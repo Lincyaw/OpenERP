@@ -1,0 +1,78 @@
+/**
+ * Shadow Token System
+ *
+ * Multi-layered shadows for depth and elevation
+ * Based on Material Design elevation concept
+ */
+
+:root {
+  /* === Elevation Shadows === */
+
+  /* Level 0: No shadow (flat) */
+  --shadow-none: none;
+
+  /* Level 1: Subtle shadow (cards, dropdowns) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Level 2: Default shadow (raised cards, menus) */
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Level 3: Pronounced shadow (popovers, dialogs) */
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Level 4: Strong shadow (modals) */
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Level 5: Maximum shadow (overlay dialogs) */
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* === Inner Shadows === */
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-inner-lg: inset 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+
+  /* === Focus Ring Shadows === */
+  --shadow-focus: 0 0 0 2px var(--color-primary-light);
+  --shadow-focus-danger: 0 0 0 2px var(--color-danger-light);
+  --shadow-focus-success: 0 0 0 2px var(--color-success-light);
+
+  /* === Component Shadows === */
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
+  --shadow-tooltip: var(--shadow-md);
+  --shadow-popover: var(--shadow-lg);
+  --shadow-sticky: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* === Button Shadows === */
+  --shadow-button: 0 2px 0 rgba(0, 0, 0, 0.02);
+  --shadow-button-primary: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* === Dark Theme Shadows === */
+[theme-mode='dark'] {
+  /* Darker, more subtle shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
+    0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+
+  /* Brighter focus rings for dark mode */
+  --shadow-focus: 0 0 0 2px rgba(64, 150, 255, 0.5);
+}
+
+/* === High Contrast Mode Shadows === */
+@media (prefers-contrast: high) {
+  :root {
+    --shadow-card: 0 0 0 1px var(--color-border-primary);
+    --shadow-card-hover: 0 0 0 2px var(--color-border-primary);
+    --shadow-dropdown: 0 0 0 1px var(--color-border-primary), var(--shadow-lg);
+  }
+}

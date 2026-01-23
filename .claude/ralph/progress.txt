@@ -1534,3 +1534,137 @@ function ProductForm() {
 - Form fields support `labelPosition` ('top', 'left', 'inset') for different layouts
 - TreeSelectField is ready for category hierarchies in P1-FE-003
 
+
+
+---
+
+## 2026-01-24 - P0-FE-DS: Frontend Design System Complete
+
+### Completed
+- **P0-FE-DS**: 前端设计规范体系 (Design System)
+
+### What was done
+1. Created comprehensive design token system at `src/styles/tokens/`:
+   - `breakpoints.css` - Responsive breakpoint system (375px/768px/1024px/1440px)
+   - `colors.css` - Color palette with semantic tokens, dark mode, and elder-friendly theme support
+   - `spacing.css` - 4px-based spacing scale with component-specific spacing
+   - `typography.css` - Font families, sizes, weights, line heights with font scaling
+   - `shadows.css` - Elevation shadow system with dark mode variants
+   - `animations.css` - Duration, easing, and keyframe animations with reduced motion support
+
+2. Created accessibility utilities at `src/styles/accessibility.css`:
+   - Focus management (:focus-visible, focus-within)
+   - Skip links for keyboard navigation
+   - Screen reader utilities (sr-only, aria-live)
+   - High contrast mode support (@media prefers-contrast)
+   - Forced colors mode support (Windows High Contrast)
+   - Touch target sizing (44x44px minimum)
+   - Color blind safe status indicators
+
+3. Created responsive layout components at `src/components/common/layout/`:
+   - `Container.tsx` - Responsive centered container with configurable max-widths
+   - `Grid.tsx` - CSS Grid component with responsive column support and GridItem
+   - `Flex.tsx` - Flexbox utilities including Stack, Row, Spacer, and Divider components
+
+4. Created theme management hooks at `src/hooks/useTheme.ts`:
+   - `useThemeManager()` - Theme switching (light/dark/elder)
+   - `useFontScale()` - Font scaling for accessibility
+   - `useAccessibilityPreferences()` - Detect reduced motion and high contrast preferences
+   - System theme detection and auto-switching
+
+5. Created responsive grid CSS utilities at `src/styles/utilities/grid.css`:
+   - Responsive grid column classes for all breakpoints
+   - Mobile-first approach
+
+6. Updated frontend/README.md with comprehensive design system documentation:
+   - Technology stack overview
+   - Responsive design guidelines and breakpoints
+   - CSS architecture and conventions
+   - Design tokens reference (colors, spacing, typography, shadows, animations)
+   - Layout component usage examples
+   - Theme system documentation
+   - Accessibility (WCAG 2.1 AA) requirements and utilities
+   - Interaction design principles
+   - Component guidelines and best practices
+   - File structure reference
+
+7. Updated root CLAUDE.md:
+   - Added reference to frontend/README.md as required reading
+   - Added frontend development guidelines section
+   - Emphasized design token usage, responsive design, and accessibility requirements
+
+### Files created
+- `frontend/src/styles/tokens/breakpoints.css`
+- `frontend/src/styles/tokens/colors.css`
+- `frontend/src/styles/tokens/spacing.css`
+- `frontend/src/styles/tokens/typography.css`
+- `frontend/src/styles/tokens/shadows.css`
+- `frontend/src/styles/tokens/animations.css`
+- `frontend/src/styles/tokens/index.css`
+- `frontend/src/styles/accessibility.css`
+- `frontend/src/styles/utilities/grid.css`
+- `frontend/src/styles/index.css`
+- `frontend/src/components/common/layout/Container.tsx`
+- `frontend/src/components/common/layout/Grid.tsx`
+- `frontend/src/components/common/layout/Flex.tsx`
+- `frontend/src/components/common/layout/index.ts`
+- `frontend/src/hooks/useTheme.ts`
+
+### Files modified
+- `frontend/src/main.tsx` (imports design system styles)
+- `frontend/src/hooks/index.ts` (exports theme hooks)
+- `frontend/src/components/common/index.ts` (exports layout components)
+- `frontend/vite.config.ts` (added @styles alias)
+- `frontend/tsconfig.app.json` (added @styles path alias)
+- `frontend/README.md` (complete rewrite with design system documentation)
+- `CLAUDE.md` (added frontend guidelines and README reference)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only warnings from existing router files)
+- `npm run build` passes
+
+### Design System Summary
+
+| Feature | Implementation |
+|---------|----------------|
+| Breakpoints | Mobile 375px / Tablet 768px / Desktop 1024px / Wide 1440px |
+| CSS Architecture | CSS Variables + CSS Modules + BEM naming |
+| Color Tokens | 10-level scales for primary/success/warning/danger/neutral |
+| Spacing | 4px grid system with component-specific tokens |
+| Typography | rem-based font sizes with 4 scale levels |
+| Shadows | 5-level elevation system |
+| Animations | Duration/easing tokens with reduced motion support |
+| Themes | Light, Dark, Elder-friendly |
+| Accessibility | WCAG 2.1 AA, focus management, screen reader support |
+| Layout Components | Container, Grid, GridItem, Flex, Stack, Row, Spacer, Divider |
+
+### Usage Examples
+
+```tsx
+// Layout with responsive grid
+import { Container, Grid, Stack, Row, Spacer } from '@/components/common'
+
+<Container size="lg">
+  <Grid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
+    <Card>Item 1</Card>
+    <Card>Item 2</Card>
+  </Grid>
+</Container>
+
+// Theme management
+import { useThemeManager, useFontScale } from '@/hooks'
+
+const { theme, setTheme } = useThemeManager()
+const { fontScale, setFontScale } = useFontScale()
+```
+
+### Notes for next developer
+- P0-FE-008 (Table components) is the next highest priority task
+- P0-FE-009 (Vitest testing) can also be started
+- Always use design tokens via CSS variables (e.g., `--spacing-4`, `--color-primary`)
+- Test components in all three themes (light, dark, elder)
+- Layout components (Container, Grid, Flex) should be used for all page layouts
+- Accessibility utilities (`sr-only`, `skip-link`, etc.) are available globally
+- Font scaling works via `data-font-scale` attribute on `<html>` element
+- Reduced motion is automatically respected via CSS `prefers-reduced-motion` media query

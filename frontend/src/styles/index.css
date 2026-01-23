@@ -1,0 +1,19 @@
+/**
+ * Design System Styles - Main Entry Point
+ *
+ * Import this file once in your application entry point
+ * to load all design system styles.
+ *
+ * @example
+ * // In main.tsx
+ * import '@/styles'
+ */
+
+/* Design Tokens */
+@import './tokens/index.css';
+
+/* Accessibility Utilities */
+@import './accessibility.css';
+
+/* Responsive Grid Utilities */
+@import './utilities/grid.css';

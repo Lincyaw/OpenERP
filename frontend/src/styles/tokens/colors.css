@@ -1,0 +1,180 @@
+/**
+ * Color Token System
+ *
+ * Extends Semi Design's color system with custom semantic tokens.
+ * Uses CSS custom properties for theme switching.
+ *
+ * Naming convention:
+ * --color-{category}-{variant}
+ *
+ * Categories:
+ * - primary: Brand/action color
+ * - secondary: Supporting color
+ * - success: Positive feedback
+ * - warning: Caution/attention
+ * - danger: Error/destructive
+ * - neutral: Gray scale
+ * - bg: Background colors
+ * - text: Text colors
+ * - border: Border colors
+ */
+
+:root {
+  /* === Primary Colors === */
+  --color-primary-50: #e6f4ff;
+  --color-primary-100: #bae0ff;
+  --color-primary-200: #91caff;
+  --color-primary-300: #69b1ff;
+  --color-primary-400: #4096ff;
+  --color-primary-500: #1677ff;
+  --color-primary-600: #0958d9;
+  --color-primary-700: #003eb3;
+  --color-primary-800: #002c8c;
+  --color-primary-900: #001d66;
+
+  /* Primary semantic aliases */
+  --color-primary: var(--color-primary-500);
+  --color-primary-hover: var(--color-primary-400);
+  --color-primary-active: var(--color-primary-600);
+  --color-primary-light: var(--color-primary-100);
+
+  /* === Success Colors === */
+  --color-success-50: #f6ffed;
+  --color-success-100: #d9f7be;
+  --color-success-200: #b7eb8f;
+  --color-success-300: #95de64;
+  --color-success-400: #73d13d;
+  --color-success-500: #52c41a;
+  --color-success-600: #389e0d;
+  --color-success-700: #237804;
+  --color-success-800: #135200;
+  --color-success-900: #092b00;
+
+  --color-success: var(--color-success-500);
+  --color-success-hover: var(--color-success-400);
+  --color-success-active: var(--color-success-600);
+  --color-success-light: var(--color-success-100);
+
+  /* === Warning Colors === */
+  --color-warning-50: #fffbe6;
+  --color-warning-100: #fff1b8;
+  --color-warning-200: #ffe58f;
+  --color-warning-300: #ffd666;
+  --color-warning-400: #ffc53d;
+  --color-warning-500: #faad14;
+  --color-warning-600: #d48806;
+  --color-warning-700: #ad6800;
+  --color-warning-800: #874d00;
+  --color-warning-900: #613400;
+
+  --color-warning: var(--color-warning-500);
+  --color-warning-hover: var(--color-warning-400);
+  --color-warning-active: var(--color-warning-600);
+  --color-warning-light: var(--color-warning-100);
+
+  /* === Danger Colors === */
+  --color-danger-50: #fff1f0;
+  --color-danger-100: #ffccc7;
+  --color-danger-200: #ffa39e;
+  --color-danger-300: #ff7875;
+  --color-danger-400: #ff4d4f;
+  --color-danger-500: #f5222d;
+  --color-danger-600: #cf1322;
+  --color-danger-700: #a8071a;
+  --color-danger-800: #820014;
+  --color-danger-900: #5c0011;
+
+  --color-danger: var(--color-danger-500);
+  --color-danger-hover: var(--color-danger-400);
+  --color-danger-active: var(--color-danger-600);
+  --color-danger-light: var(--color-danger-100);
+
+  /* === Neutral Colors (Gray Scale) === */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e8e8e8;
+  --color-neutral-300: #d9d9d9;
+  --color-neutral-400: #bfbfbf;
+  --color-neutral-500: #8c8c8c;
+  --color-neutral-600: #595959;
+  --color-neutral-700: #434343;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #141414;
+
+  /* === Background Colors === */
+  --color-bg-layout: var(--color-neutral-100);
+  --color-bg-container: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-spotlight: var(--color-neutral-50);
+  --color-bg-mask: rgba(0, 0, 0, 0.45);
+
+  /* === Text Colors === */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: #ffffff;
+  --color-text-link: var(--color-primary);
+  --color-text-link-hover: var(--color-primary-hover);
+
+  /* === Border Colors === */
+  --color-border-primary: var(--color-neutral-300);
+  --color-border-secondary: var(--color-neutral-200);
+  --color-border-focus: var(--color-primary);
+
+  /* === Status Colors for Business Logic === */
+  --color-status-draft: var(--color-neutral-500);
+  --color-status-pending: var(--color-warning);
+  --color-status-processing: var(--color-primary);
+  --color-status-completed: var(--color-success);
+  --color-status-cancelled: var(--color-danger);
+  --color-status-overdue: var(--color-danger);
+}
+
+/* === Dark Theme === */
+[theme-mode='dark'] {
+  /* Background Colors */
+  --color-bg-layout: #141414;
+  --color-bg-container: #1f1f1f;
+  --color-bg-elevated: #262626;
+  --color-bg-spotlight: #2a2a2a;
+  --color-bg-mask: rgba(0, 0, 0, 0.65);
+
+  /* Text Colors */
+  --color-text-primary: rgba(255, 255, 255, 0.95);
+  --color-text-secondary: rgba(255, 255, 255, 0.65);
+  --color-text-tertiary: rgba(255, 255, 255, 0.45);
+  --color-text-disabled: rgba(255, 255, 255, 0.3);
+  --color-text-inverse: var(--color-neutral-900);
+
+  /* Border Colors */
+  --color-border-primary: #434343;
+  --color-border-secondary: #303030;
+
+  /* Adjusted Primary for dark mode (slightly brighter) */
+  --color-primary: var(--color-primary-400);
+  --color-primary-hover: var(--color-primary-300);
+  --color-primary-active: var(--color-primary-500);
+}
+
+/* === Elder-Friendly Theme === */
+[theme-mode='elder'] {
+  /* Higher contrast colors */
+  --color-text-primary: #000000;
+  --color-text-secondary: #333333;
+  --color-text-tertiary: #555555;
+
+  /* Softer, warmer backgrounds */
+  --color-bg-layout: #f8f5f0;
+  --color-bg-container: #fffef9;
+  --color-bg-elevated: #ffffff;
+
+  /* Stronger border visibility */
+  --color-border-primary: #999999;
+  --color-border-secondary: #cccccc;
+
+  /* More saturated primary for visibility */
+  --color-primary: #0055cc;
+  --color-primary-hover: #0044aa;
+  --color-primary-active: #003388;
+}

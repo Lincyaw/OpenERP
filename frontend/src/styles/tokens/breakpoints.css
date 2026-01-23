@@ -1,0 +1,92 @@
+/**
+ * Responsive Breakpoint System
+ *
+ * Mobile First approach with 4 breakpoints:
+ * - Mobile: 375px (base)
+ * - Tablet: 768px
+ * - Desktop: 1024px
+ * - Wide: 1440px
+ *
+ * Usage:
+ * @media (--tablet) { ... }  -> min-width: 768px
+ * @media (--desktop) { ... } -> min-width: 1024px
+ * @media (--wide) { ... }    -> min-width: 1440px
+ */
+
+:root {
+  /* Breakpoint values */
+  --breakpoint-mobile: 375px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+
+  /* Container max-widths per breakpoint */
+  --container-mobile: 100%;
+  --container-tablet: 720px;
+  --container-desktop: 960px;
+  --container-wide: 1320px;
+
+  /* Content padding per breakpoint */
+  --content-padding-mobile: 16px;
+  --content-padding-tablet: 24px;
+  --content-padding-desktop: 32px;
+  --content-padding-wide: 40px;
+}
+
+/* Custom media queries (use with postcss-custom-media) */
+/* For now, use standard media queries in components */
+
+/* Utility classes for responsive visibility */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile-only {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .show-mobile-only {
+    display: block !important;
+  }
+}
+
+.hide-tablet {
+  display: block;
+}
+
+.show-tablet-only {
+  display: none;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+
+  .show-tablet-only {
+    display: block !important;
+  }
+}
+
+.hide-desktop {
+  display: block;
+}
+
+.show-desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+
+  .show-desktop-only {
+    display: block !important;
+  }
+}

@@ -1,0 +1,18 @@
+/**
+ * Design Token System - Main Import File
+ *
+ * Import this file once in your application entry point
+ * to load all design tokens.
+ *
+ * @example
+ * // In main.tsx or index.tsx
+ * import '@/styles/tokens'
+ */
+
+/* Core tokens */
+@import './breakpoints.css';
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './shadows.css';
+@import './animations.css';

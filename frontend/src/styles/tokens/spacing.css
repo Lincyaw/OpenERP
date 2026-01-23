@@ -1,0 +1,95 @@
+/**
+ * Spacing Token System
+ *
+ * Based on 4px base unit (4px grid)
+ * Follows an 8-point scale for most use cases
+ *
+ * Usage:
+ * margin: var(--spacing-4);     -> 16px
+ * padding: var(--spacing-2);    -> 8px
+ * gap: var(--spacing-3);        -> 12px
+ */
+
+:root {
+  /* === Base Spacing Scale (4px increments) === */
+  --spacing-0: 0;
+  --spacing-px: 1px;
+  --spacing-0-5: 2px;
+  --spacing-1: 4px;
+  --spacing-1-5: 6px;
+  --spacing-2: 8px;
+  --spacing-2-5: 10px;
+  --spacing-3: 12px;
+  --spacing-3-5: 14px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-11: 44px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-28: 112px;
+  --spacing-32: 128px;
+  --spacing-36: 144px;
+  --spacing-40: 160px;
+
+  /* === Component-Specific Spacing === */
+
+  /* Form spacing */
+  --form-item-margin: var(--spacing-6);
+  --form-label-margin: var(--spacing-2);
+  --form-help-margin: var(--spacing-1);
+
+  /* Card spacing */
+  --card-padding: var(--spacing-6);
+  --card-padding-sm: var(--spacing-4);
+  --card-padding-lg: var(--spacing-8);
+  --card-gap: var(--spacing-4);
+
+  /* Table spacing */
+  --table-cell-padding-y: var(--spacing-3);
+  --table-cell-padding-x: var(--spacing-4);
+  --table-header-padding-y: var(--spacing-4);
+
+  /* Modal spacing */
+  --modal-padding: var(--spacing-6);
+  --modal-header-padding: var(--spacing-4) var(--spacing-6);
+  --modal-footer-padding: var(--spacing-4) var(--spacing-6);
+
+  /* Button spacing */
+  --button-padding-y: var(--spacing-2);
+  --button-padding-x: var(--spacing-4);
+  --button-padding-y-sm: var(--spacing-1);
+  --button-padding-x-sm: var(--spacing-2);
+  --button-padding-y-lg: var(--spacing-3);
+  --button-padding-x-lg: var(--spacing-6);
+
+  /* List spacing */
+  --list-item-padding: var(--spacing-3) var(--spacing-4);
+  --list-item-gap: var(--spacing-2);
+
+  /* Section spacing */
+  --section-margin: var(--spacing-8);
+  --section-padding: var(--spacing-6);
+
+  /* Page spacing */
+  --page-padding: var(--spacing-6);
+  --page-padding-mobile: var(--spacing-4);
+}
+
+/* Elder-friendly theme increases spacing for easier touch targets */
+[theme-mode='elder'] {
+  --form-item-margin: var(--spacing-8);
+  --form-label-margin: var(--spacing-3);
+  --button-padding-y: var(--spacing-3);
+  --button-padding-x: var(--spacing-6);
+  --list-item-padding: var(--spacing-4) var(--spacing-6);
+  --table-cell-padding-y: var(--spacing-4);
+  --table-cell-padding-x: var(--spacing-5);
+}

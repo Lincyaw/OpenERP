@@ -1,0 +1,104 @@
+/**
+ * Responsive Grid Utilities
+ *
+ * CSS classes for responsive grid column counts.
+ * Used by the Grid component for responsive breakpoints.
+ */
+
+/* === Base Grid Column Classes === */
+.ds-grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.ds-grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ds-grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ds-grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ds-grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.ds-grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.ds-grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+/* === Tablet Breakpoint (768px) === */
+@media (min-width: 768px) {
+  .ds-grid-cols-tablet-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .ds-grid-cols-tablet-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* === Desktop Breakpoint (1024px) === */
+@media (min-width: 1024px) {
+  .ds-grid-cols-desktop-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .ds-grid-cols-desktop-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* === Wide Breakpoint (1440px) === */
+@media (min-width: 1440px) {
+  .ds-grid-cols-wide-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .ds-grid-cols-wide-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}

@@ -7,10 +7,25 @@ An inventory management system based on DDD (Domain-Driven Design), adopting a m
 
 - Detailed design specification: `.claude/ralph/docs/spec.md`
 - Project progress planning: `.claude/ralph/docs/task.md`
+- **Frontend Design System**: `frontend/README.md` - **MUST READ before developing frontend**
 
 ---
 
-## 2. Technology Stack
+## 2. Frontend Development Guidelines
+
+> **CRITICAL**: Before implementing ANY frontend code, you MUST read and follow the design system documentation in `frontend/README.md`.
+
+### Key Requirements
+
+1. **Use Design Tokens**: Always use CSS variables (e.g., `--spacing-4`, `--color-primary`) instead of hardcoded values
+2. **Responsive Design**: Use mobile-first approach with breakpoints (375px, 768px, 1024px, 1440px)
+3. **Accessibility**: Follow WCAG 2.1 AA guidelines (contrast, focus, keyboard navigation)
+4. **Theme Support**: Components must work in light, dark, and elder-friendly themes
+5. **Layout Components**: Use `Container`, `Grid`, `Flex`, `Stack`, `Row` from `@/components/common`
+
+---
+
+## 3. Technology Stack
 
 All technology stacks use the latest stable versions
 
