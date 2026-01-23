@@ -4364,3 +4364,90 @@ curl -X PUT "http://localhost:8080/api/v1/inventory/thresholds" \
 - Backend API (`/inventory/stock/adjust`) fails if there are active locks on the inventory item
 - Form uses Zod validation integrated with react-hook-form
 - All form components follow the project's design system tokens
+
+---
+
+## P3-BE-001 + P3-BE-002: SalesOrder Aggregate Root & SalesOrderItem Entity
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETE
+
+### Summary
+Implemented the SalesOrder aggregate root and SalesOrderItem entity for the Trade module. This includes a complete state machine for order lifecycle management, domain events for cross-context communication, and comprehensive unit tests.
+
+### Implementation Details
+
+#### 1. OrderStatus State Machine
+```
+DRAFT → CONFIRMED → SHIPPED → COMPLETED
+  ↓         ↓
+CANCELLED  CANCELLED
+```
+
+- **DRAFT**: Initial state, items can be added/modified/removed, discount can be applied
+- **CONFIRMED**: Order is confirmed, requires at least one item and positive payable amount
+- **SHIPPED**: Order has been shipped, requires warehouse to be set
+- **COMPLETED**: Terminal state, order delivered/received
+- **CANCELLED**: Terminal state, requires cancel reason
+
+#### 2. SalesOrder Aggregate Root
+- Tenant-scoped using `TenantAggregateRoot`
+- Order number with uniqueness constraint per tenant
+- Customer information (ID, name)
+- Optional warehouse assignment (required before shipping)
+- Amount calculations: TotalAmount, DiscountAmount, PayableAmount
+- Status tracking with timestamps (ConfirmedAt, ShippedAt, CompletedAt, CancelledAt)
+- Version field for optimistic locking
+
+#### 3. SalesOrderItem Entity
+- Product information (ID, name, code, unit)
+- Quantity and UnitPrice with automatic Amount calculation
+- Duplicate product prevention (same product cannot be added twice)
+- Quantity and price update methods with automatic recalculation
+
+#### 4. Domain Events
+| Event | Triggered When | Contains |
+|-------|----------------|----------|
+| SalesOrderCreatedEvent | Order created | Order details |
+| SalesOrderConfirmedEvent | Order confirmed | Full order with items |
+| SalesOrderShippedEvent | Order shipped | Order + warehouse info |
+| SalesOrderCompletedEvent | Order completed | Order details |
+| SalesOrderCancelledEvent | Order cancelled | Order + WasConfirmed flag |
+
+The `WasConfirmed` flag in cancelled event helps downstream services (like inventory) know if stock locks need to be released.
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `backend/internal/domain/trade/sales_order.go` | SalesOrder aggregate root, SalesOrderItem entity, OrderStatus enum |
+| `backend/internal/domain/trade/sales_order_events.go` | Domain events for order lifecycle |
+| `backend/internal/domain/trade/sales_order_test.go` | Comprehensive unit tests |
+
+### Test Coverage
+- 49+ test cases covering:
+  - OrderStatus validation and transitions
+  - SalesOrder creation and validation
+  - Item CRUD operations
+  - Discount application
+  - Warehouse assignment
+  - State transitions (Confirm, Ship, Complete, Cancel)
+  - Domain event generation
+  - Edge cases and error conditions
+
+### Build Status
+- All tests pass: `go test ./internal/domain/trade/...`
+- No linting issues
+
+### Key Design Decisions
+1. **Immutable Order Number**: Cannot be changed after creation
+2. **Single Product Per Item**: Same product cannot be added twice; use UpdateItemQuantity instead
+3. **Discount Validation**: Cannot exceed total amount
+4. **Warehouse Required for Shipping**: Enforced at domain level
+5. **Cancel Reason Required**: Must provide reason when cancelling
+
+### Next Steps
+- **P3-BE-003**: Multi-unit quantity conversion (if needed)
+- **P3-BE-004**: Pricing strategies (standard/tiered)
+- **P3-BE-005**: SalesOrder Application Service
+- **P3-BE-006**: Event handling for inventory lock integration
+- **P3-BE-007**: SalesOrder HTTP API
