@@ -2692,3 +2692,89 @@ curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
 - Payment terms (credit_days, credit_limit) control purchasing credit
 - Bank information is for generating payment vouchers
 - Rating can be used for supplier performance evaluation
+
+
+---
+
+## 2026-01-24 - P1-BE-012: Warehouse Aggregate Implementation Complete
+
+### Completed
+- **P1-BE-012**: Warehouse 聚合根实现 (Warehouse Aggregate Root Implementation)
+
+### What was done
+1. Created Warehouse aggregate root at `internal/domain/partner/warehouse.go`:
+   - Implements `TenantAggregateRoot` for multi-tenant support
+   - Status management: active, inactive
+   - Warehouse types: physical, virtual, consign, transit
+   - Contact information: contact name, phone, email
+   - Address information: address, city, province, postal code, country
+   - Default warehouse flag (only one per tenant)
+   - Capacity field for storage limits
+   - Custom attributes as JSON
+
+2. Created domain events at `internal/domain/partner/warehouse_events.go`:
+   - WarehouseCreatedEvent
+   - WarehouseUpdatedEvent
+   - WarehouseStatusChangedEvent
+   - WarehouseSetAsDefaultEvent
+   - WarehouseDeletedEvent
+
+3. Created repository interface at `internal/domain/partner/warehouse_repository.go`:
+   - Full CRUD operations with tenant-scoped variants
+   - Query methods: FindByCode, FindByType, FindByStatus, FindDefault
+   - Batch operations: FindByIDs, FindByCodes, SaveBatch
+   - Special methods: ClearDefault (for managing single default per tenant)
+   - Existence checks: ExistsByCode
+   - Count methods for aggregations
+
+4. Created database migration:
+   - `migrations/000007_create_warehouses.up.sql` - Creates warehouses table with:
+     - Unique constraint on (tenant_id, code)
+     - Partial unique index ensuring only one default warehouse per tenant
+     - Check constraints for type, status, capacity
+     - Indexes for common queries (tenant, status, type, is_default)
+     - GIN index for JSONB attributes
+     - Pattern indexes for ILIKE searches
+     - Auto-update trigger for updated_at
+   - `migrations/000007_create_warehouses.down.sql` - Rollback script
+
+5. Created comprehensive unit tests at `internal/domain/partner/warehouse_test.go`:
+   - 50+ test cases covering all functionality
+   - Test coverage: 91.9% for partner domain
+
+### Key Features
+- **Warehouse Types**: Physical (standard), Virtual (logical), Consign (consignment), Transit (in-transit)
+- **Default Warehouse**: Only one warehouse can be default per tenant; default cannot be disabled
+- **Capacity Management**: Optional capacity limit (0 = unlimited)
+- **Enable/Disable**: Simple status toggle with business rule protection (cannot disable default)
+- **Validation**: Code format, name length, contact validation
+- **Full Address**: Formatted full address generation
+
+### Key Differences from Customer/Supplier
+- Simpler status model (only active/inactive, no suspended/blocked)
+- No financial fields (balance, credit)
+- Has `is_default` flag for identifying primary warehouse
+- Has `capacity` field for storage planning
+- Unique partial index ensures only one default per tenant
+
+### Files created
+- `backend/internal/domain/partner/warehouse.go`
+- `backend/internal/domain/partner/warehouse_events.go`
+- `backend/internal/domain/partner/warehouse_repository.go`
+- `backend/internal/domain/partner/warehouse_test.go`
+- `backend/migrations/000007_create_warehouses.up.sql`
+- `backend/migrations/000007_create_warehouses.down.sql`
+
+### Build Status
+- `go build ./...` passes
+- `go test ./...` passes all tests
+- Test coverage for partner domain: 91.9%
+
+### Notes for next developer
+- P1-BE-013 (Partner repositories implementation) can now be started - all three aggregates are complete
+- All Partner context aggregates (Customer, Supplier, Warehouse) are now done
+- When implementing ClearDefault, use a transaction to clear other defaults before setting new one
+- The partial unique index `idx_warehouses_tenant_default` ensures database-level constraint
+- For inventory operations, warehouse must be active and is determined by `IsActive()` method
+- Virtual warehouses can represent logical locations like "Returns" or "Defective"
+- Transit warehouses track goods in transit between physical locations
