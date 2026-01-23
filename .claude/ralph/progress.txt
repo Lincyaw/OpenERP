@@ -2459,3 +2459,145 @@ curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
 - Consider adding category filter once P1-FE-003 (Category Management) is complete
 - Build passes with expected chunk size warnings (vendor chunk ~693KB)
 
+
+---
+
+## 2026-01-24 - P1-FE-002: Product Add/Edit Form Complete
+
+### Completed
+- **P1-FE-002**: 商品新增/编辑表单 (Product Add/Edit Form)
+
+### What was done
+1. Created ProductForm component at `src/features/catalog/ProductForm.tsx`:
+   - Zod schema validation for all form fields
+   - Form sections: Basic Info, Pricing, Inventory Settings
+   - Create mode (new products) and Edit mode (existing products)
+   - API integration with proper error handling
+   - useFormWithValidation hook for form state management
+   
+2. Created page components:
+   - `src/pages/catalog/ProductNew.tsx` - Product creation page
+   - `src/pages/catalog/ProductEdit.tsx` - Product edit page with data loading
+
+3. Updated routing:
+   - Added lazy-loaded page components for ProductNew and ProductEdit
+   - Registered routes at `/catalog/products/new` and `/catalog/products/:id/edit`
+   - Routes are detail pages (not shown in navigation menu)
+
+4. Form validation rules:
+   - Code: required, max 50 chars, alphanumeric + underscore/hyphen
+   - Name: required, max 200 chars
+   - Unit: required, max 20 chars
+   - Barcode: optional, max 50 chars
+   - Description: optional, max 2000 chars
+   - Purchase price: optional, non-negative
+   - Selling price: optional, non-negative
+   - Min stock: optional, non-negative integer
+   - Sort order: optional, non-negative integer
+
+5. Edit mode restrictions:
+   - Code is disabled (cannot be changed after creation)
+   - Unit is disabled (cannot be changed after creation)
+
+### Files created
+- `frontend/src/features/catalog/ProductForm.tsx`
+- `frontend/src/features/catalog/ProductForm.css`
+- `frontend/src/pages/catalog/ProductNew.tsx`
+- `frontend/src/pages/catalog/ProductEdit.tsx`
+
+### Files modified
+- `frontend/src/router/routes.tsx` - Added routes and lazy imports
+- `frontend/src/pages/catalog/Products.tsx` - Prettier formatting fix
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Notes for next developer
+- P1-FE-003 (Category Management) is the next catalog feature
+- P1-BE-010 through P1-BE-015 (Partner module backend) could be started
+- Product form navigates back to `/catalog/products` on success/cancel
+- Category selection is not yet implemented (depends on P1-FE-003)
+- Form uses Semi Design components via the common form components
+- Validation messages are in Chinese to match UI language
+
+
+
+---
+
+## 2026-01-24 - P1-BE-010: Customer Aggregate Implementation Complete
+
+### Completed
+- **P1-BE-010**: Customer 聚合根实现 (Customer Aggregate Root Implementation)
+
+### What was done
+1. Created Customer aggregate root at `internal/domain/partner/customer.go`:
+   - Implements `TenantAggregateRoot` for multi-tenant support
+   - Status management: active, inactive, suspended
+   - Customer types: individual, organization
+   - Customer levels: normal, silver, gold, platinum, vip
+   - Contact information: name, phone, email
+   - Address information: address, city, province, postal code, country
+   - Business fields: tax ID, credit limit, prepaid balance
+   - Custom attributes as JSON
+
+2. Created domain events at `internal/domain/partner/customer_events.go`:
+   - CustomerCreatedEvent
+   - CustomerUpdatedEvent
+   - CustomerStatusChangedEvent
+   - CustomerLevelChangedEvent
+   - CustomerBalanceChangedEvent
+   - CustomerDeletedEvent
+
+3. Created repository interface at `internal/domain/partner/customer_repository.go`:
+   - Full CRUD operations with tenant-scoped variants
+   - Query methods: FindByPhone, FindByEmail, FindByType, FindByLevel, FindByStatus
+   - Batch operations: FindByIDs, FindByCodes, SaveBatch
+   - Existence checks: ExistsByCode, ExistsByPhone, ExistsByEmail
+   - Count methods for aggregations
+
+4. Created database migration:
+   - `migrations/000005_create_customers.up.sql` - Creates customers table with:
+     - Unique constraint on (tenant_id, code)
+     - Check constraints for type, level, status, credit_limit, balance
+     - Indexes for common queries (tenant, status, type, level, phone, email)
+     - GIN index for JSONB attributes
+     - Pattern indexes for ILIKE searches
+     - Auto-update trigger for updated_at
+   - `migrations/000005_create_customers.down.sql` - Rollback script
+
+5. Created comprehensive unit tests at `internal/domain/partner/customer_test.go`:
+   - 30+ test cases covering all functionality
+   - Test coverage: 81.9%
+
+### Key Features
+- **Customer Types**: Individual (B2C) and Organization (B2B)
+- **Customer Levels**: 5-tier system (normal → silver → gold → platinum → vip)
+- **Balance Management**: Prepaid balance with recharge, deduction, refund operations
+- **Credit Limit**: Maximum credit allowed per customer
+- **Validation**: Code format, phone format, email format validation
+- **Full Address**: Formatted full address generation
+
+### Files created
+- `backend/internal/domain/partner/customer.go`
+- `backend/internal/domain/partner/customer_events.go`
+- `backend/internal/domain/partner/customer_repository.go`
+- `backend/internal/domain/partner/customer_test.go`
+- `backend/migrations/000005_create_customers.up.sql`
+- `backend/migrations/000005_create_customers.down.sql`
+
+### Build Status
+- `go build ./...` passes
+- `go test ./...` passes all tests
+- Test coverage for partner domain: 81.9%
+
+### Notes for next developer
+- P1-BE-011 (Supplier aggregate) can now be started - similar pattern to Customer
+- P1-BE-012 (Warehouse aggregate) can follow after Supplier
+- P1-BE-013 (Partner repositories) depends on P1-BE-010/011/012
+- Customer balance operations generate events for downstream processing
+- The balance field represents prepaid/deposit balance (not accounts receivable)
+- Use CustomerType to differentiate B2C (individual) from B2B (organization) workflows
+- TaxID field is for VAT invoice requirements (Chinese 增值税)
+
