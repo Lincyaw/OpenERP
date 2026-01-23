@@ -67,7 +67,7 @@
   {"id":"P2-BE-005","story":"InventoryTransaction 实现","priority":"high","requirements":["实现库存流水实体","记录入库出库调整操作","关联业务单据"],"passes":true},
   {"id":"P2-BE-006","story":"StockLock 实现 (乐观锁)","priority":"high","requirements":["实现库存锁定机制","使用乐观锁防止超卖","实现锁定超时释放"],"passes":true},
   {"id":"P2-BE-007","story":"Inventory Repository 接口 + 实现","priority":"high","requirements":["定义 InventoryRepository 接口","实现 GORM 版本 Repository","支持多维度查询"],"passes":true},
-  {"id":"P2-BE-008","story":"Inventory Application Service","priority":"high","requirements":["实现库存查询服务","实现库存锁定释放服务","实现库存调整服务"],"passes":false},
+  {"id":"P2-BE-008","story":"Inventory Application Service","priority":"high","requirements":["实现库存查询服务","实现库存锁定释放服务","实现库存调整服务"],"passes":true},
   {"id":"P2-BE-009","story":"Inventory API (查询/锁定/调整)","priority":"high","requirements":["实现库存查询 API","实现库存锁定 API","实现库存调整 API"],"passes":false},
   {"id":"P2-BE-010","story":"库存领域事件实现","priority":"medium","requirements":["定义 StockLocked 事件","定义 StockDeducted 事件","定义 StockIncreased 事件"],"passes":true},
   {"id":"P2-BE-011","story":"StockTaking 盘点聚合实现","priority":"medium","requirements":["实现 StockTaking 聚合","支持盘点单创建和执行","实现盘点差异计算"],"passes":false},

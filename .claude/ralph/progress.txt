@@ -3811,3 +3811,159 @@ tx, err := inventory.NewTransactionBuilder(
 - Transaction repository only supports Create - corrections require new reverse transactions
 - Consider using `FindBelowMinimum` for stock alert functionality
 - `SumQuantityByProduct` useful for showing total stock across warehouses
+
+
+---
+
+## 2026-01-24 - P2-BE-008: Inventory Application Service Complete
+
+### Completed
+- **P2-BE-008**: Inventory Application Service
+
+### What was done
+1. Created DTOs at `internal/application/inventory/dto.go`:
+   - `InventoryItemResponse` - Full inventory item response
+   - `InventoryListItemResponse` - List item response (lighter weight)
+   - `InventoryListFilter` - Query filters with pagination
+   - `IncreaseStockRequest` - Request to add stock
+   - `LockStockRequest` / `LockStockResponse` - Stock locking
+   - `UnlockStockRequest` - Release locked stock
+   - `DeductStockRequest` - Consume locked stock
+   - `AdjustStockRequest` - Stock count adjustment
+   - `SetThresholdsRequest` - Min/max quantity thresholds
+   - `StockLockResponse` - Lock details
+   - `TransactionResponse` - Audit log transaction
+   - `TransactionListFilter` - Transaction query filters
+   - `InventorySummaryResponse` / `WarehouseSummary` - Statistics
+   - Conversion functions for all domain objects to DTOs
+
+2. Created `InventoryService` at `internal/application/inventory/inventory_service.go`:
+   - **Query Operations:**
+     - `GetByID()` - Get inventory by ID
+     - `GetByWarehouseAndProduct()` - Get by warehouse-product combo
+     - `List()` - List with filtering (warehouse, product, below minimum, has stock)
+     - `ListByWarehouse()` - List all items in a warehouse
+     - `ListByProduct()` - List all warehouses for a product
+     - `ListBelowMinimum()` - Items below threshold
+     - `GetTotalQuantityByProduct()` - Sum across warehouses
+     - `GetTotalValueByWarehouse()` - Total inventory value
+     - `CheckAvailability()` - Check if quantity can be fulfilled
+   
+   - **Stock Operations:**
+     - `IncreaseStock()` - Add stock with moving weighted average cost
+     - `LockStock()` - Reserve stock for pending orders (30min default expiry)
+     - `UnlockStock()` - Release locked stock (order cancelled)
+     - `DeductStock()` - Consume locked stock (order fulfilled)
+     - `AdjustStock()` - Stock count adjustment
+     - `SetThresholds()` - Set min/max quantity alerts
+   
+   - **Lock Management:**
+     - `GetActiveLocks()` - Get active locks for an item
+     - `GetLockByID()` - Get specific lock
+     - `ReleaseExpiredLocks()` - Batch release expired locks
+   
+   - **Transaction Queries:**
+     - `ListTransactions()` - List with filtering
+     - `ListTransactionsByInventoryItem()` - Transactions for specific item
+     - `GetTransactionByID()` - Get specific transaction
+
+3. Created comprehensive unit tests at `internal/application/inventory/inventory_service_test.go`:
+   - Mock implementations for all 4 repository interfaces
+   - 23 test cases covering:
+     - Service instantiation
+     - GetByID (success, not found)
+     - GetByWarehouseAndProduct (success, not found)
+     - List (with defaults, with filters)
+     - IncreaseStock (success, invalid source type)
+     - LockStock (success, insufficient stock, no inventory)
+     - UnlockStock (success, lock not found)
+     - AdjustStock (increase, decrease, with locked stock)
+     - SetThresholds
+     - CheckAvailability (sufficient, insufficient, no inventory)
+     - ListTransactions
+     - DTO conversion functions
+
+### Service Method Reference
+
+| Category | Method | Description |
+|----------|--------|-------------|
+| Query | GetByID | Get inventory item by ID |
+| Query | GetByWarehouseAndProduct | Get by warehouse-product |
+| Query | List | List with filtering |
+| Query | CheckAvailability | Check if quantity available |
+| Stock | IncreaseStock | Add stock with cost recalc |
+| Stock | LockStock | Reserve stock for order |
+| Stock | UnlockStock | Release reservation |
+| Stock | DeductStock | Consume locked stock |
+| Stock | AdjustStock | Stock count adjustment |
+| Threshold | SetThresholds | Set min/max alerts |
+| Lock | GetActiveLocks | Get active locks |
+| Lock | ReleaseExpiredLocks | Cleanup expired locks |
+| Transaction | ListTransactions | Query audit log |
+
+### Files created
+- `backend/internal/application/inventory/dto.go`
+- `backend/internal/application/inventory/inventory_service.go`
+- `backend/internal/application/inventory/inventory_service_test.go`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (23 new tests for inventory service)
+
+### Usage Examples
+
+```go
+// Create service
+service := inventory.NewInventoryService(invRepo, batchRepo, lockRepo, txRepo)
+
+// Query inventory
+items, total, err := service.List(ctx, tenantID, inventory.InventoryListFilter{
+    WarehouseID: &warehouseID,
+    HasStock:    &[]bool{true}[0],
+    Page:        1,
+    PageSize:    20,
+})
+
+// Increase stock (purchase receiving)
+resp, err := service.IncreaseStock(ctx, tenantID, inventory.IncreaseStockRequest{
+    WarehouseID: warehouseID,
+    ProductID:   productID,
+    Quantity:    decimal.NewFromInt(100),
+    UnitCost:    decimal.NewFromFloat(15.50),
+    SourceType:  "PURCHASE_ORDER",
+    SourceID:    "PO-2024-001",
+})
+
+// Lock stock for sales order
+lockResp, err := service.LockStock(ctx, tenantID, inventory.LockStockRequest{
+    WarehouseID: warehouseID,
+    ProductID:   productID,
+    Quantity:    decimal.NewFromInt(10),
+    SourceType:  "sales_order",
+    SourceID:    "SO-2024-001",
+})
+
+// Deduct stock (shipment)
+err = service.DeductStock(ctx, tenantID, inventory.DeductStockRequest{
+    LockID:     lockResp.LockID,
+    SourceType: "SALES_ORDER",
+    SourceID:   "SO-2024-001",
+})
+
+// Adjust stock (stock count)
+resp, err = service.AdjustStock(ctx, tenantID, inventory.AdjustStockRequest{
+    WarehouseID:    warehouseID,
+    ProductID:      productID,
+    ActualQuantity: decimal.NewFromInt(95),
+    Reason:         "Stock count variance - 5 units damaged",
+})
+```
+
+### Notes for next developer
+- **P2-BE-009** (Inventory API): Can now implement HTTP handlers using this service
+- All stock operations create transaction records for audit
+- Lock expiry defaults to 30 minutes (configurable via `ExpireAt` field)
+- Adjust stock fails if there are outstanding locks (prevents inconsistency)
+- Transaction records are append-only - corrections require new transactions
+- Use `CheckAvailability()` before `LockStock()` for early validation
+- Consider running `ReleaseExpiredLocks()` as a periodic job
