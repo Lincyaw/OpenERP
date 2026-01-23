@@ -121,3 +121,71 @@
 - `WithTenant()` requires non-empty tenant ID - use in middleware after auth
 - For integration tests, use testcontainers-go to spin up PostgreSQL
 - Health endpoint at `/health` includes database status
+
+---
+
+## 2026-01-23 - P0-BE-003: Logger Framework Configuration Complete
+
+### Completed
+- **P0-BE-003**: 日志框架配置
+
+### What was done
+1. Created logger package at `internal/infrastructure/logger/` with 4 files:
+   - `logger.go` - Core logger initialization with zap, supports different levels (debug/info/warn/error) and formats (json/console)
+   - `context.go` - Context helpers for request ID, tenant ID, user ID correlation
+   - `gin.go` - Gin middleware for HTTP request logging and panic recovery
+   - `gorm.go` - GORM logger adapter that integrates database queries with zap
+
+2. Logger features implemented:
+   - Environment-aware logging (development uses console format with colors, production uses JSON)
+   - Structured logging with zap fields
+   - Request correlation with request_id, tenant_id, user_id
+   - HTTP request logging middleware with latency, status codes, client IP, user agent
+   - Panic recovery middleware with stack traces
+   - GORM query logging with slow query detection (200ms threshold)
+   - Log level filtering at both application and database level
+
+3. Configuration added:
+   - `LOG_LEVEL` - Log level (debug, info, warn, error)
+   - `LOG_FORMAT` - Output format (json, console)
+   - `LOG_OUTPUT` - Output destination (stdout, stderr, or file path)
+
+4. Integration completed:
+   - Main server uses zap instead of stdlib log
+   - Database uses custom GORM logger backed by zap
+   - HTTP middleware stack updated: RequestID → Recovery → Logger → CORS
+   - Health endpoint now logs warnings on failure
+
+5. Test coverage:
+   - 60 unit tests covering all logger functionality
+   - Tests for level parsing, encoding, context propagation
+   - Tests for Gin middleware (success/error/panic scenarios)
+   - Tests for GORM logger (info/warn/error/trace/slow query)
+
+### Files created/modified
+- `backend/internal/infrastructure/logger/logger.go` (new)
+- `backend/internal/infrastructure/logger/context.go` (new)
+- `backend/internal/infrastructure/logger/gin.go` (new)
+- `backend/internal/infrastructure/logger/gorm.go` (new)
+- `backend/internal/infrastructure/logger/logger_test.go` (new)
+- `backend/internal/infrastructure/logger/context_test.go` (new)
+- `backend/internal/infrastructure/logger/gin_test.go` (new)
+- `backend/internal/infrastructure/logger/gorm_test.go` (new)
+- `backend/internal/infrastructure/config/config.go` (added LogConfig)
+- `backend/internal/infrastructure/persistence/database.go` (added NewDatabaseWithCustomLogger)
+- `backend/cmd/server/main.go` (integrated zap logging)
+- `backend/.env.example` (added LOG_* variables)
+- `backend/go.mod` (added zap dependency)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (60 new tests in logger package)
+
+### Notes for next developer
+- P0-BE-004 (Database migrations) can now be started - logger available for migration output
+- P0-BE-008 (HTTP framework) is partially done - Gin middleware stack is configured with logging
+- Use `logger.GetGinLogger(c)` in HTTP handlers to get request-scoped logger
+- Use `logger.FromContext(ctx)` in application services to get context logger
+- GORM logs SQL queries at DEBUG level, slow queries (>200ms) at WARN level
+- Production mode uses JSON format with ISO8601 timestamps
+- Set LOG_LEVEL=debug to see SQL queries in development

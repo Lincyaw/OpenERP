@@ -25,6 +25,11 @@ func NewDatabaseWithLogger(cfg *config.DatabaseConfig, logLevel logger.LogLevel)
 	return newDatabaseWithLogLevel(cfg, logLevel)
 }
 
+// NewDatabaseWithCustomLogger creates a new database connection with a custom GORM logger
+func NewDatabaseWithCustomLogger(cfg *config.DatabaseConfig, gormLogger logger.Interface) (*Database, error) {
+	return newDatabaseWithCustomLogger(cfg, gormLogger)
+}
+
 // newDatabaseWithLogLevel is the internal function that creates database connections
 func newDatabaseWithLogLevel(cfg *config.DatabaseConfig, logLevel logger.LogLevel) (*Database, error) {
 	dsn := cfg.DSN()
@@ -39,6 +44,27 @@ func newDatabaseWithLogLevel(cfg *config.DatabaseConfig, logLevel logger.LogLeve
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
+	return configureConnectionPool(db, cfg)
+}
+
+// newDatabaseWithCustomLogger creates database connection with a custom logger
+func newDatabaseWithCustomLogger(cfg *config.DatabaseConfig, customLogger logger.Interface) (*Database, error) {
+	dsn := cfg.DSN()
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger:                 customLogger,
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	return configureConnectionPool(db, cfg)
+}
+
+// configureConnectionPool sets up the connection pool and pings the database
+func configureConnectionPool(db *gorm.DB, cfg *config.DatabaseConfig) (*Database, error) {
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)

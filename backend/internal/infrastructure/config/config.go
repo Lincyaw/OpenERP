@@ -13,6 +13,14 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	JWT      JWTConfig
+	Log      LogConfig
+}
+
+// LogConfig holds logging configuration
+type LogConfig struct {
+	Level  string // debug, info, warn, error
+	Format string // json, console
+	Output string // stdout, stderr, or file path
 }
 
 // AppConfig holds application-specific settings
@@ -79,6 +87,11 @@ func Load() (*Config, error) {
 		JWT: JWTConfig{
 			Secret:          getEnv("JWT_SECRET", ""),
 			ExpirationHours: getEnvAsInt("JWT_EXPIRATION_HOURS", 24),
+		},
+		Log: LogConfig{
+			Level:  getEnv("LOG_LEVEL", "info"),
+			Format: getEnv("LOG_FORMAT", "console"),
+			Output: getEnv("LOG_OUTPUT", "stdout"),
 		},
 	}
 
