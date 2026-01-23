@@ -823,3 +823,100 @@ make ci                # Run all CI checks
 - Use `testutil.NewTestUUID("seed")` for deterministic UUIDs in tests
 - Use `testutil.AssertEventually()` for async assertions instead of `time.Sleep()`
 
+---
+
+## 2026-01-23 - P0-FE-001: Frontend Project Scaffolding Complete
+
+### Completed
+- **P0-FE-001**: 前端项目脚手架搭建 (React + TypeScript)
+
+### What was done
+1. Created React + TypeScript project using Vite:
+   - `npm create vite@latest frontend -- --template react-ts`
+   - React 19.2.0, TypeScript 5.9.3, Vite 7.2.4
+
+2. Configured ESLint and Prettier:
+   - ESLint with TypeScript, React, React Hooks plugins
+   - Prettier integration via eslint-plugin-prettier
+   - `.prettierrc` with project conventions (no semicolons, single quotes)
+   - `.prettierignore` for build artifacts
+
+3. Established directory structure:
+   ```
+   frontend/
+   ├── src/
+   │   ├── assets/          # Static assets (images, fonts)
+   │   ├── components/
+   │   │   ├── common/      # Reusable UI components
+   │   │   └── layout/      # Layout components
+   │   ├── features/        # Feature-based modules
+   │   │   ├── catalog/     # Products, Categories
+   │   │   ├── partner/     # Customers, Suppliers, Warehouses
+   │   │   ├── inventory/   # Stock management
+   │   │   ├── trade/       # Sales, Purchases, Returns
+   │   │   └── finance/     # Receivables, Payables
+   │   ├── hooks/           # Custom React hooks
+   │   ├── pages/           # Route page components
+   │   ├── services/        # API services
+   │   ├── store/           # Zustand stores
+   │   ├── types/           # TypeScript definitions
+   │   └── utils/           # Utility functions
+   ├── .env.example
+   ├── .prettierrc
+   ├── eslint.config.js
+   ├── tsconfig.app.json
+   └── vite.config.ts
+   ```
+
+4. Configured path aliases:
+   - `@/*` → `src/*`
+   - `@components/*`, `@features/*`, `@hooks/*`, etc.
+   - Configured in both `vite.config.ts` and `tsconfig.app.json`
+
+5. Created TypeScript types matching backend:
+   - `ApiResponse<T>` - Standard response format
+   - `ApiError` - Error structure with code, message, request_id
+   - `PaginationMeta`, `PaginationParams` - Pagination support
+   - `BaseEntity`, `TenantEntity` - Entity base types
+
+6. Configured Vite:
+   - Development server on port 3000
+   - API proxy to backend (localhost:8080)
+   - Path aliases for clean imports
+
+### Files created/modified
+- `frontend/` - Entire frontend directory (new)
+- `frontend/package.json` - Project configuration with scripts
+- `frontend/eslint.config.js` - ESLint flat config
+- `frontend/.prettierrc` - Prettier configuration
+- `frontend/.prettierignore` - Prettier ignore patterns
+- `frontend/vite.config.ts` - Vite configuration with aliases and proxy
+- `frontend/tsconfig.app.json` - TypeScript config with path aliases
+- `frontend/src/types/api.ts` - API type definitions
+- `frontend/src/App.tsx` - Clean starter app
+- Feature directories with placeholder index.ts files
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes
+- `npm run build` passes (193KB JS bundle gzipped to 61KB)
+
+### NPM Scripts
+```bash
+npm run dev          # Start dev server (port 3000)
+npm run build        # Production build
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+npm run lint:fix     # Fix ESLint issues
+npm run format       # Format with Prettier
+npm run format:check # Check formatting
+npm run type-check   # TypeScript check
+```
+
+### Notes for next developer
+- P0-FE-002 (Semi Design UI) is the next highest priority task
+- P0-FE-003 (Routing) depends on P0-FE-002 for layout components
+- Use `@/` imports for clean module references
+- API types match backend `dto/response.go` format
+- Dev server proxies `/api` requests to backend on port 8080
+- ESLint + Prettier run automatically on lint:fix
