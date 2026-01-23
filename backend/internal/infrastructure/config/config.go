@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 )
 
 // Config holds all application configuration
@@ -14,6 +15,7 @@ type Config struct {
 	Redis    RedisConfig
 	JWT      JWTConfig
 	Log      LogConfig
+	Event    EventConfig
 }
 
 // LogConfig holds logging configuration
@@ -58,6 +60,16 @@ type JWTConfig struct {
 	ExpirationHours int
 }
 
+// EventConfig holds event processing configuration
+type EventConfig struct {
+	ProcessorEnabled  bool
+	BatchSize         int
+	PollInterval      time.Duration
+	MaxRetries        int
+	CleanupEnabled    bool
+	CleanupRetention  time.Duration
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	cfg := &Config{
@@ -92,6 +104,14 @@ func Load() (*Config, error) {
 			Level:  getEnv("LOG_LEVEL", "info"),
 			Format: getEnv("LOG_FORMAT", "console"),
 			Output: getEnv("LOG_OUTPUT", "stdout"),
+		},
+		Event: EventConfig{
+			ProcessorEnabled:  getEnvAsBool("EVENT_PROCESSOR_ENABLED", true),
+			BatchSize:         getEnvAsInt("EVENT_PROCESSOR_BATCH_SIZE", 100),
+			PollInterval:      getEnvAsDuration("EVENT_PROCESSOR_INTERVAL", 5*time.Second),
+			MaxRetries:        getEnvAsInt("EVENT_MAX_RETRIES", 5),
+			CleanupEnabled:    getEnvAsBool("EVENT_CLEANUP_ENABLED", true),
+			CleanupRetention:  getEnvAsDuration("EVENT_CLEANUP_RETENTION", 168*time.Hour),
 		},
 	}
 
@@ -164,6 +184,26 @@ func getEnvAsInt(key string, defaultValue int) int {
 	if value := os.Getenv(key); value != "" {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue
+		}
+	}
+	return defaultValue
+}
+
+// getEnvAsBool gets an environment variable as bool with a default fallback
+func getEnvAsBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if boolValue, err := strconv.ParseBool(value); err == nil {
+			return boolValue
+		}
+	}
+	return defaultValue
+}
+
+// getEnvAsDuration gets an environment variable as duration with a default fallback
+func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
+	if value := os.Getenv(key); value != "" {
+		if duration, err := time.ParseDuration(value); err == nil {
+			return duration
 		}
 	}
 	return defaultValue

@@ -369,3 +369,99 @@ kg, _ := grams.Convert("kg", decimal.NewFromFloat(0.001)) // 1 kg
 - Use `MustAdd()` / `MustSubtract()` when you're certain units/currencies match (panics on mismatch)
 - Quantity's `Convert()` is for unit conversion, not currency conversion
 
+---
+
+## 2026-01-23 - P0-BE-006: Domain Event Infrastructure Complete
+
+### Completed
+- **P0-BE-006**: 领域事件基础设施 (EventBus, Outbox)
+
+### What was done
+1. Defined domain interfaces in `internal/domain/shared/`:
+   - `eventbus.go` - EventHandler, EventPublisher, EventSubscriber, EventBus interfaces
+   - `outbox.go` - OutboxEntry entity with status management, OutboxRepository interface
+   - `event.go` - DomainEvent interface and BaseDomainEvent implementation
+
+2. Implemented EventBus infrastructure at `internal/infrastructure/event/`:
+   - `registry.go` - HandlerRegistry for managing event subscriptions (specific + wildcard handlers)
+   - `bus.go` - InMemoryEventBus for synchronous in-process pub/sub
+   - `serializer.go` - EventSerializer for JSON serialization/deserialization with type registry
+
+3. Implemented Outbox Pattern for reliable event delivery:
+   - `outbox_repository.go` - GormOutboxRepository with FOR UPDATE SKIP LOCKED for concurrent processing
+   - `outbox_publisher.go` - OutboxPublisher for transactional event persistence
+   - `outbox_processor.go` - Background processor with polling, batch processing, retry logic, and cleanup
+
+4. Created database migration:
+   - `migrations/000002_create_outbox_events.up.sql` - Outbox table with proper indexes
+   - `migrations/000002_create_outbox_events.down.sql` - Rollback script
+
+5. Test coverage (79.6%):
+   - `bus_test.go` - InMemoryEventBus tests (publish, subscribe, unsubscribe, wildcard, error handling)
+   - `registry_test.go` - HandlerRegistry tests
+   - `serializer_test.go` - EventSerializer round-trip tests
+   - `outbox_test.go` - OutboxEntry state machine tests
+   - `outbox_repository_test.go` - GormOutboxRepository tests
+   - `outbox_publisher_test.go` - OutboxPublisher tests
+   - `outbox_processor_test.go` - OutboxProcessor tests
+
+### Key Design Decisions
+1. **Outbox Pattern**: Events are persisted to database within the same transaction as aggregate changes, then processed asynchronously for reliable delivery
+2. **FOR UPDATE SKIP LOCKED**: Prevents double-processing in multi-instance deployments
+3. **Exponential Backoff**: Failed events retry with increasing delays (1s, 2s, 4s, 8s, 16s)
+4. **Dead Letter**: Events exceeding max retries (default 5) move to DEAD status for manual review
+5. **Automatic Cleanup**: Processed events older than 7 days are automatically deleted
+
+### Files created/modified
+- `backend/internal/domain/shared/eventbus.go` (new)
+- `backend/internal/domain/shared/outbox.go` (new)
+- `backend/internal/infrastructure/event/registry.go` (new)
+- `backend/internal/infrastructure/event/bus.go` (new)
+- `backend/internal/infrastructure/event/serializer.go` (new)
+- `backend/internal/infrastructure/event/outbox_repository.go` (new)
+- `backend/internal/infrastructure/event/outbox_publisher.go` (new)
+- `backend/internal/infrastructure/event/outbox_processor.go` (new)
+- `backend/internal/infrastructure/event/*_test.go` (7 test files)
+- `backend/migrations/000002_create_outbox_events.up.sql` (new)
+- `backend/migrations/000002_create_outbox_events.down.sql` (new)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (79.6% coverage for event package)
+
+### Usage Examples
+```go
+// Register event type for deserialization
+serializer := event.NewEventSerializer()
+serializer.Register("ProductCreated", &ProductCreatedEvent{})
+
+// Create event bus
+bus := event.NewInMemoryEventBus(logger)
+bus.Subscribe(myHandler, "ProductCreated")
+bus.Start(ctx)
+
+// Publish events within transaction using OutboxPublisher
+publisher := event.NewOutboxPublisher(serializer)
+err := db.Transaction(func(tx *gorm.DB) error {
+    // Save aggregate
+    if err := tx.Save(product).Error; err != nil {
+        return err
+    }
+    // Persist events to outbox (same transaction)
+    return publisher.PublishWithTx(ctx, tx, product.Events()...)
+})
+
+// Start background processor to deliver events
+processor := event.NewOutboxProcessor(repo, bus, serializer, config, logger)
+processor.Start(ctx)
+```
+
+### Notes for next developer
+- P0-BE-007 (Strategy registry) can now be started
+- P0-BE-008 (HTTP framework) is partially done from P0-BE-003
+- P1-BE-007 (Product domain events) can leverage this infrastructure
+- When defining new domain events, remember to register them with EventSerializer
+- OutboxProcessor should be started as part of application startup
+- For high-throughput scenarios, consider tuning BatchSize and PollInterval
+- Test with `go test ./internal/infrastructure/event/... -cover`
+
