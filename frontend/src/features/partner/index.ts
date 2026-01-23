@@ -1,3 +1,4 @@
 // Partner feature (Customers, Suppliers, Warehouses)
 // Contains components, hooks, and services for partner management
-export {}
+
+export { CustomerForm } from './CustomerForm'

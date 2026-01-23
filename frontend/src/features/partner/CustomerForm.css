@@ -1,0 +1,14 @@
+.customer-form-page {
+  padding: var(--spacing-6) 0;
+}
+
+.customer-form-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.customer-form-header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}

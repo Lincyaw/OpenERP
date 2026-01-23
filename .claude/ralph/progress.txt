@@ -3101,3 +3101,68 @@ Navigate to `/partner/customers` in the application to access the customer list.
 - The edit/view navigation goes to `/partner/customers/:id/edit` and `/partner/customers/:id` - these routes need form components
 - Generated API files in `src/api/` should never be manually edited
 
+
+---
+
+## 2026-01-24 - P1-FE-005: Customer Form (Create/Edit) Implementation Complete
+
+### Completed
+- **P1-FE-005**: 客户新增/编辑表单 (Customer Add/Edit Form)
+
+### What was done
+1. **Created CustomerForm component** (`frontend/src/features/partner/CustomerForm.tsx`):
+   - Comprehensive customer form with Zod schema validation
+   - Create mode for new customers
+   - Edit mode for existing customers (loads data via API)
+   - Form sections: Basic Info, Contact Info, Address Info, Other Settings
+   - Fields: code, name, short_name, type, level (edit only), contact_name, phone, email, tax_id, country, province, city, postal_code, address, credit_limit, sort_order, notes
+   - Client code is disabled in edit mode (immutable after creation)
+   - Type field is disabled in edit mode
+   - Level can only be changed in edit mode
+
+2. **Created page wrappers**:
+   - `frontend/src/pages/partner/CustomerNew.tsx` - Create mode wrapper
+   - `frontend/src/pages/partner/CustomerEdit.tsx` - Edit mode with data fetching
+
+3. **Updated routing** (`frontend/src/router/routes.tsx`):
+   - Added lazy-loaded imports for CustomerNewPage and CustomerEditPage
+   - Added routes: `/partner/customers/new` and `/partner/customers/:id/edit`
+
+4. **Form validation schema**:
+   - Code: required, max 50 chars, alphanumeric with underscores/dashes
+   - Name: required, max 200 chars
+   - Email: optional but validated format
+   - Credit limit: non-negative number
+   - Uses `createEnumSchema` helper for type and level fields
+
+5. **CSS styling** (`frontend/src/features/partner/CustomerForm.css`):
+   - Follows design system tokens
+   - Max width 800px container
+   - Consistent with ProductForm styling
+
+### Files created
+- `frontend/src/features/partner/CustomerForm.tsx`
+- `frontend/src/features/partner/CustomerForm.css`
+- `frontend/src/pages/partner/CustomerNew.tsx`
+- `frontend/src/pages/partner/CustomerEdit.tsx`
+
+### Files modified
+- `frontend/src/features/partner/index.ts` - Added CustomerForm export
+- `frontend/src/router/routes.tsx` - Added customer form routes
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Usage
+- Navigate to `/partner/customers` and click "新增客户" to create new customer
+- Click "编辑" action on customer row to edit existing customer
+- Form validates on submit and shows errors inline
+
+### Notes for next developer
+- P1-FE-006 (Supplier list page) is the next high-priority frontend task
+- P1-FE-007 (Supplier form) can follow the same pattern as CustomerForm
+- P1-FE-008 (Warehouse management page) is also high priority
+- Customer view page (`/partner/customers/:id`) is not yet implemented - only edit exists
+- The form uses `createEnumSchema` from validation.ts for type safety with Zod 4

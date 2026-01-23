@@ -45,7 +45,7 @@
   {"id":"P1-FE-002","story":"商品新增/编辑表单","priority":"high","requirements":["实现商品新增表单","实现商品编辑表单","实现表单验证"],"passes":true},
   {"id":"P1-FE-003","story":"商品分类管理 (树形结构)","priority":"medium","requirements":["实现分类树形展示","实现分类增删改","实现拖拽排序"],"passes":false},
   {"id":"P1-FE-004","story":"客户列表页面","priority":"high","requirements":["实现客户列表展示","支持分页和搜索","显示客户余额信息"],"passes":true},
-  {"id":"P1-FE-005","story":"客户新增/编辑表单","priority":"high","requirements":["实现客户新增表单","实现客户编辑表单","实现表单验证"],"passes":false},
+  {"id":"P1-FE-005","story":"客户新增/编辑表单","priority":"high","requirements":["实现客户新增表单","实现客户编辑表单","实现表单验证"],"passes":true},
   {"id":"P1-FE-006","story":"供应商列表页面","priority":"high","requirements":["实现供应商列表展示","支持分页和搜索","支持状态筛选"],"passes":false},
   {"id":"P1-FE-007","story":"供应商新增/编辑表单","priority":"high","requirements":["实现供应商新增表单","实现供应商编辑表单","实现表单验证"],"passes":false},
   {"id":"P1-FE-008","story":"仓库管理页面","priority":"high","requirements":["实现仓库列表展示","实现仓库新增编辑","支持启用禁用操作"],"passes":false},

@@ -30,6 +30,8 @@ const CategoriesPage = () => lazyLoad(() => import('@/pages/catalog/Categories')
 
 // Partner module
 const CustomersPage = () => lazyLoad(() => import('@/pages/partner/Customers'))
+const CustomerNewPage = () => lazyLoad(() => import('@/pages/partner/CustomerNew'))
+const CustomerEditPage = () => lazyLoad(() => import('@/pages/partner/CustomerEdit'))
 const SuppliersPage = () => lazyLoad(() => import('@/pages/partner/Suppliers'))
 const WarehousesPage = () => lazyLoad(() => import('@/pages/partner/Warehouses'))
 
@@ -328,6 +330,14 @@ export function getRouteObjects(): RouteObject[] {
         childRoutes.push(
           { path: 'products/new', element: ProductNewPage() },
           { path: 'products/:id/edit', element: ProductEditPage() }
+        )
+      }
+
+      // Add partner module detail routes (not in menu)
+      if (route.path === '/partner') {
+        childRoutes.push(
+          { path: 'customers/new', element: CustomerNewPage() },
+          { path: 'customers/:id/edit', element: CustomerEditPage() }
         )
       }
 
