@@ -279,3 +279,93 @@ go build -o bin/migrate cmd/migrate/main.go
 - Force command should only be used to fix dirty state
 - Drop command is destructive and requires explicit confirmation
 
+---
+
+## 2026-01-23 - P0-BE-005: Common Value Objects Complete
+
+### Completed
+- **P0-BE-005**: 通用值对象实现 (Money, Quantity)
+
+### What was done
+1. Added shopspring/decimal dependency for precise decimal arithmetic:
+   - `github.com/shopspring/decimal v1.4.0`
+
+2. Implemented Money value object at `internal/domain/shared/valueobject/money.go`:
+   - Immutable design - all operations return new instances
+   - Multiple currency support (CNY, USD, EUR, GBP, JPY, HKD)
+   - Factory methods: `NewMoney()`, `NewMoneyFromFloat()`, `NewMoneyFromInt()`, `NewMoneyFromString()`
+   - CNY-specific helpers: `NewMoneyCNY()`, `NewMoneyCNYFromFloat()`, `ZeroCNY()`
+   - Arithmetic: `Add()`, `Subtract()`, `Multiply()`, `Divide()`, `Negate()`, `Abs()`
+   - Comparisons: `Equals()`, `LessThan()`, `GreaterThan()`, `LessThanOrEqual()`, `GreaterThanOrEqual()`
+   - Rounding: `Round()`, `RoundBank()`, `Truncate()`
+   - Business operations: `Allocate()` (fair division), `CalculatePercentage()`, `ApplyDiscount()`
+   - JSON serialization: `MarshalJSON()`, `UnmarshalJSON()`
+   - Database support: `Value()` (driver.Valuer), `Scan()` (sql.Scanner)
+
+3. Implemented Quantity value object at `internal/domain/shared/valueobject/quantity.go`:
+   - Immutable design - all operations return new instances
+   - Non-negative enforcement (prevents negative inventory)
+   - Unit of measurement support
+   - Factory methods: `NewQuantity()`, `NewQuantityFromFloat()`, `NewQuantityFromInt()`, `NewIntegerQuantity()`
+   - Arithmetic: `Add()`, `Subtract()`, `Multiply()`, `Divide()`
+   - Unit conversion: `Convert()`, `ConvertByFloat()`
+   - Rounding: `Round()`, `Truncate()`, `Ceiling()`, `Floor()`
+   - Inventory helpers: `SufficientFor()`, `Deficit()`, `Split()`
+   - Allows negative with `SubtractAllowNegative()` for deficit calculation
+   - JSON and database support
+
+4. Comprehensive unit tests:
+   - `money_test.go`: 27 test cases covering all Money functionality
+   - `quantity_test.go`: 25 test cases covering all Quantity functionality
+   - Test coverage: 86.3% of statements
+
+### Files created/modified
+- `backend/internal/domain/shared/valueobject/money.go` (new)
+- `backend/internal/domain/shared/valueobject/money_test.go` (new)
+- `backend/internal/domain/shared/valueobject/quantity.go` (new)
+- `backend/internal/domain/shared/valueobject/quantity_test.go` (new)
+- `backend/go.mod` (added shopspring/decimal)
+- `backend/go.sum` (updated)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (86.3% coverage for valueobject package)
+
+### Key Design Decisions
+1. **Immutability**: All methods return new instances to prevent accidental mutation
+2. **Currency safety**: Money operations fail if currencies don't match
+3. **Non-negative Quantity**: Standard subtract fails if result would be negative; use `SubtractAllowNegative()` for deficit calculation
+4. **Decimal precision**: Uses shopspring/decimal for financial calculations (no floating-point errors)
+5. **Database storage**: Values stored as strings to preserve precision
+
+### Usage Examples
+```go
+// Money
+price := NewMoneyCNYFromFloat(99.99)
+quantity := 3
+total := price.MultiplyByInt(quantity) // 299.97 CNY
+
+discount := total.ApplyDiscount(decimal.NewFromInt(10)) // 10% off
+parts, _ := total.Allocate(3) // Fair division for split payments
+
+// Quantity
+stock, _ := NewQuantityFromInt(100, "pcs")
+ordered, _ := NewQuantityFromInt(30, "pcs")
+remaining, _ := stock.Subtract(ordered) // 70 pcs
+
+sufficient, _ := stock.SufficientFor(ordered) // true
+deficit, _ := ordered.Deficit(stock) // 0 pcs (no deficit)
+
+// Unit conversion (1000g = 1kg)
+grams, _ := NewQuantityFromInt(1000, "g")
+kg, _ := grams.Convert("kg", decimal.NewFromFloat(0.001)) // 1 kg
+```
+
+### Notes for next developer
+- P0-BE-006 (Event bus) can now be started - value objects ready
+- P0-BE-008 (HTTP framework) is partially done from P0-BE-003
+- Money uses `DefaultCurrency = CNY` when scanning from database without currency
+- For multi-currency systems, store currency alongside amount in database
+- Use `MustAdd()` / `MustSubtract()` when you're certain units/currencies match (panics on mismatch)
+- Quantity's `Convert()` is for unit conversion, not currency conversion
+
