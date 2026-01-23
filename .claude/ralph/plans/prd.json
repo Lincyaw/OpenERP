@@ -25,7 +25,7 @@
   {"id":"P0-PD-003","story":"库存模块原型设计","priority":"medium","requirements":["设计库存查询页原型","设计库存调整页原型","设计盘点管理页原型"],"passes":false},
   {"id":"P0-PD-004","story":"交易模块原型设计","priority":"medium","requirements":["设计销售订单页原型","设计采购订单页原型","设计退货管理页原型"],"passes":false},
   {"id":"P0-PD-005","story":"财务模块原型设计","priority":"medium","requirements":["设计应收应付页原型","设计收付款页原型","设计日常收支页原型"],"passes":false},
-  {"id":"P1-BE-001","story":"Category 聚合实现","priority":"high","requirements":["实现 Category 聚合根","支持树形分类结构","实现分类增删改查"],"passes":false},
+  {"id":"P1-BE-001","story":"Category 聚合实现","priority":"high","requirements":["实现 Category 聚合根","支持树形分类结构","实现分类增删改查"],"passes":true},
   {"id":"P1-BE-002","story":"Product 聚合根实现","priority":"high","requirements":["实现 Product 聚合根","包含 SKU/名称/条码/规格","实现启用禁用状态管理"],"passes":false},
   {"id":"P1-BE-003","story":"Product Repository 接口 + 实现","priority":"high","requirements":["定义 ProductRepository 接口","实现 GORM 版本 Repository","支持分页查询和筛选"],"passes":false},
   {"id":"P1-BE-004","story":"Product Application Service","priority":"high","requirements":["实现商品应用服务","实现 CRUD 用例","实现状态变更用例"],"passes":false},

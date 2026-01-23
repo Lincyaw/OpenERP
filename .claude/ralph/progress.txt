@@ -1989,3 +1989,112 @@ describe('useMyStore', () => {
 - Browser API mocks are pre-configured in setup.ts
 - For async tests, use `waitFor()` instead of `setTimeout()`
 - Storage mocks reset before each test automatically
+
+---
+
+## 2026-01-24 - P1-BE-001: Category Aggregate Implementation Complete
+
+### Completed
+- **P1-BE-001**: Category 聚合实现
+
+### What was done
+1. Created Category aggregate root at `internal/domain/catalog/category.go`:
+   - `Category` struct with TenantAggregateRoot embedding for multi-tenant support
+   - Tree structure using materialized path pattern (`path` field stores ancestor chain)
+   - `NewCategory()` - Creates root category
+   - `NewChildCategory()` - Creates child category under a parent
+   - `Update()`, `UpdateCode()` - Updates category information
+   - `Activate()`, `Deactivate()` - Status management
+   - `SetSortOrder()` - Display order management
+   - `IsRoot()`, `IsActive()` - State queries
+   - `GetAncestorIDs()`, `IsAncestorOf()`, `IsDescendantOf()` - Tree traversal helpers
+   - Maximum depth enforcement (5 levels)
+   - Validation for code (alphanumeric + underscore/hyphen) and name
+
+2. Created domain events at `internal/domain/catalog/category_events.go`:
+   - `CategoryCreatedEvent` - Published when category is created
+   - `CategoryUpdatedEvent` - Published when category is updated
+   - `CategoryStatusChangedEvent` - Published on activate/deactivate
+   - `CategoryDeletedEvent` - For deletion tracking
+
+3. Created repository interface at `internal/domain/catalog/category_repository.go`:
+   - `CategoryRepository` interface with methods for:
+     - CRUD operations (`FindByID`, `FindByCode`, `Save`, `Delete`)
+     - Tree queries (`FindChildren`, `FindRootCategories`, `FindDescendants`)
+     - Multi-tenant support (`FindByIDForTenant`, `FindAllForTenant`)
+     - Existence checks (`ExistsByCode`, `HasChildren`, `HasProducts`)
+     - Path management (`UpdatePath` for moving categories)
+
+4. Created GORM repository implementation at `internal/infrastructure/persistence/category_repository.go`:
+   - `GormCategoryRepository` implementing `CategoryRepository`
+   - Full CRUD with tenant scoping
+   - Tree operations using materialized path queries
+   - Filter support (search, status, parent_id, level)
+   - Pagination and ordering
+
+5. Created database migration:
+   - `migrations/000003_create_categories.up.sql`
+     - Categories table with tenant_id, code, name, parent_id, path, level, sort_order, status
+     - Indexes for efficient tree and tenant queries
+     - Check constraints for status and level
+     - Unique constraint on (tenant_id, code)
+   - `migrations/000003_create_categories.down.sql` - Rollback script
+
+6. Created comprehensive unit tests at `internal/domain/catalog/category_test.go`:
+   - 38 test cases covering all category functionality
+   - Tests for creation, updates, status changes
+   - Tests for tree structure (parent-child, ancestors, descendants)
+   - Tests for validation (code, name)
+   - Tests for domain events
+
+### Files created
+- `backend/internal/domain/catalog/category.go`
+- `backend/internal/domain/catalog/category_events.go`
+- `backend/internal/domain/catalog/category_repository.go`
+- `backend/internal/domain/catalog/category_test.go`
+- `backend/internal/infrastructure/persistence/category_repository.go`
+- `backend/migrations/000003_create_categories.up.sql`
+- `backend/migrations/000003_create_categories.down.sql`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (38 new tests in catalog package)
+
+### Key Design Decisions
+1. **Materialized Path**: Uses `/`-separated UUID path for efficient tree queries
+   - Example: `parentID/childID/grandchildID`
+   - Supports prefix matching for descendant queries
+   - Updates require path propagation to descendants
+2. **Max Depth**: 5 levels to prevent overly deep hierarchies
+3. **Code Uniqueness**: Unique per tenant, stored in uppercase
+4. **Optimistic Locking**: Version field for concurrent update handling
+5. **Soft Status**: Active/Inactive instead of hard delete for data integrity
+
+### Usage Examples
+```go
+// Create root category
+electronics, _ := catalog.NewCategory(tenantID, "ELECTRONICS", "Electronics")
+
+// Create child category
+phones, _ := catalog.NewChildCategory(tenantID, "PHONES", "Phones", electronics)
+
+// Update category
+phones.Update("Smartphones", "All smartphone products")
+
+// Status management
+phones.Deactivate()
+phones.Activate()
+
+// Tree queries
+ancestors := phones.GetAncestorIDs()       // [electronics.ID]
+isChild := electronics.IsAncestorOf(phones) // true
+```
+
+### Notes for next developer
+- P1-BE-002 (Product aggregate) can now be started - it depends on Category
+- Category code is automatically uppercased on creation/update
+- Path format: `uuid1/uuid2/uuid3` (no leading or trailing slash)
+- Repository's `HasProducts()` returns false until Product is implemented
+- Run `./bin/migrate up` to apply the categories migration
+- For moving categories to new parent, use `UpdatePath()` method
+
