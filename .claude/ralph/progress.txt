@@ -3225,3 +3225,72 @@ Navigate to `/partner/suppliers` in the application to access the supplier list.
 - Supplier page follows the same pattern as Customers page for consistency
 - Rating component displays supplier rating as 5-star visual
 - Payment terms displayed in days column
+
+---
+
+## 2026-01-24 - P1-FE-007: Supplier Form (Create/Edit) Implementation Complete
+
+### Completed
+- **P1-FE-007**: 供应商新增/编辑表单 (Supplier Add/Edit Form)
+
+### What was done
+1. **Created SupplierForm component** (`frontend/src/features/partner/SupplierForm.tsx`):
+   - Comprehensive supplier form with Zod schema validation
+   - Create mode for new suppliers
+   - Edit mode for existing suppliers (loads data via API)
+   - Form sections: Basic Info, Contact Info, Address Info, Banking Info, Purchase Settings
+   - Fields: code, name, short_name, type, contact_name, phone, email, tax_id, country, province, city, postal_code, address, bank_name, bank_account, credit_limit, credit_days, rating, sort_order, notes
+   - Supplier code is disabled in edit mode (immutable after creation)
+   - Type field is disabled in edit mode
+   - Rating uses Semi Design Rating component (5-star visual)
+
+2. **Created page wrappers**:
+   - `frontend/src/pages/partner/SupplierNew.tsx` - Create mode wrapper
+   - `frontend/src/pages/partner/SupplierEdit.tsx` - Edit mode with data fetching
+
+3. **Updated routing** (`frontend/src/router/routes.tsx`):
+   - Added lazy-loaded imports for SupplierNewPage and SupplierEditPage
+   - Added routes: `/partner/suppliers/new` and `/partner/suppliers/:id/edit`
+
+4. **Form validation schema**:
+   - Code: required, max 50 chars, alphanumeric with underscores/dashes
+   - Name: required, max 200 chars
+   - Email: optional but validated format
+   - Credit limit: non-negative number
+   - Credit days: non-negative integer
+   - Rating: 0-5 range
+   - Uses `createEnumSchema` helper for type field
+
+5. **CSS styling** (`frontend/src/features/partner/SupplierForm.css`):
+   - Follows design system tokens
+   - Max width 800px container
+   - Custom styling for Rating field component
+   - Consistent with CustomerForm styling
+
+### Files created
+- `frontend/src/features/partner/SupplierForm.tsx`
+- `frontend/src/features/partner/SupplierForm.css`
+- `frontend/src/pages/partner/SupplierNew.tsx`
+- `frontend/src/pages/partner/SupplierEdit.tsx`
+
+### Files modified
+- `frontend/src/features/partner/index.ts` - Added SupplierForm export
+- `frontend/src/router/routes.tsx` - Added supplier form routes
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Usage
+- Navigate to `/partner/suppliers` and click "新增供应商" to create new supplier
+- Click "编辑" action on supplier row to edit existing supplier
+- Form validates on submit and shows errors inline
+
+### Notes for next developer
+- P1-FE-008 (Warehouse management page) is the next high-priority frontend task
+- P1-FE-009 (Customer balance management) requires backend P1-BE-016 CustomerBalance feature first
+- Supplier view page (`/partner/suppliers/:id`) is not yet implemented - only edit exists
+- The form uses `createEnumSchema` from validation.ts for type safety with Zod 4
+- Rating component has custom styling in SupplierForm.css
+- Banking info section is specific to suppliers for payment purposes

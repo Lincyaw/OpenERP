@@ -1,0 +1,42 @@
+.supplier-form-page {
+  padding: var(--spacing-6) 0;
+}
+
+.supplier-form-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.supplier-form-header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+/* Rating field custom styling */
+.rating-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.rating-label {
+  font-weight: var(--semi-font-weight-medium);
+  font-size: var(--semi-font-size-body-1);
+  color: var(--semi-color-text-0);
+}
+
+.rating-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) 0;
+}
+
+.rating-value {
+  font-size: var(--semi-font-size-small);
+}
+
+.rating-helper {
+  font-size: var(--semi-font-size-small);
+}
