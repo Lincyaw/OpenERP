@@ -3580,3 +3580,133 @@ result, err := fifo.CalculateCost(ctx, costCtx, entries)
 - Default cost strategy is Moving Average (can be changed via `registry.SetDefault`)
 - FIFO always sorts entries by EntryDate before processing
 - Both strategies handle insufficient stock gracefully (returns RemainingQty)
+
+
+---
+
+## 2026-01-24 - P2-BE-005: InventoryTransaction Implementation Complete
+
+### Completed
+- **P2-BE-005**: InventoryTransaction 实现
+
+### What was done
+1. Created `InventoryTransaction` entity at `internal/domain/inventory/inventory_transaction.go`:
+   - Immutable record of all inventory movements
+   - Transaction types: INBOUND, OUTBOUND, ADJUSTMENT_INCREASE, ADJUSTMENT_DECREASE, TRANSFER_IN, TRANSFER_OUT, RETURN, LOCK, UNLOCK
+   - Source types: PURCHASE_ORDER, SALES_ORDER, SALES_RETURN, PURCHASE_RETURN, STOCK_TAKING, MANUAL_ADJUSTMENT, TRANSFER, INITIAL_STOCK
+   - Tracks quantity, unit cost, total cost, balance before/after
+   - Links to source documents (sourceType, sourceID, sourceLineID)
+   - Optional links to batches and locks
+   - Reference and reason fields for audit
+   - Operator tracking
+
+2. Key features implemented:
+   - **Immutability**: Transactions are append-only, cannot be modified or deleted
+   - **Transaction types** with helper methods:
+     - `IsValid()` - Validates transaction type
+     - `IsIncrease()` - Returns true for types that increase available quantity
+     - `IsDecrease()` - Returns true for types that decrease available quantity
+   - **Signed quantity/cost methods**:
+     - `GetSignedQuantity()` - Returns positive/negative based on type
+     - `GetSignedTotalCost()` - Returns positive/negative based on type
+   - **Fluent builder pattern** for creating transactions with optional fields
+   - **Helper functions**: `CreateInboundTransaction()`, `CreateOutboundTransaction()`, `CreateAdjustmentTransaction()`
+
+3. Created comprehensive unit tests at `inventory_transaction_test.go`:
+   - 19 test cases covering all transaction types
+   - Validation tests for all required fields
+   - Tests for builder pattern
+   - Tests for helper functions
+   - Coverage: ~75% of inventory domain
+
+4. Created database migration:
+   - `000008_create_inventory_transactions.up.sql`:
+     - Created `transaction_type` and `source_type` enums
+     - Created `inventory_transactions` table with proper indexes
+     - Added triggers to prevent UPDATE and DELETE (immutable audit log)
+     - Added CHECK constraints for data integrity
+   - `000008_create_inventory_transactions.down.sql`:
+     - Clean rollback of all objects
+
+### Transaction Type Reference
+
+| Type | Direction | Use Case |
+|------|-----------|----------|
+| INBOUND | + | Purchase receiving, returns from customer |
+| OUTBOUND | - | Sales shipment |
+| ADJUSTMENT_INCREASE | + | Positive stock adjustment |
+| ADJUSTMENT_DECREASE | - | Negative stock adjustment |
+| TRANSFER_IN | + | Stock received from another warehouse |
+| TRANSFER_OUT | - | Stock sent to another warehouse |
+| RETURN | + | Customer returns, defect returns |
+| LOCK | - | Stock reserved for pending orders |
+| UNLOCK | + | Released reservation (cancelled order) |
+
+### Source Type Reference
+
+| Source Type | Description |
+|-------------|-------------|
+| PURCHASE_ORDER | Stock from purchase order receiving |
+| SALES_ORDER | Stock reduction from sales shipment |
+| SALES_RETURN | Stock return from customer |
+| PURCHASE_RETURN | Stock return to supplier |
+| STOCK_TAKING | Adjustment from inventory count |
+| MANUAL_ADJUSTMENT | Manual correction |
+| TRANSFER | Inter-warehouse transfer |
+| INITIAL_STOCK | Initial inventory setup |
+
+### Files created
+- `backend/internal/domain/inventory/inventory_transaction.go`
+- `backend/internal/domain/inventory/inventory_transaction_test.go`
+- `backend/migrations/000008_create_inventory_transactions.up.sql`
+- `backend/migrations/000008_create_inventory_transactions.down.sql`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+- Test coverage: 74.8% for inventory domain
+
+### Usage Examples
+
+```go
+// Create inbound transaction
+tx, err := inventory.CreateInboundTransaction(
+    tenantID, inventoryItemID, warehouseID, productID,
+    quantity, unitCost,
+    balanceBefore, balanceAfter,
+    inventory.SourceTypePurchaseOrder, "PO-2024-001",
+)
+tx.WithReference("REF-001").
+   WithReason("Purchase receiving").
+   WithOperatorID(userID)
+
+// Create adjustment transaction
+tx, err := inventory.CreateAdjustmentTransaction(
+    tenantID, inventoryItemID, warehouseID, productID,
+    decimal.NewFromInt(10), unitCost,
+    decimal.NewFromInt(100), decimal.NewFromInt(110),
+    inventory.SourceTypeStockTaking, "ST-2024-001",
+    "Stock count variance",
+)
+
+// Using builder pattern
+tx, err := inventory.NewTransactionBuilder(
+    tenantID, inventoryItemID, warehouseID, productID,
+    inventory.TransactionTypeOutbound,
+    quantity, unitCost,
+    balanceBefore, balanceAfter,
+    inventory.SourceTypeSalesOrder, "SO-2024-001",
+).
+    WithLockID(lockID).
+    WithSourceLineID("LINE-001").
+    WithOperatorID(userID).
+    Build()
+```
+
+### Notes for next developer
+- **P2-BE-007** (Inventory Repository): Should include methods for querying transactions
+- **P2-BE-008** (Application Service): Should create transactions when performing inventory operations
+- The transaction table is immutable - corrections must be made with new reverse transactions
+- Consider adding indexes for common query patterns (date range, product, warehouse)
+- Transaction types like LOCK/UNLOCK don't change physical stock but track reservation movements
+- Balance fields track available quantity, not total quantity (available + locked)
