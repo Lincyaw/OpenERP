@@ -2419,3 +2419,43 @@ curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
 - All endpoints are documented in Swagger UI at /swagger/index.html
 - Handler tests use mock repositories - integration tests will need real database
 
+---
+
+## 2026-01-24 - P1-FE-001: Product List Page Complete
+
+### Completed
+- **P1-FE-001**: 商品列表页面 (Product List Page)
+
+### What was done
+1. Regenerated TypeScript SDK from backend OpenAPI spec using `npm run api:generate`
+2. Updated axios-instance.ts to include X-Tenant-ID header from user data in localStorage
+3. Created comprehensive Product list page (`frontend/src/pages/catalog/Products.tsx`) with:
+   - DataTable integration with full pagination and sorting
+   - Search functionality (name, code, barcode)
+   - Status filter dropdown (全部状态/启用/禁用/停售)
+   - Row actions: view, edit, activate, deactivate, discontinue, delete
+   - Bulk actions: batch activate/deactivate selected products
+   - Confirmation modals for destructive actions (discontinue, delete)
+   - Proper TypeScript types with DataTable compatibility
+4. Created Products.css for product page styling
+5. Fixed all TypeScript and ESLint errors
+
+### Files created/modified
+- `frontend/src/pages/catalog/Products.tsx` - Complete rewrite with full functionality
+- `frontend/src/pages/catalog/Products.css` - New styling file
+- `frontend/src/services/axios-instance.ts` - Added X-Tenant-ID header support
+- `frontend/src/api/` - Regenerated SDK from backend OpenAPI spec
+
+### Technical decisions
+- Created intersection type `type Product = HandlerProductListResponse & Record<string, unknown>` for DataTable generic constraint compatibility
+- Used callbacks with useCallback for all handlers to prevent unnecessary re-renders
+- Status filter uses Semi Design Select component with consistent styling
+- Bulk actions use Promise.all for parallel API calls
+
+### Notes for next developer
+- P1-FE-002 (Product Form) is the natural next step
+- The product list page navigates to `/catalog/products/new` and `/catalog/products/:id/edit` which need to be implemented
+- Product view page at `/catalog/products/:id` also needs implementation
+- Consider adding category filter once P1-FE-003 (Category Management) is complete
+- Build passes with expected chunk size warnings (vendor chunk ~693KB)
+

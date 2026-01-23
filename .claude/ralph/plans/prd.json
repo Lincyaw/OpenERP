@@ -41,7 +41,7 @@
   {"id":"P1-BE-016","story":"CustomerBalance 余额功能","priority":"medium","requirements":["实现 CustomerBalance 值对象","实现余额增减操作","实现余额查询"],"passes":false},
   {"id":"P1-BE-017","story":"BalanceTransaction 实现","priority":"medium","requirements":["实现 BalanceTransaction 实体","记录余额变动明细","支持充值消费退款类型"],"passes":false},
   {"id":"P1-BE-018","story":"Customer Balance API","priority":"medium","requirements":["实现余额查询 API","实现充值 API","实现余额流水查询 API"],"passes":false},
-  {"id":"P1-FE-001","story":"商品列表页面","priority":"high","requirements":["实现商品列表展示","支持分页和搜索","支持启用禁用操作"],"passes":false},
+  {"id":"P1-FE-001","story":"商品列表页面","priority":"high","requirements":["实现商品列表展示","支持分页和搜索","支持启用禁用操作"],"passes":true},
   {"id":"P1-FE-002","story":"商品新增/编辑表单","priority":"high","requirements":["实现商品新增表单","实现商品编辑表单","实现表单验证"],"passes":false},
   {"id":"P1-FE-003","story":"商品分类管理 (树形结构)","priority":"medium","requirements":["实现分类树形展示","实现分类增删改","实现拖拽排序"],"passes":false},
   {"id":"P1-FE-004","story":"客户列表页面","priority":"high","requirements":["实现客户列表展示","支持分页和搜索","显示客户余额信息"],"passes":false},

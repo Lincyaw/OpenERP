@@ -13,12 +13,25 @@ export const axiosInstance = axios.create({
   },
 })
 
-// Request interceptor - add auth token if available
+// Request interceptor - add auth token and tenant ID if available
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('access_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+
+    // Add tenant ID from user data
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        if (user.tenantId) {
+          config.headers['X-Tenant-ID'] = user.tenantId
+        }
+      } catch {
+        // Invalid user data, skip
+      }
     }
 
     // Add request ID for tracing
@@ -43,7 +56,9 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('token')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user')
           // Optionally redirect to login page
           // window.location.href = '/login'
           break
