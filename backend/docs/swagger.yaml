@@ -45,6 +45,39 @@ definitions:
       message:
         type: string
     type: object
+  handler.AdjustStockRequest:
+    description: Request body for stock count adjustment
+    properties:
+      actual_quantity:
+        example: 95
+        minimum: 0
+        type: number
+      operator_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      reason:
+        example: Stock count variance - 5 units damaged
+        maxLength: 255
+        minLength: 1
+        type: string
+      source_id:
+        example: ST-2024-001
+        type: string
+      source_type:
+        example: STOCK_TAKE
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - actual_quantity
+    - product_id
+    - reason
+    - warehouse_id
+    type: object
   handler.BalanceOperationRequest:
     description: Request body for balance operations (add/deduct/refund)
     properties:
@@ -53,6 +86,36 @@ definitions:
         type: number
     required:
     - amount
+    type: object
+  handler.CheckAvailabilityRequest:
+    description: Request body for checking if a quantity is available
+    properties:
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      quantity:
+        example: 10
+        type: number
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - product_id
+    - quantity
+    - warehouse_id
+    type: object
+  handler.CheckAvailabilityResponse:
+    description: Response indicating if requested quantity is available
+    properties:
+      available:
+        example: true
+        type: boolean
+      available_quantity:
+        example: 100
+        type: number
+      requested_quantity:
+        example: 10
+        type: number
     type: object
   handler.CountByStatusResponse:
     properties:
@@ -531,6 +594,182 @@ definitions:
         example: 1
         type: integer
     type: object
+  handler.DeductStockRequest:
+    description: Request body for consuming locked stock (shipment/fulfillment)
+    properties:
+      lock_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      operator_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      reference:
+        example: Shipped via SF Express
+        type: string
+      source_id:
+        example: SO-2024-001
+        type: string
+      source_type:
+        example: SALES_ORDER
+        type: string
+    required:
+    - lock_id
+    - source_id
+    - source_type
+    type: object
+  handler.IncreaseStockRequest:
+    description: Request body for increasing stock
+    properties:
+      batch_number:
+        example: BATCH-001
+        type: string
+      expiry_date:
+        example: "2025-12-31"
+        type: string
+      operator_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      quantity:
+        example: 50
+        type: number
+      reason:
+        example: Regular purchase
+        type: string
+      reference:
+        example: Received from supplier ABC
+        type: string
+      source_id:
+        example: PO-2024-001
+        type: string
+      source_type:
+        example: PURCHASE_ORDER
+        type: string
+      unit_cost:
+        example: 15.5
+        minimum: 0
+        type: number
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - product_id
+    - quantity
+    - source_id
+    - source_type
+    - unit_cost
+    - warehouse_id
+    type: object
+  handler.InventoryItemResponse:
+    description: Inventory item response with stock quantities and cost information
+    properties:
+      available_quantity:
+        example: 100.5
+        type: number
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_above_maximum:
+        example: false
+        type: boolean
+      is_below_minimum:
+        example: false
+        type: boolean
+      locked_quantity:
+        example: 10
+        type: number
+      max_quantity:
+        example: 500
+        type: number
+      min_quantity:
+        example: 20
+        type: number
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      total_quantity:
+        example: 110.5
+        type: number
+      total_value:
+        example: 1712.75
+        type: number
+      unit_cost:
+        example: 15.5
+        type: number
+      updated_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.LockStockRequest:
+    description: Request body for locking stock for a pending order
+    properties:
+      expire_at:
+        example: "2024-01-15T11:00:00Z"
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      quantity:
+        example: 10
+        type: number
+      source_id:
+        example: SO-2024-001
+        type: string
+      source_type:
+        example: sales_order
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - product_id
+    - quantity
+    - source_id
+    - source_type
+    - warehouse_id
+    type: object
+  handler.LockStockResponse:
+    description: Response after successfully locking stock
+    properties:
+      expire_at:
+        example: "2024-01-15T11:00:00Z"
+        type: string
+      inventory_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      lock_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      quantity:
+        example: 10
+        type: number
+      source_id:
+        example: SO-2024-001
+        type: string
+      source_type:
+        example: sales_order
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
   handler.PingResponse:
     properties:
       message:
@@ -680,6 +919,62 @@ definitions:
         type: integer
     required:
     - rating
+    type: object
+  handler.SetThresholdsRequest:
+    description: Request body for setting inventory alert thresholds
+    properties:
+      max_quantity:
+        example: 500
+        type: number
+      min_quantity:
+        example: 20
+        type: number
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - product_id
+    - warehouse_id
+    type: object
+  handler.StockLockResponse:
+    description: Stock lock details
+    properties:
+      consumed:
+        example: false
+        type: boolean
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      expire_at:
+        example: "2024-01-15T11:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      inventory_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_expired:
+        example: false
+        type: boolean
+      quantity:
+        example: 10
+        type: number
+      released:
+        example: false
+        type: boolean
+      source_id:
+        example: SO-2024-001
+        type: string
+      source_type:
+        example: sales_order
+        type: string
     type: object
   handler.SupplierCountByStatusResponse:
     properties:
@@ -849,6 +1144,73 @@ definitions:
       version:
         example: 1.0.0
         type: string
+    type: object
+  handler.TransactionResponse:
+    description: Inventory transaction record for audit trail
+    properties:
+      balance_after:
+        example: 100
+        type: number
+      balance_before:
+        example: 50
+        type: number
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      inventory_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440004
+        type: string
+      quantity:
+        example: 50
+        type: number
+      reason:
+        example: Regular purchase
+        type: string
+      reference:
+        example: Received from supplier ABC
+        type: string
+      signed_quantity:
+        example: 50
+        type: number
+      source_id:
+        example: PO-2024-001
+        type: string
+      source_type:
+        example: PURCHASE_ORDER
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      total_cost:
+        example: 775
+        type: number
+      transaction_date:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      transaction_type:
+        example: INBOUND
+        type: string
+      unit_cost:
+        example: 15.5
+        type: number
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+    type: object
+  handler.UnlockStockRequest:
+    description: Request body for releasing locked stock
+    properties:
+      lock_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - lock_id
     type: object
   handler.UpdateCustomerCodeRequest:
     description: Request body for updating a customer's code
@@ -2234,6 +2596,1509 @@ paths:
       summary: Get product counts by status
       tags:
       - products
+  /inventory/availability/check:
+    post:
+      consumes:
+      - application/json
+      description: Check if a specific quantity is available for a product in a warehouse
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Availability check request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CheckAvailabilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CheckAvailabilityResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Check stock availability
+      tags:
+      - inventory
+  /inventory/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of inventory items with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter by warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Filter by product ID
+        format: uuid
+        in: query
+        name: product_id
+        type: string
+      - description: Filter items below minimum threshold
+        in: query
+        name: below_minimum
+        type: boolean
+      - description: Filter by stock availability
+        in: query
+        name: has_stock
+        type: boolean
+      - description: Minimum quantity filter
+        in: query
+        name: min_quantity
+        type: number
+      - description: Maximum quantity filter
+        in: query
+        name: max_quantity
+        type: number
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: updated_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.InventoryItemResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory items
+      tags:
+      - inventory
+  /inventory/items/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an inventory item by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Inventory Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.InventoryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get inventory item by ID
+      tags:
+      - inventory
+  /inventory/items/{id}/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve transactions for a specific inventory item
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Inventory Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Filter by transaction type
+        enum:
+        - INBOUND
+        - OUTBOUND
+        - LOCK
+        - UNLOCK
+        - ADJUSTMENT
+        in: query
+        name: transaction_type
+        type: string
+      - description: Filter by start date
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: transaction_date
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.TransactionResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List transactions by inventory item
+      tags:
+      - inventory
+  /inventory/items/alerts/low-stock:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve inventory items that are below their minimum threshold
+        (low stock alerts)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Filter by warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: updated_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.InventoryItemResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory below minimum threshold
+      tags:
+      - inventory
+  /inventory/items/lookup:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve inventory for a specific warehouse-product combination
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        required: true
+        type: string
+      - description: Product ID
+        format: uuid
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.InventoryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get inventory by warehouse and product
+      tags:
+      - inventory
+  /inventory/locks:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all active (unexpired, unreleased) locks for an inventory
+        item
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        required: true
+        type: string
+      - description: Product ID
+        format: uuid
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StockLockResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get active locks
+      tags:
+      - inventory
+  /inventory/locks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific stock lock by ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Lock ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockLockResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get lock by ID
+      tags:
+      - inventory
+  /inventory/products/{product_id}/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve inventory items for a specific product across all warehouses
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: product_id
+        required: true
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter items below minimum threshold
+        in: query
+        name: below_minimum
+        type: boolean
+      - description: Filter by stock availability
+        in: query
+        name: has_stock
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: updated_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.InventoryItemResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory by product
+      tags:
+      - inventory
+  /inventory/stock/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Adjust stock to match actual quantity (stock count/adjustment)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock adjustment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AdjustStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.InventoryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Adjust stock
+      tags:
+      - inventory
+  /inventory/stock/deduct:
+    post:
+      consumes:
+      - application/json
+      description: Deduct locked stock (actual shipment/consumption)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock deduction request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.DeductStockRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deduct stock
+      tags:
+      - inventory
+  /inventory/stock/increase:
+    post:
+      consumes:
+      - application/json
+      description: Increase stock for a product in a warehouse (e.g., purchase receiving,
+        returns)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock increase request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.IncreaseStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.InventoryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Increase stock
+      tags:
+      - inventory
+  /inventory/stock/lock:
+    post:
+      consumes:
+      - application/json
+      description: Lock stock for a pending order (reserve inventory)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock lock request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LockStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.LockStockResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Lock stock
+      tags:
+      - inventory
+  /inventory/stock/unlock:
+    post:
+      consumes:
+      - application/json
+      description: Release previously locked stock back to available (e.g., order
+        cancelled)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock unlock request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UnlockStockRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Unlock stock
+      tags:
+      - inventory
+  /inventory/thresholds:
+    put:
+      consumes:
+      - application/json
+      description: Set min/max quantity thresholds for inventory alerts
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Threshold settings request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SetThresholdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.InventoryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set inventory thresholds
+      tags:
+      - inventory
+  /inventory/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of inventory transactions with optional
+        filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Filter by warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Filter by product ID
+        format: uuid
+        in: query
+        name: product_id
+        type: string
+      - description: Filter by transaction type
+        enum:
+        - INBOUND
+        - OUTBOUND
+        - LOCK
+        - UNLOCK
+        - ADJUSTMENT
+        in: query
+        name: transaction_type
+        type: string
+      - description: Filter by source type
+        enum:
+        - PURCHASE_ORDER
+        - SALES_ORDER
+        - SALES_RETURN
+        - PURCHASE_RETURN
+        - MANUAL_ADJUSTMENT
+        - STOCK_TAKE
+        in: query
+        name: source_type
+        type: string
+      - description: Filter by source ID
+        in: query
+        name: source_id
+        type: string
+      - description: Filter by start date
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: transaction_date
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.TransactionResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory transactions
+      tags:
+      - inventory
+  /inventory/transactions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific inventory transaction by ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get transaction by ID
+      tags:
+      - inventory
+  /inventory/warehouses/{warehouse_id}/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve inventory items for a specific warehouse
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: warehouse_id
+        required: true
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter items below minimum threshold
+        in: query
+        name: below_minimum
+        type: boolean
+      - description: Filter by stock availability
+        in: query
+        name: has_stock
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: updated_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.InventoryItemResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List inventory by warehouse
+      tags:
+      - inventory
   /partner/customers:
     get:
       consumes:

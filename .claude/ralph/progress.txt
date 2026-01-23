@@ -3967,3 +3967,141 @@ resp, err = service.AdjustStock(ctx, tenantID, inventory.AdjustStockRequest{
 - Transaction records are append-only - corrections require new transactions
 - Use `CheckAvailability()` before `LockStock()` for early validation
 - Consider running `ReleaseExpiredLocks()` as a periodic job
+
+---
+
+## 2026-01-24 - P2-BE-009: Inventory API Implementation
+
+### Completed
+- **P2-BE-009**: Inventory API (查询/锁定/调整)
+
+### What was done
+1. Created `InventoryHandler` at `internal/interfaces/http/handler/inventory.go`:
+   - 20+ HTTP endpoints for inventory management
+   - Full swag annotations for OpenAPI documentation
+   - Proper request validation and error handling
+   - Multi-tenant support via X-Tenant-ID header
+
+2. Registered inventory routes in `cmd/server/main.go`:
+   - Added inventory repositories initialization
+   - Added inventory service initialization
+   - Added inventory handler initialization
+   - Registered 26 routes under `/api/v1/inventory/`
+
+3. Created comprehensive unit tests at `internal/interfaces/http/handler/inventory_test.go`:
+   - Mock implementations for all 4 repository interfaces
+   - 14 test cases covering all handler operations
+
+4. Generated OpenAPI documentation with swag
+
+### API Endpoints Reference
+
+| Category | Method | Endpoint | Description |
+|----------|--------|----------|-------------|
+| Query | GET | /inventory/items | List inventory items with filtering |
+| Query | GET | /inventory/items/:id | Get inventory item by ID |
+| Query | GET | /inventory/items/lookup | Get by warehouse and product |
+| Query | GET | /inventory/items/alerts/low-stock | List items below minimum |
+| Query | GET | /inventory/items/:id/transactions | List transactions by item |
+| Query | GET | /inventory/warehouses/:warehouse_id/items | List by warehouse |
+| Query | GET | /inventory/products/:product_id/items | List by product |
+| Stock Ops | POST | /inventory/availability/check | Check stock availability |
+| Stock Ops | POST | /inventory/stock/increase | Increase stock (purchase/return) |
+| Stock Ops | POST | /inventory/stock/lock | Lock stock (reserve) |
+| Stock Ops | POST | /inventory/stock/unlock | Unlock stock (cancel) |
+| Stock Ops | POST | /inventory/stock/deduct | Deduct stock (shipment) |
+| Stock Ops | POST | /inventory/stock/adjust | Adjust stock (count) |
+| Threshold | PUT | /inventory/thresholds | Set min/max thresholds |
+| Locks | GET | /inventory/locks | Get active locks |
+| Locks | GET | /inventory/locks/:id | Get lock by ID |
+| Audit | GET | /inventory/transactions | List all transactions |
+| Audit | GET | /inventory/transactions/:id | Get transaction by ID |
+
+### Request/Response DTOs
+
+Handler defines these local types for swagger documentation:
+- `InventoryItemResponse` - Full inventory item details
+- `CheckAvailabilityRequest/Response` - Availability check
+- `IncreaseStockRequest` - Stock increase operation
+- `LockStockRequest/Response` - Stock lock operation
+- `UnlockStockRequest` - Stock unlock operation
+- `DeductStockRequest` - Stock deduction operation
+- `AdjustStockRequest` - Stock adjustment operation
+- `SetThresholdsRequest` - Threshold configuration
+- `StockLockResponse` - Stock lock details
+- `TransactionResponse` - Transaction audit record
+
+### Files created/modified
+- `backend/internal/interfaces/http/handler/inventory.go` (created)
+- `backend/internal/interfaces/http/handler/inventory_test.go` (created)
+- `backend/cmd/server/main.go` (modified - added inventory routes)
+- `backend/docs/swagger.yaml` (regenerated)
+- `backend/docs/swagger.json` (regenerated)
+
+### Build & Test Status
+- `go build ./...` passes successfully
+- `go test ./internal/interfaces/http/handler/...` passes all 14 inventory tests
+- `swag init` generates OpenAPI docs without errors
+
+### Usage Examples
+
+```bash
+# List inventory items
+curl -X GET "http://localhost:8080/api/v1/inventory/items?page=1&page_size=20" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001"
+
+# Check stock availability
+curl -X POST "http://localhost:8080/api/v1/inventory/availability/check" \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{
+    "warehouse_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_id": "550e8400-e29b-41d4-a716-446655440001",
+    "quantity": 10
+  }'
+
+# Increase stock (purchase receiving)
+curl -X POST "http://localhost:8080/api/v1/inventory/stock/increase" \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{
+    "warehouse_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_id": "550e8400-e29b-41d4-a716-446655440001",
+    "quantity": 100,
+    "unit_cost": 15.50,
+    "source_type": "PURCHASE_ORDER",
+    "source_id": "PO-2024-001"
+  }'
+
+# Lock stock for order
+curl -X POST "http://localhost:8080/api/v1/inventory/stock/lock" \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{
+    "warehouse_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_id": "550e8400-e29b-41d4-a716-446655440001",
+    "quantity": 10,
+    "source_type": "sales_order",
+    "source_id": "SO-2024-001"
+  }'
+
+# Set thresholds
+curl -X PUT "http://localhost:8080/api/v1/inventory/thresholds" \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{
+    "warehouse_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_id": "550e8400-e29b-41d4-a716-446655440001",
+    "min_quantity": 20,
+    "max_quantity": 500
+  }'
+```
+
+### Notes for next developer
+- **P2-FE-001** (库存查询列表页面): Can now implement frontend using these APIs
+- All endpoints return standardized `dto.Response` format
+- Stock operations require valid source_type values (e.g., PURCHASE_ORDER, SALES_ORDER)
+- Lock expiry defaults to 30 minutes if not specified
+- Adjust stock fails if there are active locks (to prevent inconsistency)
+- Transaction list supports filtering by type, source, and date range
+- Low stock alert endpoint (`/alerts/low-stock`) returns items below minimum threshold

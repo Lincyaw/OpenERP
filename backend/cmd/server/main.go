@@ -9,6 +9,7 @@ import (
 	"time"
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
+	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/logger"
@@ -96,18 +97,24 @@ func main() {
 	customerRepo := persistence.NewGormCustomerRepository(db.DB)
 	supplierRepo := persistence.NewGormSupplierRepository(db.DB)
 	warehouseRepo := persistence.NewGormWarehouseRepository(db.DB)
+	inventoryItemRepo := persistence.NewGormInventoryItemRepository(db.DB)
+	stockBatchRepo := persistence.NewGormStockBatchRepository(db.DB)
+	stockLockRepo := persistence.NewGormStockLockRepository(db.DB)
+	inventoryTxRepo := persistence.NewGormInventoryTransactionRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
+	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
 	customerHandler := handler.NewCustomerHandler(customerService)
 	supplierHandler := handler.NewSupplierHandler(supplierService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
+	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -252,6 +259,34 @@ func main() {
 	inventoryRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "inventory service ready"})
 	})
+
+	// Inventory item query routes
+	inventoryRoutes.GET("/items", inventoryHandler.List)
+	inventoryRoutes.GET("/items/lookup", inventoryHandler.GetByWarehouseAndProduct)
+	inventoryRoutes.GET("/items/alerts/low-stock", inventoryHandler.ListBelowMinimum)
+	inventoryRoutes.GET("/items/:id", inventoryHandler.GetByID)
+	inventoryRoutes.GET("/items/:id/transactions", inventoryHandler.ListTransactionsByItem)
+
+	// Inventory by warehouse/product
+	inventoryRoutes.GET("/warehouses/:warehouse_id/items", inventoryHandler.ListByWarehouse)
+	inventoryRoutes.GET("/products/:product_id/items", inventoryHandler.ListByProduct)
+
+	// Stock operations
+	inventoryRoutes.POST("/availability/check", inventoryHandler.CheckAvailability)
+	inventoryRoutes.POST("/stock/increase", inventoryHandler.IncreaseStock)
+	inventoryRoutes.POST("/stock/lock", inventoryHandler.LockStock)
+	inventoryRoutes.POST("/stock/unlock", inventoryHandler.UnlockStock)
+	inventoryRoutes.POST("/stock/deduct", inventoryHandler.DeductStock)
+	inventoryRoutes.POST("/stock/adjust", inventoryHandler.AdjustStock)
+	inventoryRoutes.PUT("/thresholds", inventoryHandler.SetThresholds)
+
+	// Lock management
+	inventoryRoutes.GET("/locks", inventoryHandler.GetActiveLocks)
+	inventoryRoutes.GET("/locks/:id", inventoryHandler.GetLockByID)
+
+	// Transaction audit
+	inventoryRoutes.GET("/transactions", inventoryHandler.ListTransactions)
+	inventoryRoutes.GET("/transactions/:id", inventoryHandler.GetTransactionByID)
 
 	// Trade domain (sales orders, purchase orders)
 	tradeRoutes := router.NewDomainGroup("trade", "/trade")
