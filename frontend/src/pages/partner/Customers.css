@@ -1,0 +1,136 @@
+/* Customers Page Styles */
+
+.customers-page {
+  padding: var(--spacing-6);
+}
+
+.customers-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.customers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Customer code styling */
+.customer-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Customer name cell with short name */
+.customer-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.customer-name {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+.customer-short-name {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Contact cell */
+.customer-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.customer-phone {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-0);
+}
+
+.customer-email {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Location cell */
+.customer-location-cell {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+/* Table container */
+.customers-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .customers-page {
+    padding: var(--spacing-4);
+  }
+
+  .customers-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Status tags */
+.customers-page .semi-tag {
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Level tags */
+.level-tag {
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Type tags */
+.type-tag {
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Action buttons in table */
+.customers-page .table-actions {
+  white-space: nowrap;
+}
+
+/* Bulk action bar spacing */
+.customers-page .bulk-action-bar {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Loading overlay */
+.customers-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Filter container */
+.customers-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .customers-filter-container {
+    flex-direction: column;
+  }
+
+  .customers-filter-container .semi-select {
+    width: 100% !important;
+  }
+}

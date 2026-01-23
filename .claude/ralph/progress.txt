@@ -3033,3 +3033,71 @@ Implemented GORM-based repository implementations for all three Partner context 
 - Consider adding request validation middleware for additional security
 - Unit tests for handlers (P1-QA-004) are next priority
 - Integration tests should verify full request/response cycle
+
+---
+
+## 2026-01-24 - P1-FE-004: Customer List Page Implementation Complete
+
+### Completed
+- **P1-FE-004**: 客户列表页面 (Customer List Page)
+
+### What was done
+1. **Regenerated Frontend API SDK**:
+   - Ran `npm run api:generate` to generate TypeScript clients for Partner APIs
+   - Generated `src/api/customers/`, `src/api/suppliers/`, `src/api/warehouses/` directories
+   - All API models now available in `src/api/models/`
+
+2. **Customer List Page** (`frontend/src/pages/partner/Customers.tsx`):
+   - Full customer list with pagination (20 per page default)
+   - Search by name, code, phone, email
+   - Filter by status (active, inactive, suspended)
+   - Filter by type (individual, organization)
+   - Filter by level (normal, silver, gold, platinum, vip)
+   - Sortable columns: code, name, level, created_at
+   - Row selection with bulk operations
+
+3. **Customer Status Operations**:
+   - Activate: Enable inactive/suspended customers
+   - Deactivate: Disable active customers
+   - Suspend: Temporarily pause customer (with confirmation modal)
+   - Delete: Remove customer (with confirmation modal, validates no balance)
+   - Bulk activate/deactivate for selected rows
+
+4. **Table Features**:
+   - Customer code with monospace styling
+   - Customer name with short name display
+   - Type badge (individual=light-blue, organization=blue)
+   - Contact info (phone + email in stacked layout)
+   - Location (province + city)
+   - Level badge with color coding (normal, silver, gold, platinum, vip)
+   - Status badge (active=green, inactive=grey, suspended=orange)
+   - Row actions: view, edit, activate, deactivate, suspend, delete
+
+5. **CSS Styling** (`frontend/src/pages/partner/Customers.css`):
+   - Follows design system tokens (--spacing-*, --semi-color-*, etc.)
+   - Responsive layout for mobile/tablet
+   - Consistent with Products page styling
+
+### Files created/modified
+- `frontend/src/pages/partner/Customers.tsx` (rewritten)
+- `frontend/src/pages/partner/Customers.css` (new)
+- `frontend/src/api/customers/*.ts` (auto-generated)
+- `frontend/src/api/suppliers/*.ts` (auto-generated)
+- `frontend/src/api/warehouses/*.ts` (auto-generated)
+- `frontend/src/api/models/*.ts` (updated with partner models)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings in router files)
+- `npm run build` passes
+
+### Usage
+Navigate to `/partner/customers` in the application to access the customer list.
+
+### Notes for next developer
+- P1-FE-005 (Customer form) is the next priority - enables create/edit customers
+- P1-FE-006 (Supplier list) can follow the same pattern as this implementation
+- Customer balance display is not yet implemented (requires P1-BE-016 CustomerBalance feature)
+- The edit/view navigation goes to `/partner/customers/:id/edit` and `/partner/customers/:id` - these routes need form components
+- Generated API files in `src/api/` should never be manually edited
+
