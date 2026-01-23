@@ -1,0 +1,134 @@
+/* Warehouses Page Styles */
+
+.warehouses-page {
+  padding: var(--spacing-6);
+}
+
+.warehouses-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.warehouses-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Warehouse code styling */
+.warehouse-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Warehouse name cell with short name */
+.warehouse-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.warehouse-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+.warehouse-short-name {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Default warehouse tag */
+.default-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--semi-font-size-extra-small);
+  padding: 0 var(--spacing-2);
+}
+
+.default-tag .semi-icon {
+  font-size: 10px;
+}
+
+/* Location cell */
+.warehouse-location-cell {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+/* Sort order styling */
+.warehouse-sort-order {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+/* Table container */
+.warehouses-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .warehouses-page {
+    padding: var(--spacing-4);
+  }
+
+  .warehouses-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Status tags */
+.warehouses-page .semi-tag {
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Type tags */
+.warehouses-page .type-tag {
+  min-width: 72px;
+}
+
+/* Action buttons in table */
+.warehouses-page .table-actions {
+  white-space: nowrap;
+}
+
+/* Bulk action bar spacing */
+.warehouses-page .bulk-action-bar {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Loading overlay */
+.warehouses-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Filter container */
+.warehouses-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .warehouses-filter-container {
+    flex-direction: column;
+  }
+
+  .warehouses-filter-container .semi-select {
+    width: 100% !important;
+  }
+}

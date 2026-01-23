@@ -3294,3 +3294,94 @@ Navigate to `/partner/suppliers` in the application to access the supplier list.
 - The form uses `createEnumSchema` from validation.ts for type safety with Zod 4
 - Rating component has custom styling in SupplierForm.css
 - Banking info section is specific to suppliers for payment purposes
+
+## 2026-01-24 - P1-FE-008: Warehouse Management Page
+
+### Completed
+- **P1-FE-008**: 仓库管理页面 (Warehouse management page)
+
+### What was done
+
+1. **Created Warehouses list page** (`frontend/src/pages/partner/Warehouses.tsx`):
+   - Full CRUD operations (create, edit, enable/disable, set default, delete)
+   - Pagination with configurable page size (10, 20, 50)
+   - Search by code, name, and short name
+   - Filter by status (enabled/disabled)
+   - Filter by type (physical, virtual, consign, transit)
+   - Bulk selection and bulk delete
+   - Set default warehouse action
+   - Displays: code, name, short name, type, manager, contact info, location, status
+   - Actions: edit, enable/disable, set default, delete
+
+2. **Created WarehouseForm component** (`frontend/src/features/partner/WarehouseForm.tsx`):
+   - Create and edit modes
+   - Zod schema validation
+   - Form sections:
+     - Basic Info: code, name, short name, type
+     - Contact Info: manager name, phone, email
+     - Address Info: country, province, city, postal code, address
+     - Settings: capacity, sort order, default warehouse toggle, notes
+   - Type options: physical (普通仓库), virtual (虚拟仓库), consign (寄售仓库), transit (中转仓库)
+   - Default country set to "中国"
+   - Code is disabled in edit mode (immutable)
+   - Type is disabled in edit mode (immutable)
+
+3. **Created page wrappers**:
+   - `frontend/src/pages/partner/WarehouseNew.tsx` - Create mode wrapper
+   - `frontend/src/pages/partner/WarehouseEdit.tsx` - Edit mode with data fetching
+
+4. **Updated routing** (`frontend/src/router/routes.tsx`):
+   - Added lazy-loaded imports for WarehouseNewPage and WarehouseEditPage
+   - Added routes: `/partner/warehouses/new` and `/partner/warehouses/:id/edit`
+
+5. **Form validation schema**:
+   - Code: required, max 50 chars, alphanumeric with underscores/dashes
+   - Name: required, max 200 chars
+   - Short name: optional, max 100 chars
+   - Type: required, one of physical/virtual/consign/transit
+   - Contact name: optional, max 100 chars
+   - Phone: optional, max 50 chars
+   - Email: optional, valid email format
+   - Country/Province/City: optional, max 100 chars each
+   - Postal code: optional, max 20 chars
+   - Address: optional, max 500 chars
+   - Capacity: optional, non-negative integer
+   - Sort order: optional, non-negative integer
+   - Notes: optional, max 2000 chars
+
+6. **CSS styling**:
+   - `frontend/src/pages/partner/Warehouses.css` - List page styling
+   - `frontend/src/features/partner/WarehouseForm.css` - Form styling with default toggle field
+
+### Files created
+- `frontend/src/pages/partner/Warehouses.tsx`
+- `frontend/src/pages/partner/Warehouses.css`
+- `frontend/src/features/partner/WarehouseForm.tsx`
+- `frontend/src/features/partner/WarehouseForm.css`
+- `frontend/src/pages/partner/WarehouseNew.tsx`
+- `frontend/src/pages/partner/WarehouseEdit.tsx`
+
+### Files modified
+- `frontend/src/features/partner/index.ts` - Added WarehouseForm export
+- `frontend/src/router/routes.tsx` - Added warehouse form routes
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Usage
+- Navigate to `/partner/warehouses` to view warehouse list
+- Click "新增仓库" to create new warehouse
+- Click "编辑" action on warehouse row to edit existing warehouse
+- Click "启用/禁用" to toggle warehouse status
+- Click "设为默认" to make warehouse the default
+- Use checkboxes for bulk selection and "批量删除"
+- Filter by status and type using dropdowns
+- Search by code/name/short name using search input
+
+### Notes for next developer
+- P1-FE-009 (Customer balance management) is the next frontend task but requires backend P1-BE-016 first
+- Warehouse types use API values: physical, virtual, consign, transit
+- The is_default field uses a Switch component instead of checkbox for better UX
+- Form uses capacity field (API model supports it) but mapping from initialData uses sort_order as placeholder since API doesn't return capacity

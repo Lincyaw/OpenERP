@@ -3,3 +3,4 @@
 
 export { CustomerForm } from './CustomerForm'
 export { SupplierForm } from './SupplierForm'
+export { WarehouseForm } from './WarehouseForm'
