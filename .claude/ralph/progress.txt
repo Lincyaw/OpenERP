@@ -1,0 +1,63 @@
+# ERP Development Progress
+
+## 2026-01-23 - P0-BE-001: Backend Scaffolding Complete
+
+### Completed
+- **P0-BE-001**: 项目脚手架搭建 (Go Module, 目录结构)
+
+### What was done
+1. Created Go module at `backend/` with `github.com/erp/backend`
+2. Established DDD directory structure:
+   - `cmd/server/` - HTTP server entry point
+   - `internal/domain/` - Domain layer with bounded contexts (catalog, partner, inventory, trade, finance, shared)
+   - `internal/application/` - Application services (placeholder)
+   - `internal/infrastructure/` - Infrastructure (config, persistence, eventbus)
+   - `internal/interfaces/http/` - HTTP handlers, DTOs, middleware
+   - `migrations/` - Database migrations (empty, ready for P0-BE-004)
+   - `tests/` - Unit and integration test directories
+
+3. Installed dependencies:
+   - gin-gonic/gin (HTTP framework)
+   - gorm.io/gorm + postgres driver (ORM)
+   - google/uuid (UUIDs)
+   - shopspring/decimal (precise decimals)
+   - go-playground/validator/v10 (validation)
+   - uber/zap (logging, not yet configured)
+   - spf13/viper (config, not yet integrated)
+   - golang-jwt/jwt/v5 (authentication)
+   - redis/go-redis/v9 (cache/queue)
+   - testify (testing)
+
+4. Created shared domain components:
+   - `BaseEntity` and `BaseAggregateRoot` with version for optimistic locking
+   - `TenantAggregateRoot` for multi-tenant support
+   - `DomainEvent` interface and `BaseDomainEvent`
+   - `Repository` generic interface with `Filter` and `Paginated` types
+   - Common domain errors (NotFound, AlreadyExists, InvalidState, etc.)
+
+5. Created HTTP infrastructure:
+   - Unified response format (`dto/response.go`)
+   - Base handler with error handling (`handler/base.go`)
+   - Common middleware (CORS, RequestID, Logger)
+   - Health check and ping endpoints
+
+### Files created
+- `backend/go.mod`, `backend/go.sum`
+- `backend/cmd/server/main.go`
+- `backend/internal/domain/shared/*.go` (5 files)
+- `backend/internal/domain/{catalog,partner,inventory,trade,finance}/doc.go`
+- `backend/internal/infrastructure/config/config.go`
+- `backend/internal/interfaces/http/dto/response.go`
+- `backend/internal/interfaces/http/handler/base.go`
+- `backend/internal/interfaces/http/middleware/common.go`
+- `backend/README.md`, `.gitignore`, `.env.example`
+
+### Build Status
+- `go build ./...` passes successfully
+
+### Notes for next developer
+- P0-BE-002 (Database connection) depends on this and can now be started
+- P0-BE-003 (Logger config) depends on this and can now be started
+- Config currently uses env vars directly; may integrate Viper in P0-BE-003
+- Main server is functional but minimal - add routes as APIs are developed
+- Shared kernel is ready for value objects (P0-BE-005)
