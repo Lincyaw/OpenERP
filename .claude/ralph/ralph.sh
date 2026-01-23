@@ -21,12 +21,15 @@ for ((i=1; i<=MAX_ITER; i++)); do
   result=$(claude --dangerously-skip-permissions -p "@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt \
   1. Find the highest-priority feature to work on and work only on that feature. \
   This should be the one YOU decide has the highest priority - not necessarily the first item. \
-  2. Update the PRD with the work that was done. \
-  3. Append your progress to the progress.txt file. \
+  2. If the prd.json is not clear, you can reference .claude/ralph/docs/spec.md and .claude/ralph/docs/task.md, but be careful the files is long \
+  3. Update the PRD with the work that was done. \
+  4. Append your progress to the progress.txt file. \
   Use this to leave a note for the next person working in the codebase. \
-  4. Make a git commit of that feature. \
+  5. If there are some questions you have about the design, implementation, etc., stop your work and ask me. \
+  6. Call proper subagent for specfic tasks. \
+  7. Make a git commit of that feature. \
   ONLY WORK ON A SINGLE FEATURE. \
-  5. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. \
+  8. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. \
   If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> here.")
 
   echo "$result"
