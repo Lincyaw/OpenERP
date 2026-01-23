@@ -1401,3 +1401,136 @@ setPageTitle('Products')
 - Use `getBreadcrumbs(path)` utility for custom breadcrumb generation
 - Semi Design Nav uses `isCollapsed` prop, not CSS for collapse state
 
+
+
+---
+
+## 2026-01-23 - P0-FE-007: Common Form Components Complete
+
+### Completed
+- **P0-FE-007**: 通用表单组件
+
+### What was done
+1. Installed form dependencies:
+   - `react-hook-form` v7.71.1 - Form state management
+   - `zod` v4.3.6 - Schema validation
+   - `@hookform/resolvers` v5.2.2 - Zod resolver for react-hook-form
+
+2. Created form components at `src/components/common/form/`:
+   - `TextField.tsx` - Text input field with validation
+   - `NumberField.tsx` - Number input field with min/max/precision
+   - `TextAreaField.tsx` - Multi-line text field with character count
+   - `SelectField.tsx` - Dropdown select with search support
+   - `DateField.tsx` - Date picker with multiple output formats (ISO string, Date, timestamp)
+   - `CheckboxField.tsx` - Single checkbox with label
+   - `CheckboxGroupField.tsx` - Multiple checkboxes for multi-select
+   - `RadioGroupField.tsx` - Radio button group with button/card styles
+   - `SwitchField.tsx` - Toggle switch with custom text
+   - `TreeSelectField.tsx` - Hierarchical tree select for categories
+
+3. Created form layout components:
+   - `Form.tsx` - Form wrapper with loading spinner
+   - `FormActions.tsx` - Submit/Cancel button bar with alignment options
+   - `FormSection.tsx` - Grouped form sections with title/description
+   - `FormRow.tsx` - Grid-based multi-column field layout (1-4 columns)
+   - `FormFieldWrapper.tsx` - Consistent label/error/helper styling
+
+4. Created form utilities:
+   - `useFormWithValidation.ts` - Custom hook wrapping react-hook-form with:
+     - Zod schema validation integration
+     - Server-side error handling
+     - Toast notifications on success/error
+     - Reset on success option
+   - `validation.ts` - Pre-built validation schemas and helpers:
+     - Common validation messages (Chinese localized)
+     - Regex patterns (phone, SKU, barcode, etc.)
+     - Pre-built schemas (email, phone, money, quantity, etc.)
+     - Schema factory functions (createStringSchema, createNumberSchema, createEnumSchema)
+     - Coercion helpers for form inputs
+
+5. Created TypeScript types:
+   - `types.ts` - Shared types for controlled fields, options, form config
+
+### Files created
+- `frontend/src/components/common/form/types.ts`
+- `frontend/src/components/common/form/validation.ts`
+- `frontend/src/components/common/form/FormFieldWrapper.tsx`
+- `frontend/src/components/common/form/FormFieldWrapper.css`
+- `frontend/src/components/common/form/TextField.tsx`
+- `frontend/src/components/common/form/NumberField.tsx`
+- `frontend/src/components/common/form/TextAreaField.tsx`
+- `frontend/src/components/common/form/SelectField.tsx`
+- `frontend/src/components/common/form/DateField.tsx`
+- `frontend/src/components/common/form/CheckboxField.tsx`
+- `frontend/src/components/common/form/RadioGroupField.tsx`
+- `frontend/src/components/common/form/SwitchField.tsx`
+- `frontend/src/components/common/form/TreeSelectField.tsx`
+- `frontend/src/components/common/form/Form.tsx`
+- `frontend/src/components/common/form/Form.css`
+- `frontend/src/components/common/form/useFormWithValidation.ts`
+- `frontend/src/components/common/form/index.ts`
+- `frontend/src/components/common/index.ts` (updated)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only warnings from existing route files)
+- `npm run build` passes
+
+### Usage Examples
+
+**Basic form with validation:**
+```tsx
+import { z } from 'zod'
+import { useFormWithValidation, Form, FormActions, FormRow, TextField, NumberField, SelectField } from '@/components/common'
+
+const schema = z.object({
+  name: z.string().min(1, '名称为必填项'),
+  price: z.number().positive('价格必须为正数'),
+  category: z.string().min(1, '请选择分类'),
+})
+
+type FormData = z.infer<typeof schema>
+
+function ProductForm() {
+  const { control, handleFormSubmit, isSubmitting } = useFormWithValidation<FormData>({
+    schema,
+    successMessage: '保存成功',
+  })
+
+  const onSubmit = async (data: FormData) => {
+    await api.createProduct(data)
+  }
+
+  return (
+    <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
+      <FormRow cols={2}>
+        <TextField name="name" control={control} label="名称" required />
+        <NumberField name="price" control={control} label="价格" min={0} precision={2} required />
+      </FormRow>
+      <SelectField
+        name="category"
+        control={control}
+        label="分类"
+        options={[
+          { label: '电子产品', value: 'electronics' },
+          { label: '服装', value: 'clothing' },
+        ]}
+        required
+      />
+      <FormActions isSubmitting={isSubmitting} onCancel={() => navigate(-1)} />
+    </Form>
+  )
+}
+```
+
+### Notes for next developer
+- P0-FE-008 (Table components) is the next highest priority task
+- P0-FE-009 (Vitest testing) can also be started
+- All form fields use Semi Design components under the hood
+- Zod 4.x has a slightly different API than Zod 3 - use `message` instead of `invalid_type_error` for number schemas
+- The `useFormWithValidation` hook handles server-side validation errors automatically if API returns `details` array
+- Use `schemas.*` for common field types (email, phone, money, etc.)
+- Use `patterns.*` for regex patterns (phone, SKU, barcode, etc.)
+- Form fields support `labelPosition` ('top', 'left', 'inset') for different layouts
+- TreeSelectField is ready for category hierarchies in P1-FE-003
+

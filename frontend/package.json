@@ -18,10 +18,13 @@
   "dependencies": {
     "@douyinfe/semi-icons": "^2.90.13",
     "@douyinfe/semi-ui": "^2.90.13",
+    "@hookform/resolvers": "^5.2.2",
     "axios": "^1.13.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.1",
     "react-router-dom": "^7.12.0",
+    "zod": "^4.3.6",
     "zustand": "^5.0.10"
   },
   "devDependencies": {

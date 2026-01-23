@@ -16,7 +16,7 @@
   {"id":"P0-FE-004","story":"状态管理配置 (Zustand)","priority":"high","requirements":["集成 Zustand","创建 store 目录结构","实现示例 store"],"passes":true},
   {"id":"P0-FE-005","story":"HTTP 客户端封装 (Axios)","priority":"high","requirements":["封装 Axios 实例","实现请求响应拦截器","统一错误处理"],"passes":true},
   {"id":"P0-FE-006","story":"布局组件 (Header, Sidebar, Content)","priority":"high","requirements":["实现主布局组件","实现 Header 组件","实现 Sidebar 导航组件"],"passes":true},
-  {"id":"P0-FE-007","story":"通用表单组件","priority":"medium","requirements":["集成 React Hook Form","实现通用表单字段","实现表单验证工具"],"passes":false},
+  {"id":"P0-FE-007","story":"通用表单组件","priority":"medium","requirements":["集成 React Hook Form","实现通用表单字段","实现表单验证工具"],"passes":true},
   {"id":"P0-FE-008","story":"通用表格组件","priority":"medium","requirements":["基于 Semi Table 封装","支持分页排序筛选","实现表格操作列"],"passes":false},
   {"id":"P0-FE-009","story":"前端测试框架配置 (Vitest)","priority":"medium","requirements":["配置 Vitest","配置 React Testing Library","创建测试工具函数"],"passes":false},
   {"id":"P0-PD-001","story":"商品模块原型设计","priority":"medium","requirements":["设计商品列表页原型","设计商品表单原型","设计分类管理原型"],"passes":false},
