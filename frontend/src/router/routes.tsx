@@ -43,6 +43,7 @@ const WarehouseEditPage = () => lazyLoad(() => import('@/pages/partner/Warehouse
 const StockListPage = () => lazyLoad(() => import('@/pages/inventory/StockList'))
 const StockDetailPage = () => lazyLoad(() => import('@/pages/inventory/StockDetail'))
 const StockTransactionsPage = () => lazyLoad(() => import('@/pages/inventory/StockTransactions'))
+const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdjust'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
@@ -355,7 +356,8 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/inventory') {
         childRoutes.push(
           { path: 'stock/:id', element: StockDetailPage() },
-          { path: 'stock/:id/transactions', element: StockTransactionsPage() }
+          { path: 'stock/:id/transactions', element: StockTransactionsPage() },
+          { path: 'adjust', element: StockAdjustPage() }
         )
       }
 

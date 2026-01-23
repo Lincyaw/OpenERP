@@ -4274,3 +4274,93 @@ curl -X PUT "http://localhost:8080/api/v1/inventory/thresholds" \
 - Dark mode is supported via CSS variables
 - The adjust stock navigation requires implementing `/inventory/adjust` page
 
+
+---
+
+## 2026-01-24 - P2-FE-003: Stock Adjustment Page Complete
+
+### Completed
+- **P2-FE-003**: 库存调整页面
+
+### What was done
+1. Implemented Stock Adjustment page at `src/pages/inventory/StockAdjust.tsx`:
+   - Warehouse and product selection with search support
+   - Pre-fill warehouse and product from URL query parameters
+   - Display current stock information (total, available, locked quantities)
+   - Show cost information (unit cost, total value)
+   - Locked stock warning indicator
+
+2. Implemented adjustment form features:
+   - Actual quantity input with validation (non-negative)
+   - Adjustment reason selection with predefined options:
+     - 盘点调整 (Stock take)
+     - 破损报废 (Damaged)
+     - 丢失 (Lost)
+     - 数据校正 (Data correction)
+     - 期初录入 (Initial entry)
+     - 其他 (Other)
+   - Optional notes/remarks field
+
+3. Implemented adjustment preview:
+   - Current quantity → Adjusted quantity visual comparison
+   - Calculated difference (变动数量)
+   - Color-coded indicator (green for gain/盘盈, red for loss/盘亏)
+
+4. Created CSS styling at `src/pages/inventory/StockAdjust.css`:
+   - Responsive layout with mobile breakpoints
+   - Preview section with clear visual hierarchy
+   - Dark mode support via CSS variables
+
+5. Updated router configuration:
+   - Added lazy-loaded StockAdjustPage
+   - Added route: `/inventory/adjust`
+   - Supports query params: `?warehouse_id=...&product_id=...`
+
+### Files created/modified
+- `frontend/src/pages/inventory/StockAdjust.tsx` (new)
+- `frontend/src/pages/inventory/StockAdjust.css` (new)
+- `frontend/src/router/routes.tsx` (added adjust route)
+- `.claude/ralph/plans/prd.json` (marked P2-FE-003 as complete)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Page Features Summary
+| Feature | Status |
+|---------|--------|
+| Warehouse selection with search | ✅ |
+| Product selection with search | ✅ |
+| URL parameter pre-fill | ✅ |
+| Current stock display | ✅ |
+| Locked stock warning | ✅ |
+| Actual quantity input | ✅ |
+| Reason selection dropdown | ✅ |
+| Notes field | ✅ |
+| Adjustment preview | ✅ |
+| Gain/loss indicator | ✅ |
+| Form validation | ✅ |
+| API integration | ✅ |
+
+### API Endpoints Used
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | /partner/warehouses | Get warehouses for dropdown |
+| GET | /catalog/products | Get products for dropdown |
+| GET | /inventory/items/lookup | Get current stock by warehouse+product |
+| POST | /inventory/stock/adjust | Submit stock adjustment |
+
+### Navigation Flow
+1. From StockList page → Click row action "调整" → Opens StockAdjust with pre-filled warehouse/product
+2. From StockDetail page → Click "库存调整" button → Opens StockAdjust with pre-filled warehouse/product
+3. Direct navigation to `/inventory/adjust` → Manual selection of warehouse/product
+
+### Notes for next developer
+- **P2-INT-001** (库存模块前后端联调): Can now test the complete inventory adjustment flow
+- **P2-BE-011/012** (盘点功能): Stock taking backend features are next if planning inventory count workflows
+- **P2-QA-003** (库存锁定并发测试): Consider testing concurrent adjustments
+- The adjustment form handles the case where no inventory record exists (creates new)
+- Backend API (`/inventory/stock/adjust`) fails if there are active locks on the inventory item
+- Form uses Zod validation integrated with react-hook-form
+- All form components follow the project's design system tokens

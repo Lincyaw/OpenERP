@@ -1,0 +1,131 @@
+/* Stock Adjustment Page Styles */
+
+.stock-adjust-page {
+  padding: var(--spacing-6);
+}
+
+.stock-adjust-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-6);
+}
+
+.stock-adjust-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.stock-adjust-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Loading container */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-8);
+}
+
+/* Current stock info */
+.current-stock-info {
+  padding: var(--spacing-4) 0;
+}
+
+.stock-warning {
+  margin-top: var(--spacing-4);
+}
+
+/* Adjustment preview */
+.adjustment-preview {
+  padding: var(--spacing-4);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--border-radius-md);
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-4);
+}
+
+.preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-width: 120px;
+}
+
+.preview-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.preview-arrow {
+  font-size: var(--font-size-2xl);
+  color: var(--semi-color-text-2);
+}
+
+.preview-diff {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.diff-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.diff-positive {
+  color: var(--semi-color-success);
+}
+
+.diff-negative {
+  color: var(--semi-color-danger);
+}
+
+.diff-tag {
+  margin-left: var(--spacing-2);
+}
+
+/* Dark mode adjustments */
+[theme-mode='dark'] .adjustment-preview {
+  background: var(--semi-color-fill-1);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .stock-adjust-page {
+    padding: var(--spacing-4);
+  }
+
+  .stock-adjust-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .preview-row {
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+
+  .preview-arrow {
+    transform: rotate(90deg);
+  }
+
+  .preview-item {
+    min-width: auto;
+    width: 100%;
+  }
+}
