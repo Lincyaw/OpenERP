@@ -2778,3 +2778,60 @@ curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
 - For inventory operations, warehouse must be active and is determined by `IsActive()` method
 - Virtual warehouses can represent logical locations like "Returns" or "Defective"
 - Transit warehouses track goods in transit between physical locations
+
+---
+
+## 2026-01-24: P1-BE-013 Partner Repository 接口 + 实现
+
+### Summary
+Implemented GORM-based repository implementations for all three Partner context aggregates: Customer, Supplier, and Warehouse.
+
+### What was done
+1. **GormCustomerRepository** - Complete implementation of CustomerRepository interface
+   - FindByID, FindByIDForTenant, FindByCode, FindByPhone, FindByEmail
+   - FindAll, FindAllForTenant, FindByType, FindByLevel, FindByStatus, FindActive
+   - FindByIDs, FindByCodes, FindWithPositiveBalance
+   - Save, SaveBatch, Delete, DeleteForTenant
+   - Count, CountForTenant, CountByType, CountByLevel, CountByStatus
+   - ExistsByCode, ExistsByPhone, ExistsByEmail
+   - Filter support with search, pagination, ordering
+
+2. **GormSupplierRepository** - Complete implementation of SupplierRepository interface
+   - Same pattern as CustomerRepository
+   - Additional: FindWithOutstandingBalance, FindOverCreditLimit
+   - Supplier-specific filters: min_rating, max_rating
+
+3. **GormWarehouseRepository** - Complete implementation of WarehouseRepository interface
+   - Same pattern as other repositories
+   - Special methods: FindDefault, ClearDefault
+   - Default ordering puts default warehouse first (is_default DESC)
+
+### Implementation Details
+- All repositories use GORM with PostgreSQL
+- Multi-tenant scoping with tenant_id on all tenant-aware queries
+- Code/email normalization (ToUpper for codes, ToLower for emails)
+- Error handling converts gorm.ErrRecordNotFound to shared.ErrNotFound
+- Filter system supports search across multiple fields (name, code, phone, email)
+- Pagination and ordering with sensible defaults
+
+### Files created
+- `backend/internal/infrastructure/persistence/customer_repository.go`
+- `backend/internal/infrastructure/persistence/supplier_repository.go`
+- `backend/internal/infrastructure/persistence/warehouse_repository.go`
+- `backend/internal/infrastructure/persistence/customer_repository_test.go`
+- `backend/internal/infrastructure/persistence/supplier_repository_test.go`
+- `backend/internal/infrastructure/persistence/warehouse_repository_test.go`
+
+### Build & Test Status
+- `go build ./...` passes
+- All repository tests pass
+- Tests use go-sqlmock for database mocking
+- Interface compliance verified at compile time
+
+### Notes for next developer
+- P1-BE-014 (Partner Application Service) can now be started
+- Repository interfaces are defined in domain layer, implementations in infrastructure
+- All repositories follow the same pattern for consistency
+- ClearDefault uses GORM's Update with map to avoid updating all fields
+- Consider adding transaction support in application service layer
+- FindByIDs/FindByCodes return empty slice (not error) for empty input

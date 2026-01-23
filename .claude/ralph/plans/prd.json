@@ -35,7 +35,7 @@
   {"id":"P1-BE-010","story":"Customer 聚合根实现","priority":"high","requirements":["实现 Customer 聚合根","包含基本信息联系方式地址","实现客户分级属性"],"passes":true},
   {"id":"P1-BE-011","story":"Supplier 聚合根实现","priority":"high","requirements":["实现 Supplier 聚合根","包含基本信息联系方式","实现供应商状态管理"],"passes":true},
   {"id":"P1-BE-012","story":"Warehouse 聚合根实现","priority":"high","requirements":["实现 Warehouse 聚合根","包含仓库名称地址类型","实现仓库启用禁用"],"passes":true},
-  {"id":"P1-BE-013","story":"Partner Repository 接口 + 实现","priority":"high","requirements":["定义 CustomerRepository 接口","定义 SupplierRepository 接口","定义 WarehouseRepository 接口"],"passes":false},
+  {"id":"P1-BE-013","story":"Partner Repository 接口 + 实现","priority":"high","requirements":["定义 CustomerRepository 接口","定义 SupplierRepository 接口","定义 WarehouseRepository 接口"],"passes":true},
   {"id":"P1-BE-014","story":"Partner Application Service","priority":"high","requirements":["实现客户应用服务","实现供应商应用服务","实现仓库应用服务"],"passes":false},
   {"id":"P1-BE-015","story":"Partner API (Customer/Supplier/Warehouse)","priority":"high","requirements":["实现客户 CRUD API","实现供应商 CRUD API","实现仓库 CRUD API"],"passes":false},
   {"id":"P1-BE-016","story":"CustomerBalance 余额功能","priority":"medium","requirements":["实现 CustomerBalance 值对象","实现余额增减操作","实现余额查询"],"passes":false},
