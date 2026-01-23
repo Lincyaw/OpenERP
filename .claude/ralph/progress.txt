@@ -1043,3 +1043,64 @@ console.log(info.data?.version) // "1.0.0"
 - Swagger UI available at `/swagger/index.html` for API exploration
 - The axios instance handles JWT token injection automatically from localStorage
 - Use `customInstance` function for orval integration, not `axiosInstance` directly
+
+---
+
+## 2026-01-23 - P0-FE-002: UI Component Library Integration (Semi Design) Complete
+
+### Completed
+- **P0-FE-002**: UI 组件库集成 (Semi Design)
+
+### What was done
+1. Installed Semi Design packages:
+   - `@douyinfe/semi-ui` - Main UI component library
+   - `@douyinfe/semi-icons` - Icon library
+
+2. Configured global styles:
+   - Created new `index.css` with CSS reset and Semi Design CSS variables
+   - Set up base typography using Semi Design's font stack
+   - Added custom scrollbar styling using Semi Design colors
+   - Configured selection styling with Semi Design theme colors
+
+3. Updated App.tsx with component verification demo:
+   - Demonstrates multiple Semi Design components working together
+   - Components tested: Button, Card, Typography, Space, Tag, Input, Toast, Table, Avatar, Descriptions
+   - Icons tested: IconHome, IconSearch, IconUser, IconSetting, IconGithubLogo
+   - Interactive elements (Toast notification on button click)
+
+4. Removed unused App.css file (replaced by Semi Design styling)
+
+### Files created/modified
+- `frontend/package.json` (added semi-ui and semi-icons dependencies)
+- `frontend/src/index.css` (rewritten for Semi Design)
+- `frontend/src/App.tsx` (component demo with Semi Design)
+- `frontend/src/App.css` (deleted - no longer needed)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes
+- `npm run build` passes (676KB JS bundle, gzipped to 201KB)
+- Note: Chunk size warning is expected - can be optimized with code-splitting later
+
+### Components Verified
+| Component | Status |
+|-----------|--------|
+| Button (all types) | Working |
+| Card | Working |
+| Typography (Title, Text, Paragraph) | Working |
+| Space | Working |
+| Tag (all colors) | Working |
+| Input with prefix icon | Working |
+| Toast | Working |
+| Table | Working |
+| Avatar | Working |
+| Descriptions | Working |
+| Icons | Working |
+
+### Notes for next developer
+- P0-FE-003 (Routing) is the next highest priority task
+- P0-FE-004 (Zustand state management) can also be started in parallel
+- Semi Design uses CSS variables prefixed with `--semi-color-*`
+- For dark mode, Semi Design provides built-in theme switching
+- Consider code-splitting Semi Design imports for production optimization
+- Toast component works globally without provider setup
