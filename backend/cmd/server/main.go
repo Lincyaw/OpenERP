@@ -12,6 +12,7 @@ import (
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
+	"github.com/erp/backend/internal/interfaces/http/router"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -64,49 +65,118 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Initialize router with our custom middleware
-	router := gin.New()
-	router.Use(middleware.RequestID())
-	router.Use(logger.Recovery(log))
-	router.Use(logger.GinMiddleware(log))
-	router.Use(middleware.CORS())
+	// Setup validation
+	middleware.SetupValidator()
 
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		reqLog := logger.GetGinLogger(c)
-		if err := db.Ping(); err != nil {
-			reqLog.Warn("Health check failed", zap.Error(err))
-			c.JSON(http.StatusServiceUnavailable, gin.H{
-				"status":   "unhealthy",
-				"time":     time.Now().Format(time.RFC3339),
-				"database": "error",
-			})
-			return
+	// Initialize router with custom middleware
+	engine := gin.New()
+
+	// Configure trusted proxies
+	if len(cfg.HTTP.TrustedProxies) > 0 {
+		if err := engine.SetTrustedProxies(cfg.HTTP.TrustedProxies); err != nil {
+			log.Warn("Failed to set trusted proxies", zap.Error(err))
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"status":   "healthy",
-			"time":     time.Now().Format(time.RFC3339),
-			"database": "ok",
-		})
-	})
-
-	// API v1 routes
-	v1 := router.Group("/api/v1")
-	{
-		v1.GET("/ping", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "pong",
-			})
-		})
 	}
 
-	// Create HTTP server
+	// Apply middleware stack in order:
+	// 1. RequestID - Generate/propagate request ID
+	// 2. Recovery - Catch panics
+	// 3. Logger - Log requests
+	// 4. Security - Add security headers
+	// 5. CORS - Handle cross-origin requests
+	// 6. BodyLimit - Limit request body size
+	// 7. RateLimit - Apply rate limiting (if enabled)
+	engine.Use(middleware.RequestID())
+	engine.Use(logger.Recovery(log))
+	engine.Use(logger.GinMiddleware(log))
+	engine.Use(middleware.Secure())
+
+	// Configure CORS from config
+	corsConfig := middleware.CORSConfig{
+		AllowOrigins:     cfg.HTTP.CORSAllowOrigins,
+		AllowMethods:     cfg.HTTP.CORSAllowMethods,
+		AllowHeaders:     cfg.HTTP.CORSAllowHeaders,
+		ExposeHeaders:    []string{"X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
+	engine.Use(middleware.CORSWithConfig(corsConfig))
+
+	// Body size limit
+	engine.Use(middleware.BodyLimit(cfg.HTTP.MaxBodySize))
+
+	// Rate limiting (if enabled)
+	if cfg.HTTP.RateLimitEnabled {
+		rateLimiter := middleware.NewRateLimiter(cfg.HTTP.RateLimitRequests, cfg.HTTP.RateLimitWindow)
+		engine.Use(middleware.RateLimit(rateLimiter))
+		log.Info("Rate limiting enabled",
+			zap.Int("requests", cfg.HTTP.RateLimitRequests),
+			zap.Duration("window", cfg.HTTP.RateLimitWindow),
+		)
+	}
+
+	// Health check endpoint (outside API versioning)
+	engine.GET("/health", healthHandler(db, log))
+
+	// Setup API routes using router
+	r := router.NewRouter(engine, router.WithAPIVersion("v1"))
+
+	// Register domain route groups
+	// These will be populated as domain APIs are implemented
+
+	// Catalog domain (products, categories)
+	catalogRoutes := router.NewDomainGroup("catalog", "/catalog")
+	catalogRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "catalog service ready"})
+	})
+
+	// Partner domain (customers, suppliers, warehouses)
+	partnerRoutes := router.NewDomainGroup("partner", "/partner")
+	partnerRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "partner service ready"})
+	})
+
+	// Inventory domain
+	inventoryRoutes := router.NewDomainGroup("inventory", "/inventory")
+	inventoryRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "inventory service ready"})
+	})
+
+	// Trade domain (sales orders, purchase orders)
+	tradeRoutes := router.NewDomainGroup("trade", "/trade")
+	tradeRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "trade service ready"})
+	})
+
+	// Finance domain
+	financeRoutes := router.NewDomainGroup("finance", "/finance")
+	financeRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "finance service ready"})
+	})
+
+	// Register all domain groups
+	r.Register(catalogRoutes).
+		Register(partnerRoutes).
+		Register(inventoryRoutes).
+		Register(tradeRoutes).
+		Register(financeRoutes)
+
+	// Setup routes
+	r.Setup()
+
+	// Also keep a simple ping at root API level for basic health checks
+	engine.GET("/api/v1/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	})
+
+	// Create HTTP server with config
 	srv := &http.Server{
-		Addr:         ":" + cfg.App.Port,
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:           ":" + cfg.App.Port,
+		Handler:        engine,
+		ReadTimeout:    cfg.HTTP.ReadTimeout,
+		WriteTimeout:   cfg.HTTP.WriteTimeout,
+		IdleTimeout:    cfg.HTTP.IdleTimeout,
+		MaxHeaderBytes: cfg.HTTP.MaxHeaderBytes,
 	}
 
 	// Start server in goroutine
@@ -131,4 +201,25 @@ func main() {
 	}
 
 	log.Info("Server exited gracefully")
+}
+
+// healthHandler returns a handler for health check endpoints
+func healthHandler(db *persistence.Database, _ *zap.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reqLog := logger.GetGinLogger(c)
+		if err := db.Ping(); err != nil {
+			reqLog.Warn("Health check failed", zap.Error(err))
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status":   "unhealthy",
+				"time":     time.Now().Format(time.RFC3339),
+				"database": "error",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status":   "healthy",
+			"time":     time.Now().Format(time.RFC3339),
+			"database": "ok",
+		})
+	}
 }

@@ -6,7 +6,7 @@
   {"id":"P0-BE-005","story":"通用值对象实现 (Money, Quantity)","priority":"high","requirements":["实现 Money 值对象","实现 Quantity 值对象","编写值对象单元测试"],"passes":true},
   {"id":"P0-BE-006","story":"领域事件基础设施 (EventBus, Outbox)","priority":"high","requirements":["实现 EventBus 接口","实现 Outbox Pattern","支持事件发布订阅"],"passes":true},
   {"id":"P0-BE-007","story":"策略注册中心实现","priority":"medium","requirements":["实现策略模式注册中心","支持策略动态注册获取","提供策略类型校验"],"passes":true},
-  {"id":"P0-BE-008","story":"HTTP 框架配置 (Gin)","priority":"high","requirements":["配置 Gin 框架","实现通用中间件","配置路由分组"],"passes":false},
+  {"id":"P0-BE-008","story":"HTTP 框架配置 (Gin)","priority":"high","requirements":["配置 Gin 框架","实现通用中间件","配置路由分组"],"passes":true},
   {"id":"P0-BE-009","story":"API 响应格式统一","priority":"high","requirements":["定义统一响应结构","实现响应工具函数","实现错误码规范"],"passes":false},
   {"id":"P0-BE-010","story":"单元测试框架配置","priority":"medium","requirements":["集成 testify","配置测试覆盖率工具","创建测试工具函数"],"passes":false},
   {"id":"P0-FE-001","story":"前端项目脚手架搭建 (React + TypeScript)","priority":"high","requirements":["使用 Vite 创建项目","配置 ESLint 和 Prettier","建立目录结构"],"passes":false},

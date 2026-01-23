@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type Config struct {
 	JWT      JWTConfig
 	Log      LogConfig
 	Event    EventConfig
+	HTTP     HTTPConfig
 }
 
 // LogConfig holds logging configuration
@@ -70,6 +72,22 @@ type EventConfig struct {
 	CleanupRetention  time.Duration
 }
 
+// HTTPConfig holds HTTP server configuration
+type HTTPConfig struct {
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
+	MaxHeaderBytes    int
+	MaxBodySize       int64 // Maximum request body size in bytes
+	RateLimitEnabled  bool
+	RateLimitRequests int           // Requests per window
+	RateLimitWindow   time.Duration // Window duration
+	CORSAllowOrigins  []string
+	CORSAllowMethods  []string
+	CORSAllowHeaders  []string
+	TrustedProxies    []string
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	cfg := &Config{
@@ -112,6 +130,20 @@ func Load() (*Config, error) {
 			MaxRetries:        getEnvAsInt("EVENT_MAX_RETRIES", 5),
 			CleanupEnabled:    getEnvAsBool("EVENT_CLEANUP_ENABLED", true),
 			CleanupRetention:  getEnvAsDuration("EVENT_CLEANUP_RETENTION", 168*time.Hour),
+		},
+		HTTP: HTTPConfig{
+			ReadTimeout:       getEnvAsDuration("HTTP_READ_TIMEOUT", 15*time.Second),
+			WriteTimeout:      getEnvAsDuration("HTTP_WRITE_TIMEOUT", 15*time.Second),
+			IdleTimeout:       getEnvAsDuration("HTTP_IDLE_TIMEOUT", 60*time.Second),
+			MaxHeaderBytes:    getEnvAsInt("HTTP_MAX_HEADER_BYTES", 1<<20), // 1MB
+			MaxBodySize:       getEnvAsInt64("HTTP_MAX_BODY_SIZE", 10<<20), // 10MB
+			RateLimitEnabled:  getEnvAsBool("HTTP_RATE_LIMIT_ENABLED", true),
+			RateLimitRequests: getEnvAsInt("HTTP_RATE_LIMIT_REQUESTS", 100),
+			RateLimitWindow:   getEnvAsDuration("HTTP_RATE_LIMIT_WINDOW", time.Minute),
+			CORSAllowOrigins:  getEnvAsStringSlice("HTTP_CORS_ORIGINS", []string{"*"}),
+			CORSAllowMethods:  getEnvAsStringSlice("HTTP_CORS_METHODS", []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}),
+			CORSAllowHeaders:  getEnvAsStringSlice("HTTP_CORS_HEADERS", []string{"Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"}),
+			TrustedProxies:    getEnvAsStringSlice("HTTP_TRUSTED_PROXIES", nil),
 		},
 	}
 
@@ -204,6 +236,34 @@ func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 	if value := os.Getenv(key); value != "" {
 		if duration, err := time.ParseDuration(value); err == nil {
 			return duration
+		}
+	}
+	return defaultValue
+}
+
+// getEnvAsInt64 gets an environment variable as int64 with a default fallback
+func getEnvAsInt64(key string, defaultValue int64) int64 {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.ParseInt(value, 10, 64); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
+
+// getEnvAsStringSlice gets an environment variable as string slice (comma-separated)
+func getEnvAsStringSlice(key string, defaultValue []string) []string {
+	if value := os.Getenv(key); value != "" {
+		parts := strings.Split(value, ",")
+		result := make([]string, 0, len(parts))
+		for _, part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if trimmed != "" {
+				result = append(result, trimmed)
+			}
+		}
+		if len(result) > 0 {
+			return result
 		}
 	}
 	return defaultValue

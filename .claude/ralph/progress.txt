@@ -465,3 +465,103 @@ processor.Start(ctx)
 - For high-throughput scenarios, consider tuning BatchSize and PollInterval
 - Test with `go test ./internal/infrastructure/event/... -cover`
 
+---
+
+## 2026-01-23 - P0-BE-008: HTTP Framework Configuration Complete
+
+### Completed
+- **P0-BE-008**: HTTP 框架配置 (Gin)
+
+### What was done
+1. Added HTTP configuration to config package:
+   - `HTTPConfig` struct with ReadTimeout, WriteTimeout, IdleTimeout
+   - MaxHeaderBytes, MaxBodySize settings
+   - Rate limiting configuration (enabled, requests, window)
+   - CORS configuration (origins, methods, headers)
+   - Trusted proxies list
+
+2. Implemented common middleware at `internal/interfaces/http/middleware/`:
+   - `common.go` - Enhanced with:
+     - Configurable CORS middleware (`CORSWithConfig`)
+     - Improved RequestID generation using crypto/rand
+     - Security headers middleware (`Secure()`) - X-Frame-Options, X-XSS-Protection, etc.
+     - Timeout middleware
+   - `ratelimit.go` - Token bucket rate limiter:
+     - Per-client rate limiting
+     - Automatic cleanup of expired entries
+     - Tenant-aware rate limiting (X-Tenant-ID header)
+     - Custom key extraction support
+   - `bodylimit.go` - Request body size limit:
+     - Content-Length check
+     - MaxBytesReader for streaming protection
+   - `validation.go` - Validation helpers:
+     - Integration with go-playground/validator
+     - Custom error message formatting
+     - Structured validation error responses
+
+3. Created router framework at `internal/interfaces/http/router/`:
+   - `Router` struct for centralized route registration
+   - `RouteRegistrar` interface for modular route registration
+   - `DomainGroup` for domain-specific route grouping
+   - Support for middleware per group
+   - Chained method calls for fluent API
+   - Subgroup support for nested routes
+
+4. Updated main.go with:
+   - Full middleware stack (RequestID → Recovery → Logger → Security → CORS → BodyLimit → RateLimit)
+   - HTTP server configuration from config
+   - Domain route groups (catalog, partner, inventory, trade, finance)
+   - Ping endpoints for each domain
+
+5. Test coverage:
+   - `common_test.go` - 8 test cases for CORS, RequestID, Security, Timeout
+   - `ratelimit_test.go` - 10 test cases including concurrent access
+   - `bodylimit_test.go` - 4 test cases for body size limiting
+   - `validation_test.go` - 4 test cases for validation error handling
+   - `router_test.go` - 8 test cases for router and domain groups
+
+### Files created/modified
+- `backend/internal/infrastructure/config/config.go` (added HTTPConfig)
+- `backend/internal/interfaces/http/middleware/common.go` (enhanced)
+- `backend/internal/interfaces/http/middleware/ratelimit.go` (new)
+- `backend/internal/interfaces/http/middleware/bodylimit.go` (new)
+- `backend/internal/interfaces/http/middleware/validation.go` (new)
+- `backend/internal/interfaces/http/middleware/*_test.go` (4 test files)
+- `backend/internal/interfaces/http/router/router.go` (new)
+- `backend/internal/interfaces/http/router/router_test.go` (new)
+- `backend/cmd/server/main.go` (updated with full middleware stack and routes)
+- `backend/.env.example` (added HTTP_* and EVENT_* variables)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+
+### API Routes Structure
+```
+/health                     - Health check (outside versioning)
+/api/v1/ping               - Root API ping
+/api/v1/catalog/ping       - Catalog service ping
+/api/v1/partner/ping       - Partner service ping
+/api/v1/inventory/ping     - Inventory service ping
+/api/v1/trade/ping         - Trade service ping
+/api/v1/finance/ping       - Finance service ping
+```
+
+### Middleware Stack Order
+1. RequestID - Generate/propagate X-Request-ID
+2. Recovery - Catch panics with stack trace logging
+3. GinMiddleware - Request logging with zap
+4. Secure - Security headers (X-Frame-Options, etc.)
+5. CORS - Cross-origin request handling
+6. BodyLimit - Request body size limit (default 10MB)
+7. RateLimit - Token bucket rate limiting (100 req/min default)
+
+### Notes for next developer
+- P0-BE-009 (API response format) is partially done - Response DTOs exist in dto/response.go
+- P0-BE-010 (Unit test framework) is partially done - testify already integrated
+- To add new domain APIs, create handlers and register with DomainGroup
+- Rate limiter can be customized per route using `RateLimitByKey()`
+- CORS can be configured via environment variables
+- For production, set HTTP_TRUSTED_PROXIES if behind a reverse proxy
+- Validation middleware integrates with Gin's ShouldBindJSON
+
