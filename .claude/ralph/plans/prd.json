@@ -12,7 +12,7 @@
   {"id":"P0-FE-001","story":"前端项目脚手架搭建 (React + TypeScript)","priority":"high","requirements":["使用 Vite 创建项目","配置 ESLint 和 Prettier","建立目录结构"],"passes":true},
   {"id":"P0-API-001","story":"OpenAPI 规范与 SDK 自动生成","priority":"high","requirements":["后端集成 swaggo/swag 生成 OpenAPI 规范","前端集成 orval 生成 TypeScript SDK","配置 Makefile 和 npm scripts 自动化生成流程","编写示例 API 验证完整流程"],"passes":true},
   {"id":"P0-FE-002","story":"UI 组件库集成 (Semi Design)","priority":"high","requirements":["安装 @douyinfe/semi-ui","配置主题和全局样式","验证组件正常渲染"],"passes":true},
-  {"id":"P0-FE-003","story":"路由配置","priority":"high","requirements":["配置 React Router v6","建立路由结构和懒加载","实现路由守卫基础"],"passes":false},
+  {"id":"P0-FE-003","story":"路由配置","priority":"high","requirements":["配置 React Router v6","建立路由结构和懒加载","实现路由守卫基础"],"passes":true},
   {"id":"P0-FE-004","story":"状态管理配置 (Zustand)","priority":"high","requirements":["集成 Zustand","创建 store 目录结构","实现示例 store"],"passes":false},
   {"id":"P0-FE-005","story":"HTTP 客户端封装 (Axios)","priority":"high","requirements":["封装 Axios 实例","实现请求响应拦截器","统一错误处理"],"passes":true},
   {"id":"P0-FE-006","story":"布局组件 (Header, Sidebar, Content)","priority":"high","requirements":["实现主布局组件","实现 Header 组件","实现 Sidebar 导航组件"],"passes":false},

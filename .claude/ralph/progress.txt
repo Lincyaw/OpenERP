@@ -1104,3 +1104,94 @@ console.log(info.data?.version) // "1.0.0"
 - For dark mode, Semi Design provides built-in theme switching
 - Consider code-splitting Semi Design imports for production optimization
 - Toast component works globally without provider setup
+---
+
+## 2026-01-23 - P0-FE-003: Route Configuration Complete
+
+### Completed
+- **P0-FE-003**: 路由配置 (React Router v6)
+
+### What was done
+1. Installed react-router-dom package:
+   - `react-router-dom` v7.x for React 19 compatibility
+
+2. Created router infrastructure at `src/router/`:
+   - `types.ts` - Type definitions (AppRoute, RouteMeta, MenuItem, BreadcrumbItem)
+   - `lazyLoad.tsx` - Lazy loading utilities with Suspense and loading fallback
+   - `guards.tsx` - AuthGuard and GuestGuard components for route protection
+   - `routes.tsx` - Main route configuration with lazy-loaded pages
+   - `index.ts` - Module exports
+
+3. Route features implemented:
+   - Lazy loading with React.lazy() and Suspense for code splitting
+   - AuthGuard: Redirects unauthenticated users to /login, preserves return URL
+   - GuestGuard: Redirects authenticated users away from login
+   - Permission checking foundation (ready for P6-FE-003)
+   - Breadcrumb generation utility
+   - Route metadata support (title, icon, permissions, order)
+
+4. Created placeholder pages:
+   - `pages/Dashboard.tsx` - Home dashboard placeholder
+   - `pages/Login.tsx` - Login form with mock authentication
+   - `pages/NotFound.tsx` - 404 error page
+   - `pages/Forbidden.tsx` - 403 access denied page
+   - `pages/catalog/Products.tsx`, `pages/catalog/Categories.tsx`
+   - `pages/partner/Customers.tsx`, `pages/partner/Suppliers.tsx`, `pages/partner/Warehouses.tsx`
+   - `pages/inventory/StockList.tsx`
+   - `pages/trade/SalesOrders.tsx`, `pages/trade/PurchaseOrders.tsx`
+   - `pages/finance/Receivables.tsx`, `pages/finance/Payables.tsx`
+
+5. Route structure mirrors ERP domain modules:
+   ```
+   /               - Dashboard (protected)
+   /login          - Login page (guest only)
+   /catalog/*      - Products, Categories
+   /partner/*      - Customers, Suppliers, Warehouses
+   /inventory/*    - Stock management
+   /trade/*        - Sales, Purchase orders
+   /finance/*      - Receivables, Payables
+   /403            - Access denied
+   /404            - Not found
+   ```
+
+6. Updated configuration:
+   - Added `@router/*` path alias to vite.config.ts and tsconfig.app.json
+   - Updated main.tsx to use createBrowserRouter and RouterProvider
+
+### Files created/modified
+- `frontend/package.json` (added react-router-dom)
+- `frontend/src/router/types.ts` (new)
+- `frontend/src/router/lazyLoad.tsx` (new)
+- `frontend/src/router/guards.tsx` (new)
+- `frontend/src/router/routes.tsx` (new)
+- `frontend/src/router/index.ts` (new)
+- `frontend/src/pages/Dashboard.tsx` (new)
+- `frontend/src/pages/Login.tsx` (new)
+- `frontend/src/pages/NotFound.tsx` (new)
+- `frontend/src/pages/Forbidden.tsx` (new)
+- `frontend/src/pages/catalog/*.tsx` (new - 2 files)
+- `frontend/src/pages/partner/*.tsx` (new - 3 files)
+- `frontend/src/pages/inventory/*.tsx` (new - 1 file)
+- `frontend/src/pages/trade/*.tsx` (new - 2 files)
+- `frontend/src/pages/finance/*.tsx` (new - 2 files)
+- `frontend/src/pages/index.ts` (updated)
+- `frontend/src/main.tsx` (updated to use router)
+- `frontend/vite.config.ts` (added @router alias)
+- `frontend/tsconfig.app.json` (added @router alias)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (warnings expected for route config files)
+- `npm run build` passes
+
+### Notes for next developer
+- P0-FE-004 (Zustand state management) is the next highest priority task
+- P0-FE-006 (Layout components) depends on routing and can now be started
+- Login page uses mock authentication (stores token in localStorage)
+- AuthGuard reads `access_token` from localStorage - integrate with real auth in P6
+- Placeholder pages are ready for actual implementation in P1/P2/P3/P4 phases
+- Route metadata includes `permissions` field for future permission checks
+- Use `lazyLoad()` helper for adding new lazy-loaded routes
+- Use `getBreadcrumbs(path)` to generate breadcrumb navigation
+- Semi Design illustrations package not compatible with React 19 - using icons instead
+
