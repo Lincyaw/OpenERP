@@ -1,6 +1,7 @@
 import { Navigate, type RouteObject } from 'react-router-dom'
 import { lazyLoad } from './lazyLoad'
 import { AuthGuard, GuestGuard } from './guards'
+import { MainLayout } from '@/components/layout'
 import type { AppRoute } from './types'
 
 /**
@@ -43,23 +44,14 @@ const PayablesPage = () => lazyLoad(() => import('@/pages/finance/Payables'))
 
 /**
  * Application routes with metadata
+ * Routes are organized into two groups:
+ * 1. Public routes (login, error pages) - no layout
+ * 2. Protected routes - wrapped in MainLayout
  */
 export const appRoutes: AppRoute[] = [
-  // Public routes (no auth required)
-  {
-    path: '/login',
-    element: <GuestGuard>{LoginPage()}</GuestGuard>,
-    meta: {
-      title: 'Login',
-      requiresAuth: false,
-      hideInMenu: true,
-    },
-  },
-
-  // Protected routes (require auth)
+  // Dashboard (home)
   {
     path: '/',
-    element: <AuthGuard>{DashboardPage()}</AuthGuard>,
     meta: {
       title: 'Dashboard',
       icon: 'IconHome',
@@ -82,7 +74,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/catalog/products',
-        element: <AuthGuard meta={{ title: 'Products' }}>{ProductsPage()}</AuthGuard>,
         meta: {
           title: 'Products',
           icon: 'IconGridView',
@@ -91,7 +82,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/catalog/categories',
-        element: <AuthGuard meta={{ title: 'Categories' }}>{CategoriesPage()}</AuthGuard>,
         meta: {
           title: 'Categories',
           icon: 'IconTreeTriangleDown',
@@ -116,7 +106,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/partner/customers',
-        element: <AuthGuard meta={{ title: 'Customers' }}>{CustomersPage()}</AuthGuard>,
         meta: {
           title: 'Customers',
           icon: 'IconUserGroup',
@@ -125,7 +114,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/partner/suppliers',
-        element: <AuthGuard meta={{ title: 'Suppliers' }}>{SuppliersPage()}</AuthGuard>,
         meta: {
           title: 'Suppliers',
           icon: 'IconUserCardVideo',
@@ -134,7 +122,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/partner/warehouses',
-        element: <AuthGuard meta={{ title: 'Warehouses' }}>{WarehousesPage()}</AuthGuard>,
         meta: {
           title: 'Warehouses',
           icon: 'IconInbox',
@@ -159,7 +146,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/inventory/stock',
-        element: <AuthGuard meta={{ title: 'Stock List' }}>{StockListPage()}</AuthGuard>,
         meta: {
           title: 'Stock List',
           icon: 'IconList',
@@ -184,7 +170,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/trade/sales',
-        element: <AuthGuard meta={{ title: 'Sales Orders' }}>{SalesOrdersPage()}</AuthGuard>,
         meta: {
           title: 'Sales Orders',
           icon: 'IconSend',
@@ -193,7 +178,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/trade/purchases',
-        element: <AuthGuard meta={{ title: 'Purchase Orders' }}>{PurchaseOrdersPage()}</AuthGuard>,
         meta: {
           title: 'Purchase Orders',
           icon: 'IconDownload',
@@ -218,7 +202,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/finance/receivables',
-        element: <AuthGuard meta={{ title: 'Receivables' }}>{ReceivablesPage()}</AuthGuard>,
         meta: {
           title: 'Receivables',
           icon: 'IconPriceTag',
@@ -227,7 +210,6 @@ export const appRoutes: AppRoute[] = [
       },
       {
         path: '/finance/payables',
-        element: <AuthGuard meta={{ title: 'Payables' }}>{PayablesPage()}</AuthGuard>,
         meta: {
           title: 'Payables',
           icon: 'IconCreditCard',
@@ -236,67 +218,147 @@ export const appRoutes: AppRoute[] = [
       },
     ],
   },
-
-  // Error pages
-  {
-    path: '/403',
-    element: ForbiddenPage(),
-    meta: {
-      title: 'Access Denied',
-      requiresAuth: false,
-      hideInMenu: true,
-    },
-  },
-  {
-    path: '/404',
-    element: NotFoundPage(),
-    meta: {
-      title: 'Not Found',
-      requiresAuth: false,
-      hideInMenu: true,
-    },
-  },
-  {
-    path: '*',
-    element: <Navigate to="/404" replace />,
-  },
 ]
 
 /**
- * Convert AppRoute to react-router RouteObject
- * Handles redirect and nested routes
+ * Get route elements for protected routes (within MainLayout)
  */
-function convertToRouteObject(route: AppRoute): RouteObject {
-  // Handle index routes separately due to React Router's discriminated union type
-  if (route.index) {
+function getProtectedRouteElement(path: string): React.ReactNode {
+  switch (path) {
+    case '/':
+      return DashboardPage()
+    case '/catalog/products':
+      return ProductsPage()
+    case '/catalog/categories':
+      return CategoriesPage()
+    case '/partner/customers':
+      return CustomersPage()
+    case '/partner/suppliers':
+      return SuppliersPage()
+    case '/partner/warehouses':
+      return WarehousesPage()
+    case '/inventory/stock':
+      return StockListPage()
+    case '/trade/sales':
+      return SalesOrdersPage()
+    case '/trade/purchases':
+      return PurchaseOrdersPage()
+    case '/finance/receivables':
+      return ReceivablesPage()
+    case '/finance/payables':
+      return PayablesPage()
+    default:
+      return null
+  }
+}
+
+/**
+ * Convert AppRoute to react-router RouteObject for nested layout routes
+ */
+function convertToNestedRouteObject(route: AppRoute): RouteObject | null {
+  if (route.redirect) {
     return {
-      index: true,
-      element: route.element,
+      path: route.path,
+      element: <Navigate to={route.redirect} replace />,
     }
   }
 
-  const routeObject: RouteObject = {
-    path: route.path,
-  }
+  const element = getProtectedRouteElement(route.path || '')
 
-  if (route.redirect) {
-    routeObject.element = <Navigate to={route.redirect} replace />
-  } else if (route.element) {
-    routeObject.element = route.element
-  }
-
+  // For parent routes without direct element, only handle children
   if (route.children) {
-    routeObject.children = route.children.map(convertToRouteObject)
+    const childRoutes = route.children
+      .map(convertToNestedRouteObject)
+      .filter((r): r is RouteObject => r !== null)
+
+    if (element) {
+      return {
+        path: route.path,
+        element,
+        children: childRoutes,
+      }
+    }
+
+    // Return children directly for grouping routes
+    return {
+      path: route.path,
+      children: childRoutes,
+    }
   }
 
-  return routeObject
+  if (!element) {
+    return null
+  }
+
+  return {
+    path: route.path,
+    element,
+  }
 }
 
 /**
  * Get routes in react-router format
+ * Uses a layout route pattern for protected routes
  */
 export function getRouteObjects(): RouteObject[] {
-  return appRoutes.map(convertToRouteObject)
+  // Build nested routes for protected area
+  const protectedChildRoutes: RouteObject[] = []
+
+  for (const route of appRoutes) {
+    if (route.path === '/') {
+      // Dashboard as index route
+      protectedChildRoutes.push({
+        index: true,
+        element: DashboardPage(),
+      })
+    } else if (route.children) {
+      // Module with children
+      const childRoutes = route.children
+        .map(convertToNestedRouteObject)
+        .filter((r): r is RouteObject => r !== null)
+
+      protectedChildRoutes.push({
+        path: route.path?.replace(/^\//, ''), // Remove leading slash for relative path
+        children: childRoutes.map((child) => ({
+          ...child,
+          path: child.path?.replace(/^\/[^/]+\//, ''), // Make path relative
+        })),
+      })
+    }
+  }
+
+  return [
+    // Public routes (no layout)
+    {
+      path: '/login',
+      element: <GuestGuard>{LoginPage()}</GuestGuard>,
+    },
+    {
+      path: '/403',
+      element: ForbiddenPage(),
+    },
+    {
+      path: '/404',
+      element: NotFoundPage(),
+    },
+
+    // Protected routes (with layout)
+    {
+      path: '/',
+      element: (
+        <AuthGuard>
+          <MainLayout />
+        </AuthGuard>
+      ),
+      children: protectedChildRoutes,
+    },
+
+    // Catch-all redirect
+    {
+      path: '*',
+      element: <Navigate to="/404" replace />,
+    },
+  ]
 }
 
 /**

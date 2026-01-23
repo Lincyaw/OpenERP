@@ -1312,3 +1312,92 @@ setPageTitle('Products')
 - Use selector hooks (`useUser()`, `useTheme()`, etc.) for better performance
 - The `createStoreWithSelectors` utility can be used for new stores with auto-selectors
 
+
+---
+
+## 2026-01-23 - P0-FE-006: Layout Components (Header, Sidebar, Content) Complete
+
+### Completed
+- **P0-FE-006**: 布局组件 (Header, Sidebar, Content)
+
+### What was done
+1. Created MainLayout component at `src/components/layout/MainLayout.tsx`:
+   - Wraps protected routes with consistent layout structure
+   - Uses React Router's `<Outlet>` for nested route rendering
+   - Responsive margin adjustments based on sidebar collapse state
+
+2. Created Sidebar component at `src/components/layout/Sidebar.tsx`:
+   - Collapsible sidebar with Semi Design's Nav component
+   - Dynamic navigation menu generated from route configuration
+   - Active state highlighting based on current path
+   - Nested menu support for domain modules
+   - Logo area with ERP System branding
+   - Collapse button integrated with Zustand app store
+
+3. Created Header component at `src/components/layout/Header.tsx`:
+   - Fixed header with breadcrumb navigation
+   - Theme toggle (light/dark mode)
+   - Notification bell placeholder
+   - User avatar with dropdown menu (Profile, Settings, Logout)
+   - Responsive design for mobile
+
+4. Updated routes to use layout route pattern:
+   - Public routes (login, error pages) render without layout
+   - Protected routes wrapped in AuthGuard + MainLayout
+   - Cleaner route configuration with metadata-driven approach
+
+5. Added CSS variables for layout dimensions in `index.css`:
+   - `--header-height: 60px`
+   - `--sidebar-width: 220px`
+   - `--sidebar-collapsed-width: 60px`
+
+6. Updated Dashboard page:
+   - Removed logout button (now in header)
+   - Added statistics cards with icons
+   - Added quick action buttons
+
+### Files created/modified
+- `frontend/src/components/layout/MainLayout.tsx` (new)
+- `frontend/src/components/layout/MainLayout.css` (new)
+- `frontend/src/components/layout/Sidebar.tsx` (new)
+- `frontend/src/components/layout/Sidebar.css` (new)
+- `frontend/src/components/layout/Header.tsx` (new)
+- `frontend/src/components/layout/Header.css` (new)
+- `frontend/src/components/layout/index.ts` (updated with exports)
+- `frontend/src/router/routes.tsx` (updated to use MainLayout)
+- `frontend/src/pages/Dashboard.tsx` (updated UI)
+- `frontend/src/index.css` (added CSS variables)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (warnings expected for lazy-loaded routes)
+- `npm run build` passes
+
+### Layout Structure
+```
++----------------------------------+
+|          Header (fixed)          |
++--------+-------------------------+
+|        |                         |
+| Side-  |       Content           |
+| bar    |       (Outlet)          |
+| (fixed)|                         |
+|        |                         |
++--------+-------------------------+
+```
+
+### Key Features
+- Sidebar collapse persists via Zustand (localStorage)
+- Theme toggle applies `theme-mode` attribute for Semi Design
+- Breadcrumbs auto-generated from route path
+- User dropdown with profile, settings, logout options
+- Responsive design with mobile breakpoints
+
+### Notes for next developer
+- P0-FE-007 (Form components) is the next highest priority task
+- P0-FE-008 (Table components) can also be started
+- To add new pages, simply add route to appRoutes and corresponding page component
+- Sidebar navigation auto-updates from route configuration
+- Use `getBreadcrumbs(path)` utility for custom breadcrumb generation
+- Semi Design Nav uses `isCollapsed` prop, not CSS for collapse state
+

@@ -1,3 +1,4 @@
-// Layout components (Header, Sidebar, MainLayout, etc.)
-// This directory contains layout components for the application shell
-export {}
+// Layout components for the application shell
+export { MainLayout } from './MainLayout'
+export { Header } from './Header'
+export { Sidebar } from './Sidebar'

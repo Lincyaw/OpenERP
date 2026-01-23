@@ -1,5 +1,12 @@
 /* Reset and base styles for Semi Design */
 
+:root {
+  /* Layout dimensions */
+  --header-height: 60px;
+  --sidebar-width: 220px;
+  --sidebar-collapsed-width: 60px;
+}
+
 * {
   margin: 0;
   padding: 0;
