@@ -10,15 +10,20 @@ fi
 
 MAX_ITER=$1
 
+LOG_DIR=".claude/ralph/logs"
+mkdir -p "$LOG_DIR"
 
-echo "Starting Ralph loop, max iterations: $MAX_ITER"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+MAIN_LOG="$LOG_DIR/ralph_${TIMESTAMP}.log"
 
-for ((i=1; i<=MAX_ITER; i++)); do
-  echo "========================================"
-  echo "Iteration $i / $MAX_ITER"
-  echo "========================================"
+log() {
+  echo "$1" | tee -a "$MAIN_LOG"
+}
 
-  result=$(claude --dangerously-skip-permissions -p "@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt  progress.txt may be long, so use tail, or grep to search it by id, like `P0-BE-005`. \
+log "Starting Ralph loop, max iterations: $MAX_ITER"
+log "Logs will be saved to: $MAIN_LOG"
+
+PROMPT="@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt  progress.txt may be long, so use tail, or grep to search it by id, like 'P0-BE-005'. \
   1. Find the highest-priority feature to work on and work only on that feature. \
   This should be the one YOU decide has the highest priority - not necessarily the first item. \
   2. If the prd.json is not clear, you can reference .claude/ralph/docs/spec.md and .claude/ralph/docs/task.md, but be careful the files is long, use grep, tail, head to find relevant information. \
@@ -29,14 +34,40 @@ for ((i=1; i<=MAX_ITER; i++)); do
   7. Make a git commit of that feature. \
   ONLY WORK ON A SINGLE FEATURE. \
   8. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. \
-  If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> here.")
+  If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> here."
 
+for ((i=1; i<=MAX_ITER; i++)); do
+  log "========================================"
+  log "Iteration $i / $MAX_ITER - $(date)"
+  log "========================================"
+
+  ITER_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.log"
+  ITER_JSON_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.json"
+  
+  result=$(claude --dangerously-skip-permissions -p --verbose --output-format stream-json "$PROMPT" 2>&1 | tee "$ITER_JSON_LOG" | \
+    while IFS= read -r line; do
+      echo "$line" >> "$ITER_LOG"
+      if echo "$line" | grep -q '"type":"assistant"'; then
+        text=$(echo "$line" | jq -r '.message.content[]?.text // empty' 2>/dev/null)
+        if [ -n "$text" ]; then
+          echo "$text"
+        fi
+      fi
+    done)
+
+  echo "$result" >> "$MAIN_LOG"
   echo "$result"
 
   if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
-    echo "🎉 All tasks in the PRD are complete! Exiting loop."
+    log "🎉 All tasks in the PRD are complete! Exiting loop."
     break
   fi
 
-  echo "Iteration $i completed."
+  log "Iteration $i completed."
 done
+
+log "========================================"
+log "Ralph loop finished at $(date)"
+log "Full log saved to: $MAIN_LOG"
+log "Individual iteration logs in: $LOG_DIR/"
+log "JSON stream logs: $LOG_DIR/iter_*.json"
