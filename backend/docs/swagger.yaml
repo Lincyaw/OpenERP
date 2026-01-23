@@ -1,0 +1,144 @@
+basePath: /api/v1
+definitions:
+  dto.ErrorInfo:
+    properties:
+      code:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/dto.ValidationDetail'
+        type: array
+      help:
+        type: string
+      message:
+        type: string
+      request_id:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  dto.Meta:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/dto.ErrorInfo'
+      meta:
+        $ref: '#/definitions/dto.Meta'
+      success:
+        type: boolean
+    type: object
+  dto.ValidationDetail:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  handler.PingResponse:
+    properties:
+      message:
+        example: pong
+        type: string
+      timestamp:
+        example: "2026-01-23T12:00:00Z"
+        type: string
+    type: object
+  handler.SystemInfoResponse:
+    properties:
+      go_version:
+        example: go1.25.5
+        type: string
+      name:
+        example: ERP Backend API
+        type: string
+      uptime:
+        example: 1h30m45s
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@erp.example.com
+    name: API Support
+    url: https://github.com/erp/backend
+  description: 进销存系统后端 API - 基于 DDD 设计的库存管理系统
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: ERP Backend API
+  version: "1.0"
+paths:
+  /system/info:
+    get:
+      consumes:
+      - application/json
+      description: Returns basic system information including version and uptime
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SystemInfoResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: Get system information
+      tags:
+      - system
+  /system/ping:
+    get:
+      consumes:
+      - application/json
+      description: Simple ping endpoint to check if the API is responsive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PingResponse'
+              type: object
+      summary: Ping the API
+      tags:
+      - system
+securityDefinitions:
+  BearerAuth:
+    description: 'Bearer token authentication. Format: "Bearer {token}"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

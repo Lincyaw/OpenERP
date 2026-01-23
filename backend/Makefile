@@ -2,7 +2,7 @@
 # Provides common development tasks including testing and coverage
 
 .PHONY: help build test test-unit test-integration test-coverage test-coverage-html test-race \
-        lint fmt clean run migrate-up migrate-down migrate-create
+        lint fmt clean run migrate-up migrate-down migrate-create docs docs-check
 
 # Default target
 help:
@@ -17,6 +17,9 @@ help:
 	@echo "  test-coverage      Run tests with coverage report"
 	@echo "  test-coverage-html Generate HTML coverage report"
 	@echo "  test-coverage-ci   Generate coverage for CI (with threshold check)"
+	@echo ""
+	@echo "  docs               Generate OpenAPI documentation"
+	@echo "  docs-check         Verify OpenAPI docs are up-to-date"
 	@echo ""
 	@echo "  lint               Run linter"
 	@echo "  fmt                Format code"
@@ -164,11 +167,35 @@ clean:
 	rm -rf $(COVERAGE_DIR)
 
 # CI target - runs all checks
-ci: fmt-check lint test-coverage-ci
+ci: fmt-check lint docs-check test-coverage-ci
 	@echo "All CI checks passed!"
 
 # Development helpers
 dev-deps:
 	@echo "Installing development dependencies..."
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
 	@echo "Development dependencies installed."
+
+# API documentation targets
+docs:
+	@echo "Generating OpenAPI documentation..."
+	@if ! command -v swag > /dev/null 2>&1; then \
+		echo "swag not installed. Run: go install github.com/swaggo/swag/cmd/swag@latest"; \
+		exit 1; \
+	fi
+	swag init -g cmd/server/main.go -o docs --outputTypes yaml,json,go
+	@echo "OpenAPI documentation generated in docs/"
+
+docs-check:
+	@echo "Checking if OpenAPI docs are up-to-date..."
+	@mkdir -p /tmp/docs-check
+	@cp docs/swagger.yaml /tmp/docs-check/swagger.yaml.old 2>/dev/null || true
+	@swag init -g cmd/server/main.go -o /tmp/docs-check --outputTypes yaml
+	@if ! diff -q docs/swagger.yaml /tmp/docs-check/swagger.yaml > /dev/null 2>&1; then \
+		echo "ERROR: OpenAPI docs are out of date. Run 'make docs' to regenerate."; \
+		rm -rf /tmp/docs-check; \
+		exit 1; \
+	fi
+	@rm -rf /tmp/docs-check
+	@echo "OK: OpenAPI docs are up-to-date."

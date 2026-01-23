@@ -49,17 +49,17 @@ type Strategy interface {
 
 // BaseStrategy provides common implementation for strategies
 type BaseStrategy struct {
-	name        string
+	name         string
 	strategyType StrategyType
-	description string
+	description  string
 }
 
 // NewBaseStrategy creates a new BaseStrategy
 func NewBaseStrategy(name string, strategyType StrategyType, description string) BaseStrategy {
 	return BaseStrategy{
-		name:        name,
+		name:         name,
 		strategyType: strategyType,
-		description: description,
+		description:  description,
 	}
 }
 

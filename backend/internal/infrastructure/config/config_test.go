@@ -11,18 +11,18 @@ import (
 func TestLoad(t *testing.T) {
 	// Save original env vars and restore after tests
 	originalEnv := map[string]string{
-		"APP_NAME":            os.Getenv("APP_NAME"),
-		"APP_ENV":             os.Getenv("APP_ENV"),
-		"APP_PORT":            os.Getenv("APP_PORT"),
-		"DB_HOST":             os.Getenv("DB_HOST"),
-		"DB_PORT":             os.Getenv("DB_PORT"),
-		"DB_USER":             os.Getenv("DB_USER"),
-		"DB_PASSWORD":         os.Getenv("DB_PASSWORD"),
-		"DB_NAME":             os.Getenv("DB_NAME"),
-		"DB_SSL_MODE":         os.Getenv("DB_SSL_MODE"),
-		"DB_MAX_OPEN_CONNS":   os.Getenv("DB_MAX_OPEN_CONNS"),
-		"DB_MAX_IDLE_CONNS":   os.Getenv("DB_MAX_IDLE_CONNS"),
-		"JWT_SECRET":          os.Getenv("JWT_SECRET"),
+		"APP_NAME":             os.Getenv("APP_NAME"),
+		"APP_ENV":              os.Getenv("APP_ENV"),
+		"APP_PORT":             os.Getenv("APP_PORT"),
+		"DB_HOST":              os.Getenv("DB_HOST"),
+		"DB_PORT":              os.Getenv("DB_PORT"),
+		"DB_USER":              os.Getenv("DB_USER"),
+		"DB_PASSWORD":          os.Getenv("DB_PASSWORD"),
+		"DB_NAME":              os.Getenv("DB_NAME"),
+		"DB_SSL_MODE":          os.Getenv("DB_SSL_MODE"),
+		"DB_MAX_OPEN_CONNS":    os.Getenv("DB_MAX_OPEN_CONNS"),
+		"DB_MAX_IDLE_CONNS":    os.Getenv("DB_MAX_IDLE_CONNS"),
+		"JWT_SECRET":           os.Getenv("JWT_SECRET"),
 		"JWT_EXPIRATION_HOURS": os.Getenv("JWT_EXPIRATION_HOURS"),
 	}
 

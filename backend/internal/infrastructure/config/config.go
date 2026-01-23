@@ -64,12 +64,12 @@ type JWTConfig struct {
 
 // EventConfig holds event processing configuration
 type EventConfig struct {
-	ProcessorEnabled  bool
-	BatchSize         int
-	PollInterval      time.Duration
-	MaxRetries        int
-	CleanupEnabled    bool
-	CleanupRetention  time.Duration
+	ProcessorEnabled bool
+	BatchSize        int
+	PollInterval     time.Duration
+	MaxRetries       int
+	CleanupEnabled   bool
+	CleanupRetention time.Duration
 }
 
 // HTTPConfig holds HTTP server configuration
@@ -124,12 +124,12 @@ func Load() (*Config, error) {
 			Output: getEnv("LOG_OUTPUT", "stdout"),
 		},
 		Event: EventConfig{
-			ProcessorEnabled:  getEnvAsBool("EVENT_PROCESSOR_ENABLED", true),
-			BatchSize:         getEnvAsInt("EVENT_PROCESSOR_BATCH_SIZE", 100),
-			PollInterval:      getEnvAsDuration("EVENT_PROCESSOR_INTERVAL", 5*time.Second),
-			MaxRetries:        getEnvAsInt("EVENT_MAX_RETRIES", 5),
-			CleanupEnabled:    getEnvAsBool("EVENT_CLEANUP_ENABLED", true),
-			CleanupRetention:  getEnvAsDuration("EVENT_CLEANUP_RETENTION", 168*time.Hour),
+			ProcessorEnabled: getEnvAsBool("EVENT_PROCESSOR_ENABLED", true),
+			BatchSize:        getEnvAsInt("EVENT_PROCESSOR_BATCH_SIZE", 100),
+			PollInterval:     getEnvAsDuration("EVENT_PROCESSOR_INTERVAL", 5*time.Second),
+			MaxRetries:       getEnvAsInt("EVENT_MAX_RETRIES", 5),
+			CleanupEnabled:   getEnvAsBool("EVENT_CLEANUP_ENABLED", true),
+			CleanupRetention: getEnvAsDuration("EVENT_CLEANUP_RETENTION", 168*time.Hour),
 		},
 		HTTP: HTTPConfig{
 			ReadTimeout:       getEnvAsDuration("HTTP_READ_TIMEOUT", 15*time.Second),

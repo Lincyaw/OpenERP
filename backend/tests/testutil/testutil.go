@@ -25,9 +25,9 @@ func init() {
 
 // MockDB wraps a GORM database with sqlmock for testing.
 type MockDB struct {
-	DB     *gorm.DB
-	Mock   sqlmock.Sqlmock
-	SqlDB  *sql.DB
+	DB    *gorm.DB
+	Mock  sqlmock.Sqlmock
+	SqlDB *sql.DB
 }
 
 // NewMockDB creates a new mock database for testing.

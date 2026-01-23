@@ -920,3 +920,126 @@ npm run type-check   # TypeScript check
 - API types match backend `dto/response.go` format
 - Dev server proxies `/api` requests to backend on port 8080
 - ESLint + Prettier run automatically on lint:fix
+
+---
+
+## 2026-01-23 - P0-API-001: OpenAPI Specification and SDK Auto-Generation Complete
+
+### Completed
+- **P0-API-001**: OpenAPI 规范与 SDK 自动生成
+- **P0-FE-005**: HTTP 客户端封装 (Axios) - completed as part of this task
+
+### What was done
+1. Backend: Integrated swaggo/swag for OpenAPI generation:
+   - Added `github.com/swaggo/swag`, `github.com/swaggo/gin-swagger`, `github.com/swaggo/files` dependencies
+   - Added general API info annotations to `cmd/server/main.go` (title, version, description, security)
+   - Created Swagger UI endpoint at `/swagger/*any`
+   - Configured `@securityDefinitions.apikey BearerAuth` for JWT authentication
+
+2. Backend: Created example API with full swagger annotations:
+   - `internal/interfaces/http/handler/system.go` - SystemHandler with GetSystemInfo and Ping endpoints
+   - Full swagger annotations including `@Summary`, `@Description`, `@Tags`, `@Param`, `@Success`, `@Failure`, `@Router`
+   - Unit tests for SystemHandler in `system_test.go`
+
+3. Backend: Updated Makefile with documentation targets:
+   - `make docs` - Generate OpenAPI spec from Go annotations
+   - `make docs-check` - Verify OpenAPI docs are up-to-date (for CI)
+   - Updated `dev-deps` target to install swag CLI
+   - Updated CI target to include docs-check
+
+4. Frontend: Integrated orval for TypeScript SDK generation:
+   - Installed axios and orval dependencies
+   - Created `orval.config.ts` with configuration for tags-split mode
+   - Created `src/services/axios-instance.ts` with:
+     - Base axios instance with configurable base URL
+     - Request interceptor for JWT token injection and request ID
+     - Response interceptor for error handling (401, 403, 429, 500)
+     - Custom instance function for orval integration
+
+5. Frontend: Added npm scripts for API generation:
+   - `npm run api:generate` - Generate TypeScript SDK from OpenAPI spec
+   - `npm run api:watch` - Watch mode for continuous generation
+
+6. Generated TypeScript SDK:
+   - `src/api/system/system.ts` - System API client with typed functions
+   - `src/api/models/*.ts` - TypeScript interfaces for all DTOs
+   - Auto-generated from backend OpenAPI spec
+
+### Files created/modified
+**Backend:**
+- `backend/cmd/server/main.go` (added swagger annotations and imports)
+- `backend/internal/interfaces/http/handler/system.go` (new)
+- `backend/internal/interfaces/http/handler/system_test.go` (new)
+- `backend/docs/swagger.yaml` (generated)
+- `backend/docs/swagger.json` (generated)
+- `backend/docs/docs.go` (generated)
+- `backend/Makefile` (added docs targets)
+- `backend/go.mod` (added swagger dependencies)
+
+**Frontend:**
+- `frontend/package.json` (added api:generate scripts, axios, orval)
+- `frontend/orval.config.ts` (new)
+- `frontend/src/services/axios-instance.ts` (new)
+- `frontend/src/services/index.ts` (updated with exports)
+- `frontend/src/api/**/*.ts` (auto-generated SDK files)
+
+### Build Status
+- Backend: `go build ./...` passes
+- Backend: `go test ./...` passes all tests
+- Frontend: `npm run type-check` passes
+- Frontend: `npm run build` passes
+- Frontend: `npm run lint` passes
+
+### API Documentation
+Available at: `http://localhost:8080/swagger/index.html` when server is running
+
+### Example API Endpoints
+```
+GET /api/v1/system/info   - Get system information
+GET /api/v1/system/ping   - Ping the API
+```
+
+### Usage Examples
+
+**Backend: Adding a new API endpoint**
+```go
+// CreateProduct godoc
+// @Summary      Create a new product
+// @Description  Create a new product in the catalog
+// @Tags         products
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.CreateProductRequest true "Product creation request"
+// @Success      201 {object} dto.Response{data=dto.ProductResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Router       /products [post]
+func (h *ProductHandler) Create(c *gin.Context) {
+    // implementation
+}
+```
+
+**Frontend: Using the generated SDK**
+```typescript
+import { getSystem } from '@/services'
+
+const api = getSystem()
+
+// Fetch system info with full type safety
+const info = await api.getSystemInfo()
+console.log(info.data?.name)    // "ERP Backend API"
+console.log(info.data?.version) // "1.0.0"
+```
+
+### Workflow for Adding New APIs
+1. Add handler with swagger annotations in backend
+2. Run `make docs` in backend to regenerate OpenAPI spec
+3. Run `npm run api:generate` in frontend to regenerate TypeScript SDK
+4. Use the auto-generated typed client in frontend code
+
+### Notes for next developer
+- P0-FE-002 (Semi Design UI) is the next highest priority task
+- All generated files in `frontend/src/api/` are auto-generated - DO NOT edit manually
+- Run `make docs-check` to verify OpenAPI spec is up-to-date before committing
+- Swagger UI available at `/swagger/index.html` for API exploration
+- The axios instance handles JWT token injection automatically from localStorage
+- Use `customInstance` function for orval integration, not `axiosInstance` directly

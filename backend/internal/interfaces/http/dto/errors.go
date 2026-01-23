@@ -84,8 +84,8 @@ const (
 // ErrorCodeHTTPStatus maps error codes to HTTP status codes
 var ErrorCodeHTTPStatus = map[string]int{
 	// General errors
-	ErrCodeUnknown:   http.StatusInternalServerError,
-	ErrCodeInternal:  http.StatusInternalServerError,
+	ErrCodeUnknown:  http.StatusInternalServerError,
+	ErrCodeInternal: http.StatusInternalServerError,
 
 	// Validation errors -> 400 Bad Request
 	ErrCodeValidation:         http.StatusBadRequest,
@@ -95,10 +95,10 @@ var ErrorCodeHTTPStatus = map[string]int{
 	ErrCodeValidationLength:   http.StatusBadRequest,
 
 	// Auth errors
-	ErrCodeUnauthorized:  http.StatusUnauthorized,
-	ErrCodeForbidden:     http.StatusForbidden,
-	ErrCodeTokenExpired:  http.StatusUnauthorized,
-	ErrCodeTokenInvalid:  http.StatusUnauthorized,
+	ErrCodeUnauthorized: http.StatusUnauthorized,
+	ErrCodeForbidden:    http.StatusForbidden,
+	ErrCodeTokenExpired: http.StatusUnauthorized,
+	ErrCodeTokenInvalid: http.StatusUnauthorized,
 
 	// Resource errors
 	ErrCodeNotFound:            http.StatusNotFound,
@@ -113,7 +113,7 @@ var ErrorCodeHTTPStatus = map[string]int{
 	ErrCodeInsufficientBalance: http.StatusUnprocessableEntity,
 
 	// Input errors -> 400 Bad Request
-	ErrCodeBadRequest:  http.StatusBadRequest,
+	ErrCodeBadRequest:   http.StatusBadRequest,
 	ErrCodeInvalidInput: http.StatusBadRequest,
 	ErrCodeInvalidJSON:  http.StatusBadRequest,
 

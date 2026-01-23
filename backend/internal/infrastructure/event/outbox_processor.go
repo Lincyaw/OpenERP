@@ -12,21 +12,21 @@ import (
 
 // OutboxProcessorConfig holds configuration for the outbox processor
 type OutboxProcessorConfig struct {
-	BatchSize         int
-	PollInterval      time.Duration
-	CleanupEnabled    bool
-	CleanupRetention  time.Duration
-	CleanupInterval   time.Duration
+	BatchSize        int
+	PollInterval     time.Duration
+	CleanupEnabled   bool
+	CleanupRetention time.Duration
+	CleanupInterval  time.Duration
 }
 
 // DefaultOutboxProcessorConfig returns default configuration
 func DefaultOutboxProcessorConfig() OutboxProcessorConfig {
 	return OutboxProcessorConfig{
-		BatchSize:         100,
-		PollInterval:      5 * time.Second,
-		CleanupEnabled:    true,
-		CleanupRetention:  7 * 24 * time.Hour, // 7 days
-		CleanupInterval:   1 * time.Hour,
+		BatchSize:        100,
+		PollInterval:     5 * time.Second,
+		CleanupEnabled:   true,
+		CleanupRetention: 7 * 24 * time.Hour, // 7 days
+		CleanupInterval:  1 * time.Hour,
 	}
 }
 

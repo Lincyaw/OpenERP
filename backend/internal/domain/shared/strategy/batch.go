@@ -9,27 +9,27 @@ import (
 
 // Batch represents a product batch for batch management
 type Batch struct {
-	ID             string
-	TenantID       string
-	ProductID      string
-	WarehouseID    string
-	BatchNumber    string
-	Quantity       decimal.Decimal
-	AvailableQty   decimal.Decimal
-	UnitCost       decimal.Decimal
+	ID              string
+	TenantID        string
+	ProductID       string
+	WarehouseID     string
+	BatchNumber     string
+	Quantity        decimal.Decimal
+	AvailableQty    decimal.Decimal
+	UnitCost        decimal.Decimal
 	ManufactureDate time.Time
-	ExpiryDate     time.Time
-	ReceivedDate   time.Time
-	Status         string
+	ExpiryDate      time.Time
+	ReceivedDate    time.Time
+	Status          string
 }
 
 // BatchSelection represents a selection of batch for consumption
 type BatchSelection struct {
-	BatchID      string
-	BatchNumber  string
-	Quantity     decimal.Decimal
-	ExpiryDate   time.Time
-	UnitCost     decimal.Decimal
+	BatchID     string
+	BatchNumber string
+	Quantity    decimal.Decimal
+	ExpiryDate  time.Time
+	UnitCost    decimal.Decimal
 }
 
 // BatchSelectionContext provides context for batch selection

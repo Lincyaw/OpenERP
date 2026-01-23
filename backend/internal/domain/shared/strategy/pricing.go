@@ -9,15 +9,15 @@ import (
 
 // PricingContext provides context for pricing calculation
 type PricingContext struct {
-	TenantID      string
-	ProductID     string
-	CustomerID    string
-	CustomerType  string
-	Quantity      decimal.Decimal
-	BasePrice     decimal.Decimal
-	Currency      string
-	OrderDate     time.Time
-	PromotionIDs  []string
+	TenantID     string
+	ProductID    string
+	CustomerID   string
+	CustomerType string
+	Quantity     decimal.Decimal
+	BasePrice    decimal.Decimal
+	Currency     string
+	OrderDate    time.Time
+	PromotionIDs []string
 }
 
 // PricingResult contains the result of pricing calculation

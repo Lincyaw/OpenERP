@@ -24,15 +24,15 @@ func (m CostMethod) String() string {
 
 // StockEntry represents a stock entry for cost calculation
 type StockEntry struct {
-	ID           string
-	ProductID    string
-	WarehouseID  string
-	Quantity     decimal.Decimal
-	UnitCost     decimal.Decimal
-	TotalCost    decimal.Decimal
-	EntryDate    time.Time
-	BatchNumber  string
-	ReferenceID  string
+	ID            string
+	ProductID     string
+	WarehouseID   string
+	Quantity      decimal.Decimal
+	UnitCost      decimal.Decimal
+	TotalCost     decimal.Decimal
+	EntryDate     time.Time
+	BatchNumber   string
+	ReferenceID   string
 	ReferenceType string
 }
 
@@ -47,11 +47,11 @@ type CostContext struct {
 
 // CostResult contains the result of cost calculation
 type CostResult struct {
-	UnitCost      decimal.Decimal
-	TotalCost     decimal.Decimal
-	Method        CostMethod
-	EntriesUsed   []StockEntry
-	RemainingQty  decimal.Decimal
+	UnitCost     decimal.Decimal
+	TotalCost    decimal.Decimal
+	Method       CostMethod
+	EntriesUsed  []StockEntry
+	RemainingQty decimal.Decimal
 }
 
 // CostCalculationStrategy defines the interface for inventory cost calculation

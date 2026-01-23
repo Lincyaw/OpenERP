@@ -11,11 +11,39 @@ import (
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
+	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/erp/backend/internal/interfaces/http/router"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	_ "github.com/erp/backend/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @title           ERP Backend API
+// @version         1.0
+// @description     进销存系统后端 API - 基于 DDD 设计的库存管理系统
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    https://github.com/erp/backend
+// @contact.email  support@erp.example.com
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Bearer token authentication. Format: "Bearer {token}"
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 
 func main() {
 	// Load configuration
@@ -118,6 +146,9 @@ func main() {
 	// Health check endpoint (outside API versioning)
 	engine.GET("/health", healthHandler(db, log))
 
+	// Swagger documentation endpoint
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// Setup API routes using router
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))
 
@@ -160,6 +191,13 @@ func main() {
 		Register(inventoryRoutes).
 		Register(tradeRoutes).
 		Register(financeRoutes)
+
+	// Register system routes with swagger-documented handlers
+	systemHandler := handler.NewSystemHandler()
+	systemRoutes := router.NewDomainGroup("system", "/system")
+	systemRoutes.GET("/info", systemHandler.GetSystemInfo)
+	systemRoutes.GET("/ping", systemHandler.Ping)
+	r.Register(systemRoutes)
 
 	// Setup routes
 	r.Setup()
