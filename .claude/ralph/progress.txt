@@ -61,3 +61,63 @@
 - Config currently uses env vars directly; may integrate Viper in P0-BE-003
 - Main server is functional but minimal - add routes as APIs are developed
 - Shared kernel is ready for value objects (P0-BE-005)
+
+---
+
+## 2026-01-23 - P0-BE-002: Database Connection Configuration Complete
+
+### Completed
+- **P0-BE-002**: 数据库连接配置 (PostgreSQL)
+
+### What was done
+1. Created database connection module at `internal/infrastructure/persistence/database.go`:
+   - `Database` struct wrapping GORM DB instance
+   - `NewDatabase()` and `NewDatabaseWithLogger()` constructors
+   - Connection pool configuration (MaxOpenConns, MaxIdleConns, ConnMaxLifetime, ConnMaxIdleTime)
+   - `Close()`, `Ping()`, `Stats()` methods for connection management
+   - `Transaction()` method for transactional operations
+   - `WithTenant()` method for multi-tenant scoping (with empty tenant ID validation)
+
+2. Enhanced configuration with validation:
+   - Added `ConnMaxLifetime` and `ConnMaxIdleTime` config options
+   - Added production-specific validation (JWT secret, DB password, SSL mode)
+   - Added connection pool validation (MaxIdleConns <= MaxOpenConns)
+   - Changed DSN format to URL-style for proper escaping of special characters
+
+3. Integrated database into main server:
+   - Database connection on startup with graceful close on shutdown
+   - Health check endpoint now returns proper HTTP 503 when database is unhealthy
+   - Database status included in health response
+
+4. Security improvements:
+   - Production requires JWT secret (min 32 chars), DB password, and SSL enabled
+   - Empty tenant ID in `WithTenant()` panics to prevent data leakage
+   - DSN uses URL encoding to handle special characters in passwords
+
+5. Test coverage:
+   - Unit tests for `Database` struct methods using sqlmock
+   - Tests for `ConnectionStats` struct
+   - Tests for `WithTenant` including SQL injection prevention
+   - Tests for `Transaction` with commit and rollback scenarios
+   - Config validation tests for both development and production modes
+   - DSN generation tests including special character escaping
+
+### Files created/modified
+- `backend/internal/infrastructure/persistence/database.go` (new)
+- `backend/internal/infrastructure/persistence/database_test.go` (new)
+- `backend/internal/infrastructure/config/config.go` (enhanced with validation)
+- `backend/internal/infrastructure/config/config_test.go` (new)
+- `backend/cmd/server/main.go` (integrated database)
+- `backend/.env.example` (added new config options)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+
+### Notes for next developer
+- P0-BE-003 (Logger config) can now be started - integrate zap with database logging
+- P0-BE-004 (Database migrations) can now be started - database connection is ready
+- The `NewDatabaseWithLogger()` function allows custom log levels for debugging
+- `WithTenant()` requires non-empty tenant ID - use in middleware after auth
+- For integration tests, use testcontainers-go to spin up PostgreSQL
+- Health endpoint at `/health` includes database status

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/erp/backend/internal/infrastructure/config"
+	"github.com/erp/backend/internal/infrastructure/persistence"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +20,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	// Initialize database connection
+	db, err := persistence.NewDatabase(&cfg.Database)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Error closing database: %v", err)
+		}
+	}()
+	log.Println("Database connected successfully")
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -31,9 +44,18 @@ func main() {
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
+		if err := db.Ping(); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"status":   "unhealthy",
+				"time":     time.Now().Format(time.RFC3339),
+				"database": "error",
+			})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-			"time":   time.Now().Format(time.RFC3339),
+			"status":   "healthy",
+			"time":     time.Now().Format(time.RFC3339),
+			"database": "ok",
 		})
 	})
 

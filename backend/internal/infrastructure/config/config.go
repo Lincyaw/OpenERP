@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -23,14 +24,16 @@ type AppConfig struct {
 
 // DatabaseConfig holds database connection settings
 type DatabaseConfig struct {
-	Host         string
-	Port         int
-	User         string
-	Password     string
-	DBName       string
-	SSLMode      string
-	MaxOpenConns int
-	MaxIdleConns int
+	Host            string
+	Port            int
+	User            string
+	Password        string
+	DBName          string
+	SSLMode         string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime int // in minutes
+	ConnMaxIdleTime int // in minutes
 }
 
 // RedisConfig holds Redis connection settings
@@ -56,14 +59,16 @@ func Load() (*Config, error) {
 			Port: getEnv("APP_PORT", "8080"),
 		},
 		Database: DatabaseConfig{
-			Host:         getEnv("DB_HOST", "localhost"),
-			Port:         getEnvAsInt("DB_PORT", 5432),
-			User:         getEnv("DB_USER", "postgres"),
-			Password:     getEnv("DB_PASSWORD", ""),
-			DBName:       getEnv("DB_NAME", "erp"),
-			SSLMode:      getEnv("DB_SSL_MODE", "disable"),
-			MaxOpenConns: getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
-			MaxIdleConns: getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
+			Host:            getEnv("DB_HOST", "localhost"),
+			Port:            getEnvAsInt("DB_PORT", 5432),
+			User:            getEnv("DB_USER", "postgres"),
+			Password:        getEnv("DB_PASSWORD", ""),
+			DBName:          getEnv("DB_NAME", "erp"),
+			SSLMode:         getEnv("DB_SSL_MODE", "disable"),
+			MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
+			MaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
+			ConnMaxLifetime: getEnvAsInt("DB_CONN_MAX_LIFETIME", 60),
+			ConnMaxIdleTime: getEnvAsInt("DB_CONN_MAX_IDLE_TIME", 30),
 		},
 		Redis: RedisConfig{
 			Host:     getEnv("REDIS_HOST", "localhost"),
@@ -77,15 +82,60 @@ func Load() (*Config, error) {
 		},
 	}
 
+	// Validate configuration
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
 }
 
-// DSN returns the database connection string
+// validate performs validation on the configuration
+func (c *Config) validate() error {
+	// Validate connection pool settings
+	if c.Database.MaxOpenConns <= 0 {
+		return fmt.Errorf("DB_MAX_OPEN_CONNS must be positive")
+	}
+	if c.Database.MaxIdleConns < 0 {
+		return fmt.Errorf("DB_MAX_IDLE_CONNS cannot be negative")
+	}
+	if c.Database.MaxIdleConns > c.Database.MaxOpenConns {
+		return fmt.Errorf("DB_MAX_IDLE_CONNS (%d) cannot exceed DB_MAX_OPEN_CONNS (%d)",
+			c.Database.MaxIdleConns, c.Database.MaxOpenConns)
+	}
+
+	// Production-specific validations
+	if c.App.Env == "production" {
+		if c.JWT.Secret == "" {
+			return fmt.Errorf("JWT_SECRET is required in production")
+		}
+		if len(c.JWT.Secret) < 32 {
+			return fmt.Errorf("JWT_SECRET must be at least 32 characters in production")
+		}
+		if c.Database.Password == "" {
+			return fmt.Errorf("DB_PASSWORD is required in production")
+		}
+		if c.Database.SSLMode == "disable" {
+			return fmt.Errorf("DB_SSL_MODE cannot be 'disable' in production")
+		}
+	}
+
+	return nil
+}
+
+// DSN returns the database connection string with properly escaped values
 func (d *DatabaseConfig) DSN() string {
-	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		d.Host, d.Port, d.User, d.Password, d.DBName, d.SSLMode,
-	)
+	// Build URL-style DSN for proper handling of special characters
+	u := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(d.User, d.Password),
+		Host:   fmt.Sprintf("%s:%d", d.Host, d.Port),
+		Path:   d.DBName,
+	}
+	q := u.Query()
+	q.Set("sslmode", d.SSLMode)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 // getEnv gets an environment variable with a default fallback

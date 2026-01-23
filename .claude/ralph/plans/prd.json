@@ -1,6 +1,6 @@
 [
   {"id":"P0-BE-001","story":"项目脚手架搭建 (Go Module, 目录结构)","priority":"high","requirements":["创建 Go Module 项目结构","建立 DDD 分层目录","配置 go.mod 和基础依赖"],"passes":true},
-  {"id":"P0-BE-002","story":"数据库连接配置 (PostgreSQL)","priority":"high","requirements":["配置 GORM 连接 PostgreSQL","实现连接池配置","支持环境变量读取数据库配置"],"passes":false},
+  {"id":"P0-BE-002","story":"数据库连接配置 (PostgreSQL)","priority":"high","requirements":["配置 GORM 连接 PostgreSQL","实现连接池配置","支持环境变量读取数据库配置"],"passes":true},
   {"id":"P0-BE-003","story":"日志框架配置","priority":"high","requirements":["集成 zap 日志框架","支持不同环境日志级别","实现结构化日志输出"],"passes":false},
   {"id":"P0-BE-004","story":"数据库迁移工具配置 (golang-migrate)","priority":"high","requirements":["集成 golang-migrate","创建迁移脚本目录","实现迁移命令封装"],"passes":false},
   {"id":"P0-BE-005","story":"通用值对象实现 (Money, Quantity)","priority":"high","requirements":["实现 Money 值对象","实现 Quantity 值对象","编写值对象单元测试"],"passes":false},
