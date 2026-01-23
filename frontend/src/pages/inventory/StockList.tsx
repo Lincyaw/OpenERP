@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Spin, Tooltip } from '@douyinfe/semi-ui'
-import { IconRefresh, IconWarning } from '@douyinfe/semi-icons'
+import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {
   DataTable,
@@ -344,7 +344,7 @@ export default function StockListPage() {
               </span>
               {isBelowMin && (
                 <Tooltip content="低于安全库存">
-                  <IconWarning className="warning-icon" />
+                  <IconAlertTriangle className="warning-icon" />
                 </Tooltip>
               )}
             </div>

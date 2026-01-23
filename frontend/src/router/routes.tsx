@@ -41,6 +41,8 @@ const WarehouseEditPage = () => lazyLoad(() => import('@/pages/partner/Warehouse
 
 // Inventory module
 const StockListPage = () => lazyLoad(() => import('@/pages/inventory/StockList'))
+const StockDetailPage = () => lazyLoad(() => import('@/pages/inventory/StockDetail'))
+const StockTransactionsPage = () => lazyLoad(() => import('@/pages/inventory/StockTransactions'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
@@ -346,6 +348,14 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'suppliers/:id/edit', element: SupplierEditPage() },
           { path: 'warehouses/new', element: WarehouseNewPage() },
           { path: 'warehouses/:id/edit', element: WarehouseEditPage() }
+        )
+      }
+
+      // Add inventory module detail routes (not in menu)
+      if (route.path === '/inventory') {
+        childRoutes.push(
+          { path: 'stock/:id', element: StockDetailPage() },
+          { path: 'stock/:id/transactions', element: StockTransactionsPage() }
         )
       }
 

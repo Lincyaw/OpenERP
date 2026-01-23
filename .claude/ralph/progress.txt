@@ -4183,3 +4183,94 @@ curl -X PUT "http://localhost:8080/api/v1/inventory/thresholds" \
 - The stock detail and transaction routes (`/inventory/stock/:id/*`) need corresponding page components
 - The adjust stock route (`/inventory/adjust`) needs corresponding page component
 - Consider adding real-time refresh or polling for stock changes in production
+
+---
+
+## 2026-01-24 - P2-FE-002: Inventory Detail Page Complete
+
+### Completed
+- **P2-FE-002**: 库存明细页面 (批次/流水)
+
+### What was done
+1. Implemented Stock Detail page at `src/pages/inventory/StockDetail.tsx`:
+   - Display inventory item basic information (warehouse, product, update time)
+   - Display quantity information (available, locked, total) with visual indicators
+   - Display cost information (unit cost, total value)
+   - Display threshold settings (minimum, maximum quantity)
+   - Status tag showing current stock status (normal, low stock, above max, no stock)
+   - Transaction history table with pagination and sorting
+   - Navigation actions (back, refresh, adjust stock)
+
+2. Implemented Stock Transactions page at `src/pages/inventory/StockTransactions.tsx`:
+   - Dedicated page for viewing transaction history
+   - Transaction type filter (INBOUND, OUTBOUND, LOCK, UNLOCK, ADJUSTMENT)
+   - Date range filter for time-based filtering
+   - Sortable columns (transaction date, signed quantity)
+   - Display transaction details: date, type, quantity change, balance before/after, cost, source type/ID, reference, reason
+   - Summary header showing current inventory status
+
+3. Created CSS files for both pages following design system tokens:
+   - `StockDetail.css` - Styles for detail page with quantity grid, responsive layout
+   - `StockTransactions.css` - Styles for transactions page with quantity color indicators
+
+4. Updated router configuration:
+   - Added lazy-loaded StockDetailPage and StockTransactionsPage
+   - Added routes: `/inventory/stock/:id` and `/inventory/stock/:id/transactions`
+
+5. Fixed StockList page icon import (IconWarning → IconAlertTriangle)
+
+### Files created/modified
+- `frontend/src/pages/inventory/StockDetail.tsx` (new)
+- `frontend/src/pages/inventory/StockDetail.css` (new)
+- `frontend/src/pages/inventory/StockTransactions.tsx` (new)
+- `frontend/src/pages/inventory/StockTransactions.css` (new)
+- `frontend/src/pages/inventory/StockList.tsx` (fixed icon import)
+- `frontend/src/router/routes.tsx` (added inventory detail routes)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Page Features Summary
+
+**Stock Detail Page:**
+| Feature | Status |
+|---------|--------|
+| Basic info display (warehouse, product) | ✅ |
+| Quantity display (available, locked, total) | ✅ |
+| Low stock warning indicator | ✅ |
+| Cost information display | ✅ |
+| Threshold settings display | ✅ |
+| Status tag | ✅ |
+| Transaction history (embedded) | ✅ |
+| Navigation actions | ✅ |
+
+**Stock Transactions Page:**
+| Feature | Status |
+|---------|--------|
+| Transaction listing | ✅ |
+| Transaction type filter | ✅ |
+| Date range filter | ✅ |
+| Sortable columns | ✅ |
+| Pagination | ✅ |
+| Balance before/after display | ✅ |
+| Source type/ID display | ✅ |
+| Item info summary | ✅ |
+
+### API Endpoints Used
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | /inventory/items/:id | Get inventory item details |
+| GET | /inventory/items/:id/transactions | List transactions for item |
+| GET | /partner/warehouses | Get warehouse names |
+| GET | /catalog/products | Get product names |
+
+### Notes for next developer
+- **P2-FE-003** (库存调整页面): Next high priority - implement stock adjustment form
+- **P1-INT-001/002** (前后端联调): Integration testing can now proceed with inventory module
+- Transaction type labels and source type labels are localized to Chinese
+- Both pages follow responsive design with mobile breakpoints
+- Dark mode is supported via CSS variables
+- The adjust stock navigation requires implementing `/inventory/adjust` page
+
