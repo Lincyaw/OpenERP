@@ -28,13 +28,14 @@ backend/
 │   │   ├── config/            # Configuration
 │   │   ├── persistence/       # Database repositories
 │   │   ├── migration/         # Migration utilities
-│   │   └── eventbus/          # Event bus implementation
+│   │   ├── event/             # Event bus and outbox
+│   │   ├── logger/            # Structured logging
+│   │   └── strategy/          # Strategy registry and implementations
 │   └── interfaces/            # Interface layer
 │       └── http/              # HTTP handlers, DTOs, middleware
 ├── migrations/                 # Database migrations (SQL files)
-└── tests/                     # Tests
-    ├── unit/
-    └── integration/
+└── tests/
+    └── testutil/              # Test utilities and helpers
 ```
 
 ## Running
@@ -50,6 +51,75 @@ go build -o bin/migrate cmd/migrate/main.go
 # Test
 go test ./...
 ```
+
+## Testing
+
+The project uses [testify](https://github.com/stretchr/testify) for assertions and [sqlmock](https://github.com/DATA-DOG/go-sqlmock) for database mocking.
+
+### Running Tests
+
+```bash
+# Using Makefile (recommended)
+make test              # Run all tests
+make test-unit         # Run unit tests only
+make test-race         # Run with race detector
+make test-coverage     # Run with coverage report
+make test-coverage-html # Generate HTML coverage report
+
+# Using go test directly
+go test ./...                          # All tests
+go test -v ./internal/...              # Verbose output
+go test -cover ./...                   # With coverage
+go test -race ./...                    # Race detection
+go test -coverprofile=coverage.out ./... # Coverage file
+go tool cover -html=coverage.out       # View HTML report
+```
+
+### Test Utilities
+
+The `tests/testutil` package provides reusable test helpers:
+
+```go
+import "github.com/erp/backend/tests/testutil"
+
+// Mock database
+mockDB := testutil.NewMockDB(t)
+defer mockDB.Close()
+mockDB.Mock.ExpectQuery(...).WillReturnRows(...)
+
+// HTTP test context
+tc := testutil.NewTestContext(t)
+tc.SetRequestID("req-123")
+tc.SetTenantID("tenant-456")
+
+// Deterministic UUIDs for reproducible tests
+tenantID := testutil.TestTenantID()
+userID := testutil.TestUserID()
+
+// Event testing
+handler := testutil.NewMockEventHandler("ProductCreated")
+event := testutil.NewTestEvent("ProductCreated", tenantID)
+
+// Async assertions
+testutil.AssertEventually(t, func() bool {
+    return condition
+}, 5*time.Second, 100*time.Millisecond)
+```
+
+### Test Coverage
+
+Coverage threshold is 80%. Check coverage for CI:
+
+```bash
+make test-coverage-ci  # Fails if coverage < 80%
+```
+
+### Test Patterns
+
+- **Unit tests**: Co-located with source files (`*_test.go`)
+- **Table-driven tests**: Use `t.Run()` for subtests
+- **Mocking**: Use interface mocks, not concrete implementations
+- **Assertions**: Use `require` for setup, `assert` for verification
 
 ## Database Migrations
 

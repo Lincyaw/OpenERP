@@ -698,3 +698,128 @@ processor.Start(ctx)
 - All handlers should use `h.HandleError(c, err)` or `h.HandleDomainError(c, err)` for consistent error responses
 - Request ID is extracted from `X-Request-ID` header or context - set by RequestID middleware
 
+---
+
+## 2026-01-23 - P0-BE-010: Unit Test Framework Configuration Complete
+
+### Completed
+- **P0-BE-010**: 单元测试框架配置
+
+### What was done
+1. Testify integration already complete from P0-BE-001:
+   - `github.com/stretchr/testify v1.11.1` for assertions
+   - `github.com/DATA-DOG/go-sqlmock v1.5.2` for database mocking
+   - 24 existing test files with comprehensive coverage
+
+2. Created test coverage tooling:
+   - `backend/Makefile` with coverage targets:
+     - `make test` - Run all tests
+     - `make test-unit` - Run unit tests only
+     - `make test-race` - Run with race detector
+     - `make test-coverage` - Run with coverage report
+     - `make test-coverage-html` - Generate HTML coverage report
+     - `make test-coverage-ci` - CI coverage with 80% threshold check
+   - Coverage configuration for CI/CD integration
+
+3. Created test utility package at `tests/testutil/`:
+   - `testutil.go` - Core test utilities:
+     - `NewMockDB(t)` - Creates mock database with sqlmock
+     - `NewTestContext(t)` - Creates Gin test context
+     - `NewTestUUID(seed)` - Deterministic UUIDs for reproducible tests
+     - `TestTenantID()`, `TestUserID()` - Standard test identifiers
+     - `ContextWithTimeout()`, `ContextWithCancel()` - Context helpers
+     - `AssertEventually()`, `AssertNever()` - Async assertions
+   - `http.go` - HTTP testing utilities:
+     - `HTTPTestCase` struct for table-driven HTTP tests
+     - `RunHTTPTestCases()` - Batch test runner
+     - `JSONResponse()`, `JSONResponseAs[T]()` - Response parsing
+     - `AssertSuccessResponse()`, `AssertErrorResponse()` - API assertions
+     - `ToJSONReader()` - JSON body creation
+   - `event.go` - Event testing utilities:
+     - `MockEventHandler` - Thread-safe mock event handler
+     - `TestEvent` - Simple domain event for testing
+     - `NewTestEvent()`, `NewTestEventWithID()` - Event factories
+     - `WaitForCondition()`, `WaitForEventCount()` - Async event testing
+
+4. Test coverage for testutil package:
+   - `testutil_test.go` - 30 test cases
+   - `event_test.go` - 8 test cases
+   - Coverage: 81.2% of statements
+
+### Files created/modified
+- `backend/Makefile` (new)
+- `backend/tests/testutil/testutil.go` (new)
+- `backend/tests/testutil/http.go` (new)
+- `backend/tests/testutil/event.go` (new)
+- `backend/tests/testutil/testutil_test.go` (new)
+- `backend/tests/testutil/event_test.go` (new)
+- `backend/README.md` (updated with testing documentation)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (38 new tests in testutil package)
+- `make test-coverage` works correctly
+
+### Current Test Statistics
+| Package | Coverage |
+|---------|----------|
+| valueobject | 86.3% |
+| logger | 98.5% |
+| strategy | 90.5% |
+| dto | 89.5% |
+| handler | 100.0% |
+| router | 100.0% |
+| testutil | 81.2% |
+| event | 79.6% |
+| config | 74.1% |
+| middleware | 72.0% |
+| **Overall** | **63.0%** |
+
+### Usage Examples
+```go
+// Mock database testing
+mockDB := testutil.NewMockDB(t)
+defer mockDB.Close()
+mockDB.Mock.ExpectQuery(...).WillReturnRows(...)
+
+// HTTP handler testing
+tc := testutil.NewTestContext(t)
+tc.SetRequestID("req-123")
+tc.SetTenantID("tenant-456")
+handler(tc.Context)
+testutil.AssertSuccessResponse(t, tc)
+
+// Event testing
+handler := testutil.NewMockEventHandler("ProductCreated")
+event := testutil.NewTestEvent("ProductCreated", testutil.TestTenantID())
+testutil.WaitForEventCount(t, handler, 1, 5*time.Second)
+
+// Async assertions
+testutil.AssertEventually(t, func() bool {
+    return someCondition
+}, 5*time.Second, 100*time.Millisecond)
+```
+
+### Makefile Targets
+```bash
+make test              # Run all tests
+make test-unit         # Run unit tests (./internal/...)
+make test-race         # Run with race detector
+make test-coverage     # Run with coverage report
+make test-coverage-html # Generate HTML report
+make test-coverage-ci  # CI with 80% threshold
+make test-pkg PKG=./internal/domain/... # Test specific package
+make lint              # Run linter
+make fmt               # Format code
+make ci                # Run all CI checks
+```
+
+### Notes for next developer
+- P0-FE-001 (Frontend scaffolding) is the next highest priority incomplete task
+- All P0 backend tasks are now complete
+- Use `make test-coverage-html` to view detailed coverage report in browser
+- The testutil package provides helpers for database, HTTP, and event testing
+- Coverage threshold is 80% - CI will fail if below this
+- Use `testutil.NewTestUUID("seed")` for deterministic UUIDs in tests
+- Use `testutil.AssertEventually()` for async assertions instead of `time.Sleep()`
+
