@@ -3385,3 +3385,107 @@ Navigate to `/partner/suppliers` in the application to access the supplier list.
 - Warehouse types use API values: physical, virtual, consign, transit
 - The is_default field uses a Switch component instead of checkbox for better UX
 - Form uses capacity field (API model supports it) but mapping from initialData uses sort_order as placeholder since API doesn't return capacity
+
+---
+
+## 2026-01-24 - P2-BE-001, P2-BE-002, P2-BE-006, P2-BE-010: InventoryItem Aggregate Implementation Complete
+
+### Completed
+- **P2-BE-001**: InventoryItem 聚合根实现
+- **P2-BE-002**: StockBatch 实体实现
+- **P2-BE-006**: StockLock 实现 (乐观锁)
+- **P2-BE-010**: 库存领域事件实现
+
+### What was done
+1. **InventoryItem aggregate root** (`backend/internal/domain/inventory/inventory_item.go`):
+   - Core inventory aggregate with WarehouseID + ProductID composite identifier
+   - Fields: AvailableQuantity, LockedQuantity, UnitCost, MinQuantity, MaxQuantity
+   - Moving weighted average cost calculation on stock increase
+   - Methods: IncreaseStock, LockStock, UnlockStock, DeductStock, AdjustStock
+   - Helper methods: TotalQuantity, CanFulfill, IsBelowMinimum, IsAboveMaximum, GetTotalValue
+   - Active and expired lock management with ReleaseExpiredLocks
+
+2. **StockBatch entity** (`backend/internal/domain/inventory/stock_batch.go`):
+   - Batch tracking with BatchNumber, ProductionDate, ExpiryDate
+   - Quantity and UnitCost per batch
+   - Expiry detection: IsExpired, WillExpireWithin, DaysUntilExpiry
+   - Quantity management: Deduct, Add methods
+   - Availability check: HasStock, IsAvailable
+
+3. **StockLock entity** (`backend/internal/domain/inventory/stock_lock.go`):
+   - Lock reservation for pending orders
+   - Fields: Quantity, SourceType, SourceID, ExpireAt
+   - Status tracking: Released, Consumed, ReleasedAt
+   - Methods: IsActive, IsExpired, Release, Consume, TimeUntilExpiry
+
+4. **Domain events** (`backend/internal/domain/inventory/inventory_events.go`):
+   - StockIncreasedEvent: When stock is received
+   - StockLockedEvent: When stock is reserved
+   - StockUnlockedEvent: When reservation is cancelled
+   - StockDeductedEvent: When locked stock is shipped/consumed
+   - StockAdjustedEvent: When stock is adjusted via stock taking
+   - InventoryCostChangedEvent: When unit cost changes
+   - StockBelowThresholdEvent: When stock falls below minimum
+
+5. **Unit tests** (`backend/internal/domain/inventory/inventory_item_test.go`):
+   - 37 test cases covering all aggregate functionality
+   - Tests for: creation, stock increase, locking, unlocking, deduction, adjustment
+   - Tests for: threshold checks, fulfillment checks, event emission
+   - 100% pass rate
+
+### Key Design Decisions
+1. **Composite identifier**: InventoryItem is uniquely identified by WarehouseID + ProductID
+2. **Stock locking pattern**: Orders must first lock stock, then deduct when shipping
+3. **Moving weighted average cost**: Cost recalculated on each stock increase
+4. **Invariants enforced**:
+   - availableQuantity >= 0
+   - lockedQuantity >= 0
+   - Deduction requires valid lock
+   - Adjustment requires no outstanding locks
+5. **Lock expiration**: Locks have ExpireAt and can be automatically released
+
+### Files created
+- `backend/internal/domain/inventory/inventory_item.go`
+- `backend/internal/domain/inventory/stock_batch.go`
+- `backend/internal/domain/inventory/stock_lock.go`
+- `backend/internal/domain/inventory/inventory_events.go`
+- `backend/internal/domain/inventory/inventory_item_test.go`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+
+### Usage Examples
+```go
+// Create inventory item
+item, err := NewInventoryItem(tenantID, warehouseID, productID)
+
+// Increase stock with batch
+batchInfo := &BatchInfo{
+    BatchNumber: "BATCH-001",
+    ExpiryDate:  &expiryDate,
+}
+err = item.IncreaseStock(decimal.NewFromInt(100), valueobject.NewMoneyCNYFromFloat(10.00), batchInfo)
+
+// Lock stock for order
+lock, err := item.LockStock(decimal.NewFromInt(30), "sales_order", "SO-001", time.Now().Add(time.Hour))
+
+// Deduct when shipping
+err = item.DeductStock(lock.ID)
+
+// Or unlock if order cancelled
+err = item.UnlockStock(lock.ID)
+
+// Adjust during stock taking
+err = item.AdjustStock(decimal.NewFromInt(95), "Stock taking - missing 5 units")
+```
+
+### Notes for next developer
+- **P2-BE-003** (Cost calculation strategies): Can now be integrated with InventoryItem.IncreaseStock
+- **P2-BE-004** (Batch management strategies): Can now be integrated with StockBatch
+- **P2-BE-005** (InventoryTransaction): Should be created to record all inventory movements
+- **P2-BE-007** (Repository): Should implement persistence for InventoryItem, StockBatch, StockLock
+- Database migration needed to create tables for inventory_items, stock_batches, stock_locks
+- Events should be registered with EventSerializer for Outbox pattern
+- Consider adding product name/code denormalization for query performance
+
