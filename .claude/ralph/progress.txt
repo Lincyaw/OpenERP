@@ -1668,3 +1668,185 @@ const { fontScale, setFontScale } = useFontScale()
 - Accessibility utilities (`sr-only`, `skip-link`, etc.) are available globally
 - Font scaling works via `data-font-scale` attribute on `<html>` element
 - Reduced motion is automatically respected via CSS `prefers-reduced-motion` media query
+
+
+---
+
+## 2026-01-24 - P0-FE-008: Common Table Components Complete
+
+### Completed
+- **P0-FE-008**: 通用表格组件
+
+### What was done
+1. Created comprehensive table component system at `src/components/common/table/`:
+   - `types.ts` - Type definitions for DataTable, columns, actions, filters, sorting
+   - `useTableState.ts` - Hook for managing pagination, sorting, and filtering state
+   - `DataTable.tsx` - Main table component based on Semi Design Table
+   - `DataTable.css` - Styles following design system tokens
+   - `TableActions.tsx` - Row action buttons with dropdown overflow and confirmation support
+   - `TableActions.css` - Action button styles
+   - `TableToolbar.tsx` - Search, filters, and action buttons toolbar
+   - `TableToolbar.css` - Toolbar styles
+   - `index.ts` - Module exports
+
+2. DataTable features implemented:
+   - Server-side pagination with configurable page sizes
+   - Column sorting (click to toggle asc/desc/none)
+   - Row selection with checkbox/radio support
+   - Row actions with automatic overflow to dropdown menu
+   - Confirmation dialogs for dangerous actions
+   - Loading state with spinner overlay
+   - Empty state with customizable content
+   - Sticky header support
+   - Resizable columns
+   - Expandable rows
+
+3. useTableState hook features:
+   - Manages pagination, sort, and filter state
+   - Resets to page 1 when sort/filter changes
+   - `toApiParams()` converts state to API request parameters
+   - `handleStateChange()` for controlled updates from DataTable
+
+4. TableToolbar component:
+   - Search input with debounce support
+   - Primary action button (e.g., "Add New")
+   - Secondary action buttons
+   - Filter slot for custom filter components
+   - Bulk action bar when rows are selected
+
+5. TableActions component:
+   - Direct action buttons (up to 3 visible by default)
+   - Overflow dropdown for additional actions
+   - Popconfirm for actions requiring confirmation
+   - Modal fallback for dropdown items with confirmation
+   - Supports disabled/hidden states per record
+
+### Files created
+- `frontend/src/components/common/table/types.ts`
+- `frontend/src/components/common/table/useTableState.ts`
+- `frontend/src/components/common/table/DataTable.tsx`
+- `frontend/src/components/common/table/DataTable.css`
+- `frontend/src/components/common/table/TableActions.tsx`
+- `frontend/src/components/common/table/TableActions.css`
+- `frontend/src/components/common/table/TableToolbar.tsx`
+- `frontend/src/components/common/table/TableToolbar.css`
+- `frontend/src/components/common/table/index.ts`
+
+### Files modified
+- `frontend/src/components/common/index.ts` (added table exports)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Usage Examples
+
+**Basic DataTable:**
+```tsx
+import { DataTable, useTableState, DataTableColumn, TableAction } from '@/components/common'
+
+interface Product {
+  id: string
+  name: string
+  sku: string
+  price: number
+  status: 'active' | 'inactive'
+}
+
+const columns: DataTableColumn<Product>[] = [
+  { title: '商品名称', dataIndex: 'name', sortable: true },
+  { title: 'SKU', dataIndex: 'sku', width: 120 },
+  { title: '价格', dataIndex: 'price', align: 'right', sortable: true },
+  { title: '状态', dataIndex: 'status', render: (status) => <StatusTag status={status} /> },
+]
+
+const actions: TableAction<Product>[] = [
+  { key: 'edit', label: '编辑', onClick: (record) => handleEdit(record) },
+  {
+    key: 'delete',
+    label: '删除',
+    type: 'danger',
+    onClick: (record) => handleDelete(record),
+    confirm: { title: '确认删除', content: '删除后无法恢复' },
+  },
+]
+
+function ProductList() {
+  const { state, handleStateChange, toApiParams } = useTableState({
+    defaultPageSize: 20,
+    defaultSortField: 'created_at',
+    defaultSortOrder: 'desc',
+  })
+
+  const { data, isLoading } = useQuery(['products', toApiParams()], () =>
+    fetchProducts(toApiParams())
+  )
+
+  return (
+    <DataTable
+      data={data?.data || []}
+      columns={columns}
+      rowKey="id"
+      loading={isLoading}
+      pagination={data?.meta}
+      actions={actions}
+      onStateChange={handleStateChange}
+      sortState={state.sort}
+    />
+  )
+}
+```
+
+**With TableToolbar:**
+```tsx
+import { TableToolbar, BulkActionBar, DataTable } from '@/components/common'
+
+function ProductListPage() {
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+
+  return (
+    <div>
+      <TableToolbar
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="搜索商品名称、SKU..."
+        primaryAction={{
+          label: '新增商品',
+          onClick: () => navigate('/catalog/products/new'),
+        }}
+      />
+
+      {selectedRowKeys.length > 0 && (
+        <BulkActionBar
+          selectedCount={selectedRowKeys.length}
+          onCancel={() => setSelectedRowKeys([])}
+        >
+          <Button onClick={handleBulkEnable}>批量启用</Button>
+          <Button type="danger" onClick={handleBulkDelete}>批量删除</Button>
+        </BulkActionBar>
+      )}
+
+      <DataTable
+        data={products}
+        columns={columns}
+        rowKey="id"
+        rowSelection={{
+          selectedRowKeys,
+          onChange: setSelectedRowKeys,
+        }}
+      />
+    </div>
+  )
+}
+```
+
+### Notes for next developer
+- P0-FE-009 (Vitest testing) is the next highest priority task
+- P1-FE-001 (Product list page) can now use these table components
+- All table components follow the design system tokens from `src/styles/tokens/`
+- DataTable requires `rowKey` prop (string field name or function)
+- Use `useTableState` hook for server-side pagination/sorting
+- Actions with `confirm` property show Popconfirm before executing
+- For large datasets, enable `sticky` prop for sticky header
+- Row selection uses string[] for selectedRowKeys (convert from API if needed)
