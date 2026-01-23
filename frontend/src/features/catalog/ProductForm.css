@@ -1,0 +1,14 @@
+.product-form-page {
+  padding: var(--spacing-6) 0;
+}
+
+.product-form-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.product-form-header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}

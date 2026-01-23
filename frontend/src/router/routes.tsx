@@ -24,6 +24,8 @@ const ForbiddenPage = () => lazyLoad(() => import('@/pages/Forbidden'))
 
 // Catalog module
 const ProductsPage = () => lazyLoad(() => import('@/pages/catalog/Products'))
+const ProductNewPage = () => lazyLoad(() => import('@/pages/catalog/ProductNew'))
+const ProductEditPage = () => lazyLoad(() => import('@/pages/catalog/ProductEdit'))
 const CategoriesPage = () => lazyLoad(() => import('@/pages/catalog/Categories'))
 
 // Partner module
@@ -229,6 +231,10 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return DashboardPage()
     case '/catalog/products':
       return ProductsPage()
+    case '/catalog/products/new':
+      return ProductNewPage()
+    case '/catalog/products/:id/edit':
+      return ProductEditPage()
     case '/catalog/categories':
       return CategoriesPage()
     case '/partner/customers':
@@ -316,6 +322,14 @@ export function getRouteObjects(): RouteObject[] {
       const childRoutes = route.children
         .map(convertToNestedRouteObject)
         .filter((r): r is RouteObject => r !== null)
+
+      // Add module-specific detail routes (not in menu)
+      if (route.path === '/catalog') {
+        childRoutes.push(
+          { path: 'products/new', element: ProductNewPage() },
+          { path: 'products/:id/edit', element: ProductEditPage() }
+        )
+      }
 
       protectedChildRoutes.push({
         path: route.path?.replace(/^\//, ''), // Remove leading slash for relative path

@@ -295,9 +295,7 @@ export default function ProductsPage() {
         dataIndex: 'code',
         width: 120,
         sortable: true,
-        render: (code: unknown) => (
-          <span className="product-code">{(code as string) || '-'}</span>
-        ),
+        render: (code: unknown) => <span className="product-code">{(code as string) || '-'}</span>,
       },
       {
         title: '商品名称',
