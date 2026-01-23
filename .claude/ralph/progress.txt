@@ -1850,3 +1850,142 @@ function ProductListPage() {
 - Actions with `confirm` property show Popconfirm before executing
 - For large datasets, enable `sticky` prop for sticky header
 - Row selection uses string[] for selectedRowKeys (convert from API if needed)
+
+
+---
+
+## 2026-01-24 - P0-FE-009: Frontend Test Framework Configuration (Vitest) Complete
+
+### Completed
+- **P0-FE-009**: 前端测试框架配置 (Vitest)
+
+### What was done
+1. Installed testing dependencies:
+   - `vitest` v4.x - Test runner compatible with Vite
+   - `@testing-library/react` v16.x - React component testing utilities
+   - `@testing-library/jest-dom` v6.x - Custom DOM matchers
+   - `@testing-library/user-event` v14.x - User interaction simulation
+   - `@vitest/coverage-v8` v4.x - Code coverage with V8 provider
+   - `jsdom` v27.x - DOM environment for tests
+
+2. Configured Vitest in `vite.config.ts`:
+   - Using `vitest/config` for proper TypeScript support
+   - JSDOM environment for browser-like testing
+   - Global test APIs (describe, it, expect)
+   - Coverage configuration with 80% threshold
+   - Proper exclusions for auto-generated files and test files
+
+3. Created test setup at `src/tests/setup.ts`:
+   - Jest-DOM matchers integration
+   - Auto-cleanup after each test
+   - Browser API mocks (matchMedia, ResizeObserver, IntersectionObserver)
+   - Storage mocks (localStorage, sessionStorage)
+   - Console suppression for cleaner test output
+
+4. Created test utilities at `src/tests/`:
+   - `utils.tsx` - Custom render functions with providers:
+     - `renderWithProviders()` - Renders with Router context
+     - `renderWithUser()` - Renders with user-event setup
+     - Mock API response helpers (success, error, paginated)
+   - `index.ts` - Re-exports for convenient importing
+
+5. Added path alias `@tests/*` in both Vite and TypeScript configs
+
+6. Added npm scripts:
+   - `npm run test` - Interactive watch mode
+   - `npm run test:run` - Single run for CI
+   - `npm run test:ui` - Vitest UI (requires @vitest/ui)
+   - `npm run test:coverage` - Run with coverage report
+   - `npm run test:watch` - Watch mode
+
+7. Created example tests:
+   - `src/store/authStore.test.ts` - 10 tests for Zustand auth store
+   - `src/components/common/form/validation.test.ts` - 27 tests for validation schemas
+   - `src/tests/utils.test.tsx` - 12 tests for test utilities
+
+### Files created/modified
+- `frontend/package.json` (added test dependencies and scripts)
+- `frontend/vite.config.ts` (added Vitest configuration)
+- `frontend/tsconfig.app.json` (added vitest types and @tests alias)
+- `frontend/src/tests/setup.ts` (new)
+- `frontend/src/tests/utils.tsx` (new)
+- `frontend/src/tests/index.ts` (new)
+- `frontend/src/tests/utils.test.tsx` (new)
+- `frontend/src/store/authStore.test.ts` (new)
+- `frontend/src/components/common/form/validation.test.ts` (new)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+- `npm run test:run` passes (49 tests)
+
+### Test Statistics
+| Test File | Tests |
+|-----------|-------|
+| authStore.test.ts | 10 |
+| validation.test.ts | 27 |
+| utils.test.tsx | 12 |
+| **Total** | **49** |
+
+### Usage Examples
+
+**Running tests:**
+```bash
+npm run test           # Interactive watch mode
+npm run test:run       # Single run (CI)
+npm run test:coverage  # With coverage report
+```
+
+**Writing a component test:**
+```tsx
+import { describe, it, expect } from 'vitest'
+import { renderWithProviders, screen, waitFor } from '@tests'
+
+describe('MyComponent', () => {
+  it('should render correctly', async () => {
+    const { user } = renderWithProviders(<MyComponent />)
+    
+    expect(screen.getByText('Hello')).toBeInTheDocument()
+    
+    await user.click(screen.getByRole('button'))
+    
+    await waitFor(() => {
+      expect(screen.getByText('Clicked!')).toBeInTheDocument()
+    })
+  })
+})
+```
+
+**Writing a store test:**
+```tsx
+import { describe, it, expect, beforeEach } from 'vitest'
+import { act } from '@testing-library/react'
+import { useMyStore } from '@store/myStore'
+
+describe('useMyStore', () => {
+  beforeEach(() => {
+    // Reset store state
+    act(() => {
+      useMyStore.getState().reset()
+    })
+  })
+
+  it('should update state', () => {
+    act(() => {
+      useMyStore.getState().setValue('test')
+    })
+    
+    expect(useMyStore.getState().value).toBe('test')
+  })
+})
+```
+
+### Notes for next developer
+- All P0 frontend tasks are now complete (except prototype design tasks P0-PD-*)
+- P1-FE-* tasks (Product/Partner features) can now begin
+- Use `@tests` import alias for test utilities
+- Run `npm run test:coverage` to check coverage (80% threshold enforced)
+- Browser API mocks are pre-configured in setup.ts
+- For async tests, use `waitFor()` instead of `setTimeout()`
+- Storage mocks reset before each test automatically
