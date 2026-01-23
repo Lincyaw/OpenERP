@@ -5,29 +5,14 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/erp/backend/internal/interfaces/http/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
 
-// ValidationError represents a single validation error
-type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
-
-// ValidationErrorResponse represents the validation error response
-type ValidationErrorResponse struct {
-	Success bool              `json:"success"`
-	Error   ValidationErrInfo `json:"error"`
-}
-
-// ValidationErrInfo contains validation error details
-type ValidationErrInfo struct {
-	Code    string            `json:"code"`
-	Message string            `json:"message"`
-	Details []ValidationError `json:"details,omitempty"`
-}
+// RequestIDKey is the context key for request ID
+const RequestIDKey = "X-Request-ID"
 
 // SetupValidator configures the validator with custom tags
 func SetupValidator() {
@@ -47,31 +32,40 @@ func SetupValidator() {
 }
 
 // FormatValidationErrors formats validation errors into a standard response
-func FormatValidationErrors(err error) ValidationErrorResponse {
-	var errors []ValidationError
+func FormatValidationErrors(err error, requestID string) dto.Response {
+	var details []dto.ValidationDetail
 
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		for _, e := range validationErrors {
-			errors = append(errors, ValidationError{
+			details = append(details, dto.ValidationDetail{
 				Field:   e.Field(),
 				Message: getValidationMessage(e),
 			})
 		}
 	}
 
-	return ValidationErrorResponse{
-		Success: false,
-		Error: ValidationErrInfo{
-			Code:    "VALIDATION_ERROR",
-			Message: "Request validation failed",
-			Details: errors,
-		},
-	}
+	return dto.NewValidationErrorResponse(
+		"Request validation failed",
+		requestID,
+		details,
+	)
 }
 
 // HandleValidationError returns a validation error response
 func HandleValidationError(c *gin.Context, err error) {
-	c.JSON(http.StatusBadRequest, FormatValidationErrors(err))
+	requestID := getRequestIDFromContext(c)
+	c.JSON(http.StatusBadRequest, FormatValidationErrors(err, requestID))
+}
+
+// getRequestIDFromContext extracts request ID from gin context
+func getRequestIDFromContext(c *gin.Context) string {
+	if id := c.GetString(RequestIDKey); id != "" {
+		return id
+	}
+	if id := c.GetHeader(RequestIDKey); id != "" {
+		return id
+	}
+	return ""
 }
 
 // getValidationMessage returns a human-readable validation message

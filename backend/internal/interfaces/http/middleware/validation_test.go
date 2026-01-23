@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/erp/backend/internal/interfaces/http/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -53,12 +54,12 @@ func TestFormatValidationErrors(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
-		var resp ValidationErrorResponse
+		var resp dto.Response
 		err := json.Unmarshal(w.Body.Bytes(), &resp)
 		require.NoError(t, err)
 
 		assert.False(t, resp.Success)
-		assert.Equal(t, "VALIDATION_ERROR", resp.Error.Code)
+		assert.Equal(t, dto.ErrCodeValidation, resp.Error.Code)
 		assert.Equal(t, "Request validation failed", resp.Error.Message)
 		assert.Len(t, resp.Error.Details, 2)
 	})
@@ -150,6 +151,6 @@ func TestHandleValidationError(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, w.Body.String(), "VALIDATION_ERROR")
+		assert.Contains(t, w.Body.String(), dto.ErrCodeValidation)
 	})
 }

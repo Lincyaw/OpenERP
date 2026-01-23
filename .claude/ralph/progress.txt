@@ -557,11 +557,144 @@ processor.Start(ctx)
 7. RateLimit - Token bucket rate limiting (100 req/min default)
 
 ### Notes for next developer
-- P0-BE-009 (API response format) is partially done - Response DTOs exist in dto/response.go
 - P0-BE-010 (Unit test framework) is partially done - testify already integrated
 - To add new domain APIs, create handlers and register with DomainGroup
 - Rate limiter can be customized per route using `RateLimitByKey()`
 - CORS can be configured via environment variables
 - For production, set HTTP_TRUSTED_PROXIES if behind a reverse proxy
 - Validation middleware integrates with Gin's ShouldBindJSON
+
+---
+
+## 2026-01-23 - P0-BE-009: API Response Format Unification Complete
+
+### Completed
+- **P0-BE-009**: API 响应格式统一
+
+### What was done
+1. Created comprehensive error code constants at `internal/interfaces/http/dto/errors.go`:
+   - Standardized error code format: `ERR_<CATEGORY>_<DESCRIPTION>`
+   - Categories: General, Validation, Authentication, Resource, Business Rule, Input, Rate Limiting
+   - All error codes mapped to appropriate HTTP status codes
+   - Legacy error code mapping for backward compatibility with existing domain errors
+
+2. Enhanced Response structure in `internal/interfaces/http/dto/response.go`:
+   - `ErrorInfo` now includes:
+     - `Code` - Standardized error code
+     - `Message` - Human-readable error message
+     - `RequestID` - Request correlation ID (from X-Request-ID header)
+     - `Timestamp` - When the error occurred
+     - `Details` - Array of validation errors (field + message)
+     - `Help` - Optional documentation URL
+   - New response factory functions:
+     - `NewErrorResponseWithRequestID()` - Error with request correlation
+     - `NewValidationErrorResponse()` - Validation errors with field details
+     - `NewErrorResponseWithDetails()` - Error with additional details
+     - `NewErrorResponseWithHelp()` - Error with help URL
+
+3. Updated BaseHandler in `internal/interfaces/http/handler/base.go`:
+   - All error methods now include RequestID from context/header
+   - New methods: `Unauthorized()`, `Forbidden()`, `Conflict()`, `TooManyRequests()`, `UnprocessableEntity()`
+   - `ErrorWithCode()` - Derives HTTP status from error code automatically
+   - `ValidationError()` - Sends validation error with field details
+   - `HandleError()` - Generic error handler for any error type
+   - `HandleDomainError()` - Enhanced to normalize legacy error codes
+
+4. Updated validation middleware in `internal/interfaces/http/middleware/validation.go`:
+   - Now uses unified `dto.Response` structure
+   - Includes request ID in validation error responses
+   - Uses standardized `ERR_VALIDATION` error code
+
+5. Comprehensive test coverage:
+   - `dto/errors_test.go` - 14 test cases for error codes, HTTP status mapping, code normalization
+   - `handler/base_test.go` - 15 test cases for all handler methods and domain error handling
+   - Coverage: dto=88.2%, handler=100%
+
+### Error Code Reference
+
+| Category | Code | HTTP Status |
+|----------|------|-------------|
+| General | `ERR_UNKNOWN`, `ERR_INTERNAL` | 500 |
+| Validation | `ERR_VALIDATION`, `ERR_VALIDATION_*` | 400 |
+| Auth | `ERR_UNAUTHORIZED`, `ERR_FORBIDDEN`, `ERR_TOKEN_*` | 401/403 |
+| Resource | `ERR_NOT_FOUND`, `ERR_ALREADY_EXISTS`, `ERR_CONFLICT` | 404/409 |
+| Business | `ERR_INVALID_STATE`, `ERR_INSUFFICIENT_*` | 422 |
+| Input | `ERR_BAD_REQUEST`, `ERR_INVALID_INPUT`, `ERR_INVALID_JSON` | 400 |
+| Rate Limit | `ERR_RATE_LIMITED`, `ERR_TOO_MANY_REQUESTS` | 429 |
+
+### Files created/modified
+- `backend/internal/interfaces/http/dto/errors.go` (new)
+- `backend/internal/interfaces/http/dto/errors_test.go` (new)
+- `backend/internal/interfaces/http/dto/response.go` (enhanced)
+- `backend/internal/interfaces/http/handler/base.go` (enhanced)
+- `backend/internal/interfaces/http/handler/base_test.go` (new)
+- `backend/internal/interfaces/http/middleware/validation.go` (updated to use unified response)
+- `backend/internal/interfaces/http/middleware/validation_test.go` (updated)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+
+### Example API Response Formats
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "data": { "id": "123", "name": "Example" }
+}
+```
+
+**Success with Pagination:**
+```json
+{
+  "success": true,
+  "data": [...],
+  "meta": {
+    "total": 100,
+    "page": 1,
+    "page_size": 10,
+    "total_pages": 10
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERR_NOT_FOUND",
+    "message": "Resource not found",
+    "request_id": "req-abc-123",
+    "timestamp": "2026-01-23T10:30:00Z"
+  }
+}
+```
+
+**Validation Error Response:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERR_VALIDATION",
+    "message": "Request validation failed",
+    "request_id": "req-def-456",
+    "timestamp": "2026-01-23T10:30:00Z",
+    "details": [
+      { "field": "email", "message": "Invalid email format" },
+      { "field": "age", "message": "Must be at least 18" }
+    ]
+  }
+}
+```
+
+### Notes for next developer
+- P0-BE-010 (Unit test framework) can now be started - testify already integrated, patterns established
+- P0-FE-001 (Frontend scaffolding) can use this error format for consistent error handling
+- Legacy domain error codes (e.g., "NOT_FOUND") are automatically normalized to new format (e.g., "ERR_NOT_FOUND")
+- Use `dto.GetHTTPStatus(code)` to get the HTTP status for any error code
+- Use `dto.NormalizeErrorCode(code)` if you need to convert legacy codes
+- All handlers should use `h.HandleError(c, err)` or `h.HandleDomainError(c, err)` for consistent error responses
+- Request ID is extracted from `X-Request-ID` header or context - set by RequestID middleware
 
