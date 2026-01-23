@@ -2912,3 +2912,124 @@ Implemented GORM-based repository implementations for all three Partner context 
 - Consider adding SupplierService and WarehouseService tests (same pattern)
 - Transaction support may be needed for complex operations
 - Event publishing can be added for domain events
+
+---
+
+## 2026-01-24 - P1-BE-015: Partner API Implementation Complete
+
+### Completed
+- **P1-BE-015**: Partner API (Customer/Supplier/Warehouse)
+
+### What was done
+1. **Customer Handler** (`backend/internal/interfaces/http/handler/customer.go`):
+   - Create, GetByID, GetByCode, List with pagination and filtering
+   - Update, UpdateCode for customer modifications
+   - Delete with balance validation
+   - Activate, Deactivate, Suspend status operations
+   - AddBalance, DeductBalance for prepaid balance management
+   - SetLevel for customer tier management
+   - CountByStatus for analytics dashboard
+
+2. **Supplier Handler** (`backend/internal/interfaces/http/handler/supplier.go`):
+   - Create, GetByID, GetByCode, List with filtering
+   - Update, UpdateCode for supplier modifications
+   - Delete with validation
+   - Activate, Deactivate, Block status operations
+   - SetRating for supplier quality tracking (0-5)
+   - SetPaymentTerms for credit days and limit management
+   - CountByStatus for analytics dashboard
+
+3. **Warehouse Handler** (`backend/internal/interfaces/http/handler/warehouse.go`):
+   - Create, GetByID, GetByCode, GetDefault, List with filtering
+   - Update, UpdateCode for warehouse modifications
+   - Delete (prevents deletion of default warehouse)
+   - Enable, Disable status operations
+   - SetDefault for default warehouse management
+   - CountByStatus for analytics dashboard
+
+4. **Swagger Documentation** (handler DTOs):
+   - Created `customer_dto.go` with CustomerResponse, CustomerListResponse
+   - Created `supplier_dto.go` with SupplierResponse, SupplierListResponse
+   - Created `warehouse_dto.go` with WarehouseResponse, WarehouseListResponse
+   - All handlers have complete Swagger annotations for API documentation
+
+5. **Route Registration** (`backend/cmd/server/main.go`):
+   - Added partnerapp import for application services
+   - Initialized customer, supplier, warehouse repositories
+   - Initialized customer, supplier, warehouse services
+   - Initialized customer, supplier, warehouse handlers
+   - Registered 46 partner routes under /api/v1/partner:
+     - 14 customer routes (/customers/*)
+     - 14 supplier routes (/suppliers/*)
+     - 12 warehouse routes (/warehouses/*)
+
+### API Endpoints Implemented
+
+**Customer Endpoints** (`/api/v1/partner/customers`):
+- `POST /customers` - Create customer
+- `GET /customers` - List customers with filtering
+- `GET /customers/stats/count` - Get customer counts by status
+- `GET /customers/:id` - Get customer by ID
+- `GET /customers/code/:code` - Get customer by code
+- `PUT /customers/:id` - Update customer
+- `PUT /customers/:id/code` - Update customer code
+- `DELETE /customers/:id` - Delete customer
+- `POST /customers/:id/activate` - Activate customer
+- `POST /customers/:id/deactivate` - Deactivate customer
+- `POST /customers/:id/suspend` - Suspend customer
+- `POST /customers/:id/balance/add` - Add to prepaid balance
+- `POST /customers/:id/balance/deduct` - Deduct from prepaid balance
+- `PUT /customers/:id/level` - Set customer tier level
+
+**Supplier Endpoints** (`/api/v1/partner/suppliers`):
+- `POST /suppliers` - Create supplier
+- `GET /suppliers` - List suppliers with filtering
+- `GET /suppliers/stats/count` - Get supplier counts by status
+- `GET /suppliers/:id` - Get supplier by ID
+- `GET /suppliers/code/:code` - Get supplier by code
+- `PUT /suppliers/:id` - Update supplier
+- `PUT /suppliers/:id/code` - Update supplier code
+- `DELETE /suppliers/:id` - Delete supplier
+- `POST /suppliers/:id/activate` - Activate supplier
+- `POST /suppliers/:id/deactivate` - Deactivate supplier
+- `POST /suppliers/:id/block` - Block supplier
+- `PUT /suppliers/:id/rating` - Set supplier rating
+- `PUT /suppliers/:id/payment-terms` - Set payment terms
+
+**Warehouse Endpoints** (`/api/v1/partner/warehouses`):
+- `POST /warehouses` - Create warehouse
+- `GET /warehouses` - List warehouses with filtering
+- `GET /warehouses/stats/count` - Get warehouse counts by status
+- `GET /warehouses/default` - Get default warehouse
+- `GET /warehouses/:id` - Get warehouse by ID
+- `GET /warehouses/code/:code` - Get warehouse by code
+- `PUT /warehouses/:id` - Update warehouse
+- `PUT /warehouses/:id/code` - Update warehouse code
+- `DELETE /warehouses/:id` - Delete warehouse
+- `POST /warehouses/:id/enable` - Enable warehouse
+- `POST /warehouses/:id/disable` - Disable warehouse
+- `POST /warehouses/:id/set-default` - Set as default warehouse
+
+### Files created
+- `backend/internal/interfaces/http/handler/customer.go`
+- `backend/internal/interfaces/http/handler/customer_dto.go`
+- `backend/internal/interfaces/http/handler/supplier.go`
+- `backend/internal/interfaces/http/handler/supplier_dto.go`
+- `backend/internal/interfaces/http/handler/warehouse.go`
+- `backend/internal/interfaces/http/handler/warehouse_dto.go`
+
+### Files modified
+- `backend/cmd/server/main.go` - Added partner handler initialization and routes
+- `backend/docs/swagger.json` - Regenerated with partner API endpoints
+- `backend/docs/swagger.yaml` - Regenerated with partner API endpoints
+
+### Build & Documentation Status
+- `go build ./...` passes successfully
+- Swagger documentation regenerated with `swag init`
+- All partner API endpoints documented with full Swagger annotations
+
+### Notes for next developer
+- Frontend (P1-FE-004 to P1-FE-008) can now integrate with these APIs
+- Consider adding request validation middleware for additional security
+- Unit tests for handlers (P1-QA-004) are next priority
+- Integration tests should verify full request/response cycle

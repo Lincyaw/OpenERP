@@ -9,6 +9,7 @@ import (
 	"time"
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
+	partnerapp "github.com/erp/backend/internal/application/partner"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
@@ -92,12 +93,21 @@ func main() {
 	// Initialize repositories
 	productRepo := persistence.NewGormProductRepository(db.DB)
 	categoryRepo := persistence.NewGormCategoryRepository(db.DB)
+	customerRepo := persistence.NewGormCustomerRepository(db.DB)
+	supplierRepo := persistence.NewGormSupplierRepository(db.DB)
+	warehouseRepo := persistence.NewGormWarehouseRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	customerService := partnerapp.NewCustomerService(customerRepo)
+	supplierService := partnerapp.NewSupplierService(supplierRepo)
+	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
+	customerHandler := handler.NewCustomerHandler(customerService)
+	supplierHandler := handler.NewSupplierHandler(supplierService)
+	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -191,6 +201,51 @@ func main() {
 	partnerRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "partner service ready"})
 	})
+
+	// Customer routes
+	partnerRoutes.POST("/customers", customerHandler.Create)
+	partnerRoutes.GET("/customers", customerHandler.List)
+	partnerRoutes.GET("/customers/stats/count", customerHandler.CountByStatus)
+	partnerRoutes.GET("/customers/:id", customerHandler.GetByID)
+	partnerRoutes.GET("/customers/code/:code", customerHandler.GetByCode)
+	partnerRoutes.PUT("/customers/:id", customerHandler.Update)
+	partnerRoutes.PUT("/customers/:id/code", customerHandler.UpdateCode)
+	partnerRoutes.DELETE("/customers/:id", customerHandler.Delete)
+	partnerRoutes.POST("/customers/:id/activate", customerHandler.Activate)
+	partnerRoutes.POST("/customers/:id/deactivate", customerHandler.Deactivate)
+	partnerRoutes.POST("/customers/:id/suspend", customerHandler.Suspend)
+	partnerRoutes.POST("/customers/:id/balance/add", customerHandler.AddBalance)
+	partnerRoutes.POST("/customers/:id/balance/deduct", customerHandler.DeductBalance)
+	partnerRoutes.PUT("/customers/:id/level", customerHandler.SetLevel)
+
+	// Supplier routes
+	partnerRoutes.POST("/suppliers", supplierHandler.Create)
+	partnerRoutes.GET("/suppliers", supplierHandler.List)
+	partnerRoutes.GET("/suppliers/stats/count", supplierHandler.CountByStatus)
+	partnerRoutes.GET("/suppliers/:id", supplierHandler.GetByID)
+	partnerRoutes.GET("/suppliers/code/:code", supplierHandler.GetByCode)
+	partnerRoutes.PUT("/suppliers/:id", supplierHandler.Update)
+	partnerRoutes.PUT("/suppliers/:id/code", supplierHandler.UpdateCode)
+	partnerRoutes.DELETE("/suppliers/:id", supplierHandler.Delete)
+	partnerRoutes.POST("/suppliers/:id/activate", supplierHandler.Activate)
+	partnerRoutes.POST("/suppliers/:id/deactivate", supplierHandler.Deactivate)
+	partnerRoutes.POST("/suppliers/:id/block", supplierHandler.Block)
+	partnerRoutes.PUT("/suppliers/:id/rating", supplierHandler.SetRating)
+	partnerRoutes.PUT("/suppliers/:id/payment-terms", supplierHandler.SetPaymentTerms)
+
+	// Warehouse routes
+	partnerRoutes.POST("/warehouses", warehouseHandler.Create)
+	partnerRoutes.GET("/warehouses", warehouseHandler.List)
+	partnerRoutes.GET("/warehouses/stats/count", warehouseHandler.CountByStatus)
+	partnerRoutes.GET("/warehouses/default", warehouseHandler.GetDefault)
+	partnerRoutes.GET("/warehouses/:id", warehouseHandler.GetByID)
+	partnerRoutes.GET("/warehouses/code/:code", warehouseHandler.GetByCode)
+	partnerRoutes.PUT("/warehouses/:id", warehouseHandler.Update)
+	partnerRoutes.PUT("/warehouses/:id/code", warehouseHandler.UpdateCode)
+	partnerRoutes.DELETE("/warehouses/:id", warehouseHandler.Delete)
+	partnerRoutes.POST("/warehouses/:id/enable", warehouseHandler.Enable)
+	partnerRoutes.POST("/warehouses/:id/disable", warehouseHandler.Disable)
+	partnerRoutes.POST("/warehouses/:id/set-default", warehouseHandler.SetDefault)
 
 	// Inventory domain
 	inventoryRoutes := router.NewDomainGroup("inventory", "/inventory")

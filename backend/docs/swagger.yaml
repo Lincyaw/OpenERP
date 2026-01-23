@@ -45,6 +45,15 @@ definitions:
       message:
         type: string
     type: object
+  handler.BalanceOperationRequest:
+    description: Request body for balance operations (add/deduct/refund)
+    properties:
+      amount:
+        example: 1000
+        type: number
+    required:
+    - amount
+    type: object
   handler.CountByStatusResponse:
     properties:
       active:
@@ -59,6 +68,82 @@ definitions:
       total:
         example: 65
         type: integer
+    type: object
+  handler.CreateCustomerRequest:
+    description: Request body for creating a new customer
+    properties:
+      address:
+        example: 123 Main St
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      city:
+        example: Shanghai
+        maxLength: 100
+        type: string
+      code:
+        example: CUST-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      contact_name:
+        example: John Doe
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      credit_limit:
+        example: 10000
+        type: number
+      email:
+        example: contact@acme.com
+        maxLength: 200
+        type: string
+      name:
+        example: Acme Corp
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: VIP customer
+        type: string
+      phone:
+        example: "13800138000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "200000"
+        maxLength: 20
+        type: string
+      province:
+        example: Shanghai
+        maxLength: 100
+        type: string
+      short_name:
+        example: Acme
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      tax_id:
+        example: 91310000MA1FL8L972
+        maxLength: 50
+        type: string
+      type:
+        enum:
+        - individual
+        - organization
+        example: organization
+        type: string
+    required:
+    - code
+    - name
+    - type
     type: object
   handler.CreateProductRequest:
     description: Request body for creating a new product
@@ -108,6 +193,343 @@ definitions:
     - code
     - name
     - unit
+    type: object
+  handler.CreateSupplierRequest:
+    description: Request body for creating a new supplier
+    properties:
+      address:
+        example: 789 Industrial Park
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      bank_account:
+        example: "6222021234567890123"
+        maxLength: 100
+        type: string
+      bank_name:
+        example: Industrial Bank
+        maxLength: 200
+        type: string
+      city:
+        example: Guangzhou
+        maxLength: 100
+        type: string
+      code:
+        example: SUP-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      contact_name:
+        example: Mike Johnson
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      credit_days:
+        example: 30
+        type: integer
+      credit_limit:
+        example: 50000
+        type: number
+      email:
+        example: mike@globalsupplies.com
+        maxLength: 200
+        type: string
+      name:
+        example: Global Supplies Inc
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: Reliable supplier
+        type: string
+      phone:
+        example: "13600136000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "510000"
+        maxLength: 20
+        type: string
+      province:
+        example: Guangdong
+        maxLength: 100
+        type: string
+      rating:
+        example: 4
+        maximum: 5
+        minimum: 0
+        type: integer
+      short_name:
+        example: Global
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      tax_id:
+        example: 91440000MA5FL8L972
+        maxLength: 50
+        type: string
+      type:
+        enum:
+        - manufacturer
+        - distributor
+        - retailer
+        - service
+        example: distributor
+        type: string
+    required:
+    - code
+    - name
+    - type
+    type: object
+  handler.CreateWarehouseRequest:
+    description: Request body for creating a new warehouse
+    properties:
+      address:
+        example: Building 5, Industrial Zone
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      capacity:
+        example: 10000
+        type: integer
+      city:
+        example: Shanghai
+        maxLength: 100
+        type: string
+      code:
+        example: WH-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      contact_name:
+        example: Wang Wei
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      email:
+        example: warehouse@company.com
+        maxLength: 200
+        type: string
+      is_default:
+        example: true
+        type: boolean
+      name:
+        example: Main Warehouse
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: Primary storage facility
+        type: string
+      phone:
+        example: "13500135000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "201100"
+        maxLength: 20
+        type: string
+      province:
+        example: Shanghai
+        maxLength: 100
+        type: string
+      short_name:
+        example: Main
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      type:
+        enum:
+        - physical
+        - virtual
+        - consign
+        - transit
+        example: physical
+        type: string
+    required:
+    - code
+    - name
+    - type
+    type: object
+  handler.CustomerCountByStatusResponse:
+    properties:
+      active:
+        example: 100
+        type: integer
+      inactive:
+        example: 20
+        type: integer
+      suspended:
+        example: 5
+        type: integer
+      total:
+        example: 125
+        type: integer
+    type: object
+  handler.CustomerListResponse:
+    description: Customer list item with basic information
+    properties:
+      city:
+        example: Shanghai
+        type: string
+      code:
+        example: CUST-001
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      email:
+        example: contact@acme.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      level:
+        enum:
+        - normal
+        - silver
+        - gold
+        - platinum
+        - vip
+        example: normal
+        type: string
+      name:
+        example: Acme Corp
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+      province:
+        example: Shanghai
+        type: string
+      short_name:
+        example: Acme
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - active
+        - inactive
+        - suspended
+        example: active
+        type: string
+      type:
+        enum:
+        - individual
+        - organization
+        example: organization
+        type: string
+    type: object
+  handler.CustomerResponse:
+    description: Customer details returned by the API
+    properties:
+      address:
+        example: 123 Main St
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      balance:
+        example: 5000
+        type: number
+      city:
+        example: Shanghai
+        type: string
+      code:
+        example: CUST-001
+        type: string
+      contact_name:
+        example: John Doe
+        type: string
+      country:
+        example: China
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      credit_limit:
+        example: 10000
+        type: number
+      email:
+        example: contact@acme.com
+        type: string
+      full_address:
+        example: 123 Main St, Shanghai, Shanghai 200000, China
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      level:
+        enum:
+        - normal
+        - silver
+        - gold
+        - platinum
+        - vip
+        example: normal
+        type: string
+      name:
+        example: Acme Corp
+        type: string
+      notes:
+        example: VIP customer
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+      postal_code:
+        example: "200000"
+        type: string
+      province:
+        example: Shanghai
+        type: string
+      short_name:
+        example: Acme
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - active
+        - inactive
+        - suspended
+        example: active
+        type: string
+      tax_id:
+        example: 91310000MA1FL8L972
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      type:
+        enum:
+        - individual
+        - organization
+        example: organization
+        type: string
+      updated_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
     type: object
   handler.PingResponse:
     properties:
@@ -221,6 +643,198 @@ definitions:
         example: 1
         type: integer
     type: object
+  handler.SetLevelRequest:
+    description: Request body for setting customer level
+    properties:
+      level:
+        enum:
+        - normal
+        - silver
+        - gold
+        - platinum
+        - vip
+        example: gold
+        type: string
+    required:
+    - level
+    type: object
+  handler.SetPaymentTermsRequest:
+    description: Request body for setting supplier payment terms
+    properties:
+      credit_days:
+        example: 30
+        minimum: 0
+        type: integer
+      credit_limit:
+        example: 50000
+        minimum: 0
+        type: number
+    type: object
+  handler.SetRatingRequest:
+    description: Request body for setting supplier rating
+    properties:
+      rating:
+        example: 5
+        maximum: 5
+        minimum: 0
+        type: integer
+    required:
+    - rating
+    type: object
+  handler.SupplierCountByStatusResponse:
+    properties:
+      active:
+        example: 80
+        type: integer
+      blocked:
+        example: 5
+        type: integer
+      inactive:
+        example: 15
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  handler.SupplierListResponse:
+    description: Supplier list item with basic information
+    properties:
+      city:
+        example: Shenzhen
+        type: string
+      code:
+        example: SUP-001
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      email:
+        example: contact@supplier.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Supplier Co
+        type: string
+      payment_term_days:
+        example: 30
+        type: integer
+      phone:
+        example: "13800138000"
+        type: string
+      province:
+        example: Guangdong
+        type: string
+      rating:
+        example: 4.5
+        type: number
+      short_name:
+        example: Supplier
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - active
+        - inactive
+        - blocked
+        example: active
+        type: string
+    type: object
+  handler.SupplierResponse:
+    description: Supplier details returned by the API
+    properties:
+      address:
+        example: 456 Supply St
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      bank_account:
+        example: "6217001234567890123"
+        type: string
+      bank_account_name:
+        example: Supplier Co Ltd
+        type: string
+      bank_name:
+        example: Bank of China
+        type: string
+      city:
+        example: Shenzhen
+        type: string
+      code:
+        example: SUP-001
+        type: string
+      contact_name:
+        example: John Doe
+        type: string
+      country:
+        example: China
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      credit_limit:
+        example: 50000
+        type: number
+      email:
+        example: contact@supplier.com
+        type: string
+      full_address:
+        example: 456 Supply St, Shenzhen, Guangdong 518000, China
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Supplier Co
+        type: string
+      notes:
+        example: Reliable supplier
+        type: string
+      payment_term_days:
+        example: 30
+        type: integer
+      phone:
+        example: "13800138000"
+        type: string
+      postal_code:
+        example: "518000"
+        type: string
+      province:
+        example: Guangdong
+        type: string
+      rating:
+        example: 4.5
+        type: number
+      short_name:
+        example: Supplier
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - active
+        - inactive
+        - blocked
+        example: active
+        type: string
+      tax_id:
+        example: 91440300MA5F99999X
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
   handler.SystemInfoResponse:
     properties:
       go_version:
@@ -234,6 +848,87 @@ definitions:
         type: string
       version:
         example: 1.0.0
+        type: string
+    type: object
+  handler.UpdateCustomerCodeRequest:
+    description: Request body for updating a customer's code
+    properties:
+      code:
+        example: CUST-002
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - code
+    type: object
+  handler.UpdateCustomerRequest:
+    description: Request body for updating a customer
+    properties:
+      address:
+        example: 456 Oak Ave
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      city:
+        example: Beijing
+        maxLength: 100
+        type: string
+      contact_name:
+        example: Jane Doe
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      credit_limit:
+        example: 20000
+        type: number
+      email:
+        example: info@acme.com
+        maxLength: 200
+        type: string
+      level:
+        enum:
+        - normal
+        - silver
+        - gold
+        - platinum
+        - vip
+        example: gold
+        type: string
+      name:
+        example: Acme Corporation
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: Updated notes
+        type: string
+      phone:
+        example: "13900139000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "100000"
+        maxLength: 20
+        type: string
+      province:
+        example: Beijing
+        maxLength: 100
+        type: string
+      short_name:
+        example: Acme Co
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 1
+        type: integer
+      tax_id:
+        example: 91310000MA1FL8L972
+        maxLength: 50
         type: string
     type: object
   handler.UpdateProductCodeRequest:
@@ -279,6 +974,301 @@ definitions:
         example: 110
         type: number
       sort_order:
+        example: 1
+        type: integer
+    type: object
+  handler.UpdateSupplierCodeRequest:
+    description: Request body for updating a supplier's code
+    properties:
+      code:
+        example: SUP-002
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - code
+    type: object
+  handler.UpdateSupplierRequest:
+    description: Request body for updating a supplier
+    properties:
+      address:
+        example: Building A, Tech Park
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      bank_account:
+        example: "6226221234567890123"
+        maxLength: 100
+        type: string
+      bank_name:
+        example: China Merchants Bank
+        maxLength: 200
+        type: string
+      city:
+        example: Shenzhen
+        maxLength: 100
+        type: string
+      contact_name:
+        example: Sarah Chen
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      credit_days:
+        example: 45
+        type: integer
+      credit_limit:
+        example: 100000
+        type: number
+      email:
+        example: sarah@globalsupplies.com
+        maxLength: 200
+        type: string
+      name:
+        example: Global Supplies International
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: Premium supplier
+        type: string
+      phone:
+        example: "13700137000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "518000"
+        maxLength: 20
+        type: string
+      province:
+        example: Guangdong
+        maxLength: 100
+        type: string
+      rating:
+        example: 5
+        maximum: 5
+        minimum: 0
+        type: integer
+      short_name:
+        example: GSI
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 1
+        type: integer
+      tax_id:
+        example: 91440300MA5FL8L972
+        maxLength: 50
+        type: string
+    type: object
+  handler.UpdateWarehouseCodeRequest:
+    description: Request body for updating a warehouse's code
+    properties:
+      code:
+        example: WH-002
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - code
+    type: object
+  handler.UpdateWarehouseRequest:
+    description: Request body for updating a warehouse
+    properties:
+      address:
+        example: Block A, Logistics Park
+        maxLength: 500
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      capacity:
+        example: 15000
+        type: integer
+      city:
+        example: Hangzhou
+        maxLength: 100
+        type: string
+      contact_name:
+        example: Li Ming
+        maxLength: 100
+        type: string
+      country:
+        example: China
+        maxLength: 100
+        type: string
+      email:
+        example: mdc@company.com
+        maxLength: 200
+        type: string
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: Main Distribution Center
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        example: Upgraded capacity
+        type: string
+      phone:
+        example: "13600136000"
+        maxLength: 50
+        type: string
+      postal_code:
+        example: "310000"
+        maxLength: 20
+        type: string
+      province:
+        example: Zhejiang
+        maxLength: 100
+        type: string
+      short_name:
+        example: MDC
+        maxLength: 100
+        type: string
+      sort_order:
+        example: 1
+        type: integer
+    type: object
+  handler.WarehouseCountByStatusResponse:
+    properties:
+      active:
+        example: 8
+        type: integer
+      inactive:
+        example: 2
+        type: integer
+      total:
+        example: 10
+        type: integer
+    type: object
+  handler.WarehouseListResponse:
+    description: Warehouse list item with basic information
+    properties:
+      city:
+        example: Guangzhou
+        type: string
+      code:
+        example: WH-001
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_default:
+        example: true
+        type: boolean
+      name:
+        example: Main Warehouse
+        type: string
+      province:
+        example: Guangdong
+        type: string
+      short_name:
+        example: Main WH
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - enabled
+        - disabled
+        example: enabled
+        type: string
+      type:
+        enum:
+        - normal
+        - virtual
+        - transit
+        example: normal
+        type: string
+    type: object
+  handler.WarehouseResponse:
+    description: Warehouse details returned by the API
+    properties:
+      address:
+        example: 789 Storage Road
+        type: string
+      attributes:
+        example: '{}'
+        type: string
+      city:
+        example: Guangzhou
+        type: string
+      code:
+        example: WH-001
+        type: string
+      country:
+        example: China
+        type: string
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      email:
+        example: warehouse@company.com
+        type: string
+      full_address:
+        example: 789 Storage Road, Guangzhou, Guangdong 510000, China
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_default:
+        example: true
+        type: boolean
+      manager_name:
+        example: John Manager
+        type: string
+      name:
+        example: Main Warehouse
+        type: string
+      notes:
+        example: Main distribution center
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+      postal_code:
+        example: "510000"
+        type: string
+      province:
+        example: Guangdong
+        type: string
+      short_name:
+        example: Main WH
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      status:
+        enum:
+        - enabled
+        - disabled
+        example: enabled
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      type:
+        enum:
+        - normal
+        - virtual
+        - transit
+        example: normal
+        type: string
+      updated_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      version:
         example: 1
         type: integer
     type: object
@@ -1244,6 +2234,3031 @@ paths:
       summary: Get product counts by status
       tags:
       - products
+  /partner/customers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of customers with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (name, code, phone, email)
+        in: query
+        name: search
+        type: string
+      - description: Customer status
+        enum:
+        - active
+        - inactive
+        - suspended
+        in: query
+        name: status
+        type: string
+      - description: Customer type
+        enum:
+        - individual
+        - organization
+        in: query
+        name: type
+        type: string
+      - description: Customer level
+        enum:
+        - normal
+        - silver
+        - gold
+        - platinum
+        - vip
+        in: query
+        name: level
+        type: string
+      - description: City
+        in: query
+        name: city
+        type: string
+      - description: Province
+        in: query
+        name: province
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: sort_order
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: asc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.CustomerListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List customers
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer in the partner module
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new customer
+      tags:
+      - customers
+  /partner/customers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a customer by ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a customer
+      tags:
+      - customers
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer by ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer's details
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Customer update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a customer
+      tags:
+      - customers
+  /partner/customers/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate an inactive or suspended customer
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Activate a customer
+      tags:
+      - customers
+  /partner/customers/{id}/balance/add:
+    post:
+      consumes:
+      - application/json
+      description: Add to a customer's prepaid balance
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Balance amount to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BalanceOperationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add balance to customer
+      tags:
+      - customers
+  /partner/customers/{id}/balance/deduct:
+    post:
+      consumes:
+      - application/json
+      description: Deduct from a customer's prepaid balance
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Balance amount to deduct
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BalanceOperationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deduct balance from customer
+      tags:
+      - customers
+  /partner/customers/{id}/code:
+    put:
+      consumes:
+      - application/json
+      description: Update a customer's code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New customer code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCustomerCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update customer code
+      tags:
+      - customers
+  /partner/customers/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active customer
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate a customer
+      tags:
+      - customers
+  /partner/customers/{id}/level:
+    put:
+      consumes:
+      - application/json
+      description: Set a customer's tier level
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Customer level
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SetLevelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set customer level
+      tags:
+      - customers
+  /partner/customers/{id}/suspend:
+    post:
+      consumes:
+      - application/json
+      description: Suspend an active customer
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Suspend a customer
+      tags:
+      - customers
+  /partner/customers/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer by its code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer by code
+      tags:
+      - customers
+  /partner/customers/stats/count:
+    get:
+      consumes:
+      - application/json
+      description: Get the count of customers grouped by status
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerCountByStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer counts by status
+      tags:
+      - customers
+  /partner/suppliers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of suppliers with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (name, code, phone, email)
+        in: query
+        name: search
+        type: string
+      - description: Supplier status
+        enum:
+        - active
+        - inactive
+        - blocked
+        in: query
+        name: status
+        type: string
+      - description: Supplier type
+        enum:
+        - manufacturer
+        - distributor
+        - retailer
+        - service
+        in: query
+        name: type
+        type: string
+      - description: City
+        in: query
+        name: city
+        type: string
+      - description: Province
+        in: query
+        name: province
+        type: string
+      - description: Minimum rating (0-5)
+        in: query
+        name: min_rating
+        type: integer
+      - description: Maximum rating (0-5)
+        in: query
+        name: max_rating
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: sort_order
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: asc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.SupplierListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List suppliers
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      description: Create a new supplier in the partner module
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateSupplierRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new supplier
+      tags:
+      - suppliers
+  /partner/suppliers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a supplier by ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a supplier
+      tags:
+      - suppliers
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a supplier by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get supplier by ID
+      tags:
+      - suppliers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing supplier's details
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Supplier update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSupplierRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a supplier
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate an inactive or blocked supplier
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Activate a supplier
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/block:
+    post:
+      consumes:
+      - application/json
+      description: Block a supplier from doing business
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Block a supplier
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/code:
+    put:
+      consumes:
+      - application/json
+      description: Update a supplier's code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New supplier code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSupplierCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update supplier code
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active supplier
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate a supplier
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/payment-terms:
+    put:
+      consumes:
+      - application/json
+      description: Set a supplier's credit days and credit limit
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment terms
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SetPaymentTermsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set supplier payment terms
+      tags:
+      - suppliers
+  /partner/suppliers/{id}/rating:
+    put:
+      consumes:
+      - application/json
+      description: Set a supplier's rating (0-5)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Supplier rating
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SetRatingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set supplier rating
+      tags:
+      - suppliers
+  /partner/suppliers/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a supplier by its code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Supplier Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get supplier by code
+      tags:
+      - suppliers
+  /partner/suppliers/stats/count:
+    get:
+      consumes:
+      - application/json
+      description: Get the count of suppliers grouped by status
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SupplierCountByStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get supplier counts by status
+      tags:
+      - suppliers
+  /partner/warehouses:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of warehouses with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (name, code)
+        in: query
+        name: search
+        type: string
+      - description: Warehouse status
+        enum:
+        - active
+        - inactive
+        in: query
+        name: status
+        type: string
+      - description: Warehouse type
+        enum:
+        - physical
+        - virtual
+        - consign
+        - transit
+        in: query
+        name: type
+        type: string
+      - description: City
+        in: query
+        name: city
+        type: string
+      - description: Province
+        in: query
+        name: province
+        type: string
+      - description: Filter by default status
+        in: query
+        name: is_default
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: is_default
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.WarehouseListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List warehouses
+      tags:
+      - warehouses
+    post:
+      consumes:
+      - application/json
+      description: Create a new warehouse in the partner module
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateWarehouseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a warehouse by ID (cannot delete default warehouse)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a warehouse
+      tags:
+      - warehouses
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a warehouse by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get warehouse by ID
+      tags:
+      - warehouses
+    put:
+      consumes:
+      - application/json
+      description: Update an existing warehouse's details
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Warehouse update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateWarehouseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/{id}/code:
+    put:
+      consumes:
+      - application/json
+      description: Update a warehouse's code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New warehouse code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateWarehouseCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update warehouse code
+      tags:
+      - warehouses
+  /partner/warehouses/{id}/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disable an active warehouse
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Disable a warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/{id}/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enable an inactive warehouse
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Enable a warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/{id}/set-default:
+    post:
+      consumes:
+      - application/json
+      description: Set a warehouse as the default warehouse
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set default warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a warehouse by its code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Warehouse Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get warehouse by code
+      tags:
+      - warehouses
+  /partner/warehouses/default:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the default warehouse for the tenant
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get default warehouse
+      tags:
+      - warehouses
+  /partner/warehouses/stats/count:
+    get:
+      consumes:
+      - application/json
+      description: Get the count of warehouses grouped by status
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.WarehouseCountByStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get warehouse counts by status
+      tags:
+      - warehouses
   /system/info:
     get:
       consumes:
