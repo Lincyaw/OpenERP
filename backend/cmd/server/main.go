@@ -11,6 +11,7 @@ import (
 	catalogapp "github.com/erp/backend/internal/application/catalog"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
+	tradeapp "github.com/erp/backend/internal/application/trade"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
@@ -101,6 +102,7 @@ func main() {
 	stockBatchRepo := persistence.NewGormStockBatchRepository(db.DB)
 	stockLockRepo := persistence.NewGormStockLockRepository(db.DB)
 	inventoryTxRepo := persistence.NewGormInventoryTransactionRepository(db.DB)
+	salesOrderRepo := persistence.NewGormSalesOrderRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -108,6 +110,7 @@ func main() {
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
+	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
@@ -115,6 +118,7 @@ func main() {
 	supplierHandler := handler.NewSupplierHandler(supplierService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
+	salesOrderHandler := handler.NewSalesOrderHandler(salesOrderService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -293,6 +297,22 @@ func main() {
 	tradeRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "trade service ready"})
 	})
+
+	// Sales Order routes
+	tradeRoutes.POST("/sales-orders", salesOrderHandler.Create)
+	tradeRoutes.GET("/sales-orders", salesOrderHandler.List)
+	tradeRoutes.GET("/sales-orders/stats/summary", salesOrderHandler.GetStatusSummary)
+	tradeRoutes.GET("/sales-orders/number/:order_number", salesOrderHandler.GetByOrderNumber)
+	tradeRoutes.GET("/sales-orders/:id", salesOrderHandler.GetByID)
+	tradeRoutes.PUT("/sales-orders/:id", salesOrderHandler.Update)
+	tradeRoutes.DELETE("/sales-orders/:id", salesOrderHandler.Delete)
+	tradeRoutes.POST("/sales-orders/:id/items", salesOrderHandler.AddItem)
+	tradeRoutes.PUT("/sales-orders/:id/items/:item_id", salesOrderHandler.UpdateItem)
+	tradeRoutes.DELETE("/sales-orders/:id/items/:item_id", salesOrderHandler.RemoveItem)
+	tradeRoutes.POST("/sales-orders/:id/confirm", salesOrderHandler.Confirm)
+	tradeRoutes.POST("/sales-orders/:id/ship", salesOrderHandler.Ship)
+	tradeRoutes.POST("/sales-orders/:id/complete", salesOrderHandler.Complete)
+	tradeRoutes.POST("/sales-orders/:id/cancel", salesOrderHandler.Cancel)
 
 	// Finance domain
 	financeRoutes := router.NewDomainGroup("finance", "/finance")
