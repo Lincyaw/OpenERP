@@ -189,3 +189,93 @@
 - GORM logs SQL queries at DEBUG level, slow queries (>200ms) at WARN level
 - Production mode uses JSON format with ISO8601 timestamps
 - Set LOG_LEVEL=debug to see SQL queries in development
+
+---
+
+## 2026-01-23 - P0-BE-004: Database Migration Tool Configuration Complete
+
+### Completed
+- **P0-BE-004**: 数据库迁移工具配置 (golang-migrate)
+
+### What was done
+1. Integrated golang-migrate library:
+   - Added `github.com/golang-migrate/migrate/v4` dependency
+   - Added `github.com/lib/pq` for native PostgreSQL driver support in CLI
+
+2. Created migration infrastructure at `internal/infrastructure/migration/`:
+   - `migrate.go` - Core Migrator struct wrapping golang-migrate
+     - `New()` and `NewFromURL()` constructors
+     - `Up()`, `Down()`, `Steps()`, `GoTo()` migration methods
+     - `Version()`, `Force()`, `Drop()` utility methods
+     - Integrated with zap logger for structured logging
+   - `creator.go` - Migration file creation utilities
+     - `CreateMigration()` creates up/down SQL file pairs
+     - Template-based migration file generation
+     - Version format: YYYYMMDDHHMMSS for proper ordering
+     - `ListMigrations()` to enumerate available migrations
+
+3. Created migration CLI at `cmd/migrate/`:
+   - Full-featured CLI for database migrations
+   - Commands: up, down, step, goto, version, force, drop, create, list
+   - Configurable migrations path and log level
+   - Uses same database config as main server
+   - Safety features: drop requires `-confirm` flag
+
+4. Created initial migration:
+   - `migrations/000001_init_schema.up.sql`:
+     - Enables uuid-ossp and pgcrypto extensions
+     - Creates tenants table with multi-tenancy support
+     - Implements `update_updated_at_column()` trigger function
+     - Adds default tenant for development
+   - `migrations/000001_init_schema.down.sql`:
+     - Clean rollback of all schema changes
+
+5. Test coverage:
+   - Unit tests for migration creator functions
+   - Tests for name sanitization
+   - Tests for file creation and directory handling
+   - Tests for migration listing
+
+### Files created/modified
+- `backend/internal/infrastructure/migration/migrate.go` (new)
+- `backend/internal/infrastructure/migration/creator.go` (new)
+- `backend/internal/infrastructure/migration/creator_test.go` (new)
+- `backend/cmd/migrate/main.go` (new)
+- `backend/migrations/000001_init_schema.up.sql` (new)
+- `backend/migrations/000001_init_schema.down.sql` (new)
+- `backend/README.md` (updated with migration documentation)
+- `backend/.env.example` (added MIGRATIONS_PATH)
+- `backend/go.mod` (added golang-migrate and pq dependencies)
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests
+
+### Usage Examples
+```bash
+# Build the migration CLI
+go build -o bin/migrate cmd/migrate/main.go
+
+# Apply all pending migrations
+./bin/migrate up
+
+# Create a new migration
+./bin/migrate create add_users_table "Create users table"
+
+# Check current version
+./bin/migrate version
+
+# Roll back last migration
+./bin/migrate step -1
+```
+
+### Notes for next developer
+- P0-BE-005 (Value objects) can now be started - migrations are ready for new tables
+- P0-BE-006 (Event bus) can now be started - database foundation is complete
+- Initial migration creates tenants table for multi-tenancy
+- Use `./bin/migrate create <name>` to add new migrations
+- Migrations use YYYYMMDDHHMMSS versioning for proper ordering
+- The Migrator integrates with zap logger for structured output
+- Force command should only be used to fix dirty state
+- Drop command is destructive and requires explicit confirmation
+
