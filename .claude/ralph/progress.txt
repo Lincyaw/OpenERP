@@ -2835,3 +2835,80 @@ Implemented GORM-based repository implementations for all three Partner context 
 - ClearDefault uses GORM's Update with map to avoid updating all fields
 - Consider adding transaction support in application service layer
 - FindByIDs/FindByCodes return empty slice (not error) for empty input
+
+---
+
+## 2026-01-24 - P1-BE-014: Partner Application Service Complete
+
+### Completed
+- **P1-BE-014**: Partner Application Service (客户/供应商/仓库应用服务)
+
+### What was done
+1. **Created DTOs** (`backend/internal/application/partner/dto.go`):
+   - Request DTOs: CreateCustomerRequest, UpdateCustomerRequest, CreateSupplierRequest, UpdateSupplierRequest, CreateWarehouseRequest, UpdateWarehouseRequest
+   - Response DTOs: CustomerResponse, CustomerListResponse, SupplierResponse, SupplierListResponse, WarehouseResponse, WarehouseListResponse
+   - Filter DTOs: CustomerListFilter, SupplierListFilter, WarehouseListFilter
+   - Conversion functions: ToCustomerResponse, ToSupplierResponse, ToWarehouseResponse, etc.
+
+2. **CustomerService** (`backend/internal/application/partner/customer_service.go`):
+   - Create customer with unique code/phone/email validation
+   - GetByID, GetByCode, List with filtering and pagination
+   - Update, UpdateCode with duplicate validation
+   - Delete with balance check (cannot delete customer with balance)
+   - Activate, Deactivate, Suspend status management
+   - AddBalance, DeductBalance, RefundBalance for balance operations
+   - SetLevel for customer level management
+   - CountByStatus, CountByLevel, CountByType for analytics
+
+3. **SupplierService** (`backend/internal/application/partner/supplier_service.go`):
+   - Create supplier with unique code/phone/email validation
+   - GetByID, GetByCode, List with filtering and pagination
+   - Update, UpdateCode with duplicate validation
+   - Delete with balance check
+   - Activate, Deactivate, Block status management
+   - SetRating for supplier rating (1-5)
+   - SetPaymentTerms for credit days and limit
+   - CountByStatus, CountByType for analytics
+
+4. **WarehouseService** (`backend/internal/application/partner/warehouse_service.go`):
+   - Create warehouse with unique code validation
+   - GetByID, GetByCode, GetDefault, List with filtering
+   - Update, UpdateCode with duplicate validation
+   - Delete (cannot delete default warehouse)
+   - Enable, Disable status management
+   - SetDefault with auto-clearing of other defaults
+   - CountByStatus, CountByType for analytics
+
+5. **Unit Tests** (`backend/internal/application/partner/customer_service_test.go`):
+   - 19 unit tests for CustomerService
+   - MockCustomerRepository implementation using testify/mock
+   - Tests cover: Create, Create_WithAllFields, Create_DuplicateCode, Create_DuplicatePhone, GetByID, List, Update, UpdateCode, Delete, Delete_HasBalance, Activate, Deactivate, Suspend, AddBalance, SetLevel, CountByStatus, ToCustomerResponse, ToCustomerListResponses
+
+### Implementation Details
+- Services follow DDD Application Service pattern
+- Each service takes repository interface as dependency (dependency injection)
+- Services orchestrate domain operations without exposing domain entities
+- Response DTOs hide internal domain structure
+- Validation occurs at service level before domain operations
+- Duplicate checks use repository methods (ExistsByCode, ExistsByPhone, ExistsByEmail)
+- Balance operations preserve atomicity through domain aggregate methods
+- Default warehouse management ensures only one default per tenant
+
+### Files created
+- `backend/internal/application/partner/dto.go`
+- `backend/internal/application/partner/customer_service.go`
+- `backend/internal/application/partner/supplier_service.go`
+- `backend/internal/application/partner/warehouse_service.go`
+- `backend/internal/application/partner/customer_service_test.go`
+
+### Build & Test Status
+- `go build ./...` passes
+- All 19 tests pass: `go test ./internal/application/partner/...`
+- No linting errors (fixed interface{} to any)
+
+### Notes for next developer
+- P1-BE-015 (Partner API) can now be started using these services
+- Services are ready for HTTP handler integration
+- Consider adding SupplierService and WarehouseService tests (same pattern)
+- Transaction support may be needed for complex operations
+- Event publishing can be added for domain events
