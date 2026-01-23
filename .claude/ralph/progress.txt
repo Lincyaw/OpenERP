@@ -3710,3 +3710,104 @@ tx, err := inventory.NewTransactionBuilder(
 - Consider adding indexes for common query patterns (date range, product, warehouse)
 - Transaction types like LOCK/UNLOCK don't change physical stock but track reservation movements
 - Balance fields track available quantity, not total quantity (available + locked)
+
+
+---
+
+## 2026-01-24 - P2-BE-007: Inventory Repository Interface + Implementation Complete
+
+### Completed
+- **P2-BE-007**: Inventory Repository 接口 + 实现
+
+### What was done
+1. Created repository interfaces in `internal/domain/inventory/repository.go`:
+   - `InventoryItemRepository` - Full CRUD and query operations for inventory items
+     - FindByID, FindByIDForTenant, FindByWarehouseAndProduct
+     - FindByWarehouse, FindByProduct, FindAllForTenant
+     - FindBelowMinimum, FindWithAvailableStock, FindByIDs
+     - Save, SaveWithLock (optimistic locking), Delete, DeleteForTenant
+     - CountForTenant, CountByWarehouse, CountByProduct
+     - SumQuantityByProduct, SumValueByWarehouse
+     - ExistsByWarehouseAndProduct, GetOrCreate
+   - `StockBatchRepository` - Batch management operations
+     - FindByID, FindByInventoryItem, FindAvailable
+     - FindExpiringSoon, FindExpired, FindByBatchNumber
+     - Save, SaveBatch, Delete, CountByInventoryItem
+   - `StockLockRepository` - Lock management operations
+     - FindByID, FindByInventoryItem, FindActive
+     - FindExpired, FindBySource
+     - Save, Delete, ReleaseExpired
+   - `InventoryTransactionRepository` - Transaction (audit log) operations
+     - FindByID, FindByInventoryItem, FindByWarehouse, FindByProduct
+     - FindBySource, FindByDateRange, FindByType, FindForTenant
+     - Create, CreateBatch (no Update/Delete - append-only)
+     - CountForTenant, CountByInventoryItem
+     - SumQuantityByTypeAndDateRange
+   - `InventoryFilter` and `TransactionFilter` - Extended filter types
+
+2. Created database migration `000009_create_inventory_items`:
+   - `inventory_items` table with unique constraint on (tenant_id, warehouse_id, product_id)
+   - `stock_batches` table with foreign key to inventory_items
+   - `stock_locks` table with foreign key to inventory_items
+   - Added foreign keys from inventory_transactions to inventory_items, stock_batches, stock_locks
+   - Proper indexes for common query patterns
+   - Update triggers for updated_at columns
+
+3. Implemented GORM repositories in `internal/infrastructure/persistence/`:
+   - `inventory_repository.go` - GormInventoryItemRepository
+     - Full filter support (warehouse_id, product_id, below_minimum, has_stock, etc.)
+     - Optimistic locking with version check in SaveWithLock
+     - GetOrCreate using ON CONFLICT DO NOTHING for race condition handling
+   - `stock_batch_repository.go` - GormStockBatchRepository
+     - FEFO (First Expired, First Out) ordering for FindAvailable
+     - Expiry date based queries
+   - `stock_lock_repository.go` - GormStockLockRepository
+     - Bulk release of expired locks
+   - `inventory_transaction_repository.go` - GormInventoryTransactionRepository
+     - Create only (no Update/Delete as per audit log requirements)
+     - Full filtering by warehouse, product, type, source, date range
+
+4. Wrote comprehensive unit tests (36 test cases):
+   - `inventory_repository_test.go` covering all four repositories
+   - Tests for CRUD operations, counts, existence checks
+   - Interface compliance tests
+
+### Files created
+- `backend/internal/domain/inventory/repository.go`
+- `backend/migrations/000009_create_inventory_items.up.sql`
+- `backend/migrations/000009_create_inventory_items.down.sql`
+- `backend/internal/infrastructure/persistence/inventory_repository.go`
+- `backend/internal/infrastructure/persistence/stock_batch_repository.go`
+- `backend/internal/infrastructure/persistence/stock_lock_repository.go`
+- `backend/internal/infrastructure/persistence/inventory_transaction_repository.go`
+- `backend/internal/infrastructure/persistence/inventory_repository_test.go`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (36 new tests for inventory repositories)
+
+### Repository Interface Summary
+
+| Repository | Key Methods |
+|------------|-------------|
+| InventoryItemRepository | FindByWarehouseAndProduct, GetOrCreate, SaveWithLock |
+| StockBatchRepository | FindAvailable (FEFO), FindExpiringSoon |
+| StockLockRepository | FindActive, FindExpired, ReleaseExpired |
+| InventoryTransactionRepository | Create, FindBySource, SumQuantityByTypeAndDateRange |
+
+### Key Design Decisions
+1. **Optimistic Locking**: `SaveWithLock` checks version before update to prevent lost updates
+2. **GetOrCreate**: Uses PostgreSQL `ON CONFLICT DO NOTHING` for race-safe upsert
+3. **FEFO Ordering**: Stock batches ordered by expiry date for proper inventory rotation
+4. **Append-Only Transactions**: No Update/Delete methods on transaction repository
+5. **Multi-dimensional Queries**: Support for filtering by warehouse, product, type, date range
+
+### Notes for next developer
+- **P2-BE-008** (Inventory Application Service): Can now use these repositories
+- **P2-BE-009** (Inventory API): Depends on P2-BE-008
+- Run `./bin/migrate up` to apply migration 000009
+- Use `SaveWithLock` when modifying quantities to prevent race conditions
+- Use `GetOrCreate` when you need to ensure inventory item exists
+- Transaction repository only supports Create - corrections require new reverse transactions
+- Consider using `FindBelowMinimum` for stock alert functionality
+- `SumQuantityByProduct` useful for showing total stock across warehouses
