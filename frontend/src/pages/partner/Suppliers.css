@@ -1,0 +1,140 @@
+/* Suppliers Page Styles */
+
+.suppliers-page {
+  padding: var(--spacing-6);
+}
+
+.suppliers-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.suppliers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Supplier code styling */
+.supplier-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Supplier name cell with short name */
+.supplier-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.supplier-name {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+.supplier-short-name {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Contact cell */
+.supplier-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.supplier-phone {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-0);
+}
+
+.supplier-email {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Location cell */
+.supplier-location-cell {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+/* Payment days styling */
+.supplier-payment-days {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-0);
+}
+
+/* Table container */
+.suppliers-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .suppliers-page {
+    padding: var(--spacing-4);
+  }
+
+  .suppliers-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Status tags */
+.suppliers-page .semi-tag {
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Rating component in table */
+.suppliers-page .semi-rating {
+  display: inline-flex;
+}
+
+.suppliers-page .semi-rating .semi-rating-star {
+  font-size: 14px;
+}
+
+/* Action buttons in table */
+.suppliers-page .table-actions {
+  white-space: nowrap;
+}
+
+/* Bulk action bar spacing */
+.suppliers-page .bulk-action-bar {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Loading overlay */
+.suppliers-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Filter container */
+.suppliers-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .suppliers-filter-container {
+    flex-direction: column;
+  }
+
+  .suppliers-filter-container .semi-select {
+    width: 100% !important;
+  }
+}

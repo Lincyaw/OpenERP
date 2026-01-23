@@ -3166,3 +3166,62 @@ Navigate to `/partner/customers` in the application to access the customer list.
 - P1-FE-008 (Warehouse management page) is also high priority
 - Customer view page (`/partner/customers/:id`) is not yet implemented - only edit exists
 - The form uses `createEnumSchema` from validation.ts for type safety with Zod 4
+
+---
+
+## 2026-01-24 - P1-FE-006: Supplier List Page Implementation Complete
+
+### Completed
+- **P1-FE-006**: 供应商列表页面 (Supplier List Page)
+
+### What was done
+1. **Supplier List Page** (`frontend/src/pages/partner/Suppliers.tsx`):
+   - Full supplier list with pagination (20 per page default)
+   - Search by name, code, phone, email
+   - Filter by status (active, inactive, blocked)
+   - Filter by type (manufacturer, distributor, retailer, service)
+   - Sortable columns: code, name, rating, payment_term_days, created_at
+   - Row selection with bulk operations
+
+2. **Supplier Status Operations**:
+   - Activate: Enable inactive/blocked suppliers
+   - Deactivate: Disable active suppliers
+   - Block: Block supplier from business (with confirmation modal)
+   - Delete: Remove supplier (with confirmation modal)
+   - Bulk activate/deactivate for selected rows
+
+3. **Table Features**:
+   - Supplier code with monospace styling
+   - Supplier name with short name display
+   - Contact info (phone + email in stacked layout)
+   - Location (province + city)
+   - Rating display using Semi Design Rating component (5-star system)
+   - Payment term days column
+   - Status badge (active=green, inactive=grey, blocked=red)
+   - Row actions: view, edit, activate, deactivate, block, delete
+
+4. **CSS Styling** (`frontend/src/pages/partner/Suppliers.css`):
+   - Follows design system tokens (--spacing-*, --semi-color-*, etc.)
+   - Responsive layout for mobile/tablet
+   - Consistent with Customers page styling
+   - Rating component styling for table cells
+
+### Files created/modified
+- `frontend/src/pages/partner/Suppliers.tsx` (rewritten from placeholder)
+- `frontend/src/pages/partner/Suppliers.css` (new)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings in router files)
+- `npm run build` passes
+
+### Usage
+Navigate to `/partner/suppliers` in the application to access the supplier list.
+
+### Notes for next developer
+- P1-FE-007 (Supplier form) is the next priority - enables create/edit suppliers
+- P1-FE-008 (Warehouse management page) is also high priority
+- The edit/view navigation goes to `/partner/suppliers/:id/edit` and `/partner/suppliers/:id` - these routes need form components
+- Supplier page follows the same pattern as Customers page for consistency
+- Rating component displays supplier rating as 5-star visual
+- Payment terms displayed in days column
