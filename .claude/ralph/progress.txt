@@ -2212,3 +2212,108 @@ margin := product.GetProfitMargin() // 100% for (100-50)/50*100
 - Repository implements interface check: `var _ catalog.ProductRepository = (*GormProductRepository)(nil)`
 - Run `./bin/migrate up` to apply the products migration
 
+
+
+---
+
+## 2026-01-24 - P1-BE-004: Product Application Service Complete
+
+### Completed
+- **P1-BE-004**: Product Application Service
+- **P1-BE-003**: Product Repository 接口 + 实现 (was already done in P1-BE-002, marking as complete)
+- **P1-BE-007**: Product 领域事件发布 (was already done in P1-BE-002, marking as complete)
+
+### What was done
+1. Created application service directory structure at `internal/application/catalog/`
+
+2. Created product DTOs at `internal/application/catalog/dto.go`:
+   - `CreateProductRequest` - Request for creating new products
+   - `UpdateProductRequest` - Request for updating products (partial updates)
+   - `UpdateProductCodeRequest` - Request for changing product code
+   - `ProductResponse` - Full product response with all fields including profit margin
+   - `ProductListResponse` - Simplified response for list views
+   - `ProductListFilter` - Filter options for product listing
+   - Converter functions: `ToProductResponse()`, `ToProductListResponse()`, `ToProductListResponses()`
+
+3. Created Product Application Service at `internal/application/catalog/product_service.go`:
+   - `ProductService` struct with ProductRepository and CategoryRepository dependencies
+   - `Create()` - Create product with validation (duplicate code/barcode, category existence)
+   - `GetByID()` - Get product by ID for tenant
+   - `GetByCode()` - Get product by code for tenant
+   - `List()` - List products with filtering, pagination, and sorting
+   - `Update()` - Partial update of product fields
+   - `UpdateCode()` - Update product code with duplicate check
+   - `Delete()` - Delete product (with existence check)
+   - `Activate()` - Activate inactive product
+   - `Deactivate()` - Deactivate active product
+   - `Discontinue()` - Discontinue product (cannot be reactivated)
+   - `GetByCategory()` - Get products by category ID
+   - `CountByStatus()` - Get product counts grouped by status
+
+4. Created comprehensive unit tests at `internal/application/catalog/product_service_test.go`:
+   - 23 test cases covering all service methods
+   - Mock implementations for ProductRepository and CategoryRepository
+   - Tests for success cases, validation errors, and domain errors
+   - Tests for status transitions and business rules
+
+### Files created
+- `backend/internal/application/catalog/dto.go`
+- `backend/internal/application/catalog/product_service.go`
+- `backend/internal/application/catalog/product_service_test.go`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (23 new tests in application/catalog package)
+
+### Key Design Decisions
+1. **Separate DTOs from Domain**: Application layer has its own DTOs to decouple from domain models
+2. **Tenant Scoping**: All operations are scoped to tenant ID from context
+3. **Validation at Service Level**: Business rule validation (duplicate code/barcode, category existence) in service
+4. **Partial Updates**: UpdateProductRequest uses pointers for optional fields
+5. **Repository Injection**: Service depends on interfaces, not implementations (DI ready)
+
+### Usage Examples
+```go
+// Create service
+productRepo := persistence.NewGormProductRepository(db)
+categoryRepo := persistence.NewGormCategoryRepository(db)
+productService := catalog.NewProductService(productRepo, categoryRepo)
+
+// Create product
+req := catalog.CreateProductRequest{
+    Code: "SKU-001",
+    Name: "Widget",
+    Unit: "pcs",
+    PurchasePrice: decimal.NewFromFloat(50.00),
+    SellingPrice: decimal.NewFromFloat(100.00),
+}
+product, err := productService.Create(ctx, tenantID, req)
+
+// List products with filters
+filter := catalog.ProductListFilter{
+    Search:   "widget",
+    Status:   "active",
+    Page:     1,
+    PageSize: 20,
+}
+products, total, err := productService.List(ctx, tenantID, filter)
+
+// Update product
+updateReq := catalog.UpdateProductRequest{
+    Name: stringPtr("Updated Widget"),
+}
+updated, err := productService.Update(ctx, tenantID, productID, updateReq)
+
+// Status changes
+_, err = productService.Deactivate(ctx, tenantID, productID)
+_, err = productService.Activate(ctx, tenantID, productID)
+_, err = productService.Discontinue(ctx, tenantID, productID)
+```
+
+### Notes for next developer
+- P1-BE-005 (Product API) can now be started - service layer is ready
+- Application service handles validation and orchestration
+- Domain events are already published by the domain layer (P1-BE-002)
+- Use the DTOs for HTTP request/response handling
+- Service methods return domain errors which can be converted to HTTP errors using handlers
+
