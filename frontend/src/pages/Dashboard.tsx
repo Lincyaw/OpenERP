@@ -1,13 +1,28 @@
-import { Card, Typography, Space, Button } from '@douyinfe/semi-ui'
-import { IconHome } from '@douyinfe/semi-icons'
+import { useNavigate } from 'react-router-dom'
+import { Card, Typography, Space, Button, Avatar, Descriptions } from '@douyinfe/semi-ui'
+import { IconHome, IconUser, IconExit } from '@douyinfe/semi-icons'
+import { useAuthStore, useUser } from '@/store'
 
 const { Title, Paragraph } = Typography
 
 /**
  * Dashboard/Home page placeholder
  * Will be replaced with actual dashboard implementation in P5-FE-006
+ *
+ * Demonstrates Zustand store usage:
+ * - useUser() selector hook for getting current user
+ * - useAuthStore() for accessing logout action
  */
 export default function DashboardPage() {
+  const navigate = useNavigate()
+  const user = useUser()
+  const logout = useAuthStore((state) => state.logout)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div style={{ padding: '24px' }}>
       <Space vertical align="start" spacing="medium" style={{ width: '100%' }}>
@@ -22,6 +37,27 @@ export default function DashboardPage() {
             <Paragraph type="secondary">
               Welcome to the ERP System. This dashboard will display key metrics and quick actions.
             </Paragraph>
+          </Space>
+        </Card>
+
+        {/* User Info Card - Demonstrates Zustand auth store usage */}
+        <Card title="Current User" style={{ width: '100%' }}>
+          <Space align="start" spacing="medium">
+            <Avatar size="large" color="blue">
+              {user?.displayName?.charAt(0).toUpperCase() || <IconUser />}
+            </Avatar>
+            <div style={{ flex: 1 }}>
+              <Descriptions
+                data={[
+                  { key: 'Username', value: user?.username || '-' },
+                  { key: 'Display Name', value: user?.displayName || '-' },
+                  { key: 'Roles', value: user?.roles?.join(', ') || '-' },
+                ]}
+              />
+            </div>
+            <Button icon={<IconExit />} type="danger" onClick={handleLogout}>
+              Logout
+            </Button>
           </Space>
         </Card>
 

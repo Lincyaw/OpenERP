@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, Form, Button, Typography, Toast } from '@douyinfe/semi-ui'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
+import { useAuthStore } from '@/store'
 
 const { Title, Text } = Typography
 
@@ -12,12 +13,13 @@ interface LoginFormValues {
 
 /**
  * Login page
- * Handles user authentication
+ * Handles user authentication using Zustand auth store
  */
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [loading, setLoading] = useState(false)
+  const login = useAuthStore((state) => state.login)
 
   // Get intended destination from location state
   const from = (location.state as { from?: Location })?.from?.pathname || '/'
@@ -29,9 +31,18 @@ export default function LoginPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // TODO: Store actual token from API response
-      localStorage.setItem('access_token', 'mock-token')
-      localStorage.setItem('user', JSON.stringify({ username: values.username }))
+      // TODO: Replace with actual API response data
+      const mockUser = {
+        id: '1',
+        username: values.username,
+        displayName: values.username,
+        permissions: ['*'], // Admin has all permissions for demo
+        roles: ['admin'],
+      }
+      const mockToken = 'mock-jwt-token-' + Date.now()
+
+      // Use auth store to login
+      login(mockUser, mockToken)
 
       Toast.success({ content: 'Login successful!' })
 

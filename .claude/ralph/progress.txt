@@ -1195,3 +1195,120 @@ console.log(info.data?.version) // "1.0.0"
 - Use `getBreadcrumbs(path)` to generate breadcrumb navigation
 - Semi Design illustrations package not compatible with React 19 - using icons instead
 
+---
+
+## 2026-01-23 - P0-FE-004: State Management Configuration (Zustand) Complete
+
+### Completed
+- **P0-FE-004**: 状态管理配置 (Zustand)
+
+### What was done
+1. Installed Zustand package:
+   - `zustand` v5.x for React 19 compatibility
+
+2. Created store directory structure at `src/store/`:
+   - `types.ts` - Type definitions (User, AuthState, AuthActions, AppState, AppActions, BreadcrumbItem)
+   - `authStore.ts` - Authentication store with persistence
+   - `appStore.ts` - Application settings store with persistence
+   - `createStore.ts` - Utility for creating stores with auto-selectors
+   - `index.ts` - Module exports
+
+3. Implemented Auth Store features:
+   - User state (id, username, displayName, permissions, roles)
+   - JWT token management (accessToken, refreshToken)
+   - Persistent storage using Zustand's persist middleware
+   - Permission checking utilities (hasPermission, hasAnyPermission, hasAllPermissions)
+   - Login/logout actions
+   - Backward compatibility with localStorage for existing guards
+   - Devtools integration for debugging
+
+4. Implemented App Store features:
+   - Sidebar collapsed state (persistent)
+   - Theme switching (light/dark) with Semi Design integration
+   - Locale settings (persistent)
+   - Page title and breadcrumbs (non-persistent)
+   - Devtools integration for debugging
+
+5. Selector hooks for common access patterns:
+   - `useUser()`, `useIsAuthenticated()`, `useAuthLoading()` - Auth selectors
+   - `useSidebarCollapsed()`, `useTheme()`, `useLocale()`, `useBreadcrumbs()`, `usePageTitle()` - App selectors
+
+6. Updated existing components to use Zustand:
+   - `Login.tsx` - Uses `useAuthStore().login()` instead of direct localStorage
+   - `Dashboard.tsx` - Displays user info using `useUser()`, logout with `useAuthStore().logout()`
+   - `router/guards.tsx` - Uses `useAuthStore()` for authentication and permission checks
+
+### Files created/modified
+- `frontend/package.json` (added zustand dependency)
+- `frontend/src/store/types.ts` (new)
+- `frontend/src/store/authStore.ts` (new)
+- `frontend/src/store/appStore.ts` (new)
+- `frontend/src/store/createStore.ts` (new)
+- `frontend/src/store/index.ts` (updated with exports)
+- `frontend/src/pages/Login.tsx` (updated to use auth store)
+- `frontend/src/pages/Dashboard.tsx` (updated to show user info and logout)
+- `frontend/src/router/guards.tsx` (updated to use auth store)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (warnings from existing route files, not new code)
+- `npm run build` passes
+
+### Usage Examples
+
+**Auth Store:**
+```tsx
+import { useAuthStore, useUser, useIsAuthenticated } from '@/store'
+
+// Get current user
+const user = useUser()
+
+// Check if authenticated
+const isAuthenticated = useIsAuthenticated()
+
+// Login
+const login = useAuthStore((state) => state.login)
+login({ id: '1', username: 'admin' }, 'jwt-token')
+
+// Logout
+const logout = useAuthStore((state) => state.logout)
+logout()
+
+// Check permissions
+const { hasPermission, hasAnyPermission } = useAuthStore()
+if (hasPermission('products:create')) {
+  // User can create products
+}
+```
+
+**App Store:**
+```tsx
+import { useAppStore, useTheme, useSidebarCollapsed } from '@/store'
+
+// Get theme
+const theme = useTheme()
+
+// Toggle sidebar
+const { toggleSidebar, setSidebarCollapsed } = useAppStore()
+toggleSidebar()
+
+// Toggle theme
+const { toggleTheme, setTheme } = useAppStore()
+toggleTheme()
+setTheme('dark')
+
+// Set page title (updates document.title)
+const { setPageTitle } = useAppStore()
+setPageTitle('Products')
+```
+
+### Notes for next developer
+- P0-FE-006 (Layout components) is the next highest priority task
+- P0-FE-007 (Form components) and P0-FE-008 (Table components) can also be started
+- Auth store persists to localStorage under key `erp-auth`
+- App store persists to localStorage under key `erp-app-settings`
+- Theme changes automatically apply `theme-mode` attribute to document body for Semi Design
+- Zustand devtools are available in React DevTools for debugging
+- Use selector hooks (`useUser()`, `useTheme()`, etc.) for better performance
+- The `createStoreWithSelectors` utility can be used for new stores with auto-selectors
+
