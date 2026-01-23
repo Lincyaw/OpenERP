@@ -62,7 +62,7 @@
   {"id":"P1-INT-003","story":"客户余额功能联调","priority":"medium","requirements":["验证余额查询","验证充值流程","验证流水记录"],"passes":false},
   {"id":"P2-BE-001","story":"InventoryItem 聚合根实现","priority":"high","requirements":["实现 InventoryItem 聚合根","包含仓库商品可用锁定数量","实现库存不变量校验"],"passes":true},
   {"id":"P2-BE-002","story":"StockBatch 实体实现","priority":"high","requirements":["实现 StockBatch 实体","包含批次号入库日期数量成本","支持批次过期管理"],"passes":true},
-  {"id":"P2-BE-003","story":"成本计算策略实现 (移动加权/FIFO)","priority":"high","requirements":["实现成本计算策略接口","实现移动加权平均策略","实现 FIFO 策略"],"passes":false},
+  {"id":"P2-BE-003","story":"成本计算策略实现 (移动加权/FIFO)","priority":"high","requirements":["实现成本计算策略接口","实现移动加权平均策略","实现 FIFO 策略"],"passes":true},
   {"id":"P2-BE-004","story":"批次管理策略实现","priority":"medium","requirements":["实现批次出库策略接口","实现 FIFO 批次策略","实现指定批次策略"],"passes":false},
   {"id":"P2-BE-005","story":"InventoryTransaction 实现","priority":"high","requirements":["实现库存流水实体","记录入库出库调整操作","关联业务单据"],"passes":false},
   {"id":"P2-BE-006","story":"StockLock 实现 (乐观锁)","priority":"high","requirements":["实现库存锁定机制","使用乐观锁防止超卖","实现锁定超时释放"],"passes":true},
