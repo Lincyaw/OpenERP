@@ -1,0 +1,88 @@
+/* Stock List Page Styles */
+
+.stock-list-page {
+  padding: var(--spacing-6, 24px);
+}
+
+.stock-list-card {
+  width: 100%;
+}
+
+.stock-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+/* Quantity cell with warning icon */
+.quantity-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-1, 4px);
+}
+
+/* Warning styling for low stock */
+.quantity-warning {
+  color: var(--semi-color-warning, #ff7900);
+  font-weight: 600;
+}
+
+/* Locked quantity styling */
+.quantity-locked {
+  color: var(--semi-color-danger, #f93920);
+}
+
+/* Warning icon */
+.warning-icon {
+  color: var(--semi-color-warning, #ff7900);
+  font-size: 14px;
+}
+
+/* Product name in cell */
+.product-name-cell {
+  color: var(--semi-color-text-0, #1c1f23);
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .stock-list-page {
+    padding: var(--spacing-4, 16px);
+  }
+
+  .stock-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2, 8px);
+  }
+}
+
+/* Table row hover effect */
+.stock-list-card :global(.semi-table-row:hover) {
+  background-color: var(--semi-color-fill-0, #f5f5f5);
+}
+
+/* Status tags alignment */
+.stock-list-card :global(.semi-tag) {
+  font-size: 12px;
+}
+
+/* Filter select styling */
+.stock-list-card :global(.semi-select) {
+  min-width: 120px;
+}
+
+/* Dark mode adjustments */
+[theme-mode='dark'] .product-name-cell {
+  color: var(--semi-color-text-0, #fff);
+}
+
+[theme-mode='dark'] .quantity-warning {
+  color: var(--semi-color-warning, #ffa940);
+}
+
+[theme-mode='dark'] .quantity-locked {
+  color: var(--semi-color-danger, #ff4d4f);
+}

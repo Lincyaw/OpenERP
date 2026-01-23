@@ -4105,3 +4105,81 @@ curl -X PUT "http://localhost:8080/api/v1/inventory/thresholds" \
 - Adjust stock fails if there are active locks (to prevent inconsistency)
 - Transaction list supports filtering by type, source, and date range
 - Low stock alert endpoint (`/alerts/low-stock`) returns items below minimum threshold
+
+---
+
+## 2026-01-24 - P2-FE-001: Inventory Stock List Page Complete
+
+### Completed
+- **P2-FE-001**: 库存查询列表页面
+
+### What was done
+1. Regenerated frontend TypeScript SDK from OpenAPI spec:
+   - New `src/api/inventory/` directory with typed API client
+   - Generated types: `HandlerInventoryItemResponse`, `GetInventoryItemsParams`, etc.
+   - All inventory endpoints available: list, lookup, lock, unlock, adjust, etc.
+
+2. Implemented Stock List page at `src/pages/inventory/StockList.tsx`:
+   - Full inventory listing with DataTable component
+   - Server-side pagination support
+   - Sortable columns (available_quantity, locked_quantity, total_quantity, unit_cost, total_value, updated_at)
+   - Warehouse name and product name resolution from IDs
+   - Row actions: View detail, View transactions, Adjust stock
+
+3. Implemented filtering:
+   - Warehouse dropdown filter (fetches active warehouses)
+   - Stock status filter: All / Has stock / Low stock warning / No stock
+   - Search input for product search
+
+4. Quantity display features:
+   - Available quantity with low stock warning icon
+   - Locked quantity with special styling
+   - Total quantity display
+   - Unit cost and total value columns
+   - Status tags: 正常 (normal), 低库存 (low), 超上限 (above max), 无库存 (no stock)
+
+5. Created CSS styling at `src/pages/inventory/StockList.css`:
+   - Warning styles for low stock quantities
+   - Locked quantity highlighting
+   - Dark mode support
+   - Responsive layout adjustments
+
+### Files created/modified
+- `frontend/src/pages/inventory/StockList.tsx` (rewritten)
+- `frontend/src/pages/inventory/StockList.css` (new)
+- `frontend/src/api/inventory/inventory.ts` (auto-generated)
+- `frontend/src/api/models/*.ts` (auto-generated inventory models)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings from other files)
+- `npm run build` passes
+
+### API Endpoints Used
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | /inventory/items | List inventory items with filtering |
+| GET | /partner/warehouses | Get warehouses for filter dropdown |
+| GET | /catalog/products | Get products for name display |
+
+### Page Features Summary
+| Feature | Status |
+|---------|--------|
+| Inventory list display | ✅ |
+| Warehouse filter | ✅ |
+| Stock status filter | ✅ |
+| Search functionality | ✅ |
+| Available quantity display | ✅ |
+| Locked quantity display | ✅ |
+| Low stock warning indicator | ✅ |
+| Pagination | ✅ |
+| Sorting | ✅ |
+| Row actions (view/transactions/adjust) | ✅ |
+
+### Notes for next developer
+- **P2-FE-002** (库存明细页面): Next priority - implement batch and transaction detail pages
+- **P2-FE-003** (库存调整页面): Can implement using `postInventoryStockAdjust` API
+- Warehouse and product names are cached in Maps for display - consider using React Query for caching
+- The stock detail and transaction routes (`/inventory/stock/:id/*`) need corresponding page components
+- The adjust stock route (`/inventory/adjust`) needs corresponding page component
+- Consider adding real-time refresh or polling for stock changes in production

@@ -72,7 +72,7 @@
   {"id":"P2-BE-010","story":"库存领域事件实现","priority":"medium","requirements":["定义 StockLocked 事件","定义 StockDeducted 事件","定义 StockIncreased 事件"],"passes":true},
   {"id":"P2-BE-011","story":"StockTaking 盘点聚合实现","priority":"medium","requirements":["实现 StockTaking 聚合","支持盘点单创建和执行","实现盘点差异计算"],"passes":false},
   {"id":"P2-BE-012","story":"StockTaking API","priority":"medium","requirements":["实现盘点单 CRUD API","实现盘点执行 API","实现盘点审批 API"],"passes":false},
-  {"id":"P2-FE-001","story":"库存查询列表页面","priority":"high","requirements":["实现库存列表展示","支持仓库商品筛选","显示可用锁定数量"],"passes":false},
+  {"id":"P2-FE-001","story":"库存查询列表页面","priority":"high","requirements":["实现库存列表展示","支持仓库商品筛选","显示可用锁定数量"],"passes":true},
   {"id":"P2-FE-002","story":"库存明细页面 (批次/流水)","priority":"high","requirements":["实现批次明细展示","实现流水记录展示","支持时间范围筛选"],"passes":false},
   {"id":"P2-FE-003","story":"库存调整页面","priority":"high","requirements":["实现库存调整表单","支持调整原因选择","实现调整预览"],"passes":false},
   {"id":"P2-FE-004","story":"盘点单创建页面","priority":"medium","requirements":["实现盘点单创建表单","支持选择仓库和商品范围","支持导入系统库存"],"passes":false},
