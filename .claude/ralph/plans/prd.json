@@ -17,6 +17,7 @@
   {"id":"P0-FE-005","story":"HTTP 客户端封装 (Axios)","priority":"high","requirements":["封装 Axios 实例","实现请求响应拦截器","统一错误处理"],"passes":true},
   {"id":"P0-FE-006","story":"布局组件 (Header, Sidebar, Content)","priority":"high","requirements":["实现主布局组件","实现 Header 组件","实现 Sidebar 导航组件"],"passes":true},
   {"id":"P0-FE-007","story":"通用表单组件","priority":"medium","requirements":["集成 React Hook Form","实现通用表单字段","实现表单验证工具"],"passes":true},
+  {"id":"P0-FE-DS","story":"前端设计规范体系 (Design System)","priority":"critical","requirements":["建立响应式断点系统 (Mobile 375px / Tablet 768px / Desktop 1024px / Wide 1440px)","实现 CSS 架构规范 (CSS Modules + CSS Variables + BEM 命名)","创建设计 Token 系统 (颜色/字体/间距/阴影/动画)","实现无障碍适老化支持 (WCAG 2.1 AA / 字体缩放 / 高对比度模式 / 焦点管理)","建立交互设计规范 (最少点击原则 / 智能默认值 / 批量操作 / 快捷键)","创建响应式布局工具 (Container / Grid / Flex 组件)","实现主题切换系统 (亮色/暗色/适老化主题)","将完整设计规范写入 frontend/README.md","在根目录 CLAUDE.md 中引用 frontend/README.md，要求 LLM 开发前端时必须遵循该规范"],"passes":false},
   {"id":"P0-FE-008","story":"通用表格组件","priority":"medium","requirements":["基于 Semi Table 封装","支持分页排序筛选","实现表格操作列"],"passes":false},
   {"id":"P0-FE-009","story":"前端测试框架配置 (Vitest)","priority":"medium","requirements":["配置 Vitest","配置 React Testing Library","创建测试工具函数"],"passes":false},
   {"id":"P0-PD-001","story":"商品模块原型设计","priority":"medium","requirements":["设计商品列表页原型","设计商品表单原型","设计分类管理原型"],"passes":false},
