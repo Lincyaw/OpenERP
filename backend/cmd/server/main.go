@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	catalogapp "github.com/erp/backend/internal/application/catalog"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
@@ -88,6 +89,16 @@ func main() {
 	}()
 	log.Info("Database connected successfully")
 
+	// Initialize repositories
+	productRepo := persistence.NewGormProductRepository(db.DB)
+	categoryRepo := persistence.NewGormCategoryRepository(db.DB)
+
+	// Initialize application services
+	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+
+	// Initialize HTTP handlers
+	productHandler := handler.NewProductHandler(productService)
+
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -160,6 +171,20 @@ func main() {
 	catalogRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "catalog service ready"})
 	})
+	// Product routes
+	catalogRoutes.POST("/products", productHandler.Create)
+	catalogRoutes.GET("/products", productHandler.List)
+	catalogRoutes.GET("/products/stats/count", productHandler.CountByStatus)
+	catalogRoutes.GET("/products/:id", productHandler.GetByID)
+	catalogRoutes.GET("/products/code/:code", productHandler.GetByCode)
+	catalogRoutes.PUT("/products/:id", productHandler.Update)
+	catalogRoutes.PUT("/products/:id/code", productHandler.UpdateCode)
+	catalogRoutes.DELETE("/products/:id", productHandler.Delete)
+	catalogRoutes.POST("/products/:id/activate", productHandler.Activate)
+	catalogRoutes.POST("/products/:id/deactivate", productHandler.Deactivate)
+	catalogRoutes.POST("/products/:id/discontinue", productHandler.Discontinue)
+	// Products by category
+	catalogRoutes.GET("/categories/:category_id/products", productHandler.GetByCategory)
 
 	// Partner domain (customers, suppliers, warehouses)
 	partnerRoutes := router.NewDomainGroup("partner", "/partner")

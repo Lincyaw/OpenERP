@@ -2317,3 +2317,105 @@ _, err = productService.Discontinue(ctx, tenantID, productID)
 - Use the DTOs for HTTP request/response handling
 - Service methods return domain errors which can be converted to HTTP errors using handlers
 
+
+---
+
+## 2026-01-24 - P1-BE-005: Product API (CRUD + enable/disable) Complete
+
+### Completed
+- **P1-BE-005**: Product API (CRUD + enable/disable)
+
+### What was done
+1. Created Product HTTP handler at `internal/interfaces/http/handler/product.go`:
+   - Full CRUD operations: Create, GetByID, GetByCode, List, Update, UpdateCode, Delete
+   - Status management: Activate, Deactivate, Discontinue
+   - Utility endpoints: CountByStatus, GetByCategory
+   - Complete Swagger/OpenAPI annotations for all endpoints
+
+2. Created Swagger-friendly DTOs at `internal/interfaces/http/handler/product_dto.go`:
+   - `ProductResponse` with swagger example annotations
+   - `ProductListResponse` for list views
+   - `ProductListItem` for paginated responses
+
+3. Created helper functions at `internal/interfaces/http/handler/helpers.go`:
+   - `toDecimalPtr()` - Convert float64 to *decimal.Decimal
+   - `toDecimal()` - Convert float64 to decimal.Decimal
+
+4. Registered routes in `cmd/server/main.go`:
+   - Initialized repositories (product, category)
+   - Initialized ProductService with dependencies
+   - Initialized ProductHandler
+   - Registered all routes under `/api/v1/catalog/products`
+
+5. Regenerated OpenAPI documentation:
+   - `backend/docs/swagger.yaml`
+   - `backend/docs/swagger.json`
+   - `backend/docs/docs.go`
+
+6. Created comprehensive unit tests at `internal/interfaces/http/handler/product_test.go`:
+   - 17 test cases covering all handler methods
+   - Mock implementations for ProductRepository and CategoryRepository
+   - Tests for success cases, validation errors, not found errors
+
+### Files created
+- `backend/internal/interfaces/http/handler/product.go`
+- `backend/internal/interfaces/http/handler/product_dto.go`
+- `backend/internal/interfaces/http/handler/helpers.go`
+- `backend/internal/interfaces/http/handler/product_test.go`
+
+### Files modified
+- `backend/cmd/server/main.go` - Route registration
+- `backend/docs/swagger.yaml` - OpenAPI spec
+- `backend/docs/swagger.json` - OpenAPI spec
+- `backend/docs/docs.go` - Swagger embed
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (17 new handler tests)
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /api/v1/catalog/products | Create a new product |
+| GET | /api/v1/catalog/products | List products with filters |
+| GET | /api/v1/catalog/products/:id | Get product by ID |
+| GET | /api/v1/catalog/products/code/:code | Get product by code |
+| PUT | /api/v1/catalog/products/:id | Update product |
+| PUT | /api/v1/catalog/products/:id/code | Update product code |
+| DELETE | /api/v1/catalog/products/:id | Delete product |
+| PUT | /api/v1/catalog/products/:id/activate | Activate product |
+| PUT | /api/v1/catalog/products/:id/deactivate | Deactivate product |
+| PUT | /api/v1/catalog/products/:id/discontinue | Discontinue product |
+| GET | /api/v1/catalog/products/count-by-status | Count products by status |
+| GET | /api/v1/catalog/products/category/:category_id | Get products by category |
+
+### Key Design Decisions
+1. **X-Tenant-ID Header**: All endpoints require tenant ID via header for multi-tenancy
+2. **Swagger Annotations**: Full OpenAPI 3.0 documentation for frontend SDK generation
+3. **Error Handling**: Uses BaseHandler's error methods for consistent error responses
+4. **Separation of DTOs**: Handler-level DTOs for Swagger, application-level DTOs for service
+
+### Usage Examples
+```bash
+# Create product
+curl -X POST http://localhost:8080/api/v1/catalog/products \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{"code":"SKU-001","name":"Widget","unit":"pcs"}'
+
+# List products with filters
+curl "http://localhost:8080/api/v1/catalog/products?search=widget&status=active&page=1&page_size=20" \
+  -H "X-Tenant-ID: 550e8400-e29b-41d4-a716-446655440000"
+
+# Activate product
+curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
+  -H "X-Tenant-ID: 550e8400-e29b-41d4-a716-446655440000"
+```
+
+### Notes for next developer
+- P1-FE-001 (Product List Page) can now be started - API is ready
+- Run `npm run api:generate` in frontend to generate TypeScript SDK from updated OpenAPI spec
+- All endpoints are documented in Swagger UI at /swagger/index.html
+- Handler tests use mock repositories - integration tests will need real database
+
