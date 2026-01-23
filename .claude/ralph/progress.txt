@@ -2098,3 +2098,117 @@ isChild := electronics.IsAncestorOf(phones) // true
 - Run `./bin/migrate up` to apply the categories migration
 - For moving categories to new parent, use `UpdatePath()` method
 
+
+---
+
+## 2026-01-24 - P1-BE-002: Product Aggregate Root Implementation Complete
+
+### Completed
+- **P1-BE-002**: Product 聚合根实现
+
+### What was done
+1. Created Product aggregate root at `internal/domain/catalog/product.go`:
+   - `Product` struct extending `TenantAggregateRoot` for multi-tenant support
+   - Fields: Code, Name, Description, Barcode, CategoryID, Unit, PurchasePrice, SellingPrice, MinStock, Status, SortOrder, Attributes
+   - `NewProduct()` - Factory for creating products with validation
+   - `NewProductWithPrices()` - Factory with prices
+   - `Update()`, `UpdateCode()`, `SetBarcode()`, `SetCategory()` - Basic updates
+   - `SetPrices()`, `UpdatePurchasePrice()`, `UpdateSellingPrice()` - Price management
+   - `SetMinStock()`, `SetSortOrder()`, `SetAttributes()` - Additional settings
+   - `Activate()`, `Deactivate()`, `Discontinue()` - Status management (three states: active/inactive/discontinued)
+   - `GetProfitMargin()`, `GetPurchasePriceMoney()`, `GetSellingPriceMoney()` - Business calculations
+   - Validation for code (alphanumeric + underscore/hyphen), name (max 200 chars), unit (max 20 chars)
+
+2. Created domain events at `internal/domain/catalog/product_events.go`:
+   - `ProductCreatedEvent` - Published on creation
+   - `ProductUpdatedEvent` - Published on updates
+   - `ProductStatusChangedEvent` - Published on status changes
+   - `ProductPriceChangedEvent` - Published on price changes
+   - `ProductDeletedEvent` - For deletion tracking
+   - All events embed `BaseDomainEvent` with tenant support
+
+3. Created ProductRepository interface at `internal/domain/catalog/product_repository.go`:
+   - Standard CRUD: `FindByID`, `FindByIDForTenant`, `Save`, `Delete`, `DeleteForTenant`
+   - Query methods: `FindByCode`, `FindByBarcode`, `FindAll`, `FindAllForTenant`
+   - Category queries: `FindByCategory`, `FindByCategories`
+   - Status queries: `FindActive`, `FindByStatus`
+   - Batch operations: `FindByIDs`, `FindByCodes`, `SaveBatch`
+   - Count methods: `Count`, `CountForTenant`, `CountByCategory`, `CountByStatus`
+   - Existence checks: `ExistsByCode`, `ExistsByBarcode`
+
+4. Created GORM repository implementation at `internal/infrastructure/persistence/product_repository.go`:
+   - Full implementation of ProductRepository interface
+   - Tenant scoping on all queries
+   - Filter support: search (name/code/barcode), status, category_id, unit, min_price, max_price, has_barcode
+   - Pagination and ordering support
+   - Default ordering by sort_order, name
+
+5. Created database migration `000004_create_products`:
+   - Products table with tenant foreign key
+   - Composite unique index on (tenant_id, code)
+   - Foreign key to categories
+   - Decimal fields for prices (18,4 precision)
+   - JSONB for custom attributes
+   - Indexes for efficient querying (tenant, category, barcode, status)
+   - Trigger for updated_at timestamp
+
+6. Comprehensive unit tests at `internal/domain/catalog/product_test.go`:
+   - 67 test cases covering all Product functionality
+   - Tests for creation, updates, status changes
+   - Tests for price management
+   - Tests for validation (code, name, unit)
+   - Tests for domain events
+   - Tests for business calculations (profit margin)
+
+### Files created
+- `backend/internal/domain/catalog/product.go`
+- `backend/internal/domain/catalog/product_events.go`
+- `backend/internal/domain/catalog/product_repository.go`
+- `backend/internal/domain/catalog/product_test.go`
+- `backend/internal/infrastructure/persistence/product_repository.go`
+- `backend/migrations/000004_create_products.up.sql`
+- `backend/migrations/000004_create_products.down.sql`
+
+### Build Status
+- `go build ./...` passes successfully
+- `go test ./...` passes all tests (67 new tests in product)
+
+### Key Design Decisions
+1. **Three-state status**: Active, Inactive, Discontinued (discontinued cannot be reactivated)
+2. **Decimal prices**: Using `decimal.Decimal` for precision, 4 decimal places in DB
+3. **JSONB attributes**: Flexible custom attributes stored as JSON
+4. **Code normalization**: Codes stored uppercase for consistency
+5. **Category reference**: Soft reference to Category (SET NULL on delete)
+
+### Usage Examples
+```go
+// Create product
+product, _ := catalog.NewProduct(tenantID, "SKU-001", "Widget", "pcs")
+
+// Set prices
+purchasePrice := valueobject.NewMoneyCNYFromFloat(50.00)
+sellingPrice := valueobject.NewMoneyCNYFromFloat(100.00)
+product.SetPrices(purchasePrice, sellingPrice)
+
+// Set category
+product.SetCategory(&categoryID)
+
+// Status management
+product.Deactivate()
+product.Activate()
+product.Discontinue() // Cannot reactivate after this
+
+// Calculate profit margin
+margin := product.GetProfitMargin() // 100% for (100-50)/50*100
+```
+
+### Notes for next developer
+- P1-BE-003 (Product Repository) is also done as part of this task
+- P1-BE-004 (Product Application Service) can now be started
+- P1-BE-007 (Product domain events) is also done as part of this task
+- Product code is automatically uppercased on creation/update
+- Use `NewProductWithPrices()` when you need to set prices during creation
+- Discontinued products cannot be activated or deactivated
+- Repository implements interface check: `var _ catalog.ProductRepository = (*GormProductRepository)(nil)`
+- Run `./bin/migrate up` to apply the products migration
+
