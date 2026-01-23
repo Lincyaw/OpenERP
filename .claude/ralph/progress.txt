@@ -2601,3 +2601,94 @@ curl -X PUT http://localhost:8080/api/v1/catalog/products/123/activate \
 - Use CustomerType to differentiate B2C (individual) from B2B (organization) workflows
 - TaxID field is for VAT invoice requirements (Chinese 增值税)
 
+
+---
+
+## 2026-01-24 - P1-BE-011: Supplier Aggregate Implementation Complete
+
+### Completed
+- **P1-BE-011**: Supplier 聚合根实现 (Supplier Aggregate Root Implementation)
+
+### What was done
+1. Created Supplier aggregate root at `internal/domain/partner/supplier.go`:
+   - Implements `TenantAggregateRoot` for multi-tenant support
+   - Status management: active, inactive, blocked
+   - Supplier types: manufacturer, distributor, retailer, service
+   - Contact information: name, phone, email
+   - Address information: address, city, province, postal code, country
+   - Financial fields: tax ID, bank name, bank account
+   - Payment terms: credit days, credit limit
+   - Accounts payable balance tracking
+   - Supplier rating (0-5 scale)
+   - Custom attributes as JSON
+
+2. Created domain events at `internal/domain/partner/supplier_events.go`:
+   - SupplierCreatedEvent
+   - SupplierUpdatedEvent
+   - SupplierStatusChangedEvent
+   - SupplierPaymentTermsChangedEvent
+   - SupplierBalanceChangedEvent
+   - SupplierDeletedEvent
+
+3. Created repository interface at `internal/domain/partner/supplier_repository.go`:
+   - Full CRUD operations with tenant-scoped variants
+   - Query methods: FindByPhone, FindByEmail, FindByType, FindByStatus
+   - Batch operations: FindByIDs, FindByCodes, SaveBatch
+   - Special queries: FindWithOutstandingBalance, FindOverCreditLimit
+   - Existence checks: ExistsByCode, ExistsByPhone, ExistsByEmail
+   - Count methods for aggregations
+
+4. Created database migration:
+   - `migrations/000006_create_suppliers.up.sql` - Creates suppliers table with:
+     - Unique constraint on (tenant_id, code)
+     - Check constraints for type, status, credit_days, credit_limit, balance, rating
+     - Indexes for common queries (tenant, status, type, phone, email)
+     - GIN index for JSONB attributes
+     - Pattern indexes for ILIKE searches
+     - Index for balance and over-credit queries
+     - Auto-update trigger for updated_at
+   - `migrations/000006_create_suppliers.down.sql` - Rollback script
+
+5. Created comprehensive unit tests at `internal/domain/partner/supplier_test.go`:
+   - 45+ test cases covering all functionality
+   - Test coverage: 89.6% for partner domain
+
+### Key Features
+- **Supplier Types**: Manufacturer, Distributor, Retailer, Service
+- **Payment Terms**: Credit days (0-365) and credit limit configuration
+- **Balance Management**: Accounts payable tracking with purchase, payment, adjustment operations
+- **Credit Control**: GetAvailableCredit(), IsOverCreditLimit() helpers
+- **Bank Information**: Bank name and account for payments
+- **Rating System**: 0-5 scale supplier rating
+- **Validation**: Code format, phone format, email format validation
+- **Full Address**: Formatted full address generation
+
+### Key Differences from Customer
+- No customer levels (suppliers have rating instead)
+- Balance represents accounts payable (what we owe), not prepaid balance
+- Payment terms (credit days/limit) instead of customer balance operations
+- Bank information fields for payment processing
+- "blocked" status instead of "suspended" (for quality/payment issues)
+
+### Files created
+- `backend/internal/domain/partner/supplier.go`
+- `backend/internal/domain/partner/supplier_events.go`
+- `backend/internal/domain/partner/supplier_repository.go`
+- `backend/internal/domain/partner/supplier_test.go`
+- `backend/migrations/000006_create_suppliers.up.sql`
+- `backend/migrations/000006_create_suppliers.down.sql`
+
+### Build Status
+- `go build ./...` passes
+- `go test ./...` passes all tests
+- Test coverage for partner domain: 89.6%
+
+### Notes for next developer
+- P1-BE-012 (Warehouse aggregate) is the next priority - completes the partner context aggregates
+- P1-BE-013 (Partner repositories) depends on all three aggregates being complete
+- Supplier balance operations generate events for downstream finance processing
+- The balance field represents accounts payable (money we owe the supplier)
+- Use SupplierType to categorize supply chain relationship
+- Payment terms (credit_days, credit_limit) control purchasing credit
+- Bank information is for generating payment vouchers
+- Rating can be used for supplier performance evaluation
