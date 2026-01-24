@@ -133,8 +133,8 @@ func (r *GormSalesReturnRepository) FindPendingApproval(ctx context.Context, ten
 // Save creates or updates a sales return
 func (r *GormSalesReturnRepository) Save(ctx context.Context, sr *trade.SalesReturn) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Save the return
-		if err := tx.Save(sr).Error; err != nil {
+		// Save the return without auto-saving associations
+		if err := tx.Omit("Items").Save(sr).Error; err != nil {
 			return err
 		}
 

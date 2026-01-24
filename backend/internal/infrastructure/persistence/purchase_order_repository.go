@@ -148,8 +148,8 @@ func (r *GormPurchaseOrderRepository) FindPendingReceipt(ctx context.Context, te
 // Save creates or updates a purchase order
 func (r *GormPurchaseOrderRepository) Save(ctx context.Context, order *trade.PurchaseOrder) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Save the order
-		if err := tx.Save(order).Error; err != nil {
+		// Save the order without auto-saving associations
+		if err := tx.Omit("Items").Save(order).Error; err != nil {
 			return err
 		}
 

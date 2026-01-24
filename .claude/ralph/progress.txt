@@ -12938,3 +12938,87 @@ Tests error information handling:
 4. **XSS protection layers**: Content-Type: application/json, security headers, input validation
 5. **SQL injection prevention**: GORM with parameterized queries, input validation
 6. **Next priority items**: P8-001 (端到端业务流程测试), P1-INT-003 (客户余额功能联调), P1-QA-004 (Partner API 集成测试)
+
+---
+
+## 2026-01-25: P8-001 - End-to-End Business Flow Testing (端到端业务流程测试)
+
+### Summary
+Implemented comprehensive end-to-end integration tests for all major business flows: sales, purchase, and return operations. Tests use testcontainers with PostgreSQL to simulate real database interactions.
+
+### Implementation Details
+
+**Test Coverage:**
+1. **Complete Sales Flow** (`TestE2E_CompleteSalesFlow`)
+   - Sales order creation → confirmation → shipment → completion
+   - Inventory locking on confirmation
+   - Inventory deduction on shipment
+   - Account receivable creation on shipment
+   - Sales order cancellation with inventory release
+
+2. **Complete Purchase Flow** (`TestE2E_CompletePurchaseFlow`)
+   - Purchase order creation → confirmation → goods receiving
+   - Partial receiving support
+   - Full receiving with completion
+   - Account payable creation on receipt
+   - Purchase order cancellation
+
+3. **Sales Return Flow** (`TestE2E_SalesReturnFlow`)
+   - Return creation from shipped sales order
+   - Submit → Approve → Complete workflow
+   - Red-letter account receivable creation
+   - Return rejection handling
+
+4. **Purchase Return Flow** (`TestE2E_PurchaseReturnFlow`)
+   - Return creation from received purchase order
+   - Submit → Approve → Ship → Complete workflow
+   - Red-letter account payable creation
+   - Return cancellation handling
+
+5. **Full Business Cycle** (`TestE2E_FullBusinessCycle`)
+   - Complete cycle: Purchase → Inventory → Sales → Return
+   - Financial verification (payables, receivables, red-letters)
+   - Inventory tracking through entire cycle
+
+6. **Error Scenarios** (`TestE2E_ErrorScenarios`)
+   - Insufficient inventory handling
+   - Invalid state transitions
+   - Over-return prevention
+   - Event idempotency testing
+
+### Files Created
+- `backend/tests/integration/e2e_business_flow_test.go` (~1227 lines)
+- `backend/migrations/000022_create_trade_tables.up.sql` (trade module tables)
+- `backend/migrations/000022_create_trade_tables.down.sql` (rollback)
+
+### Files Modified
+- `backend/internal/infrastructure/persistence/sales_order_repository.go` (fixed GORM association handling)
+- `backend/internal/infrastructure/persistence/purchase_order_repository.go` (fixed GORM association handling)
+- `backend/internal/infrastructure/persistence/sales_return_repository.go` (fixed GORM association handling)
+- `backend/internal/infrastructure/persistence/purchase_return_repository.go` (fixed GORM association handling)
+- `.claude/ralph/plans/prd.json` (P8-001: passes: true)
+
+### Bug Fixes
+- **GORM Association Save Issue**: Fixed foreign key constraint violations when saving orders with items by using `tx.Omit("Items").Save(order)` to prevent GORM from auto-saving associations before the parent record exists.
+
+### Database Tables Created
+- `sales_orders` - Sales order header
+- `sales_order_items` - Sales order line items
+- `purchase_orders` - Purchase order header
+- `purchase_order_items` - Purchase order line items
+- `sales_returns` - Sales return header
+- `sales_return_items` - Sales return line items
+- `purchase_returns` - Purchase return header
+- `purchase_return_items` - Purchase return line items
+
+### Test Results
+- All 18 sub-tests: PASS
+- Total test time: ~33 seconds (6 separate PostgreSQL containers)
+
+### Notes for Next Developer
+1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestE2E" -timeout 600s`
+2. **Database migrations**: New migration `000022_create_trade_tables` adds all trade module tables
+3. **Repository pattern**: Parent-child saves use `Omit("Items")` to handle association properly
+4. **Return workflow**: Set warehouse before submit/approve - cannot set warehouse after approval
+5. **Purchase returns**: Use `purchaseOrder.Items[0]` after receive to get updated `ReceivedQuantity`
+6. **Next priority items**: P8-002 (性能压力测试), P1-INT-003 (客户余额功能联调)

@@ -130,8 +130,8 @@ func (r *GormSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID
 // Save creates or updates a sales order
 func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesOrder) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Save the order
-		if err := tx.Save(order).Error; err != nil {
+		// Save the order without auto-saving associations
+		if err := tx.Omit("Items").Save(order).Error; err != nil {
 			return err
 		}
 
