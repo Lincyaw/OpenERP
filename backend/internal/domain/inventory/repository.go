@@ -199,3 +199,64 @@ type TransactionFilter struct {
 	EndDate         *time.Time
 	OperatorID      *uuid.UUID
 }
+
+// StockTakingRepository defines the interface for stock taking persistence
+type StockTakingRepository interface {
+	// FindByID finds a stock taking by its ID
+	FindByID(ctx context.Context, id uuid.UUID) (*StockTaking, error)
+
+	// FindByIDForTenant finds a stock taking by ID within a tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*StockTaking, error)
+
+	// FindByTakingNumber finds a stock taking by its number
+	FindByTakingNumber(ctx context.Context, tenantID uuid.UUID, takingNumber string) (*StockTaking, error)
+
+	// FindByWarehouse finds all stock takings for a warehouse
+	FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]StockTaking, error)
+
+	// FindByStatus finds all stock takings with a specific status
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status StockTakingStatus, filter shared.Filter) ([]StockTaking, error)
+
+	// FindAllForTenant finds all stock takings for a tenant
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]StockTaking, error)
+
+	// FindByDateRange finds stock takings within a date range
+	FindByDateRange(ctx context.Context, tenantID uuid.UUID, start, end time.Time, filter shared.Filter) ([]StockTaking, error)
+
+	// FindPendingApproval finds stock takings pending approval
+	FindPendingApproval(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]StockTaking, error)
+
+	// Save creates or updates a stock taking
+	Save(ctx context.Context, st *StockTaking) error
+
+	// SaveWithItems saves a stock taking with its items
+	SaveWithItems(ctx context.Context, st *StockTaking) error
+
+	// Delete deletes a stock taking
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant deletes a stock taking within a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts stock takings matching the filter
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error)
+
+	// CountByStatus counts stock takings by status
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status StockTakingStatus) (int64, error)
+
+	// ExistsByTakingNumber checks if a stock taking number exists
+	ExistsByTakingNumber(ctx context.Context, tenantID uuid.UUID, takingNumber string) (bool, error)
+
+	// GenerateTakingNumber generates a new unique taking number
+	GenerateTakingNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
+
+// StockTakingFilter extends shared.Filter with stock-taking-specific filters
+type StockTakingFilter struct {
+	shared.Filter
+	WarehouseID *uuid.UUID
+	Status      *StockTakingStatus
+	StartDate   *time.Time
+	EndDate     *time.Time
+	CreatedByID *uuid.UUID
+}

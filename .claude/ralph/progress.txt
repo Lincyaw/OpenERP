@@ -10433,3 +10433,91 @@ TypeScript check passes (no errors)
 
 ### Build Status
 TypeScript check passes (no errors)
+
+
+---
+
+## 2026-01-24 - P2-BE-011: StockTaking 盘点聚合实现 (Stock Taking Aggregate) Complete
+
+### Completed
+- **P2-BE-011**: StockTaking 盘点聚合实现
+
+### What was done
+
+1. **StockTaking Aggregate Root** (`backend/internal/domain/inventory/stock_taking.go`)
+   - Implemented full status machine: DRAFT -> COUNTING -> PENDING_APPROVAL -> APPROVED/REJECTED/CANCELLED
+   - StockTakingItem entity for individual product counts
+   - Key behaviors:
+     - `AddItem` / `RemoveItem` - Add/remove products in DRAFT status
+     - `StartCounting` - Transition to COUNTING status
+     - `RecordItemCount` - Record actual physical count with difference calculation
+     - `SubmitForApproval` - Submit for approval when all items counted
+     - `Approve` / `Reject` - Approval/rejection workflow
+     - `Cancel` - Cancel from DRAFT or COUNTING status
+   - Auto-calculated fields: difference quantity, difference amount, totals
+   - Progress tracking: `GetProgress()`, `GetUncountedItems()`, `GetItemsWithDifference()`
+
+2. **StockTaking Domain Events** (`backend/internal/domain/inventory/stock_taking_events.go`)
+   - `StockTakingCreatedEvent` - When stock taking is created
+   - `StockTakingStartedEvent` - When counting starts
+   - `StockTakingSubmittedEvent` - When submitted for approval
+   - `StockTakingApprovedEvent` - When approved (triggers inventory adjustments)
+   - `StockTakingRejectedEvent` - When rejected
+   - `StockTakingCancelledEvent` - When cancelled
+
+3. **StockTaking Repository Interface** (`backend/internal/domain/inventory/repository.go`)
+   - `FindByID`, `FindByIDForTenant`, `FindByTakingNumber`
+   - `FindByWarehouse`, `FindByStatus`, `FindByDateRange`
+   - `FindPendingApproval` - For approval workflow
+   - `Save`, `SaveWithItems`, `Delete`
+   - `CountForTenant`, `CountByStatus`
+   - `ExistsByTakingNumber`, `GenerateTakingNumber`
+   - `StockTakingFilter` for filtering queries
+
+4. **Database Migration** (`backend/migrations/000017_create_stock_takings.up.sql`)
+   - `stock_takings` table with all fields
+   - `stock_taking_items` table for line items
+   - Indexes for common query patterns (tenant, warehouse, status, date)
+   - Foreign keys to tenants, warehouses, users, products
+   - Update triggers for updated_at
+
+5. **Unit Tests** (`backend/internal/domain/inventory/stock_taking_test.go`)
+   - Tests for aggregate creation and validation
+   - Tests for adding/removing items
+   - Tests for status transitions and state machine
+   - Tests for recording counts and difference calculation
+   - Tests for approval/rejection/cancellation workflows
+   - All tests passing
+
+### Requirements Met
+- ✅ 实现 StockTaking 聚合 (StockTaking aggregate with status machine)
+- ✅ 支持盘点单创建和执行 (Create stock taking, add items, record counts)
+- ✅ 实现盘点差异计算 (Difference calculation: actual - system quantity and amount)
+
+### Files Created
+- `backend/internal/domain/inventory/stock_taking.go`
+- `backend/internal/domain/inventory/stock_taking_events.go`
+- `backend/internal/domain/inventory/stock_taking_test.go`
+- `backend/migrations/000017_create_stock_takings.up.sql`
+- `backend/migrations/000017_create_stock_takings.down.sql`
+
+### Files Modified
+- `backend/internal/domain/inventory/repository.go` (added StockTakingRepository interface)
+
+### Status Machine
+```
+DRAFT -> COUNTING -> PENDING_APPROVAL -> APPROVED
+                                      -> REJECTED
+      -> CANCELLED
+         COUNTING -> CANCELLED
+```
+
+### Key Design Decisions
+- StockTaking is a separate aggregate from InventoryItem to support complex approval workflows
+- Difference calculation happens at count time (not at approval) for real-time feedback
+- Items must all be counted before submission for approval
+- Approval triggers StockTakingApprovedEvent which can be subscribed to for inventory adjustments
+- Rejecting returns to a terminal state (not back to COUNTING) - new stock taking needed if recount required
+
+### Build Status
+All tests pass, build succeeds
