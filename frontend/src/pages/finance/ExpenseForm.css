@@ -1,0 +1,32 @@
+/* Expense Form Page Styles */
+
+.expense-form-page {
+  padding: var(--spacing-6);
+}
+
+.expense-form-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.expense-form-header {
+  margin-bottom: var(--spacing-6);
+}
+
+.expense-form-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .expense-form-page {
+    padding: var(--spacing-4);
+  }
+
+  .expense-form-header {
+    margin-bottom: var(--spacing-4);
+  }
+}

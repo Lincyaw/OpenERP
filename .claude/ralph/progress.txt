@@ -6880,3 +6880,78 @@ Implemented the backend infrastructure for tracking non-trade expenses (ExpenseR
 - **Repository Implementation Needed**: The GORM repository implementations need to be created in infrastructure layer
 - **API Routes Needed**: HTTP handlers need to be created to expose the ExpenseIncomeService endpoints
 - **Integration with Cash Flow**: The CashFlowSummary method can be extended to include ReceiptVoucher and PaymentVoucher data
+
+---
+
+## P4-FE-010: 费用录入页面 (Expense Entry Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the frontend expense management page for the Finance module. This provides a complete CRUD interface for managing expense records with approval workflow support, filtering, and summary statistics.
+
+### Features Implemented
+
+1. **Expense List Page** (`Expenses.tsx`)
+   - Full expense record listing with pagination
+   - Search by expense number and description
+   - Filter by category, status, payment status, and date range
+   - Summary cards showing total approved amount and pending count
+   - Table actions for workflow operations:
+     - Edit (draft expenses only)
+     - Submit for approval (draft expenses)
+     - Approve (pending expenses)
+     - Reject with reason modal (pending expenses)
+     - Cancel with reason modal (draft/pending expenses)
+     - Delete (draft expenses only)
+
+2. **Expense Form Page** (`ExpenseForm.tsx`)
+   - Category selection (11 expense categories)
+   - Amount input with currency formatting
+   - Date picker for incurred date
+   - Description field (required)
+   - Optional remark and attachment URLs
+   - Edit mode support for existing records
+   - Form validation with zod schema
+
+3. **API Client Integration** (`finance.ts`, `types.ts`)
+   - ExpenseRecord types and interfaces
+   - OtherIncomeRecord types for future use
+   - CashFlowSummary types for future use
+   - Full CRUD API methods for expenses
+   - Workflow API methods (submit, approve, reject, cancel, pay)
+   - Summary API method
+
+4. **Routing and Navigation**
+   - Added `/finance/expenses` route to sidebar navigation
+   - Added expense create/edit routes
+   - IconMinus icon for expenses in sidebar
+
+### Files Created
+- `frontend/src/pages/finance/Expenses.tsx` - Expense list page
+- `frontend/src/pages/finance/Expenses.css` - Expense list styles
+- `frontend/src/pages/finance/ExpenseForm.tsx` - Expense create/edit form
+- `frontend/src/pages/finance/ExpenseForm.css` - Form styles
+
+### Files Modified
+- `frontend/src/api/finance/finance.ts` - Added expense and income API methods
+- `frontend/src/api/finance/types.ts` - Added expense, income, and cash flow types
+- `frontend/src/router/routes.tsx` - Added expense routes
+- `frontend/src/components/layout/Sidebar.tsx` - Added IconMinus for expenses
+
+### Technical Notes
+- **Design Pattern**: Follows existing finance module patterns (Receivables.tsx)
+- **State Management**: Local state with React hooks
+- **Form Validation**: Zod schema with react-hook-form
+- **Responsive Design**: CSS follows design system with responsive breakpoints
+- **Workflow Support**: Full approval workflow (Draft → Pending → Approved/Rejected)
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **P4-FE-011 Ready**: Other income entry page can follow similar pattern
+- **P4-FE-012 Ready**: Cash flow page can use the CashFlowSummary API
+- **Backend Routes Needed**: HTTP handlers need to be created to expose ExpenseIncomeService endpoints
+- **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available

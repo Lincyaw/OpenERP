@@ -285,3 +285,208 @@ export interface ReconcilePaymentResult {
   remaining_unallocated: number
   fully_reconciled: boolean
 }
+
+// ===================== Expense Record Types =====================
+
+export type ExpenseCategory =
+  | 'RENT'
+  | 'UTILITIES'
+  | 'SALARY'
+  | 'OFFICE'
+  | 'TRAVEL'
+  | 'MARKETING'
+  | 'EQUIPMENT'
+  | 'MAINTENANCE'
+  | 'INSURANCE'
+  | 'TAX'
+  | 'OTHER'
+
+export type ExpenseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+
+export type ExpensePaymentStatus = 'UNPAID' | 'PAID'
+
+export interface ExpenseRecord {
+  id: string
+  tenant_id: string
+  expense_number: string
+  category: ExpenseCategory
+  category_name: string
+  amount: number
+  description: string
+  incurred_at: string
+  status: ExpenseStatus
+  payment_status: ExpensePaymentStatus
+  payment_method?: PaymentMethod
+  paid_at?: string
+  remark?: string
+  attachment_urls?: string
+  submitted_at?: string
+  submitted_by?: string
+  approved_at?: string
+  approved_by?: string
+  approval_remark?: string
+  rejected_at?: string
+  rejected_by?: string
+  rejection_reason?: string
+  created_at: string
+  updated_at: string
+  version: number
+}
+
+export interface GetExpenseRecordsParams {
+  search?: string
+  category?: ExpenseCategory
+  status?: ExpenseStatus
+  payment_status?: ExpensePaymentStatus
+  from_date?: string
+  to_date?: string
+  page?: number
+  page_size?: number
+}
+
+export interface CreateExpenseRecordRequest {
+  category: ExpenseCategory
+  amount: number
+  description: string
+  incurred_at: string
+  remark?: string
+  attachment_urls?: string
+}
+
+export interface UpdateExpenseRecordRequest {
+  category: ExpenseCategory
+  amount: number
+  description: string
+  incurred_at: string
+  remark?: string
+  attachment_urls?: string
+}
+
+export interface ApproveExpenseRequest {
+  remark?: string
+}
+
+export interface RejectExpenseRequest {
+  reason: string
+}
+
+export interface CancelExpenseRequest {
+  reason: string
+}
+
+export interface MarkExpensePaidRequest {
+  payment_method: PaymentMethod
+}
+
+export interface ExpenseSummary {
+  total_approved: number
+  total_pending: number
+  by_category: Record<string, number>
+}
+
+// ===================== Other Income Record Types =====================
+
+export type IncomeCategory =
+  | 'INVESTMENT'
+  | 'SUBSIDY'
+  | 'INTEREST'
+  | 'RENTAL'
+  | 'REFUND'
+  | 'COMPENSATION'
+  | 'ASSET_DISPOSAL'
+  | 'OTHER'
+
+export type IncomeStatus = 'DRAFT' | 'CONFIRMED' | 'CANCELLED'
+
+export type IncomeReceiptStatus = 'PENDING' | 'RECEIVED'
+
+export interface OtherIncomeRecord {
+  id: string
+  tenant_id: string
+  income_number: string
+  category: IncomeCategory
+  category_name: string
+  amount: number
+  description: string
+  received_at: string
+  status: IncomeStatus
+  receipt_status: IncomeReceiptStatus
+  payment_method?: PaymentMethod
+  actual_received?: string
+  remark?: string
+  attachment_urls?: string
+  confirmed_at?: string
+  confirmed_by?: string
+  created_at: string
+  updated_at: string
+  version: number
+}
+
+export interface GetOtherIncomeRecordsParams {
+  search?: string
+  category?: IncomeCategory
+  status?: IncomeStatus
+  receipt_status?: IncomeReceiptStatus
+  from_date?: string
+  to_date?: string
+  page?: number
+  page_size?: number
+}
+
+export interface CreateOtherIncomeRecordRequest {
+  category: IncomeCategory
+  amount: number
+  description: string
+  received_at: string
+  remark?: string
+  attachment_urls?: string
+}
+
+export interface UpdateOtherIncomeRecordRequest {
+  category: IncomeCategory
+  amount: number
+  description: string
+  received_at: string
+  remark?: string
+  attachment_urls?: string
+}
+
+export interface CancelIncomeRequest {
+  reason: string
+}
+
+export interface MarkIncomeReceivedRequest {
+  payment_method: PaymentMethod
+}
+
+export interface IncomeSummary {
+  total_confirmed: number
+  total_draft: number
+  by_category: Record<string, number>
+}
+
+// ===================== Cash Flow Types =====================
+
+export type CashFlowDirection = 'INFLOW' | 'OUTFLOW'
+
+export type CashFlowItemType = 'EXPENSE' | 'INCOME' | 'RECEIPT' | 'PAYMENT'
+
+export interface CashFlowItem {
+  id: string
+  type: CashFlowItemType
+  category: string
+  number: string
+  description: string
+  amount: number
+  date: string
+  direction: CashFlowDirection
+}
+
+export interface CashFlowSummary {
+  total_inflow: number
+  total_outflow: number
+  net_cash_flow: number
+  expense_total: number
+  income_total: number
+  items?: CashFlowItem[]
+}
