@@ -2116,7 +2116,7 @@
       "验证权限控制",
       "验证 Token 刷新"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-INT-003",

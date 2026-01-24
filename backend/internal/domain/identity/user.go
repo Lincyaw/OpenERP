@@ -427,6 +427,9 @@ func (u *User) CanLogin() bool {
 	if u.Status == UserStatusDeactivated {
 		return false
 	}
+	if u.Status == UserStatusPending {
+		return false
+	}
 	if u.IsLocked() {
 		return false
 	}

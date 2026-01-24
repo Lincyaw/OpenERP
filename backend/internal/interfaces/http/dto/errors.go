@@ -120,6 +120,22 @@ var ErrorCodeHTTPStatus = map[string]int{
 	// Rate limiting -> 429 Too Many Requests
 	ErrCodeRateLimited:     http.StatusTooManyRequests,
 	ErrCodeTooManyRequests: http.StatusTooManyRequests,
+
+	// Auth domain-specific error codes (preserved for frontend handling)
+	"INVALID_CREDENTIALS":  http.StatusUnauthorized,
+	"ACCOUNT_LOCKED":       http.StatusUnprocessableEntity, // Account state issue, not auth issue
+	"ACCOUNT_DEACTIVATED":  http.StatusUnprocessableEntity,
+	"ACCOUNT_PENDING":      http.StatusUnprocessableEntity,
+	"ACCOUNT_INACTIVE":     http.StatusUnprocessableEntity,
+	"TOKEN_EXPIRED":        http.StatusUnauthorized,
+	"TOKEN_INVALID":        http.StatusUnauthorized,
+	"TOKEN_ERROR":          http.StatusUnauthorized,
+	"TOKEN_MAX_REFRESH":    http.StatusUnauthorized,
+	"INVALID_TOKEN":        http.StatusUnauthorized,
+	"INVALID_REFRESH":      http.StatusUnauthorized,
+	"MAX_REFRESH_EXCEEDED": http.StatusUnauthorized,
+	"PASSWORD_INCORRECT":   http.StatusUnprocessableEntity,
+	"INVALID_PASSWORD":     http.StatusUnprocessableEntity,
 }
 
 // GetHTTPStatus returns the HTTP status code for an error code

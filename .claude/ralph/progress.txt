@@ -12734,3 +12734,108 @@ Tests cross-tenant security:
 2. **Tenant isolation is repository-level**: All tenant-scoped repositories use `tenant_id` in WHERE clauses
 3. **Application layer should check tenant status**: Repository doesn't check tenant status - application layer should verify `tenant.IsActive()` before allowing operations
 4. **Next priority items**: P6-INT-002 (认证授权联调), P6-INT-003 (用户角色管理联调)
+
+---
+
+## P6-INT-002: 认证授权联调 (Authentication/Authorization Integration Test)
+
+**Date**: 2026-01-25
+**Status**: COMPLETED
+
+### Requirements
+1. 验证登录流程 (Verify login flow)
+2. 验证权限控制 (Verify permission control)
+3. 验证 Token 刷新 (Verify Token refresh)
+
+### Implementation Summary
+
+Created comprehensive integration tests in `backend/tests/integration/auth_integration_test.go` with 6 test suites:
+
+#### 1. TestAuth_LoginFlow (7 sub-tests)
+Tests authentication login functionality:
+- **successful_login_returns_tokens_and_user_info**: Verifies successful login returns access token, refresh token, and user details
+- **invalid_username_returns_401**: Non-existent username returns unauthorized
+- **invalid_password_returns_401**: Wrong password returns unauthorized
+- **deactivated_user_cannot_login**: Deactivated users get 422 with ACCOUNT_DEACTIVATED code
+- **pending_user_cannot_login**: Pending users get 422 with ACCOUNT_PENDING code
+- **account_locks_after_max_failed_attempts**: After 5 failed attempts, account locks (4x 401, then 422 ACCOUNT_LOCKED)
+- **login_tracks_ip_address**: Successful login records last_login_at and last_login_ip
+
+#### 2. TestAuth_PermissionControl (12 sub-tests)
+Tests RBAC permission enforcement:
+- **user_without_auth_gets_401**: Protected endpoints require authentication
+- **user_with_required_permission_can_access**: User with correct permission (product:read) can access
+- **user_without_required_permission_gets_403**: Missing permission returns 403 forbidden
+- **require_any_permission_works_with_one_match**: RequireAnyPermission passes with one matching permission
+- **require_any_permission_fails_without_any_match**: RequireAnyPermission fails if no permissions match
+- **require_all_permissions_works_when_user_has_all**: RequireAllPermissions passes when all present
+- **require_all_permissions_fails_without_all**: RequireAllPermissions fails if any missing
+- **require_resource_maps_http_method_to_action**: HTTP method maps to permission action (GET→read, POST→create, etc.)
+- **user_with_multiple_roles_gets_union_of_permissions**: Permissions from all roles are combined
+- **user_with_no_roles_has_no_permissions**: User without roles has empty permissions
+- **invalid_bearer_format_returns_401**: Malformed Authorization header returns 401
+- **empty_bearer_token_returns_401**: Empty token returns 401
+
+#### 3. TestAuth_TokenRefresh (5 sub-tests)
+Tests JWT token refresh functionality:
+- **valid_refresh_token_returns_new_tokens**: Valid refresh returns new access and refresh tokens
+- **refresh_with_invalid_token_returns_error**: Invalid token format returns 401
+- **refresh_with_access_token_instead_of_refresh_token_fails**: Using access token as refresh returns 401
+- **refresh_for_deactivated_user_fails**: Deactivated user's refresh token returns 422 ACCOUNT_INACTIVE
+- **refresh_updates_permissions_when_role_changes**: New token reflects updated role permissions
+
+#### 4. TestAuth_CurrentUserAndPassword (4 sub-tests)
+Tests user profile and password management:
+- **get_current_user_returns_user_info**: /auth/me returns authenticated user details
+- **get_current_user_without_token_returns_401**: Requires authentication
+- **change_password_with_correct_old_password_succeeds**: Password change works with correct old password
+- **change_password_with_wrong_old_password_fails**: Wrong old password returns 422 INVALID_PASSWORD
+
+#### 5. TestAuth_TokenSecurity (4 sub-tests)
+Tests JWT security:
+- **token_with_wrong_signature_is_rejected**: Tampered token signature returns 401
+- **completely_invalid_token_is_rejected**: Malformed token returns 401
+- **empty_authorization_header_returns_401**: Missing auth header returns 401
+- **logout_returns_success**: Logout endpoint returns success
+
+#### 6. TestAuth_MultiTenantIsolation (3 sub-tests)
+Tests multi-tenant auth isolation:
+- **tokens_contain_correct_tenant_id**: JWT contains correct tenant_id claim
+- **user_permissions_are_tenant_scoped**: Permissions are loaded from tenant-specific roles
+- **users_with_same_username_in_different_tenants**: Same username can exist in different tenants with isolated auth
+
+### Infrastructure/Migration Created
+- `backend/migrations/000021_create_roles.up.sql`: Creates roles, role_permissions, role_data_scopes tables
+  - Adds FK constraint to user_roles table
+  - Inserts default system roles (ADMIN, MANAGER, SALES, PURCHASER, WAREHOUSE, CASHIER, ACCOUNTANT)
+  - Inserts admin permissions (100 permission combinations)
+- `backend/migrations/000021_create_roles.down.sql`: Drops role-related tables
+
+### Bug Fixes Applied
+- **User.CanLogin()**: Fixed to also check for UserStatusPending (was allowing pending users to login)
+- **Error code mapping**: Added auth-specific error codes to ErrorCodeHTTPStatus map:
+  - INVALID_CREDENTIALS → 401, ACCOUNT_LOCKED → 422, ACCOUNT_DEACTIVATED → 422
+  - ACCOUNT_PENDING → 422, TOKEN_INVALID → 401, TOKEN_ERROR → 401, etc.
+
+### Files Created
+- `backend/tests/integration/auth_integration_test.go` (~920 lines)
+- `backend/migrations/000021_create_roles.up.sql`
+- `backend/migrations/000021_create_roles.down.sql`
+
+### Files Modified
+- `backend/internal/domain/identity/user.go` (fixed CanLogin() for pending users)
+- `backend/internal/interfaces/http/dto/errors.go` (added auth error code mappings)
+- `.claude/ralph/plans/prd.json` (P6-INT-002: passes: true)
+
+### Test Results
+- All 35 sub-tests: PASS
+- Total test time: ~46 seconds (6 separate PostgreSQL containers)
+
+### Notes for Next Developer
+1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestAuth_" -timeout 300s`
+2. **JWT uses HS256**: Separate secrets for access and refresh tokens
+3. **Account locking**: 5 failed attempts = 15 min lock (configurable in AuthServiceConfig)
+4. **Token refresh limit**: Max 10 refreshes per refresh token
+5. **Error codes preserved**: Auth-specific codes (ACCOUNT_LOCKED, etc.) returned in response for frontend handling
+6. **Next priority items**: P6-INT-003 (用户角色管理联调), P6-QA-003 (安全漏洞扫描)
+
