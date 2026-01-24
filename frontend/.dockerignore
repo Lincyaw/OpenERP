@@ -44,10 +44,8 @@ coverage/
 *.md
 docs/
 
-# Configuration files
+# Configuration files (lint/format only)
 .eslintrc*
 .prettierrc*
-tsconfig*.json
-vite.config.ts
 vitest.config.ts
 orval.config.ts

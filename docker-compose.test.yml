@@ -1,12 +1,10 @@
-version: '3.8'
-
 # Test environment - runs on different ports to avoid conflicts with dev/prod
 # Frontend: 3001, Backend: 8081, PostgreSQL: 5433, Redis: 6380
 
 services:
   # PostgreSQL Database for Testing
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.1
     container_name: erp-test-postgres
     restart: unless-stopped
     environment:
@@ -29,7 +27,7 @@ services:
 
   # Redis Cache for Testing
   redis:
-    image: redis:7-alpine
+    image: redis:8.4.0
     container_name: erp-test-redis
     restart: unless-stopped
     command: redis-server --appendonly yes

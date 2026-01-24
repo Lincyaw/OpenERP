@@ -11232,3 +11232,81 @@ Updated the following items to `"passes": true`:
 - The remaining incomplete QA items are either integration tests (INT) that require full system verification, or items like P6-QA-003 (安全漏洞扫描) which requires external security scanning tools
 - High-priority incomplete items are now mostly integration tests (P1-INT-001, P1-INT-002, etc.) which are verification tasks rather than implementation tasks
 - Category tests in `backend/internal/domain/catalog/category_test.go` (371 lines) are also comprehensive but Category is part of Product domain so covered under P1-QA-001
+
+---
+
+## 2026-01-25 - P0-QA-001 to P0-QA-006: Docker 集成测试和类型修复需求添加
+
+### Completed
+- Added 6 new QA requirements to prd.json for Docker integration testing and type system fixes
+
+### Background/Issues Discovered
+1. **后端 API 类型问题（根本原因）**
+   - File: `backend/internal/interfaces/http/dto/response.go:8`
+   - Issue: `Response.Data` field uses `any` type
+   - Impact: Generated frontend SDK types are `data?: unknown`, requiring manual type handling
+
+2. **前端构建问题（下游影响）**
+   - npm dependency issues (Semi UI shows invalid)
+   - 256 TypeScript errors, mainly implicit any
+
+3. **Docker 测试环境不完整**
+   - `docker/` directory only has `init-db.sh`
+   - Missing test seed data files
+   - Missing API test scripts
+
+4. **后端路由参数命名不一致**
+   - Mixed usage of `:id`, `:productId`, `:product_id`
+
+### New PRD Requirements Added
+
+1. **P0-QA-001: 后端 API Response 泛型类型重构**
+   - Convert dto.Response to generic Response[T any]
+   - Update all handlers to use concrete types
+   - Ensure swagger annotations output correct types
+   - Regenerate swagger.yaml and frontend SDK
+
+2. **P0-QA-002: 前端 SDK 类型完整性验证**
+   - Fix npm dependency issues (Semi UI)
+   - Regenerate SDK with npm run api:generate
+   - Verify generated SDK contains complete type definitions
+   - Ensure npm run build passes type checking
+   - Add npm run type-check to CI pipeline
+
+3. **P0-QA-003: Docker 测试环境完善**
+   - Create docker/seed-data.sql with test data
+   - Create docker/test-api.sh API smoke test script
+   - Create docker/quick-test.sh quick validation script
+   - Verify docker-compose.test.yml starts correctly
+   - Document testing environment usage
+
+4. **P0-QA-004: 后端集成测试（真实数据库）**
+   - Configure testcontainers or Docker PostgreSQL
+   - Create integration test suite against real database
+   - Test Repository layer actual database operations
+   - Add make test-integration target
+   - Integration tests cover core business flows
+
+5. **P0-QA-005: 后端路由参数命名规范化**
+   - Standardize route parameters to snake_case
+   - Change :id to specific names like :product_id
+   - Change :productId to :product_id
+   - Update all handler parameter retrieval code
+   - Update swagger annotations and frontend SDK
+
+6. **P0-QA-006: CI/CD 自动化测试流水线**
+   - Create GitHub Actions backend test workflow
+   - Create GitHub Actions frontend build/test workflow
+   - Add Docker image build verification step
+   - Enforce test coverage threshold (80%)
+   - Add type check failure to block merges
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` - Added 6 new requirements (P0-QA-001 to P0-QA-006)
+
+### Notes for Next Developer
+- P0-QA-001 is the ROOT CAUSE - fixing backend API types will cascade to fix frontend issues
+- After P0-QA-001, regenerate frontend SDK to get proper types
+- P0-QA-005 should be done together with P0-QA-001 to minimize SDK regeneration
+- P0-QA-003 and P0-QA-004 can be worked on in parallel
+- P0-QA-006 depends on P0-QA-003 and P0-QA-004 for test infrastructure

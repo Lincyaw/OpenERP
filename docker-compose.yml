@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.1
     container_name: erp-postgres
     restart: unless-stopped
     environment:
@@ -26,10 +24,10 @@ services:
 
   # Redis Cache
   redis:
-    image: redis:7-alpine
+    image: redis:8.4.0
     container_name: erp-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -57,7 +55,7 @@ services:
     environment:
       # Application
       APP_NAME: ${APP_NAME:-erp-backend}
-      APP_ENV: ${APP_ENV:-production}
+      APP_ENV: ${APP_ENV:-development}
       APP_PORT: ${APP_PORT:-8080}
 
       # Database

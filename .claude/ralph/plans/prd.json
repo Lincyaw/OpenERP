@@ -2348,5 +2348,83 @@
       "确认问题已解决"
     ],
     "passes": false
+  },
+  {
+    "id": "P0-QA-001",
+    "story": "后端 API Response 泛型类型重构",
+    "priority": "high",
+    "requirements": [
+      "将 dto.Response 改为泛型 Response[T any]",
+      "更新所有 handler 使用具体类型而非 any",
+      "确保 swagger 注解正确输出具体类型",
+      "重新生成 swagger.yaml 验证类型定义",
+      "重新生成前端 SDK 验证类型传递"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-QA-002",
+    "story": "前端 SDK 类型完整性验证",
+    "priority": "high",
+    "requirements": [
+      "修复 npm 依赖问题 (Semi UI)",
+      "运行 npm run api:generate 重新生成 SDK",
+      "验证生成的 SDK 包含完整类型定义",
+      "确保 npm run build 类型检查通过",
+      "添加 npm run type-check 到 CI 流程"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-QA-003",
+    "story": "Docker 测试环境完善",
+    "priority": "high",
+    "requirements": [
+      "创建 docker/seed-data.sql 包含各模块测试数据",
+      "创建 docker/test-api.sh API 冒烟测试脚本",
+      "创建 docker/quick-test.sh 快速验证脚本",
+      "验证 docker-compose.test.yml 正常启动",
+      "文档化测试环境使用方法"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-QA-004",
+    "story": "后端集成测试（真实数据库）",
+    "priority": "high",
+    "requirements": [
+      "配置 testcontainers 或使用 Docker PostgreSQL",
+      "创建集成测试套件对真实数据库运行",
+      "测试 Repository 层实际数据库操作",
+      "添加 make test-integration 目标",
+      "集成测试覆盖核心业务流程"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-QA-005",
+    "story": "后端路由参数命名规范化",
+    "priority": "high",
+    "requirements": [
+      "统一使用 snake_case 命名路由参数",
+      "将 :id 改为具体名称如 :product_id",
+      "将 :productId 改为 :product_id",
+      "更新所有 handler 获取参数的代码",
+      "更新 swagger 注解和前端 SDK"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-QA-006",
+    "story": "CI/CD 自动化测试流水线",
+    "priority": "high",
+    "requirements": [
+      "创建 GitHub Actions 后端测试工作流",
+      "创建 GitHub Actions 前端构建/测试工作流",
+      "添加 Docker 镜像构建验证步骤",
+      "强制测试覆盖率阈值 (80%)",
+      "添加类型检查失败阻止合并"
+    ],
+    "passes": false
   }
 ]

@@ -30,7 +30,6 @@ Thumbs.db
 
 # Documentation
 *.md
-docs/
 !migrations/
 
 # Test files

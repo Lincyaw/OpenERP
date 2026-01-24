@@ -165,9 +165,14 @@ async function performRefresh(refreshToken: string): Promise<string | null> {
     const { token } = response.data
 
     // Update tokens in store
-    setTokens(token.access_token, token.refresh_token)
+    if (token?.access_token && token?.refresh_token) {
+      setTokens(token.access_token, token.refresh_token)
+      return token.access_token
+    }
 
-    return token.access_token
+    logout()
+    redirectToLogin('Session expired. Please log in again.')
+    return null
   } catch (error) {
     // Refresh failed, logout user
     logout()
