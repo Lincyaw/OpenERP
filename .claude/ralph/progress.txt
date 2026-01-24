@@ -5633,3 +5633,87 @@ Implemented the Purchase Order Receiving page (采购收货页面) with full sup
 - Expiry date uses ISO 8601 format for API submission
 - Navigation returns to `/trade/purchase` after successful receive
 - Backend event (P3-BE-011) handles inventory integration automatically
+
+---
+
+## 2026-01-24 - P4-BE-001: AccountReceivable Aggregate Implementation Complete
+
+### Completed
+- **P4-BE-001**: AccountReceivable 聚合实现
+
+### What was done
+1. Created AccountReceivable aggregate root at `internal/domain/finance/account_receivable.go`:
+   - `ReceivableStatus` enum with state machine (PENDING → PARTIAL → PAID / REVERSED / CANCELLED)
+   - `SourceType` enum (SALES_ORDER, MANUAL, ADJUSTMENT)
+   - `PaymentRecord` entity for tracking individual payments
+   - `AccountReceivable` aggregate with full domain logic
+
+2. Key domain methods implemented:
+   - `NewAccountReceivable()` factory with validation (min amount, required fields)
+   - `ApplyPayment()` with partial payment support and automatic status transitions
+   - `Reverse()` for reversing receivables with reason and refund to customer balance
+   - `Cancel()` for cancelling pending receivables with validation
+   - `SetDueDate()` with validation (must be future date)
+   - `IsOverdue()`, `DaysOverdue()`, `PaidPercentage()` helper methods
+
+3. Created domain events at `internal/domain/finance/account_receivable_events.go`:
+   - `AccountReceivableCreatedEvent` - raised on creation
+   - `AccountReceivablePaidEvent` - raised when fully paid
+   - `AccountReceivablePartiallyPaidEvent` - raised on partial payment
+   - `AccountReceivableReversedEvent` - raised on reversal
+   - `AccountReceivableCancelledEvent` - raised on cancellation
+
+4. Defined repository interface at `internal/domain/finance/repository.go`:
+   - `AccountReceivableFilter` with comprehensive filter options (customer, status, source, dates, amounts, overdue)
+   - `AccountReceivableRepository` interface with:
+     - CRUD operations (FindByID, Save, Delete)
+     - Query methods (FindByCustomer, FindByStatus, FindBySource, FindOutstanding, FindOverdue)
+     - Count methods (CountForTenant, CountByStatus, CountByCustomer, CountOverdue)
+     - Sum calculations (SumOutstandingByCustomer, SumOutstandingForTenant, SumOverdueForTenant)
+     - Utility methods (ExistsByReceivableNumber, ExistsBySource, GenerateReceivableNumber)
+
+5. Created database migration at `migrations/000010_create_account_receivables.up.sql`:
+   - `account_receivables` table with proper constraints and indexes
+   - `receivable_payment_records` child table for payment tracking
+   - Indexes for common query patterns (customer, status, due_date, source)
+   - Foreign key to customers table
+   - Trigger for updated_at timestamp
+
+6. Created down migration at `migrations/000010_create_account_receivables.down.sql`:
+   - Proper rollback order (child table first, then triggers, then main table)
+
+7. Comprehensive unit tests at `internal/domain/finance/account_receivable_test.go`:
+   - 59 test cases covering all functionality
+   - Status enum tests (String, IsValid, IsTerminal, state transitions)
+   - Creation validation tests (valid data, validation errors)
+   - ApplyPayment tests (full, partial, overpayment prevention)
+   - Reverse tests (validation, status transitions, event generation)
+   - Cancel tests (validation, status checks)
+   - Helper method tests (IsOverdue, DaysOverdue, PaidPercentage)
+
+### Files created/modified
+- `backend/internal/domain/finance/account_receivable.go` (NEW)
+- `backend/internal/domain/finance/account_receivable_events.go` (NEW)
+- `backend/internal/domain/finance/repository.go` (NEW)
+- `backend/migrations/000010_create_account_receivables.up.sql` (NEW)
+- `backend/migrations/000010_create_account_receivables.down.sql` (NEW)
+- `backend/internal/domain/finance/account_receivable_test.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (59 tests)
+
+### Design Decisions
+1. **State machine pattern**: ReceivableStatus uses strict state transitions validated by CanTransitionTo()
+2. **Domain events**: All significant state changes emit events for integration with other bounded contexts
+3. **Multi-tenant**: Inherits from TenantAggregateRoot for tenant isolation
+4. **Optimistic locking**: Uses version field for concurrent update protection
+5. **Decimal precision**: Uses shopspring/decimal for monetary amounts
+6. **Payment tracking**: Each payment is recorded as PaymentRecord with reference and notes
+
+### Notes for next developer
+- **P4-BE-002** (AccountPayable 聚合实现) follows similar pattern - can reuse structure
+- **P4-BE-003** (应收应付自动生成) will subscribe to SalesOrder events to create receivables
+- Repository implementation (GORM) needed next
+- Application service will coordinate with Customer balance for balance payments
+- Finance API (P4-BE-010) will expose these domain operations
