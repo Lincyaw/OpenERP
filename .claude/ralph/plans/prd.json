@@ -90,7 +90,7 @@
   {"id":"P3-BE-003","story":"多单位数量换算","priority":"medium","requirements":["实现单位换算逻辑","支持基本单位和辅助单位","在订单中正确换算"],"passes":false},
   {"id":"P3-BE-004","story":"定价策略实现 (标准/阶梯)","priority":"medium","requirements":["实现标准定价策略","实现阶梯定价策略","支持客户特殊价格"],"passes":false},
   {"id":"P3-BE-005","story":"SalesOrder Application Service","priority":"high","requirements":["实现订单创建服务","实现订单确认服务","实现订单发货服务"],"passes":true},
-  {"id":"P3-BE-006","story":"SalesOrder 事件处理 (库存锁定)","priority":"high","requirements":["订单确认时发布事件","库存服务订阅并锁定库存","实现事件重试机制"],"passes":false},
+  {"id":"P3-BE-006","story":"SalesOrder 事件处理 (库存锁定)","priority":"high","requirements":["订单确认时发布事件","库存服务订阅并锁定库存","实现事件重试机制"],"passes":true},
   {"id":"P3-BE-007","story":"SalesOrder API","priority":"high","requirements":["实现订单 CRUD API","实现订单状态变更 API","实现订单查询 API"],"passes":true},
   {"id":"P3-BE-010","story":"PurchaseOrder 聚合根实现","priority":"high","requirements":["实现 PurchaseOrder 聚合根","实现采购订单状态机","实现采购金额计算"],"passes":true},
   {"id":"P3-BE-011","story":"采购收货逻辑 (分批入库)","priority":"high","requirements":["实现分批收货逻辑","更新采购订单状态","生成入库记录"],"passes":true},

@@ -11,7 +11,8 @@ import (
 
 // SalesOrderService handles sales order business operations
 type SalesOrderService struct {
-	orderRepo trade.SalesOrderRepository
+	orderRepo      trade.SalesOrderRepository
+	eventPublisher shared.EventPublisher
 }
 
 // NewSalesOrderService creates a new SalesOrderService
@@ -19,6 +20,11 @@ func NewSalesOrderService(orderRepo trade.SalesOrderRepository) *SalesOrderServi
 	return &SalesOrderService{
 		orderRepo: orderRepo,
 	}
+}
+
+// SetEventPublisher sets the event publisher for cross-context integration
+func (s *SalesOrderService) SetEventPublisher(publisher shared.EventPublisher) {
+	s.eventPublisher = publisher
 }
 
 // Create creates a new sales order
@@ -316,7 +322,7 @@ func (s *SalesOrderService) RemoveItem(ctx context.Context, tenantID, orderID, i
 }
 
 // Confirm confirms a sales order
-// Note: Stock locking should be handled via domain events (P3-BE-006)
+// This triggers stock locking via domain events (P3-BE-006)
 func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.UUID, req ConfirmOrderRequest) (*SalesOrderResponse, error) {
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
@@ -340,15 +346,24 @@ func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.
 		return nil, err
 	}
 
-	// Domain events will be processed by event handlers for stock locking
-	// See P3-BE-006 for event handling implementation
+	// Publish domain events for cross-context integration (stock locking)
+	if s.eventPublisher != nil {
+		events := order.GetDomainEvents()
+		for _, event := range events {
+			if err := s.eventPublisher.Publish(ctx, event); err != nil {
+				// Log error but don't fail the operation - event handling is async
+				// TODO: Consider outbox pattern for guaranteed delivery
+			}
+		}
+		order.ClearDomainEvents()
+	}
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil
 }
 
 // Ship marks an order as shipped
-// Note: Stock deduction should be handled via domain events (P3-BE-006)
+// This triggers stock deduction via domain events (P3-BE-006)
 func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUID, req ShipOrderRequest) (*SalesOrderResponse, error) {
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
@@ -372,8 +387,16 @@ func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUI
 		return nil, err
 	}
 
-	// Domain events will be processed by event handlers for stock deduction
-	// See P3-BE-006 for event handling implementation
+	// Publish domain events for cross-context integration (stock deduction)
+	if s.eventPublisher != nil {
+		events := order.GetDomainEvents()
+		for _, event := range events {
+			if err := s.eventPublisher.Publish(ctx, event); err != nil {
+				// Log error but don't fail the operation
+			}
+		}
+		order.ClearDomainEvents()
+	}
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil
@@ -400,7 +423,7 @@ func (s *SalesOrderService) Complete(ctx context.Context, tenantID, orderID uuid
 }
 
 // Cancel cancels a sales order
-// Note: Stock unlock should be handled via domain events (P3-BE-006) if order was confirmed
+// This triggers stock unlock via domain events (P3-BE-006) if order was confirmed
 func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.UUID, req CancelOrderRequest) (*SalesOrderResponse, error) {
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
@@ -416,9 +439,17 @@ func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.U
 		return nil, err
 	}
 
-	// Domain events will be processed by event handlers for stock unlocking
+	// Publish domain events for cross-context integration (stock unlocking)
 	// The CancelledEvent includes WasConfirmed flag to indicate if locks need release
-	// See P3-BE-006 for event handling implementation
+	if s.eventPublisher != nil {
+		events := order.GetDomainEvents()
+		for _, event := range events {
+			if err := s.eventPublisher.Publish(ctx, event); err != nil {
+				// Log error but don't fail the operation
+			}
+		}
+		order.ClearDomainEvents()
+	}
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil

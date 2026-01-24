@@ -119,10 +119,27 @@ func main() {
 	eventBus := event.NewInMemoryEventBus(log)
 
 	// Register event handlers for cross-context integration
+	// Purchase order receiving -> inventory increase
 	purchaseOrderReceivedHandler := tradeapp.NewPurchaseOrderReceivedHandler(inventoryService, log)
 	eventBus.Subscribe(purchaseOrderReceivedHandler)
+
+	// Sales order confirmed -> stock locking
+	salesOrderConfirmedHandler := tradeapp.NewSalesOrderConfirmedHandler(inventoryService, log)
+	eventBus.Subscribe(salesOrderConfirmedHandler)
+
+	// Sales order shipped -> stock deduction
+	salesOrderShippedHandler := tradeapp.NewSalesOrderShippedHandler(inventoryService, log)
+	eventBus.Subscribe(salesOrderShippedHandler)
+
+	// Sales order cancelled -> stock unlock
+	salesOrderCancelledHandler := tradeapp.NewSalesOrderCancelledHandler(inventoryService, log)
+	eventBus.Subscribe(salesOrderCancelledHandler)
+
 	log.Info("Event handlers registered",
 		zap.Strings("purchase_order_received_events", purchaseOrderReceivedHandler.EventTypes()),
+		zap.Strings("sales_order_confirmed_events", salesOrderConfirmedHandler.EventTypes()),
+		zap.Strings("sales_order_shipped_events", salesOrderShippedHandler.EventTypes()),
+		zap.Strings("sales_order_cancelled_events", salesOrderCancelledHandler.EventTypes()),
 	)
 
 	// Start event bus
@@ -137,6 +154,7 @@ func main() {
 
 	// Inject event bus into services that publish events
 	purchaseOrderService.SetEventPublisher(eventBus)
+	salesOrderService.SetEventPublisher(eventBus)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)

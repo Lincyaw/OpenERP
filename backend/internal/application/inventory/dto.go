@@ -132,6 +132,8 @@ type SetThresholdsRequest struct {
 type StockLockResponse struct {
 	ID              uuid.UUID       `json:"id"`
 	InventoryItemID uuid.UUID       `json:"inventory_item_id"`
+	WarehouseID     uuid.UUID       `json:"warehouse_id,omitempty"`
+	ProductID       uuid.UUID       `json:"product_id,omitempty"`
 	Quantity        decimal.Decimal `json:"quantity"`
 	SourceType      string          `json:"source_type"`
 	SourceID        string          `json:"source_id"`

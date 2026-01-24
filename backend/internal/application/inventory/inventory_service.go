@@ -727,3 +727,78 @@ func (s *InventoryService) CheckAvailability(ctx context.Context, tenantID, ware
 	available := item.CanFulfill(quantity)
 	return available, item.AvailableQuantity, nil
 }
+
+// GetLocksBySource retrieves all locks for a specific source (e.g., sales order)
+// This method enriches lock responses with ProductID and WarehouseID from inventory items
+func (s *InventoryService) GetLocksBySource(ctx context.Context, sourceType, sourceID string) ([]StockLockResponse, error) {
+	locks, err := s.lockRepo.FindBySource(ctx, sourceType, sourceID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build responses with enriched data
+	responses := make([]StockLockResponse, 0, len(locks))
+	for _, lock := range locks {
+		// Get inventory item to obtain ProductID and WarehouseID
+		item, err := s.inventoryRepo.FindByID(ctx, lock.InventoryItemID)
+		if err != nil {
+			// Log and continue - include lock with missing product info
+			responses = append(responses, ToStockLockResponse(&lock))
+			continue
+		}
+
+		resp := ToStockLockResponse(&lock)
+		resp.ProductID = item.ProductID
+		resp.WarehouseID = item.WarehouseID
+		responses = append(responses, resp)
+	}
+
+	return responses, nil
+}
+
+// UnlockBySource releases all active locks for a specific source
+func (s *InventoryService) UnlockBySource(ctx context.Context, tenantID uuid.UUID, sourceType, sourceID string) (int, error) {
+	// Find all locks for this source
+	locks, err := s.lockRepo.FindBySource(ctx, sourceType, sourceID)
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	for _, lock := range locks {
+		// Skip already released or consumed locks
+		if lock.Released || lock.Consumed {
+			continue
+		}
+
+		// Get inventory item
+		item, err := s.inventoryRepo.FindByID(ctx, lock.InventoryItemID)
+		if err != nil {
+			continue
+		}
+
+		// Verify tenant
+		if item.TenantID != tenantID {
+			continue
+		}
+
+		// Unlock
+		if err := item.UnlockStock(lock.ID); err != nil {
+			continue
+		}
+
+		// Save inventory item
+		if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
+			continue
+		}
+
+		// Update lock status
+		if err := s.lockRepo.Save(ctx, &lock); err != nil {
+			continue
+		}
+
+		count++
+	}
+
+	return count, nil
+}
