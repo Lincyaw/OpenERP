@@ -1874,7 +1874,7 @@
       "从 Token 提取 tenant_id",
       "注入请求上下文"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-BE-003",

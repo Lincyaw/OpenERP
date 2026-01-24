@@ -7817,3 +7817,94 @@ Implemented the Tenant aggregate root in the identity domain. This is foundation
 - **Pattern**: Uses BaseAggregateRoot from shared package (not TenantAggregateRoot since Tenant itself is the tenant)
 - **Events**: Tenant events use tenant ID as both aggregate_id and tenant_id in BaseDomainEvent
 - **Repository**: Interface defined but GORM implementation needed in infrastructure layer
+
+---
+
+## P6-BE-002: 租户中间件 (Tenant Middleware - tenant_id injection)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the tenant identification middleware that extracts tenant_id from multiple sources (JWT claims, HTTP header, subdomain) and injects it into the request context. This is foundational infrastructure for the multi-tenant system.
+
+### Features Implemented
+
+1. **Multi-source Tenant Extraction**
+   - Priority 1: JWT claims (`jwt_tenant_id`) - for use after JWT middleware runs
+   - Priority 2: X-Tenant-ID header - for direct API calls
+   - Priority 3: Subdomain extraction - e.g., `acme.erp.com` → `acme`
+
+2. **Configuration Options**
+   - `HeaderEnabled` - Enable/disable X-Tenant-ID header extraction
+   - `JWTEnabled` - Enable/disable JWT claim extraction
+   - `SubdomainEnabled` - Enable/disable subdomain extraction
+   - `BaseDomain` - Base domain for subdomain extraction
+   - `SkipPaths` - Paths that don't require tenant context (health checks, etc.)
+   - `Required` - Whether tenant context is mandatory
+   - `Validator` - Optional validator interface to check tenant status
+
+3. **Context Integration**
+   - Stores tenant_id in both gin.Context and request.Context
+   - Integrates with logger package for structured logging
+   - Provides helper functions: `GetTenantID`, `GetTenantUUID`, `GetTenantCode`
+   - Must-get variants: `MustGetTenantID`, `MustGetTenantUUID` (panic if not found)
+
+4. **Security Features**
+   - UUID format validation for tenant IDs
+   - Optional tenant validation via `TenantValidator` interface
+   - Unauthorized response for invalid/missing tenant when required
+   - Path skipping for public endpoints
+
+5. **Middleware Variants**
+   - `TenantMiddleware()` - Default configuration, tenant required
+   - `TenantMiddlewareWithConfig(cfg)` - Custom configuration
+   - `OptionalTenantMiddleware()` - Tenant not required
+
+### Files Created
+
+- `backend/internal/interfaces/http/middleware/tenant.go` - Tenant middleware implementation
+- `backend/internal/interfaces/http/middleware/tenant_test.go` - Comprehensive unit tests
+
+### Technical Details
+
+**Extraction Priority Order**:
+1. JWT claims (if JWT middleware has run and set `jwt_tenant_id`)
+2. X-Tenant-ID header
+3. Subdomain (if configured with base domain)
+
+**Default Skip Paths**:
+- `/health`
+- `/healthz`
+- `/ready`
+- `/metrics`
+- `/api/v1/health`
+
+### API for Handlers
+
+```go
+// Get tenant ID from gin context
+tenantID := middleware.GetTenantID(c)
+
+// Get tenant ID as UUID
+tenantUUID, err := middleware.GetTenantUUID(c)
+
+// Get tenant code (if validator provides it)
+tenantCode := middleware.GetTenantCode(c)
+
+// Must-get variants (panic if not found)
+tenantID := middleware.MustGetTenantID(c)
+tenantUUID := middleware.MustGetTenantUUID(c)
+```
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/interfaces/http/middleware/...` ✅ PASSED (16 tenant-related tests)
+
+### Notes for Next Developer
+- **Next Steps**: P6-BE-003 (Repository layer tenant_id filtering) or P6-BE-014 (JWT middleware) 
+- **JWT Integration**: When JWT middleware (P6-BE-014) is implemented, it should set `jwt_tenant_id` in gin.Context
+- **Validator Pattern**: Implement `TenantValidator` interface to check tenant status in database
+- **Subdomain**: Enable `SubdomainEnabled` and set `BaseDomain` for subdomain-based tenant identification
+- **Context Propagation**: Tenant ID is available in both gin.Context (via GetTenantID) and request.Context (via logger.GetTenantID)
+
