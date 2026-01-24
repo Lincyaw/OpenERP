@@ -1,33 +1,36 @@
-#!/usr/bin/env python3
-"""
-Log Viewer - 一个用于查看 JSONL 日志文件的 Web 服务
-支持实时更新，只显示 assistant 消息
-"""
-
 import json
 import os
-import time
 import threading
+import time
 from pathlib import Path
-from flask import Flask, render_template_string, jsonify, Response
-from watchdog.observers import Observer
+
+import socket
+
+from flask import Flask, Response, jsonify, render_template_string
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 app = Flask(__name__)
 
-# 日志目录
+
+def get_free_port():
+    """Get an available free port"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        s.listen(1)
+        port = s.getsockname()[1]
+    return port
+
+
 LOGS_DIR = Path(__file__).parent.parent / "logs"
 PLANS_DIR = Path(__file__).parent.parent / "plans"
 RALPH_DIR = Path(__file__).parent.parent
 
-# 存储文件变更事件
 file_changes = {}
 file_changes_lock = threading.Lock()
 
 
 class LogFileHandler(FileSystemEventHandler):
-    """监控日志文件变更"""
-
     def on_modified(self, event):
         if event.src_path.endswith(".jsonl"):
             with file_changes_lock:
@@ -35,7 +38,6 @@ class LogFileHandler(FileSystemEventHandler):
 
 
 def get_log_files():
-    """获取所有日志文件列表"""
     files = []
     for f in LOGS_DIR.glob("*.jsonl"):
         stat = f.stat()
@@ -46,13 +48,11 @@ def get_log_files():
                 "mtime": stat.st_mtime,
             }
         )
-    # 按修改时间倒序排列
     files.sort(key=lambda x: x["mtime"], reverse=True)
     return files
 
 
 def parse_assistant_messages(filepath):
-    """解析日志文件中的 assistant 消息"""
     messages = []
     try:
         with open(filepath, "r", encoding="utf-8") as f:
@@ -81,10 +81,9 @@ def parse_assistant_messages(filepath):
 
 
 def get_prd_data():
-    """读取 PRD JSON 文件"""
     prd_file = PLANS_DIR / "prd.json"
     try:
-        with open(prd_file, "r", encoding="utf-8") as f:
+        with open(prd_file, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         print(f"Error reading PRD file: {e}")
@@ -92,10 +91,9 @@ def get_prd_data():
 
 
 def get_progress_content():
-    """读取 Progress Markdown 文件"""
     progress_file = RALPH_DIR / "progress.txt"
     try:
-        with open(progress_file, "r", encoding="utf-8") as f:
+        with open(progress_file, encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         print(f"Error reading progress file: {e}")
@@ -104,7 +102,7 @@ def get_progress_content():
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -139,7 +137,7 @@ HTML_TEMPLATE = """
             line-height: 1.6;
         }
         
-        /* 顶部 Tab 栏 */
+        /* Top Tab Bar */
         .top-tabs {
             display: flex;
             background: var(--bg-secondary);
@@ -267,7 +265,7 @@ HTML_TEMPLATE = """
             padding: 24px;
         }
         
-        /* 自定义滚动条 */
+        /* Custom Scrollbar */
         .main-content::-webkit-scrollbar,
         .sidebar::-webkit-scrollbar {
             width: 10px;
@@ -289,7 +287,7 @@ HTML_TEMPLATE = """
             background: var(--text-secondary);
         }
         
-        /* Firefox 滚动条 */
+        /* Firefox Scrollbar */
         .main-content,
         .sidebar {
             scrollbar-width: thin;
@@ -468,7 +466,7 @@ HTML_TEMPLATE = """
             background: #79b8ff;
         }
         
-        /* 滚动按钮组 */
+        /* Scroll Button Group */
         .scroll-buttons {
             position: fixed;
             bottom: 24px;
@@ -534,7 +532,7 @@ HTML_TEMPLATE = """
             }
         }
         
-        /* PRD 页面样式 */
+        /* PRD Page Styles */
         .prd-container {
             padding: 24px;
             max-width: 1200px;
@@ -685,7 +683,7 @@ HTML_TEMPLATE = """
             color: var(--text-secondary);
         }
         
-        /* Progress 页面样式 */
+        /* Progress Page Styles */
         .progress-container {
             padding: 24px;
             max-width: 900px;
@@ -810,7 +808,7 @@ HTML_TEMPLATE = """
             color: var(--text-secondary);
         }
         
-        /* 汉堡菜单按钮 */
+        /* Hamburger Menu Button */
         .menu-toggle {
             display: none;
             position: fixed;
@@ -833,7 +831,7 @@ HTML_TEMPLATE = """
             background: var(--bg-tertiary);
         }
         
-        /* 遮罩层 */
+        /* Overlay Layer */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -849,7 +847,7 @@ HTML_TEMPLATE = """
             display: block;
         }
         
-        /* 移动端响应式 */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .menu-toggle {
                 display: flex;
@@ -964,7 +962,7 @@ HTML_TEMPLATE = """
             }
         }
         
-        /* 更小的屏幕 */
+        /* Smaller Screens */
         @media (max-width: 480px) {
             .sidebar {
                 width: 100%;
@@ -991,21 +989,21 @@ HTML_TEMPLATE = """
     </style>
 </head>
 <body>
-    <!-- 顶部 Tab 栏 -->
+    <!-- Top Tab Bar -->
     <div class="top-tabs">
         <div class="top-tab active" onclick="switchTab('logs')" id="tab-logs">
-            📋 日志查看
+            📋 Logs Viewer
         </div>
         <div class="top-tab" onclick="switchTab('prd')" id="tab-prd">
-            📝 PRD 需求
+            📝 PRD Requirements
         </div>
         <div class="top-tab" onclick="switchTab('progress')" id="tab-progress">
-            📊 开发进度
+            📊 Development Progress
         </div>
     </div>
     
     <div class="app-container">
-        <!-- 日志页面 -->
+        <!-- Logs Page -->
         <div class="tab-content active" id="content-logs">
             <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
             <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -1013,43 +1011,43 @@ HTML_TEMPLATE = """
                 <div class="sidebar" id="sidebar">
                     <div class="sidebar-header">
                         <h1>Log Viewer</h1>
-                        <button class="refresh-btn" onclick="loadFiles()">🔄 刷新列表</button>
+                        <button class="refresh-btn" onclick="loadFiles()">🔄 Refresh List</button>
                     </div>
                     <div class="file-list" id="fileList">
-                        <!-- 文件列表将在这里动态加载 -->
+                        <!-- File list will be dynamically loaded here -->
                     </div>
                 </div>
                 <div class="main-content" id="mainContent">
                     <div class="empty-state">
-                        <h2>👈 选择一个日志文件</h2>
-                        <p>从左侧选择一个 JSONL 文件来查看 Assistant 消息</p>
+                        <h2>👈 Select a Log File</h2>
+                        <p>Select a JSONL file from the left to view Assistant messages</p>
                     </div>
                 </div>
             </div>
             <button class="scroll-to-bottom" id="scrollBtn" onclick="scrollToBottom()">
-                ⬇️ 滚动到底部
+                ⬇️ Scroll to Bottom
             </button>
         </div>
         
-        <!-- PRD 页面 -->
+        <!-- PRD Page -->
         <div class="tab-content" id="content-prd">
             <div class="prd-container" id="prdContainer">
                 <div class="empty-state">
-                    <h2>⏳ 加载中...</h2>
+                    <h2>⏳ Loading...</h2>
                 </div>
             </div>
         </div>
         
-        <!-- Progress 页面 -->
+        <!-- Progress Page -->
         <div class="tab-content" id="content-progress">
             <div class="progress-container" id="progressContainer">
                 <div class="empty-state">
-                    <h2>⏳ 加载中...</h2>
+                    <h2>⏳ Loading...</h2>
                 </div>
             </div>
             <div class="scroll-buttons active" id="progressScrollBtns">
-                <button class="scroll-btn" onclick="scrollProgressToTop()" title="回到顶部">⬆️</button>
-                <button class="scroll-btn" onclick="scrollProgressToBottom()" title="回到底部">⬇️</button>
+                <button class="scroll-btn" onclick="scrollProgressToTop()" title="Go to Top">⬆️</button>
+                <button class="scroll-btn" onclick="scrollProgressToBottom()" title="Go to Bottom">⬇️</button>
             </div>
         </div>
     </div>
@@ -1067,28 +1065,28 @@ HTML_TEMPLATE = """
         let currentFile = null;
         let eventSource = null;
         let autoScroll = true;
-        let loadedMessages = [];  // 已加载的消息列表
+        let loadedMessages = [];  // List of loaded messages
         let currentTab = 'logs';
         let prdData = null;
         let prdFilter = 'all';
 
-        // Tab 切换功能
+        // Tab switching function
         function switchTab(tabName) {
             currentTab = tabName;
             
-            // 更新 Tab 样式
+            // Update Tab styles
             document.querySelectorAll('.top-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             document.getElementById('tab-' + tabName).classList.add('active');
             
-            // 切换内容
+            // Switch content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById('content-' + tabName).classList.add('active');
             
-            // 加载对应内容
+            // Load corresponding content
             if (tabName === 'prd' && !prdData) {
                 loadPRD();
             } else if (tabName === 'progress') {
@@ -1124,7 +1122,7 @@ HTML_TEMPLATE = """
 
         function formatTime(timestamp) {
             const date = new Date(timestamp * 1000);
-            return date.toLocaleString('zh-CN');
+            return date.toLocaleString('en-US');
         }
 
         async function loadFiles() {
@@ -1172,8 +1170,8 @@ HTML_TEMPLATE = """
             if (messages.length === 0) {
                 return `
                     <div class="empty-state">
-                        <h2>📭 没有 Assistant 消息</h2>
-                        <p>这个文件中没有找到 assistant 类型的消息</p>
+                        <h2>📭 No Assistant Messages</h2>
+                        <p>No assistant type messages found in this file</p>
                     </div>
                 `;
             }
@@ -1202,17 +1200,17 @@ HTML_TEMPLATE = """
 
         async function loadFile(filename) {
             currentFile = filename;
-            loadedMessages = [];  // 重置已加载消息
-            loadFiles(); // 更新选中状态
-            closeSidebar(); // 在移动端关闭侧边栏
+            loadedMessages = [];  // Reset loaded messages
+            loadFiles(); // Update selected state
+            closeSidebar(); // Close sidebar on mobile
             
-            // 关闭之前的 SSE 连接
+            // Close previous SSE connection
             if (eventSource) {
                 eventSource.close();
             }
 
             const mainContent = document.getElementById('mainContent');
-            mainContent.innerHTML = '<div class="empty-state"><h2>⏳ 加载中...</h2></div>';
+            mainContent.innerHTML = '<div class="empty-state"><h2>⏳ Loading...</h2></div>';
 
             try {
                 const response = await fetch(`/api/messages/${filename}`);
@@ -1224,26 +1222,26 @@ HTML_TEMPLATE = """
                         <h2 style="font-size: 18px;">${filename}</h2>
                         <span class="live-indicator">
                             <span class="live-dot"></span>
-                            实时更新中
+                            Live Update
                         </span>
                     </div>
                     ${renderMessages(messages)}
                 `;
 
-                // 启动 SSE 监听
+                // Start SSE listener
                 startSSE(filename);
                 
-                // 滚动到底部
+                // Scroll to bottom
                 scrollToBottom();
                 
-                // 代码高亮
+                // Syntax highlighting
                 document.querySelectorAll('pre code').forEach(block => {
                     hljs.highlightElement(block);
                 });
             } catch (error) {
                 mainContent.innerHTML = `
                     <div class="empty-state">
-                        <h2>❌ 加载失败</h2>
+                        <h2>❌ Loading Failed</h2>
                         <p>${error.message}</p>
                     </div>
                 `;
@@ -1251,7 +1249,7 @@ HTML_TEMPLATE = """
         }
 
         async function updateMessages(filename) {
-            // 增量更新：只追加新消息
+            // Incremental update: only append new messages
             try {
                 const response = await fetch(`/api/messages/${filename}`);
                 const messages = await response.json();
@@ -1260,41 +1258,41 @@ HTML_TEMPLATE = """
                 
                 const messageList = document.getElementById('messageList');
                 if (!messageList) {
-                    // 如果消息列表不存在（之前是空的），重新加载
+                    // If message list doesn't exist (was empty), reload
                     loadFile(filename);
                     return;
                 }
                 
-                // 获取当前最后一条消息的行号
+                // Get the line number of the last loaded message
                 const lastLoadedLine = loadedMessages.length > 0 
                     ? loadedMessages[loadedMessages.length - 1].line 
                     : 0;
                 
-                // 找出新消息
+                // Find new messages
                 const newMessages = messages.filter(msg => msg.line > lastLoadedLine);
                 
                 if (newMessages.length > 0) {
-                    // 追加新消息
+                    // Append new messages
                     newMessages.forEach(msg => {
                         const msgHtml = renderSingleMessage(msg);
                         messageList.insertAdjacentHTML('beforeend', msgHtml);
                         
-                        // 为新添加的消息应用代码高亮
+                        // Apply syntax highlighting to newly added messages
                         const newMsgEl = document.getElementById(`msg-${msg.line}`);
                         if (newMsgEl) {
                             newMsgEl.querySelectorAll('pre code').forEach(block => {
                                 hljs.highlightElement(block);
                             });
-                            // 添加高亮动画效果
+                            // Add highlight animation effect
                             newMsgEl.classList.add('message-new');
                             setTimeout(() => newMsgEl.classList.remove('message-new'), 2000);
                         }
                     });
                     
-                    // 更新已加载消息列表
+                    // Update loaded messages list
                     loadedMessages = messages;
                     
-                    // 如果用户在底部，自动滚动
+                    // Auto scroll if user is at bottom
                     if (autoScroll) {
                         scrollToBottom();
                     }
@@ -1334,7 +1332,7 @@ HTML_TEMPLATE = """
             progressContainer.scrollTo({ top: progressContainer.scrollHeight, behavior: 'smooth' });
         }
 
-        // 检测滚动位置
+        // Detect scroll position
         document.getElementById('mainContent').addEventListener('scroll', function() {
             const scrollBtn = document.getElementById('scrollBtn');
             const isAtBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 100;
@@ -1342,7 +1340,7 @@ HTML_TEMPLATE = """
             autoScroll = isAtBottom;
         });
 
-        // ========== PRD 功能 ==========
+        // ========== PRD Functions ==========
         async function loadPRD() {
             try {
                 const response = await fetch('/api/prd');
@@ -1351,7 +1349,7 @@ HTML_TEMPLATE = """
             } catch (error) {
                 document.getElementById('prdContainer').innerHTML = `
                     <div class="empty-state">
-                        <h2>❌ 加载失败</h2>
+                        <h2>❌ Loading Failed</h2>
                         <p>${error.message}</p>
                     </div>
                 `;
@@ -1371,7 +1369,7 @@ HTML_TEMPLATE = """
             const pending = total - passed;
             const progress = Math.round((passed / total) * 100);
             
-            // 根据筛选过滤
+            // Filter based on selection
             let filteredData = prdData;
             if (prdFilter === 'passed') {
                 filteredData = prdData.filter(item => item.passes);
@@ -1384,33 +1382,33 @@ HTML_TEMPLATE = """
             const container = document.getElementById('prdContainer');
             container.innerHTML = `
                 <div class="prd-header">
-                    <h1>📝 产品需求文档 (PRD)</h1>
-                    <p style="color: var(--text-secondary);">共 ${total} 个需求项</p>
+                    <h1>📝 Product Requirements Document (PRD)</h1>
+                    <p style="color: var(--text-secondary);">Total ${total} requirements</p>
                 </div>
                 
                 <div class="prd-stats">
                     <div class="prd-stat">
                         <div class="prd-stat-value">${total}</div>
-                        <div class="prd-stat-label">总需求</div>
+                        <div class="prd-stat-label">Total Requirements</div>
                     </div>
                     <div class="prd-stat success">
                         <div class="prd-stat-value">${passed}</div>
-                        <div class="prd-stat-label">已完成</div>
+                        <div class="prd-stat-label">Completed</div>
                     </div>
                     <div class="prd-stat warning">
                         <div class="prd-stat-value">${pending}</div>
-                        <div class="prd-stat-label">待完成</div>
+                        <div class="prd-stat-label">Pending</div>
                     </div>
                     <div class="prd-stat">
                         <div class="prd-stat-value">${progress}%</div>
-                        <div class="prd-stat-label">完成率</div>
+                        <div class="prd-stat-label">Completion Rate</div>
                     </div>
                 </div>
                 
                 <div class="prd-filter">
-                    <button class="prd-filter-btn ${prdFilter === 'all' ? 'active' : ''}" onclick="filterPRD('all')">全部</button>
-                    <button class="prd-filter-btn ${prdFilter === 'passed' ? 'active' : ''}" onclick="filterPRD('passed')">✅ 已完成</button>
-                    <button class="prd-filter-btn ${prdFilter === 'pending' ? 'active' : ''}" onclick="filterPRD('pending')">⏳ 待完成</button>
+                    <button class="prd-filter-btn ${prdFilter === 'all' ? 'active' : ''}" onclick="filterPRD('all')">All</button>
+                    <button class="prd-filter-btn ${prdFilter === 'passed' ? 'active' : ''}" onclick="filterPRD('passed')">✅ Completed</button>
+                    <button class="prd-filter-btn ${prdFilter === 'pending' ? 'active' : ''}" onclick="filterPRD('pending')">⏳ Pending</button>
                     <button class="prd-filter-btn ${prdFilter === 'critical' ? 'active' : ''}" onclick="filterPRD('critical')">Critical</button>
                     <button class="prd-filter-btn ${prdFilter === 'high' ? 'active' : ''}" onclick="filterPRD('high')">High</button>
                     <button class="prd-filter-btn ${prdFilter === 'medium' ? 'active' : ''}" onclick="filterPRD('medium')">Medium</button>
@@ -1434,7 +1432,7 @@ HTML_TEMPLATE = """
             `;
         }
 
-        // ========== Progress 功能 ==========
+        // ========== Progress Functions ==========
         async function loadProgress() {
             try {
                 const response = await fetch('/api/progress');
@@ -1447,24 +1445,21 @@ HTML_TEMPLATE = """
                     </div>
                 `;
                 
-                // 代码高亮
                 container.querySelectorAll('pre code').forEach(block => {
                     hljs.highlightElement(block);
                 });
             } catch (error) {
                 document.getElementById('progressContainer').innerHTML = `
                     <div class="empty-state">
-                        <h2>❌ 加载失败</h2>
+                        <h2>❌ Loading Failed</h2>
                         <p>${error.message}</p>
                     </div>
                 `;
             }
         }
 
-        // 初始加载
         loadFiles();
         
-        // 定期刷新文件列表
         setInterval(loadFiles, 10000);
     </script>
 </body>
@@ -1484,13 +1479,11 @@ def api_files():
 
 @app.route("/api/prd")
 def api_prd():
-    """返回 PRD JSON 数据"""
     return jsonify(get_prd_data())
 
 
 @app.route("/api/progress")
 def api_progress():
-    """返回 Progress Markdown 内容"""
     return jsonify({"content": get_progress_content()})
 
 
@@ -1506,7 +1499,6 @@ def api_messages(filename):
 
 @app.route("/api/stream/<filename>")
 def api_stream(filename):
-    """SSE 端点用于实时更新"""
     filepath = LOGS_DIR / filename
 
     def generate():
@@ -1514,7 +1506,7 @@ def api_stream(filename):
 
         try:
             while True:
-                time.sleep(1)  # 每秒检查一次
+                time.sleep(1)
                 try:
                     current_size = filepath.stat().st_size
                     if current_size != last_size:
@@ -1523,7 +1515,6 @@ def api_stream(filename):
                 except (OSError, IOError):
                     pass
         except GeneratorExit:
-            # 客户端断开连接时正常退出
             return
 
     return Response(
@@ -1538,19 +1529,20 @@ def api_stream(filename):
 
 
 def main():
-    # 启动文件监控
     observer = Observer()
     event_handler = LogFileHandler()
     observer.schedule(event_handler, str(LOGS_DIR), recursive=False)
     observer.start()
 
-    print(f"📋 Log Viewer 启动中...")
-    print(f"📁 监控目录: {LOGS_DIR}")
-    print(f"🌐 访问地址: http://localhost:5000")
-    print(f"按 Ctrl+C 停止服务")
+    port = get_free_port()
+
+    print("📋 Log Viewer starting...")
+    print(f"📁 Watching directory: {LOGS_DIR}")
+    print(f"🌐 Access URL: http://localhost:{port}")
+    print("Press Ctrl+C to stop the service")
 
     try:
-        app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+        app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
     finally:
         observer.stop()
         observer.join()
