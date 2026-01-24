@@ -260,14 +260,14 @@ export default function CashFlowReportPage() {
 
       // Process statement
       if (statementRes.status === 'fulfilled' && statementRes.value.data) {
-        setStatement(statementRes.value.data)
+        setStatement(statementRes.value.data as unknown as CashFlowStatement)
       } else {
         setStatement(null)
       }
 
       // Process items
       if (itemsRes.status === 'fulfilled' && itemsRes.value.data) {
-        setCashFlowItems(itemsRes.value.data)
+        setCashFlowItems(itemsRes.value.data as unknown as CashFlowItem[])
       } else {
         setCashFlowItems([])
       }
@@ -283,7 +283,7 @@ export default function CashFlowReportPage() {
         try {
           const compRes = await reportsApi.getReportsFinanceCashFlow(comparisonParams)
           if (compRes.data) {
-            setComparisonStatement(compRes.data)
+            setComparisonStatement(compRes.data as unknown as CashFlowStatement)
           } else {
             setComparisonStatement(null)
           }

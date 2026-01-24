@@ -16,6 +16,7 @@ import type {
   HandlerStockTakingListResponse,
   GetInventoryStockTakingsParams,
   GetInventoryStockTakingsOrderDir,
+  GetInventoryStockTakingsOrderBy,
   HandlerWarehouseListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -32,6 +33,10 @@ type WarehouseOption = {
   value: string
 }
 
+import type { TagProps } from '@douyinfe/semi-ui/lib/es/tag'
+
+type TagColor = TagProps['color']
+
 // Status filter options
 const STATUS_OPTIONS = [
   { label: '全部状态', value: '' },
@@ -44,7 +49,7 @@ const STATUS_OPTIONS = [
 ]
 
 // Status colors
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, TagColor> = {
   DRAFT: 'grey',
   COUNTING: 'blue',
   PENDING_APPROVAL: 'orange',
@@ -166,7 +171,7 @@ export default function StockTakingListPage() {
         search: searchKeyword || undefined,
         warehouse_id: warehouseFilter || undefined,
         status: (statusFilter as GetInventoryStockTakingsParams['status']) || undefined,
-        order_by: state.sort.field || 'created_at',
+        order_by: (state.sort.field || 'created_at') as GetInventoryStockTakingsOrderBy,
         order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as GetInventoryStockTakingsOrderDir,
       }
 
@@ -360,7 +365,7 @@ export default function StockTakingListPage() {
         key: 'execute',
         label: '执行',
         onClick: handleExecute,
-        condition: (record) =>
+        condition: (record: StockTakingItem) =>
           record.status === 'DRAFT' || record.status === 'COUNTING',
       },
     ],

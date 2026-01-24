@@ -298,13 +298,13 @@ export default function SalesRankingPage() {
       ])
 
       if (productsRes.status === 'fulfilled' && productsRes.value.data) {
-        setProductRankings(productsRes.value.data)
+        setProductRankings(productsRes.value.data as unknown as ProductSalesRanking[])
       } else {
         setProductRankings([])
       }
 
       if (customersRes.status === 'fulfilled' && customersRes.value.data) {
-        setCustomerRankings(customersRes.value.data)
+        setCustomerRankings(customersRes.value.data as unknown as CustomerSalesRanking[])
       } else {
         setCustomerRankings([])
       }

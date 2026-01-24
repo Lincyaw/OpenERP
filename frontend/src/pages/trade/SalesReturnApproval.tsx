@@ -18,7 +18,7 @@ import {
   Input,
 } from '@douyinfe/semi-ui'
 import { IconArrowLeft, IconTick, IconClose, IconSearch, IconRefresh } from '@douyinfe/semi-icons'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
 import { getCustomers } from '@/api/customers/customers'
@@ -104,7 +104,6 @@ function formatDateTime(dateStr?: string): string {
  * - Search and filter pending returns
  */
 export default function SalesReturnApprovalPage() {
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
   const customerApi = useMemo(() => getCustomers(), [])

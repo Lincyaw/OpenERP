@@ -39,6 +39,13 @@ import './StockTakingCreate.css'
 
 const { Title, Text } = Typography
 
+// Extended inventory item type that may include product info from joined queries
+interface ExtendedInventoryItem extends HandlerInventoryItemResponse {
+  product_name?: string
+  product_code?: string
+  unit?: string
+}
+
 // Form validation schema
 const stockTakingCreateSchema = z.object({
   warehouse_id: z.string().min(1, validationMessages.required),
@@ -102,7 +109,7 @@ export default function StockTakingCreatePage() {
   const [loadingWarehouses, setLoadingWarehouses] = useState(false)
 
   // State for inventory items
-  const [inventoryItems, setInventoryItems] = useState<HandlerInventoryItemResponse[]>([])
+  const [inventoryItems, setInventoryItems] = useState<ExtendedInventoryItem[]>([])
   const [loadingInventory, setLoadingInventory] = useState(false)
 
   // State for selected products
@@ -123,7 +130,8 @@ export default function StockTakingCreatePage() {
     []
   )
 
-  const { control, handleFormSubmit, isSubmitting, watch, setValue } =
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { control, handleFormSubmit, isSubmitting, watch, setValue: _setValue } =
     useFormWithValidation<StockTakingCreateFormData>({
       schema: stockTakingCreateSchema,
       defaultValues,
@@ -183,7 +191,7 @@ export default function StockTakingCreatePage() {
         has_stock: true,
       })
       if (response.success && response.data) {
-        setInventoryItems(response.data as HandlerInventoryItemResponse[])
+        setInventoryItems(response.data as ExtendedInventoryItem[])
       }
     } catch {
       Toast.error('获取库存列表失败')

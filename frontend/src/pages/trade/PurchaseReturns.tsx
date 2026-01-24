@@ -364,7 +364,7 @@ export default function PurchaseReturnsPage() {
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdShip(returnItem.id!, {
-              warehouse_id: returnItem.warehouse_id || '',
+              note: `从仓库发货`,
             })
             Toast.success(`退货单 "${returnItem.return_number}" 已发货`)
             fetchReturns()

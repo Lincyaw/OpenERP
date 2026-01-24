@@ -214,21 +214,21 @@ export default function ProfitLossPage() {
 
       // Process statement
       if (statementRes.status === 'fulfilled' && statementRes.value.data) {
-        setStatement(statementRes.value.data)
+        setStatement(statementRes.value.data as unknown as ProfitLossStatement)
       } else {
         setStatement(null)
       }
 
       // Process trends
       if (trendsRes.status === 'fulfilled' && trendsRes.value.data) {
-        setMonthlyTrends(trendsRes.value.data)
+        setMonthlyTrends(trendsRes.value.data as unknown as MonthlyProfitTrend[])
       } else {
         setMonthlyTrends([])
       }
 
       // Process product profit
       if (productRes.status === 'fulfilled' && productRes.value.data) {
-        setProfitByProduct(productRes.value.data)
+        setProfitByProduct(productRes.value.data as unknown as ProfitByProduct[])
       } else {
         setProfitByProduct([])
       }

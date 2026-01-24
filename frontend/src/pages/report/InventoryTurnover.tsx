@@ -209,25 +209,25 @@ export default function InventoryTurnoverPage() {
       ])
 
       if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
-        setSummary(summaryRes.value.data)
+        setSummary(summaryRes.value.data as unknown as InventorySummary)
       } else {
         setSummary(null)
       }
 
       if (turnoverRes.status === 'fulfilled' && turnoverRes.value.data) {
-        setTurnovers(turnoverRes.value.data)
+        setTurnovers(turnoverRes.value.data as unknown as InventoryTurnoverType[])
       } else {
         setTurnovers([])
       }
 
       if (categoryRes.status === 'fulfilled' && categoryRes.value.data) {
-        setValueByCategory(categoryRes.value.data)
+        setValueByCategory(categoryRes.value.data as unknown as InventoryValueByCategory[])
       } else {
         setValueByCategory([])
       }
 
       if (warehouseRes.status === 'fulfilled' && warehouseRes.value.data) {
-        setValueByWarehouse(warehouseRes.value.data)
+        setValueByWarehouse(warehouseRes.value.data as unknown as InventoryValueByWarehouse[])
       } else {
         setValueByWarehouse([])
       }

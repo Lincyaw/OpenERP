@@ -18,7 +18,7 @@ import {
   IconPlay,
   IconSend,
   IconRefresh,
-  IconCheckCircle,
+  IconTickCircle,
   IconClose,
 } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -33,8 +33,12 @@ import './StockTakingExecute.css'
 
 const { Title, Text } = Typography
 
+import type { TagProps } from '@douyinfe/semi-ui/lib/es/tag'
+
+type TagColor = TagProps['color']
+
 // Status colors
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, TagColor> = {
   DRAFT: 'grey',
   COUNTING: 'blue',
   PENDING_APPROVAL: 'orange',
@@ -708,7 +712,7 @@ export default function StockTakingExecutePage() {
       >
         <div className="submit-modal-content">
           <div className="confirm-item">
-            <IconCheckCircle style={{ color: 'var(--color-success)', fontSize: 48 }} />
+            <IconTickCircle style={{ color: 'var(--color-success)', fontSize: 48 }} />
           </div>
           <Text>所有商品已完成盘点，确定提交审批吗？</Text>
           <div className="confirm-details">

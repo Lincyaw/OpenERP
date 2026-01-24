@@ -21,6 +21,8 @@ import type {
   HandlerBalanceTransactionResponse,
   HandlerBalanceSummaryResponse,
   GetPartnerCustomersCustomerIdBalanceTransactionsParams,
+  GetPartnerCustomersCustomerIdBalanceTransactionsTransactionType,
+  GetPartnerCustomersCustomerIdBalanceTransactionsSourceType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import RechargeModal from './RechargeModal'
@@ -184,8 +186,8 @@ export default function CustomerBalancePage() {
       const params: GetPartnerCustomersCustomerIdBalanceTransactionsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
-        transaction_type: transactionTypeFilter || undefined,
-        source_type: sourceTypeFilter || undefined,
+        transaction_type: (transactionTypeFilter || undefined) as GetPartnerCustomersCustomerIdBalanceTransactionsTransactionType | undefined,
+        source_type: (sourceTypeFilter || undefined) as GetPartnerCustomersCustomerIdBalanceTransactionsSourceType | undefined,
         date_from: dateRange?.[0]?.toISOString().split('T')[0],
         date_to: dateRange?.[1]?.toISOString().split('T')[0],
       }
@@ -260,9 +262,9 @@ export default function CustomerBalancePage() {
 
   // Handle date range change
   const handleDateRangeChange = useCallback(
-    (dates: [Date, Date] | Date | string | undefined) => {
-      if (Array.isArray(dates) && dates.length === 2) {
-        setDateRange(dates as [Date, Date])
+    (dates: Date | Date[] | string | string[] | undefined) => {
+      if (Array.isArray(dates) && dates.length === 2 && dates[0] instanceof Date && dates[1] instanceof Date) {
+        setDateRange([dates[0], dates[1]])
       } else {
         setDateRange(null)
       }
@@ -508,7 +510,7 @@ export default function CustomerBalancePage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1000 }}
-            emptyText="暂无交易记录"
+            empty="暂无交易记录"
           />
         </Spin>
       </Card>

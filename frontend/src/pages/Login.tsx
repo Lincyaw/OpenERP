@@ -54,10 +54,14 @@ export default function LoginPage() {
 
       const { token, user: apiUser } = response.data
 
+      if (!apiUser || !token) {
+        throw new Error('Invalid login response: missing user or token')
+      }
+
       // Convert API user response to store User type
       const user: User = {
-        id: apiUser.id,
-        username: apiUser.username,
+        id: apiUser.id ?? '',
+        username: apiUser.username ?? '',
         displayName: apiUser.display_name,
         email: apiUser.email,
         avatar: apiUser.avatar,
@@ -67,7 +71,7 @@ export default function LoginPage() {
       }
 
       // Use auth store to login with tokens
-      login(user, token.access_token, token.refresh_token)
+      login(user, token.access_token ?? '', token.refresh_token ?? '')
 
       Toast.success({ content: 'Login successful!' })
 

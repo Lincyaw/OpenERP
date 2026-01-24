@@ -142,7 +142,7 @@ export default function RechargeModal({
 
         {/* Recharge Form */}
         <Form className="recharge-form" labelPosition="top">
-          <Form.Slot label="充值金额" required>
+          <Form.Slot label="充值金额 *">
             <InputNumber
               value={amount ?? undefined}
               onChange={handleAmountChange}

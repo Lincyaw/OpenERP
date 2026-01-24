@@ -271,28 +271,28 @@ export default function SalesReportPage() {
 
       // Process summary
       if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
-        setSummary(summaryRes.value.data)
+        setSummary(summaryRes.value.data as unknown as SalesSummary)
       } else {
         setSummary(null)
       }
 
       // Process trends
       if (trendsRes.status === 'fulfilled' && trendsRes.value.data) {
-        setDailyTrends(trendsRes.value.data)
+        setDailyTrends(trendsRes.value.data as unknown as DailySalesTrend[])
       } else {
         setDailyTrends([])
       }
 
       // Process product rankings
       if (productsRes.status === 'fulfilled' && productsRes.value.data) {
-        setProductRankings(productsRes.value.data)
+        setProductRankings(productsRes.value.data as unknown as ProductSalesRanking[])
       } else {
         setProductRankings([])
       }
 
       // Process customer rankings
       if (customersRes.status === 'fulfilled' && customersRes.value.data) {
-        setCustomerRankings(customersRes.value.data)
+        setCustomerRankings(customersRes.value.data as unknown as CustomerSalesRanking[])
       } else {
         setCustomerRankings([])
       }
