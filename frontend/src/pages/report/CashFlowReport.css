@@ -1,0 +1,224 @@
+/**
+ * Cash Flow Report Page Styles
+ */
+
+.cash-flow-report-page {
+  padding: var(--spacing-4);
+}
+
+/* Page Header */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.report-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.report-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Metrics Section */
+.report-metrics {
+  margin-bottom: var(--spacing-6);
+}
+
+/* Metric Card */
+.metric-card {
+  height: 100%;
+}
+
+.metric-card-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--semi-border-radius-medium);
+  flex-shrink: 0;
+}
+
+.metric-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-label {
+  display: block;
+  margin-bottom: var(--spacing-1);
+}
+
+.metric-value-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.metric-value {
+  font-size: var(--font-size-2xl);
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+.metric-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.metric-sub {
+  display: block;
+  margin-top: var(--spacing-1);
+}
+
+/* Statement Card */
+.statement-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.statement-descriptions {
+  width: 100%;
+}
+
+.statement-descriptions .semi-descriptions-item {
+  padding: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.statement-descriptions .semi-descriptions-item:last-child {
+  border-bottom: none;
+}
+
+.statement-descriptions .semi-descriptions-key {
+  font-weight: 600;
+  min-width: 100px;
+  color: var(--semi-color-text-0);
+}
+
+.statement-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.statement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-1) 0;
+}
+
+.statement-row.indent {
+  padding-left: var(--spacing-4);
+}
+
+.statement-row .amount {
+  font-family: var(--semi-font-family-code, 'Roboto Mono', monospace);
+  font-weight: 500;
+}
+
+.statement-row.negative .amount {
+  color: var(--semi-color-danger);
+}
+
+.statement-row.positive .amount {
+  color: var(--semi-color-success);
+}
+
+.statement-row.subtotal {
+  font-weight: 600;
+}
+
+.statement-row.total {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.statement-row.info {
+  color: var(--semi-color-text-2);
+  font-size: var(--font-size-sm);
+}
+
+/* Chart Card */
+.chart-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.chart-card .semi-card-body {
+  padding: var(--spacing-4);
+}
+
+/* Items Card */
+.items-card {
+  margin-bottom: var(--spacing-6);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .report-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-filters > * {
+    width: 100% !important;
+  }
+
+  .metric-card-content {
+    gap: var(--spacing-3);
+  }
+
+  .metric-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .metric-value {
+    font-size: var(--font-size-xl);
+  }
+
+  .statement-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  .statement-row .amount {
+    align-self: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cash-flow-report-page {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1440px) {
+  .cash-flow-report-page {
+    padding: var(--spacing-8);
+  }
+}

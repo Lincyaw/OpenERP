@@ -7633,3 +7633,105 @@ Implemented the Profit/Loss Report Page with comprehensive P&L statement display
 - **Design Pattern**: Similar structure to SalesReport and InventoryTurnover pages
 - **Export Format**: CSV with UTF-8 BOM for proper Chinese character display in Excel
 - **Chart Note**: Uses grouped bar chart pattern from ECharts for multi-series comparison
+
+
+---
+
+## P5-FE-005: 现金流量报表页面 (Cash Flow Report Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Cash Flow Report Page with comprehensive cash flow statement display, waterfall chart visualization, cash flow items detail table, and period comparison functionality.
+
+### Features Implemented
+
+1. **Summary Metrics Dashboard**
+   - Ending cash balance with beginning balance comparison
+   - Net cash increase/decrease with trend indicator
+   - Operating cash flow with period comparison
+   - Customer receipts vs supplier payments
+
+2. **Cash Flow Statement Breakdown**
+   - Beginning cash balance section
+   - Operating activities section with:
+     - Receipts from customers (positive)
+     - Payments to suppliers (negative)
+     - Other income (positive)
+     - Expense payments (negative)
+     - Net operating cash flow subtotal
+   - Ending balance section with net cash flow
+
+3. **Cash Flow Waterfall Chart**
+   - Visual waterfall chart showing cash flow progression
+   - Green bars for inflows, red bars for outflows
+   - Starting and ending balance visualization
+   - Stacked bar implementation with invisible helper series
+   - Value labels on each bar
+
+4. **Cash Flow Items Detail Table**
+   - Columns: Date, Type (with color-coded tags), Reference No, Description, Amount, Running Balance
+   - Type filters (Customer Receipts, Supplier Payments, Other Income, Expense)
+   - Sortable amount column
+   - Pagination with size options (10/20/50)
+
+5. **Period Comparison Feature**
+   - Select comparison options: None, Previous Period, Same Period Last Year
+   - Comparison values displayed in metric cards
+   - Percentage change indicators with trend arrows
+   - Comparison period ending balance shown in statement
+
+6. **Filters & Export**
+   - Date range picker for period selection
+   - Refresh button to reload data
+   - CSV export with UTF-8 BOM for Excel compatibility
+   - Export includes full cash flow statement breakdown
+
+### Files Created
+
+- `frontend/src/pages/report/CashFlowReport.tsx` - Main cash flow report page component
+- `frontend/src/pages/report/CashFlowReport.css` - Page-specific styles
+
+### Files Modified
+
+- `frontend/src/router/routes.tsx` - Added /report/cash-flow route and lazy-loaded component
+
+### Technical Details
+
+**Chart Library**: ECharts (echarts + echarts-for-react)
+- Waterfall chart implementation using stacked bars
+- Invisible helper series for positioning
+- Green/red coloring for inflows/outflows
+
+**UI Components**: Semi Design
+- Grid for responsive metrics layout
+- Descriptions for cash flow statement breakdown
+- Table with column filtering and sorting
+- DatePicker with type="dateRange"
+- Select for comparison period
+- Tag for cash flow type indicators (green/red/cyan/orange)
+- Button with IconSync for refresh, IconDownload for export
+
+**State Management**:
+- Local state with useState hooks
+- Parallel API calls with Promise.allSettled
+- Memoized chart options with useMemo
+- Comparison period data fetched separately
+
+**Layout Components**: Custom design system
+- Container, Grid from @/components/common/layout
+- Responsive grid with mobile/tablet/desktop breakpoints
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### API Endpoints Used
+- `GET /reports/finance/cash-flow` - Cash flow statement summary
+- `GET /reports/finance/cash-flow/items` - Detailed cash flow items
+
+### Notes for Next Developer
+- **Report Module Complete**: All P5-FE reports (Sales, Sales Ranking, Inventory Turnover, P&L, Cash Flow) are now implemented
+- **Next Focus**: Consider P5-INT-001 (Report Module Integration Testing) or move to P6 (Multi-tenant & Auth)
+- **Design Pattern**: Waterfall chart pattern can be reused for other financial visualizations
+- **Comparison Feature**: The period comparison logic is reusable for other reports
