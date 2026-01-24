@@ -8554,3 +8554,71 @@ PUT /api/v1/auth/password (requires JWT)
 - **Route Security**: Login and refresh should be public; logout, me, password require JWT
 - **OpenAPI Spec**: Run `swag init` to generate updated Swagger docs
 - **Frontend**: Generate SDK using `npm run api:generate`
+
+---
+
+## P6-FE-001: 登录页面 (Login Page)
+
+**Date**: 2026-01-24
+**Status**: COMPLETED ✅
+
+### Summary
+Implemented the login page with real API integration, replacing the mock login implementation.
+
+### Implementation Details
+
+#### Auth API Service (`frontend/src/api/auth/`)
+
+Created a new auth API module with the following files:
+
+**types.ts** - TypeScript interfaces matching backend DTOs:
+- `LoginRequest`, `RefreshTokenRequest`, `ChangePasswordRequest`
+- `TokenResponse`, `AuthUserResponse`, `LoginResponse`
+- `RefreshTokenResponse`, `CurrentUserResponse`, `LogoutResponse`
+- `ApiResponse<T>` wrapper interface
+
+**auth.ts** - Auth API service with methods:
+- `postAuthLogin(loginRequest)` - User login
+- `postAuthRefresh(refreshTokenRequest)` - Token refresh
+- `postAuthLogout()` - User logout
+- `getAuthMe()` - Get current user info
+- `putAuthPassword(changePasswordRequest)` - Change password
+
+**index.ts** - Re-exports for clean imports
+
+#### Login Page Updates (`frontend/src/pages/Login.tsx`)
+
+- Integrated with `authApi.postAuthLogin()` instead of mock data
+- Added proper form validation:
+  - Username: required, min 3 chars, max 100 chars
+  - Password: required, min 8 chars, max 128 chars
+- Added error handling with specific error codes:
+  - `INVALID_CREDENTIALS` - Invalid username or password
+  - `ACCOUNT_LOCKED` - Account is locked
+  - `ACCOUNT_DISABLED/DEACTIVATED` - Account is disabled
+  - `USER_NOT_FOUND` - User not found
+- Added error banner display for login failures
+- Disabled form inputs during loading state
+- Used design system tokens (--spacing-4, --spacing-6, etc.)
+
+### Requirements Fulfilled
+
+1. ✅ **实现登录表单** - Login form implemented with Semi Design Form component
+2. ✅ **实现表单验证** - Form validation for username (3-100 chars) and password (8-128 chars)
+3. ✅ **处理登录错误** - Comprehensive error handling with user-friendly messages
+
+### Build & Test Status
+- `npm run build` ✅ PASSED
+- `npx tsc --noEmit` ✅ PASSED (TypeScript check)
+
+### Files Created/Modified
+- `frontend/src/api/auth/types.ts` (NEW)
+- `frontend/src/api/auth/auth.ts` (NEW)
+- `frontend/src/api/auth/index.ts` (NEW)
+- `frontend/src/pages/Login.tsx` (MODIFIED)
+
+### Notes for Next Steps
+- **P6-FE-002**: Token storage is already partially implemented in `authStore.ts`. Need to add automatic token refresh logic.
+- **P6-FE-003**: Route permission control - implement route guards that check permissions from auth store.
+- The auth API module can be regenerated using orval once the backend swagger docs are updated.
+

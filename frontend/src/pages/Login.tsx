@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Card, Form, Button, Typography, Toast } from '@douyinfe/semi-ui'
+import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
 import { useAuthStore } from '@/store'
+import { authApi } from '@/api/auth'
+import type { User } from '@/store/types'
+import type { AxiosError } from 'axios'
 
 const { Title, Text } = Typography
 
@@ -11,14 +14,24 @@ interface LoginFormValues {
   password: string
 }
 
+interface ApiError {
+  success: boolean
+  error?: {
+    code: string
+    message: string
+    details?: string
+  }
+}
+
 /**
  * Login page
- * Handles user authentication using Zustand auth store
+ * Handles user authentication using the Auth API
  */
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const login = useAuthStore((state) => state.login)
 
   // Get intended destination from location state
@@ -26,30 +39,69 @@ export default function LoginPage() {
 
   const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true)
+    setError(null)
+
     try {
-      // TODO: Replace with actual login API call
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // TODO: Replace with actual API response data
-      const mockUser = {
-        id: '1',
+      const response = await authApi.postAuthLogin({
         username: values.username,
-        displayName: values.username,
-        permissions: ['*'], // Admin has all permissions for demo
-        roles: ['admin'],
-      }
-      const mockToken = 'mock-jwt-token-' + Date.now()
+        password: values.password,
+      })
 
-      // Use auth store to login
-      login(mockUser, mockToken)
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Login failed')
+      }
+
+      const { token, user: apiUser } = response.data
+
+      // Convert API user response to store User type
+      const user: User = {
+        id: apiUser.id,
+        username: apiUser.username,
+        displayName: apiUser.display_name,
+        email: apiUser.email,
+        avatar: apiUser.avatar,
+        tenantId: apiUser.tenant_id,
+        permissions: apiUser.permissions,
+        roles: apiUser.role_ids,
+      }
+
+      // Use auth store to login with tokens
+      login(user, token.access_token, token.refresh_token)
 
       Toast.success({ content: 'Login successful!' })
 
       // Redirect to intended destination
       navigate(from, { replace: true })
-    } catch {
-      Toast.error({ content: 'Login failed. Please check your credentials.' })
+    } catch (err) {
+      const axiosError = err as AxiosError<ApiError>
+      let errorMessage = 'Login failed. Please check your credentials.'
+
+      if (axiosError.response?.data?.error) {
+        const apiError = axiosError.response.data.error
+        // Handle specific error codes
+        switch (apiError.code) {
+          case 'INVALID_CREDENTIALS':
+            errorMessage = 'Invalid username or password'
+            break
+          case 'ACCOUNT_LOCKED':
+            errorMessage = 'Account is locked. Please try again later.'
+            break
+          case 'ACCOUNT_DISABLED':
+          case 'ACCOUNT_DEACTIVATED':
+            errorMessage = 'Account is disabled. Please contact support.'
+            break
+          case 'USER_NOT_FOUND':
+            errorMessage = 'User not found'
+            break
+          default:
+            errorMessage = apiError.message || errorMessage
+        }
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message
+      }
+
+      setError(errorMessage)
+      Toast.error({ content: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -63,18 +115,29 @@ export default function LoginPage() {
         alignItems: 'center',
         minHeight: '100vh',
         background: 'var(--semi-color-bg-0)',
+        padding: 'var(--spacing-4)',
       }}
     >
       <Card
         style={{
-          width: 400,
-          padding: '24px',
+          width: '100%',
+          maxWidth: 400,
+          padding: 'var(--spacing-6)',
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-6)' }}>
           <Title heading={3}>ERP System</Title>
           <Text type="secondary">Sign in to your account</Text>
         </div>
+
+        {error && (
+          <Banner
+            type="danger"
+            description={error}
+            style={{ marginBottom: 'var(--spacing-4)' }}
+            closeIcon={null}
+          />
+        )}
 
         <Form onSubmit={handleSubmit} labelPosition="top">
           <Form.Input
@@ -82,7 +145,12 @@ export default function LoginPage() {
             label="Username"
             prefix={<IconUser />}
             placeholder="Enter username"
-            rules={[{ required: true, message: 'Username is required' }]}
+            rules={[
+              { required: true, message: 'Username is required' },
+              { min: 3, message: 'Username must be at least 3 characters' },
+              { max: 100, message: 'Username must be at most 100 characters' },
+            ]}
+            disabled={loading}
           />
 
           <Form.Input
@@ -91,7 +159,12 @@ export default function LoginPage() {
             mode="password"
             prefix={<IconLock />}
             placeholder="Enter password"
-            rules={[{ required: true, message: 'Password is required' }]}
+            rules={[
+              { required: true, message: 'Password is required' },
+              { min: 8, message: 'Password must be at least 8 characters' },
+              { max: 128, message: 'Password must be at most 128 characters' },
+            ]}
+            disabled={loading}
           />
 
           <Button
@@ -100,15 +173,11 @@ export default function LoginPage() {
             theme="solid"
             block
             loading={loading}
-            style={{ marginTop: '16px' }}
+            style={{ marginTop: 'var(--spacing-4)' }}
           >
             Sign In
           </Button>
         </Form>
-
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <Text type="tertiary">Demo: any username/password will work</Text>
-        </div>
       </Card>
     </div>
   )
