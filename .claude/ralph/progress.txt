@@ -5892,3 +5892,104 @@ PurchaseOrder Received Event (fully received) → PurchaseOrderReceivedHandler (
 - Red-ink/reversal logic (P4-BE-004) will subscribe to return events
 - The handlers are ready but need repository implementations to be wired into the application
 
+
+
+---
+
+## 2026-01-24 - P4-BE-005: ReceiptVoucher (收款单) Implementation Complete
+
+### Completed
+- **P4-BE-005**: ReceiptVoucher 收款单实现
+
+### What was done
+1. Created ReceiptVoucher aggregate root at `internal/domain/finance/receipt_voucher.go`:
+   - `VoucherStatus` enum with state machine (DRAFT → CONFIRMED → ALLOCATED / CANCELLED)
+   - `PaymentMethod` enum (CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
+   - `ReceivableAllocation` entity for tracking payment allocations to receivables
+   - `ReceiptVoucher` aggregate with full domain logic
+
+2. Key domain methods implemented:
+   - `NewReceiptVoucher()` factory with validation (positive amount, valid payment method, required fields)
+   - `Confirm()` with user tracking - transitions from DRAFT to CONFIRMED
+   - `AllocateToReceivable()` with partial allocation support and automatic status transitions
+   - `Cancel()` for cancelling vouchers without allocations
+   - `SetPaymentReference()`, `SetRemark()` for updating voucher details
+   - Helper methods: `IsFullyAllocated()`, `AllocationCount()`, `AllocatedPercentage()`, etc.
+
+3. Created domain events at `internal/domain/finance/receipt_voucher_events.go`:
+   - `ReceiptVoucherCreatedEvent` - raised on creation
+   - `ReceiptVoucherConfirmedEvent` - raised when confirmed
+   - `ReceiptVoucherAllocatedEvent` - raised when allocated to a receivable
+   - `ReceiptVoucherCancelledEvent` - raised on cancellation
+
+4. Extended repository interface at `internal/domain/finance/repository.go`:
+   - `ReceiptVoucherFilter` with comprehensive filter options (customer, status, payment method, dates, amounts)
+   - `ReceiptVoucherRepository` interface with:
+     - CRUD operations (FindByID, Save, Delete)
+     - Query methods (FindByCustomer, FindByStatus, FindWithUnallocatedAmount)
+     - Count methods (CountForTenant, CountByStatus, CountByCustomer)
+     - Sum calculations (SumByCustomer, SumForTenant, SumUnallocatedByCustomer)
+     - Utility methods (ExistsByVoucherNumber, GenerateVoucherNumber)
+
+5. Created database migration at `migrations/000012_create_receipt_vouchers.up.sql`:
+   - `receipt_vouchers` table with proper constraints and indexes
+   - `receivable_allocations` child table for allocation tracking
+   - Check constraints for amount validation and status values
+   - Foreign key to account_receivables table
+   - Trigger for updated_at timestamp
+
+6. Created down migration at `migrations/000012_create_receipt_vouchers.down.sql`:
+   - Proper rollback order (child table first, then triggers, then main table)
+
+7. Comprehensive unit tests at `internal/domain/finance/receipt_voucher_test.go`:
+   - 59+ test cases covering all functionality
+   - VoucherStatus enum tests (IsValid, IsTerminal, CanAllocate, CanConfirm, CanCancel)
+   - PaymentMethod enum tests (IsValid, String)
+   - Creation validation tests (valid data, validation errors)
+   - Confirm tests (success, state validation, user validation)
+   - AllocateToReceivable tests (full, partial, multiple allocations, validation)
+   - Cancel tests (validation, status checks, allocation checks)
+   - Helper method tests (amounts, percentages, status checks)
+
+### Files created/modified
+- `backend/internal/domain/finance/receipt_voucher.go` (NEW)
+- `backend/internal/domain/finance/receipt_voucher_events.go` (NEW)
+- `backend/internal/domain/finance/receipt_voucher_test.go` (NEW)
+- `backend/internal/domain/finance/repository.go` (UPDATED - added ReceiptVoucherRepository)
+- `backend/migrations/000012_create_receipt_vouchers.up.sql` (NEW)
+- `backend/migrations/000012_create_receipt_vouchers.down.sql` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (59+ tests for ReceiptVoucher)
+
+### Design Decisions
+1. **State machine pattern**: VoucherStatus uses strict state transitions validated by CanAllocate(), CanConfirm(), CanCancel()
+2. **Domain events**: All significant state changes emit events for integration with other bounded contexts
+3. **Multi-tenant**: Inherits from TenantAggregateRoot for tenant isolation
+4. **Optimistic locking**: Uses version field for concurrent update protection
+5. **Decimal precision**: Uses shopspring/decimal for monetary amounts
+6. **Allocation tracking**: Each allocation is recorded as ReceivableAllocation with full details
+7. **Confirmation workflow**: Vouchers must be confirmed before allocations can be made
+8. **Payment method support**: Seven payment methods including WeChat Pay, Alipay, and customer balance
+
+### Voucher Workflow
+```
+DRAFT → Confirm() → CONFIRMED → AllocateToReceivable() → ALLOCATED
+           |                         |
+           v                         |
+        Cancel() ←-------------------+
+           |
+           v
+       CANCELLED
+```
+
+### Notes for next developer
+- **P4-BE-007** (PaymentVoucher 付款单实现) follows similar pattern - can reuse structure
+- **P4-BE-008** (核销策略实现 FIFO) will implement automatic allocation strategy
+- **P4-BE-009** (ReconciliationService) will coordinate voucher allocation with receivable updates
+- GORM repository implementation needed before integration
+- Finance API (P4-BE-010) will expose receipt voucher operations
+- The ReceiptVoucher must be confirmed before allocations - prevents accidental allocations to draft vouchers
+- Allocations automatically update the receivable's paid amount via ApplyPayment() method
+

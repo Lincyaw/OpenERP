@@ -184,3 +184,76 @@ type AccountPayableRepository interface {
 	// GeneratePayableNumber generates a unique payable number for a tenant
 	GeneratePayableNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// ReceiptVoucherFilter defines filtering options for receipt voucher queries
+type ReceiptVoucherFilter struct {
+	shared.Filter
+	CustomerID    *uuid.UUID      // Filter by customer
+	Status        *VoucherStatus  // Filter by status
+	PaymentMethod *PaymentMethod  // Filter by payment method
+	FromDate      *time.Time      // Filter by receipt date range start
+	ToDate        *time.Time      // Filter by receipt date range end
+	MinAmount     *decimal.Decimal // Filter by minimum amount
+	MaxAmount     *decimal.Decimal // Filter by maximum amount
+	HasUnallocated *bool          // Filter vouchers with unallocated amount
+}
+
+// ReceiptVoucherRepository defines the interface for receipt voucher persistence
+type ReceiptVoucherRepository interface {
+	// FindByID finds a receipt voucher by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*ReceiptVoucher, error)
+
+	// FindByIDForTenant finds a receipt voucher by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*ReceiptVoucher, error)
+
+	// FindByVoucherNumber finds by voucher number for a tenant
+	FindByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (*ReceiptVoucher, error)
+
+	// FindAllForTenant finds all receipt vouchers for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter ReceiptVoucherFilter) ([]ReceiptVoucher, error)
+
+	// FindByCustomer finds receipt vouchers for a customer
+	FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter ReceiptVoucherFilter) ([]ReceiptVoucher, error)
+
+	// FindByStatus finds receipt vouchers by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status VoucherStatus, filter ReceiptVoucherFilter) ([]ReceiptVoucher, error)
+
+	// FindWithUnallocatedAmount finds vouchers that have unallocated amount
+	FindWithUnallocatedAmount(ctx context.Context, tenantID, customerID uuid.UUID) ([]ReceiptVoucher, error)
+
+	// Save creates or updates a receipt voucher
+	Save(ctx context.Context, voucher *ReceiptVoucher) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, voucher *ReceiptVoucher) error
+
+	// Delete soft deletes a receipt voucher
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes a receipt voucher for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts receipt vouchers for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter ReceiptVoucherFilter) (int64, error)
+
+	// CountByStatus counts receipt vouchers by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status VoucherStatus) (int64, error)
+
+	// CountByCustomer counts receipt vouchers for a customer
+	CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
+
+	// SumByCustomer calculates total receipt amount for a customer
+	SumByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error)
+
+	// SumForTenant calculates total receipt amount for a tenant
+	SumForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// SumUnallocatedByCustomer calculates total unallocated amount for a customer
+	SumUnallocatedByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByVoucherNumber checks if a voucher number exists for a tenant
+	ExistsByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (bool, error)
+
+	// GenerateVoucherNumber generates a unique voucher number for a tenant
+	GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
