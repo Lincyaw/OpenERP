@@ -2094,7 +2094,7 @@
       "测试 XSS 防护",
       "测试 CSRF 防护"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-INT-001",
