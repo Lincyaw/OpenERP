@@ -1,0 +1,27 @@
+# Project Progress Log
+
+## 2026-01-25
+
+### P2-QA-004: Inventory API Integration Tests - COMPLETED
+
+Created comprehensive integration tests for the Inventory API at `backend/tests/integration/inventory_api_test.go`.
+
+**Test Coverage:**
+- **Query APIs**: GetByID, List, ListByWarehouse, ListByProduct, GetByWarehouseAndProduct
+- **Stock Operations**: IncreaseStock, LockStock, UnlockStock, DeductStock, AdjustStock
+- **Availability Checking**: CheckAvailability endpoint testing
+- **Threshold Management**: SetThresholds and low-stock alerts
+- **Transaction History**: ListTransactions, ListTransactionsByItem
+- **Error Scenarios**: Missing fields, negative quantities, invalid UUIDs, insufficient stock, non-existent locks
+- **Tenant Isolation**: Verify tenants cannot access each other's inventory data
+- **Concurrent Operations**: Multiple sequential locks succeed correctly
+
+**Test Files Added:**
+- `backend/tests/integration/inventory_api_test.go` - 11 test functions, all passing
+
+**Key Implementation Details:**
+- Created `InventoryTestServer` struct for test setup
+- Used testcontainers with PostgreSQL for real database testing
+- Fixed pagination parameter requirements (page, page_size are required with min validation)
+- Decimal values are serialized as strings in JSON responses (shopspring/decimal behavior)
+- All 11 test functions pass successfully

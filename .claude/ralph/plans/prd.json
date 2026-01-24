@@ -917,7 +917,7 @@
       "测试库存操作 API",
       "测试错误场景"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-QA-005",
