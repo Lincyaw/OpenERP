@@ -11760,3 +11760,78 @@ P0-QA-006: passes: true
 3. **Caching**: GitHub Actions cache is enabled for Go modules and npm packages
 4. **Docker builds**: Use GitHub Container Registry for production deployments
 5. **Next priority items**: P1-INT-001 (商品模块前后端联调) and P1-INT-002 (伙伴模块前后端联调)
+
+
+## 2026-01-25 02:10 - P1-QA-002 Product API Integration Tests COMPLETED
+
+### Summary
+Created comprehensive integration tests for the Product API using testcontainers with a real PostgreSQL database.
+
+### File Created
+`backend/tests/integration/product_api_test.go` - Product API integration test suite
+
+### Test Coverage
+
+#### 1. CRUD Operations (`TestProductAPI_CRUD`)
+- Create product with all fields
+- Get product by ID
+- Get product by code
+- Update product
+- Update product code
+- Delete product
+
+#### 2. Status Operations (`TestProductAPI_StatusOperations`)
+- Deactivate active product
+- Activate inactive product
+- Discontinue product
+- Verify discontinued product cannot be activated
+
+#### 3. List and Pagination (`TestProductAPI_List`)
+- List with pagination parameters
+- Custom page size
+- Search filtering
+- Status count endpoint
+
+#### 4. Validation (`TestProductAPI_Validation`)
+- Missing required fields (code, name, unit)
+- Invalid code length (max 50 chars)
+- Invalid UUID format
+- Non-existent product (404)
+
+#### 5. Duplicate Code Handling (`TestProductAPI_DuplicateCode`)
+- Duplicate code on create fails (409)
+- Duplicate code on update fails (409)
+
+#### 6. Tenant Isolation (`TestProductAPI_TenantIsolation`)
+- Tenant 2 cannot see Tenant 1's products
+- Tenant 2 cannot update Tenant 1's products
+- Tenant 2 cannot delete Tenant 1's products
+- Product counts are isolated per tenant
+- Same code can be used by different tenants
+
+#### 7. Barcode Handling (`TestProductAPI_Barcode`)
+- Create product with barcode
+- Update product barcode
+
+#### 8. Pricing (`TestProductAPI_Pricing`)
+- Create product with prices
+- Update product prices
+
+#### 9. Concurrency (`TestProductAPI_Concurrency`)
+- 10 concurrent product creations with unique codes
+
+### Test Helpers Created
+- `TestServer` - Wraps test database and HTTP server
+- `NewTestServer(t)` - Creates isolated test environment
+- `Request()` method - Simplified HTTP request helper
+- `APIResponse` struct - Standard response parsing
+
+### Known Issues Found
+1. **Pagination validation**: `ProductListFilter` has `min=1` validation tags but defaults are set AFTER validation, requiring explicit page/page_size parameters
+2. **Error code mapping**: Custom domain error codes (e.g., "CANNOT_ACTIVATE") not mapped to HTTP status codes in dto/errors.go
+
+### Notes for Next Developer
+1. **Run tests**: `go test -v -short=false -run "TestProductAPI" ./tests/integration/... -timeout 300s`
+2. **Test isolation**: Each test gets its own PostgreSQL container
+3. **Pagination required**: Always pass page=1&page_size=20 when listing products
+4. **Next priority items**: P1-QA-004 (Partner API 集成测试) or P1-INT-001 (商品模块前后端联调)

@@ -598,7 +598,7 @@
       "测试分页查询",
       "测试错误场景"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-QA-003",
