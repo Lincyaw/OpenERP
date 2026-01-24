@@ -67,6 +67,9 @@ const OtherIncomesPage = () => lazyLoad(() => import('@/pages/finance/OtherIncom
 const OtherIncomeFormPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomeForm'))
 const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
 
+// Report module
+const SalesReportPage = () => lazyLoad(() => import('@/pages/report/SalesReport'))
+
 /**
  * Application routes with metadata
  * Routes are organized into two groups:
@@ -267,6 +270,30 @@ export const appRoutes: AppRoute[] = [
       },
     ],
   },
+
+  // Report module
+  {
+    path: '/report',
+    meta: {
+      title: 'Reports',
+      icon: 'IconChartLine',
+      order: 6,
+    },
+    children: [
+      {
+        path: '/report',
+        redirect: '/report/sales',
+      },
+      {
+        path: '/report/sales',
+        meta: {
+          title: 'Sales Report',
+          icon: 'IconChartLine',
+          order: 1,
+        },
+      },
+    ],
+  },
 ]
 
 /**
@@ -306,6 +333,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return OtherIncomesPage()
     case '/finance/cashflow':
       return CashFlowPage()
+    case '/report/sales':
+      return SalesReportPage()
     default:
       return null
   }
