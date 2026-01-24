@@ -1698,7 +1698,7 @@
       "验证收付款流程",
       "验证核销流程"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P4-INT-002",

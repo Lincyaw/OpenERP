@@ -240,6 +240,7 @@ func (ap *AccountPayable) Reverse(reason string) error {
 	ap.Status = PayableStatusReversed
 	ap.ReversedAt = &now
 	ap.ReversalReason = reason
+	ap.OutstandingAmount = decimal.Zero // No longer outstanding after reversal
 	ap.UpdatedAt = now
 	ap.IncrementVersion()
 

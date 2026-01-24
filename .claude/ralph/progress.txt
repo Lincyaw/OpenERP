@@ -12409,3 +12409,109 @@ P3-INT-002: passes: true
 2. **All 85 tests pass** (44 for PurchaseOrders, 41 for PurchaseOrderReceive)
 3. **Test patterns**: Follow the established patterns for consistency
 4. **Next priority items**: P4-INT-001 (财务核心功能联调), P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)
+
+---
+
+## 2026-01-25: P4-INT-001 Implementation - Finance Core Functionality Integration
+
+### Feature: P4-INT-001 (财务核心功能联调)
+
+**Requirements:**
+- 验证应收应付生成 (Verify AR/AP generation)
+- 验证收付款流程 (Verify payment workflow)
+- 验证核销流程 (Verify reconciliation)
+
+### Implementation Summary
+
+#### 1. GORM Repository Implementations
+
+Created production-ready GORM repositories for finance entities:
+
+**Account Receivable Repository** (`backend/internal/infrastructure/persistence/account_receivable_repository.go`):
+- FindByID, FindByIDForTenant, FindByReceivableNumber
+- FindBySource (for finding AR by source document)
+- FindAllForTenant with comprehensive filtering
+- FindByCustomer, FindByStatus
+- FindOutstanding, FindOverdue
+- Save, SaveWithLock (optimistic locking)
+- CountForTenant, CountByStatus, CountByCustomer, CountOverdue
+- SumOutstandingByCustomer, SumOutstandingForTenant, SumOverdueForTenant
+- ExistsByReceivableNumber, ExistsBySource
+- GenerateReceivableNumber (format: AR-YYYYMMDD-XXXXX)
+
+**Account Payable Repository** (`backend/internal/infrastructure/persistence/account_payable_repository.go`):
+- Same comprehensive methods as AccountReceivableRepository
+- GeneratePayableNumber (format: AP-YYYYMMDD-XXXXX)
+
+#### 2. Database Migration Fix
+
+Created migration 000019 to fix constraints for cancelled/reversed records:
+
+**File**: `backend/migrations/000019_fix_receivable_payable_constraints.up.sql`
+
+The original constraints prevented cancelled/reversed records from having `outstanding_amount = 0` when `total_amount > 0`. Fixed by:
+- Allowing `outstanding_amount = 0` for CANCELLED/REVERSED status regardless of total_amount
+- Maintaining strict constraint for active records (PENDING, PARTIAL, PAID)
+
+#### 3. Domain Model Fixes
+
+Fixed `Reverse()` method in both AccountReceivable and AccountPayable domains to set `OutstandingAmount = 0` when reversed (matching the Cancel behavior).
+
+#### 4. Integration Tests
+
+Created comprehensive integration test suite (`backend/tests/integration/finance_test.go`):
+
+**Test Categories (6 test functions, 12 sub-tests):**
+
+1. **TestFinance_SalesOrderShipped_CreatesReceivable**
+   - Sales order shipped creates account receivable
+   - Idempotent - duplicate shipped event does not create duplicate receivable
+   - Zero payable amount does not create receivable
+
+2. **TestFinance_PurchaseOrderReceived_CreatesPayable**
+   - Purchase order fully received creates account payable
+   - Partial receive does not create payable (only on full receive)
+
+3. **TestFinance_ReceivablePaymentWorkflow**
+   - Apply full payment to receivable (status: PAID)
+   - Apply partial payment to receivable (status: PARTIAL)
+   - Multiple payments complete receivable
+
+4. **TestFinance_PayablePaymentWorkflow**
+   - Apply full payment to payable
+
+5. **TestFinance_SummaryQueries**
+   - Sum outstanding receivables by customer
+   - Sum outstanding payables by supplier
+
+6. **TestFinance_ReceivableCancellation**
+   - Cancel pending receivable
+   - Reverse receivable
+
+**Test Infrastructure:**
+- Uses testcontainers for PostgreSQL isolation
+- Helper functions: CreateTestCustomer, CreateTestSupplier
+- Each test gets fresh database container
+- All 12 tests pass
+
+### Files Created/Modified
+
+**Created:**
+- `backend/internal/infrastructure/persistence/account_receivable_repository.go`
+- `backend/internal/infrastructure/persistence/account_payable_repository.go`
+- `backend/tests/integration/finance_test.go`
+- `backend/migrations/000019_fix_receivable_payable_constraints.up.sql`
+- `backend/migrations/000019_fix_receivable_payable_constraints.down.sql`
+
+**Modified:**
+- `backend/internal/domain/finance/account_receivable.go` (Reverse method fix)
+- `backend/internal/domain/finance/account_payable.go` (Reverse method fix)
+- `.claude/ralph/plans/prd.json` (P4-INT-001: passes: true)
+
+### PRD Status
+P4-INT-001: passes: true
+
+### Notes for Next Developer
+1. **Run finance tests**: `cd backend && go test -v ./tests/integration/... -run TestFinance_ -timeout 180s`
+2. **All 12 tests pass**
+3. **Next priority items**: P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)

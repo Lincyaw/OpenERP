@@ -240,6 +240,7 @@ func (ar *AccountReceivable) Reverse(reason string) error {
 	ar.Status = ReceivableStatusReversed
 	ar.ReversedAt = &now
 	ar.ReversalReason = reason
+	ar.OutstandingAmount = decimal.Zero // No longer outstanding after reversal
 	ar.UpdatedAt = now
 	ar.IncrementVersion()
 
