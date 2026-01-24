@@ -50,18 +50,18 @@ type UpdateRoleInput struct {
 
 // RoleDTO represents role data transfer object
 type RoleDTO struct {
-	ID           uuid.UUID  `json:"id"`
-	TenantID     uuid.UUID  `json:"tenant_id"`
-	Code         string     `json:"code"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description,omitempty"`
-	IsSystemRole bool       `json:"is_system_role"`
-	IsEnabled    bool       `json:"is_enabled"`
-	SortOrder    int        `json:"sort_order"`
-	Permissions  []string   `json:"permissions"`
-	UserCount    int64      `json:"user_count,omitempty"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	ID           uuid.UUID `json:"id"`
+	TenantID     uuid.UUID `json:"tenant_id"`
+	Code         string    `json:"code"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description,omitempty"`
+	IsSystemRole bool      `json:"is_system_role"`
+	IsEnabled    bool      `json:"is_enabled"`
+	SortOrder    int       `json:"sort_order"`
+	Permissions  []string  `json:"permissions"`
+	UserCount    int64     `json:"user_count,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // RoleListResult represents paginated role list result

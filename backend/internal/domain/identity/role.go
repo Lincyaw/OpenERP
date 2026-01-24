@@ -79,10 +79,10 @@ func (p Permission) IsEmpty() bool {
 // DataScope represents a data-level permission scope
 // It is a value object
 type DataScope struct {
-	Resource    string        `gorm:"type:varchar(50);not null"`  // e.g., "sales_order"
-	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"`  // Type of scope
-	ScopeValues []string      `gorm:"-"`                          // For custom scope: specific IDs or conditions
-	Description string        `gorm:"type:varchar(200)"`          // Optional description
+	Resource    string        `gorm:"type:varchar(50);not null"` // e.g., "sales_order"
+	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"` // Type of scope
+	ScopeValues []string      `gorm:"-"`                         // For custom scope: specific IDs or conditions
+	Description string        `gorm:"type:varchar(200)"`         // Optional description
 }
 
 // NewDataScope creates a new DataScope value object
@@ -609,26 +609,26 @@ const (
 
 // Predefined resources
 const (
-	ResourceProduct       = "product"
-	ResourceCategory      = "category"
-	ResourceCustomer      = "customer"
-	ResourceSupplier      = "supplier"
-	ResourceWarehouse     = "warehouse"
-	ResourceInventory     = "inventory"
-	ResourceSalesOrder    = "sales_order"
-	ResourcePurchaseOrder = "purchase_order"
-	ResourceSalesReturn   = "sales_return"
-	ResourcePurchaseReturn = "purchase_return"
+	ResourceProduct           = "product"
+	ResourceCategory          = "category"
+	ResourceCustomer          = "customer"
+	ResourceSupplier          = "supplier"
+	ResourceWarehouse         = "warehouse"
+	ResourceInventory         = "inventory"
+	ResourceSalesOrder        = "sales_order"
+	ResourcePurchaseOrder     = "purchase_order"
+	ResourceSalesReturn       = "sales_return"
+	ResourcePurchaseReturn    = "purchase_return"
 	ResourceAccountReceivable = "account_receivable"
 	ResourceAccountPayable    = "account_payable"
-	ResourceReceipt       = "receipt"
-	ResourcePayment       = "payment"
-	ResourceExpense       = "expense"
-	ResourceIncome        = "income"
-	ResourceReport        = "report"
-	ResourceUser          = "user"
-	ResourceRole          = "role"
-	ResourceTenant        = "tenant"
+	ResourceReceipt           = "receipt"
+	ResourcePayment           = "payment"
+	ResourceExpense           = "expense"
+	ResourceIncome            = "income"
+	ResourceReport            = "report"
+	ResourceUser              = "user"
+	ResourceRole              = "role"
+	ResourceTenant            = "tenant"
 )
 
 // Predefined actions

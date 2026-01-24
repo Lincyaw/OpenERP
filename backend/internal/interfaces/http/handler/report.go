@@ -112,41 +112,41 @@ type CustomerSalesRankingResponse struct {
 // InventorySummaryResponse represents inventory summary
 // @Description Inventory summary data
 type InventorySummaryResponse struct {
-	TotalProducts      int64   `json:"total_products" example:"500"`
-	TotalWarehouses    int64   `json:"total_warehouses" example:"5"`
-	TotalQuantity      float64 `json:"total_quantity" example:"10000"`
-	TotalValue         float64 `json:"total_value" example:"500000.00"`
-	AvgValue           float64 `json:"avg_value" example:"1000.00"`
-	LowStockCount      int64   `json:"low_stock_count" example:"25"`
-	OutOfStockCount    int64   `json:"out_of_stock_count" example:"10"`
-	OverstockCount     int64   `json:"overstock_count" example:"15"`
-	TurnoverRate       float64 `json:"turnover_rate" example:"4.5"`
-	DaysOfStockOnHand  float64 `json:"days_of_stock_on_hand" example:"30.5"`
+	TotalProducts     int64   `json:"total_products" example:"500"`
+	TotalWarehouses   int64   `json:"total_warehouses" example:"5"`
+	TotalQuantity     float64 `json:"total_quantity" example:"10000"`
+	TotalValue        float64 `json:"total_value" example:"500000.00"`
+	AvgValue          float64 `json:"avg_value" example:"1000.00"`
+	LowStockCount     int64   `json:"low_stock_count" example:"25"`
+	OutOfStockCount   int64   `json:"out_of_stock_count" example:"10"`
+	OverstockCount    int64   `json:"overstock_count" example:"15"`
+	TurnoverRate      float64 `json:"turnover_rate" example:"4.5"`
+	DaysOfStockOnHand float64 `json:"days_of_stock_on_hand" example:"30.5"`
 }
 
 // InventoryMovementResponse represents inventory movement data
 // @Description Inventory movement summary
 type InventoryMovementResponse struct {
-	PeriodStart     string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
-	PeriodEnd       string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
-	TotalIn         float64 `json:"total_in" example:"5000"`
-	TotalOut        float64 `json:"total_out" example:"4500"`
-	NetChange       float64 `json:"net_change" example:"500"`
-	InValue         float64 `json:"in_value" example:"250000.00"`
-	OutValue        float64 `json:"out_value" example:"225000.00"`
-	TransactionCount int64  `json:"transaction_count" example:"150"`
+	PeriodStart      string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
+	PeriodEnd        string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
+	TotalIn          float64 `json:"total_in" example:"5000"`
+	TotalOut         float64 `json:"total_out" example:"4500"`
+	NetChange        float64 `json:"net_change" example:"500"`
+	InValue          float64 `json:"in_value" example:"250000.00"`
+	OutValue         float64 `json:"out_value" example:"225000.00"`
+	TransactionCount int64   `json:"transaction_count" example:"150"`
 }
 
 // InventoryTurnoverResponse represents inventory turnover data
 // @Description Inventory turnover data
 type InventoryTurnoverResponse struct {
-	ProductID           string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ProductName         string  `json:"product_name" example:"Sample Product"`
-	CategoryName        string  `json:"category_name,omitempty" example:"Electronics"`
-	AvgInventory        float64 `json:"avg_inventory" example:"100"`
-	TotalSold           float64 `json:"total_sold" example:"450"`
-	TurnoverRate        float64 `json:"turnover_rate" example:"4.5"`
-	DaysOfStockOnHand   float64 `json:"days_of_stock_on_hand" example:"81.1"`
+	ProductID         string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ProductName       string  `json:"product_name" example:"Sample Product"`
+	CategoryName      string  `json:"category_name,omitempty" example:"Electronics"`
+	AvgInventory      float64 `json:"avg_inventory" example:"100"`
+	TotalSold         float64 `json:"total_sold" example:"450"`
+	TurnoverRate      float64 `json:"turnover_rate" example:"4.5"`
+	DaysOfStockOnHand float64 `json:"days_of_stock_on_hand" example:"81.1"`
 }
 
 // InventoryValueByCategoryResponse represents inventory value by category
@@ -163,52 +163,52 @@ type InventoryValueByCategoryResponse struct {
 // ProfitLossResponse represents profit and loss data
 // @Description Profit and loss statement data
 type ProfitLossResponse struct {
-	PeriodStart      string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
-	PeriodEnd        string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
-	Revenue          float64 `json:"revenue" example:"125000.00"`
-	CostOfGoodsSold  float64 `json:"cost_of_goods_sold" example:"87500.00"`
-	GrossProfit      float64 `json:"gross_profit" example:"37500.00"`
+	PeriodStart       string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
+	PeriodEnd         string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
+	Revenue           float64 `json:"revenue" example:"125000.00"`
+	CostOfGoodsSold   float64 `json:"cost_of_goods_sold" example:"87500.00"`
+	GrossProfit       float64 `json:"gross_profit" example:"37500.00"`
 	GrossProfitMargin float64 `json:"gross_profit_margin" example:"30.0"`
 	OperatingExpenses float64 `json:"operating_expenses" example:"15000.00"`
-	OtherIncome      float64 `json:"other_income" example:"2000.00"`
-	OtherExpenses    float64 `json:"other_expenses" example:"1000.00"`
-	NetProfit        float64 `json:"net_profit" example:"23500.00"`
-	NetProfitMargin  float64 `json:"net_profit_margin" example:"18.8"`
+	OtherIncome       float64 `json:"other_income" example:"2000.00"`
+	OtherExpenses     float64 `json:"other_expenses" example:"1000.00"`
+	NetProfit         float64 `json:"net_profit" example:"23500.00"`
+	NetProfitMargin   float64 `json:"net_profit_margin" example:"18.8"`
 }
 
 // CashFlowResponse represents cash flow data
 // @Description Cash flow data
 type CashFlowResponse struct {
-	PeriodStart         string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
-	PeriodEnd           string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
-	CashFromSales       float64 `json:"cash_from_sales" example:"100000.00"`
-	CashToPurchases     float64 `json:"cash_to_purchases" example:"70000.00"`
-	CashToExpenses      float64 `json:"cash_to_expenses" example:"15000.00"`
-	OtherCashInflow     float64 `json:"other_cash_inflow" example:"2000.00"`
-	OtherCashOutflow    float64 `json:"other_cash_outflow" example:"1000.00"`
-	NetCashFlow         float64 `json:"net_cash_flow" example:"16000.00"`
-	OpeningCashBalance  float64 `json:"opening_cash_balance" example:"50000.00"`
-	ClosingCashBalance  float64 `json:"closing_cash_balance" example:"66000.00"`
+	PeriodStart        string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
+	PeriodEnd          string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
+	CashFromSales      float64 `json:"cash_from_sales" example:"100000.00"`
+	CashToPurchases    float64 `json:"cash_to_purchases" example:"70000.00"`
+	CashToExpenses     float64 `json:"cash_to_expenses" example:"15000.00"`
+	OtherCashInflow    float64 `json:"other_cash_inflow" example:"2000.00"`
+	OtherCashOutflow   float64 `json:"other_cash_outflow" example:"1000.00"`
+	NetCashFlow        float64 `json:"net_cash_flow" example:"16000.00"`
+	OpeningCashBalance float64 `json:"opening_cash_balance" example:"50000.00"`
+	ClosingCashBalance float64 `json:"closing_cash_balance" example:"66000.00"`
 }
 
 // ReceivableSummaryReportResponse represents receivable summary
 // @Description Accounts receivable summary
 type ReceivableSummaryReportResponse struct {
-	TotalReceivable  float64 `json:"total_receivable" example:"50000.00"`
-	CollectedAmount  float64 `json:"collected_amount" example:"35000.00"`
+	TotalReceivable   float64 `json:"total_receivable" example:"50000.00"`
+	CollectedAmount   float64 `json:"collected_amount" example:"35000.00"`
 	OutstandingAmount float64 `json:"outstanding_amount" example:"15000.00"`
-	OverdueAmount    float64 `json:"overdue_amount" example:"5000.00"`
-	CustomerCount    int64   `json:"customer_count" example:"25"`
+	OverdueAmount     float64 `json:"overdue_amount" example:"5000.00"`
+	CustomerCount     int64   `json:"customer_count" example:"25"`
 }
 
 // PayableSummaryReportResponse represents payable summary
 // @Description Accounts payable summary
 type PayableSummaryReportResponse struct {
-	TotalPayable     float64 `json:"total_payable" example:"40000.00"`
-	PaidAmount       float64 `json:"paid_amount" example:"30000.00"`
+	TotalPayable      float64 `json:"total_payable" example:"40000.00"`
+	PaidAmount        float64 `json:"paid_amount" example:"30000.00"`
 	OutstandingAmount float64 `json:"outstanding_amount" example:"10000.00"`
-	OverdueAmount    float64 `json:"overdue_amount" example:"3000.00"`
-	SupplierCount    int64   `json:"supplier_count" example:"15"`
+	OverdueAmount     float64 `json:"overdue_amount" example:"3000.00"`
+	SupplierCount     int64   `json:"supplier_count" example:"15"`
 }
 
 // CustomerReceivableResponse represents customer receivable data
@@ -252,41 +252,41 @@ type ProfitLossStatementResponse struct {
 // MonthlyProfitTrendResponse represents monthly profit trend
 // @Description Monthly profit trend data point
 type MonthlyProfitTrendResponse struct {
-	Month         string  `json:"month" example:"2026-01"`
-	Revenue       float64 `json:"revenue" example:"125000.00"`
-	Cost          float64 `json:"cost" example:"87500.00"`
-	GrossProfit   float64 `json:"gross_profit" example:"37500.00"`
-	Expenses      float64 `json:"expenses" example:"15000.00"`
-	NetProfit     float64 `json:"net_profit" example:"22500.00"`
-	ProfitMargin  float64 `json:"profit_margin" example:"18.0"`
+	Month        string  `json:"month" example:"2026-01"`
+	Revenue      float64 `json:"revenue" example:"125000.00"`
+	Cost         float64 `json:"cost" example:"87500.00"`
+	GrossProfit  float64 `json:"gross_profit" example:"37500.00"`
+	Expenses     float64 `json:"expenses" example:"15000.00"`
+	NetProfit    float64 `json:"net_profit" example:"22500.00"`
+	ProfitMargin float64 `json:"profit_margin" example:"18.0"`
 }
 
 // ProfitByProductResponse represents profit by product
 // @Description Profit breakdown by product
 type ProfitByProductResponse struct {
-	ProductID     string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ProductName   string  `json:"product_name" example:"Sample Product"`
-	CategoryName  string  `json:"category_name,omitempty" example:"Electronics"`
-	Revenue       float64 `json:"revenue" example:"25000.00"`
-	Cost          float64 `json:"cost" example:"17500.00"`
-	GrossProfit   float64 `json:"gross_profit" example:"7500.00"`
-	Quantity      float64 `json:"quantity" example:"500"`
-	ProfitMargin  float64 `json:"profit_margin" example:"30.0"`
+	ProductID    string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ProductName  string  `json:"product_name" example:"Sample Product"`
+	CategoryName string  `json:"category_name,omitempty" example:"Electronics"`
+	Revenue      float64 `json:"revenue" example:"25000.00"`
+	Cost         float64 `json:"cost" example:"17500.00"`
+	GrossProfit  float64 `json:"gross_profit" example:"7500.00"`
+	Quantity     float64 `json:"quantity" example:"500"`
+	ProfitMargin float64 `json:"profit_margin" example:"30.0"`
 }
 
 // CashFlowStatementResponse represents cash flow statement
 // @Description Cash flow statement
 type CashFlowStatementResponse struct {
-	PeriodStart         string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
-	PeriodEnd           string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
-	CashFromSales       float64 `json:"cash_from_sales" example:"100000.00"`
-	CashToPurchases     float64 `json:"cash_to_purchases" example:"70000.00"`
-	CashToExpenses      float64 `json:"cash_to_expenses" example:"15000.00"`
-	OtherCashInflow     float64 `json:"other_cash_inflow" example:"2000.00"`
-	OtherCashOutflow    float64 `json:"other_cash_outflow" example:"1000.00"`
-	NetCashFlow         float64 `json:"net_cash_flow" example:"16000.00"`
-	OpeningCashBalance  float64 `json:"opening_cash_balance" example:"50000.00"`
-	ClosingCashBalance  float64 `json:"closing_cash_balance" example:"66000.00"`
+	PeriodStart        string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
+	PeriodEnd          string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
+	CashFromSales      float64 `json:"cash_from_sales" example:"100000.00"`
+	CashToPurchases    float64 `json:"cash_to_purchases" example:"70000.00"`
+	CashToExpenses     float64 `json:"cash_to_expenses" example:"15000.00"`
+	OtherCashInflow    float64 `json:"other_cash_inflow" example:"2000.00"`
+	OtherCashOutflow   float64 `json:"other_cash_outflow" example:"1000.00"`
+	NetCashFlow        float64 `json:"net_cash_flow" example:"16000.00"`
+	OpeningCashBalance float64 `json:"opening_cash_balance" example:"50000.00"`
+	ClosingCashBalance float64 `json:"closing_cash_balance" example:"66000.00"`
 }
 
 // CashFlowItemResponse represents cash flow item

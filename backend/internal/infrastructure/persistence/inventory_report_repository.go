@@ -333,7 +333,7 @@ func (r *GormInventoryReportRepository) GetSlowMovingProducts(filter report.Inve
 		Joins("JOIN warehouses w ON w.id = ii.warehouse_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
 		Where("ii.tenant_id = ?", filter.TenantID).
-		Where("ii.available_quantity > 0"). // Has stock
+		Where("ii.available_quantity > 0").           // Has stock
 		Order("sold_quantity ASC, stock_value DESC"). // Lowest sales first, then highest value
 		Limit(topN)
 

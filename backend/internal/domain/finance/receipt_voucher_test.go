@@ -82,7 +82,7 @@ func TestVoucherStatus_IsTerminal(t *testing.T) {
 
 func TestVoucherStatus_CanAllocate(t *testing.T) {
 	tests := []struct {
-		status     VoucherStatus
+		status      VoucherStatus
 		canAllocate bool
 	}{
 		{VoucherStatusDraft, false},

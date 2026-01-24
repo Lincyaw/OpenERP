@@ -79,15 +79,15 @@ func NewReceiptVoucherConfirmedEvent(rv *ReceiptVoucher) *ReceiptVoucherConfirme
 // ReceiptVoucherAllocatedEvent is raised when a receipt voucher is allocated to a receivable
 type ReceiptVoucherAllocatedEvent struct {
 	shared.BaseDomainEvent
-	VoucherID         uuid.UUID       `json:"voucher_id"`
-	VoucherNumber     string          `json:"voucher_number"`
-	CustomerID        uuid.UUID       `json:"customer_id"`
-	ReceivableID      uuid.UUID       `json:"receivable_id"`
-	ReceivableNumber  string          `json:"receivable_number"`
-	AllocationAmount  decimal.Decimal `json:"allocation_amount"`
-	TotalAllocated    decimal.Decimal `json:"total_allocated"`
-	RemainingAmount   decimal.Decimal `json:"remaining_amount"`
-	IsFullyAllocated  bool            `json:"is_fully_allocated"`
+	VoucherID        uuid.UUID       `json:"voucher_id"`
+	VoucherNumber    string          `json:"voucher_number"`
+	CustomerID       uuid.UUID       `json:"customer_id"`
+	ReceivableID     uuid.UUID       `json:"receivable_id"`
+	ReceivableNumber string          `json:"receivable_number"`
+	AllocationAmount decimal.Decimal `json:"allocation_amount"`
+	TotalAllocated   decimal.Decimal `json:"total_allocated"`
+	RemainingAmount  decimal.Decimal `json:"remaining_amount"`
+	IsFullyAllocated bool            `json:"is_fully_allocated"`
 }
 
 // EventType returns the event type name
@@ -98,16 +98,16 @@ func (e *ReceiptVoucherAllocatedEvent) EventType() string {
 // NewReceiptVoucherAllocatedEvent creates a new ReceiptVoucherAllocatedEvent
 func NewReceiptVoucherAllocatedEvent(rv *ReceiptVoucher, allocation *ReceivableAllocation) *ReceiptVoucherAllocatedEvent {
 	return &ReceiptVoucherAllocatedEvent{
-		BaseDomainEvent:   shared.NewBaseDomainEvent("ReceiptVoucherAllocated", "ReceiptVoucher", rv.ID, rv.TenantID),
-		VoucherID:         rv.ID,
-		VoucherNumber:     rv.VoucherNumber,
-		CustomerID:        rv.CustomerID,
-		ReceivableID:      allocation.ReceivableID,
-		ReceivableNumber:  allocation.ReceivableNumber,
-		AllocationAmount:  allocation.Amount,
-		TotalAllocated:    rv.AllocatedAmount,
-		RemainingAmount:   rv.UnallocatedAmount,
-		IsFullyAllocated:  rv.IsFullyAllocated(),
+		BaseDomainEvent:  shared.NewBaseDomainEvent("ReceiptVoucherAllocated", "ReceiptVoucher", rv.ID, rv.TenantID),
+		VoucherID:        rv.ID,
+		VoucherNumber:    rv.VoucherNumber,
+		CustomerID:       rv.CustomerID,
+		ReceivableID:     allocation.ReceivableID,
+		ReceivableNumber: allocation.ReceivableNumber,
+		AllocationAmount: allocation.Amount,
+		TotalAllocated:   rv.AllocatedAmount,
+		RemainingAmount:  rv.UnallocatedAmount,
+		IsFullyAllocated: rv.IsFullyAllocated(),
 	}
 }
 

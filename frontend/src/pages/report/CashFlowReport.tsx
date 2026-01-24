@@ -36,7 +36,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
-import { getReportsApi } from '@/api/reports'
+import { getReports } from '@/api/reports'
 import type {
   CashFlowStatement,
   CashFlowItem,
@@ -216,7 +216,7 @@ function getCashFlowTypeColor(type: string): TagColor {
  * - Export support (CSV)
  */
 export default function CashFlowReportPage() {
-  const reportsApi = useMemo(() => getReportsApi(), [])
+  const reportsApi = useMemo(() => getReports(), [])
 
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)

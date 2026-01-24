@@ -2,7 +2,7 @@
  * Auth API Module
  * Re-exports auth API service and types
  */
-export { default as authApi, getAuth } from './auth'
+export { getAuth } from './auth'
 export type {
   LoginRequest,
   LoginResponse,

@@ -14,17 +14,17 @@ import (
 type ExpenseCategory string
 
 const (
-	ExpenseCategoryRent        ExpenseCategory = "RENT"         // 房租
-	ExpenseCategoryUtilities   ExpenseCategory = "UTILITIES"    // 水电费
-	ExpenseCategorySalary      ExpenseCategory = "SALARY"       // 工资
-	ExpenseCategoryOffice      ExpenseCategory = "OFFICE"       // 办公费
-	ExpenseCategoryTravel      ExpenseCategory = "TRAVEL"       // 差旅费
-	ExpenseCategoryMarketing   ExpenseCategory = "MARKETING"    // 市场营销
-	ExpenseCategoryEquipment   ExpenseCategory = "EQUIPMENT"    // 设备费
-	ExpenseCategoryMaintenance ExpenseCategory = "MAINTENANCE"  // 维修费
-	ExpenseCategoryInsurance   ExpenseCategory = "INSURANCE"    // 保险费
-	ExpenseCategoryTax         ExpenseCategory = "TAX"          // 税费
-	ExpenseCategoryOther       ExpenseCategory = "OTHER"        // 其他费用
+	ExpenseCategoryRent        ExpenseCategory = "RENT"        // 房租
+	ExpenseCategoryUtilities   ExpenseCategory = "UTILITIES"   // 水电费
+	ExpenseCategorySalary      ExpenseCategory = "SALARY"      // 工资
+	ExpenseCategoryOffice      ExpenseCategory = "OFFICE"      // 办公费
+	ExpenseCategoryTravel      ExpenseCategory = "TRAVEL"      // 差旅费
+	ExpenseCategoryMarketing   ExpenseCategory = "MARKETING"   // 市场营销
+	ExpenseCategoryEquipment   ExpenseCategory = "EQUIPMENT"   // 设备费
+	ExpenseCategoryMaintenance ExpenseCategory = "MAINTENANCE" // 维修费
+	ExpenseCategoryInsurance   ExpenseCategory = "INSURANCE"   // 保险费
+	ExpenseCategoryTax         ExpenseCategory = "TAX"         // 税费
+	ExpenseCategoryOther       ExpenseCategory = "OTHER"       // 其他费用
 )
 
 // IsValid checks if the category is a valid ExpenseCategory
@@ -78,10 +78,10 @@ func (c ExpenseCategory) DisplayName() string {
 type ExpenseStatus string
 
 const (
-	ExpenseStatusDraft    ExpenseStatus = "DRAFT"    // Draft, not yet submitted
-	ExpenseStatusPending  ExpenseStatus = "PENDING"  // Submitted, pending approval
-	ExpenseStatusApproved ExpenseStatus = "APPROVED" // Approved
-	ExpenseStatusRejected ExpenseStatus = "REJECTED" // Rejected
+	ExpenseStatusDraft     ExpenseStatus = "DRAFT"     // Draft, not yet submitted
+	ExpenseStatusPending   ExpenseStatus = "PENDING"   // Submitted, pending approval
+	ExpenseStatusApproved  ExpenseStatus = "APPROVED"  // Approved
+	ExpenseStatusRejected  ExpenseStatus = "REJECTED"  // Rejected
 	ExpenseStatusCancelled ExpenseStatus = "CANCELLED" // Cancelled
 )
 

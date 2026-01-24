@@ -30,7 +30,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
-import { getReportsApi } from '@/api/reports'
+import { getReports } from '@/api/reports'
 import type {
   ProductSalesRanking,
   CustomerSalesRanking,
@@ -187,7 +187,7 @@ function MetricCard({ title, value, icon, color }: MetricCardProps) {
  * - Date range filter with presets
  */
 export default function SalesRankingPage() {
-  const reportsApi = useMemo(() => getReportsApi(), [])
+  const reportsApi = useMemo(() => getReports(), [])
 
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)

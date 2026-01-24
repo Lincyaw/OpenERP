@@ -538,10 +538,10 @@ func (r *GormFinanceReportRepository) GetCashFlowItems(filter report.FinanceRepo
 
 	// Get receipt vouchers
 	type receiptItem struct {
-		Date          time.Time
-		ReferenceNo   string
-		Description   string
-		Amount        decimal.Decimal
+		Date        time.Time
+		ReferenceNo string
+		Description string
+		Amount      decimal.Decimal
 	}
 	var receipts []receiptItem
 

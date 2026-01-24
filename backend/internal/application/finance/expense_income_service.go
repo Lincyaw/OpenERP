@@ -32,31 +32,31 @@ func NewExpenseIncomeService(
 
 // ExpenseRecordResponse represents an expense record in API responses
 type ExpenseRecordResponse struct {
-	ID             uuid.UUID       `json:"id"`
-	TenantID       uuid.UUID       `json:"tenant_id"`
-	ExpenseNumber  string          `json:"expense_number"`
-	Category       string          `json:"category"`
-	CategoryName   string          `json:"category_name"`
-	Amount         decimal.Decimal `json:"amount"`
-	Description    string          `json:"description"`
-	IncurredAt     time.Time       `json:"incurred_at"`
-	Status         string          `json:"status"`
-	PaymentStatus  string          `json:"payment_status"`
-	PaymentMethod  *string         `json:"payment_method,omitempty"`
-	PaidAt         *time.Time      `json:"paid_at,omitempty"`
-	Remark         string          `json:"remark,omitempty"`
-	AttachmentURLs string          `json:"attachment_urls,omitempty"`
-	SubmittedAt    *time.Time      `json:"submitted_at,omitempty"`
-	SubmittedBy    *uuid.UUID      `json:"submitted_by,omitempty"`
-	ApprovedAt     *time.Time      `json:"approved_at,omitempty"`
-	ApprovedBy     *uuid.UUID      `json:"approved_by,omitempty"`
-	ApprovalRemark string          `json:"approval_remark,omitempty"`
-	RejectedAt     *time.Time      `json:"rejected_at,omitempty"`
-	RejectedBy     *uuid.UUID      `json:"rejected_by,omitempty"`
-	RejectionReason string         `json:"rejection_reason,omitempty"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-	Version        int             `json:"version"`
+	ID              uuid.UUID       `json:"id"`
+	TenantID        uuid.UUID       `json:"tenant_id"`
+	ExpenseNumber   string          `json:"expense_number"`
+	Category        string          `json:"category"`
+	CategoryName    string          `json:"category_name"`
+	Amount          decimal.Decimal `json:"amount"`
+	Description     string          `json:"description"`
+	IncurredAt      time.Time       `json:"incurred_at"`
+	Status          string          `json:"status"`
+	PaymentStatus   string          `json:"payment_status"`
+	PaymentMethod   *string         `json:"payment_method,omitempty"`
+	PaidAt          *time.Time      `json:"paid_at,omitempty"`
+	Remark          string          `json:"remark,omitempty"`
+	AttachmentURLs  string          `json:"attachment_urls,omitempty"`
+	SubmittedAt     *time.Time      `json:"submitted_at,omitempty"`
+	SubmittedBy     *uuid.UUID      `json:"submitted_by,omitempty"`
+	ApprovedAt      *time.Time      `json:"approved_at,omitempty"`
+	ApprovedBy      *uuid.UUID      `json:"approved_by,omitempty"`
+	ApprovalRemark  string          `json:"approval_remark,omitempty"`
+	RejectedAt      *time.Time      `json:"rejected_at,omitempty"`
+	RejectedBy      *uuid.UUID      `json:"rejected_by,omitempty"`
+	RejectionReason string          `json:"rejection_reason,omitempty"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+	Version         int             `json:"version"`
 }
 
 // CreateExpenseRecordRequest represents a request to create an expense record
@@ -703,12 +703,12 @@ type CashFlowItem struct {
 
 // CashFlowSummary represents a summary of cash flow
 type CashFlowSummary struct {
-	TotalInflow   decimal.Decimal `json:"total_inflow"`
-	TotalOutflow  decimal.Decimal `json:"total_outflow"`
-	NetCashFlow   decimal.Decimal `json:"net_cash_flow"`
-	ExpenseTotal  decimal.Decimal `json:"expense_total"`
-	IncomeTotal   decimal.Decimal `json:"income_total"`
-	Items         []CashFlowItem  `json:"items,omitempty"`
+	TotalInflow  decimal.Decimal `json:"total_inflow"`
+	TotalOutflow decimal.Decimal `json:"total_outflow"`
+	NetCashFlow  decimal.Decimal `json:"net_cash_flow"`
+	ExpenseTotal decimal.Decimal `json:"expense_total"`
+	IncomeTotal  decimal.Decimal `json:"income_total"`
+	Items        []CashFlowItem  `json:"items,omitempty"`
 }
 
 // GetCashFlowSummary gets a summary of cash flow for a date range

@@ -120,23 +120,23 @@ func (a *ReceivableAllocation) GetAmountMoney() valueobject.Money {
 // It records a payment received from a customer
 type ReceiptVoucher struct {
 	shared.TenantAggregateRoot
-	VoucherNumber        string                 `gorm:"type:varchar(50);not null;uniqueIndex:idx_receipt_tenant_number,priority:2"`
-	CustomerID           uuid.UUID              `gorm:"type:uuid;not null;index"`
-	CustomerName         string                 `gorm:"type:varchar(200);not null"`
-	Amount               decimal.Decimal        `gorm:"type:decimal(18,4);not null"`   // Total receipt amount
-	AllocatedAmount      decimal.Decimal        `gorm:"type:decimal(18,4);not null"`   // Amount allocated to receivables
-	UnallocatedAmount    decimal.Decimal        `gorm:"type:decimal(18,4);not null"`   // Remaining unallocated amount
-	PaymentMethod        PaymentMethod          `gorm:"type:varchar(30);not null"`     // Payment method
-	PaymentReference     string                 `gorm:"type:varchar(100)"`             // Reference (bank txn, check #)
-	Status               VoucherStatus          `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	ReceiptDate          time.Time              `gorm:"not null"`                      // When payment was received
-	Allocations          []ReceivableAllocation `gorm:"foreignKey:ReceiptVoucherID;references:ID"`
-	Remark               string                 `gorm:"type:text"`
-	ConfirmedAt          *time.Time             // When confirmed
-	ConfirmedBy          *uuid.UUID             `gorm:"type:uuid"` // User who confirmed
-	CancelledAt          *time.Time             // When cancelled
-	CancelledBy          *uuid.UUID             `gorm:"type:uuid"` // User who cancelled
-	CancelReason         string                 `gorm:"type:varchar(500)"`
+	VoucherNumber     string                 `gorm:"type:varchar(50);not null;uniqueIndex:idx_receipt_tenant_number,priority:2"`
+	CustomerID        uuid.UUID              `gorm:"type:uuid;not null;index"`
+	CustomerName      string                 `gorm:"type:varchar(200);not null"`
+	Amount            decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Total receipt amount
+	AllocatedAmount   decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Amount allocated to receivables
+	UnallocatedAmount decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Remaining unallocated amount
+	PaymentMethod     PaymentMethod          `gorm:"type:varchar(30);not null"`   // Payment method
+	PaymentReference  string                 `gorm:"type:varchar(100)"`           // Reference (bank txn, check #)
+	Status            VoucherStatus          `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
+	ReceiptDate       time.Time              `gorm:"not null"` // When payment was received
+	Allocations       []ReceivableAllocation `gorm:"foreignKey:ReceiptVoucherID;references:ID"`
+	Remark            string                 `gorm:"type:text"`
+	ConfirmedAt       *time.Time             // When confirmed
+	ConfirmedBy       *uuid.UUID             `gorm:"type:uuid"` // User who confirmed
+	CancelledAt       *time.Time             // When cancelled
+	CancelledBy       *uuid.UUID             `gorm:"type:uuid"` // User who cancelled
+	CancelReason      string                 `gorm:"type:varchar(500)"`
 }
 
 // TableName returns the table name for GORM

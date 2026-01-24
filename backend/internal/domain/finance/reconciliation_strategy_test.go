@@ -160,7 +160,7 @@ func TestFIFOReconciliationStrategy(t *testing.T) {
 		assert.True(t, result.TotalAllocated.Equal(decimal.NewFromInt(250)))
 		assert.True(t, result.RemainingAmount.IsZero())
 		assert.True(t, result.FullyReconciled)
-		assert.Len(t, result.TargetsFullyPaid, 1)    // AR-001 fully paid
+		assert.Len(t, result.TargetsFullyPaid, 1)     // AR-001 fully paid
 		assert.Len(t, result.TargetsPartiallyPaid, 1) // AR-002 partially paid
 	})
 
@@ -632,10 +632,10 @@ func TestReconciliationResult(t *testing.T) {
 			Allocations: []AllocationResult{
 				{TargetID: id1, TargetNumber: "AR-001", Amount: decimal.NewFromInt(100)},
 			},
-			TotalAllocated:      decimal.NewFromInt(100),
-			RemainingAmount:     decimal.NewFromInt(50),
-			FullyReconciled:     false,
-			TargetsFullyPaid:    []uuid.UUID{id1},
+			TotalAllocated:       decimal.NewFromInt(100),
+			RemainingAmount:      decimal.NewFromInt(50),
+			FullyReconciled:      false,
+			TargetsFullyPaid:     []uuid.UUID{id1},
 			TargetsPartiallyPaid: []uuid.UUID{id2},
 		}
 		assert.Len(t, result.Allocations, 1)

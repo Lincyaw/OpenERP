@@ -11,8 +11,11 @@
  * - Secure logout on refresh failure
  */
 
-import { authApi } from '@/api/auth'
+import { getAuth } from '@/api/auth'
 import { useAuthStore } from '@/store'
+
+// Create auth API instance
+const authApi = getAuth()
 
 // Token expiration buffer (refresh 1 minute before expiry)
 const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000

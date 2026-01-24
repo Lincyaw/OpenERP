@@ -87,9 +87,9 @@ type RoleWithUserCount struct {
 
 // PermissionSummary represents a summary of permission usage
 type PermissionSummary struct {
-	Code       string
-	Resource   string
-	Action     string
-	RoleCount  int64 // Number of roles that have this permission
-	RoleCodes  []string
+	Code      string
+	Resource  string
+	Action    string
+	RoleCount int64 // Number of roles that have this permission
+	RoleCodes []string
 }

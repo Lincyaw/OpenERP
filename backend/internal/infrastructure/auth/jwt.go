@@ -52,12 +52,12 @@ type TokenPair struct {
 
 // JWTService handles JWT token operations
 type JWTService struct {
-	accessSecret       []byte
-	refreshSecret      []byte
-	accessExpiration   time.Duration
-	refreshExpiration  time.Duration
-	issuer             string
-	maxRefreshCount    int
+	accessSecret      []byte
+	refreshSecret     []byte
+	accessExpiration  time.Duration
+	refreshExpiration time.Duration
+	issuer            string
+	maxRefreshCount   int
 }
 
 // NewJWTService creates a new JWT service

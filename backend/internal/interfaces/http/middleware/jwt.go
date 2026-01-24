@@ -12,14 +12,14 @@ import (
 
 // JWT context keys
 const (
-	JWTClaimsKey    = "jwt_claims"
-	JWTUserIDKey    = "jwt_user_id"
-	JWTTenantIDKey  = "jwt_tenant_id"
-	JWTUsernameKey  = "jwt_username"
-	JWTRoleIDsKey   = "jwt_role_ids"
-	JWTPermissions  = "jwt_permissions"
-	AuthHeaderKey   = "Authorization"
-	BearerPrefix    = "Bearer "
+	JWTClaimsKey   = "jwt_claims"
+	JWTUserIDKey   = "jwt_user_id"
+	JWTTenantIDKey = "jwt_tenant_id"
+	JWTUsernameKey = "jwt_username"
+	JWTRoleIDsKey  = "jwt_role_ids"
+	JWTPermissions = "jwt_permissions"
+	AuthHeaderKey  = "Authorization"
+	BearerPrefix   = "Bearer "
 )
 
 // JWTMiddlewareConfig holds configuration for JWT middleware

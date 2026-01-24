@@ -31,7 +31,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid, Row } from '@/components/common/layout'
-import { getReportsApi } from '@/api/reports'
+import { getReports } from '@/api/reports'
 import type {
   InventorySummary,
   InventoryTurnover as InventoryTurnoverType,
@@ -186,7 +186,7 @@ export default function InventoryTurnoverPage() {
   const categoryChartRef = useRef<ReactEChartsCore>(null)
 
   // API instance
-  const api = useMemo(() => getReportsApi(), [])
+  const api = useMemo(() => getReports(), [])
 
   /**
    * Fetch all data

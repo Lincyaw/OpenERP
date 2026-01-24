@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
 import { useAuthStore } from '@/store'
-import { authApi } from '@/api/auth'
+import { getAuth } from '@/api/auth'
 import type { User } from '@/store/types'
 import type { AxiosError } from 'axios'
 
@@ -33,6 +33,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const login = useAuthStore((state) => state.login)
+  const authApi = useMemo(() => getAuth(), [])
 
   // Get intended destination from location state
   const from = (location.state as { from?: Location })?.from?.pathname || '/'

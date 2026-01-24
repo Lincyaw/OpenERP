@@ -485,16 +485,16 @@ type ProfitByProductResponse struct {
 
 // CashFlowStatementResponse represents cash flow statement
 type CashFlowStatementResponse struct {
-	PeriodStart              time.Time `json:"period_start"`
-	PeriodEnd                time.Time `json:"period_end"`
-	ReceiptsFromCustomers    float64   `json:"receipts_from_customers"`
-	PaymentsToSuppliers      float64   `json:"payments_to_suppliers"`
-	OtherIncome              float64   `json:"other_income"`
-	ExpensePayments          float64   `json:"expense_payments"`
-	NetOperatingCashFlow     float64   `json:"net_operating_cash_flow"`
-	BeginningCash            float64   `json:"beginning_cash"`
-	NetCashFlow              float64   `json:"net_cash_flow"`
-	EndingCash               float64   `json:"ending_cash"`
+	PeriodStart           time.Time `json:"period_start"`
+	PeriodEnd             time.Time `json:"period_end"`
+	ReceiptsFromCustomers float64   `json:"receipts_from_customers"`
+	PaymentsToSuppliers   float64   `json:"payments_to_suppliers"`
+	OtherIncome           float64   `json:"other_income"`
+	ExpensePayments       float64   `json:"expense_payments"`
+	NetOperatingCashFlow  float64   `json:"net_operating_cash_flow"`
+	BeginningCash         float64   `json:"beginning_cash"`
+	NetCashFlow           float64   `json:"net_cash_flow"`
+	EndingCash            float64   `json:"ending_cash"`
 }
 
 // CashFlowItemResponse represents a cash flow item

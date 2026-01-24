@@ -51,13 +51,13 @@ type PaymentVoucher struct {
 	VoucherNumber     string              `gorm:"type:varchar(50);not null;uniqueIndex:idx_payment_tenant_number,priority:2"`
 	SupplierID        uuid.UUID           `gorm:"type:uuid;not null;index"`
 	SupplierName      string              `gorm:"type:varchar(200);not null"`
-	Amount            decimal.Decimal     `gorm:"type:decimal(18,4);not null"`   // Total payment amount
-	AllocatedAmount   decimal.Decimal     `gorm:"type:decimal(18,4);not null"`   // Amount allocated to payables
-	UnallocatedAmount decimal.Decimal     `gorm:"type:decimal(18,4);not null"`   // Remaining unallocated amount
-	PaymentMethod     PaymentMethod       `gorm:"type:varchar(30);not null"`     // Payment method
-	PaymentReference  string              `gorm:"type:varchar(100)"`             // Reference (bank txn, check #)
+	Amount            decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Total payment amount
+	AllocatedAmount   decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Amount allocated to payables
+	UnallocatedAmount decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Remaining unallocated amount
+	PaymentMethod     PaymentMethod       `gorm:"type:varchar(30);not null"`   // Payment method
+	PaymentReference  string              `gorm:"type:varchar(100)"`           // Reference (bank txn, check #)
 	Status            VoucherStatus       `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	PaymentDate       time.Time           `gorm:"not null"`                      // When payment was made
+	PaymentDate       time.Time           `gorm:"not null"` // When payment was made
 	Allocations       []PayableAllocation `gorm:"foreignKey:PaymentVoucherID;references:ID"`
 	Remark            string              `gorm:"type:text"`
 	ConfirmedAt       *time.Time          // When confirmed

@@ -33,7 +33,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
-import { getReportsApi } from '@/api/reports'
+import { getReports } from '@/api/reports'
 import type {
   ProfitLossStatement,
   MonthlyProfitTrend,
@@ -170,7 +170,7 @@ function MetricCard({
  * - Export support (CSV)
  */
 export default function ProfitLossPage() {
-  const reportsApi = useMemo(() => getReportsApi(), [])
+  const reportsApi = useMemo(() => getReports(), [])
 
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)

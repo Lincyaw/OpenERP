@@ -38,11 +38,11 @@ type SalesSummary struct {
 
 // DailySalesTrend represents daily sales trend data
 type DailySalesTrend struct {
-	Date         time.Time       `json:"date"`
-	OrderCount   int64           `json:"order_count"`
-	TotalAmount  decimal.Decimal `json:"total_amount"`
-	TotalProfit  decimal.Decimal `json:"total_profit"`
-	ItemsSold    decimal.Decimal `json:"items_sold"`
+	Date        time.Time       `json:"date"`
+	OrderCount  int64           `json:"order_count"`
+	TotalAmount decimal.Decimal `json:"total_amount"`
+	TotalProfit decimal.Decimal `json:"total_profit"`
+	ItemsSold   decimal.Decimal `json:"items_sold"`
 }
 
 // ProductSalesRanking represents product sales ranking

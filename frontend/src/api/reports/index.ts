@@ -1,5 +1,5 @@
 /**
  * Reports API exports
  */
-export { getReportsApi } from './reports'
+export { getReports } from './reports'
 export * from './types'

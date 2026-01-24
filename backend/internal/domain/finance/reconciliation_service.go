@@ -38,12 +38,12 @@ type ReconcileReceiptRequest struct {
 
 // ReconcileReceiptResult represents the result of reconciling a receipt voucher
 type ReconcileReceiptResult struct {
-	ReceiptVoucher       *ReceiptVoucher       // Updated voucher with new allocations
-	UpdatedReceivables   []AccountReceivable   // Receivables that were updated
+	ReceiptVoucher       *ReceiptVoucher        // Updated voucher with new allocations
+	UpdatedReceivables   []AccountReceivable    // Receivables that were updated
 	Allocations          []ReceivableAllocation // Allocations that were made
-	TotalReconciled      decimal.Decimal       // Total amount reconciled
-	RemainingUnallocated decimal.Decimal       // Amount still unallocated
-	FullyReconciled      bool                  // True if all voucher amount was allocated
+	TotalReconciled      decimal.Decimal        // Total amount reconciled
+	RemainingUnallocated decimal.Decimal        // Amount still unallocated
+	FullyReconciled      bool                   // True if all voucher amount was allocated
 }
 
 // ReconcileReceipt reconciles a receipt voucher to receivables using the specified strategy
@@ -78,8 +78,8 @@ func (s *ReconciliationService) ReconcileReceipt(
 	customerReceivables := make([]AccountReceivable, 0)
 	for _, r := range req.Receivables {
 		if r.CustomerID == req.ReceiptVoucher.CustomerID &&
-		   r.Status.CanApplyPayment() &&
-		   r.OutstandingAmount.GreaterThan(decimal.Zero) {
+			r.Status.CanApplyPayment() &&
+			r.OutstandingAmount.GreaterThan(decimal.Zero) {
 			customerReceivables = append(customerReceivables, r)
 		}
 	}
@@ -168,12 +168,12 @@ type ReconcilePaymentRequest struct {
 
 // ReconcilePaymentResult represents the result of reconciling a payment voucher
 type ReconcilePaymentResult struct {
-	PaymentVoucher       *PaymentVoucher       // Updated voucher with new allocations
-	UpdatedPayables      []AccountPayable      // Payables that were updated
-	Allocations          []PayableAllocation   // Allocations that were made
-	TotalReconciled      decimal.Decimal       // Total amount reconciled
-	RemainingUnallocated decimal.Decimal       // Amount still unallocated
-	FullyReconciled      bool                  // True if all voucher amount was allocated
+	PaymentVoucher       *PaymentVoucher     // Updated voucher with new allocations
+	UpdatedPayables      []AccountPayable    // Payables that were updated
+	Allocations          []PayableAllocation // Allocations that were made
+	TotalReconciled      decimal.Decimal     // Total amount reconciled
+	RemainingUnallocated decimal.Decimal     // Amount still unallocated
+	FullyReconciled      bool                // True if all voucher amount was allocated
 }
 
 // ReconcilePayment reconciles a payment voucher to payables using the specified strategy
@@ -208,8 +208,8 @@ func (s *ReconciliationService) ReconcilePayment(
 	supplierPayables := make([]AccountPayable, 0)
 	for _, p := range req.Payables {
 		if p.SupplierID == req.PaymentVoucher.SupplierID &&
-		   p.Status.CanApplyPayment() &&
-		   p.OutstandingAmount.GreaterThan(decimal.Zero) {
+			p.Status.CanApplyPayment() &&
+			p.OutstandingAmount.GreaterThan(decimal.Zero) {
 			supplierPayables = append(supplierPayables, p)
 		}
 	}
@@ -367,8 +367,8 @@ func (s *ReconciliationService) PreviewReconcileReceipt(
 	customerReceivables := make([]AccountReceivable, 0)
 	for _, r := range req.Receivables {
 		if r.CustomerID == req.ReceiptVoucher.CustomerID &&
-		   r.Status.CanApplyPayment() &&
-		   r.OutstandingAmount.GreaterThan(decimal.Zero) {
+			r.Status.CanApplyPayment() &&
+			r.OutstandingAmount.GreaterThan(decimal.Zero) {
 			customerReceivables = append(customerReceivables, r)
 		}
 	}
@@ -404,8 +404,8 @@ func (s *ReconciliationService) PreviewReconcilePayment(
 	supplierPayables := make([]AccountPayable, 0)
 	for _, p := range req.Payables {
 		if p.SupplierID == req.PaymentVoucher.SupplierID &&
-		   p.Status.CanApplyPayment() &&
-		   p.OutstandingAmount.GreaterThan(decimal.Zero) {
+			p.Status.CanApplyPayment() &&
+			p.OutstandingAmount.GreaterThan(decimal.Zero) {
 			supplierPayables = append(supplierPayables, p)
 		}
 	}

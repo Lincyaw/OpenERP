@@ -43,28 +43,28 @@ func AllReconciliationStrategyTypes() []ReconciliationStrategyType {
 
 // AllocationTarget represents a target receivable/payable for allocation
 type AllocationTarget struct {
-	ID               uuid.UUID       // ID of the receivable/payable
-	Number           string          // Number for display purposes
+	ID                uuid.UUID       // ID of the receivable/payable
+	Number            string          // Number for display purposes
 	OutstandingAmount decimal.Decimal // Amount still outstanding
-	DueDate          *time.Time      // Due date for FIFO ordering
-	CreatedAt        time.Time       // Creation date as fallback ordering
+	DueDate           *time.Time      // Due date for FIFO ordering
+	CreatedAt         time.Time       // Creation date as fallback ordering
 }
 
 // AllocationResult represents the result of a single allocation
 type AllocationResult struct {
-	TargetID   uuid.UUID       // ID of the receivable/payable
-	TargetNumber string        // Number of the receivable/payable
-	Amount     decimal.Decimal // Amount to allocate
+	TargetID     uuid.UUID       // ID of the receivable/payable
+	TargetNumber string          // Number of the receivable/payable
+	Amount       decimal.Decimal // Amount to allocate
 }
 
 // ReconciliationResult represents the complete result of a reconciliation strategy
 type ReconciliationResult struct {
-	Allocations       []AllocationResult // List of allocations to make
-	TotalAllocated    decimal.Decimal    // Total amount allocated
-	RemainingAmount   decimal.Decimal    // Amount left unallocated
-	FullyReconciled   bool               // True if all amount was allocated
-	TargetsFullyPaid  []uuid.UUID        // Targets that will be fully paid
-	TargetsPartiallyPaid []uuid.UUID     // Targets that will be partially paid
+	Allocations          []AllocationResult // List of allocations to make
+	TotalAllocated       decimal.Decimal    // Total amount allocated
+	RemainingAmount      decimal.Decimal    // Amount left unallocated
+	FullyReconciled      bool               // True if all amount was allocated
+	TargetsFullyPaid     []uuid.UUID        // Targets that will be fully paid
+	TargetsPartiallyPaid []uuid.UUID        // Targets that will be partially paid
 }
 
 // ReconciliationStrategy is the interface for reconciliation strategies
@@ -119,11 +119,11 @@ func (s *FIFOReconciliationStrategy) Allocate(amount valueobject.Money, targets 
 	}
 	if len(targets) == 0 {
 		return &ReconciliationResult{
-			Allocations:      make([]AllocationResult, 0),
-			TotalAllocated:   decimal.Zero,
-			RemainingAmount:  amount.Amount(),
-			FullyReconciled:  false,
-			TargetsFullyPaid: make([]uuid.UUID, 0),
+			Allocations:          make([]AllocationResult, 0),
+			TotalAllocated:       decimal.Zero,
+			RemainingAmount:      amount.Amount(),
+			FullyReconciled:      false,
+			TargetsFullyPaid:     make([]uuid.UUID, 0),
 			TargetsPartiallyPaid: make([]uuid.UUID, 0),
 		}, nil
 	}
@@ -181,11 +181,11 @@ func (s *FIFOReconciliationStrategy) Allocate(amount valueobject.Money, targets 
 	}
 
 	return &ReconciliationResult{
-		Allocations:         allocations,
-		TotalAllocated:      totalAllocated,
-		RemainingAmount:     remaining,
-		FullyReconciled:     remaining.IsZero(),
-		TargetsFullyPaid:    fullyPaid,
+		Allocations:          allocations,
+		TotalAllocated:       totalAllocated,
+		RemainingAmount:      remaining,
+		FullyReconciled:      remaining.IsZero(),
+		TargetsFullyPaid:     fullyPaid,
 		TargetsPartiallyPaid: partiallyPaid,
 	}, nil
 }
@@ -285,11 +285,11 @@ func (s *ManualReconciliationStrategy) Allocate(amount valueobject.Money, target
 	}
 	if len(targets) == 0 {
 		return &ReconciliationResult{
-			Allocations:      make([]AllocationResult, 0),
-			TotalAllocated:   decimal.Zero,
-			RemainingAmount:  amount.Amount(),
-			FullyReconciled:  false,
-			TargetsFullyPaid: make([]uuid.UUID, 0),
+			Allocations:          make([]AllocationResult, 0),
+			TotalAllocated:       decimal.Zero,
+			RemainingAmount:      amount.Amount(),
+			FullyReconciled:      false,
+			TargetsFullyPaid:     make([]uuid.UUID, 0),
 			TargetsPartiallyPaid: make([]uuid.UUID, 0),
 		}, nil
 	}
@@ -357,11 +357,11 @@ func (s *ManualReconciliationStrategy) Allocate(amount valueobject.Money, target
 	}
 
 	return &ReconciliationResult{
-		Allocations:         allocations,
-		TotalAllocated:      totalAllocated,
-		RemainingAmount:     remaining,
-		FullyReconciled:     remaining.IsZero(),
-		TargetsFullyPaid:    fullyPaid,
+		Allocations:          allocations,
+		TotalAllocated:       totalAllocated,
+		RemainingAmount:      remaining,
+		FullyReconciled:      remaining.IsZero(),
+		TargetsFullyPaid:     fullyPaid,
 		TargetsPartiallyPaid: partiallyPaid,
 	}, nil
 }

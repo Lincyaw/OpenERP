@@ -13,8 +13,8 @@ import (
 
 // FinanceService provides application-level finance operations
 type FinanceService struct {
-	receivableRepo    finance.AccountReceivableRepository
-	payableRepo       finance.AccountPayableRepository
+	receivableRepo     finance.AccountReceivableRepository
+	payableRepo        finance.AccountPayableRepository
 	receiptVoucherRepo finance.ReceiptVoucherRepository
 	paymentVoucherRepo finance.PaymentVoucherRepository
 	reconciliationSvc  *finance.ReconciliationService
@@ -40,25 +40,25 @@ func NewFinanceService(
 
 // AccountReceivableResponse represents an account receivable in API responses
 type AccountReceivableResponse struct {
-	ID                uuid.UUID                `json:"id"`
-	TenantID          uuid.UUID                `json:"tenant_id"`
-	ReceivableNumber  string                   `json:"receivable_number"`
-	CustomerID        uuid.UUID                `json:"customer_id"`
-	CustomerName      string                   `json:"customer_name"`
-	SourceType        string                   `json:"source_type"`
-	SourceID          uuid.UUID                `json:"source_id"`
-	SourceNumber      string                   `json:"source_number"`
-	TotalAmount       decimal.Decimal          `json:"total_amount"`
-	PaidAmount        decimal.Decimal          `json:"paid_amount"`
-	OutstandingAmount decimal.Decimal          `json:"outstanding_amount"`
-	Status            string                   `json:"status"`
-	DueDate           *time.Time               `json:"due_date,omitempty"`
-	PaymentRecords    []PaymentRecordResponse  `json:"payment_records,omitempty"`
-	Remark            string                   `json:"remark,omitempty"`
-	PaidAt            *time.Time               `json:"paid_at,omitempty"`
-	CreatedAt         time.Time                `json:"created_at"`
-	UpdatedAt         time.Time                `json:"updated_at"`
-	Version           int                      `json:"version"`
+	ID                uuid.UUID               `json:"id"`
+	TenantID          uuid.UUID               `json:"tenant_id"`
+	ReceivableNumber  string                  `json:"receivable_number"`
+	CustomerID        uuid.UUID               `json:"customer_id"`
+	CustomerName      string                  `json:"customer_name"`
+	SourceType        string                  `json:"source_type"`
+	SourceID          uuid.UUID               `json:"source_id"`
+	SourceNumber      string                  `json:"source_number"`
+	TotalAmount       decimal.Decimal         `json:"total_amount"`
+	PaidAmount        decimal.Decimal         `json:"paid_amount"`
+	OutstandingAmount decimal.Decimal         `json:"outstanding_amount"`
+	Status            string                  `json:"status"`
+	DueDate           *time.Time              `json:"due_date,omitempty"`
+	PaymentRecords    []PaymentRecordResponse `json:"payment_records,omitempty"`
+	Remark            string                  `json:"remark,omitempty"`
+	PaidAt            *time.Time              `json:"paid_at,omitempty"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	Version           int                     `json:"version"`
 }
 
 // PaymentRecordResponse represents a payment record in API responses
@@ -136,11 +136,11 @@ func (s *FinanceService) ListReceivables(ctx context.Context, tenantID uuid.UUID
 
 // GetReceivableSummary gets a summary of receivables for a tenant
 type ReceivableSummary struct {
-	TotalOutstanding  decimal.Decimal `json:"total_outstanding"`
-	TotalOverdue      decimal.Decimal `json:"total_overdue"`
-	PendingCount      int64           `json:"pending_count"`
-	PartialCount      int64           `json:"partial_count"`
-	OverdueCount      int64           `json:"overdue_count"`
+	TotalOutstanding decimal.Decimal `json:"total_outstanding"`
+	TotalOverdue     decimal.Decimal `json:"total_overdue"`
+	PendingCount     int64           `json:"pending_count"`
+	PartialCount     int64           `json:"partial_count"`
+	OverdueCount     int64           `json:"overdue_count"`
 }
 
 func (s *FinanceService) GetReceivableSummary(ctx context.Context, tenantID uuid.UUID) (*ReceivableSummary, error) {
@@ -324,24 +324,24 @@ func (s *FinanceService) GetPayableSummary(ctx context.Context, tenantID uuid.UU
 
 // ReceiptVoucherResponse represents a receipt voucher in API responses
 type ReceiptVoucherResponse struct {
-	ID                uuid.UUID                     `json:"id"`
-	TenantID          uuid.UUID                     `json:"tenant_id"`
-	VoucherNumber     string                        `json:"voucher_number"`
-	CustomerID        uuid.UUID                     `json:"customer_id"`
-	CustomerName      string                        `json:"customer_name"`
-	Amount            decimal.Decimal               `json:"amount"`
-	AllocatedAmount   decimal.Decimal               `json:"allocated_amount"`
-	UnallocatedAmount decimal.Decimal               `json:"unallocated_amount"`
-	PaymentMethod     string                        `json:"payment_method"`
-	PaymentReference  string                        `json:"payment_reference,omitempty"`
-	Status            string                        `json:"status"`
-	ReceiptDate       time.Time                     `json:"receipt_date"`
+	ID                uuid.UUID                      `json:"id"`
+	TenantID          uuid.UUID                      `json:"tenant_id"`
+	VoucherNumber     string                         `json:"voucher_number"`
+	CustomerID        uuid.UUID                      `json:"customer_id"`
+	CustomerName      string                         `json:"customer_name"`
+	Amount            decimal.Decimal                `json:"amount"`
+	AllocatedAmount   decimal.Decimal                `json:"allocated_amount"`
+	UnallocatedAmount decimal.Decimal                `json:"unallocated_amount"`
+	PaymentMethod     string                         `json:"payment_method"`
+	PaymentReference  string                         `json:"payment_reference,omitempty"`
+	Status            string                         `json:"status"`
+	ReceiptDate       time.Time                      `json:"receipt_date"`
 	Allocations       []ReceivableAllocationResponse `json:"allocations,omitempty"`
-	Remark            string                        `json:"remark,omitempty"`
-	ConfirmedAt       *time.Time                    `json:"confirmed_at,omitempty"`
-	CreatedAt         time.Time                     `json:"created_at"`
-	UpdatedAt         time.Time                     `json:"updated_at"`
-	Version           int                           `json:"version"`
+	Remark            string                         `json:"remark,omitempty"`
+	ConfirmedAt       *time.Time                     `json:"confirmed_at,omitempty"`
+	CreatedAt         time.Time                      `json:"created_at"`
+	UpdatedAt         time.Time                      `json:"updated_at"`
+	Version           int                            `json:"version"`
 }
 
 // ReceivableAllocationResponse represents a receivable allocation in API responses
@@ -356,13 +356,13 @@ type ReceivableAllocationResponse struct {
 
 // CreateReceiptVoucherRequest represents a request to create a receipt voucher
 type CreateReceiptVoucherRequest struct {
-	CustomerID       uuid.UUID `json:"customer_id"`
-	CustomerName     string    `json:"customer_name"`
+	CustomerID       uuid.UUID       `json:"customer_id"`
+	CustomerName     string          `json:"customer_name"`
 	Amount           decimal.Decimal `json:"amount"`
-	PaymentMethod    string    `json:"payment_method"`
-	PaymentReference string    `json:"payment_reference"`
-	ReceiptDate      time.Time `json:"receipt_date"`
-	Remark           string    `json:"remark"`
+	PaymentMethod    string          `json:"payment_method"`
+	PaymentReference string          `json:"payment_reference"`
+	ReceiptDate      time.Time       `json:"receipt_date"`
+	Remark           string          `json:"remark"`
 }
 
 // ReceiptVoucherListFilter defines filtering options for receipt voucher list queries
@@ -704,9 +704,9 @@ func (s *FinanceService) CancelPaymentVoucher(ctx context.Context, tenantID, vou
 
 // ReconcileReceiptRequest represents a request to reconcile a receipt voucher
 type ReconcileReceiptRequest struct {
-	VoucherID         uuid.UUID                  `json:"voucher_id"`
-	StrategyType      string                     `json:"strategy_type"` // FIFO or MANUAL
-	ManualAllocations []ManualAllocationRequest  `json:"manual_allocations,omitempty"`
+	VoucherID         uuid.UUID                 `json:"voucher_id"`
+	StrategyType      string                    `json:"strategy_type"` // FIFO or MANUAL
+	ManualAllocations []ManualAllocationRequest `json:"manual_allocations,omitempty"`
 }
 
 // ManualAllocationRequest represents a manual allocation request
@@ -717,11 +717,11 @@ type ManualAllocationRequest struct {
 
 // ReconcileReceiptResult represents the result of reconciling a receipt voucher
 type ReconcileReceiptResult struct {
-	Voucher              *ReceiptVoucherResponse       `json:"voucher"`
-	UpdatedReceivables   []AccountReceivableResponse   `json:"updated_receivables"`
-	TotalReconciled      decimal.Decimal               `json:"total_reconciled"`
-	RemainingUnallocated decimal.Decimal               `json:"remaining_unallocated"`
-	FullyReconciled      bool                          `json:"fully_reconciled"`
+	Voucher              *ReceiptVoucherResponse     `json:"voucher"`
+	UpdatedReceivables   []AccountReceivableResponse `json:"updated_receivables"`
+	TotalReconciled      decimal.Decimal             `json:"total_reconciled"`
+	RemainingUnallocated decimal.Decimal             `json:"remaining_unallocated"`
+	FullyReconciled      bool                        `json:"fully_reconciled"`
 }
 
 // ReconcileReceipt reconciles a receipt voucher to outstanding receivables
@@ -790,18 +790,18 @@ func (s *FinanceService) ReconcileReceipt(ctx context.Context, tenantID uuid.UUI
 
 // ReconcilePaymentRequest represents a request to reconcile a payment voucher
 type ReconcilePaymentRequest struct {
-	VoucherID         uuid.UUID                  `json:"voucher_id"`
-	StrategyType      string                     `json:"strategy_type"` // FIFO or MANUAL
-	ManualAllocations []ManualAllocationRequest  `json:"manual_allocations,omitempty"`
+	VoucherID         uuid.UUID                 `json:"voucher_id"`
+	StrategyType      string                    `json:"strategy_type"` // FIFO or MANUAL
+	ManualAllocations []ManualAllocationRequest `json:"manual_allocations,omitempty"`
 }
 
 // ReconcilePaymentResult represents the result of reconciling a payment voucher
 type ReconcilePaymentResult struct {
-	Voucher              *PaymentVoucherResponse    `json:"voucher"`
-	UpdatedPayables      []AccountPayableResponse   `json:"updated_payables"`
-	TotalReconciled      decimal.Decimal            `json:"total_reconciled"`
-	RemainingUnallocated decimal.Decimal            `json:"remaining_unallocated"`
-	FullyReconciled      bool                       `json:"fully_reconciled"`
+	Voucher              *PaymentVoucherResponse  `json:"voucher"`
+	UpdatedPayables      []AccountPayableResponse `json:"updated_payables"`
+	TotalReconciled      decimal.Decimal          `json:"total_reconciled"`
+	RemainingUnallocated decimal.Decimal          `json:"remaining_unallocated"`
+	FullyReconciled      bool                     `json:"fully_reconciled"`
 }
 
 // ReconcilePayment reconciles a payment voucher to outstanding payables

@@ -188,14 +188,14 @@ type AccountPayableRepository interface {
 // ReceiptVoucherFilter defines filtering options for receipt voucher queries
 type ReceiptVoucherFilter struct {
 	shared.Filter
-	CustomerID    *uuid.UUID      // Filter by customer
-	Status        *VoucherStatus  // Filter by status
-	PaymentMethod *PaymentMethod  // Filter by payment method
-	FromDate      *time.Time      // Filter by receipt date range start
-	ToDate        *time.Time      // Filter by receipt date range end
-	MinAmount     *decimal.Decimal // Filter by minimum amount
-	MaxAmount     *decimal.Decimal // Filter by maximum amount
-	HasUnallocated *bool          // Filter vouchers with unallocated amount
+	CustomerID     *uuid.UUID       // Filter by customer
+	Status         *VoucherStatus   // Filter by status
+	PaymentMethod  *PaymentMethod   // Filter by payment method
+	FromDate       *time.Time       // Filter by receipt date range start
+	ToDate         *time.Time       // Filter by receipt date range end
+	MinAmount      *decimal.Decimal // Filter by minimum amount
+	MaxAmount      *decimal.Decimal // Filter by maximum amount
+	HasUnallocated *bool            // Filter vouchers with unallocated amount
 }
 
 // ReceiptVoucherRepository defines the interface for receipt voucher persistence

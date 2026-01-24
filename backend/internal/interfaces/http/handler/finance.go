@@ -62,25 +62,25 @@ type PaymentRecordResponse struct {
 // AccountPayableResponse represents an account payable in API responses
 // @Description Account payable response
 type AccountPayableResponse struct {
-	ID                string                        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                        `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	PayableNumber     string                        `json:"payable_number" example:"AP-2026-00001"`
-	SupplierID        string                        `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	SupplierName      string                        `json:"supplier_name" example:"供应商A"`
-	SourceType        string                        `json:"source_type" example:"PURCHASE_ORDER"`
-	SourceID          string                        `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SourceNumber      string                        `json:"source_number" example:"PO-2026-00001"`
-	TotalAmount       float64                       `json:"total_amount" example:"2000.00"`
-	PaidAmount        float64                       `json:"paid_amount" example:"1000.00"`
-	OutstandingAmount float64                       `json:"outstanding_amount" example:"1000.00"`
-	Status            string                        `json:"status" example:"PARTIAL"`
-	DueDate           *time.Time                    `json:"due_date,omitempty"`
+	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	PayableNumber     string                         `json:"payable_number" example:"AP-2026-00001"`
+	SupplierID        string                         `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	SupplierName      string                         `json:"supplier_name" example:"供应商A"`
+	SourceType        string                         `json:"source_type" example:"PURCHASE_ORDER"`
+	SourceID          string                         `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SourceNumber      string                         `json:"source_number" example:"PO-2026-00001"`
+	TotalAmount       float64                        `json:"total_amount" example:"2000.00"`
+	PaidAmount        float64                        `json:"paid_amount" example:"1000.00"`
+	OutstandingAmount float64                        `json:"outstanding_amount" example:"1000.00"`
+	Status            string                         `json:"status" example:"PARTIAL"`
+	DueDate           *time.Time                     `json:"due_date,omitempty"`
 	PaymentRecords    []PayablePaymentRecordResponse `json:"payment_records,omitempty"`
-	Remark            string                        `json:"remark,omitempty" example:"备注"`
-	PaidAt            *time.Time                    `json:"paid_at,omitempty"`
-	CreatedAt         time.Time                     `json:"created_at"`
-	UpdatedAt         time.Time                     `json:"updated_at"`
-	Version           int                           `json:"version" example:"1"`
+	Remark            string                         `json:"remark,omitempty" example:"备注"`
+	PaidAt            *time.Time                     `json:"paid_at,omitempty"`
+	CreatedAt         time.Time                      `json:"created_at"`
+	UpdatedAt         time.Time                      `json:"updated_at"`
+	Version           int                            `json:"version" example:"1"`
 }
 
 // PayablePaymentRecordResponse represents a payment record for payable in API responses
@@ -96,24 +96,24 @@ type PayablePaymentRecordResponse struct {
 // ReceiptVoucherResponse represents a receipt voucher in API responses
 // @Description Receipt voucher response
 type ReceiptVoucherResponse struct {
-	ID                string                        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                        `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	VoucherNumber     string                        `json:"voucher_number" example:"RV-2026-00001"`
-	CustomerID        string                        `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	CustomerName      string                        `json:"customer_name" example:"张三"`
-	Amount            float64                       `json:"amount" example:"1000.00"`
-	AllocatedAmount   float64                       `json:"allocated_amount" example:"500.00"`
-	UnallocatedAmount float64                       `json:"unallocated_amount" example:"500.00"`
-	PaymentMethod     string                        `json:"payment_method" example:"CASH"`
-	PaymentReference  string                        `json:"payment_reference,omitempty" example:"银行转账-12345"`
-	Status            string                        `json:"status" example:"CONFIRMED"`
-	ReceiptDate       time.Time                     `json:"receipt_date"`
+	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	VoucherNumber     string                         `json:"voucher_number" example:"RV-2026-00001"`
+	CustomerID        string                         `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerName      string                         `json:"customer_name" example:"张三"`
+	Amount            float64                        `json:"amount" example:"1000.00"`
+	AllocatedAmount   float64                        `json:"allocated_amount" example:"500.00"`
+	UnallocatedAmount float64                        `json:"unallocated_amount" example:"500.00"`
+	PaymentMethod     string                         `json:"payment_method" example:"CASH"`
+	PaymentReference  string                         `json:"payment_reference,omitempty" example:"银行转账-12345"`
+	Status            string                         `json:"status" example:"CONFIRMED"`
+	ReceiptDate       time.Time                      `json:"receipt_date"`
 	Allocations       []ReceivableAllocationResponse `json:"allocations,omitempty"`
-	Remark            string                        `json:"remark,omitempty" example:"备注"`
-	ConfirmedAt       *time.Time                    `json:"confirmed_at,omitempty"`
-	CreatedAt         time.Time                     `json:"created_at"`
-	UpdatedAt         time.Time                     `json:"updated_at"`
-	Version           int                           `json:"version" example:"1"`
+	Remark            string                         `json:"remark,omitempty" example:"备注"`
+	ConfirmedAt       *time.Time                     `json:"confirmed_at,omitempty"`
+	CreatedAt         time.Time                      `json:"created_at"`
+	UpdatedAt         time.Time                      `json:"updated_at"`
+	Version           int                            `json:"version" example:"1"`
 }
 
 // ReceivableAllocationResponse represents a receivable allocation in API responses
@@ -194,7 +194,7 @@ type CancelVoucherRequest struct {
 // ReconcileRequest represents a request to reconcile a voucher
 // @Description Request body for reconciling a voucher
 type ReconcileRequest struct {
-	StrategyType      string                        `json:"strategy_type" binding:"required" example:"FIFO"`
+	StrategyType      string                         `json:"strategy_type" binding:"required" example:"FIFO"`
 	ManualAllocations []ManualAllocationInputRequest `json:"manual_allocations,omitempty"`
 }
 

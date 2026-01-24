@@ -53,18 +53,18 @@ type UpdateUserInput struct {
 
 // UserDTO represents user data transfer object
 type UserDTO struct {
-	ID          uuid.UUID    `json:"id"`
-	TenantID    uuid.UUID    `json:"tenant_id"`
-	Username    string       `json:"username"`
-	Email       string       `json:"email,omitempty"`
-	Phone       string       `json:"phone,omitempty"`
-	DisplayName string       `json:"display_name"`
-	Avatar      string       `json:"avatar,omitempty"`
-	Status      string       `json:"status"`
-	RoleIDs     []uuid.UUID  `json:"role_ids"`
-	LastLoginAt *time.Time   `json:"last_login_at,omitempty"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
+	ID          uuid.UUID   `json:"id"`
+	TenantID    uuid.UUID   `json:"tenant_id"`
+	Username    string      `json:"username"`
+	Email       string      `json:"email,omitempty"`
+	Phone       string      `json:"phone,omitempty"`
+	DisplayName string      `json:"display_name"`
+	Avatar      string      `json:"avatar,omitempty"`
+	Status      string      `json:"status"`
+	RoleIDs     []uuid.UUID `json:"role_ids"`
+	LastLoginAt *time.Time  `json:"last_login_at,omitempty"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 // UserListResult represents paginated user list result

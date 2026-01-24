@@ -86,8 +86,8 @@ func TestReceivableStatus_IsTerminal(t *testing.T) {
 
 func TestReceivableStatus_CanApplyPayment(t *testing.T) {
 	tests := []struct {
-		status     ReceivableStatus
-		canApply   bool
+		status   ReceivableStatus
+		canApply bool
 	}{
 		{ReceivableStatusPending, true},
 		{ReceivableStatusPartial, true},
@@ -766,7 +766,7 @@ func TestAccountReceivable_Overdue(t *testing.T) {
 	})
 
 	t.Run("DaysOverdue returns correct count", func(t *testing.T) {
-		ar := createTestReceivableWithDueDate(t, -5) // 5 days ago
+		ar := createTestReceivableWithDueDate(t, -5)  // 5 days ago
 		assert.GreaterOrEqual(t, ar.DaysOverdue(), 4) // At least 4 days
 		assert.LessOrEqual(t, ar.DaysOverdue(), 6)    // At most 6 days
 	})

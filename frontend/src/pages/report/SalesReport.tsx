@@ -33,7 +33,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
-import { getReportsApi } from '@/api/reports'
+import { getReports } from '@/api/reports'
 import type {
   SalesSummary,
   DailySalesTrend,
@@ -171,7 +171,7 @@ function MetricCard({
  * - Date range filter with time range presets
  */
 export default function SalesReportPage() {
-  const reportsApi = useMemo(() => getReportsApi(), [])
+  const reportsApi = useMemo(() => getReports(), [])
   const chartRef = useRef<ReactEChartsCore>(null)
 
   // Date range state

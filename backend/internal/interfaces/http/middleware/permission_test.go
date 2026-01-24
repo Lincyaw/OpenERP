@@ -711,7 +711,7 @@ func TestRequirePermission_WithOnDeniedCallback(t *testing.T) {
 		OnDenied: func(c *gin.Context, requiredPerms []string) {
 			customDeniedCalled = true
 			c.AbortWithStatusJSON(http.StatusTeapot, gin.H{
-				"custom": true,
+				"custom":   true,
 				"required": requiredPerms,
 			})
 		},

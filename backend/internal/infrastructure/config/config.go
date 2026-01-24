@@ -58,13 +58,13 @@ type RedisConfig struct {
 
 // JWTConfig holds JWT settings
 type JWTConfig struct {
-	Secret                  string
-	AccessTokenExpiration   time.Duration
-	RefreshTokenExpiration  time.Duration
-	Issuer                  string
-	RefreshSecret           string // Optional separate secret for refresh tokens
-	MaxRefreshCount         int    // Maximum number of times a token can be refreshed
-	ExpirationHours         int    // Deprecated: use AccessTokenExpiration instead
+	Secret                 string
+	AccessTokenExpiration  time.Duration
+	RefreshTokenExpiration time.Duration
+	Issuer                 string
+	RefreshSecret          string // Optional separate secret for refresh tokens
+	MaxRefreshCount        int    // Maximum number of times a token can be refreshed
+	ExpirationHours        int    // Deprecated: use AccessTokenExpiration instead
 }
 
 // EventConfig holds event processing configuration
@@ -120,13 +120,13 @@ func Load() (*Config, error) {
 			DB:       getEnvAsInt("REDIS_DB", 0),
 		},
 		JWT: JWTConfig{
-			Secret:                  getEnv("JWT_SECRET", ""),
-			AccessTokenExpiration:   getEnvAsDuration("JWT_ACCESS_TOKEN_EXPIRATION", 15*time.Minute),
-			RefreshTokenExpiration:  getEnvAsDuration("JWT_REFRESH_TOKEN_EXPIRATION", 7*24*time.Hour),
-			Issuer:                  getEnv("JWT_ISSUER", "erp-backend"),
-			RefreshSecret:           getEnv("JWT_REFRESH_SECRET", ""),
-			MaxRefreshCount:         getEnvAsInt("JWT_MAX_REFRESH_COUNT", 10),
-			ExpirationHours:         getEnvAsInt("JWT_EXPIRATION_HOURS", 24),
+			Secret:                 getEnv("JWT_SECRET", ""),
+			AccessTokenExpiration:  getEnvAsDuration("JWT_ACCESS_TOKEN_EXPIRATION", 15*time.Minute),
+			RefreshTokenExpiration: getEnvAsDuration("JWT_REFRESH_TOKEN_EXPIRATION", 7*24*time.Hour),
+			Issuer:                 getEnv("JWT_ISSUER", "erp-backend"),
+			RefreshSecret:          getEnv("JWT_REFRESH_SECRET", ""),
+			MaxRefreshCount:        getEnvAsInt("JWT_MAX_REFRESH_COUNT", 10),
+			ExpirationHours:        getEnvAsInt("JWT_EXPIRATION_HOURS", 24),
 		},
 		Log: LogConfig{
 			Level:  getEnv("LOG_LEVEL", "info"),

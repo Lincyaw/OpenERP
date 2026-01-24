@@ -428,10 +428,10 @@ func TestSalesOrderCancelledHandler_Handle_WasConfirmed(t *testing.T) {
 			testSalesHandlerOrderID,
 			testSalesHandlerTenantID,
 		),
-		OrderID:      testSalesHandlerOrderID,
-		OrderNumber:  testSalesHandlerOrderNumber,
-		CustomerID:   testSalesHandlerCustomerID,
-		WarehouseID:  &warehouseID,
+		OrderID:     testSalesHandlerOrderID,
+		OrderNumber: testSalesHandlerOrderNumber,
+		CustomerID:  testSalesHandlerCustomerID,
+		WarehouseID: &warehouseID,
 		Items: []trade.SalesOrderItemInfo{
 			{
 				ItemID:      uuid.New(),
@@ -474,10 +474,10 @@ func TestSalesOrderCancelledHandler_Handle_WasNotConfirmed(t *testing.T) {
 			testSalesHandlerOrderID,
 			testSalesHandlerTenantID,
 		),
-		OrderID:      testSalesHandlerOrderID,
-		OrderNumber:  testSalesHandlerOrderNumber,
-		CustomerID:   testSalesHandlerCustomerID,
-		WarehouseID:  nil,
+		OrderID:     testSalesHandlerOrderID,
+		OrderNumber: testSalesHandlerOrderNumber,
+		CustomerID:  testSalesHandlerCustomerID,
+		WarehouseID: nil,
 		Items: []trade.SalesOrderItemInfo{
 			{
 				ItemID:      uuid.New(),
