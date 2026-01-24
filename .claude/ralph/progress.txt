@@ -12610,3 +12610,58 @@ Added integration tests to `backend/tests/integration/finance_test.go`:
 2. **Run integration tests**: `cd backend && go test -v ./tests/integration/... -run "TestFinance_.*Return" -timeout 180s`
 3. **Red-letter entries**: Both AR and AP use positive amounts with specific SourceType to identify as credits/debits
 4. **Next priority items**: P4-QA-004 (财务数据准确性测试), P6-INT-001 (多租户隔离联调)
+
+---
+
+## P4-QA-004: 财务数据准确性测试 (Financial Data Accuracy Tests)
+
+**Date**: 2026-01-25
+**Status**: COMPLETED
+
+### Requirements
+1. 验证金额计算精度 (Verify amount calculation precision)
+2. 验证核销后余额 (Verify balance after reconciliation)
+3. 验证汇总数据 (Verify summary data)
+
+### Implementation Summary
+
+Added 3 comprehensive test suites to `backend/tests/integration/finance_test.go`:
+
+#### 1. TestFinance_AmountCalculationPrecision (5 sub-tests)
+Tests decimal precision in financial calculations:
+- **decimal_precision_preserved_for_small_amounts**: Verifies 0.01 (smallest unit) is preserved
+- **decimal_precision_preserved_for_amounts_with_4_decimal_places**: Tests 4 decimal place precision (decimal(18,4) schema)
+- **large_amount_precision_preserved**: Tests large amounts (99,999,999.9999)
+- **payment_amounts_sum_correctly_without_floating_point_errors**: Classic 0.1 + 0.2 = 0.3 test
+- **multiple_partial_payments_maintain_precision**: 111.11 * 3 = 333.33 accumulation test
+
+#### 2. TestFinance_BalanceAfterReconciliation (4 sub-tests)
+Tests balance updates after payment reconciliation:
+- **partial_payment_updates_status_to_PARTIAL**: Status transition after partial payment
+- **full_payment_updates_status_to_PAID**: Status transition after full payment, PaidAt timestamp set
+- **balance_invariant_TotalAmount_=_PaidAmount_+_OutstandingAmount**: Validates balance invariant after multiple payments
+- **payable_balance_updates_correctly_after_payments**: Same tests for AccountPayable
+
+#### 3. TestFinance_SummaryDataAccuracy (6 sub-tests)
+Tests aggregate summary calculations:
+- **customer_outstanding_sum_matches_individual_receivables**: Sum of multiple receivables matches repository sum
+- **sum_updates_correctly_after_partial_payments**: Outstanding sum updates after payments
+- **supplier_payable_sum_matches_individual_payables**: Same for payables
+- **count_for_tenant_matches_created_records**: Count filter matches actual records
+- **paid_receivables_excluded_from_outstanding_sum**: Paid receivables have 0 outstanding
+- **cancelled_receivables_excluded_from_outstanding_sum**: Cancelled receivables have 0 outstanding
+
+### Bug Fixes
+- Fixed `CreateTestCustomer`/`CreateTestSupplier` helpers to use unique codes based on UUID (was using fixed "CUST-TEST"/"SUPP-TEST" causing unique constraint violations)
+
+### Test Results
+- All 15 sub-tests: PASS
+
+### Files Modified
+- `backend/tests/integration/finance_test.go` (added ~350 lines of tests)
+- `.claude/ralph/plans/prd.json` (P4-QA-004: passes: true)
+
+### Notes for Next Developer
+1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestFinance_AmountCalculation|TestFinance_BalanceAfter|TestFinance_SummaryData" -timeout 180s`
+2. **All tests use testcontainers** for real PostgreSQL database testing
+3. **Next priority items**: P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)
