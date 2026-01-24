@@ -12063,3 +12063,160 @@ P3-QA-004: passes: true
 3. **Test helpers**: Uses `OrderInventoryTestSetup` struct for common test setup
 4. **Lock persistence**: Remember that lock status updates happen in item.Locks slice, not original variable
 5. **Next priority items**: P3-QA-001 (SalesOrder聚合单元测试), P3-QA-002 (PurchaseOrder聚合单元测试), or P3-INT-001 (销售订单前后端联调)
+
+---
+
+## 2026-01-25: P3-INT-001 销售订单前后端联调 (Sales Order Frontend-Backend Integration)
+
+### Summary
+Implemented comprehensive frontend integration tests for the sales order module, verifying frontend-backend integration for order creation, status changes, and inventory integration.
+
+### Test Files Created
+
+#### frontend/src/pages/trade/SalesOrders.test.tsx (38 tests)
+Tests for the sales orders list page covering:
+
+**Basic Rendering (3 tests)**
+- Renders page title and create button
+- Renders data table with columns
+- Shows empty state when no orders
+
+**Order List Display (6 tests)**
+- Displays order data correctly
+- Shows order status tags with correct colors
+- Shows customer names
+- Shows item count
+- Shows monetary amounts
+- Displays timestamps correctly
+
+**Search and Filters (4 tests)**
+- Calls API with search parameter when searching
+- Filters by status
+- Filters by customer
+- Renders filter dropdowns
+
+**Order Actions (6 tests)**
+- Shows confirm action for draft orders
+- Shows ship action for confirmed orders
+- Shows cancel action for cancellable orders
+- Shows complete action for shipped orders
+- Hides edit for non-draft orders
+- Shows edit action for draft orders
+
+**Navigation (4 tests)**
+- Navigates to new order page
+- Navigates to order detail
+- Navigates to edit page
+- Navigates to customer detail
+
+**Status Change Interactions (6 tests)**
+- Handles confirm order action
+- Handles cancel order action
+- Handles ship order action
+- Handles complete order action
+- Refreshes list after status change
+- Shows error toast on API failure
+
+**Error Handling (3 tests)**
+- Shows loading state
+- Shows error toast on load failure
+- Retries on error
+
+**Pagination (3 tests)**
+- Handles pagination
+- Changes page size
+- Calls API with pagination params
+
+**API Integration (3 tests)**
+- Passes correct params to API
+- Handles multiple filters
+- Sorts by creation date
+
+#### frontend/src/pages/trade/SalesOrderDetail.test.tsx (34 tests)
+Tests for the sales order detail page covering:
+
+**Basic Rendering (2 tests)**
+- Renders order detail page with order number
+- Renders loading state while fetching
+
+**Order Information Display (5 tests)**
+- Displays order status with correct tag color
+- Displays customer information
+- Displays order timestamps
+- Displays order totals
+- Displays discount amount
+
+**Order Items Table (4 tests)**
+- Renders items table with correct columns
+- Displays item details
+- Calculates item subtotals
+- Shows empty state for orders without items
+
+**Amount Summary (3 tests)**
+- Shows total amount
+- Shows discount amount
+- Shows payable amount
+
+**Action Buttons (7 tests)**
+- Shows confirm button for draft orders
+- Shows cancel button for draft orders
+- Shows ship button for confirmed orders
+- Shows complete button for shipped orders
+- Hides action buttons for completed orders
+- Shows edit button for draft orders
+- Shows delete button for draft orders
+
+**Timeline (3 tests)**
+- Shows creation time
+- Shows confirmed time when order confirmed
+- Shows shipped time when order shipped
+
+**Status Change Actions (4 tests)**
+- Handles confirm action
+- Handles cancel action with reason
+- Handles ship action
+- Handles complete action
+
+**Navigation (3 tests)**
+- Navigates back to list
+- Navigates to edit page
+- Navigates to customer detail
+
+**Error Handling (3 tests)**
+- Shows error state on fetch failure
+- Shows 404 for non-existent orders
+- Shows error toast on action failure
+
+### Key Testing Patterns Used
+
+1. **API Mocking**: Used vi.mock() to mock the API factory functions
+```typescript
+vi.mock('@/api/sales-orders/sales-orders', () => ({
+  getSalesOrders: vi.fn(),
+}))
+
+mockSalesOrderApiInstance = {
+  getTradeSalesOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+  postTradeSalesOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
+  // ...
+}
+```
+
+2. **Semi Design Mocking**: Mocked Toast, Modal.confirm, and other Semi components
+3. **React Router Mocking**: Mocked useNavigate and useParams hooks
+4. **Test Utilities**: Used render helper from @/tests/utils.tsx with providers
+
+### Technical Insights
+
+1. **TableActions Component**: Uses maxVisible=3, so actions beyond 3 go to dropdown menu
+2. **Status Tags**: Different colors for different order statuses (blue=draft, cyan=confirmed, orange=shipped, green=completed, red=cancelled)
+3. **Multiple Elements**: Some elements like "2 件" or "¥500.00" appear multiple times in the table, requiring getAllByText() instead of getByText()
+
+### PRD Status
+P3-INT-001: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `cd frontend && npm run test:run -- src/pages/trade/SalesOrders.test.tsx src/pages/trade/SalesOrderDetail.test.tsx`
+2. **All 72 tests pass** (38 for SalesOrders, 34 for SalesOrderDetail)
+3. **Test patterns**: Follow the established patterns in StockList.test.tsx and these new test files for consistency
+4. **Next priority items**: P3-INT-002 (采购订单前后端联调), P4-QA-003 (交易-财务联动集成测试), or P4-INT-001 (财务核心功能联调)
