@@ -1885,7 +1885,7 @@
       "自动添加 tenant_id 条件",
       "防止跨租户访问"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-BE-004",

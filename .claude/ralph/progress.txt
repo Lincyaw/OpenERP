@@ -7908,3 +7908,107 @@ tenantUUID := middleware.MustGetTenantUUID(c)
 - **Subdomain**: Enable `SubdomainEnabled` and set `BaseDomain` for subdomain-based tenant identification
 - **Context Propagation**: Tenant ID is available in both gin.Context (via GetTenantID) and request.Context (via logger.GetTenantID)
 
+
+---
+
+## P6-BE-003: Repository 层自动 tenant_id 过滤 (Repository Auto tenant_id Filtering)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented automatic tenant_id filtering at the repository layer using GORM scopes and callbacks. This prevents cross-tenant data access by automatically adding WHERE tenant_id = ? conditions to all database queries.
+
+### Features Implemented
+
+1. **TenantScope Functions**
+   - `TenantScope(uuid.UUID)` - GORM scope for UUID tenant IDs
+   - `TenantScopeString(string)` - GORM scope for string tenant IDs
+
+2. **TenantDB Wrapper**
+   - `NewTenantDB(db)` - Creates tenant-aware DB wrapper (required=true by default)
+   - `NewTenantDBWithConfig(db, cfg)` - With custom configuration
+   - `WithContext(ctx)` - Extracts tenant_id from context, applies scope
+   - `WithTenant(uuid)` - Scopes to specific tenant UUID
+   - `WithTenantString(string)` - Scopes to specific tenant string
+   - `ForTenant(ctx, uuid)` - Creates scoped DB with both context and tenant
+   - `Transaction(ctx, fn)` - Transaction with tenant scope
+   - `Unscoped()` - Returns raw DB (bypasses tenant filter - use with caution!)
+   - `SetRequired(bool)` - Changes required flag
+
+3. **GORM Callbacks (Optional Auto-filter)**
+   - `EnableAutoTenantFilter(db, required)` - Enables automatic filtering via callbacks
+   - `DisableAutoTenantFilter(db)` - Removes callbacks
+   - Callbacks intercept: Query, Update, Delete, Row operations
+   - Automatically adds tenant_id filter from context
+
+4. **Error Handling**
+   - `ErrTenantIDRequired` - When tenant required but not in context
+   - `ErrInvalidTenantID` - When tenant ID is not valid UUID format
+
+5. **Configuration**
+   - `Config.TenantColumn` - Column name (default: "tenant_id")
+   - `Config.Required` - Whether tenant is mandatory (default: true)
+
+### Files Created
+
+- `backend/internal/infrastructure/persistence/tenant/scope.go` - TenantDB wrapper and scopes
+- `backend/internal/infrastructure/persistence/tenant/callback.go` - GORM callback implementation
+- `backend/internal/infrastructure/persistence/tenant/scope_test.go` - Comprehensive tests
+- `backend/internal/infrastructure/persistence/tenant/callback_test.go` - Callback tests
+
+### Usage Examples
+
+**Basic Usage with Context (Recommended)**:
+```go
+import "github.com/erp/backend/internal/infrastructure/persistence/tenant"
+
+// Create tenant-aware DB wrapper
+tenantDB := tenant.NewTenantDB(db)
+
+// In handler: extract tenant from context and query
+func (h *Handler) List(c *gin.Context) {
+    ctx := c.Request.Context() // Contains tenant_id from middleware
+    var products []Product
+    if err := tenantDB.WithContext(ctx).Find(&products).Error; err != nil {
+        // Handle error
+    }
+}
+```
+
+**Direct Tenant Scoping**:
+```go
+// When you have tenant ID directly
+products, err := tenantDB.WithTenant(tenantUUID).Find(&products)
+
+// With string tenant ID
+products, err := tenantDB.WithTenantString("tenant-uuid-string").Find(&products)
+```
+
+**Using GORM Scopes Directly**:
+```go
+// Apply to any GORM query
+db.Scopes(tenant.TenantScope(tenantID)).Find(&products)
+```
+
+**Auto-Filter with Callbacks**:
+```go
+// Enable once at startup - all queries will auto-filter by tenant
+tenant.EnableAutoTenantFilter(db, true)
+
+// Then use normal GORM operations - tenant filter is automatic
+db.WithContext(ctx).Find(&products) // WHERE tenant_id = 'xxx' auto-added
+```
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/infrastructure/persistence/tenant/...` ✅ PASSED (26+ tests)
+
+### Notes for Next Developer
+- **Recommended Pattern**: Use `TenantDB.WithContext(ctx)` which extracts tenant from context set by middleware
+- **Callback Approach**: Use `EnableAutoTenantFilter` for automatic filtering without code changes (good for legacy code migration)
+- **Scope Approach**: Use `TenantScope` functions for explicit, opt-in tenant filtering
+- **Security**: The `Unscoped()` method bypasses all tenant filtering - use only for system-level operations
+- **Validation**: Both UUID format validation and required tenant checks are enforced
+- **Context Integration**: Works with `logger.GetTenantID(ctx)` which is set by tenant middleware
+
