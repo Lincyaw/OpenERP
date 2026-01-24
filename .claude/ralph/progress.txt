@@ -8305,3 +8305,122 @@ Implemented the JWT authentication middleware for the Identity Context, providin
 - **Refresh Token Storage**: For production, consider storing refresh tokens in database for revocation capability
 - **Rate Limiting**: Consider rate limiting the refresh endpoint to prevent abuse
 - **Password Hash**: User.VerifyPassword() from identity domain already handles bcrypt comparison
+
+---
+
+## P6-BE-015: Permission Validation Middleware (权限校验中间件)
+
+**Date**: 2026-01-24
+**Status**: COMPLETED ✅
+
+### Implementation Summary
+
+Implemented comprehensive permission validation middleware that integrates with the existing JWT authentication system to provide role-based access control (RBAC) for API routes.
+
+### Components Implemented
+
+1. **RequirePermission Middleware** (`backend/internal/interfaces/http/middleware/permission.go`)
+   - `RequirePermission(permission)` - Requires a single permission
+   - `RequireAnyPermission(permissions...)` - Requires any one of the permissions
+   - `RequireAllPermissions(permissions...)` - Requires all specified permissions
+
+2. **Resource-Based Permission Middleware**
+   - `RequireResource(resource)` - Auto-maps HTTP methods to actions:
+     - GET → `resource:read`
+     - POST → `resource:create`
+     - PUT/PATCH → `resource:update`
+     - DELETE → `resource:delete`
+   - `RequireResourceAction(resource, action)` - Explicit resource:action check
+
+3. **Route-Based Permission Middleware**
+   - `RoutePermissionMiddleware(cfg)` - Centralized route permission configuration
+   - Supports exact path matching and prefix matching (with `*`)
+   - Supports wildcard method matching (`*`)
+   - `RequireAll` option for AND logic (default is OR)
+   - `DefaultDeny` option for secure-by-default routes
+
+4. **Custom Permission Middleware**
+   - `RequireCustomPermission(checkFunc)` - For complex permission logic
+   - Callback receives `*auth.Claims` and `*gin.Context`
+
+5. **Helper Functions**
+   - `HasPermission(c, permission)` - Check single permission in handlers
+   - `HasAnyPermission(c, permissions...)` - Check any permission
+   - `HasAllPermissions(c, permissions...)` - Check all permissions
+   - `MustHavePermission(c, permission)` - Abort if no permission
+
+6. **Configuration Options**
+   - `PermissionConfig` with Logger and OnDenied callback
+   - `RoutePermissionConfig` with Routes, Logger, DefaultDeny, OnDenied
+
+### Error Response Format
+
+Permission denied returns HTTP 403 Forbidden with standardized error:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERR_FORBIDDEN",
+    "message": "Access denied: insufficient permissions"
+  }
+}
+```
+
+### Usage Examples
+
+```go
+// Single permission
+router.GET("/products", RequirePermission("product:read"), handler)
+
+// Any of multiple permissions
+router.POST("/orders", RequireAnyPermission("order:create", "admin:all"), handler)
+
+// All permissions required
+router.DELETE("/users/:id", RequireAllPermissions("user:delete", "admin:access"), handler)
+
+// Resource-based (auto-maps method to action)
+products := router.Group("/products", RequireResource("product"))
+products.GET("/", listHandler)      // Requires product:read
+products.POST("/", createHandler)   // Requires product:create
+products.PUT("/:id", updateHandler) // Requires product:update
+
+// Route-based configuration
+cfg := RoutePermissionConfig{
+    Routes: []RoutePermission{
+        {Method: "GET", Path: "/api/v1/products*", Permissions: []string{"product:read"}},
+        {Method: "*", Path: "/api/v1/admin/*", Permissions: []string{"admin:access"}, RequireAll: true},
+    },
+    DefaultDeny: true,
+    Logger: logger,
+}
+router.Use(RoutePermissionMiddleware(cfg))
+
+// Custom permission logic
+router.GET("/custom", RequireCustomPermission(func(claims *auth.Claims, c *gin.Context) bool {
+    // Check ownership, time-based access, etc.
+    resourceID := c.Param("id")
+    return claims.UserID == resourceID || claims.HasPermission("admin:all")
+}), handler)
+```
+
+### Files Created/Modified
+
+- `backend/internal/interfaces/http/middleware/permission.go` - Main implementation
+- `backend/internal/interfaces/http/middleware/permission_test.go` - Comprehensive tests (30 test cases)
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/interfaces/http/middleware/...` ✅ PASSED (30 permission tests + existing tests)
+
+### Integration with Existing Components
+- Integrates with JWT middleware (`GetJWTClaims`)
+- Uses `auth.Claims.HasPermission()`, `HasAnyPermission()`, `HasAllPermissions()`
+- Uses standardized error format from `dto/errors.go`
+- Uses `ERR_FORBIDDEN` error code
+
+### Notes for Next Developer
+- **P6-BE-016 (Auth API)**: Login handler should use `JWTService.GenerateTokenPair()` with permissions loaded from user's roles
+- **Route Registration**: When registering routes with permission requirements, prefer `RequireResource()` for standard CRUD operations
+- **Admin Override**: Consider implementing an admin permission (e.g., `admin:all`) that bypasses all permission checks
+- **Caching**: For high-traffic applications, consider caching permission checks with Redis
+- **Audit Logging**: The `PermissionConfig.OnDenied` callback can be used to log unauthorized access attempts
