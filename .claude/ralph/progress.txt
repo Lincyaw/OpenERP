@@ -5803,3 +5803,92 @@ Implemented the Purchase Order Receiving page (采购收货页面) with full sup
 - Application service will coordinate with payment vouchers for actual payments
 - Finance API (P4-BE-010) will expose these domain operations
 - The AccountPayable aggregate mirrors AccountReceivable for consistency
+
+
+---
+
+## 2026-01-24 - P4-BE-003: Auto-Generate Receivables/Payables (Event Processing) Complete
+
+### Completed
+- **P4-BE-003**: 应收应付自动生成 (事件处理)
+
+### What was done
+1. Created finance application layer at `internal/application/finance/`:
+   - `sales_order_shipped_handler.go` - Handles SalesOrderShippedEvent to create AccountReceivable
+   - `purchase_order_received_handler.go` - Handles PurchaseOrderReceivedEvent to create AccountPayable
+
+2. SalesOrderShippedHandler implementation:
+   - Subscribes to `SalesOrderShipped` events
+   - Creates AccountReceivable when sales orders are shipped
+   - **Idempotency check**: Uses ExistsBySource() to prevent duplicate receivables
+   - Skips zero-amount orders (fully prepaid)
+   - Auto-generates receivable number
+   - Sets 30-day default due date
+   - Comprehensive logging for debugging
+
+3. PurchaseOrderReceivedHandler implementation:
+   - Subscribes to `PurchaseOrderReceived` events
+   - Creates AccountPayable when purchase orders are fully received
+   - **Idempotency check**: Uses FindBySource() to prevent duplicate payables
+   - Only creates payable when `IsFullyReceived = true` (prevents multiple payables for partial receives)
+   - Skips zero-amount receives
+   - Auto-generates payable number
+   - Sets 30-day default due date
+   - Comprehensive logging for debugging
+
+4. Comprehensive unit tests (20 tests, all passing):
+   - `sales_order_shipped_handler_test.go`: 10 tests
+     - EventTypes() returns correct event type
+     - Success case with correct receivable creation
+     - Wrong event type handling
+     - Idempotency when receivable exists
+     - Skip zero amount (prepaid) orders
+     - Error handling for exists check, number generation, and save operations
+     - Validation of created receivable fields
+   - `purchase_order_received_handler_test.go`: 10 tests
+     - EventTypes() returns correct event type
+     - Success case with correct payable creation
+     - Wrong event type handling
+     - Skip partial receives (only create on full receive)
+     - Idempotency when payable exists
+     - Skip zero amount receives
+     - Error handling for source check, number generation, and save operations
+     - Validation of created payable fields
+     - isNotFoundError helper function tests
+
+### Files created/modified
+- `backend/internal/application/finance/sales_order_shipped_handler.go` (NEW)
+- `backend/internal/application/finance/sales_order_shipped_handler_test.go` (NEW)
+- `backend/internal/application/finance/purchase_order_received_handler.go` (NEW)
+- `backend/internal/application/finance/purchase_order_received_handler_test.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/application/finance/...` ✅ PASSED (20 tests)
+
+### Design Decisions
+1. **Idempotency**: Both handlers check for existing receivables/payables before creation to ensure safe event re-processing
+2. **Event-driven**: Handlers follow existing patterns from trade module (SalesOrderShippedHandler, PurchaseOrderReceivedHandler in trade)
+3. **Full receive only for payables**: AccountPayable only created when PO is fully received, preventing multiple payables for partial shipments
+4. **30-day due date**: Default payment terms of 30 days (configurable in future)
+5. **Skip prepaid orders**: No receivable created for fully prepaid sales orders (PayableAmount = 0)
+6. **Logging**: Comprehensive INFO/WARN/ERROR logging for troubleshooting event processing
+
+### Event Flow
+```
+SalesOrder Shipped Event → SalesOrderShippedHandler (finance) → AccountReceivable
+PurchaseOrder Received Event (fully received) → PurchaseOrderReceivedHandler (finance) → AccountPayable
+```
+
+### Integration Notes
+- Handlers require `AccountReceivableRepository` and `AccountPayableRepository` implementations
+- Register handlers with EventBus in main.go (pending repository implementation)
+- Handlers follow same pattern as existing trade event handlers
+
+### Notes for next developer
+- **P4-BE-005** (ReceiptVoucher 收款单实现) is next high-priority task for finance module
+- GORM repository implementations needed before handlers can be registered in main.go
+- Finance API (P4-BE-010) will expose receivables/payables for frontend
+- Red-ink/reversal logic (P4-BE-004) will subscribe to return events
+- The handlers are ready but need repository implementations to be wired into the application
+
