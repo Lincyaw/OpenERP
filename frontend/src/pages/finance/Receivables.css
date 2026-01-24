@@ -1,0 +1,214 @@
+/* Receivables Page Styles */
+
+.receivables-page {
+  padding: var(--spacing-6);
+}
+
+/* Summary Section */
+.receivables-summary {
+  margin-bottom: var(--spacing-6);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+  padding: var(--spacing-4);
+}
+
+.summary-descriptions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-4);
+  min-width: 120px;
+}
+
+.summary-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+}
+
+.summary-value {
+  font-size: var(--semi-font-size-header-4);
+  font-weight: var(--semi-font-weight-semibold);
+  color: var(--semi-color-text-0);
+}
+
+.summary-value.primary {
+  color: var(--semi-color-primary);
+}
+
+.summary-value.danger {
+  color: var(--semi-color-danger);
+}
+
+.summary-value.warning {
+  color: var(--semi-color-warning);
+}
+
+/* Main Card */
+.receivables-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.receivables-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Receivable number styling */
+.receivable-number-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.receivable-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+.overdue-icon {
+  color: var(--semi-color-danger);
+  font-size: 14px;
+}
+
+/* Customer name styling */
+.customer-name {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+/* Source cell */
+.source-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.source-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-0);
+}
+
+.source-type {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Amount styling */
+.amount-cell {
+  font-family: var(--semi-font-family-code);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+.total-amount {
+  color: var(--semi-color-text-0);
+}
+
+.paid-amount {
+  color: var(--semi-color-success);
+}
+
+.outstanding-amount {
+  color: var(--semi-color-primary);
+}
+
+.outstanding-amount.overdue {
+  color: var(--semi-color-danger);
+}
+
+/* Date styling */
+.date-cell {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+.date-cell.overdue {
+  color: var(--semi-color-danger);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Table container */
+.receivables-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Filter container */
+.receivables-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Status tags */
+.receivables-page .semi-tag {
+  min-width: 64px;
+  text-align: center;
+}
+
+/* Loading overlay */
+.receivables-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .summary-descriptions {
+    flex-wrap: wrap;
+  }
+
+  .summary-item {
+    min-width: 100px;
+    flex: 1 1 calc(33.33% - var(--spacing-4));
+  }
+}
+
+@media (max-width: 768px) {
+  .receivables-page {
+    padding: var(--spacing-4);
+  }
+
+  .receivables-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .receivables-filter-container {
+    flex-direction: column;
+  }
+
+  .receivables-filter-container .semi-select {
+    width: 100% !important;
+  }
+
+  .receivables-filter-container .semi-datePicker {
+    width: 100% !important;
+  }
+
+  .summary-item {
+    flex: 1 1 calc(50% - var(--spacing-4));
+  }
+
+  .summary-value {
+    font-size: var(--semi-font-size-header-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-item {
+    flex: 1 1 100%;
+  }
+}

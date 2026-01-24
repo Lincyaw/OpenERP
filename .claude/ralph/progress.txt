@@ -6373,3 +6373,64 @@ type ReconcilePaymentRequest struct {
   ```
 - **Domain layer complete**: All aggregates, events, repositories interfaces, and reconciliation service are implemented
 - **Next features**: P4-FE-001 (应收账款列表页面) or P4-BE-015 (ExpenseRecord)
+
+---
+
+## P4-FE-001: 应收账款列表页面 (Account Receivable List Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Account Receivable (AR) list page for the Finance module frontend. This page allows users to view, filter, and manage account receivables with summary metrics.
+
+### Features Implemented
+1. **Summary Dashboard**
+   - Total outstanding amount display
+   - Total overdue amount display
+   - Pending receivables count
+   - Partial payment count
+   - Overdue receivables count
+
+2. **Data Table**
+   - Receivable number with overdue indicator icon
+   - Customer name
+   - Source document (order number and type)
+   - Total amount, Paid amount, Outstanding amount
+   - Due date with overdue highlighting
+   - Status tags (PENDING/PARTIAL/PAID/REVERSED/CANCELLED)
+   - Created date
+   - Row actions: View, Collect (create receipt)
+
+3. **Filtering & Search**
+   - Search by receivable number, customer name
+   - Status filter dropdown
+   - Source type filter (Sales Order, Sales Return, Manual)
+   - Overdue filter toggle
+   - Date range picker
+
+4. **Navigation**
+   - View action navigates to receivable detail page
+   - Collect action navigates to receipt voucher creation with pre-filled customer
+
+### Files Created/Modified
+- `frontend/src/api/finance/types.ts` (NEW) - Finance API TypeScript types
+- `frontend/src/api/finance/finance.ts` (NEW) - Finance API service functions
+- `frontend/src/api/finance/index.ts` (NEW) - Finance API exports
+- `frontend/src/pages/finance/Receivables.tsx` (MODIFIED) - Complete implementation
+- `frontend/src/pages/finance/Receivables.css` (NEW) - Styles for receivables page
+
+### Technical Notes
+- **API Client**: Created manual API service since OpenAPI/orval generation isn't set up for finance endpoints yet. When the backend routes are wired up and swagger is regenerated, replace with auto-generated client.
+- **Design System**: Used CSS variables for spacing, colors, typography per frontend/README.md guidelines
+- **Responsive**: Mobile-first design with breakpoints at 768px and 1024px
+- **Components**: Reused existing DataTable, TableToolbar, Container components
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **Backend not wired**: Finance API routes exist in main.go but handlers aren't connected to actual service layer (repositories not implemented)
+- **Next Frontend Tasks**: P4-FE-002 (应付账款列表页面), P4-FE-003 (收款单创建页面)
+- **API generation**: Once backend implements persistence layer and regenerates swagger, run `npm run api:generate` to auto-generate TypeScript client, then replace manual API service
+- **Similar pattern**: The Payables page (P4-FE-002) can follow the same structure - just swap customer for supplier and receivables for payables
