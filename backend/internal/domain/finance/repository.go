@@ -96,3 +96,91 @@ type AccountReceivableRepository interface {
 	// GenerateReceivableNumber generates a unique receivable number for a tenant
 	GenerateReceivableNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// AccountPayableFilter defines filtering options for payable queries
+type AccountPayableFilter struct {
+	shared.Filter
+	SupplierID *uuid.UUID         // Filter by supplier
+	Status     *PayableStatus     // Filter by status
+	SourceType *PayableSourceType // Filter by source type
+	SourceID   *uuid.UUID         // Filter by source document
+	FromDate   *time.Time         // Filter by creation date range start
+	ToDate     *time.Time         // Filter by creation date range end
+	DueFrom    *time.Time         // Filter by due date range start
+	DueTo      *time.Time         // Filter by due date range end
+	Overdue    *bool              // Filter only overdue payables
+	MinAmount  *decimal.Decimal   // Filter by minimum outstanding amount
+	MaxAmount  *decimal.Decimal   // Filter by maximum outstanding amount
+}
+
+// AccountPayableRepository defines the interface for account payable persistence
+type AccountPayableRepository interface {
+	// FindByID finds an account payable by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*AccountPayable, error)
+
+	// FindByIDForTenant finds an account payable by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*AccountPayable, error)
+
+	// FindByPayableNumber finds by payable number for a tenant
+	FindByPayableNumber(ctx context.Context, tenantID uuid.UUID, payableNumber string) (*AccountPayable, error)
+
+	// FindBySource finds by source document (e.g., purchase order)
+	FindBySource(ctx context.Context, tenantID uuid.UUID, sourceType PayableSourceType, sourceID uuid.UUID) (*AccountPayable, error)
+
+	// FindAllForTenant finds all account payables for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter AccountPayableFilter) ([]AccountPayable, error)
+
+	// FindBySupplier finds account payables for a supplier
+	FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter AccountPayableFilter) ([]AccountPayable, error)
+
+	// FindByStatus finds account payables by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status PayableStatus, filter AccountPayableFilter) ([]AccountPayable, error)
+
+	// FindOutstanding finds all outstanding (pending or partial) payables for a supplier
+	FindOutstanding(ctx context.Context, tenantID, supplierID uuid.UUID) ([]AccountPayable, error)
+
+	// FindOverdue finds all overdue payables for a tenant
+	FindOverdue(ctx context.Context, tenantID uuid.UUID, filter AccountPayableFilter) ([]AccountPayable, error)
+
+	// Save creates or updates an account payable
+	Save(ctx context.Context, payable *AccountPayable) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, payable *AccountPayable) error
+
+	// Delete soft deletes an account payable
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes an account payable for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts account payables for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter AccountPayableFilter) (int64, error)
+
+	// CountByStatus counts account payables by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status PayableStatus) (int64, error)
+
+	// CountBySupplier counts account payables for a supplier
+	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
+	// CountOverdue counts overdue payables for a tenant
+	CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error)
+
+	// SumOutstandingBySupplier calculates total outstanding amount for a supplier
+	SumOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error)
+
+	// SumOutstandingForTenant calculates total outstanding amount for a tenant
+	SumOutstandingForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// SumOverdueForTenant calculates total overdue amount for a tenant
+	SumOverdueForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByPayableNumber checks if a payable number exists for a tenant
+	ExistsByPayableNumber(ctx context.Context, tenantID uuid.UUID, payableNumber string) (bool, error)
+
+	// ExistsBySource checks if a payable exists for the given source document
+	ExistsBySource(ctx context.Context, tenantID uuid.UUID, sourceType PayableSourceType, sourceID uuid.UUID) (bool, error)
+
+	// GeneratePayableNumber generates a unique payable number for a tenant
+	GeneratePayableNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}

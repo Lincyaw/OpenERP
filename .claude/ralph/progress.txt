@@ -5717,3 +5717,89 @@ Implemented the Purchase Order Receiving page (采购收货页面) with full sup
 - Repository implementation (GORM) needed next
 - Application service will coordinate with Customer balance for balance payments
 - Finance API (P4-BE-010) will expose these domain operations
+
+
+---
+
+## 2026-01-24 - P4-BE-002: AccountPayable Aggregate Implementation Complete
+
+### Completed
+- **P4-BE-002**: AccountPayable 聚合实现
+
+### What was done
+1. Created AccountPayable aggregate root at `internal/domain/finance/account_payable.go`:
+   - `PayableStatus` enum with state machine (PENDING → PARTIAL → PAID / REVERSED / CANCELLED)
+   - `PayableSourceType` enum (PURCHASE_ORDER, PURCHASE_RETURN, MANUAL)
+   - `PayablePaymentRecord` entity for tracking individual payments
+   - `AccountPayable` aggregate with full domain logic
+
+2. Key domain methods implemented:
+   - `NewAccountPayable()` factory with validation (min amount, required fields)
+   - `ApplyPayment()` with partial payment support and automatic status transitions
+   - `Reverse()` for reversing payables with reason tracking
+   - `Cancel()` for cancelling pending payables with validation
+   - `SetDueDate()` with validation (rejects terminal state updates)
+   - `IsOverdue()`, `DaysOverdue()`, `PaidPercentage()` helper methods
+
+3. Created domain events at `internal/domain/finance/account_payable_events.go`:
+   - `AccountPayableCreatedEvent` - raised on creation
+   - `AccountPayablePaidEvent` - raised when fully paid
+   - `AccountPayablePartiallyPaidEvent` - raised on partial payment
+   - `AccountPayableReversedEvent` - raised on reversal
+   - `AccountPayableCancelledEvent` - raised on cancellation
+
+4. Extended repository interface at `internal/domain/finance/repository.go`:
+   - `AccountPayableFilter` with comprehensive filter options (supplier, status, source, dates, amounts, overdue)
+   - `AccountPayableRepository` interface with:
+     - CRUD operations (FindByID, Save, Delete)
+     - Query methods (FindBySupplier, FindByStatus, FindBySource, FindOutstanding, FindOverdue)
+     - Count methods (CountForTenant, CountByStatus, CountBySupplier, CountOverdue)
+     - Sum calculations (SumOutstandingBySupplier, SumOutstandingForTenant, SumOverdueForTenant)
+     - Utility methods (ExistsByPayableNumber, ExistsBySource, GeneratePayableNumber)
+
+5. Created database migration at `migrations/000011_create_account_payables.up.sql`:
+   - `account_payables` table with proper constraints and indexes
+   - `payable_payment_records` child table for payment tracking
+   - Indexes for common query patterns (supplier, status, due_date, source)
+   - Foreign key to suppliers table
+   - Trigger for updated_at timestamp
+
+6. Created down migration at `migrations/000011_create_account_payables.down.sql`:
+   - Proper rollback order (child table first, then triggers, then main table)
+
+7. Comprehensive unit tests at `internal/domain/finance/account_payable_test.go`:
+   - 59 test cases covering all functionality
+   - Status enum tests (String, IsValid, IsTerminal, state transitions)
+   - Creation validation tests (valid data, validation errors)
+   - ApplyPayment tests (full, partial, overpayment prevention)
+   - Reverse tests (validation, status transitions, event generation)
+   - Cancel tests (validation, status checks)
+   - Helper method tests (IsOverdue, DaysOverdue, PaidPercentage)
+
+### Files created/modified
+- `backend/internal/domain/finance/account_payable.go` (NEW)
+- `backend/internal/domain/finance/account_payable_events.go` (NEW)
+- `backend/internal/domain/finance/repository.go` (UPDATED - added AccountPayableRepository)
+- `backend/migrations/000011_create_account_payables.up.sql` (NEW)
+- `backend/migrations/000011_create_account_payables.down.sql` (NEW)
+- `backend/internal/domain/finance/account_payable_test.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (59 tests for AccountPayable + existing tests)
+
+### Design Decisions
+1. **State machine pattern**: PayableStatus uses strict state transitions validated by CanApplyPayment()
+2. **Domain events**: All significant state changes emit events for integration with other bounded contexts
+3. **Multi-tenant**: Inherits from TenantAggregateRoot for tenant isolation
+4. **Optimistic locking**: Uses version field for concurrent update protection
+5. **Decimal precision**: Uses shopspring/decimal for monetary amounts
+6. **Payment tracking**: Each payment is recorded as PayablePaymentRecord with reference and notes
+7. **Symmetric with AccountReceivable**: Same patterns/structure for consistency
+
+### Notes for next developer
+- **P4-BE-003** (应收应付自动生成) will subscribe to PurchaseOrder events to create payables
+- Repository implementation (GORM) needed next
+- Application service will coordinate with payment vouchers for actual payments
+- Finance API (P4-BE-010) will expose these domain operations
+- The AccountPayable aggregate mirrors AccountReceivable for consistency

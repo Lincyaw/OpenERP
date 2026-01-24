@@ -126,7 +126,7 @@
   {"id":"P3-INT-003","story":"销售退货全流程联调","priority":"medium","requirements":["验证退货创建","验证审批流程","验证库存恢复"],"passes":false},
   {"id":"P3-INT-004","story":"采购退货全流程联调","priority":"medium","requirements":["验证采购退货创建","验证发货流程","验证库存扣减"],"passes":false},
   {"id":"P4-BE-001","story":"AccountReceivable 聚合实现","priority":"high","requirements":["实现 AccountReceivable 聚合","包含客户金额状态","支持部分收款"],"passes":true},
-  {"id":"P4-BE-002","story":"AccountPayable 聚合实现","priority":"high","requirements":["实现 AccountPayable 聚合","包含供应商金额状态","支持部分付款"],"passes":false},
+  {"id":"P4-BE-002","story":"AccountPayable 聚合实现","priority":"high","requirements":["实现 AccountPayable 聚合","包含供应商金额状态","支持部分付款"],"passes":true},
   {"id":"P4-BE-003","story":"应收应付自动生成 (事件处理)","priority":"high","requirements":["订阅销售发货事件生成应收","订阅采购收货事件生成应付","实现事件幂等处理"],"passes":false},
   {"id":"P4-BE-004","story":"红冲逻辑实现 (退货关联)","priority":"medium","requirements":["退货完成时生成红冲单","关联原应收应付","更新应收应付余额"],"passes":false},
   {"id":"P4-BE-005","story":"ReceiptVoucher 收款单实现","priority":"high","requirements":["实现 ReceiptVoucher 聚合","支持多种收款方式","关联应收账款"],"passes":false},
