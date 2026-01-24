@@ -1,0 +1,225 @@
+/* Customer Balance Page Styles */
+
+.customer-balance-page {
+  padding: var(--spacing-6);
+}
+
+/* Page Header */
+.balance-page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+/* Balance Summary Card */
+.balance-summary-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+  margin-bottom: var(--spacing-6);
+}
+
+.balance-summary-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-6);
+}
+
+/* Customer Info Section */
+.customer-info-section {
+  flex: 0 0 auto;
+  min-width: 200px;
+}
+
+.customer-info-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.customer-name-text {
+  font-size: var(--semi-font-size-header-5);
+  color: var(--semi-color-text-0);
+}
+
+.customer-code-tag {
+  font-family: var(--semi-font-family-code);
+}
+
+/* Balance Cards Section */
+.balance-cards-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  flex: 1;
+}
+
+.balance-card {
+  padding: var(--spacing-4);
+  border-radius: var(--semi-border-radius-medium);
+  min-width: 140px;
+  text-align: center;
+}
+
+.balance-card-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  margin-bottom: var(--spacing-2);
+}
+
+.balance-card-value {
+  font-size: var(--semi-font-size-header-4);
+  font-weight: var(--semi-font-weight-bold);
+  font-family: var(--semi-font-family-code);
+}
+
+/* Balance card variants */
+.balance-card.current-balance {
+  background: linear-gradient(135deg, var(--semi-color-primary-light-active), var(--semi-color-primary-light-default));
+}
+
+.balance-card.current-balance .balance-card-value {
+  color: var(--semi-color-primary);
+}
+
+.balance-card.total-recharge {
+  background: var(--semi-color-success-light-default);
+}
+
+.balance-card.total-recharge .balance-card-value {
+  color: var(--semi-color-success);
+}
+
+.balance-card.total-consume {
+  background: var(--semi-color-danger-light-default);
+}
+
+.balance-card.total-consume .balance-card-value {
+  color: var(--semi-color-danger);
+}
+
+.balance-card.total-refund {
+  background: var(--semi-color-tertiary-light-default);
+}
+
+.balance-card.total-refund .balance-card-value {
+  color: var(--semi-color-tertiary);
+}
+
+/* Balance Actions Section */
+.balance-actions-section {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+/* Transactions Card */
+.transactions-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.transactions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Transaction Filter Container */
+.transactions-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Amount styling */
+.amount-increase {
+  color: var(--semi-color-success);
+  font-weight: var(--semi-font-weight-medium);
+  font-family: var(--semi-font-family-code);
+}
+
+.amount-decrease {
+  color: var(--semi-color-danger);
+  font-weight: var(--semi-font-weight-medium);
+  font-family: var(--semi-font-family-code);
+}
+
+/* Balance after styling */
+.balance-after {
+  font-weight: var(--semi-font-weight-bold);
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-text-0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .balance-summary-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .customer-info-section {
+    min-width: auto;
+  }
+
+  .balance-cards-section {
+    justify-content: space-between;
+  }
+
+  .balance-card {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .balance-actions-section {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-balance-page {
+    padding: var(--spacing-4);
+  }
+
+  .balance-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .balance-cards-section {
+    flex-direction: column;
+  }
+
+  .balance-card {
+    min-width: auto;
+  }
+
+  .transactions-filter-container {
+    flex-direction: column;
+  }
+
+  .transactions-filter-container .semi-select,
+  .transactions-filter-container .semi-datepicker {
+    width: 100% !important;
+  }
+}
+
+/* Table container */
+.customer-balance-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Loading overlay */
+.customer-balance-page .semi-spin-wrapper {
+  min-height: 200px;
+}
+
+/* Transaction type tags */
+.customer-balance-page .semi-tag {
+  min-width: 48px;
+  text-align: center;
+}

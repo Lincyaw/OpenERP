@@ -9294,3 +9294,111 @@ Implemented multi-unit support for products, allowing products to have alternate
 - Frontend page for managing product units could be added
 - Consider adding bulk operations for units
 - P1-BE-016 (CustomerBalance) and P1-BE-017 (BalanceTransaction) are next medium-priority features
+
+---
+
+## P1-FE-009: 客户余额管理页面 (Customer Balance Management Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Implementation Summary
+Implemented a comprehensive customer balance management page that displays balance summary and transaction history with filtering capabilities.
+
+### Features Implemented
+1. **Balance Summary Display**
+   - Customer name and code display
+   - Current balance card (highlighted)
+   - Total recharge amount
+   - Total consumption amount
+   - Total refund amount
+
+2. **Transaction History Table**
+   - Filterable by transaction type (Recharge, Consume, Refund, Adjustment, Expire)
+   - Filterable by source type (Manual, Sales Order, Sales Return, Receipt Voucher, System)
+   - Date range filter
+   - Pagination support
+   - Sortable by transaction date
+   - Displays: transaction time, type, amount (with +/- indicator), balance before/after, source, reference, remark
+
+3. **Recharge Entry Point**
+   - "充值" (Recharge) button on balance summary card
+   - Links to RechargeModal component
+
+### API Endpoints Used
+- `GET /partner/customers/:customerId/balance/summary` - Get balance summary
+- `GET /partner/customers/:customerId/balance/transactions` - List transactions with filters
+
+### Files Created
+- `frontend/src/pages/partner/CustomerBalance.tsx` - Main balance page component
+- `frontend/src/pages/partner/CustomerBalance.css` - Page styles
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added route for `/partner/customers/:id/balance`
+- `frontend/src/pages/partner/Customers.tsx` - Added "余额" action button to navigate to balance page
+
+### Build Status
+- TypeScript check: ✅ PASSED
+- ESLint: ✅ PASSED
+- Prettier: ✅ PASSED
+
+### Requirements Met
+- ✅ 实现余额展示 (Balance display with summary cards)
+- ✅ 实现余额流水查询 (Transaction history with filtering)
+- ✅ 支持充值入口 (Recharge entry point/button)
+
+---
+
+## P1-FE-010: 客户充值弹窗 (Customer Recharge Modal)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Implementation Summary
+Implemented a modal component for recharging customer balance with amount input, validation, and balance preview.
+
+### Features Implemented
+1. **Customer Info Display**
+   - Shows customer name in modal
+   - Displays current balance
+
+2. **Recharge Form**
+   - Amount input with currency prefix (¥)
+   - Min value validation (0.01)
+   - Precision of 2 decimal places
+   - Optional reference number field
+   - Optional remark field with max 500 characters
+
+3. **Balance Preview**
+   - Shows current balance
+   - Shows recharge amount (green, positive)
+   - Shows calculated balance after recharge
+   - Animated preview section
+
+4. **Submission**
+   - Loading state during submission
+   - Success callback to refresh parent data
+   - Error handling with toast notifications
+
+### API Endpoints Used
+- `POST /partner/customers/:customerId/balance/recharge` - Create recharge transaction
+
+### Files Created
+- `frontend/src/pages/partner/RechargeModal.tsx` - Recharge modal component
+- `frontend/src/pages/partner/RechargeModal.css` - Modal styles
+
+### Build Status
+- TypeScript check: ✅ PASSED
+- ESLint: ✅ PASSED
+- Prettier: ✅ PASSED
+
+### Requirements Met
+- ✅ 实现充值弹窗组件 (Recharge modal component)
+- ✅ 支持金额输入和验证 (Amount input with validation)
+- ✅ 充值成功后刷新余额 (Refresh balance after successful recharge via callback)
+
+### Notes for Next Steps
+- P1-INT-001 and P1-INT-002 (前后端联调) could be prioritized next as integration testing
+- Consider adding balance adjustment modal similar to recharge for admin operations
+- Customer detail page could include a balance overview section
+

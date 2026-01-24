@@ -1,0 +1,91 @@
+/* Recharge Modal Styles */
+
+.recharge-modal {
+  max-width: 480px;
+}
+
+.recharge-modal-content {
+  padding: var(--spacing-2) 0;
+}
+
+/* Customer Info Section */
+.recharge-modal-content .customer-info-section {
+  margin-bottom: var(--spacing-6);
+  padding: var(--spacing-4);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--semi-border-radius-medium);
+}
+
+/* Recharge Form */
+.recharge-form {
+  margin-bottom: var(--spacing-4);
+}
+
+.recharge-form .amount-input {
+  font-size: var(--semi-font-size-header-5);
+}
+
+.recharge-form .amount-input input {
+  font-family: var(--semi-font-family-code);
+  font-weight: var(--semi-font-weight-bold);
+}
+
+/* Balance Preview */
+.balance-preview {
+  padding: var(--spacing-4);
+  background: var(--semi-color-primary-light-default);
+  border-radius: var(--semi-border-radius-medium);
+  border: 1px solid var(--semi-color-primary-light-active);
+}
+
+.balance-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+}
+
+.balance-preview-label {
+  font-size: var(--semi-font-size-regular);
+  color: var(--semi-color-text-1);
+}
+
+.balance-preview-value {
+  font-size: var(--semi-font-size-regular);
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-text-0);
+}
+
+.balance-preview-value.balance-add {
+  color: var(--semi-color-success);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+.balance-preview-divider {
+  height: 1px;
+  background: var(--semi-color-border);
+  margin: var(--spacing-2) 0;
+}
+
+.balance-preview-total {
+  padding-top: var(--spacing-3);
+}
+
+.balance-preview-total .balance-preview-label {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+.balance-preview-value.balance-after {
+  font-size: var(--semi-font-size-header-5);
+  font-weight: var(--semi-font-weight-bold);
+  color: var(--semi-color-primary);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .recharge-modal {
+    max-width: 100%;
+    margin: var(--spacing-4);
+  }
+}

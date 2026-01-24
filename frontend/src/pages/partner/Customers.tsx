@@ -452,6 +452,16 @@ export default function CustomersPage() {
     []
   )
 
+  // Handle view balance
+  const handleViewBalance = useCallback(
+    (customer: Customer) => {
+      if (customer.id) {
+        navigate(`/partner/customers/${customer.id}/balance`)
+      }
+    },
+    [navigate]
+  )
+
   // Table row actions
   const tableActions: TableAction<Customer>[] = useMemo(
     () => [
@@ -464,6 +474,12 @@ export default function CustomersPage() {
         key: 'edit',
         label: '编辑',
         onClick: handleEdit,
+      },
+      {
+        key: 'balance',
+        label: '余额',
+        type: 'primary',
+        onClick: handleViewBalance,
       },
       {
         key: 'activate',
@@ -493,7 +509,15 @@ export default function CustomersPage() {
         onClick: handleDelete,
       },
     ],
-    [handleView, handleEdit, handleActivate, handleDeactivate, handleSuspend, handleDelete]
+    [
+      handleView,
+      handleEdit,
+      handleViewBalance,
+      handleActivate,
+      handleDeactivate,
+      handleSuspend,
+      handleDelete,
+    ]
   )
 
   // Row selection handler

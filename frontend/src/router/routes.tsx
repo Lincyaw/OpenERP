@@ -39,6 +39,7 @@ const SupplierEditPage = () => lazyLoad(() => import('@/pages/partner/SupplierEd
 const WarehousesPage = () => lazyLoad(() => import('@/pages/partner/Warehouses'))
 const WarehouseNewPage = () => lazyLoad(() => import('@/pages/partner/WarehouseNew'))
 const WarehouseEditPage = () => lazyLoad(() => import('@/pages/partner/WarehouseEdit'))
+const CustomerBalancePage = () => lazyLoad(() => import('@/pages/partner/CustomerBalance'))
 
 // Inventory module
 const StockListPage = () => lazyLoad(() => import('@/pages/inventory/StockList'))
@@ -555,6 +556,7 @@ export function getRouteObjects(): RouteObject[] {
         childRoutes.push(
           { path: 'customers/new', element: CustomerNewPage() },
           { path: 'customers/:id/edit', element: CustomerEditPage() },
+          { path: 'customers/:id/balance', element: CustomerBalancePage() },
           { path: 'suppliers/new', element: SupplierNewPage() },
           { path: 'suppliers/:id/edit', element: SupplierEditPage() },
           { path: 'warehouses/new', element: WarehouseNewPage() },
