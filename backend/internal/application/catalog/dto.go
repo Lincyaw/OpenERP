@@ -142,3 +142,115 @@ func ToProductListResponses(products []catalog.Product) []ProductListResponse {
 	}
 	return responses
 }
+
+// ============================================================================
+// Category DTOs
+// ============================================================================
+
+// CreateCategoryRequest represents a request to create a new category
+type CreateCategoryRequest struct {
+	Code        string     `json:"code" binding:"required,min=1,max=50"`
+	Name        string     `json:"name" binding:"required,min=1,max=100"`
+	Description string     `json:"description" binding:"max=2000"`
+	ParentID    *uuid.UUID `json:"parent_id"`
+	SortOrder   *int       `json:"sort_order"`
+}
+
+// UpdateCategoryRequest represents a request to update a category
+type UpdateCategoryRequest struct {
+	Name        string `json:"name" binding:"omitempty,min=1,max=100"`
+	Description string `json:"description" binding:"omitempty,max=2000"`
+	SortOrder   *int   `json:"sort_order"`
+}
+
+// MoveCategoryRequest represents a request to move a category to a new parent
+type MoveCategoryRequest struct {
+	ParentID *uuid.UUID `json:"parent_id"`
+}
+
+// CategoryResponse represents a category in API responses
+type CategoryResponse struct {
+	ID          uuid.UUID  `json:"id"`
+	TenantID    uuid.UUID  `json:"tenant_id"`
+	Code        string     `json:"code"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	ParentID    *uuid.UUID `json:"parent_id"`
+	Path        string     `json:"path"`
+	Level       int        `json:"level"`
+	SortOrder   int        `json:"sort_order"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Version     int        `json:"version"`
+}
+
+// CategoryListResponse represents a list item for categories
+type CategoryListResponse struct {
+	ID          uuid.UUID  `json:"id"`
+	Code        string     `json:"code"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	ParentID    *uuid.UUID `json:"parent_id"`
+	Level       int        `json:"level"`
+	SortOrder   int        `json:"sort_order"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
+// CategoryTreeNode represents a category with children in tree structure
+type CategoryTreeNode struct {
+	ID          uuid.UUID          `json:"id"`
+	Code        string             `json:"code"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	ParentID    *uuid.UUID         `json:"parent_id"`
+	Level       int                `json:"level"`
+	SortOrder   int                `json:"sort_order"`
+	Status      string             `json:"status"`
+	Children    []CategoryTreeNode `json:"children"`
+}
+
+// CategoryListFilter represents filter options for category list
+type CategoryListFilter struct {
+	Search   string `form:"search"`
+	Status   string `form:"status" binding:"omitempty,oneof=active inactive"`
+	Page     int    `form:"page" binding:"min=0"`
+	PageSize int    `form:"page_size" binding:"min=0,max=100"`
+	SortBy   string `form:"sort_by"`
+	SortDesc bool   `form:"sort_desc"`
+}
+
+// ToCategoryResponse converts a domain Category to CategoryResponse
+func ToCategoryResponse(c *catalog.Category) *CategoryResponse {
+	return &CategoryResponse{
+		ID:          c.ID,
+		TenantID:    c.TenantID,
+		Code:        c.Code,
+		Name:        c.Name,
+		Description: c.Description,
+		ParentID:    c.ParentID,
+		Path:        c.Path,
+		Level:       c.Level,
+		SortOrder:   c.SortOrder,
+		Status:      string(c.Status),
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
+		Version:     c.Version,
+	}
+}
+
+// ToCategoryListResponse converts a domain Category to CategoryListResponse
+func ToCategoryListResponse(c *catalog.Category) CategoryListResponse {
+	return CategoryListResponse{
+		ID:          c.ID,
+		Code:        c.Code,
+		Name:        c.Name,
+		Description: c.Description,
+		ParentID:    c.ParentID,
+		Level:       c.Level,
+		SortOrder:   c.SortOrder,
+		Status:      string(c.Status),
+		CreatedAt:   c.CreatedAt,
+	}
+}

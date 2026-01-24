@@ -112,6 +112,7 @@ func main() {
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
@@ -168,6 +169,7 @@ func main() {
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
 	customerHandler := handler.NewCustomerHandler(customerService)
 	supplierHandler := handler.NewSupplierHandler(supplierService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
@@ -264,6 +266,19 @@ func main() {
 	catalogRoutes.POST("/products/:id/discontinue", productHandler.Discontinue)
 	// Products by category
 	catalogRoutes.GET("/categories/:category_id/products", productHandler.GetByCategory)
+
+	// Category routes
+	catalogRoutes.POST("/categories", categoryHandler.Create)
+	catalogRoutes.GET("/categories", categoryHandler.List)
+	catalogRoutes.GET("/categories/tree", categoryHandler.GetTree)
+	catalogRoutes.GET("/categories/roots", categoryHandler.GetRoots)
+	catalogRoutes.GET("/categories/:id", categoryHandler.GetByID)
+	catalogRoutes.GET("/categories/:id/children", categoryHandler.GetChildren)
+	catalogRoutes.PUT("/categories/:id", categoryHandler.Update)
+	catalogRoutes.POST("/categories/:id/move", categoryHandler.Move)
+	catalogRoutes.POST("/categories/:id/activate", categoryHandler.Activate)
+	catalogRoutes.POST("/categories/:id/deactivate", categoryHandler.Deactivate)
+	catalogRoutes.DELETE("/categories/:id", categoryHandler.Delete)
 
 	// Partner domain (customers, suppliers, warehouses)
 	partnerRoutes := router.NewDomainGroup("partner", "/partner")

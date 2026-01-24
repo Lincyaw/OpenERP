@@ -499,7 +499,7 @@
       "实现分类增删改",
       "实现拖拽排序"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-FE-004",
