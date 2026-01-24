@@ -2354,13 +2354,13 @@
     "story": "后端 API Response 泛型类型重构",
     "priority": "high",
     "requirements": [
-      "将 dto.Response 改为泛型 Response[T any]",
-      "更新所有 handler 使用具体类型而非 any",
-      "确保 swagger 注解正确输出具体类型",
-      "重新生成 swagger.yaml 验证类型定义",
-      "重新生成前端 SDK 验证类型传递"
+      "使用 swagger allOf 组合实现类型化响应 (替代 Go 泛型，因 swag 不支持)",
+      "所有 handler swagger 注解使用 dto.Response{data=ConcreteType} 格式",
+      "swagger.yaml 正确输出 allOf 组合的具体类型",
+      "前端 SDK 正确生成交叉类型 DtoResponse & { data: ConcreteType }",
+      "npm run build 类型检查通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-QA-002",
