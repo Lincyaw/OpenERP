@@ -7735,3 +7735,85 @@ Implemented the Cash Flow Report Page with comprehensive cash flow statement dis
 - **Next Focus**: Consider P5-INT-001 (Report Module Integration Testing) or move to P6 (Multi-tenant & Auth)
 - **Design Pattern**: Waterfall chart pattern can be reused for other financial visualizations
 - **Comparison Feature**: The period comparison logic is reusable for other reports
+
+---
+
+## P6-BE-001: Tenant 聚合实现 (Tenant Aggregate Implementation)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Tenant aggregate root in the identity domain. This is foundational infrastructure for the multi-tenant system, supporting tenant management with status, plans, configuration, and expiration handling.
+
+### Features Implemented
+
+1. **Tenant Aggregate Root**
+   - Status management: Active, Inactive, Suspended, Trial
+   - Subscription plans: Free, Basic, Pro, Enterprise
+   - Contact information (name, phone, email)
+   - Address and logo URL
+   - Custom domain/subdomain support
+   - Trial and subscription expiration dates
+
+2. **TenantConfig Embedded Configuration**
+   - MaxUsers, MaxWarehouses, MaxProducts limits
+   - Cost strategy (FIFO, Weighted Average)
+   - Currency, Timezone, Locale settings
+   - Features and Settings JSON objects
+   - Auto-updates based on plan tier
+
+3. **Status Transitions**
+   - Activate() - Activate a tenant
+   - Deactivate() - Deactivate a tenant
+   - Suspend() - Suspend a tenant (e.g., payment issues)
+   - ConvertFromTrial() - Convert trial to paid plan
+
+4. **Domain Events**
+   - TenantCreatedEvent
+   - TenantUpdatedEvent
+   - TenantStatusChangedEvent
+   - TenantPlanChangedEvent
+   - TenantDeletedEvent
+
+5. **Business Logic**
+   - Trial expiration checks
+   - Subscription expiration checks
+   - Resource limit checks (CanAddUser, CanAddWarehouse, CanAddProduct)
+   - Auto config updates when plan changes
+
+### Files Created
+
+- `backend/internal/domain/identity/doc.go` - Package documentation
+- `backend/internal/domain/identity/tenant.go` - Tenant aggregate root
+- `backend/internal/domain/identity/tenant_events.go` - Domain events
+- `backend/internal/domain/identity/tenant_repository.go` - Repository interface
+- `backend/internal/domain/identity/tenant_test.go` - Comprehensive unit tests
+
+### Technical Details
+
+**Plan Resource Limits**:
+| Plan | MaxUsers | MaxWarehouses | MaxProducts |
+|------|----------|---------------|-------------|
+| Free | 5 | 3 | 1,000 |
+| Basic | 10 | 5 | 5,000 |
+| Pro | 50 | 20 | 50,000 |
+| Enterprise | 9,999 | 9,999 | 999,999 |
+
+**Test Coverage**: 50+ test cases covering:
+- Tenant creation (normal and trial)
+- Status transitions
+- Plan changes and config updates
+- Expiration checks
+- Resource limit validation
+- Input validation
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/identity/...` ✅ PASSED (all 50+ tests)
+
+### Notes for Next Developer
+- **Next Steps**: P6-BE-002 (Tenant Middleware) to implement tenant_id extraction from JWT
+- **Pattern**: Uses BaseAggregateRoot from shared package (not TenantAggregateRoot since Tenant itself is the tenant)
+- **Events**: Tenant events use tenant ID as both aggregate_id and tenant_id in BaseDomainEvent
+- **Repository**: Interface defined but GORM implementation needed in infrastructure layer
