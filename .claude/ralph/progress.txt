@@ -5244,3 +5244,98 @@ Implemented the full PurchaseOrder HTTP API handler with all CRUD operations, st
 - The handler follows SalesOrderHandler patterns for consistency
 - All endpoints use tenant_id from context (currently hardcoded default)
 - Decimal amounts use string format in JSON for precision
+
+---
+
+## 2026-01-24 - P3-FE-010: Purchase Order List Page Implementation
+
+**Date:** 2026-01-24
+**Status:** ✅ COMPLETED
+
+### Summary
+Implemented the Purchase Order List page with full CRUD operations, filtering, pagination, and status-based actions.
+
+### What was done
+1. Created `PurchaseOrders.tsx` page component at `frontend/src/pages/trade/`:
+   - Purchase order list with DataTable component
+   - Search by order number
+   - Filter by status (draft, confirmed, partial_received, completed, cancelled)
+   - Filter by supplier (loaded from API)
+   - Filter by date range
+   - Sortable columns (order number, total amount, payable amount, created_at)
+   - Receive progress bar for orders in receiving status
+   - Row actions: View, Edit, Confirm, Receive, Cancel, Delete (context-aware based on status)
+
+2. Created `PurchaseOrders.css` styling:
+   - Following design system tokens (spacing, colors, typography)
+   - Responsive design for mobile/tablet/desktop
+   - Payable amount highlighting (warning color)
+   - Progress bar styling in table cells
+
+3. Regenerated TypeScript SDK from backend OpenAPI spec:
+   - `npm run api:generate` to create typed API client
+   - Purchase order API methods: list, get, create, update, delete, confirm, receive, cancel
+   - Full type definitions for request/response DTOs
+
+4. Updated routes at `frontend/src/router/routes.tsx`:
+   - Changed path from `/trade/purchases` to `/trade/purchase` for consistency
+   - Added placeholder routes for detail pages (to be implemented in P3-FE-011/012):
+     - `/trade/purchase/new`
+     - `/trade/purchase/:id`
+     - `/trade/purchase/:id/edit`
+     - `/trade/purchase/:id/receive`
+
+### Files created
+- `frontend/src/pages/trade/PurchaseOrders.tsx` (new - full implementation)
+- `frontend/src/pages/trade/PurchaseOrders.css` (new - styling)
+
+### Files modified
+- `frontend/src/router/routes.tsx` (updated route paths and added detail routes)
+- `frontend/src/api/purchase-orders/purchase-orders.ts` (auto-generated)
+- `frontend/src/api/models/` (auto-generated types)
+- `.claude/ralph/plans/prd.json` (marked P3-FE-010 as completed)
+
+### Build Status
+- `npm run type-check` ✅ PASSED
+- `npm run lint` ✅ PASSED (only pre-existing warnings)
+- `npm run build` ✅ PASSED
+- `npm run test:run` ✅ PASSED (49 tests)
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Order list with pagination | ✓ |
+| Search by order number | ✓ |
+| Status filter (all 5 statuses) | ✓ |
+| Supplier filter | ✓ |
+| Date range filter | ✓ |
+| Column sorting | ✓ |
+| Receive progress display | ✓ |
+| Confirm order action | ✓ |
+| Cancel order action | ✓ |
+| Delete draft order | ✓ |
+| Navigate to receive page | ✓ (route placeholder) |
+| Navigate to detail page | ✓ (route placeholder) |
+| Navigate to edit page | ✓ (route placeholder) |
+
+### Key Components Used
+- `DataTable` - Common table component with pagination and sorting
+- `TableToolbar` - Search, filters, and actions bar
+- `useTableState` - Hook for managing pagination/sort/filter state
+- `Container` - Responsive layout component
+- Semi Design: Card, Tag, Select, DatePicker, Modal, Toast, Progress, Spin
+
+### Status Flow Support
+- Draft → Confirm → Confirmed
+- Confirmed → Receive → Partial Received / Completed
+- Draft/Confirmed → Cancel → Cancelled
+- Draft → Delete (hard delete)
+
+### Notes for next developer
+- **P3-FE-011** (采购开单页面) is the next high priority - create purchase order form
+- **P3-FE-012** (采购收货页面) - receiving workflow with batch/expiry tracking
+- Detail page routes are placeholders pointing to list page until implemented
+- The `receive_progress` field shows percentage of items received (0-1 scale, displayed as 0-100%)
+- Supplier filter loads up to 100 suppliers - may need pagination for large datasets
+- Status colors match sales order patterns for UI consistency
+

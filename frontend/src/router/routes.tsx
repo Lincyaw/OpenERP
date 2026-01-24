@@ -191,7 +191,7 @@ export const appRoutes: AppRoute[] = [
         },
       },
       {
-        path: '/trade/purchases',
+        path: '/trade/purchase',
         meta: {
           title: 'Purchase Orders',
           icon: 'IconDownload',
@@ -259,7 +259,7 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return StockListPage()
     case '/trade/sales':
       return SalesOrdersPage()
-    case '/trade/purchases':
+    case '/trade/purchase':
       return PurchaseOrdersPage()
     case '/finance/receivables':
       return ReceivablesPage()
@@ -369,7 +369,12 @@ export function getRouteObjects(): RouteObject[] {
         childRoutes.push(
           { path: 'sales/new', element: SalesOrderNewPage() },
           { path: 'sales/:id', element: SalesOrderDetailPage() },
-          { path: 'sales/:id/edit', element: SalesOrderEditPage() }
+          { path: 'sales/:id/edit', element: SalesOrderEditPage() },
+          // Purchase order routes - will use placeholder until P3-FE-011/012 are implemented
+          { path: 'purchase/new', element: PurchaseOrdersPage() }, // TODO: P3-FE-011
+          { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: P3-FE-012/detail
+          { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
+          { path: 'purchase/:id/receive', element: PurchaseOrdersPage() } // TODO: P3-FE-012
         )
       }
 
