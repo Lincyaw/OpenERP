@@ -4956,3 +4956,84 @@ ok      github.com/erp/backend/internal/interfaces/http/handler  0.018s
 - The modal automatically fetches warehouses when opened
 - Default warehouse selection priority: order's warehouse > default warehouse > first active warehouse
 - The ship API accepts an optional `warehouse_id` parameter
+
+---
+
+## P3-BE-010: PurchaseOrder 聚合根实现 (COMPLETED)
+
+**Date**: 2026-01-24
+
+### Summary
+Implemented the PurchaseOrder aggregate root with complete lifecycle management including order creation, confirmation, partial/full receiving, and cancellation. The implementation follows DDD patterns consistent with the existing SalesOrder aggregate.
+
+### Files Created
+- `backend/internal/domain/trade/purchase_order.go` - Main aggregate root implementation
+- `backend/internal/domain/trade/purchase_order_events.go` - Domain events for purchase orders
+- `backend/internal/domain/trade/purchase_order_test.go` - Comprehensive unit tests
+
+### Files Modified
+- `backend/internal/domain/trade/repository.go` - Added PurchaseOrderRepository interface
+
+### Key Features Implemented
+
+#### PurchaseOrder Aggregate Root
+| Feature | Status |
+|---------|--------|
+| PurchaseOrderStatus enum | ✓ |
+| State machine (DRAFT → CONFIRMED → PARTIAL_RECEIVED → COMPLETED) | ✓ |
+| Optimistic locking (Version field) | ✓ |
+| Multi-tenant support (TenantID) | ✓ |
+| Order items management | ✓ |
+| Total/payable amount calculation | ✓ |
+| Discount and tax handling | ✓ |
+| Receiving operation with batch tracking | ✓ |
+| Partial receiving support | ✓ |
+| Cancellation with reason | ✓ |
+| Warehouse assignment | ✓ |
+
+#### Domain Events
+| Event | Description |
+|-------|-------------|
+| PurchaseOrderCreatedEvent | Raised when order is created |
+| PurchaseOrderConfirmedEvent | Raised when order is confirmed |
+| PurchaseOrderReceivedEvent | Raised when goods are received (partial or full) |
+| PurchaseOrderCompletedEvent | Raised when order is fully received |
+| PurchaseOrderCancelledEvent | Raised when order is cancelled |
+
+#### PurchaseOrderRepository Interface
+| Method | Description |
+|--------|-------------|
+| FindByID, FindByIDForTenant | Find order by ID |
+| FindByOrderNumber | Find by order number |
+| FindAllForTenant | List orders with filters |
+| FindBySupplier | Find orders by supplier |
+| FindByStatus | Find orders by status |
+| FindByWarehouse | Find orders by warehouse |
+| FindPendingReceipt | Find orders pending receipt |
+| Save, SaveWithLock | Persist order |
+| Delete, DeleteForTenant | Delete order |
+| CountForTenant, CountByStatus, etc. | Counting methods |
+| ExistsByOrderNumber | Check order number uniqueness |
+| GenerateOrderNumber | Generate unique order number |
+
+#### Key Domain Logic
+- **State Transitions**: Validated transitions between states (DRAFT → CONFIRMED → PARTIAL_RECEIVED → COMPLETED)
+- **Receiving Logic**: Tracks received quantities per item with batch numbers and expiry dates
+- **Progress Tracking**: CalculateReceivedPercentage() for tracking fulfillment progress
+- **Cancellation Rules**: Cannot cancel after goods received (PARTIAL_RECEIVED or COMPLETED)
+- **Amount Calculation**: Automatic recalculation with discount/tax support
+
+### Test Coverage
+- 60+ test cases covering all aggregate functionality
+- Tests for status transitions, item management, receiving, cancellation, events
+- Edge case tests for validation and boundary conditions
+
+### Build Status
+- `go build ./...` passes
+- `go test ./internal/domain/trade/...` passes (all tests green)
+
+### Notes for Next Developer
+- **P3-BE-011** (采购收货逻辑) depends on this implementation - the Receive() method provides the foundation
+- **P3-BE-012** (PurchaseOrder Application Service) is the next logical task
+- The ReceivedItemInfo struct includes batch_number and expiry_date for inventory integration
+- Domain events can be used to trigger inventory updates when implementing P3-BE-011

@@ -57,3 +57,60 @@ type SalesOrderRepository interface {
 	// GenerateOrderNumber generates a unique order number for a tenant
 	GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// PurchaseOrderRepository defines the interface for purchase order persistence
+type PurchaseOrderRepository interface {
+	// FindByID finds a purchase order by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*PurchaseOrder, error)
+
+	// FindByIDForTenant finds a purchase order by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*PurchaseOrder, error)
+
+	// FindByOrderNumber finds a purchase order by order number for a tenant
+	FindByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (*PurchaseOrder, error)
+
+	// FindAllForTenant finds all purchase orders for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]PurchaseOrder, error)
+
+	// FindBySupplier finds purchase orders for a supplier
+	FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter shared.Filter) ([]PurchaseOrder, error)
+
+	// FindByStatus finds purchase orders by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status PurchaseOrderStatus, filter shared.Filter) ([]PurchaseOrder, error)
+
+	// FindByWarehouse finds purchase orders for a warehouse
+	FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]PurchaseOrder, error)
+
+	// FindPendingReceipt finds purchase orders pending receipt (CONFIRMED or PARTIAL_RECEIVED)
+	FindPendingReceipt(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]PurchaseOrder, error)
+
+	// Save creates or updates a purchase order
+	Save(ctx context.Context, order *PurchaseOrder) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, order *PurchaseOrder) error
+
+	// Delete deletes a purchase order (soft delete)
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant deletes a purchase order for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts purchase orders for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error)
+
+	// CountByStatus counts purchase orders by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status PurchaseOrderStatus) (int64, error)
+
+	// CountBySupplier counts purchase orders for a supplier
+	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
+	// CountPendingReceipt counts orders pending receipt for a tenant
+	CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error)
+
+	// ExistsByOrderNumber checks if an order number exists for a tenant
+	ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error)
+
+	// GenerateOrderNumber generates a unique order number for a tenant
+	GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
