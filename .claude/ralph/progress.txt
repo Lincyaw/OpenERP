@@ -9038,3 +9038,64 @@ Features implemented:
 - **P6-FE-005**: Role management page can reuse the identity API client
 - **P6-FE-006**: Permission configuration page will use setRolePermissions and getAllPermissions APIs
 - The Users page includes role assignment which partially addresses user-role management
+
+---
+
+## 2026-01-24: P6-FE-005 - 角色管理页面
+
+### Summary
+Implemented the Role Management page frontend that allows administrators to manage system roles, including CRUD operations, status management, and permission configuration.
+
+### Implementation Details
+
+#### 1. Role Management Page (`frontend/src/pages/system/Roles.tsx`)
+Features implemented:
+- Role list with pagination and filtering (search, status, type)
+- Create role modal with form validation
+- Edit role modal for updating role details (name, description, sort order)
+- Status management actions (enable/disable)
+- Permission configuration modal with tree-based permission selection
+- Role detail view modal showing all role information and permissions
+- Protection for system roles (cannot edit/disable/delete)
+- Readable permission labels in Chinese (e.g., "查看商品" instead of "product:read")
+
+#### 2. Permission Configuration Features
+- Tree-based permission selection grouped by resource
+- Select all / clear all buttons
+- Resource and action labels translated to Chinese
+- Warning banner for system role permission modifications
+- Real-time count of selected permissions
+
+#### 3. Route Configuration Updates
+- Added `/system/roles` route to `routes.tsx`
+- Added `RolesPage` lazy-loaded component
+- Added route element mapping for `/system/roles`
+- Updated `permissions.ts` with `/system/roles` route permission (ROLE_READ)
+
+### API Endpoints Used
+- `GET /identity/roles` - List roles with filtering
+- `POST /identity/roles` - Create role
+- `GET /identity/roles/:id` - Get role by ID
+- `PUT /identity/roles/:id` - Update role
+- `DELETE /identity/roles/:id` - Delete role
+- `POST /identity/roles/:id/enable` - Enable role
+- `POST /identity/roles/:id/disable` - Disable role
+- `PUT /identity/roles/:id/permissions` - Set role permissions
+- `GET /identity/permissions` - Get all available permissions
+
+### Build Status
+- TypeScript check: ✅ PASSED
+- Vite build: ✅ PASSED
+
+### Files Created
+- `frontend/src/pages/system/Roles.tsx`
+- `frontend/src/pages/system/Roles.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added roles route and component
+- `frontend/src/config/permissions.ts` - Added /system/roles route permission
+
+### Notes for Next Steps
+- **P6-FE-006**: Permission configuration page is largely covered by the permission modal in Roles.tsx. May only need a dedicated page if more advanced permission tree viewing is required.
+- The Roles page provides full permission management through the "配置权限" action.
+- System roles are protected from modification but their permissions can still be viewed.

@@ -270,6 +270,7 @@ export const RoutePermissions: Record<string, string[]> = {
   // System module
   '/system': [Permissions.USER_READ, Permissions.ROLE_READ],
   '/system/users': [Permissions.USER_READ],
+  '/system/roles': [Permissions.ROLE_READ],
 }
 
 /**

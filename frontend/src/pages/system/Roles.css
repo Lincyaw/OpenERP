@@ -1,0 +1,118 @@
+/* Roles Page Styles */
+
+.roles-page {
+  padding: var(--spacing-4);
+}
+
+.roles-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.roles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.roles-filter-container {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+/* Role cells */
+.role-code {
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-text-0);
+  font-size: var(--semi-font-size-small);
+}
+
+.role-name-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.role-name {
+  font-weight: 500;
+  color: var(--semi-color-text-0);
+}
+
+.role-system-tag {
+  flex-shrink: 0;
+}
+
+/* Permission configuration */
+.permission-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-2);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.permission-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.permission-tree {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.permission-tree .semi-tree-option {
+  padding: var(--spacing-1) 0;
+}
+
+.permission-tree .semi-tree-option-list {
+  margin-left: var(--spacing-4);
+}
+
+/* Role detail */
+.role-detail {
+  padding: var(--spacing-2) 0;
+}
+
+.role-permissions-section {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.role-permissions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.permission-tag {
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .roles-page {
+    padding: var(--spacing-2);
+  }
+
+  .roles-filter-container {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .roles-filter-container .semi-select {
+    width: 100% !important;
+  }
+
+  .permission-config-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+}
