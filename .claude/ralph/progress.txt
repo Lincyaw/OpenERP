@@ -5536,3 +5536,100 @@ Implemented the purchase order receiving logic that integrates the trade context
 - The `WarehouseID` is required for receiving - validation happens in handler
 - Use `LOG_LEVEL=debug` to see detailed inventory increase logs
 - If receiving fails for some items, check server logs for specific product failures
+
+
+---
+
+## 2026-01-24 - P3-FE-012: Purchase Order Receiving Page Implementation
+
+**Date:** 2026-01-24
+**Status:** ✅ COMPLETED
+
+### Summary
+Implemented the Purchase Order Receiving page (采购收货页面) with full support for partial receiving, batch tracking, expiry date management, and warehouse selection. This completes the purchase order workflow by allowing users to receive goods against confirmed purchase orders.
+
+### What was done
+1. Created `PurchaseOrderReceive.tsx` page at `frontend/src/pages/trade/`:
+   - Order summary display with key information (order number, supplier, status, amounts)
+   - Warehouse selection for receiving destination (defaults to order's warehouse or default warehouse)
+   - Receivable items table showing:
+     - Product details (code, name, unit)
+     - Ordered quantity, received quantity, remaining quantity
+     - Unit cost for each item
+   - Interactive form fields for each item:
+     - Receive quantity input (defaults to remaining, max = remaining)
+     - Batch number input (optional)
+     - Expiry date picker (optional)
+   - Quick actions:
+     - "全部收货" (Receive All) - sets all quantities to remaining
+     - "清空数量" (Clear All) - resets all quantities to 0
+   - Real-time receiving summary (items count, total quantity, total amount)
+   - Form validation before submission
+   - Support for partial receiving (allows receiving less than ordered)
+
+2. Created `PurchaseOrderReceive.css` styling:
+   - Following design system tokens (spacing, colors, typography)
+   - Responsive design for mobile/tablet/desktop
+   - Dark mode support
+
+3. Updated routes at `frontend/src/router/routes.tsx`:
+   - Added lazy-loaded `PurchaseOrderReceivePage` component
+   - Updated `/trade/purchase/:id/receive` route to use the new page
+
+### Files created
+- `frontend/src/pages/trade/PurchaseOrderReceive.tsx` (new - 470+ lines)
+- `frontend/src/pages/trade/PurchaseOrderReceive.css` (new - styling)
+
+### Files modified
+- `frontend/src/router/routes.tsx` (added PurchaseOrderReceivePage import and route)
+- `.claude/ralph/plans/prd.json` (marked P3-FE-012 as completed)
+
+### Build Status
+- `npm run type-check` ✅ PASSED
+- `npm run lint` ✅ PASSED (only pre-existing warnings)
+- `npm run build` ✅ PASSED
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Order summary display | ✓ |
+| Warehouse selection | ✓ |
+| Receivable items table | ✓ |
+| Receive quantity input | ✓ |
+| Batch number tracking | ✓ |
+| Expiry date input | ✓ |
+| Receive all / Clear all actions | ✓ |
+| Receiving summary stats | ✓ |
+| Partial receiving support | ✓ |
+| Form validation | ✓ |
+| Status-based access control | ✓ |
+| Responsive design | ✓ |
+
+### API Integration
+- Uses `getTradePurchaseOrdersId()` for fetching order details
+- Uses `getTradePurchaseOrdersIdReceivableItems()` for fetching items with remaining quantities
+- Uses `postTradePurchaseOrdersIdReceive()` for submitting receive operation
+- Uses `getPartnerWarehouses()` for warehouse dropdown
+
+### Key Design Decisions
+1. **Default to receive all**: When loading, all items default to receiving their full remaining quantity
+2. **Batch tracking optional**: Batch number and expiry date are optional fields for flexibility
+3. **Status validation**: Page only accessible for orders in CONFIRMED or PARTIAL_RECEIVED status
+4. **Warehouse required**: Receiving requires warehouse selection for inventory placement
+5. **Client-side validation**: Validates quantities don't exceed remaining before API call
+
+### User Flow
+1. Navigate from Purchase Orders list → Click "收货" action on a confirmed order
+2. Review order summary information
+3. Select receiving warehouse (defaults to order's warehouse or default warehouse)
+4. Enter receiving quantities (default = remaining), optionally add batch/expiry info
+5. Click "确认收货" to submit
+6. Backend processes receiving → Updates inventory → Redirects to list
+
+### Notes for next developer
+- **P3-INT-002** (采购订单前后端联调) can now be tested - full workflow is complete
+- The receive page validates order status on load - returns helpful error for invalid states
+- Batch number format is free-form text (no validation)
+- Expiry date uses ISO 8601 format for API submission
+- Navigation returns to `/trade/purchase` after successful receive
+- Backend event (P3-BE-011) handles inventory integration automatically

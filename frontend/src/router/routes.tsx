@@ -52,6 +52,7 @@ const SalesOrderEditPage = () => lazyLoad(() => import('@/pages/trade/SalesOrder
 const SalesOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderDetail'))
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
 const PurchaseOrderNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderNew'))
+const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderReceive'))
 
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
@@ -375,7 +376,7 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'purchase/new', element: PurchaseOrderNewPage() },
           { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: detail page
           { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
-          { path: 'purchase/:id/receive', element: PurchaseOrdersPage() } // TODO: P3-FE-012
+          { path: 'purchase/:id/receive', element: PurchaseOrderReceivePage() }
         )
       }
 
