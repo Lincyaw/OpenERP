@@ -1984,7 +1984,7 @@
       "实现角色 CRUD API",
       "实现用户角色分配 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-FE-001",

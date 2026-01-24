@@ -9,9 +9,11 @@ import (
 	"time"
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
+	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
 	tradeapp "github.com/erp/backend/internal/application/trade"
+	"github.com/erp/backend/internal/infrastructure/auth"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
@@ -105,6 +107,8 @@ func main() {
 	inventoryTxRepo := persistence.NewGormInventoryTransactionRepository(db.DB)
 	salesOrderRepo := persistence.NewGormSalesOrderRepository(db.DB)
 	purchaseOrderRepo := persistence.NewGormPurchaseOrderRepository(db.DB)
+	userRepo := persistence.NewGormUserRepository(db.DB)
+	roleRepo := persistence.NewGormRoleRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -114,6 +118,12 @@ func main() {
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
+
+	// Identity services (auth, user, role)
+	jwtService := auth.NewJWTService(cfg.JWT)
+	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, identityapp.DefaultAuthServiceConfig(), log)
+	userService := identityapp.NewUserService(userRepo, roleRepo, log)
+	roleService := identityapp.NewRoleService(roleRepo, userRepo, log)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -164,6 +174,9 @@ func main() {
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 	salesOrderHandler := handler.NewSalesOrderHandler(salesOrderService)
 	purchaseOrderHandler := handler.NewPurchaseOrderHandler(purchaseOrderService)
+	authHandler := handler.NewAuthHandler(authService)
+	userHandler := handler.NewUserHandler(userService)
+	roleHandler := handler.NewRoleHandler(roleService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -382,12 +395,60 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "finance service ready"})
 	})
 
+	// Identity domain (authentication, users, roles) - public routes
+	authRoutes := router.NewDomainGroup("auth", "/auth")
+	authRoutes.POST("/login", authHandler.Login)
+	authRoutes.POST("/refresh", authHandler.RefreshToken)
+
+	// Identity domain - protected routes
+	identityRoutes := router.NewDomainGroup("identity", "/identity")
+	identityRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "identity service ready"})
+	})
+
+	// Auth routes requiring authentication
+	identityRoutes.POST("/auth/logout", authHandler.Logout)
+	identityRoutes.GET("/auth/me", authHandler.GetCurrentUser)
+	identityRoutes.PUT("/auth/password", authHandler.ChangePassword)
+
+	// User management routes
+	identityRoutes.POST("/users", userHandler.Create)
+	identityRoutes.GET("/users", userHandler.List)
+	identityRoutes.GET("/users/stats/count", userHandler.Count)
+	identityRoutes.GET("/users/:id", userHandler.GetByID)
+	identityRoutes.PUT("/users/:id", userHandler.Update)
+	identityRoutes.DELETE("/users/:id", userHandler.Delete)
+	identityRoutes.POST("/users/:id/activate", userHandler.Activate)
+	identityRoutes.POST("/users/:id/deactivate", userHandler.Deactivate)
+	identityRoutes.POST("/users/:id/lock", userHandler.Lock)
+	identityRoutes.POST("/users/:id/unlock", userHandler.Unlock)
+	identityRoutes.POST("/users/:id/reset-password", userHandler.ResetPassword)
+	identityRoutes.PUT("/users/:id/roles", userHandler.AssignRoles)
+
+	// Role management routes
+	identityRoutes.POST("/roles", roleHandler.Create)
+	identityRoutes.GET("/roles", roleHandler.List)
+	identityRoutes.GET("/roles/system", roleHandler.GetSystemRoles)
+	identityRoutes.GET("/roles/stats/count", roleHandler.Count)
+	identityRoutes.GET("/roles/:id", roleHandler.GetByID)
+	identityRoutes.GET("/roles/code/:code", roleHandler.GetByCode)
+	identityRoutes.PUT("/roles/:id", roleHandler.Update)
+	identityRoutes.DELETE("/roles/:id", roleHandler.Delete)
+	identityRoutes.POST("/roles/:id/enable", roleHandler.Enable)
+	identityRoutes.POST("/roles/:id/disable", roleHandler.Disable)
+	identityRoutes.PUT("/roles/:id/permissions", roleHandler.SetPermissions)
+
+	// Permission management
+	identityRoutes.GET("/permissions", roleHandler.GetPermissions)
+
 	// Register all domain groups
 	r.Register(catalogRoutes).
 		Register(partnerRoutes).
 		Register(inventoryRoutes).
 		Register(tradeRoutes).
-		Register(financeRoutes)
+		Register(financeRoutes).
+		Register(authRoutes).
+		Register(identityRoutes)
 
 	// Register system routes with swagger-documented handlers
 	systemHandler := handler.NewSystemHandler()

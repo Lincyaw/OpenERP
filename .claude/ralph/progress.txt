@@ -8856,3 +8856,110 @@ Improved forbidden page with:
 - **P6-INT-002**: Auth flow integration can verify permission filtering works end-to-end
 - Backend API should return user permissions in the login response (already done in P6-BE-016)
 - For testing, user permissions should include relevant permission codes from the backend
+
+---
+
+## P6-BE-017: User/Role Management API
+
+### Date: 2026-01-24
+
+### Summary
+Implemented complete User and Role management API endpoints that enable frontend to manage users, roles, and their assignments.
+
+### Implementation Details
+
+#### 1. Application Services (`internal/application/identity/`)
+- **user_service.go**: UserService with CRUD operations:
+  - Create, Get, List, Update, Delete users
+  - Activate/Deactivate/Lock/Unlock user accounts
+  - Reset password functionality
+  - Assign roles to users
+  - User count statistics
+- **role_service.go**: RoleService with CRUD operations:
+  - Create, Get, List, Update, Delete roles
+  - Enable/Disable roles
+  - Set permissions for roles
+  - Get system roles and permission codes
+  - Role count statistics
+
+#### 2. Repository Implementations (`internal/infrastructure/persistence/`)
+- **user_repository.go**: GormUserRepository implementing UserRepository interface:
+  - FindByID, FindByUsername, FindByEmail, FindAll
+  - Create, Update, Delete
+  - SaveUserRoles, LoadUserRoles
+  - ExistsByUsername, ExistsByEmail
+  - CountUsersWithRole
+- **role_repository.go**: GormRoleRepository implementing RoleRepository interface:
+  - FindByID, FindByCode, FindAll, FindByIDs
+  - Create, Update, Delete
+  - SavePermissions, LoadPermissions
+  - SaveDataScopes, LoadDataScopes
+  - GetAllPermissionCodes, FindRolesWithPermission
+  - CountUsersWithRole
+
+#### 3. HTTP Handlers (`internal/interfaces/http/handler/`)
+- **user_role_dto.go**: Request/Response DTOs for User and Role APIs
+- **user.go**: UserHandler with 12 endpoints
+- **role.go**: RoleHandler with 13 endpoints
+
+#### 4. Route Registration (`cmd/server/main.go`)
+- Added identity domain repositories and services initialization
+- Registered auth routes (public): `/api/v1/auth/login`, `/api/v1/auth/refresh`
+- Registered identity routes (protected):
+  - Auth: `/api/v1/identity/auth/logout`, `/api/v1/identity/auth/me`, `/api/v1/identity/auth/password`
+  - Users: `/api/v1/identity/users/*` (CRUD, activate, deactivate, lock, unlock, reset-password, roles)
+  - Roles: `/api/v1/identity/roles/*` (CRUD, enable, disable, permissions)
+  - Permissions: `/api/v1/identity/permissions`
+
+### API Endpoints
+
+#### User Management
+- `POST /api/v1/identity/users` - Create user
+- `GET /api/v1/identity/users` - List users with filtering/pagination
+- `GET /api/v1/identity/users/:id` - Get user by ID
+- `PUT /api/v1/identity/users/:id` - Update user
+- `DELETE /api/v1/identity/users/:id` - Delete user
+- `POST /api/v1/identity/users/:id/activate` - Activate user
+- `POST /api/v1/identity/users/:id/deactivate` - Deactivate user
+- `POST /api/v1/identity/users/:id/lock` - Lock user account
+- `POST /api/v1/identity/users/:id/unlock` - Unlock user account
+- `POST /api/v1/identity/users/:id/reset-password` - Reset user password
+- `PUT /api/v1/identity/users/:id/roles` - Assign roles to user
+- `GET /api/v1/identity/users/stats/count` - Get user count
+
+#### Role Management
+- `POST /api/v1/identity/roles` - Create role
+- `GET /api/v1/identity/roles` - List roles with filtering/pagination
+- `GET /api/v1/identity/roles/:id` - Get role by ID
+- `GET /api/v1/identity/roles/code/:code` - Get role by code
+- `PUT /api/v1/identity/roles/:id` - Update role
+- `DELETE /api/v1/identity/roles/:id` - Delete role
+- `POST /api/v1/identity/roles/:id/enable` - Enable role
+- `POST /api/v1/identity/roles/:id/disable` - Disable role
+- `PUT /api/v1/identity/roles/:id/permissions` - Set role permissions
+- `GET /api/v1/identity/roles/system` - Get system roles
+- `GET /api/v1/identity/roles/stats/count` - Get role count
+- `GET /api/v1/identity/permissions` - Get all available permissions
+
+### Build Status
+- `go build ./...` ✅ PASSED
+
+### Known Issues
+- Swagger/OpenAPI spec generation fails due to pre-existing issue in report.go (reportapp types not resolvable by swag). This is not related to P6-BE-017 changes.
+
+### Files Created/Modified
+- `backend/internal/application/identity/user_service.go` (NEW)
+- `backend/internal/application/identity/role_service.go` (NEW)
+- `backend/internal/infrastructure/persistence/user_repository.go` (NEW)
+- `backend/internal/infrastructure/persistence/role_repository.go` (NEW)
+- `backend/internal/interfaces/http/handler/user_role_dto.go` (NEW)
+- `backend/internal/interfaces/http/handler/user.go` (NEW)
+- `backend/internal/interfaces/http/handler/role.go` (NEW)
+- `backend/internal/interfaces/http/dto/response.go` (MODIFIED) - Added MessageResponse
+- `backend/cmd/server/main.go` (MODIFIED) - Added identity routes
+
+### Notes for Next Steps
+- **P6-FE-004**: User management page can now use `/api/v1/identity/users/*` endpoints
+- **P6-FE-005**: Role management page can now use `/api/v1/identity/roles/*` endpoints
+- **P6-FE-006**: Permission assignment page can use `/api/v1/identity/roles/:id/permissions` and `/api/v1/identity/permissions`
+- **Swagger Fix**: The report.go swagger annotations need to be fixed separately (use full paths or local types instead of aliased imports)
