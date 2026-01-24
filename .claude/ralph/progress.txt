@@ -10211,3 +10211,77 @@ TypeScript check passes (no errors)
 ### Build Status
 TypeScript check passes (no errors)
 
+
+---
+
+## 2026-01-24 - P3-FE-021: 销售退货创建页面 (Sales Return Create Page) Complete
+
+### Completed
+- **P3-FE-021**: 销售退货创建页面
+
+### What was done
+
+1. **SalesReturnForm Component** (`frontend/src/features/trade/SalesReturnForm.tsx`)
+   - Full form component for creating sales returns
+   - Search and select existing sales order (filtered to SHIPPED/COMPLETED orders only)
+   - Display order details after selection
+   - Checkbox selection for order items to include in return
+   - Return quantity input (capped at original quantity)
+   - Real-time refund amount calculation per item
+   - Product condition selector (intact, damaged, defective, wrong_item, other)
+   - Per-item and global return reason fields
+   - Warehouse selection for return goods
+   - Select all / Deselect all buttons for items
+   - Form validation with Zod
+   - Summary section showing total items, quantity, and refund amount
+
+2. **SalesReturnForm CSS** (`frontend/src/features/trade/SalesReturnForm.css`)
+   - Consistent styling with existing form components
+   - Order info section with background highlight
+   - Responsive layout for form rows
+   - Refund amount emphasized in danger color
+   - Summary section styling
+
+3. **SalesReturnNew Page** (`frontend/src/pages/trade/SalesReturnNew.tsx`)
+   - Renders SalesReturnForm component
+   - Supports pre-selection via `?order_id=` query parameter
+   - Allows creating return directly from order detail page
+
+4. **Route Registration** (`frontend/src/router/routes.tsx`)
+   - Added SalesReturnNewPage lazy load
+   - Added `/trade/sales-returns/new` route
+
+5. **Feature Export** (`frontend/src/features/trade/index.ts`)
+   - Added SalesReturnForm export
+
+### Requirements Met
+- ✅ 选择原订单 (Select original order with search, filter to shipped/completed)
+- ✅ 选择退货商品和数量 (Checkbox selection, quantity input with max validation)
+- ✅ 填写退货原因 (Global reason field + per-item reason fields)
+
+### Files Created
+- `frontend/src/features/trade/SalesReturnForm.tsx`
+- `frontend/src/features/trade/SalesReturnForm.css`
+- `frontend/src/pages/trade/SalesReturnNew.tsx`
+
+### Files Modified
+- `frontend/src/features/trade/index.ts` (added SalesReturnForm export)
+- `frontend/src/router/routes.tsx` (added route registration)
+
+### API Used
+- `GET /trade/sales-orders` - List orders for selection (filtered by status)
+- `GET /trade/sales-orders/{id}` - Get order details with items
+- `GET /partner/warehouses` - Get warehouses for selection
+- `POST /trade/sales-returns` - Create sales return
+
+### Features
+- **Order Selection**: Search by order number or customer name
+- **Item Selection**: Individual checkboxes + select all/deselect all
+- **Quantity Validation**: Cannot exceed original quantity
+- **Condition Tracking**: Track condition of returned goods
+- **Per-item Reasons**: Optional reason per item in addition to global reason
+- **Real-time Calculation**: Refund amounts calculated automatically
+- **URL Pre-selection**: Support `?order_id=` for creating return from order detail
+
+### Build Status
+TypeScript check passes (no errors)
