@@ -9226,3 +9226,71 @@ Implemented the Category Management page with full CRUD operations and tree stru
 - ✅ 实现分类增删改 (Category CRUD)
 - ✅ 实现拖拽排序 (Drag and drop sorting/moving)
 
+
+---
+
+## P1-BE-006: ProductUnit 多单位支持
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Implementation Summary
+Implemented multi-unit support for products, allowing products to have alternate units with conversion rates. This supports common ERP scenarios like "purchase by box, sell by piece".
+
+### Features Implemented
+1. **ProductUnit Entity**
+   - Unit code and name (e.g., "BOX" / "箱")
+   - Conversion rate to base unit (e.g., 1 box = 24 pieces)
+   - Default purchase/selling prices per unit
+   - Default purchase unit and sales unit flags
+   - Sort order for display
+
+2. **Unit Conversion**
+   - Convert quantity from one unit to another
+   - Automatic conversion to/from base unit
+   - Precision of 4 decimal places
+
+3. **CRUD Operations**
+   - Create/Read/Update/Delete product units
+   - List all units for a product
+   - Get default purchase/sales unit
+
+### API Endpoints Created
+- `POST /catalog/products/:productId/units` - Create product unit
+- `GET /catalog/products/:productId/units` - List all units for product
+- `GET /catalog/products/:productId/units/:id` - Get unit by ID
+- `PUT /catalog/products/:productId/units/:id` - Update unit
+- `DELETE /catalog/products/:productId/units/:id` - Delete unit
+- `GET /catalog/products/:productId/units/convert` - Convert between units
+- `GET /catalog/products/:productId/units/default-purchase` - Get default purchase unit
+- `GET /catalog/products/:productId/units/default-sales` - Get default sales unit
+
+### Files Created
+- `backend/internal/domain/catalog/product_unit.go` - ProductUnit entity
+- `backend/internal/domain/catalog/product_unit_repository.go` - Repository interface
+- `backend/internal/infrastructure/persistence/product_unit_repository.go` - GORM repository
+- `backend/internal/application/catalog/product_unit_service.go` - Application service
+- `backend/internal/interfaces/http/handler/product_unit.go` - HTTP handler
+- `backend/migrations/000015_create_product_units.up.sql` - Up migration
+- `backend/migrations/000015_create_product_units.down.sql` - Down migration
+- `frontend/src/api/product-units/product-units.ts` - Auto-generated TypeScript SDK
+
+### Files Modified
+- `backend/internal/application/catalog/dto.go` - Added ProductUnit DTOs
+- `backend/cmd/server/main.go` - Registered repository, service, handler and routes
+- `backend/docs/swagger.yaml` - Generated OpenAPI spec
+
+### Build Status
+- Backend Go build: ✅ PASSED
+- OpenAPI generation: ✅ PASSED
+- Frontend SDK generation: ✅ PASSED
+
+### Requirements Met
+- ✅ 实现 ProductUnit 实体 (ProductUnit entity implemented)
+- ✅ 支持多单位换算比例 (Multi-unit conversion rate support)
+- ✅ 实现单位增删改 (Unit CRUD operations)
+
+### Notes for Next Steps
+- Frontend page for managing product units could be added
+- Consider adding bulk operations for units
+- P1-BE-016 (CustomerBalance) and P1-BE-017 (BalanceTransaction) are next medium-priority features

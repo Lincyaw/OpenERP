@@ -563,6 +563,39 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
+  handler.ConvertUnitRequest:
+    description: Request body for unit conversion
+    properties:
+      from_unit_code:
+        example: BOX
+        type: string
+      quantity:
+        example: 2
+        type: number
+      to_unit_code:
+        example: pcs
+        type: string
+    required:
+    - from_unit_code
+    - quantity
+    - to_unit_code
+    type: object
+  handler.ConvertUnitResponse:
+    description: Unit conversion result
+    properties:
+      from_quantity:
+        example: 2
+        type: number
+      from_unit_code:
+        example: BOX
+        type: string
+      to_quantity:
+        example: 48
+        type: number
+      to_unit_code:
+        example: pcs
+        type: string
+    type: object
   handler.CountByStatusResponse:
     properties:
       active:
@@ -762,6 +795,42 @@ definitions:
     - code
     - name
     - unit
+    type: object
+  handler.CreateProductUnitRequest:
+    description: Request body for creating a product unit
+    properties:
+      conversion_rate:
+        example: 24
+        type: number
+      default_purchase_price:
+        example: 1200
+        type: number
+      default_selling_price:
+        example: 2400
+        type: number
+      is_default_purchase_unit:
+        example: false
+        type: boolean
+      is_default_sales_unit:
+        example: false
+        type: boolean
+      sort_order:
+        example: 0
+        type: integer
+      unit_code:
+        example: BOX
+        maxLength: 20
+        minLength: 1
+        type: string
+      unit_name:
+        example: 箱
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - conversion_rate
+    - unit_code
+    - unit_name
     type: object
   handler.CreatePurchaseOrderItemInput:
     description: Purchase order item for creation
@@ -2028,6 +2097,46 @@ definitions:
         example: 500
         type: number
     type: object
+  handler.ProductUnitResponse:
+    description: Product unit response
+    properties:
+      conversion_rate:
+        example: 24
+        type: number
+      created_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+      default_purchase_price:
+        example: 1200
+        type: number
+      default_selling_price:
+        example: 2400
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_default_purchase_unit:
+        example: false
+        type: boolean
+      is_default_sales_unit:
+        example: false
+        type: boolean
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      sort_order:
+        example: 0
+        type: integer
+      unit_code:
+        example: BOX
+        type: string
+      unit_name:
+        example: 箱
+        type: string
+      updated_at:
+        example: "2026-01-24T12:00:00Z"
+        type: string
+    type: object
   handler.ProfitByProductResponse:
     description: Profit breakdown by product
     properties:
@@ -3245,6 +3354,33 @@ definitions:
       sort_order:
         example: 1
         type: integer
+    type: object
+  handler.UpdateProductUnitRequest:
+    description: Request body for updating a product unit
+    properties:
+      conversion_rate:
+        example: 24
+        type: number
+      default_purchase_price:
+        example: 1200
+        type: number
+      default_selling_price:
+        example: 2400
+        type: number
+      is_default_purchase_unit:
+        example: false
+        type: boolean
+      is_default_sales_unit:
+        example: false
+        type: boolean
+      sort_order:
+        example: 0
+        type: integer
+      unit_name:
+        example: 箱
+        maxLength: 50
+        minLength: 1
+        type: string
     type: object
   handler.UpdatePurchaseOrderItemRequest:
     description: Request body for updating a purchase order item
@@ -5512,6 +5648,525 @@ paths:
       summary: Discontinue a product
       tags:
       - products
+  /catalog/products/{productId}/units:
+    get:
+      consumes:
+      - application/json
+      description: List all alternate units for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.ProductUnitResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List product units
+      tags:
+      - product-units
+    post:
+      consumes:
+      - application/json
+      description: Create a new alternate unit for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Product unit creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateProductUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProductUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a product unit
+      tags:
+      - product-units
+  /catalog/products/{productId}/units/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product unit
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Unit ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete product unit
+      tags:
+      - product-units
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a product unit by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Unit ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProductUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get product unit by ID
+      tags:
+      - product-units
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product unit
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Unit ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product unit update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateProductUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProductUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update product unit
+      tags:
+      - product-units
+  /catalog/products/{productId}/units/convert:
+    post:
+      consumes:
+      - application/json
+      description: Convert quantity from one unit to another for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Unit conversion request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ConvertUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ConvertUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Convert quantity between units
+      tags:
+      - product-units
+  /catalog/products/{productId}/units/default-purchase:
+    get:
+      consumes:
+      - application/json
+      description: Get the default purchase unit for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProductUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get default purchase unit
+      tags:
+      - product-units
+  /catalog/products/{productId}/units/default-sales:
+    get:
+      consumes:
+      - application/json
+      description: Get the default sales unit for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: productId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProductUnitResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get default sales unit
+      tags:
+      - product-units
   /catalog/products/code/{code}:
     get:
       consumes:

@@ -254,3 +254,88 @@ func ToCategoryListResponse(c *catalog.Category) CategoryListResponse {
 		CreatedAt:   c.CreatedAt,
 	}
 }
+
+// ============================================================================
+// ProductUnit DTOs
+// ============================================================================
+
+// CreateProductUnitRequest represents a request to create a product unit
+type CreateProductUnitRequest struct {
+	UnitCode              string           `json:"unit_code" binding:"required,min=1,max=20"`
+	UnitName              string           `json:"unit_name" binding:"required,min=1,max=50"`
+	ConversionRate        decimal.Decimal  `json:"conversion_rate" binding:"required,gt=0"`
+	DefaultPurchasePrice  *decimal.Decimal `json:"default_purchase_price"`
+	DefaultSellingPrice   *decimal.Decimal `json:"default_selling_price"`
+	IsDefaultPurchaseUnit bool             `json:"is_default_purchase_unit"`
+	IsDefaultSalesUnit    bool             `json:"is_default_sales_unit"`
+	SortOrder             *int             `json:"sort_order"`
+}
+
+// UpdateProductUnitRequest represents a request to update a product unit
+type UpdateProductUnitRequest struct {
+	UnitName              *string          `json:"unit_name" binding:"omitempty,min=1,max=50"`
+	ConversionRate        *decimal.Decimal `json:"conversion_rate" binding:"omitempty,gt=0"`
+	DefaultPurchasePrice  *decimal.Decimal `json:"default_purchase_price"`
+	DefaultSellingPrice   *decimal.Decimal `json:"default_selling_price"`
+	IsDefaultPurchaseUnit *bool            `json:"is_default_purchase_unit"`
+	IsDefaultSalesUnit    *bool            `json:"is_default_sales_unit"`
+	SortOrder             *int             `json:"sort_order"`
+}
+
+// ProductUnitResponse represents a product unit in API responses
+type ProductUnitResponse struct {
+	ID                    uuid.UUID       `json:"id"`
+	ProductID             uuid.UUID       `json:"product_id"`
+	UnitCode              string          `json:"unit_code"`
+	UnitName              string          `json:"unit_name"`
+	ConversionRate        decimal.Decimal `json:"conversion_rate"`
+	DefaultPurchasePrice  decimal.Decimal `json:"default_purchase_price"`
+	DefaultSellingPrice   decimal.Decimal `json:"default_selling_price"`
+	IsDefaultPurchaseUnit bool            `json:"is_default_purchase_unit"`
+	IsDefaultSalesUnit    bool            `json:"is_default_sales_unit"`
+	SortOrder             int             `json:"sort_order"`
+	CreatedAt             time.Time       `json:"created_at"`
+	UpdatedAt             time.Time       `json:"updated_at"`
+}
+
+// ConvertUnitRequest represents a request to convert quantity between units
+type ConvertUnitRequest struct {
+	Quantity     decimal.Decimal `json:"quantity" binding:"required"`
+	FromUnitCode string          `json:"from_unit_code" binding:"required"`
+	ToUnitCode   string          `json:"to_unit_code" binding:"required"`
+}
+
+// ConvertUnitResponse represents the result of a unit conversion
+type ConvertUnitResponse struct {
+	FromQuantity decimal.Decimal `json:"from_quantity"`
+	FromUnitCode string          `json:"from_unit_code"`
+	ToQuantity   decimal.Decimal `json:"to_quantity"`
+	ToUnitCode   string          `json:"to_unit_code"`
+}
+
+// ToProductUnitResponse converts a domain ProductUnit to ProductUnitResponse
+func ToProductUnitResponse(u *catalog.ProductUnit) ProductUnitResponse {
+	return ProductUnitResponse{
+		ID:                    u.ID,
+		ProductID:             u.ProductID,
+		UnitCode:              u.UnitCode,
+		UnitName:              u.UnitName,
+		ConversionRate:        u.ConversionRate,
+		DefaultPurchasePrice:  u.DefaultPurchasePrice,
+		DefaultSellingPrice:   u.DefaultSellingPrice,
+		IsDefaultPurchaseUnit: u.IsDefaultPurchaseUnit,
+		IsDefaultSalesUnit:    u.IsDefaultSalesUnit,
+		SortOrder:             u.SortOrder,
+		CreatedAt:             u.CreatedAt,
+		UpdatedAt:             u.UpdatedAt,
+	}
+}
+
+// ToProductUnitResponses converts a slice of domain ProductUnits to ProductUnitResponses
+func ToProductUnitResponses(units []catalog.ProductUnit) []ProductUnitResponse {
+	responses := make([]ProductUnitResponse, len(units))
+	for i, u := range units {
+		responses[i] = ToProductUnitResponse(&u)
+	}
+	return responses
+}

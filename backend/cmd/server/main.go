@@ -97,6 +97,7 @@ func main() {
 
 	// Initialize repositories
 	productRepo := persistence.NewGormProductRepository(db.DB)
+	productUnitRepo := persistence.NewGormProductUnitRepository(db.DB)
 	categoryRepo := persistence.NewGormCategoryRepository(db.DB)
 	customerRepo := persistence.NewGormCustomerRepository(db.DB)
 	supplierRepo := persistence.NewGormSupplierRepository(db.DB)
@@ -112,6 +113,7 @@ func main() {
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
@@ -169,6 +171,7 @@ func main() {
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
+	productUnitHandler := handler.NewProductUnitHandler(productUnitService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	customerHandler := handler.NewCustomerHandler(customerService)
 	supplierHandler := handler.NewSupplierHandler(supplierService)
@@ -264,6 +267,15 @@ func main() {
 	catalogRoutes.POST("/products/:id/activate", productHandler.Activate)
 	catalogRoutes.POST("/products/:id/deactivate", productHandler.Deactivate)
 	catalogRoutes.POST("/products/:id/discontinue", productHandler.Discontinue)
+	// Product unit routes
+	catalogRoutes.POST("/products/:productId/units", productUnitHandler.Create)
+	catalogRoutes.GET("/products/:productId/units", productUnitHandler.List)
+	catalogRoutes.GET("/products/:productId/units/convert", productUnitHandler.Convert)
+	catalogRoutes.GET("/products/:productId/units/default-purchase", productUnitHandler.GetDefaultPurchaseUnit)
+	catalogRoutes.GET("/products/:productId/units/default-sales", productUnitHandler.GetDefaultSalesUnit)
+	catalogRoutes.GET("/products/:productId/units/:id", productUnitHandler.GetByID)
+	catalogRoutes.PUT("/products/:productId/units/:id", productUnitHandler.Update)
+	catalogRoutes.DELETE("/products/:productId/units/:id", productUnitHandler.Delete)
 	// Products by category
 	catalogRoutes.GET("/categories/:category_id/products", productHandler.GetByCategory)
 
