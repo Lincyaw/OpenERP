@@ -10,7 +10,7 @@ import {
   Spin,
   DatePicker,
 } from '@douyinfe/semi-ui'
-import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
+import { IconPlus, IconRefresh, IconTickCircle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {
   DataTable,
@@ -589,6 +589,12 @@ export default function SalesReturnsPage() {
             onClick: () => navigate('/trade/sales-returns/new'),
           }}
           secondaryActions={[
+            {
+              key: 'approval',
+              label: '审批',
+              icon: <IconTickCircle />,
+              onClick: () => navigate('/trade/sales-returns/approval'),
+            },
             {
               key: 'refresh',
               label: '刷新',

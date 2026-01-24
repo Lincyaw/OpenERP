@@ -10361,3 +10361,75 @@ TypeScript check passes (no errors)
 
 ### Build Status
 TypeScript check passes (no errors)
+
+
+---
+
+## 2026-01-24 - P3-FE-022: 销售退货审批页面 (Sales Return Approval Page) Complete
+
+### Completed
+- **P3-FE-022**: 销售退货审批页面
+
+### What was done
+
+1. **SalesReturnApproval Page** (`frontend/src/pages/trade/SalesReturnApproval.tsx`)
+   - Dual-view page: list view and detail view
+   - List view shows pending returns filtered by PENDING status
+   - Detail view shows comprehensive return information for approval
+   - Search by return number
+   - Filter by customer and date range
+   - View return details including all items
+   - Approve returns with optional note
+   - Reject returns with required reason
+   - Timeline showing return status history
+   - URL query parameter support (?id=) for direct linking to detail
+   - Back to list navigation
+
+2. **SalesReturnApproval CSS** (`frontend/src/pages/trade/SalesReturnApproval.css`)
+   - Consistent styling with other detail pages
+   - Filter bar styling
+   - Return item table styling
+   - Modal form styling with required field indicator
+   - Responsive design for mobile devices
+   - Amount summary with refund total
+
+3. **Route Registration** (`frontend/src/router/routes.tsx`)
+   - Added SalesReturnApprovalPage lazy load
+   - Added `/trade/sales-returns/approval` route
+
+4. **Navigation Integration** (`frontend/src/pages/trade/SalesReturns.tsx`)
+   - Added "审批" button in toolbar for quick access to approval page
+   - Added IconTickCircle icon import
+
+### Requirements Met
+- ✅ 展示待审批退货单 (List of pending returns with search and filters)
+- ✅ 支持通过拒绝 (Approve/Reject buttons with modal confirmation)
+- ✅ 填写审批意见 (Optional note for approval, required reason for rejection)
+
+### Files Created
+- `frontend/src/pages/trade/SalesReturnApproval.tsx`
+- `frontend/src/pages/trade/SalesReturnApproval.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` (added lazy load and route)
+- `frontend/src/pages/trade/SalesReturns.tsx` (added approval button in toolbar)
+
+### API Used
+- `GET /trade/sales-returns` - List returns (filtered by PENDING status)
+- `GET /trade/sales-returns/{id}` - Get return details
+- `POST /trade/sales-returns/{id}/approve` - Approve return
+- `POST /trade/sales-returns/{id}/reject` - Reject return
+- `GET /partner/customers` - Get customers for filter
+
+### Features
+- **List View**: Shows all pending returns sorted by submission time (oldest first for FIFO)
+- **Detail View**: Shows complete return information with items table
+- **Approve Modal**: Optional approval note input
+- **Reject Modal**: Required rejection reason input (1-500 chars)
+- **Item Details**: Shows product info, quantities, prices, conditions, reasons
+- **Amount Summary**: Displays total refund amount
+- **Timeline**: Shows return creation and submission events
+- **Responsive**: Works on mobile and desktop devices
+
+### Build Status
+TypeScript check passes (no errors)
