@@ -9807,3 +9807,75 @@ SalesReturn.Complete()
 - Repository needs to be wired in DI/bootstrap
 - OpenAPI spec should be regenerated: `cd backend && swag init -g cmd/server/main.go -o docs`
 - Frontend SDK regeneration: `cd frontend && npm run api:generate`
+
+---
+
+## 2026-01-24 - P3-BE-030: PurchaseReturn Aggregate Root Complete
+
+### Completed
+- **P3-BE-030**: PurchaseReturn 聚合根实现
+
+### What was done
+
+1. **Aggregate Root** (`backend/internal/domain/trade/purchase_return.go`)
+   - Implemented `PurchaseReturn` aggregate root with full lifecycle management
+   - Status machine with 7 states: DRAFT → PENDING → APPROVED → SHIPPED → COMPLETED
+   - Also supports REJECTED and CANCELLED as terminal states
+   - Key difference from SalesReturn: includes SHIPPED state for tracking goods sent back to supplier
+   
+2. **Status Machine Transitions**
+   - DRAFT → PENDING (submit for approval)
+   - DRAFT → CANCELLED
+   - PENDING → APPROVED / REJECTED / CANCELLED
+   - APPROVED → SHIPPED / CANCELLED
+   - SHIPPED → COMPLETED (terminal)
+   - Note: Cannot cancel after shipping (goods already in transit)
+
+3. **PurchaseReturnItem Entity**
+   - Links to original `PurchaseOrderItem`
+   - Validates return quantity against received quantity (not ordered)
+   - Tracks shipping: `ShippedQuantity`, `ShippedAt`
+   - Tracks supplier receipt confirmation: `SupplierReceivedQty`, `SupplierReceivedAt`
+   - Supports batch number tracking for returned goods
+
+4. **Domain Events** (`backend/internal/domain/trade/purchase_return_events.go`)
+   - `PurchaseReturnCreatedEvent`
+   - `PurchaseReturnSubmittedEvent`
+   - `PurchaseReturnApprovedEvent`
+   - `PurchaseReturnRejectedEvent`
+   - `PurchaseReturnShippedEvent` - triggers inventory deduction
+   - `PurchaseReturnCompletedEvent` - triggers accounts payable credit
+   - `PurchaseReturnCancelledEvent` - includes `WasApproved` flag
+
+5. **Unit Tests** (`backend/internal/domain/trade/purchase_return_test.go`)
+   - 50+ test cases covering all scenarios
+   - Tests for aggregate creation from completed and partially-received orders
+   - Tests for all status transitions
+   - Tests for item management (add, update, remove)
+   - Tests for domain events
+   - Tests for helper methods
+
+### Key Design Decisions
+
+1. **Validation against received quantity**: Unlike SalesReturn which validates against ordered quantity, PurchaseReturn validates against received quantity since you can only return what was actually received.
+
+2. **SHIPPED state**: Added because goods need to be physically shipped back to supplier before the return is completed, unlike sales returns where goods are received immediately.
+
+3. **Tracking fields**: Added `TrackingNumber` and shipping-related fields on both aggregate and items for logistics tracking.
+
+4. **Supplier receipt confirmation**: Items track when supplier confirms receipt of returned goods.
+
+### Requirements Met
+- ✅ 实现 PurchaseReturn 聚合根
+- ✅ 关联原采购订单 (links via PurchaseOrderID)
+- ✅ 实现采购退货状态机 (7-state machine with proper transitions)
+
+### Next Steps
+- P3-BE-031 (PurchaseReturn 发货流程) - Implement inventory deduction event handler
+- P3-BE-032 (PurchaseReturn API) - Implement REST API endpoints
+- P4-BE-004 (红冲逻辑) - Credit note for accounts payable
+
+### Files Created
+- `backend/internal/domain/trade/purchase_return.go`
+- `backend/internal/domain/trade/purchase_return_events.go`
+- `backend/internal/domain/trade/purchase_return_test.go`
