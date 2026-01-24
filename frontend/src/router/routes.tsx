@@ -71,6 +71,7 @@ const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
 const SalesReportPage = () => lazyLoad(() => import('@/pages/report/SalesReport'))
 const SalesRankingPage = () => lazyLoad(() => import('@/pages/report/SalesRanking'))
 const InventoryTurnoverPage = () => lazyLoad(() => import('@/pages/report/InventoryTurnover'))
+const ProfitLossPage = () => lazyLoad(() => import('@/pages/report/ProfitLoss'))
 
 /**
  * Application routes with metadata
@@ -310,6 +311,14 @@ export const appRoutes: AppRoute[] = [
           order: 3,
         },
       },
+      {
+        path: '/report/profit-loss',
+        meta: {
+          title: 'Profit & Loss',
+          icon: 'IconPieChartStroked',
+          order: 4,
+        },
+      },
     ],
   },
 ]
@@ -357,6 +366,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return SalesRankingPage()
     case '/report/inventory-turnover':
       return InventoryTurnoverPage()
+    case '/report/profit-loss':
+      return ProfitLossPage()
     default:
       return null
   }

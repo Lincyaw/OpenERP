@@ -7545,3 +7545,91 @@ Implemented the Inventory Turnover Report Page with metrics cards, distribution 
 - **Design Pattern**: Similar structure to SalesReport and SalesRanking pages - can reuse MetricCard component pattern
 - **Filter Logic**: Category/warehouse options are populated from API response data
 
+
+---
+
+## P5-FE-004: 损益报表页面 (Profit/Loss Report Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Profit/Loss Report Page with comprehensive P&L statement display, monthly profit trends, and product profit analysis. The page provides clear visibility into business profitability with export support.
+
+### Features Implemented
+
+1. **Summary Metrics Dashboard**
+   - Net sales revenue with total income
+   - Sales cost with returns amount
+   - Gross profit with gross margin percentage
+   - Net profit with net margin percentage
+
+2. **P&L Statement Breakdown**
+   - Revenue section: Sales revenue, returns, net sales revenue
+   - Cost & Gross Profit section: COGS, gross profit, gross margin
+   - Other Income/Expenses section: Other income, total income, expenses
+   - Net Profit section: Net profit and net margin with color-coded tags
+
+3. **Monthly Profit Trend Chart**
+   - Grouped bar chart for sales revenue, gross profit, net profit
+   - Line chart overlay for gross margin and net margin percentages
+   - Dual Y-axis (amount and percentage)
+   - Interactive tooltips with formatted values
+
+4. **Product Profit Analysis Table**
+   - Columns: Product (Name + SKU), Category, Sales Revenue, COGS, Gross Profit, Gross Margin (color-coded tag), Profit Contribution
+   - Sortable columns for revenue, profit, margin, and contribution
+   - Pagination with size options (10/20/50)
+
+5. **Filters & Export**
+   - Date range picker for period selection
+   - CSV export button with UTF-8 BOM for Excel compatibility
+   - Export includes all P&L statement line items
+
+### Files Created
+
+- `frontend/src/pages/report/ProfitLoss.tsx` - Main P&L report page component
+- `frontend/src/pages/report/ProfitLoss.css` - Page-specific styles
+
+### Files Modified
+
+- `frontend/src/router/routes.tsx` - Added /report/profit-loss route and lazy-loaded component
+
+### Technical Details
+
+**Chart Library**: ECharts (echarts + echarts-for-react)
+- Grouped bar chart for revenue/profit metrics
+- Line chart overlay for margin percentages
+- Dual Y-axis configuration
+
+**UI Components**: Semi Design
+- Grid for responsive metrics layout
+- Descriptions for P&L statement breakdown
+- Table with column sorting and pagination
+- DatePicker with type="dateRange"
+- Tag for margin status indicators (green/orange/red)
+- Button with IconDownload for export
+
+**State Management**:
+- Local state with useState hooks
+- Parallel API calls with Promise.allSettled
+- Memoized chart options with useMemo
+- Export to CSV with Blob API
+
+**Layout Components**: Custom design system
+- Container, Grid from @/components/common/layout
+- Responsive grid with mobile/tablet/desktop breakpoints
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### API Endpoints Used
+- `GET /reports/finance/profit-loss` - P&L statement data
+- `GET /reports/finance/monthly-trend` - Monthly profit trend data
+- `GET /reports/finance/profit-by-product` - Product profit analysis
+
+### Notes for Next Developer
+- **P5-FE-005**: Cash Flow Report - uses `/reports/finance/cash-flow` and `/reports/finance/cash-flow/items` endpoints
+- **Design Pattern**: Similar structure to SalesReport and InventoryTurnover pages
+- **Export Format**: CSV with UTF-8 BOM for proper Chinese character display in Excel
+- **Chart Note**: Uses grouped bar chart pattern from ECharts for multi-series comparison
