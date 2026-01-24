@@ -32,7 +32,6 @@ import type { PaginationMeta } from '@/types/api'
 import './SalesOrders.css'
 
 const { Title } = Typography
-const { DateRangePicker } = DatePicker
 
 // Sales order type with index signature for DataTable compatibility
 type SalesOrder = HandlerSalesOrderListResponse & Record<string, unknown>
@@ -387,7 +386,7 @@ export default function SalesOrdersPage() {
   const handleView = useCallback(
     (order: SalesOrder) => {
       if (order.id) {
-        navigate(`/trade/sales-orders/${order.id}`)
+        navigate(`/trade/sales/${order.id}`)
       }
     },
     [navigate]
@@ -397,7 +396,7 @@ export default function SalesOrdersPage() {
   const handleEdit = useCallback(
     (order: SalesOrder) => {
       if (order.id) {
-        navigate(`/trade/sales-orders/${order.id}/edit`)
+        navigate(`/trade/sales/${order.id}/edit`)
       }
     },
     [navigate]
@@ -555,7 +554,7 @@ export default function SalesOrdersPage() {
           primaryAction={{
             label: '新建订单',
             icon: <IconPlus />,
-            onClick: () => navigate('/trade/sales-orders/new'),
+            onClick: () => navigate('/trade/sales/new'),
           }}
           secondaryActions={[
             {
@@ -583,7 +582,8 @@ export default function SalesOrdersPage() {
                 filter
                 style={{ width: 150 }}
               />
-              <DateRangePicker
+              <DatePicker
+                type="dateRange"
                 placeholder={['开始日期', '结束日期']}
                 value={dateRange || undefined}
                 onChange={handleDateRangeChange}

@@ -104,7 +104,7 @@
   {"id":"P3-BE-031","story":"PurchaseReturn 发货流程","priority":"medium","requirements":["实现退货发货逻辑","扣减库存","更新退货状态"],"passes":false},
   {"id":"P3-BE-032","story":"PurchaseReturn API","priority":"medium","requirements":["实现采购退货 CRUD API","实现发货 API","实现退货完成 API"],"passes":false},
   {"id":"P3-FE-001","story":"销售订单列表页面","priority":"high","requirements":["实现订单列表展示","支持状态筛选","支持客户日期筛选"],"passes":true},
-  {"id":"P3-FE-002","story":"销售开单页面","priority":"high","requirements":["实现客户选择","实现商品添加","实现金额计算和提交"],"passes":false},
+  {"id":"P3-FE-002","story":"销售开单页面","priority":"high","requirements":["实现客户选择","实现商品添加","实现金额计算和提交"],"passes":true},
   {"id":"P3-FE-003","story":"销售订单详情页面","priority":"high","requirements":["展示订单完整信息","展示订单行项目","展示状态变更历史"],"passes":false},
   {"id":"P3-FE-004","story":"销售订单发货操作","priority":"high","requirements":["实现发货确认弹窗","支持选择发货仓库","更新订单状态"],"passes":false},
   {"id":"P3-FE-010","story":"采购订单列表页面","priority":"high","requirements":["实现采购订单列表","支持状态筛选","支持供应商筛选"],"passes":false},

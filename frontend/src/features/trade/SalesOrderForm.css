@@ -1,0 +1,160 @@
+.sales-order-form-page {
+  padding: var(--spacing-6);
+}
+
+.sales-order-form-card {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sales-order-form-header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.section-title {
+  margin-bottom: var(--spacing-4) !important;
+  color: var(--semi-color-text-0);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.section-header .section-title {
+  margin-bottom: 0 !important;
+}
+
+/* Form Row & Fields */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-4);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.form-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  font-weight: 500;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: var(--semi-color-danger);
+}
+
+/* Items Table */
+.items-table {
+  margin-top: var(--spacing-3);
+}
+
+.items-table .semi-table-thead th {
+  background-color: var(--semi-color-fill-0);
+  font-weight: 500;
+}
+
+.items-table .semi-table-row:hover {
+  background-color: var(--semi-color-fill-0);
+}
+
+.items-error {
+  display: block;
+  margin-bottom: var(--spacing-2);
+}
+
+.selected-product {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-amount {
+  color: var(--semi-color-primary);
+}
+
+/* Summary Section */
+.summary-section {
+  background-color: var(--semi-color-fill-0);
+  border-radius: var(--semi-border-radius-medium);
+  padding: var(--spacing-4) !important;
+  margin-top: var(--spacing-4);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-6);
+}
+
+@media (max-width: 768px) {
+  .summary-row {
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+}
+
+.discount-field {
+  flex-shrink: 0;
+}
+
+.summary-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-2);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.summary-item.total {
+  margin-top: var(--spacing-2);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.total-amount {
+  font-size: var(--semi-font-size-header-4);
+  color: var(--semi-color-danger);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-4);
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}

@@ -4719,3 +4719,88 @@ ok      github.com/erp/backend/internal/interfaces/http/handler  0.018s
 - Customer filter loads all customers (up to 100); consider search-on-type for large customer bases
 - Date range filter uses ISO 8601 format for API compatibility
 - Status actions are context-sensitive based on current order status
+
+---
+
+## 2026-01-24 - P3-FE-002: Sales Order Creation Page Complete
+
+### Completed
+- **P3-FE-002**: 销售开单页面 (Sales Order Creation/Edit Form)
+
+### What was done
+1. Created `SalesOrderForm` component (`frontend/src/features/trade/SalesOrderForm.tsx`)
+   - Customer selection with search (remote filtering)
+   - Warehouse selection (optional)
+   - Dynamic order items table with add/remove rows
+   - Product selection with search for each row
+   - Real-time amount calculation (unit_price × quantity)
+   - Subtotal, discount (percentage), and payable amount calculation
+   - Remark field for order notes
+   - Zod v4 schema validation (uses `issues` not `errors`)
+   - Submit/Cancel actions with loading state
+
+2. Created page wrappers:
+   - `SalesOrderNew.tsx` - New order creation page
+   - `SalesOrderEdit.tsx` - Edit existing draft order page
+   - CSS file `SalesOrderForm.css` with design system tokens
+
+3. Updated routes (`router/routes.tsx`):
+   - Added lazy load imports for SalesOrderNew and SalesOrderEdit
+   - Added routes: `/trade/sales/new` and `/trade/sales/:id/edit`
+
+4. Fixed `SalesOrders.tsx` list page:
+   - Updated navigation paths from `/trade/sales-orders/` to `/trade/sales/`
+   - Changed DateRangePicker to use `DatePicker type="dateRange"` (Semi Design API)
+
+### Files created
+- `frontend/src/features/trade/SalesOrderForm.tsx` (main form component)
+- `frontend/src/features/trade/SalesOrderForm.css` (styles)
+- `frontend/src/pages/trade/SalesOrderNew.tsx` (new order page)
+- `frontend/src/pages/trade/SalesOrderEdit.tsx` (edit order page)
+
+### Files modified
+- `frontend/src/features/trade/index.ts` - Added export
+- `frontend/src/router/routes.tsx` - Added routes for new/edit pages
+- `frontend/src/pages/trade/SalesOrders.tsx` - Fixed navigation paths and DatePicker
+
+### Technical decisions
+1. **Discount calculation**: API returns `discount_amount` not `discount`. Computed percentage from `discount_amount / (total_amount + discount_amount) * 100`
+2. **Zod v4**: Uses `result.error.issues` instead of `result.error.errors`
+3. **Edit restrictions**: Customer cannot be changed on edit (API limitation); only warehouse, discount, and remark can be updated
+4. **Semi Design DatePicker**: Use `type="dateRange"` prop instead of destructured `DateRangePicker` to avoid TypeScript errors
+
+### Feature details
+
+| Feature | Status |
+|---------|--------|
+| Customer selection with search | ✓ |
+| Warehouse selection | ✓ |
+| Product selection per row | ✓ |
+| Dynamic rows (add/remove) | ✓ |
+| Unit price auto-fill from product | ✓ |
+| Quantity input with validation | ✓ |
+| Amount calculation (price × qty) | ✓ |
+| Subtotal calculation | ✓ |
+| Discount percentage input | ✓ |
+| Payable amount calculation | ✓ |
+| Order remark field | ✓ |
+| Form validation (Zod) | ✓ |
+| Create new order | ✓ |
+| Edit draft order | ✓ |
+| Navigate from list page | ✓ |
+
+### API Endpoints Used
+- `POST /trade/sales-orders` - Create new order
+- `GET /trade/sales-orders/{id}` - Get order details (for edit)
+- `PUT /trade/sales-orders/{id}` - Update order
+- `GET /partner/customers` - Load customer list
+- `GET /partner/warehouses` - Load warehouse list
+- `GET /catalog/products` - Load product list
+
+### Notes for next developer
+- **P3-FE-003** (Sales Order Detail Page): Need to implement `/trade/sales/:id` view page
+- Edit mode only available for `draft` status orders
+- Products table auto-adds empty row when last row has product selected
+- Customer field disabled in edit mode (API doesn't support customer change)
+- Consider adding product barcode scanning support
+- Consider adding quick product select from recent orders

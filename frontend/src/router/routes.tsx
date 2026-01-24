@@ -47,6 +47,8 @@ const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdju
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
+const SalesOrderNewPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderNew'))
+const SalesOrderEditPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderEdit'))
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
 
 // Finance module
@@ -358,6 +360,14 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'stock/:id', element: StockDetailPage() },
           { path: 'stock/:id/transactions', element: StockTransactionsPage() },
           { path: 'adjust', element: StockAdjustPage() }
+        )
+      }
+
+      // Add trade module detail routes (not in menu)
+      if (route.path === '/trade') {
+        childRoutes.push(
+          { path: 'sales/new', element: SalesOrderNewPage() },
+          { path: 'sales/:id/edit', element: SalesOrderEditPage() }
         )
       }
 
