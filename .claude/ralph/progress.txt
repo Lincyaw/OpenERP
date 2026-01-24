@@ -9402,3 +9402,91 @@ Implemented a modal component for recharging customer balance with amount input,
 - Consider adding balance adjustment modal similar to recharge for admin operations
 - Customer detail page could include a balance overview section
 
+
+---
+
+## P2-BE-004: 批次管理策略实现 (Batch Management Strategy Implementation)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Implementation Summary
+Implemented batch outbound strategies for inventory management, enabling FIFO (First In First Out), FEFO (First Expire First Out), and specified batch selection for stock deduction operations.
+
+### Features Implemented
+1. **BatchOutboundStrategy Interface**
+   - Base interface extending shared.strategy.Strategy
+   - SelectBatches method for calculating batch deductions
+   - Support for multiple strategy types
+
+2. **FIFO Batch Outbound Strategy**
+   - Selects oldest batches first by production date
+   - Falls back to creation date when no production date
+   - Skips expired and consumed batches automatically
+
+3. **FEFO Batch Outbound Strategy**
+   - Prioritizes batches closest to expiry
+   - Batches with expiry dates come before those without
+   - Useful for perishable goods management
+
+4. **Specified Batch Outbound Strategy**
+   - Allows manual selection of specific batches
+   - Supports specifying exact quantities per batch
+   - Processes requests in specified order
+
+5. **Strategy Factory**
+   - BatchOutboundStrategyFactory for creating strategies
+   - GetStrategy by type with validation
+   - GetDefaultStrategy returns FIFO
+
+6. **Helper Functions**
+   - ValidateBatchAvailability - checks if sufficient stock exists
+   - GetBatchesByExpiryWindow - finds batches expiring soon
+   - ApplyBatchDeductions - applies deduction results to batch entities
+
+### Result Structures
+- BatchDeductionRequest - specifies batch and quantity
+- BatchDeductionResult - deduction details with cost calculations
+- BatchOutboundResult - complete result with weighted average cost
+
+### Files Created
+- `backend/internal/domain/inventory/batch_outbound_strategy.go` - Strategy implementations
+- `backend/internal/domain/inventory/batch_outbound_strategy_test.go` - Unit tests
+
+### Test Coverage
+- Strategy type validation tests
+- FIFO ordering tests (production date, creation date fallback)
+- FEFO ordering tests (expiry date priority)
+- Specified batch selection tests
+- Factory tests
+- Helper function tests
+- Edge case tests (expired/consumed batches, partial fulfillment)
+
+### Build Status
+- Go build: ✅ PASSED
+- Unit tests: ✅ 50+ test cases PASSED
+
+### Requirements Met
+- ✅ 实现批次出库策略接口 (Batch outbound strategy interface)
+- ✅ 实现 FIFO 批次策略 (FIFO batch strategy with FEFO as bonus)
+- ✅ 实现指定批次策略 (Specified batch strategy)
+
+### Usage Example
+```go
+// Create factory
+factory := inventory.NewBatchOutboundStrategyFactory()
+
+// Get FIFO strategy
+strategy := factory.CreateFIFOStrategy()
+
+// Select batches for outbound
+result, err := strategy.SelectBatches(requestedQty, batches)
+
+// Apply deductions to actual batches
+err = inventory.ApplyBatchDeductions(batchPtrs, result)
+```
+
+### Notes for Next Steps
+- P2-BE-011/P2-BE-012 (StockTaking) could use these strategies for inventory reconciliation
+- Sales order shipment can use FIFO/FEFO strategy for batch selection
+- Consider adding batch selection UI in frontend for manual batch picking

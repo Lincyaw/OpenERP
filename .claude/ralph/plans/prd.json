@@ -719,7 +719,7 @@
       "实现 FIFO 批次策略",
       "实现指定批次策略"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-BE-005",
