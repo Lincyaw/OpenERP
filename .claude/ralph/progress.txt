@@ -6093,3 +6093,79 @@ DRAFT → Confirm() → CONFIRMED → AllocateToPayable() → ALLOCATED
 - The PaymentVoucher must be confirmed before allocations - prevents accidental allocations to draft vouchers
 - Allocations automatically update the payable's paid amount via ApplyPayment() method
 - PaymentVoucher reuses VoucherStatus and PaymentMethod enums from ReceiptVoucher for consistency
+
+---
+
+## 2026-01-24 - P4-BE-008: Reconciliation Strategy (核销策略) Implementation Complete
+
+### Completed
+- **P4-BE-008**: 核销策略实现 (FIFO)
+
+### What was done
+1. Created `reconciliation_strategy.go` with comprehensive reconciliation strategy framework:
+   - `ReconciliationStrategyType` enum with FIFO and MANUAL types
+   - `AllocationTarget` struct for representing receivables/payables
+   - `AllocationResult` and `ReconciliationResult` structs for allocation outcomes
+   - `ReconciliationStrategy` interface extending base strategy pattern
+
+2. Implemented FIFO Reconciliation Strategy (`FIFOReconciliationStrategy`):
+   - Sorts outstanding receivables/payables by due date first, then creation date
+   - Items with due dates are prioritized over items without
+   - Allocates payment amounts to oldest items first
+   - Tracks fully paid vs partially paid targets
+   - Implements `ReceivableReconciliationStrategy` and `PayableReconciliationStrategy` interfaces
+   - Methods: `Allocate()`, `AllocateReceipt()`, `AllocatePayment()`
+
+3. Implemented Manual Reconciliation Strategy (`ManualReconciliationStrategy`):
+   - Allows user-specified allocation order via `ManualAllocationRequest`
+   - Supports specific amounts or full outstanding allocation (Amount=0)
+   - Validates and caps amounts at available/outstanding limits
+   - Skips invalid or unavailable targets gracefully
+
+4. Created `ReconciliationStrategyFactory`:
+   - `CreateFIFOStrategy()` - creates FIFO strategy
+   - `CreateManualStrategy(allocations)` - creates manual strategy
+   - `GetStrategy(type, allocations)` - factory method with validation
+
+5. Comprehensive unit tests at `reconciliation_strategy_test.go`:
+   - 35+ test cases covering all functionality
+   - ReconciliationStrategyType validation tests
+   - FIFO strategy tests (sorting, allocation, edge cases)
+   - Manual strategy tests (ordering, amounts, validation)
+   - Factory tests (creation, validation)
+   - Result struct tests
+
+### Files created/modified
+- `backend/internal/domain/finance/reconciliation_strategy.go` (NEW)
+- `backend/internal/domain/finance/reconciliation_strategy_test.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (35+ tests for reconciliation strategies)
+
+### Design Decisions
+1. **Strategy pattern**: Leverages existing `strategy.BaseStrategy` for consistent pattern
+2. **FIFO ordering**: Prioritizes by due date, falls back to creation date, handles nil due dates
+3. **Generic allocation**: `Allocate()` method works with abstract `AllocationTarget` for reusability
+4. **Specialized methods**: `AllocateReceipt()` and `AllocatePayment()` filter valid targets automatically
+5. **Comprehensive results**: `ReconciliationResult` tracks allocations, totals, and affected targets
+6. **Factory with validation**: Prevents invalid strategy creation (e.g., manual without allocations)
+
+### FIFO Algorithm
+```
+1. Sort targets by:
+   - Due date ascending (items with due date before items without)
+   - Creation date ascending (fallback when due dates equal or missing)
+2. For each target in sorted order:
+   - If remaining amount > 0 and target.outstanding > 0:
+     - Allocate min(remaining, outstanding)
+     - Track if fully/partially paid
+3. Return allocations, totals, and remaining amount
+```
+
+### Notes for next developer
+- **P4-BE-009** (ReconciliationService) is next - will use these strategies
+- ReconciliationService should coordinate voucher allocation with receivable/payable updates
+- Consider adding more strategies (e.g., LIFO, Priority-based) if needed
+- The FIFO strategy filters out non-payable items automatically (terminal states, zero outstanding)
+- Manual strategy allows fine-grained control over allocation order and amounts
