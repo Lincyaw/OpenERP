@@ -78,6 +78,7 @@ const CashFlowReportPage = () => lazyLoad(() => import('@/pages/report/CashFlowR
 // System module
 const UsersPage = () => lazyLoad(() => import('@/pages/system/Users'))
 const RolesPage = () => lazyLoad(() => import('@/pages/system/Roles'))
+const PermissionsPage = () => lazyLoad(() => import('@/pages/system/Permissions'))
 
 /**
  * Application routes with metadata
@@ -405,6 +406,15 @@ export const appRoutes: AppRoute[] = [
           permissions: [Permissions.ROLE_READ],
         },
       },
+      {
+        path: '/system/permissions',
+        meta: {
+          title: 'Permissions',
+          icon: 'IconKey',
+          order: 3,
+          permissions: [Permissions.ROLE_READ],
+        },
+      },
     ],
   },
 ]
@@ -460,6 +470,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return UsersPage()
     case '/system/roles':
       return RolesPage()
+    case '/system/permissions':
+      return PermissionsPage()
     default:
       return null
   }

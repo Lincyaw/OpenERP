@@ -271,6 +271,7 @@ export const RoutePermissions: Record<string, string[]> = {
   '/system': [Permissions.USER_READ, Permissions.ROLE_READ],
   '/system/users': [Permissions.USER_READ],
   '/system/roles': [Permissions.ROLE_READ],
+  '/system/permissions': [Permissions.ROLE_READ],
 }
 
 /**

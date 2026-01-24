@@ -9099,3 +9099,56 @@ Features implemented:
 - **P6-FE-006**: Permission configuration page is largely covered by the permission modal in Roles.tsx. May only need a dedicated page if more advanced permission tree viewing is required.
 - The Roles page provides full permission management through the "配置权限" action.
 - System roles are protected from modification but their permissions can still be viewed.
+
+---
+
+## 2026-01-24: P6-FE-006 - 权限配置页面
+
+### Summary
+Implemented the Permission Configuration page frontend that provides a read-only view of all system permissions, showing permission tree structure and which roles have which permissions.
+
+### Implementation Details
+
+#### 1. Permission Configuration Page (`frontend/src/pages/system/Permissions.tsx`)
+Features implemented:
+- Display all system permissions in a hierarchical tree view grouped by resource
+- Show statistics: total resources, total permissions, and enabled roles
+- Search/filter permissions by keyword (matches permission code, resource name, or action name)
+- Expand/collapse all functionality for the permission tree
+- Display which roles have each permission (with overflow handling for many roles)
+- Role-Permission summary collapse panel showing all roles and their permission counts
+- Info banner explaining this is a read-only view and directing users to Roles page for modifications
+
+#### 2. Permission Tree Display
+- Resources displayed as parent nodes with permission counts and role counts
+- Action permissions displayed as child nodes with:
+  - Chinese action labels
+  - Permission code in monospace font
+  - Tooltip with action description
+  - Tags showing which roles have this permission
+
+#### 3. Route Configuration Updates
+- Added `/system/permissions` route to `routes.tsx`
+- Added `PermissionsPage` lazy-loaded component
+- Updated `permissions.ts` with `/system/permissions` route permission (ROLE_READ)
+
+### API Endpoints Used
+- `GET /identity/permissions` - Get all available permissions
+- `GET /identity/roles` - List roles with their permissions
+
+### Build Status
+- TypeScript check: ✅ PASSED
+- Vite build: ✅ PASSED
+
+### Files Created
+- `frontend/src/pages/system/Permissions.tsx`
+- `frontend/src/pages/system/Permissions.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added permissions route and component
+- `frontend/src/config/permissions.ts` - Added /system/permissions route permission
+
+### Notes for Next Steps
+- **P6-FE-007**: Tenant switching component (low priority)
+- The System module now has complete User, Role, and Permission management pages
+- The permission configuration page is read-only; actual permission modifications are done through the Role Management page's "配置权限" action
