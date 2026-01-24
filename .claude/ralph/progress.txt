@@ -13719,3 +13719,106 @@ npm run test -- --run src/pages/inventory/StockTakingList.test.tsx
 2. **Auth Mock**: StockTakingExecute requires auth store mock for user context
 3. **Status Workflow**: DRAFT → COUNTING → PENDING_APPROVAL → APPROVED/REJECTED/CANCELLED
 4. **Next priority items**: P2-INT-002 (盘点功能联调), P3-QA-005 (交易模块前端组件测试)
+
+---
+
+## P3-QA-005: 交易模块前端组件测试 (Transaction Module Frontend Component Tests)
+
+**Date**: 2026-01-25
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented comprehensive frontend component tests for the Transaction (Trade) module, completing the P3-QA-005 story. Created three new test files covering order form components and return list components.
+
+### Requirements Verified
+
+#### 1. 测试订单列表组件 ✅
+**Files (Already Existed)**:
+- `frontend/src/pages/trade/SalesOrders.test.tsx` - 38 tests
+- `frontend/src/pages/trade/PurchaseOrders.test.tsx` - 44 tests
+
+#### 2. 测试开单表单组件 ✅
+**Files (NEW)**:
+- `frontend/src/pages/trade/SalesOrderNew.test.tsx` - 36 tests
+- `frontend/src/pages/trade/PurchaseOrderNew.test.tsx` - 36 tests
+
+**SalesOrderNew tests coverage:**
+- Page layout (title, sections, buttons)
+- Basic information section (customer, warehouse)
+- Product items section (table columns, add button)
+- Summary display (item count, subtotal, discount, total)
+- API loading (customers, products, warehouses)
+- Form validation
+- Navigation (cancel button)
+- Error handling
+
+**PurchaseOrderNew tests coverage:**
+- Page layout (title, sections, buttons)
+- Basic information section (supplier, warehouse)
+- Product items section (table columns including "采购单价")
+- Summary display (item count, subtotal, discount, total)
+- API loading (suppliers, products, warehouses)
+- Form validation
+- Navigation (cancel button)
+- Error handling
+
+#### 3. 测试订单详情组件 ✅
+**Files (Already Existed)**:
+- `frontend/src/pages/trade/SalesOrderDetail.test.tsx` - 34 tests
+- `frontend/src/pages/trade/PurchaseOrderReceive.test.tsx` - 41 tests
+
+**Additional Tests Created**:
+- `frontend/src/pages/trade/SalesReturns.test.tsx` - 38 tests (NEW)
+
+**SalesReturns tests coverage:**
+- Page layout (title, buttons, search)
+- Return list display (return number, order number, customer, amounts)
+- Status tags (草稿/待审批/已审批/已拒绝/已完成/已取消)
+- Table column headers (9 columns verified)
+- Navigation (new return, approval page)
+- API integration (pagination, sorting, filtering)
+- Error handling
+- Refresh functionality
+- Actions by status (draft, pending, approved, completed)
+
+### Test Coverage Summary
+| File | Tests | Status |
+|------|-------|--------|
+| SalesOrders.test.tsx | 38 | Existing ✅ |
+| PurchaseOrders.test.tsx | 44 | Existing ✅ |
+| SalesOrderDetail.test.tsx | 34 | Existing ✅ |
+| PurchaseOrderReceive.test.tsx | 41 | Existing ✅ |
+| SalesOrderNew.test.tsx | 36 | NEW ✅ |
+| PurchaseOrderNew.test.tsx | 36 | NEW ✅ |
+| SalesReturns.test.tsx | 38 | NEW ✅ |
+| **Trade module total** | **267** | **All passing** |
+
+### How to Run Tests
+```bash
+# Run all trade module tests
+cd frontend && npm run test -- --run src/pages/trade/*.test.tsx
+
+# Run only the new tests
+npm run test -- --run src/pages/trade/SalesOrderNew.test.tsx src/pages/trade/PurchaseOrderNew.test.tsx src/pages/trade/SalesReturns.test.tsx
+```
+
+### Technical Notes
+1. **Mock API Pattern**: Uses vi.mock() for API modules and creates typed mock instances
+2. **Semi UI Mocking**: Spies on Toast methods for success/error message verification
+3. **Navigation Mocking**: Uses vi.mock() for react-router-dom's useNavigate
+4. **Multiple Elements**: Uses getAllByText() when same text appears multiple times (e.g., "备注" as both form label and table column)
+5. **Select Component**: Semi UI Select placeholder may render differently in tests
+
+### Files Created
+- `frontend/src/pages/trade/SalesOrderNew.test.tsx` (~400 lines)
+- `frontend/src/pages/trade/PurchaseOrderNew.test.tsx` (~400 lines)
+- `frontend/src/pages/trade/SalesReturns.test.tsx` (~650 lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P3-QA-005: passes: true)
+
+### Notes for Next Developer
+1. **Test Pattern**: Order form tests focus on layout, API loading, and validation
+2. **Return Tests**: Include comprehensive status tag and action button testing
+3. **Next priority items**: P4-QA-005 (财务模块前端组件测试), P3-QA-006 (退货流程端到端测试)
+4. **Total trade module coverage**: 267 tests all passing
