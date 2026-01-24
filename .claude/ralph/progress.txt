@@ -9727,3 +9727,83 @@ SalesReturn.Complete()
 - P3-BE-023 (SalesReturn API) can now be implemented to expose return endpoints
 - P4-BE-004 (红冲逻辑 - Credit note logic) depends on return completion for A/R adjustments
 - The handler needs to be registered in the application bootstrap/wire configuration
+
+---
+
+## 2026-01-24 - P3-BE-023: SalesReturn API Complete
+
+### Completed
+- **P3-BE-023**: SalesReturn API - 退货单 CRUD/审批/完成 API
+
+### What was done
+
+1. **Repository Layer** (`backend/internal/infrastructure/persistence/sales_return_repository.go`)
+   - Implemented `GormSalesReturnRepository` with full CRUD operations
+   - Tenant isolation with `tenant_id` filtering
+   - Optimistic locking via `SaveWithLock` for concurrent modifications
+   - Return number generation (format: SR-YYYY-NNNNN)
+   - Filter/pagination support with status, customer, date range filters
+   - Count methods for dashboard statistics
+
+2. **Application Service Layer** (`backend/internal/application/trade/sales_return_service.go`)
+   - Complete service with all business operations:
+     - `Create` - Create new return from shipped/completed orders
+     - `GetByID`, `GetByReturnNumber`, `List` - Query operations
+     - `Update`, `Delete` - CRUD for draft returns only
+     - `AddItem`, `UpdateItem`, `RemoveItem` - Item management
+     - `Submit` - Transition from DRAFT → PENDING
+     - `Approve` - Transition from PENDING → APPROVED
+     - `Reject` - Transition from PENDING → REJECTED
+     - `Complete` - Transition from APPROVED → COMPLETED
+     - `Cancel` - Cancel draft/pending/approved returns
+     - `GetStatusSummary` - Dashboard statistics
+   - Domain event publishing on state changes
+   - Validation with sales order lookup
+
+3. **DTOs** (`backend/internal/application/trade/dto.go`)
+   - Added 15+ request/response DTOs for SalesReturn operations
+   - Converter functions for domain ↔ DTO mapping
+
+4. **HTTP Handler** (`backend/internal/interfaces/http/handler/sales_return.go`)
+   - Full REST API with OpenAPI/Swagger annotations
+   - Endpoints:
+     - `POST /trade/sales-returns` - Create return
+     - `GET /trade/sales-returns` - List with pagination/filters
+     - `GET /trade/sales-returns/:id` - Get by ID
+     - `GET /trade/sales-returns/number/:number` - Get by return number
+     - `PUT /trade/sales-returns/:id` - Update draft
+     - `DELETE /trade/sales-returns/:id` - Delete draft
+     - `POST /trade/sales-returns/:id/items` - Add item
+     - `PUT /trade/sales-returns/:id/items/:itemId` - Update item
+     - `DELETE /trade/sales-returns/:id/items/:itemId` - Remove item
+     - `POST /trade/sales-returns/:id/submit` - Submit for approval
+     - `POST /trade/sales-returns/:id/approve` - Approve (requires auth)
+     - `POST /trade/sales-returns/:id/reject` - Reject (requires auth)
+     - `POST /trade/sales-returns/:id/complete` - Mark complete
+     - `POST /trade/sales-returns/:id/cancel` - Cancel return
+     - `GET /trade/sales-returns/stats/summary` - Status summary
+   - JWT user authentication for approve/reject operations
+
+5. **Handler Tests** (`backend/internal/interfaces/http/handler/sales_return_test.go`)
+   - 20+ test cases covering:
+     - Create with valid/invalid data
+     - Get by ID (success, not found, invalid ID)
+     - List with pagination
+     - Submit (draft only)
+     - Approve/Reject (pending only, auth required)
+     - Complete (approved only)
+     - Cancel (with reason validation)
+     - Delete (draft only)
+     - Status summary
+     - Add item (with order lookup)
+
+### Requirements Met
+- ✅ 实现退货单 CRUD API
+- ✅ 实现审批 API (Approve/Reject with user authentication)
+- ✅ 实现退货完成 API (Complete endpoint)
+
+### Integration Notes
+- Handler needs to be registered in router configuration
+- Repository needs to be wired in DI/bootstrap
+- OpenAPI spec should be regenerated: `cd backend && swag init -g cmd/server/main.go -o docs`
+- Frontend SDK regeneration: `cd frontend && npm run api:generate`

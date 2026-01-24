@@ -1115,7 +1115,7 @@
       "实现审批 API",
       "实现退货完成 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-BE-030",

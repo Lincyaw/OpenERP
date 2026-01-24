@@ -524,3 +524,253 @@ func ToSalesOrderItemResponse(item *trade.SalesOrderItem) SalesOrderItemResponse
 		UpdatedAt:   item.UpdatedAt,
 	}
 }
+
+// ==================== Sales Return DTOs ====================
+
+// CreateSalesReturnRequest represents a request to create a sales return
+type CreateSalesReturnRequest struct {
+	SalesOrderID uuid.UUID                    `json:"sales_order_id" binding:"required"`
+	WarehouseID  *uuid.UUID                   `json:"warehouse_id"`
+	Items        []CreateSalesReturnItemInput `json:"items" binding:"required,min=1"`
+	Reason       string                       `json:"reason"`
+	Remark       string                       `json:"remark"`
+}
+
+// CreateSalesReturnItemInput represents an item in the create return request
+type CreateSalesReturnItemInput struct {
+	SalesOrderItemID  uuid.UUID       `json:"sales_order_item_id" binding:"required"`
+	ReturnQuantity    decimal.Decimal `json:"return_quantity" binding:"required"`
+	Reason            string          `json:"reason"`
+	ConditionOnReturn string          `json:"condition_on_return"` // damaged, defective, wrong_item, etc.
+}
+
+// UpdateSalesReturnRequest represents a request to update a sales return (only in DRAFT status)
+type UpdateSalesReturnRequest struct {
+	WarehouseID *uuid.UUID `json:"warehouse_id"`
+	Reason      *string    `json:"reason"`
+	Remark      *string    `json:"remark"`
+}
+
+// UpdateReturnItemRequest represents a request to update a return item
+type UpdateReturnItemRequest struct {
+	ReturnQuantity    *decimal.Decimal `json:"return_quantity"`
+	Reason            *string          `json:"reason"`
+	ConditionOnReturn *string          `json:"condition_on_return"`
+}
+
+// AddReturnItemRequest represents a request to add an item to a return
+type AddReturnItemRequest struct {
+	SalesOrderItemID  uuid.UUID       `json:"sales_order_item_id" binding:"required"`
+	ReturnQuantity    decimal.Decimal `json:"return_quantity" binding:"required"`
+	Reason            string          `json:"reason"`
+	ConditionOnReturn string          `json:"condition_on_return"`
+}
+
+// ApproveReturnRequest represents a request to approve a return
+type ApproveReturnRequest struct {
+	Note string `json:"note"`
+}
+
+// RejectReturnRequest represents a request to reject a return
+type RejectReturnRequest struct {
+	Reason string `json:"reason" binding:"required,min=1,max=500"`
+}
+
+// CancelReturnRequest represents a request to cancel a return
+type CancelReturnRequest struct {
+	Reason string `json:"reason" binding:"required,min=1,max=500"`
+}
+
+// CompleteReturnRequest represents a request to complete a return
+type CompleteReturnRequest struct {
+	WarehouseID *uuid.UUID `json:"warehouse_id"` // Optional warehouse override
+}
+
+// SalesReturnListFilter represents filter options for sales return list
+type SalesReturnListFilter struct {
+	Search       string              `form:"search"`
+	CustomerID   *uuid.UUID          `form:"customer_id"`
+	SalesOrderID *uuid.UUID          `form:"sales_order_id"`
+	WarehouseID  *uuid.UUID          `form:"warehouse_id"`
+	Status       *trade.ReturnStatus `form:"status"`
+	Statuses     []string            `form:"statuses"`
+	StartDate    *time.Time          `form:"start_date"`
+	EndDate      *time.Time          `form:"end_date"`
+	MinAmount    *decimal.Decimal    `form:"min_amount"`
+	MaxAmount    *decimal.Decimal    `form:"max_amount"`
+	Page         int                 `form:"page" binding:"min=1"`
+	PageSize     int                 `form:"page_size" binding:"min=1,max=100"`
+	OrderBy      string              `form:"order_by"`
+	OrderDir     string              `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+}
+
+// SalesReturnResponse represents a sales return in API responses
+type SalesReturnResponse struct {
+	ID               uuid.UUID                 `json:"id"`
+	TenantID         uuid.UUID                 `json:"tenant_id"`
+	ReturnNumber     string                    `json:"return_number"`
+	SalesOrderID     uuid.UUID                 `json:"sales_order_id"`
+	SalesOrderNumber string                    `json:"sales_order_number"`
+	CustomerID       uuid.UUID                 `json:"customer_id"`
+	CustomerName     string                    `json:"customer_name"`
+	WarehouseID      *uuid.UUID                `json:"warehouse_id,omitempty"`
+	Items            []SalesReturnItemResponse `json:"items"`
+	ItemCount        int                       `json:"item_count"`
+	TotalQuantity    decimal.Decimal           `json:"total_quantity"`
+	TotalRefund      decimal.Decimal           `json:"total_refund"`
+	Status           string                    `json:"status"`
+	Reason           string                    `json:"reason,omitempty"`
+	Remark           string                    `json:"remark,omitempty"`
+	SubmittedAt      *time.Time                `json:"submitted_at,omitempty"`
+	ApprovedAt       *time.Time                `json:"approved_at,omitempty"`
+	ApprovedBy       *uuid.UUID                `json:"approved_by,omitempty"`
+	ApprovalNote     string                    `json:"approval_note,omitempty"`
+	RejectedAt       *time.Time                `json:"rejected_at,omitempty"`
+	RejectedBy       *uuid.UUID                `json:"rejected_by,omitempty"`
+	RejectionReason  string                    `json:"rejection_reason,omitempty"`
+	CompletedAt      *time.Time                `json:"completed_at,omitempty"`
+	CancelledAt      *time.Time                `json:"cancelled_at,omitempty"`
+	CancelReason     string                    `json:"cancel_reason,omitempty"`
+	CreatedAt        time.Time                 `json:"created_at"`
+	UpdatedAt        time.Time                 `json:"updated_at"`
+	Version          int                       `json:"version"`
+}
+
+// SalesReturnListItemResponse represents a sales return in list responses (less detail)
+type SalesReturnListItemResponse struct {
+	ID               uuid.UUID       `json:"id"`
+	ReturnNumber     string          `json:"return_number"`
+	SalesOrderID     uuid.UUID       `json:"sales_order_id"`
+	SalesOrderNumber string          `json:"sales_order_number"`
+	CustomerID       uuid.UUID       `json:"customer_id"`
+	CustomerName     string          `json:"customer_name"`
+	WarehouseID      *uuid.UUID      `json:"warehouse_id,omitempty"`
+	ItemCount        int             `json:"item_count"`
+	TotalRefund      decimal.Decimal `json:"total_refund"`
+	Status           string          `json:"status"`
+	SubmittedAt      *time.Time      `json:"submitted_at,omitempty"`
+	ApprovedAt       *time.Time      `json:"approved_at,omitempty"`
+	CompletedAt      *time.Time      `json:"completed_at,omitempty"`
+	CreatedAt        time.Time       `json:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+}
+
+// SalesReturnItemResponse represents a return item in API responses
+type SalesReturnItemResponse struct {
+	ID                uuid.UUID       `json:"id"`
+	SalesOrderItemID  uuid.UUID       `json:"sales_order_item_id"`
+	ProductID         uuid.UUID       `json:"product_id"`
+	ProductName       string          `json:"product_name"`
+	ProductCode       string          `json:"product_code"`
+	OriginalQuantity  decimal.Decimal `json:"original_quantity"`
+	ReturnQuantity    decimal.Decimal `json:"return_quantity"`
+	UnitPrice         decimal.Decimal `json:"unit_price"`
+	RefundAmount      decimal.Decimal `json:"refund_amount"`
+	Unit              string          `json:"unit"`
+	Reason            string          `json:"reason,omitempty"`
+	ConditionOnReturn string          `json:"condition_on_return,omitempty"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
+}
+
+// ReturnStatusSummary represents a summary of returns by status
+type ReturnStatusSummary struct {
+	Draft           int64           `json:"draft"`
+	Pending         int64           `json:"pending"`
+	Approved        int64           `json:"approved"`
+	Rejected        int64           `json:"rejected"`
+	Completed       int64           `json:"completed"`
+	Cancelled       int64           `json:"cancelled"`
+	Total           int64           `json:"total"`
+	PendingApproval int64           `json:"pending_approval"` // Same as Pending, for convenience
+	TotalRefund     decimal.Decimal `json:"total_refund"`
+}
+
+// ToSalesReturnResponse converts domain SalesReturn to response DTO
+func ToSalesReturnResponse(sr *trade.SalesReturn) SalesReturnResponse {
+	items := make([]SalesReturnItemResponse, len(sr.Items))
+	for i := range sr.Items {
+		items[i] = ToSalesReturnItemResponse(&sr.Items[i])
+	}
+
+	return SalesReturnResponse{
+		ID:               sr.ID,
+		TenantID:         sr.TenantID,
+		ReturnNumber:     sr.ReturnNumber,
+		SalesOrderID:     sr.SalesOrderID,
+		SalesOrderNumber: sr.SalesOrderNumber,
+		CustomerID:       sr.CustomerID,
+		CustomerName:     sr.CustomerName,
+		WarehouseID:      sr.WarehouseID,
+		Items:            items,
+		ItemCount:        sr.ItemCount(),
+		TotalQuantity:    sr.TotalReturnQuantity(),
+		TotalRefund:      sr.TotalRefund,
+		Status:           string(sr.Status),
+		Reason:           sr.Reason,
+		Remark:           sr.Remark,
+		SubmittedAt:      sr.SubmittedAt,
+		ApprovedAt:       sr.ApprovedAt,
+		ApprovedBy:       sr.ApprovedBy,
+		ApprovalNote:     sr.ApprovalNote,
+		RejectedAt:       sr.RejectedAt,
+		RejectedBy:       sr.RejectedBy,
+		RejectionReason:  sr.RejectionReason,
+		CompletedAt:      sr.CompletedAt,
+		CancelledAt:      sr.CancelledAt,
+		CancelReason:     sr.CancelReason,
+		CreatedAt:        sr.CreatedAt,
+		UpdatedAt:        sr.UpdatedAt,
+		Version:          sr.Version,
+	}
+}
+
+// ToSalesReturnListItemResponse converts domain SalesReturn to list response DTO
+func ToSalesReturnListItemResponse(sr *trade.SalesReturn) SalesReturnListItemResponse {
+	return SalesReturnListItemResponse{
+		ID:               sr.ID,
+		ReturnNumber:     sr.ReturnNumber,
+		SalesOrderID:     sr.SalesOrderID,
+		SalesOrderNumber: sr.SalesOrderNumber,
+		CustomerID:       sr.CustomerID,
+		CustomerName:     sr.CustomerName,
+		WarehouseID:      sr.WarehouseID,
+		ItemCount:        sr.ItemCount(),
+		TotalRefund:      sr.TotalRefund,
+		Status:           string(sr.Status),
+		SubmittedAt:      sr.SubmittedAt,
+		ApprovedAt:       sr.ApprovedAt,
+		CompletedAt:      sr.CompletedAt,
+		CreatedAt:        sr.CreatedAt,
+		UpdatedAt:        sr.UpdatedAt,
+	}
+}
+
+// ToSalesReturnListItemResponses converts a slice of domain returns to list responses
+func ToSalesReturnListItemResponses(returns []trade.SalesReturn) []SalesReturnListItemResponse {
+	responses := make([]SalesReturnListItemResponse, len(returns))
+	for i := range returns {
+		responses[i] = ToSalesReturnListItemResponse(&returns[i])
+	}
+	return responses
+}
+
+// ToSalesReturnItemResponse converts domain SalesReturnItem to response DTO
+func ToSalesReturnItemResponse(item *trade.SalesReturnItem) SalesReturnItemResponse {
+	return SalesReturnItemResponse{
+		ID:                item.ID,
+		SalesOrderItemID:  item.SalesOrderItemID,
+		ProductID:         item.ProductID,
+		ProductName:       item.ProductName,
+		ProductCode:       item.ProductCode,
+		OriginalQuantity:  item.OriginalQuantity,
+		ReturnQuantity:    item.ReturnQuantity,
+		UnitPrice:         item.UnitPrice,
+		RefundAmount:      item.RefundAmount,
+		Unit:              item.Unit,
+		Reason:            item.Reason,
+		ConditionOnReturn: item.ConditionOnReturn,
+		CreatedAt:         item.CreatedAt,
+		UpdatedAt:         item.UpdatedAt,
+	}
+}
