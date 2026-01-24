@@ -225,7 +225,7 @@ func (h *StockTakingHandler) GetByID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        taking_number path string true "Taking Number" example(ST-20240115-0001)
+// @Param        taking_number path string true "Taking Number"
 // @Success      200 {object} dto.Response{data=StockTakingResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}

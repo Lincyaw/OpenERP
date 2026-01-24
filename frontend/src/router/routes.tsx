@@ -46,6 +46,8 @@ const StockListPage = () => lazyLoad(() => import('@/pages/inventory/StockList')
 const StockDetailPage = () => lazyLoad(() => import('@/pages/inventory/StockDetail'))
 const StockTransactionsPage = () => lazyLoad(() => import('@/pages/inventory/StockTransactions'))
 const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdjust'))
+const StockTakingListPage = () => lazyLoad(() => import('@/pages/inventory/StockTakingList'))
+const StockTakingCreatePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingCreate'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
@@ -211,6 +213,15 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconList',
           order: 1,
           permissions: [Permissions.INVENTORY_READ],
+        },
+      },
+      {
+        path: '/inventory/stock-taking',
+        meta: {
+          title: 'Stock Taking',
+          icon: 'IconCheckList',
+          order: 2,
+          permissions: [Permissions.INVENTORY_ADJUST],
         },
       },
     ],
@@ -466,6 +477,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return WarehousesPage()
     case '/inventory/stock':
       return StockListPage()
+    case '/inventory/stock-taking':
+      return StockTakingListPage()
     case '/trade/sales':
       return SalesOrdersPage()
     case '/trade/purchase':
@@ -596,7 +609,9 @@ export function getRouteObjects(): RouteObject[] {
         childRoutes.push(
           { path: 'stock/:id', element: StockDetailPage() },
           { path: 'stock/:id/transactions', element: StockTransactionsPage() },
-          { path: 'adjust', element: StockAdjustPage() }
+          { path: 'adjust', element: StockAdjustPage() },
+          { path: 'stock-taking', element: StockTakingListPage() },
+          { path: 'stock-taking/new', element: StockTakingCreatePage() }
         )
       }
 

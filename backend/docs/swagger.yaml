@@ -278,6 +278,46 @@ definitions:
     - return_quantity
     - sales_order_item_id
     type: object
+  handler.AddStockTakingItemRequest:
+    description: Request body for adding a product to stock taking
+    properties:
+      product_code:
+        example: WIDGET-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: Widget A
+        type: string
+      system_quantity:
+        example: 100
+        type: number
+      unit:
+        example: pcs
+        type: string
+      unit_cost:
+        example: 15.5
+        type: number
+    required:
+    - product_code
+    - product_id
+    - product_name
+    - system_quantity
+    - unit
+    - unit_cost
+    type: object
+  handler.AddStockTakingItemsRequest:
+    description: Request body for adding multiple products to stock taking
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.AddStockTakingItemRequest'
+        minItems: 1
+        type: array
+    required:
+    - items
+    type: object
   handler.AdjustRequest:
     description: Request body for adjusting customer balance
     properties:
@@ -346,6 +386,22 @@ definitions:
       note:
         example: 审批通过，同意退货
         type: string
+    type: object
+  handler.ApproveStockTakingRequest:
+    description: Request body for approving a stock taking
+    properties:
+      approver_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      approver_name:
+        example: Manager Smith
+        type: string
+      note:
+        example: Approved after verification
+        type: string
+    required:
+    - approver_id
+    - approver_name
     type: object
   handler.AssignRolesRequest:
     properties:
@@ -498,6 +554,14 @@ definitions:
         type: string
     required:
     - reason
+    type: object
+  handler.CancelStockTakingRequest:
+    description: Request body for cancelling a stock taking
+    properties:
+      reason:
+        example: Stock taking no longer required
+        maxLength: 500
+        type: string
     type: object
   handler.CancelVoucherRequest:
     description: Request body for cancelling a voucher
@@ -1278,6 +1342,33 @@ definitions:
     required:
     - items
     - sales_order_id
+    type: object
+  handler.CreateStockTakingRequest:
+    description: Request body for creating a new stock taking
+    properties:
+      created_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      created_by_name:
+        example: John Doe
+        type: string
+      remark:
+        example: Monthly inventory count
+        type: string
+      taking_date:
+        example: "2024-01-15"
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      warehouse_name:
+        example: Main Warehouse
+        type: string
+    required:
+    - created_by_id
+    - created_by_name
+    - warehouse_id
+    - warehouse_name
     type: object
   handler.CreateSupplierRequest:
     description: Request body for creating a new supplier
@@ -3104,6 +3195,34 @@ definitions:
     required:
     - strategy_type
     type: object
+  handler.RecordCountRequest:
+    description: Request body for recording physical count for a product
+    properties:
+      actual_quantity:
+        example: 98
+        minimum: 0
+        type: number
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      remark:
+        example: 2 units damaged
+        type: string
+    required:
+    - actual_quantity
+    - product_id
+    type: object
+  handler.RecordCountsRequest:
+    description: Request body for recording multiple physical counts
+    properties:
+      counts:
+        items:
+          $ref: '#/definitions/handler.RecordCountRequest'
+        minItems: 1
+        type: array
+    required:
+    - counts
+    type: object
   handler.RefreshTokenRequest:
     properties:
       refresh_token:
@@ -3136,6 +3255,25 @@ definitions:
         minLength: 1
         type: string
     required:
+    - reason
+    type: object
+  handler.RejectStockTakingRequest:
+    description: Request body for rejecting a stock taking
+    properties:
+      approver_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      approver_name:
+        example: Manager Smith
+        type: string
+      reason:
+        example: Counts are inconsistent, please recount
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - approver_id
+    - approver_name
     - reason
     type: object
   handler.ResetPasswordRequest:
@@ -3674,6 +3812,215 @@ definitions:
         example: sales_order
         type: string
     type: object
+  handler.StockTakingItemResponse:
+    description: Stock taking item with count and difference information
+    properties:
+      actual_quantity:
+        example: 98
+        type: number
+      counted:
+        example: true
+        type: boolean
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      difference_amount:
+        example: -31
+        type: number
+      difference_qty:
+        example: -2
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      product_code:
+        example: WIDGET-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: Widget A
+        type: string
+      remark:
+        example: 2 units damaged
+        type: string
+      stock_taking_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      system_quantity:
+        example: 100
+        type: number
+      unit:
+        example: pcs
+        type: string
+      unit_cost:
+        example: 15.5
+        type: number
+      updated_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+    type: object
+  handler.StockTakingListResponse:
+    description: Stock taking summary for list views
+    properties:
+      counted_items:
+        example: 20
+        type: integer
+      created_at:
+        example: "2024-01-15T08:00:00Z"
+        type: string
+      created_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      created_by_name:
+        example: John Doe
+        type: string
+      difference_items:
+        example: 3
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      progress:
+        example: 80
+        type: number
+      status:
+        example: COUNTING
+        type: string
+      taking_date:
+        example: "2024-01-15T00:00:00Z"
+        type: string
+      taking_number:
+        example: ST-20240115-0001
+        type: string
+      total_difference:
+        example: -155.5
+        type: number
+      total_items:
+        example: 25
+        type: integer
+      updated_at:
+        example: "2024-01-15T12:00:00Z"
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440050
+        type: string
+      warehouse_name:
+        example: Main Warehouse
+        type: string
+    type: object
+  handler.StockTakingProgressResponse:
+    description: Stock taking progress summary
+    properties:
+      counted_items:
+        example: 20
+        type: integer
+      difference_items:
+        example: 3
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_complete:
+        example: false
+        type: boolean
+      progress:
+        example: 80
+        type: number
+      status:
+        example: COUNTING
+        type: string
+      taking_number:
+        example: ST-20240115-0001
+        type: string
+      total_difference:
+        example: -155.5
+        type: number
+      total_items:
+        example: 25
+        type: integer
+    type: object
+  handler.StockTakingResponse:
+    description: Stock taking document with full details
+    properties:
+      approval_note:
+        example: Approved after verification
+        type: string
+      approved_at:
+        example: "2024-01-15T14:00:00Z"
+        type: string
+      approved_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      approved_by_name:
+        example: Manager Smith
+        type: string
+      completed_at:
+        example: "2024-01-15T12:00:00Z"
+        type: string
+      counted_items:
+        example: 20
+        type: integer
+      created_at:
+        example: "2024-01-15T08:00:00Z"
+        type: string
+      created_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      created_by_name:
+        example: John Doe
+        type: string
+      difference_items:
+        example: 3
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/handler.StockTakingItemResponse'
+        type: array
+      progress:
+        example: 80
+        type: number
+      remark:
+        example: Monthly inventory count
+        type: string
+      started_at:
+        example: "2024-01-15T09:00:00Z"
+        type: string
+      status:
+        example: DRAFT
+        type: string
+      taking_date:
+        example: "2024-01-15T00:00:00Z"
+        type: string
+      taking_number:
+        example: ST-20240115-0001
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440100
+        type: string
+      total_difference:
+        example: -155.5
+        type: number
+      total_items:
+        example: 25
+        type: integer
+      updated_at:
+        example: "2024-01-15T14:00:00Z"
+        type: string
+      version:
+        example: 5
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440050
+        type: string
+      warehouse_name:
+        example: Main Warehouse
+        type: string
+    type: object
   handler.SupplierCountByStatusResponse:
     properties:
       active:
@@ -4209,6 +4556,13 @@ definitions:
         type: string
       warehouse_id:
         example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handler.UpdateStockTakingRequest:
+    description: Request body for updating a stock taking
+    properties:
+      remark:
+        example: Updated remark
         type: string
     type: object
   handler.UpdateSupplierCodeRequest:
@@ -10764,6 +11118,1462 @@ paths:
       summary: List inventory by product
       tags:
       - inventory
+  /inventory/stock-takings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of stock takings with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (taking number, warehouse, creator)
+        in: query
+        name: search
+        type: string
+      - description: Filter by warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Filter by status
+        enum:
+        - DRAFT
+        - COUNTING
+        - PENDING_APPROVAL
+        - APPROVED
+        - REJECTED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - description: Filter by start date
+        format: date
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date
+        format: date
+        in: query
+        name: end_date
+        type: string
+      - description: Filter by creator ID
+        format: uuid
+        in: query
+        name: created_by_id
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        enum:
+        - taking_number
+        - taking_date
+        - status
+        - created_at
+        - updated_at
+        - total_items
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StockTakingListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List stock takings
+      tags:
+      - stock-taking
+    post:
+      consumes:
+      - application/json
+      description: Create a new stock taking document
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock taking creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateStockTakingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a stock taking document (only in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete stock taking
+      tags:
+      - stock-taking
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a stock taking document by its ID with all items
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get stock taking by ID
+      tags:
+      - stock-taking
+    put:
+      consumes:
+      - application/json
+      description: Update a stock taking document (only in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Stock taking update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateStockTakingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve the stock taking and trigger inventory adjustments
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ApproveStockTakingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Approve stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel the stock taking (only in DRAFT or COUNTING status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancellation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CancelStockTakingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/count:
+    post:
+      consumes:
+      - application/json
+      description: Record the actual physical count for a product
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Count record
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RecordCountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Record count for an item
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/counts:
+    post:
+      consumes:
+      - application/json
+      description: Record actual physical counts for multiple products
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Count records
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RecordCountsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Record counts for multiple items
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a product to the stock taking document
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Item to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddStockTakingItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/items/{product_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a product from the stock taking document
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product ID
+        format: uuid
+        in: path
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/items/bulk:
+    post:
+      consumes:
+      - application/json
+      description: Add multiple products to the stock taking document
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Items to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddStockTakingItemsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add multiple items to stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/progress:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the counting progress of a stock taking
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingProgressResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get stock taking progress
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject the stock taking with a reason
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Rejection request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RejectStockTakingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Reject stock taking
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Transition the stock taking to counting status
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Start counting
+      tags:
+      - stock-taking
+  /inventory/stock-takings/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit the stock taking for approval (all items must be counted)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Stock Taking ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Submit for approval
+      tags:
+      - stock-taking
+  /inventory/stock-takings/by-number/{taking_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a stock taking document by its taking number
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Taking Number
+        in: path
+        name: taking_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StockTakingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get stock taking by number
+      tags:
+      - stock-taking
+  /inventory/stock-takings/pending-approval:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve stock takings that are awaiting approval
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StockTakingListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List stock takings pending approval
+      tags:
+      - stock-taking
   /inventory/stock/adjust:
     post:
       consumes:

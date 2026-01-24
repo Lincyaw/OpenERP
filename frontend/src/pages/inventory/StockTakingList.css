@@ -1,0 +1,47 @@
+/* Stock Taking List Page Styles */
+
+.stock-taking-list-page {
+  padding: var(--spacing-6) 0;
+}
+
+.stock-taking-list-card {
+  padding: var(--spacing-6);
+}
+
+.stock-taking-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+.taking-number {
+  font-family: var(--font-family-mono, monospace);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.diff-positive {
+  color: var(--color-success);
+}
+
+.diff-negative {
+  color: var(--color-danger);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .stock-taking-list-page {
+    padding: var(--spacing-4) 0;
+  }
+
+  .stock-taking-list-card {
+    padding: var(--spacing-4);
+  }
+
+  .stock-taking-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}

@@ -10601,3 +10601,79 @@ All tests pass, build succeeds
 
 ### Build Status
 All files compile successfully
+
+---
+
+## 2026-01-24 - P2-FE-004: Stock Taking Create Page Complete
+
+### Completed
+- **P2-FE-004**: 盘点单创建页面 (Stock Taking Create Page)
+
+### What was done
+
+1. **StockTakingCreate Page** (`frontend/src/pages/inventory/StockTakingCreate.tsx`)
+   - Create stock taking form with warehouse selection
+   - Date picker for taking date
+   - Remark textarea
+   - Product selection from warehouse inventory
+   - "Import All" button to import all products with stock
+   - "Select Products" modal for granular selection
+   - Displays product list with system quantities and unit costs
+   - Creates stock taking via API and adds items in bulk
+   - Uses auth store to get current user for creator info
+
+2. **StockTakingList Page** (`frontend/src/pages/inventory/StockTakingList.tsx`)
+   - List all stock takings with pagination
+   - Filter by warehouse and status
+   - Display taking number, warehouse, status, progress, difference
+   - Navigate to create, detail, and execution pages
+   - Status badge colors (DRAFT, COUNTING, PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED)
+
+3. **Routes and Navigation** (`frontend/src/router/routes.tsx`)
+   - Added StockTakingListPage and StockTakingCreatePage lazy imports
+   - Added menu item "Stock Taking" under Inventory module
+   - Added routes: /inventory/stock-taking, /inventory/stock-taking/new
+
+4. **Permissions** (`frontend/src/config/permissions.ts`)
+   - Added stock-taking routes to RoutePermissions
+   - Uses INVENTORY_ADJUST permission for stock taking operations
+
+5. **Backend Fix** (`backend/internal/interfaces/http/handler/stock_taking.go`)
+   - Fixed swagger annotation for taking_number path parameter that was causing orval validation error
+
+6. **API Regeneration**
+   - Regenerated backend swagger docs
+   - Regenerated frontend TypeScript SDK with orval
+
+### Requirements Met
+- ✅ 实现盘点单创建表单 (Create stock taking form with warehouse and date selection)
+- ✅ 支持选择仓库和商品范围 (Select warehouse and product range)
+- ✅ 支持导入系统库存 (Import system inventory quantities)
+
+### Files Created
+- `frontend/src/pages/inventory/StockTakingCreate.tsx`
+- `frontend/src/pages/inventory/StockTakingCreate.css`
+- `frontend/src/pages/inventory/StockTakingList.tsx`
+- `frontend/src/pages/inventory/StockTakingList.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` (added stock taking routes)
+- `frontend/src/config/permissions.ts` (added stock taking permissions)
+- `backend/internal/interfaces/http/handler/stock_taking.go` (fixed swagger annotation)
+- `backend/docs/swagger.yaml` (regenerated)
+- `backend/docs/swagger.json` (regenerated)
+- `frontend/src/api/**` (regenerated via orval)
+- `.claude/ralph/plans/prd.json` (marked P2-FE-004 as complete)
+
+### Build Status
+TypeScript compilation passes successfully
+
+### Notes for Next Developer
+- P2-FE-005 (盘点执行页面) should be implemented next as it depends on the stock taking created by P2-FE-004
+- The stock taking execute page should:
+  - Display stock taking items with system quantities
+  - Allow entering actual counted quantities
+  - Calculate and display differences in real-time
+  - Support submitting for approval when all items are counted
+- Detail page route /inventory/stock-taking/:id needs to be implemented
+- Execute page route /inventory/stock-taking/:id/execute needs to be implemented

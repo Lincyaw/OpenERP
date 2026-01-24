@@ -225,6 +225,10 @@ export const RoutePermissions: Record<string, string[]> = {
   '/inventory/stock/:id': [Permissions.INVENTORY_READ],
   '/inventory/stock/:id/transactions': [Permissions.INVENTORY_READ],
   '/inventory/adjust': [Permissions.INVENTORY_ADJUST],
+  '/inventory/stock-taking': [Permissions.INVENTORY_ADJUST],
+  '/inventory/stock-taking/new': [Permissions.INVENTORY_ADJUST],
+  '/inventory/stock-taking/:id': [Permissions.INVENTORY_READ],
+  '/inventory/stock-taking/:id/execute': [Permissions.INVENTORY_ADJUST],
 
   // Trade module
   '/trade': [Permissions.SALES_ORDER_READ, Permissions.PURCHASE_ORDER_READ],
