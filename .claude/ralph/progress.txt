@@ -4633,3 +4633,89 @@ ok      github.com/erp/backend/internal/interfaces/http/handler  0.018s
 - **P3-BE-006** (SalesOrder Event Handling) still needs implementation for inventory integration
 - Run `swag init -g cmd/server/main.go -o docs --outputTypes yaml,json` to regenerate OpenAPI spec
 - Run `npm run api:generate` in frontend to regenerate TypeScript SDK
+
+---
+
+## 2026-01-24 - P3-FE-001: Sales Order List Page Complete
+
+### Completed
+- **P3-FE-001**: 销售订单列表页面
+
+### What was done
+1. Created comprehensive Sales Order list page at `frontend/src/pages/trade/SalesOrders.tsx`:
+   - Full data table with pagination and sorting
+   - Order listing showing: order number, customer, item count, amounts, status, timestamps
+   - Status-based row actions (confirm, ship, complete, cancel, delete)
+   - Navigation to order detail and edit pages (routes pending implementation)
+
+2. Implemented filtering capabilities:
+   - Search by order number
+   - Filter by order status (draft, confirmed, shipped, completed, cancelled)
+   - Filter by customer (dropdown with all customers)
+   - Filter by date range (start date to end date)
+
+3. Implemented order status actions:
+   - **Confirm** - For draft orders, triggers stock lock (with confirmation dialog)
+   - **Ship** - For confirmed orders, triggers stock deduction (with confirmation dialog)
+   - **Complete** - For shipped orders
+   - **Cancel** - For draft/confirmed orders (with confirmation dialog)
+   - **Delete** - For draft orders only (with confirmation dialog)
+
+4. Created CSS styles at `frontend/src/pages/trade/SalesOrders.css`:
+   - Follows design system tokens
+   - Responsive design for mobile
+   - Status tag styling
+   - Order number and amount emphasis
+
+5. Regenerated OpenAPI spec and TypeScript SDK:
+   - Backend: `make docs` - regenerated OpenAPI spec
+   - Frontend: `npm run api:generate` - regenerated TypeScript SDK
+   - All Sales Order API endpoints now available with full type safety
+
+### Files created/modified
+- `frontend/src/pages/trade/SalesOrders.tsx` (rewritten)
+- `frontend/src/pages/trade/SalesOrders.css` (new)
+- `backend/docs/swagger.yaml` (regenerated)
+- `backend/docs/swagger.json` (regenerated)
+- `frontend/src/api/sales-orders/sales-orders.ts` (auto-generated)
+- `frontend/src/api/models/*.ts` (auto-generated)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Order listing with pagination | ✓ |
+| Sorting by columns | ✓ |
+| Search by order number | ✓ |
+| Status filtering | ✓ |
+| Customer filtering | ✓ |
+| Date range filtering | ✓ |
+| Confirm order action | ✓ |
+| Ship order action | ✓ |
+| Complete order action | ✓ |
+| Cancel order action | ✓ |
+| Delete order action | ✓ |
+| View order (navigation) | ✓ |
+| Edit order (navigation) | ✓ |
+
+### API Endpoints Used
+- `GET /trade/sales-orders` - List orders with filtering
+- `POST /trade/sales-orders/{id}/confirm` - Confirm order
+- `POST /trade/sales-orders/{id}/ship` - Ship order
+- `POST /trade/sales-orders/{id}/complete` - Complete order
+- `POST /trade/sales-orders/{id}/cancel` - Cancel order
+- `DELETE /trade/sales-orders/{id}` - Delete order
+- `GET /partner/customers` - Load customer list for filter
+
+### Notes for next developer
+- **P3-FE-002** (Sales Order Creation Page): Create new sales order form with customer selection, product addition, and amount calculation
+- **P3-FE-003** (Sales Order Detail Page): Show full order details with items and status history
+- **P3-FE-004** (Sales Order Shipping): Already integrated in list page; may need warehouse selection modal
+- Routes for `/trade/sales-orders/:id` (detail) and `/trade/sales-orders/:id/edit` (edit) need to be implemented
+- Customer filter loads all customers (up to 100); consider search-on-type for large customer bases
+- Date range filter uses ISO 8601 format for API compatibility
+- Status actions are context-sensitive based on current order status

@@ -45,6 +45,44 @@ definitions:
       message:
         type: string
     type: object
+  handler.AddOrderItemRequest:
+    description: Request body for adding an item to an order
+    properties:
+      product_code:
+        example: SKU-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        maxLength: 200
+        minLength: 1
+        type: string
+      quantity:
+        example: 5
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        maxLength: 20
+        minLength: 1
+        type: string
+      unit_price:
+        example: 199.99
+        type: number
+    required:
+    - product_code
+    - product_id
+    - product_name
+    - quantity
+    - unit
+    - unit_price
+    type: object
   handler.AdjustStockRequest:
     description: Request body for stock count adjustment
     properties:
@@ -87,6 +125,17 @@ definitions:
     required:
     - amount
     type: object
+  handler.CancelOrderRequest:
+    description: Request body for cancelling an order
+    properties:
+      reason:
+        example: 客户取消订单
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
   handler.CheckAvailabilityRequest:
     description: Request body for checking if a quantity is available
     properties:
@@ -116,6 +165,13 @@ definitions:
       requested_quantity:
         example: 10
         type: number
+    type: object
+  handler.ConfirmOrderRequest:
+    description: Request body for confirming an order
+    properties:
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
     type: object
   handler.CountByStatusResponse:
     properties:
@@ -256,6 +312,72 @@ definitions:
     - code
     - name
     - unit
+    type: object
+  handler.CreateSalesOrderItemInput:
+    description: Order item for creation
+    properties:
+      product_code:
+        example: SKU-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        maxLength: 200
+        minLength: 1
+        type: string
+      quantity:
+        example: 10
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        maxLength: 20
+        minLength: 1
+        type: string
+      unit_price:
+        example: 99.99
+        type: number
+    required:
+    - product_code
+    - product_id
+    - product_name
+    - quantity
+    - unit
+    - unit_price
+    type: object
+  handler.CreateSalesOrderRequest:
+    description: Request body for creating a new sales order
+    properties:
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      customer_name:
+        example: 张三
+        maxLength: 200
+        minLength: 1
+        type: string
+      discount:
+        example: 100
+        type: number
+      items:
+        items:
+          $ref: '#/definitions/handler.CreateSalesOrderItemInput'
+        type: array
+      remark:
+        example: 备注信息
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - customer_id
+    - customer_name
     type: object
   handler.CreateSupplierRequest:
     description: Request body for creating a new supplier
@@ -770,6 +892,28 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
     type: object
+  handler.OrderStatusSummaryResponse:
+    description: Order status summary response
+    properties:
+      cancelled:
+        example: 3
+        type: integer
+      completed:
+        example: 100
+        type: integer
+      confirmed:
+        example: 10
+        type: integer
+      draft:
+        example: 5
+        type: integer
+      shipped:
+        example: 8
+        type: integer
+      total:
+        example: 126
+        type: integer
+    type: object
   handler.PingResponse:
     properties:
       message:
@@ -882,6 +1026,145 @@ definitions:
         example: 1
         type: integer
     type: object
+  handler.SalesOrderItemResponse:
+    description: Sales order item response
+    properties:
+      amount:
+        example: 999.9
+        type: number
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      product_code:
+        example: SKU-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        type: string
+      quantity:
+        example: 10
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        type: string
+      unit_price:
+        example: 99.99
+        type: number
+      updated_at:
+        type: string
+    type: object
+  handler.SalesOrderListResponse:
+    description: Sales order list item response
+    properties:
+      confirmed_at:
+        type: string
+      created_at:
+        type: string
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      customer_name:
+        example: 张三
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 3
+        type: integer
+      order_number:
+        example: SO-2026-00001
+        type: string
+      payable_amount:
+        example: 2899.7
+        type: number
+      shipped_at:
+        type: string
+      status:
+        example: draft
+        type: string
+      total_amount:
+        example: 2999.7
+        type: number
+      updated_at:
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.SalesOrderResponse:
+    description: Sales order response
+    properties:
+      cancel_reason:
+        example: ""
+        type: string
+      cancelled_at:
+        type: string
+      completed_at:
+        type: string
+      confirmed_at:
+        type: string
+      created_at:
+        type: string
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      customer_name:
+        example: 张三
+        type: string
+      discount_amount:
+        example: 100
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 3
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/handler.SalesOrderItemResponse'
+        type: array
+      order_number:
+        example: SO-2026-00001
+        type: string
+      payable_amount:
+        example: 2899.7
+        type: number
+      remark:
+        example: 备注信息
+        type: string
+      shipped_at:
+        type: string
+      status:
+        example: draft
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_amount:
+        example: 2999.7
+        type: number
+      total_quantity:
+        example: 30
+        type: number
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
   handler.SetLevelRequest:
     description: Request body for setting customer level
     properties:
@@ -938,6 +1221,13 @@ definitions:
     required:
     - product_id
     - warehouse_id
+    type: object
+  handler.ShipOrderRequest:
+    description: Request body for shipping an order
+    properties:
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
     type: object
   handler.StockLockResponse:
     description: Stock lock details
@@ -1293,6 +1583,19 @@ definitions:
         maxLength: 50
         type: string
     type: object
+  handler.UpdateOrderItemRequest:
+    description: Request body for updating an order item
+    properties:
+      quantity:
+        example: 8
+        type: number
+      remark:
+        example: 更新商品备注
+        type: string
+      unit_price:
+        example: 89.99
+        type: number
+    type: object
   handler.UpdateProductCodeRequest:
     description: Request body for updating a product's code
     properties:
@@ -1338,6 +1641,19 @@ definitions:
       sort_order:
         example: 1
         type: integer
+    type: object
+  handler.UpdateSalesOrderRequest:
+    description: Request body for updating a sales order (draft only)
+    properties:
+      discount:
+        example: 50
+        type: number
+      remark:
+        example: 更新备注
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
     type: object
   handler.UpdateSupplierCodeRequest:
     description: Request body for updating a supplier's code
@@ -7173,6 +7489,1125 @@ paths:
       summary: Ping the API
       tags:
       - system
+  /trade/sales-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of sales orders with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (order number, customer name)
+        in: query
+        name: search
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: query
+        name: customer_id
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Order status
+        enum:
+        - draft
+        - confirmed
+        - shipped
+        - completed
+        - cancelled
+        in: query
+        name: status
+        type: string
+      - collectionFormat: csv
+        description: Multiple order statuses
+        in: query
+        items:
+          type: string
+        name: statuses
+        type: array
+      - description: Start date (ISO 8601)
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - description: Minimum payable amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum payable amount
+        in: query
+        name: max_amount
+        type: number
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.SalesOrderListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List sales orders
+      tags:
+      - sales-orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new sales order with optional items
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales order creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateSalesOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a sales order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a sales order
+      tags:
+      - sales-orders
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a sales order by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get sales order by ID
+      tags:
+      - sales-orders
+    put:
+      consumes:
+      - application/json
+      description: Update a sales order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Sales order update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSalesOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a sales order (from DRAFT or CONFIRMED status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel order request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CancelOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel a sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Mark a sales order as completed (transitions from SHIPPED to COMPLETED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm a sales order (transitions from DRAFT to CONFIRMED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirm order request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ConfirmOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Confirm a sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a sales order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order item to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddOrderItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/items/{item_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an item from a sales order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from sales order
+      tags:
+      - sales-orders
+    put:
+      consumes:
+      - application/json
+      description: Update an item in a sales order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Order item update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateOrderItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update order item
+      tags:
+      - sales-orders
+  /trade/sales-orders/{id}/ship:
+    post:
+      consumes:
+      - application/json
+      description: Mark a sales order as shipped (transitions from CONFIRMED to SHIPPED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ship order request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ShipOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Ship a sales order
+      tags:
+      - sales-orders
+  /trade/sales-orders/number/{order_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a sales order by its order number
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Order Number
+        in: path
+        name: order_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get sales order by order number
+      tags:
+      - sales-orders
+  /trade/sales-orders/stats/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get count of orders by status for dashboard
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OrderStatusSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get order status summary
+      tags:
+      - sales-orders
 securityDefinitions:
   BearerAuth:
     description: 'Bearer token authentication. Format: "Bearer {token}"'

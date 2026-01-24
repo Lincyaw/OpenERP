@@ -1,0 +1,75 @@
+/* Sales Orders Page Styles */
+
+.sales-orders-page {
+  padding: var(--spacing-6);
+}
+
+.sales-orders-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.sales-orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Order number styling */
+.order-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-primary);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Payable amount emphasis */
+.payable-amount {
+  font-weight: var(--semi-font-weight-bold);
+  color: var(--semi-color-danger);
+}
+
+/* Table container */
+.sales-orders-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sales-orders-page {
+    padding: var(--spacing-4);
+  }
+
+  .sales-orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Status tags */
+.sales-orders-page .semi-tag {
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Action buttons in table */
+.sales-orders-page .table-actions {
+  white-space: nowrap;
+}
+
+/* Loading overlay */
+.sales-orders-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Filter spacing */
+.sales-orders-page .table-toolbar {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Date picker adjustment */
+.sales-orders-page .semi-datepicker {
+  min-width: 240px;
+}
