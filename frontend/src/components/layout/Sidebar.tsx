@@ -15,6 +15,7 @@ import {
   IconUserCardVideo,
   IconMinus,
   IconPlus,
+  IconHistory,
 } from '@douyinfe/semi-icons'
 
 import { useAppStore } from '@/store'
@@ -42,6 +43,7 @@ const iconMap: Record<string, React.ReactNode> = {
   IconUserCardVideo: <IconUserCardVideo />,
   IconMinus: <IconMinus />,
   IconPlus: <IconPlus />,
+  IconHistory: <IconHistory />,
 }
 
 /**

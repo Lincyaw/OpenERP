@@ -65,6 +65,7 @@ const ExpensesPage = () => lazyLoad(() => import('@/pages/finance/Expenses'))
 const ExpenseFormPage = () => lazyLoad(() => import('@/pages/finance/ExpenseForm'))
 const OtherIncomesPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomes'))
 const OtherIncomeFormPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomeForm'))
+const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
 
 /**
  * Application routes with metadata
@@ -256,6 +257,14 @@ export const appRoutes: AppRoute[] = [
           order: 4,
         },
       },
+      {
+        path: '/finance/cashflow',
+        meta: {
+          title: 'Cash Flow',
+          icon: 'IconHistory',
+          order: 5,
+        },
+      },
     ],
   },
 ]
@@ -295,6 +304,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return ExpensesPage()
     case '/finance/incomes':
       return OtherIncomesPage()
+    case '/finance/cashflow':
+      return CashFlowPage()
     default:
       return null
   }

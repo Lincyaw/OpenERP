@@ -1,0 +1,157 @@
+/* Cash Flow Page Styles */
+
+.cashflow-page {
+  padding: var(--spacing-6);
+}
+
+/* Summary Section */
+.cashflow-summary {
+  margin-bottom: var(--spacing-6);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+  padding: var(--spacing-4);
+}
+
+.cashflow-summary .summary-descriptions {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--spacing-8);
+}
+
+.cashflow-summary .summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-4);
+  min-width: 120px;
+}
+
+.cashflow-summary .summary-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+}
+
+.cashflow-summary .summary-value {
+  font-size: var(--semi-font-size-header-4);
+  font-weight: var(--semi-font-weight-semibold);
+  color: var(--semi-color-text-0);
+}
+
+.cashflow-summary .summary-value.inflow {
+  color: var(--semi-color-success);
+}
+
+.cashflow-summary .summary-value.outflow {
+  color: var(--semi-color-danger);
+}
+
+/* Main Card */
+.cashflow-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.cashflow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Cash flow number styling */
+.cashflow-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Amount styling */
+.amount-cell {
+  font-family: var(--semi-font-family-code);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+.amount-cell.amount-inflow {
+  color: var(--semi-color-success);
+}
+
+.amount-cell.amount-outflow {
+  color: var(--semi-color-danger);
+}
+
+/* Table container */
+.cashflow-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Filter container */
+.cashflow-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Status tags */
+.cashflow-page .semi-tag {
+  min-width: 64px;
+  text-align: center;
+}
+
+/* Loading overlay */
+.cashflow-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .cashflow-summary .summary-descriptions {
+    flex-wrap: wrap;
+  }
+
+  .cashflow-summary .summary-item {
+    min-width: 100px;
+    flex: 1 1 calc(33% - var(--spacing-4));
+  }
+}
+
+@media (max-width: 768px) {
+  .cashflow-page {
+    padding: var(--spacing-4);
+  }
+
+  .cashflow-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .cashflow-filter-container {
+    flex-direction: column;
+  }
+
+  .cashflow-filter-container .semi-select {
+    width: 100% !important;
+  }
+
+  .cashflow-filter-container .semi-datePicker {
+    width: 100% !important;
+  }
+
+  .cashflow-summary .summary-item {
+    flex: 1 1 calc(50% - var(--spacing-4));
+  }
+
+  .cashflow-summary .summary-value {
+    font-size: var(--semi-font-size-header-5);
+  }
+}
+
+@media (max-width: 375px) {
+  .cashflow-summary .summary-item {
+    flex: 1 1 100%;
+  }
+}

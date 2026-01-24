@@ -7018,3 +7018,67 @@ Implemented the frontend other income management page for the Finance module. Th
 - **P4-FE-012 Ready**: Cash flow page can use the CashFlowSummary API
 - **Backend Routes Needed**: HTTP handlers need to be created to expose ExpenseIncomeService endpoints
 - **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available
+
+---
+
+## P4-FE-012: 收支流水页面 (Cash Flow Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the frontend Cash Flow page for the Finance module. This provides a unified view of all financial transactions including expenses, other income, receipts, and payments with comprehensive filtering and summary statistics.
+
+### Features Implemented
+
+1. **Cash Flow Summary Section**
+   - Total inflow amount (收入)
+   - Total outflow amount (支出)
+   - Net cash flow (净现金流) with color coding (green for positive, red for negative)
+   - Expense total (费用支出)
+   - Income total (其他收入)
+   - Responsive summary cards layout
+
+2. **Cash Flow Items List**
+   - Display all cash flow items with pagination
+   - Client-side filtering by direction, type, and search
+   - Columns: Date, Document Number, Type, Category, Description, Direction, Amount
+   - Amount display with +/- prefix based on direction
+   - Color-coded direction and type tags
+
+3. **Filtering and Search**
+   - Direction filter (收入/支出)
+   - Type filter (费用支出/其他收入/收款/付款)
+   - Date range filter with default to current month
+   - Full-text search by document number, description, category
+   - Refresh button
+
+4. **Routing and Navigation**
+   - Added `/finance/cashflow` route to sidebar navigation
+   - Added IconHistory icon for cash flow in sidebar
+   - Route order set to 5 (after incomes)
+
+### Files Created
+- `frontend/src/pages/finance/CashFlow.tsx` - Cash flow list page
+- `frontend/src/pages/finance/CashFlow.css` - Cash flow page styles
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added cash flow route and lazy-loaded component
+- `frontend/src/components/layout/Sidebar.tsx` - Added IconHistory for cash flow
+
+### Technical Notes
+- **Design Pattern**: Follows existing finance module patterns (Expenses.tsx, OtherIncomes.tsx)
+- **Data Handling**: Uses cash flow API with include_items=true to fetch all items
+- **Client-side Filtering**: Filters, search, and pagination handled client-side for better UX
+- **Default Date Range**: Defaults to current month for initial view
+- **Responsive Design**: CSS follows design system with responsive breakpoints
+- **Type Tags**: Different colors for each cash flow type (EXPENSE=red, INCOME=green, RECEIPT=cyan, PAYMENT=orange)
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **Finance Module Complete**: All P4-FE features are now implemented
+- **P4-INT-002 Ready**: Daily income/expense integration testing can now be performed
+- **Backend API**: Uses `getFinanceCashFlow` API with `include_items: true` parameter
+- **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available
