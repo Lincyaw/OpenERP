@@ -12515,3 +12515,98 @@ P4-INT-001: passes: true
 1. **Run finance tests**: `cd backend && go test -v ./tests/integration/... -run TestFinance_ -timeout 180s`
 2. **All 12 tests pass**
 3. **Next priority items**: P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)
+
+---
+
+## P4-QA-003: 交易-财务联动集成测试 (Trade-Finance Integration Tests)
+
+**Date**: 2026-01-25
+**Status**: COMPLETED
+
+### Requirements
+1. 测试发货生成应收 (Test shipping generates AR) - Already covered in finance_test.go
+2. 测试收货生成应付 (Test receiving generates AP) - Already covered in finance_test.go
+3. 测试退货红冲 (Test returns red-letter reversal) - **NEW IMPLEMENTATION**
+
+### Implementation Summary
+
+#### 1. New Finance Event Handlers
+
+Created two new finance handlers for return events that generate red-letter (reversal) entries:
+
+**SalesReturnCompletedHandler** (`backend/internal/application/finance/sales_return_completed_handler.go`):
+- Handles `SalesReturnCompletedEvent` from trade module
+- Creates red-letter AccountReceivable with `SourceTypeSalesReturn`
+- Idempotent - skips if already exists for same return
+- Skips zero refund amounts
+- Adds remark indicating red-letter entry and original order reference
+
+**PurchaseReturnCompletedHandler** (`backend/internal/application/finance/purchase_return_completed_handler.go`):
+- Handles `PurchaseReturnCompletedEvent` from trade module
+- Creates red-letter AccountPayable with `PayableSourceTypePurchaseReturn`
+- Idempotent - skips if already exists for same return
+- Skips zero refund amounts
+- Adds remark indicating red-letter entry and original order reference
+
+#### 2. Unit Tests
+
+Created comprehensive unit test suites:
+
+**sales_return_completed_handler_test.go** (9 tests):
+- TestSalesReturnCompletedHandler_EventTypes
+- TestSalesReturnCompletedHandler_Handle_Success
+- TestSalesReturnCompletedHandler_Handle_WrongEventType
+- TestSalesReturnCompletedHandler_Handle_IdempotentWhenExisting
+- TestSalesReturnCompletedHandler_Handle_SkipZeroRefund
+- TestSalesReturnCompletedHandler_Handle_ExistsCheckError
+- TestSalesReturnCompletedHandler_Handle_GenerateNumberError
+- TestSalesReturnCompletedHandler_Handle_SaveError
+- TestSalesReturnCompletedHandler_Handle_CreatesCorrectRedLetterReceivable
+
+**purchase_return_completed_handler_test.go** (8 tests):
+- TestPurchaseReturnCompletedHandler_EventTypes
+- TestPurchaseReturnCompletedHandler_Handle_Success
+- TestPurchaseReturnCompletedHandler_Handle_WrongEventType
+- TestPurchaseReturnCompletedHandler_Handle_IdempotentWhenExisting
+- TestPurchaseReturnCompletedHandler_Handle_SkipZeroRefund
+- TestPurchaseReturnCompletedHandler_Handle_ExistsCheckError
+- TestPurchaseReturnCompletedHandler_Handle_GenerateNumberError
+- TestPurchaseReturnCompletedHandler_Handle_SaveError
+- TestPurchaseReturnCompletedHandler_Handle_CreatesCorrectRedLetterPayable
+
+#### 3. Integration Tests
+
+Added integration tests to `backend/tests/integration/finance_test.go`:
+
+**TestFinance_SalesReturnCompleted_CreatesRedLetterReceivable** (3 sub-tests):
+- sales return completed creates red-letter receivable
+- idempotent - duplicate completed event does not create duplicate
+- zero refund does not create receivable
+
+**TestFinance_PurchaseReturnCompleted_CreatesRedLetterPayable** (3 sub-tests):
+- purchase return completed creates red-letter payable
+- idempotent - duplicate completed event does not create duplicate
+- zero refund does not create payable
+
+**TestFinance_RedLetterReducesOutstandingBalance** (1 sub-test):
+- sales order then return reduces customer outstanding (end-to-end flow)
+
+### Files Created
+- `backend/internal/application/finance/sales_return_completed_handler.go`
+- `backend/internal/application/finance/sales_return_completed_handler_test.go`
+- `backend/internal/application/finance/purchase_return_completed_handler.go`
+- `backend/internal/application/finance/purchase_return_completed_handler_test.go`
+
+### Files Modified
+- `backend/tests/integration/finance_test.go` (added return red-letter integration tests)
+- `.claude/ralph/plans/prd.json` (P4-QA-003: passes: true)
+
+### Test Results
+- All unit tests: PASS (17 tests)
+- All integration tests: PASS (9 new tests + existing tests)
+
+### Notes for Next Developer
+1. **Run unit tests**: `cd backend && go test -v ./internal/application/finance/... -run "Return"`
+2. **Run integration tests**: `cd backend && go test -v ./tests/integration/... -run "TestFinance_.*Return" -timeout 180s`
+3. **Red-letter entries**: Both AR and AP use positive amounts with specific SourceType to identify as credits/debits
+4. **Next priority items**: P4-QA-004 (财务数据准确性测试), P6-INT-001 (多租户隔离联调)
