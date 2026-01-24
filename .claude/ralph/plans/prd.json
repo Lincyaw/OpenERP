@@ -131,7 +131,7 @@
   {"id":"P4-BE-004","story":"红冲逻辑实现 (退货关联)","priority":"medium","requirements":["退货完成时生成红冲单","关联原应收应付","更新应收应付余额"],"passes":false},
   {"id":"P4-BE-005","story":"ReceiptVoucher 收款单实现","priority":"high","requirements":["实现 ReceiptVoucher 聚合","支持多种收款方式","关联应收账款"],"passes":true},
   {"id":"P4-BE-006","story":"余额支付逻辑","priority":"medium","requirements":["支持客户余额抵扣","扣减客户余额","生成余额变动记录"],"passes":false},
-  {"id":"P4-BE-007","story":"PaymentVoucher 付款单实现","priority":"high","requirements":["实现 PaymentVoucher 聚合","支持多种付款方式","关联应付账款"],"passes":false},
+  {"id":"P4-BE-007","story":"PaymentVoucher 付款单实现","priority":"high","requirements":["实现 PaymentVoucher 聚合","支持多种付款方式","关联应付账款"],"passes":true},
   {"id":"P4-BE-008","story":"核销策略实现 (FIFO)","priority":"high","requirements":["实现 FIFO 核销策略","按应收应付日期顺序核销","支持手动指定核销"],"passes":false},
   {"id":"P4-BE-009","story":"ReconciliationService 核销服务","priority":"high","requirements":["实现自动核销服务","实现手动核销服务","更新应收应付状态"],"passes":false},
   {"id":"P4-BE-010","story":"Finance API (应收/应付/收款/付款)","priority":"high","requirements":["实现应收应付查询 API","实现收款付款 API","实现核销 API"],"passes":false},

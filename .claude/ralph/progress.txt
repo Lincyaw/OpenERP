@@ -5993,3 +5993,103 @@ DRAFT → Confirm() → CONFIRMED → AllocateToReceivable() → ALLOCATED
 - The ReceiptVoucher must be confirmed before allocations - prevents accidental allocations to draft vouchers
 - Allocations automatically update the receivable's paid amount via ApplyPayment() method
 
+
+
+
+---
+
+## 2026-01-24 - P4-BE-007: PaymentVoucher (付款单) Implementation Complete
+
+### Completed
+- **P4-BE-007**: PaymentVoucher 付款单实现
+
+### What was done
+1. Created PaymentVoucher aggregate root at `internal/domain/finance/payment_voucher.go`:
+   - Reuses `VoucherStatus` enum from receipt_voucher.go (DRAFT → CONFIRMED → ALLOCATED / CANCELLED)
+   - Reuses `PaymentMethod` enum (CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
+   - `PayableAllocation` entity for tracking payment allocations to payables
+   - `PaymentVoucher` aggregate with full domain logic - mirrors ReceiptVoucher for consistency
+
+2. Key domain methods implemented:
+   - `NewPaymentVoucher()` factory with validation (positive amount, valid payment method, required fields)
+   - `Confirm()` with user tracking - transitions from DRAFT to CONFIRMED
+   - `AllocateToPayable()` with partial allocation support and automatic status transitions
+   - `Cancel()` for cancelling vouchers without allocations
+   - `SetPaymentReference()`, `SetRemark()` for updating voucher details
+   - Helper methods: `IsFullyAllocated()`, `AllocationCount()`, `AllocatedPercentage()`, etc.
+
+3. Created domain events at `internal/domain/finance/payment_voucher_events.go`:
+   - `PaymentVoucherCreatedEvent` - raised on creation
+   - `PaymentVoucherConfirmedEvent` - raised when confirmed
+   - `PaymentVoucherAllocatedEvent` - raised when allocated to a payable
+   - `PaymentVoucherCancelledEvent` - raised on cancellation
+
+4. Extended repository interface at `internal/domain/finance/repository.go`:
+   - `PaymentVoucherFilter` with comprehensive filter options (supplier, status, payment method, dates, amounts)
+   - `PaymentVoucherRepository` interface with:
+     - CRUD operations (FindByID, Save, Delete)
+     - Query methods (FindBySupplier, FindByStatus, FindWithUnallocatedAmount)
+     - Count methods (CountForTenant, CountByStatus, CountBySupplier)
+     - Sum calculations (SumBySupplier, SumForTenant, SumUnallocatedBySupplier)
+     - Utility methods (ExistsByVoucherNumber, GenerateVoucherNumber)
+
+5. Created database migration at `migrations/000013_create_payment_vouchers.up.sql`:
+   - `payment_vouchers` table with proper constraints and indexes
+   - `payable_allocations` child table for allocation tracking
+   - Check constraints for amount validation and status values
+   - Foreign key to account_payables table
+   - Trigger for updated_at timestamp
+
+6. Created down migration at `migrations/000013_create_payment_vouchers.down.sql`:
+   - Proper rollback order (child table first, then triggers, then main table)
+
+7. Comprehensive unit tests at `internal/domain/finance/payment_voucher_test.go`:
+   - 58+ test cases covering all functionality
+   - Creation validation tests (valid data, validation errors)
+   - Confirm tests (success, state validation, user validation)
+   - AllocateToPayable tests (full, partial, multiple allocations, validation)
+   - Cancel tests (validation, status checks, allocation checks)
+   - Helper method tests (amounts, percentages, status checks)
+   - Domain events tests (created, confirmed, allocated, cancelled)
+
+### Files created/modified
+- `backend/internal/domain/finance/payment_voucher.go` (NEW)
+- `backend/internal/domain/finance/payment_voucher_events.go` (NEW)
+- `backend/internal/domain/finance/payment_voucher_test.go` (NEW)
+- `backend/internal/domain/finance/repository.go` (UPDATED - added PaymentVoucherRepository)
+- `backend/migrations/000013_create_payment_vouchers.up.sql` (NEW)
+- `backend/migrations/000013_create_payment_vouchers.down.sql` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (58+ tests for PaymentVoucher)
+
+### Design Decisions
+1. **State machine pattern**: Reuses VoucherStatus from ReceiptVoucher for consistency
+2. **Domain events**: All significant state changes emit events for integration with other bounded contexts
+3. **Multi-tenant**: Inherits from TenantAggregateRoot for tenant isolation
+4. **Optimistic locking**: Uses version field for concurrent update protection
+5. **Decimal precision**: Uses shopspring/decimal for monetary amounts
+6. **Allocation tracking**: Each allocation is recorded as PayableAllocation with full details
+7. **Confirmation workflow**: Vouchers must be confirmed before allocations can be made
+8. **Symmetric design**: PaymentVoucher mirrors ReceiptVoucher structure for consistency
+
+### Voucher Workflow
+```
+DRAFT → Confirm() → CONFIRMED → AllocateToPayable() → ALLOCATED
+           |                         |
+           v                         |
+        Cancel() ←-------------------+
+           |
+           v
+       CANCELLED
+```
+
+### Notes for next developer
+- **P4-BE-008** (核销策略实现 FIFO) is next high-priority task - will implement automatic allocation strategy
+- **P4-BE-009** (ReconciliationService) will coordinate voucher allocation with payable updates
+- GORM repository implementation needed before integration
+- Finance API (P4-BE-010) will expose payment voucher operations
+- The PaymentVoucher must be confirmed before allocations - prevents accidental allocations to draft vouchers
+- Allocations automatically update the payable's paid amount via ApplyPayment() method
+- PaymentVoucher reuses VoucherStatus and PaymentMethod enums from ReceiptVoucher for consistency

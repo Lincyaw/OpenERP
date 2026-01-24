@@ -257,3 +257,76 @@ type ReceiptVoucherRepository interface {
 	// GenerateVoucherNumber generates a unique voucher number for a tenant
 	GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// PaymentVoucherFilter defines filtering options for payment voucher queries
+type PaymentVoucherFilter struct {
+	shared.Filter
+	SupplierID     *uuid.UUID       // Filter by supplier
+	Status         *VoucherStatus   // Filter by status
+	PaymentMethod  *PaymentMethod   // Filter by payment method
+	FromDate       *time.Time       // Filter by payment date range start
+	ToDate         *time.Time       // Filter by payment date range end
+	MinAmount      *decimal.Decimal // Filter by minimum amount
+	MaxAmount      *decimal.Decimal // Filter by maximum amount
+	HasUnallocated *bool            // Filter vouchers with unallocated amount
+}
+
+// PaymentVoucherRepository defines the interface for payment voucher persistence
+type PaymentVoucherRepository interface {
+	// FindByID finds a payment voucher by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*PaymentVoucher, error)
+
+	// FindByIDForTenant finds a payment voucher by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*PaymentVoucher, error)
+
+	// FindByVoucherNumber finds by voucher number for a tenant
+	FindByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (*PaymentVoucher, error)
+
+	// FindAllForTenant finds all payment vouchers for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter PaymentVoucherFilter) ([]PaymentVoucher, error)
+
+	// FindBySupplier finds payment vouchers for a supplier
+	FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter PaymentVoucherFilter) ([]PaymentVoucher, error)
+
+	// FindByStatus finds payment vouchers by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status VoucherStatus, filter PaymentVoucherFilter) ([]PaymentVoucher, error)
+
+	// FindWithUnallocatedAmount finds vouchers that have unallocated amount
+	FindWithUnallocatedAmount(ctx context.Context, tenantID, supplierID uuid.UUID) ([]PaymentVoucher, error)
+
+	// Save creates or updates a payment voucher
+	Save(ctx context.Context, voucher *PaymentVoucher) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, voucher *PaymentVoucher) error
+
+	// Delete soft deletes a payment voucher
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes a payment voucher for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts payment vouchers for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter PaymentVoucherFilter) (int64, error)
+
+	// CountByStatus counts payment vouchers by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status VoucherStatus) (int64, error)
+
+	// CountBySupplier counts payment vouchers for a supplier
+	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
+	// SumBySupplier calculates total payment amount for a supplier
+	SumBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error)
+
+	// SumForTenant calculates total payment amount for a tenant
+	SumForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// SumUnallocatedBySupplier calculates total unallocated amount for a supplier
+	SumUnallocatedBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByVoucherNumber checks if a voucher number exists for a tenant
+	ExistsByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (bool, error)
+
+	// GenerateVoucherNumber generates a unique voucher number for a tenant
+	GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
