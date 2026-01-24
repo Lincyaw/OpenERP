@@ -7,6 +7,8 @@
 # Backup files
 backups/
 *.sql
+!docker/seed-data.sql
+!backend/migrations/*.sql
 *.dump
 
 # Docker volumes (if using local volumes)

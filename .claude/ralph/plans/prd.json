@@ -2386,7 +2386,7 @@
       "验证 docker-compose.test.yml 正常启动",
       "文档化测试环境使用方法"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-QA-004",

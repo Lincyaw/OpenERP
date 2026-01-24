@@ -11458,3 +11458,134 @@ export type GetCatalogProducts200 = DtoResponse & {
 - The swagger annotation syntax `dto.Response{data=ConcreteType}` is the correct approach
 - If adding new handlers, always use the same annotation pattern
 - Next priority items: P0-QA-003 (Docker test env), P0-QA-005 (route params), or P0-QA-006 (CI/CD)
+
+---
+
+## 2026-01-25 - P0-QA-003: Docker 测试环境完善
+
+### Completed
+- **P0-QA-003**: Docker Test Environment Enhancement - MARKED COMPLETE
+
+### Implementation Details
+
+#### 1. Created docker/seed-data.sql
+Comprehensive test data file including:
+- **Tenants**: 3 tenants (default + 2 test companies)
+- **Categories**: 9 categories (4 root + 5 sub-categories)
+  - Electronics (ELEC): Phones, Computers, Accessories
+  - Clothing (CLOTH): Men's Wear, Women's Wear
+  - Food & Beverages (FOOD)
+  - Office Supplies (OFFICE)
+- **Products**: 10 products with various prices
+  - iPhone 15 Pro, Samsung Galaxy S24, Xiaomi 14 Pro
+  - MacBook Pro 14, ThinkPad X1 Carbon
+  - AirPods Pro, USB-C Charger
+  - Men's T-Shirt, Men's Jeans
+  - A4 Copy Paper
+- **Product Units**: 3 units for A4 paper (pack, box, carton)
+- **Customers**: 5 customers (3 organizations, 2 individuals)
+- **Suppliers**: 5 suppliers (Apple China, Samsung, Xiaomi, Lenovo, General Supplies)
+- **Warehouses**: 4 warehouses (3 physical, 1 virtual)
+- **Inventory Items**: 10 inventory items across warehouses
+- **Stock Batches**: 4 batches with FIFO tracking
+- **Stock Locks**: 2 locks for pending orders
+- **Inventory Transactions**: 4 transaction records
+- **Account Receivables**: 4 receivables in various statuses
+- **Account Payables**: 3 payables
+- **Receipt/Payment Vouchers**: 5 vouchers total
+- **Expense Records**: 4 expenses
+- **Other Income Records**: 2 income entries
+- **Balance Transactions**: 5 customer balance changes
+
+**Note**: Seed data matches current migration state. Tables for users, roles, sales_orders, purchase_orders are NOT yet migrated, so their data is excluded.
+
+#### 2. Created docker/test-api.sh
+Comprehensive API smoke test script covering:
+- Health & System endpoints
+- Authentication module
+- Catalog module (categories, products, units)
+- Partner module (customers, suppliers, warehouses, balance)
+- Inventory module (items, batches, locks, transactions, stock-takings)
+- Trade module (sales orders, purchase orders, returns)
+- Finance module (receivables, payables, receipts, payments)
+- Report module (sales, inventory, finance reports)
+- Identity module (users, roles, tenants, permissions)
+
+Features:
+- Color-coded output (pass/fail)
+- JWT authentication support
+- Configurable base URL
+- Test summary with pass/fail counts
+
+#### 3. Created docker/quick-test.sh
+Quick validation script with commands:
+- `start` - Start test environment and run validations
+- `stop` - Stop test environment
+- `restart` - Restart test environment
+- `status` - Show status of services
+- `logs` - Show logs from all services
+- `seed` - Run seed data only
+- `api` - Run full API smoke tests
+- `clean` - Stop and remove all test data
+
+Features:
+- Service health checking with wait loops
+- Database connection verification
+- Automatic seed data application
+- Quick API health checks
+
+#### 4. Updated docker/init-db.sh
+Enhanced PostgreSQL initialization:
+- Creates uuid-ossp extension
+- Creates pgcrypto extension
+- Clear comments about migration/seed flow
+
+#### 5. Created docker/README.md
+Comprehensive documentation including:
+- Quick start instructions
+- File descriptions
+- Port mappings
+- Command reference
+- Test credentials
+- Seed data summary
+- Troubleshooting guide
+
+### Files Created/Modified
+- `docker/seed-data.sql` (NEW) - 228 lines of test data
+- `docker/test-api.sh` (NEW) - 400+ lines of API tests
+- `docker/quick-test.sh` (NEW) - 300+ lines of management script
+- `docker/init-db.sh` (MODIFIED) - Enhanced initialization
+- `docker/README.md` (NEW) - Environment documentation
+
+### PRD Changes
+- Updated P0-QA-003 to `"passes": true`
+
+### Test Environment Ports
+| Service    | Port | Description      |
+|------------|------|------------------|
+| Frontend   | 3001 | React app        |
+| Backend    | 8081 | Go API server    |
+| PostgreSQL | 5433 | Database         |
+| Redis      | 6380 | Cache            |
+
+### Notes for Next Developer
+
+1. **Missing table migrations**: The following tables don't have migrations yet:
+   - `users` (identity module)
+   - `roles` (identity module)
+   - `user_roles` (identity module)
+   - `sales_orders` / `sales_order_items` (trade module)
+   - `purchase_orders` / `purchase_order_items` (trade module)
+   - `sales_returns` / `sales_return_items` (trade module)
+   - `purchase_returns` / `purchase_return_items` (trade module)
+   
+   When these migrations are added, update seed-data.sql to include test data.
+
+2. **Auth endpoints**: The test-api.sh script includes auth tests, but they may fail until user/role tables are migrated.
+
+3. **Test environment reset**: Use `./docker/quick-test.sh clean` to completely reset the test environment including volumes.
+
+4. **Remaining P0-QA items**:
+   - P0-QA-004: Backend integration tests (real database)
+   - P0-QA-005: Backend route parameter naming
+   - P0-QA-006: CI/CD automation
