@@ -12665,3 +12665,72 @@ Tests aggregate summary calculations:
 1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestFinance_AmountCalculation|TestFinance_BalanceAfter|TestFinance_SummaryData" -timeout 180s`
 2. **All tests use testcontainers** for real PostgreSQL database testing
 3. **Next priority items**: P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)
+
+---
+
+## P6-INT-001: 多租户隔离联调 (Multi-Tenant Isolation Integration Test)
+
+**Date**: 2026-01-25
+**Status**: COMPLETED
+
+### Requirements
+1. 验证租户数据隔离 (Verify tenant data isolation)
+2. 验证租户切换 (Verify tenant switching)
+3. 验证租户停用 (Verify tenant deactivation)
+
+### Implementation Summary
+
+Created comprehensive integration tests in `backend/tests/integration/tenant_isolation_test.go` with 4 test suites:
+
+#### 1. TestTenantIsolation_DataIsolation (5 sub-tests)
+Tests fundamental tenant data isolation:
+- **product_created_in_tenant_A_not_visible_to_tenant_B**: Verifies products created in one tenant are not accessible by another
+- **customer_created_in_tenant_A_not_visible_to_tenant_B**: Same isolation test for customers
+- **tenant_A_list_excludes_tenant_B_products**: List queries only return data for the current tenant
+- **same_product_code_allowed_in_different_tenants**: Validates unique codes are scoped per-tenant (same code can exist in different tenants)
+- **count_for_tenant_only_includes_own_data**: Count operations respect tenant boundaries
+
+#### 2. TestTenantIsolation_TenantSwitching (2 sub-tests)
+Tests tenant context switching:
+- **switching_tenant_context_shows_correct_data**: Data correctly scoped when user switches between tenants
+- **product_lookup_by_code_respects_current_tenant**: FindByCode returns tenant-specific data based on current context
+
+#### 3. TestTenantIsolation_TenantDeactivation (5 sub-tests)
+Tests tenant status management:
+- **tenant_status_transitions**: Tests active → inactive → active transitions
+- **tenant_suspension**: Tests suspension status
+- **deactivated_tenant_data_still_exists_but_filtered**: Data persists but can be filtered by tenant status
+- **find_tenants_by_status**: FindByStatus correctly filters by active/inactive/suspended
+- **count_by_status**: CountByStatus returns correct counts per status
+
+#### 4. TestTenantIsolation_CrossTenantSecurity (3 sub-tests)
+Tests cross-tenant security:
+- **cannot_update_product_with_wrong_tenant_id**: FindByIDForTenant returns NotFound for wrong tenant
+- **cannot_delete_product_from_wrong_tenant**: DeleteForTenant fails with NotFound for wrong tenant
+- **tenant_id_mismatch_returns_not_found**: Random tenant ID returns NotFound
+
+### Migration Created
+- `backend/migrations/000020_add_tenant_columns.up.sql`: Added missing tenant table columns to match domain model
+  - Added: short_name, plan, contact_name, contact_phone, contact_email, address, logo_url, domain
+  - Added: expires_at, trial_ends_at, notes
+  - Added embedded config fields: config_max_users, config_max_warehouses, config_max_products, etc.
+  - Added constraints: chk_tenant_plan, updated chk_tenant_status for 'trial' status
+  - Added indexes: idx_tenants_domain, idx_tenants_expires_at, idx_tenants_trial_ends_at, idx_tenants_plan
+
+### Files Created
+- `backend/tests/integration/tenant_isolation_test.go` (~470 lines)
+- `backend/migrations/000020_add_tenant_columns.up.sql`
+- `backend/migrations/000020_add_tenant_columns.down.sql`
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P6-INT-001: passes: true)
+
+### Test Results
+- All 15 sub-tests: PASS
+- Total test time: ~27 seconds (including container startup)
+
+### Notes for Next Developer
+1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestTenantIsolation" -timeout 180s`
+2. **Tenant isolation is repository-level**: All tenant-scoped repositories use `tenant_id` in WHERE clauses
+3. **Application layer should check tenant status**: Repository doesn't check tenant status - application layer should verify `tenant.IsActive()` before allowing operations
+4. **Next priority items**: P6-INT-002 (认证授权联调), P6-INT-003 (用户角色管理联调)

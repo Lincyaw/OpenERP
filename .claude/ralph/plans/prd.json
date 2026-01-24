@@ -2105,7 +2105,7 @@
       "验证租户切换",
       "验证租户停用"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-INT-002",
