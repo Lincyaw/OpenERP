@@ -7358,3 +7358,86 @@ Implemented the Sales Report Page with interactive charts, KPI metrics cards, an
 - **Data Loading**: Uses Promise.allSettled for graceful degradation
 - **Chart Sizing**: Charts are responsive but may need adjustment for very small screens
 - **Caching**: Consider adding React Query for API response caching in future
+
+---
+
+## P5-FE-002: Sales Ranking Page (销售排行榜页面)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Sales Ranking Page with product and customer ranking tables, horizontal bar charts, and dimension switching capability. The page provides detailed sales performance analysis with flexible sorting options.
+
+### Features Implemented
+
+1. **Summary Metrics Dashboard**
+   - Total products count participating in rankings
+   - Total customers count participating in rankings
+   - Top product sales amount (champion)
+   - Top customer sales amount (champion)
+
+2. **Dimension Switching (Radio Buttons)**
+   - Sort by Sales Amount (销售额)
+   - Sort by Sales Quantity (销售数量)
+   - Sort by Profit (毛利)
+   - Dynamic re-sorting of data when dimension changes
+
+3. **Product Sales Ranking**
+   - Horizontal bar chart showing Top 10 products by selected dimension
+   - Full ranking table with pagination (10/20/50 per page)
+   - Columns: Rank (with medal icons for top 3), Product Name, SKU, Category, Sales Amount, Quantity, Order Count, Profit
+   - Client-side sorting capability on numeric columns
+
+4. **Customer Sales Ranking**
+   - Horizontal bar chart showing Top 10 customers by selected dimension
+   - Full ranking table with pagination (10/20/50 per page)
+   - Columns: Rank (with medal icons for top 3), Customer Name, Sales Amount, Quantity, Order Count, Profit
+   - Client-side sorting capability on numeric columns
+
+5. **Filters**
+   - Preset date ranges: Last 7/30/90 days, This Month, Last Month, This Year
+   - Custom date range picker
+   - Top N selector: Top 10, 20, 50, 100
+
+### Files Created
+
+- `frontend/src/pages/report/SalesRanking.tsx` - Main sales ranking page component
+- `frontend/src/pages/report/SalesRanking.css` - Page-specific styles
+
+### Files Modified
+
+- `frontend/src/router/routes.tsx` - Added /report/ranking route and lazy-loaded component
+
+### Technical Details
+
+**Chart Library**: ECharts (echarts + echarts-for-react)
+- Horizontal bar charts with gradient fills
+- Responsive sizing
+- Truncated labels for long names
+
+**UI Components**: Semi Design
+- RadioGroup for dimension switching
+- Tabs for Product/Customer toggle
+- Table with sorting and pagination
+- Tag with medal colors (amber, white, orange) for top 3 ranks
+- DatePicker with type="dateRange"
+
+**State Management**:
+- Local state with useState hooks
+- Parallel API calls with Promise.allSettled
+- Memoized chart options with useMemo
+- Client-side sorting by dimension
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### API Endpoints Used
+- `GET /reports/sales/products/ranking` - Product sales ranking with top_n parameter
+- `GET /reports/sales/customers/ranking` - Customer sales ranking with top_n parameter
+
+### Notes for Next Developer
+- **P5-FE-003**: Inventory Turnover Report - should follow similar structure
+- **P5-FE-004**: Profit/Loss Report - uses different API endpoints
+- **Dimension Switching**: The pattern can be reused for other ranking pages
+- **ECharts**: Shared between SalesReport and SalesRanking pages (code-split together)

@@ -51,7 +51,24 @@ function formatDate(dateString?: string): string {
 }
 
 // Tag color type for Semi UI
-type TagColor = 'amber' | 'blue' | 'cyan' | 'green' | 'grey' | 'indigo' | 'light-blue' | 'light-green' | 'lime' | 'orange' | 'pink' | 'purple' | 'red' | 'teal' | 'violet' | 'yellow' | 'white'
+type TagColor =
+  | 'amber'
+  | 'blue'
+  | 'cyan'
+  | 'green'
+  | 'grey'
+  | 'indigo'
+  | 'light-blue'
+  | 'light-green'
+  | 'lime'
+  | 'orange'
+  | 'pink'
+  | 'purple'
+  | 'red'
+  | 'teal'
+  | 'violet'
+  | 'yellow'
+  | 'white'
 
 /**
  * Get status tag color for payment voucher
@@ -418,9 +435,7 @@ export default function PaymentReconcilePage() {
     if (voucher.status !== 'CONFIRMED') return false
     if (voucher.unallocated_amount <= 0) return false
     if (reconcileMode === 'MANUAL') {
-      const hasSelection = allocationItems.some(
-        (item) => item.selected && item.allocateAmount > 0
-      )
+      const hasSelection = allocationItems.some((item) => item.selected && item.allocateAmount > 0)
       return hasSelection
     }
     return payables.length > 0
@@ -666,9 +681,7 @@ export default function PaymentReconcilePage() {
                     dataIndex: 'status',
                     key: 'status',
                     render: (value: string) => (
-                      <Tag color={getPayableStatusColor(value)}>
-                        {getPayableStatusLabel(value)}
-                      </Tag>
+                      <Tag color={getPayableStatusColor(value)}>{getPayableStatusLabel(value)}</Tag>
                     ),
                   },
                 ]}
@@ -738,8 +751,8 @@ export default function PaymentReconcilePage() {
               voucher.status === 'DRAFT'
                 ? '该付款单尚未确认，请先确认后再进行核销'
                 : voucher.status === 'ALLOCATED'
-                ? '该付款单已完全核销'
-                : '该付款单已取消，无法进行核销'
+                  ? '该付款单已完全核销'
+                  : '该付款单已取消，无法进行核销'
             }
           />
         )}
@@ -860,8 +873,7 @@ export default function PaymentReconcilePage() {
                 title: '核销时间',
                 dataIndex: 'allocated_at',
                 key: 'allocated_at',
-                render: (value: string) =>
-                  value ? new Date(value).toLocaleString('zh-CN') : '-',
+                render: (value: string) => (value ? new Date(value).toLocaleString('zh-CN') : '-'),
               },
               {
                 title: '备注',

@@ -1,0 +1,202 @@
+/**
+ * Sales Ranking Page Styles
+ */
+
+.sales-ranking-page {
+  padding: var(--spacing-4);
+}
+
+/* Page Header */
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.ranking-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.ranking-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Summary Metrics Section */
+.ranking-metrics {
+  margin-bottom: var(--spacing-6);
+}
+
+/* Metric Card */
+.ranking-metric-card {
+  height: 100%;
+}
+
+.ranking-metric-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.ranking-metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--semi-border-radius-medium);
+  flex-shrink: 0;
+}
+
+.ranking-metric-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ranking-metric-label {
+  display: block;
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-sm);
+}
+
+.ranking-metric-value {
+  font-size: var(--font-size-xl);
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+/* Dimension Card */
+.dimension-card {
+  margin-bottom: var(--spacing-4);
+}
+
+.dimension-selector {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+/* Main Content Card */
+.ranking-content-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.ranking-content-card .semi-tabs-content {
+  padding-top: var(--spacing-4);
+}
+
+/* Ranking Content Layout */
+.ranking-content {
+  gap: var(--spacing-4);
+}
+
+.ranking-chart-container {
+  flex: 1;
+  min-width: 350px;
+}
+
+.ranking-table-container {
+  flex: 2;
+  min-width: 500px;
+  overflow-x: auto;
+}
+
+.ranking-chart-card {
+  height: 100%;
+}
+
+.ranking-chart-card .semi-card-body {
+  padding: var(--spacing-4);
+}
+
+/* Table Styles */
+.ranking-table-container .semi-table-wrapper {
+  border: none;
+}
+
+/* Gold/Silver/Bronze tag colors */
+.sales-ranking-page .semi-tag-gold {
+  background-color: #ffd700;
+  color: #5c4813;
+}
+
+.sales-ranking-page .semi-tag-silver {
+  background-color: #c0c0c0;
+  color: #404040;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .ranking-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ranking-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ranking-filters > * {
+    width: 100% !important;
+  }
+
+  .ranking-metric-content {
+    gap: var(--spacing-2);
+  }
+
+  .ranking-metric-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ranking-metric-value {
+    font-size: var(--font-size-lg);
+  }
+
+  .dimension-selector {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ranking-chart-container,
+  .ranking-table-container {
+    flex: none;
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .ranking-content {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 1024px) {
+  .ranking-chart-container {
+    min-width: 100%;
+  }
+
+  .ranking-table-container {
+    min-width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sales-ranking-page {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1440px) {
+  .sales-ranking-page {
+    padding: var(--spacing-8);
+  }
+}

@@ -1,14 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { z } from 'zod'
-import {
-  Card,
-  Typography,
-  Toast,
-  Spin,
-  Select,
-  Tag,
-  Banner,
-} from '@douyinfe/semi-ui'
+import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Form,
@@ -27,11 +19,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { getFinanceApi } from '@/api/finance'
 import { getCustomers } from '@/api/customers/customers'
-import type {
-  PaymentMethod,
-  CreateReceiptVoucherRequest,
-  AccountReceivable,
-} from '@/api/finance'
+import type { PaymentMethod, CreateReceiptVoucherRequest, AccountReceivable } from '@/api/finance'
 import type { HandlerCustomerResponse } from '@/api/models'
 import './ReceiptVoucherNew.css'
 
@@ -205,7 +193,8 @@ export default function ReceiptVoucherNewPage() {
         if (receivablesResponse.success && receivablesResponse.data) {
           // Filter receivables for this customer only
           const filteredReceivables = receivablesResponse.data.filter(
-            (r) => r.customer_id === customerId && (r.status === 'PENDING' || r.status === 'PARTIAL')
+            (r) =>
+              r.customer_id === customerId && (r.status === 'PENDING' || r.status === 'PARTIAL')
           )
           setCustomerReceivables(filteredReceivables)
         }
@@ -329,7 +318,9 @@ export default function ReceiptVoucherNewPage() {
                       <Text>
                         客户 <strong>{selectedCustomer.name}</strong> 共有{' '}
                         <strong>{customerReceivables.length}</strong> 笔待收账款，待收总额:{' '}
-                        <strong className="amount-highlight">{formatCurrency(totalOutstanding)}</strong>
+                        <strong className="amount-highlight">
+                          {formatCurrency(totalOutstanding)}
+                        </strong>
                       </Text>
                     </div>
                   }
@@ -359,7 +350,8 @@ export default function ReceiptVoucherNewPage() {
                       color={receivable.status === 'PARTIAL' ? 'blue' : 'orange'}
                       className="receivable-tag"
                     >
-                      {receivable.receivable_number}: {formatCurrency(receivable.outstanding_amount)}
+                      {receivable.receivable_number}:{' '}
+                      {formatCurrency(receivable.outstanding_amount)}
                     </Tag>
                   ))}
                   {customerReceivables.length > 5 && (
@@ -410,9 +402,7 @@ export default function ReceiptVoucherNewPage() {
                 precision={2}
                 prefix="¥"
                 helperText={
-                  totalOutstanding > 0
-                    ? `待收总额: ${formatCurrency(totalOutstanding)}`
-                    : undefined
+                  totalOutstanding > 0 ? `待收总额: ${formatCurrency(totalOutstanding)}` : undefined
                 }
               />
               <SelectField

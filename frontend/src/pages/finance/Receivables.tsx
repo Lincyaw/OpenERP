@@ -56,7 +56,10 @@ const SOURCE_TYPE_OPTIONS = [
 ]
 
 // Status tag color mapping
-const STATUS_TAG_COLORS: Record<AccountReceivableStatus, 'orange' | 'blue' | 'green' | 'red' | 'grey'> = {
+const STATUS_TAG_COLORS: Record<
+  AccountReceivableStatus,
+  'orange' | 'blue' | 'green' | 'red' | 'grey'
+> = {
   PENDING: 'orange',
   PARTIAL: 'blue',
   PAID: 'green',
@@ -288,7 +291,9 @@ export default function ReceivablesPage() {
   const handleCollect = useCallback(
     (receivable: ReceivableRow) => {
       if (receivable.id && receivable.status !== 'PAID' && receivable.status !== 'CANCELLED') {
-        navigate(`/finance/receipts/new?receivable_id=${receivable.id}&customer_id=${receivable.customer_id}`)
+        navigate(
+          `/finance/receipts/new?receivable_id=${receivable.id}&customer_id=${receivable.customer_id}`
+        )
       }
     },
     [navigate]
@@ -324,9 +329,7 @@ export default function ReceivablesPage() {
         dataIndex: 'customer_name',
         sortable: true,
         ellipsis: true,
-        render: (name: unknown) => (
-          <span className="customer-name">{(name as string) || '-'}</span>
-        ),
+        render: (name: unknown) => <span className="customer-name">{(name as string) || '-'}</span>,
       },
       {
         title: '来源单据',
@@ -367,9 +370,7 @@ export default function ReceivablesPage() {
         align: 'right',
         sortable: true,
         render: (amount: unknown, record: ReceivableRow) => (
-          <span
-            className={`amount-cell outstanding-amount ${isOverdue(record) ? 'overdue' : ''}`}
-          >
+          <span className={`amount-cell outstanding-amount ${isOverdue(record) ? 'overdue' : ''}`}>
             {formatCurrency(amount as number)}
           </span>
         ),
@@ -421,9 +422,7 @@ export default function ReceivablesPage() {
         type: 'primary',
         onClick: handleCollect,
         hidden: (record) =>
-          record.status === 'PAID' ||
-          record.status === 'CANCELLED' ||
-          record.status === 'REVERSED',
+          record.status === 'PAID' || record.status === 'CANCELLED' || record.status === 'REVERSED',
       },
     ],
     [handleView, handleCollect]

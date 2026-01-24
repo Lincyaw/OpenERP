@@ -11,12 +11,7 @@ import {
   Descriptions,
 } from '@douyinfe/semi-ui'
 import { IconRefresh } from '@douyinfe/semi-icons'
-import {
-  DataTable,
-  TableToolbar,
-  useTableState,
-  type DataTableColumn,
-} from '@/components/common'
+import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getFinanceApi } from '@/api/finance'
 import type {

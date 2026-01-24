@@ -56,7 +56,10 @@ const SOURCE_TYPE_OPTIONS = [
 ]
 
 // Status tag color mapping
-const STATUS_TAG_COLORS: Record<AccountPayableStatus, 'orange' | 'blue' | 'green' | 'red' | 'grey'> = {
+const STATUS_TAG_COLORS: Record<
+  AccountPayableStatus,
+  'orange' | 'blue' | 'green' | 'red' | 'grey'
+> = {
   PENDING: 'orange',
   PARTIAL: 'blue',
   PAID: 'green',
@@ -288,7 +291,9 @@ export default function PayablesPage() {
   const handlePay = useCallback(
     (payable: PayableRow) => {
       if (payable.id && payable.status !== 'PAID' && payable.status !== 'CANCELLED') {
-        navigate(`/finance/payments/new?payable_id=${payable.id}&supplier_id=${payable.supplier_id}`)
+        navigate(
+          `/finance/payments/new?payable_id=${payable.id}&supplier_id=${payable.supplier_id}`
+        )
       }
     },
     [navigate]
@@ -324,9 +329,7 @@ export default function PayablesPage() {
         dataIndex: 'supplier_name',
         sortable: true,
         ellipsis: true,
-        render: (name: unknown) => (
-          <span className="supplier-name">{(name as string) || '-'}</span>
-        ),
+        render: (name: unknown) => <span className="supplier-name">{(name as string) || '-'}</span>,
       },
       {
         title: '来源单据',
@@ -367,9 +370,7 @@ export default function PayablesPage() {
         align: 'right',
         sortable: true,
         render: (amount: unknown, record: PayableRow) => (
-          <span
-            className={`amount-cell outstanding-amount ${isOverdue(record) ? 'overdue' : ''}`}
-          >
+          <span className={`amount-cell outstanding-amount ${isOverdue(record) ? 'overdue' : ''}`}>
             {formatCurrency(amount as number)}
           </span>
         ),
@@ -421,9 +422,7 @@ export default function PayablesPage() {
         type: 'primary',
         onClick: handlePay,
         hidden: (record) =>
-          record.status === 'PAID' ||
-          record.status === 'CANCELLED' ||
-          record.status === 'REVERSED',
+          record.status === 'PAID' || record.status === 'CANCELLED' || record.status === 'REVERSED',
       },
     ],
     [handleView, handlePay]

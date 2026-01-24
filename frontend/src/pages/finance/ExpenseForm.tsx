@@ -56,10 +56,7 @@ const CATEGORIES = [
 // Form validation schema
 const expenseFormSchema = z.object({
   category: createEnumSchema(CATEGORIES, true),
-  amount: z
-    .number()
-    .positive('金额必须大于0')
-    .max(999999999.99, '金额不能超过999,999,999.99'),
+  amount: z.number().positive('金额必须大于0').max(999999999.99, '金额不能超过999,999,999.99'),
   description: z
     .string()
     .min(1, validationMessages.required)
@@ -111,15 +108,16 @@ export default function ExpenseFormPage() {
     []
   )
 
-  const { control, handleFormSubmit, isSubmitting, reset } =
-    useFormWithValidation<ExpenseFormData>({
+  const { control, handleFormSubmit, isSubmitting, reset } = useFormWithValidation<ExpenseFormData>(
+    {
       schema: expenseFormSchema,
       defaultValues,
       successMessage: isEditMode ? '费用更新成功' : '费用创建成功',
       onSuccess: () => {
         navigate('/finance/expenses')
       },
-    })
+    }
+  )
 
   // Load expense data for edit mode
   useEffect(() => {

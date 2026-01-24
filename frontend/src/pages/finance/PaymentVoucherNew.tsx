@@ -1,14 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { z } from 'zod'
-import {
-  Card,
-  Typography,
-  Toast,
-  Spin,
-  Select,
-  Tag,
-  Banner,
-} from '@douyinfe/semi-ui'
+import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Form,
@@ -27,11 +19,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { getFinanceApi } from '@/api/finance'
 import { getSuppliers } from '@/api/suppliers/suppliers'
-import type {
-  PaymentMethod,
-  CreatePaymentVoucherRequest,
-  AccountPayable,
-} from '@/api/finance'
+import type { PaymentMethod, CreatePaymentVoucherRequest, AccountPayable } from '@/api/finance'
 import type { HandlerSupplierResponse } from '@/api/models'
 import './PaymentVoucherNew.css'
 
@@ -205,7 +193,8 @@ export default function PaymentVoucherNewPage() {
         if (payablesResponse.success && payablesResponse.data) {
           // Filter payables for this supplier only
           const filteredPayables = payablesResponse.data.filter(
-            (p) => p.supplier_id === supplierId && (p.status === 'PENDING' || p.status === 'PARTIAL')
+            (p) =>
+              p.supplier_id === supplierId && (p.status === 'PENDING' || p.status === 'PARTIAL')
           )
           setSupplierPayables(filteredPayables)
         }
@@ -329,7 +318,9 @@ export default function PaymentVoucherNewPage() {
                       <Text>
                         供应商 <strong>{selectedSupplier.name}</strong> 共有{' '}
                         <strong>{supplierPayables.length}</strong> 笔待付账款，待付总额:{' '}
-                        <strong className="amount-highlight">{formatCurrency(totalOutstanding)}</strong>
+                        <strong className="amount-highlight">
+                          {formatCurrency(totalOutstanding)}
+                        </strong>
                       </Text>
                     </div>
                   }
@@ -410,9 +401,7 @@ export default function PaymentVoucherNewPage() {
                 precision={2}
                 prefix="¥"
                 helperText={
-                  totalOutstanding > 0
-                    ? `待付总额: ${formatCurrency(totalOutstanding)}`
-                    : undefined
+                  totalOutstanding > 0 ? `待付总额: ${formatCurrency(totalOutstanding)}` : undefined
                 }
               />
               <SelectField

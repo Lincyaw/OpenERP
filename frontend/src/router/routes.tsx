@@ -69,6 +69,7 @@ const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
 
 // Report module
 const SalesReportPage = () => lazyLoad(() => import('@/pages/report/SalesReport'))
+const SalesRankingPage = () => lazyLoad(() => import('@/pages/report/SalesRanking'))
 
 /**
  * Application routes with metadata
@@ -292,6 +293,14 @@ export const appRoutes: AppRoute[] = [
           order: 1,
         },
       },
+      {
+        path: '/report/ranking',
+        meta: {
+          title: 'Sales Ranking',
+          icon: 'IconBarChartHStroked',
+          order: 2,
+        },
+      },
     ],
   },
 ]
@@ -335,6 +344,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return CashFlowPage()
     case '/report/sales':
       return SalesReportPage()
+    case '/report/ranking':
+      return SalesRankingPage()
     default:
       return null
   }
