@@ -1,0 +1,32 @@
+/* Other Income Form Page Styles */
+
+.other-income-form-page {
+  padding: var(--spacing-6);
+}
+
+.other-income-form-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.other-income-form-header {
+  margin-bottom: var(--spacing-6);
+}
+
+.other-income-form-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .other-income-form-page {
+    padding: var(--spacing-4);
+  }
+
+  .other-income-form-header {
+    margin-bottom: var(--spacing-4);
+  }
+}

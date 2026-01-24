@@ -6955,3 +6955,66 @@ Implemented the frontend expense management page for the Finance module. This pr
 - **P4-FE-012 Ready**: Cash flow page can use the CashFlowSummary API
 - **Backend Routes Needed**: HTTP handlers need to be created to expose ExpenseIncomeService endpoints
 - **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available
+
+---
+
+## P4-FE-011: 其他收入录入页面 (Other Income Entry Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the frontend other income management page for the Finance module. This provides a complete CRUD interface for managing other income records with confirmation workflow support, filtering, and summary statistics.
+
+### Features Implemented
+
+1. **Other Income List Page** (`OtherIncomes.tsx`)
+   - Full other income record listing with pagination
+   - Search by income number and description
+   - Filter by category, status, receipt status, and date range
+   - Summary cards showing total confirmed amount and pending amount
+   - Table actions for workflow operations:
+     - Edit (draft incomes only)
+     - Confirm (draft incomes)
+     - Cancel with reason modal (draft incomes)
+     - Delete (draft incomes only)
+
+2. **Other Income Form Page** (`OtherIncomeForm.tsx`)
+   - Category selection (8 income categories)
+   - Amount input with currency formatting
+   - Date picker for income date
+   - Description field (required)
+   - Optional remark and attachment URLs
+   - Edit mode support for existing records
+   - Form validation with zod schema
+
+3. **Routing and Navigation**
+   - Added `/finance/incomes` route to sidebar navigation
+   - Added income create/edit routes
+   - IconPlus icon for incomes in sidebar
+
+### Files Created
+- `frontend/src/pages/finance/OtherIncomes.tsx` - Other income list page
+- `frontend/src/pages/finance/OtherIncomes.css` - Other income list styles
+- `frontend/src/pages/finance/OtherIncomeForm.tsx` - Other income create/edit form
+- `frontend/src/pages/finance/OtherIncomeForm.css` - Form styles
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added income routes and lazy-loaded components
+- `frontend/src/components/layout/Sidebar.tsx` - Added IconPlus for incomes
+
+### Technical Notes
+- **Design Pattern**: Follows existing finance module patterns (Expenses.tsx)
+- **State Management**: Local state with React hooks
+- **Form Validation**: Zod schema with react-hook-form
+- **Responsive Design**: CSS follows design system with responsive breakpoints
+- **Workflow Support**: Simple workflow (Draft → Confirmed/Cancelled)
+- **Income Categories**: INVESTMENT, SUBSIDY, INTEREST, RENTAL, REFUND, COMPENSATION, ASSET_DISPOSAL, OTHER
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **P4-FE-012 Ready**: Cash flow page can use the CashFlowSummary API
+- **Backend Routes Needed**: HTTP handlers need to be created to expose ExpenseIncomeService endpoints
+- **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available

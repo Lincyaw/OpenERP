@@ -63,6 +63,8 @@ const ReceiptReconcilePage = () => lazyLoad(() => import('@/pages/finance/Receip
 const PaymentReconcilePage = () => lazyLoad(() => import('@/pages/finance/PaymentReconcile'))
 const ExpensesPage = () => lazyLoad(() => import('@/pages/finance/Expenses'))
 const ExpenseFormPage = () => lazyLoad(() => import('@/pages/finance/ExpenseForm'))
+const OtherIncomesPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomes'))
+const OtherIncomeFormPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomeForm'))
 
 /**
  * Application routes with metadata
@@ -246,6 +248,14 @@ export const appRoutes: AppRoute[] = [
           order: 3,
         },
       },
+      {
+        path: '/finance/incomes',
+        meta: {
+          title: 'Other Income',
+          icon: 'IconPlus',
+          order: 4,
+        },
+      },
     ],
   },
 ]
@@ -283,6 +293,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return PayablesPage()
     case '/finance/expenses':
       return ExpensesPage()
+    case '/finance/incomes':
+      return OtherIncomesPage()
     default:
       return null
   }
@@ -404,7 +416,9 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'payments/new', element: PaymentVoucherNewPage() },
           { path: 'payments/:id/reconcile', element: PaymentReconcilePage() },
           { path: 'expenses/new', element: ExpenseFormPage() },
-          { path: 'expenses/:id/edit', element: ExpenseFormPage() }
+          { path: 'expenses/:id/edit', element: ExpenseFormPage() },
+          { path: 'incomes/new', element: OtherIncomeFormPage() },
+          { path: 'incomes/:id/edit', element: OtherIncomeFormPage() }
         )
       }
 

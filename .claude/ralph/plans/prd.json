@@ -145,7 +145,7 @@
   {"id":"P4-FE-005","story":"付款单创建页面","priority":"high","requirements":["选择供应商","选择付款方式","输入付款金额"],"passes":true},
   {"id":"P4-FE-006","story":"付款核销页面","priority":"high","requirements":["展示待核销应付","支持自动手动核销","显示核销结果"],"passes":true},
   {"id":"P4-FE-010","story":"费用录入页面","priority":"medium","requirements":["实现费用录入表单","支持费用分类选择","支持附件上传"],"passes":true},
-  {"id":"P4-FE-011","story":"其他收入录入页面","priority":"medium","requirements":["实现收入录入表单","支持收入分类选择","支持附件上传"],"passes":false},
+  {"id":"P4-FE-011","story":"其他收入录入页面","priority":"medium","requirements":["实现收入录入表单","支持收入分类选择","支持附件上传"],"passes":true},
   {"id":"P4-FE-012","story":"收支流水页面","priority":"medium","requirements":["展示收支流水列表","支持时间范围筛选","支持分类筛选"],"passes":false},
   {"id":"P4-QA-001","story":"应收应付聚合单元测试","priority":"medium","requirements":["测试应收创建和更新","测试应付创建和更新","测试状态变更"],"passes":false},
   {"id":"P4-QA-002","story":"核销策略单元测试","priority":"medium","requirements":["测试 FIFO 核销算法","测试部分核销","测试超额核销处理"],"passes":false},
