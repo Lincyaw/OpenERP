@@ -13336,3 +13336,61 @@ go test -v ./tests/integration/... -run "TestWarehouseAPI_CRUD" -timeout 300s
 3. **Validation tests**: Cover both missing fields and invalid values
 4. **Status tests**: Cover all status transitions for each entity type
 5. **Next priority items**: P1-QA-005 (商品模块前端组件测试), P1-QA-006 (伙伴模块前端组件测试)
+
+---
+
+## 2026-01-25: Trading Module Domain Unit Tests Verification (P3-QA-001, P3-QA-002, P3-QA-003)
+
+### Summary
+Verified that comprehensive unit tests already exist for SalesOrder and PurchaseOrder domain aggregates. All tests pass with >80% code coverage.
+
+### P3-QA-001: SalesOrder 聚合单元测试 ✅
+**Requirements verified:**
+- ✅ 测试订单创建逻辑 - `TestNewSalesOrder` (7 test cases)
+- ✅ 测试状态流转 - `TestOrderStatus_CanTransitionTo` (20 transitions), `TestSalesOrder_Confirm/Ship/Complete/Cancel`
+- ✅ 测试金额计算 - `TestSalesOrder_AddItem`, `TestSalesOrder_ApplyDiscount`, item amount calculations
+
+**Test coverage:** 86.7% for sales_order.go
+
+### P3-QA-002: PurchaseOrder 聚合单元测试 ✅
+**Requirements verified:**
+- ✅ 测试采购订单创建 - `TestNewPurchaseOrder` (7 test cases)
+- ✅ 测试收货逻辑 - `TestPurchaseOrder_Receive` (12 test cases covering partial/full/batch receiving)
+- ✅ 测试状态流转 - `TestPurchaseOrderStatus_CanTransitionTo` (21 transitions)
+
+**Test coverage:** Included in overall 86.7%
+
+### P3-QA-003: 订单状态流转测试 ✅
+**Requirements verified:**
+- ✅ 测试合法状态流转 - All valid transitions tested (DRAFT→CONFIRMED, CONFIRMED→SHIPPED, etc.)
+- ✅ 测试非法状态流转 - All invalid transitions return false (COMPLETED→any, CANCELLED→any, etc.)
+- ✅ 测试状态前置条件 - Tests for:
+  - Confirm fails without items
+  - Confirm fails with zero payable amount
+  - Ship fails without warehouse
+  - Ship fails when not confirmed
+  - Cancel fails when shipped
+  - Receive fails in draft status
+
+### Existing Test Files
+- `backend/internal/domain/trade/sales_order_test.go` (~1042 lines)
+- `backend/internal/domain/trade/purchase_order_test.go` (~1269 lines)
+
+### How to Run Tests
+```bash
+# Run all trading domain tests
+cd backend && go test -v ./internal/domain/trade/... -count=1
+
+# Run with coverage
+go test -coverprofile=cover.out ./internal/domain/trade/... && go tool cover -func=cover.out | grep "_order.go"
+```
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P3-QA-001, P3-QA-002, P3-QA-003: passes: true)
+
+### Notes for Next Developer
+1. **Test organization**: Tests follow naming convention `Test{Aggregate}_{Operation}` with subtests for scenarios
+2. **Test helpers**: `createTestOrder()`, `addTestItem()` helpers reduce boilerplate
+3. **Domain events tested**: All domain events (Created, Confirmed, Shipped, Cancelled, etc.) have dedicated tests
+4. **Edge cases covered**: Discount adjustment on item removal, concurrent modifications, etc.
+5. **Next priority items**: P3-QA-005 (交易模块前端组件测试), P3-QA-006 (退货流程端到端测试)
