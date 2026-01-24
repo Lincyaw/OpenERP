@@ -2,3 +2,4 @@
 // Contains components, hooks, and services for trading operations
 
 export { SalesOrderForm } from './SalesOrderForm'
+export { PurchaseOrderForm } from './PurchaseOrderForm'

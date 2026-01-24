@@ -5339,3 +5339,95 @@ Implemented the Purchase Order List page with full CRUD operations, filtering, p
 - Supplier filter loads up to 100 suppliers - may need pagination for large datasets
 - Status colors match sales order patterns for UI consistency
 
+
+
+---
+
+## 2026-01-24 - P3-FE-011: Purchase Order Creation Page Implementation
+
+**Date:** 2026-01-24
+**Status:** ✅ COMPLETED
+
+### Summary
+Implemented the Purchase Order Creation page (采购开单页面) with full CRUD operations, supplier selection, product item management, discount support, and form validation.
+
+### What was done
+1. Created `PurchaseOrderForm.tsx` component at `frontend/src/features/trade/`:
+   - Supplier search and selection with remote filtering
+   - Warehouse selection for receiving destination
+   - Dynamic product item rows with add/remove functionality
+   - Real-time amount calculation (unit_cost × quantity)
+   - Discount percentage support with automatic total calculation
+   - Form validation with Zod schema
+   - Support for both create and edit modes
+   - Uses `purchase_price` for unit cost when available
+
+2. Created `PurchaseOrderForm.css` styling:
+   - Following design system tokens (spacing, colors, typography)
+   - Responsive design for mobile/tablet/desktop
+   - Consistent styling with SalesOrderForm
+
+3. Created `PurchaseOrderNew.tsx` page at `frontend/src/pages/trade/`:
+   - Renders PurchaseOrderForm in create mode
+   - Follows same pattern as SalesOrderNew
+
+4. Updated routes at `frontend/src/router/routes.tsx`:
+   - Changed purchase/new route to use PurchaseOrderNewPage
+   - Added lazy loading for the new page component
+
+5. Updated exports at `frontend/src/features/trade/index.ts`:
+   - Added PurchaseOrderForm export
+
+### Files created
+- `frontend/src/features/trade/PurchaseOrderForm.tsx` (new - full implementation)
+- `frontend/src/features/trade/PurchaseOrderForm.css` (new - styling)
+- `frontend/src/pages/trade/PurchaseOrderNew.tsx` (new - page component)
+
+### Files modified
+- `frontend/src/features/trade/index.ts` (added PurchaseOrderForm export)
+- `frontend/src/router/routes.tsx` (updated purchase routes)
+- `.claude/ralph/plans/prd.json` (marked P3-FE-011 as completed)
+
+### Build Status
+- `npm run type-check` ✅ PASSED
+- `npm run lint` ✅ PASSED (only pre-existing warnings)
+- `npm run build` ✅ PASSED
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Supplier search and selection | ✓ |
+| Warehouse selection (optional) | ✓ |
+| Product search and selection | ✓ |
+| Dynamic item rows (add/remove) | ✓ |
+| Unit cost editing | ✓ |
+| Quantity editing | ✓ |
+| Real-time amount calculation | ✓ |
+| Discount percentage support | ✓ |
+| Subtotal/discount/total display | ✓ |
+| Form validation (Zod) | ✓ |
+| Order remark | ✓ |
+| Create order API call | ✓ |
+| Edit mode support | ✓ |
+
+### Key Differences from SalesOrderForm
+- Uses `supplier_id` and `supplier_name` instead of `customer_id` and `customer_name`
+- Uses `unit_cost` instead of `unit_price` (purchase cost vs selling price)
+- Defaults to `purchase_price` when selecting products
+- Warehouse label says "收货仓库" (receiving warehouse) instead of "发货仓库" (shipping warehouse)
+- Total label says "应付金额" (payable amount) - same as sales (amount to pay supplier)
+
+### API Integration
+- Uses `getPurchaseOrders().postTradePurchaseOrders()` for order creation
+- Uses `getPurchaseOrders().putTradePurchaseOrdersId()` for order update
+- Uses `getSuppliers().getPartnerSuppliers()` for supplier dropdown
+- Uses `getProducts().getCatalogProducts()` for product dropdown
+- Uses `getWarehouses().getPartnerWarehouses()` for warehouse dropdown
+
+### Notes for next developer
+- **P3-FE-012** (采购收货页面) is the next high priority - receiving workflow with batch/expiry tracking
+- Edit mode disables supplier selection (cannot change supplier after creation)
+- The `ordered_quantity` field from API maps to `quantity` in the form
+- Empty items (without product_id) are filtered out before API submission
+- Navigation goes back to `/trade/purchase` after successful submit
+- Default warehouse is auto-selected if available

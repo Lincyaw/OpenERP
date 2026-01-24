@@ -51,6 +51,7 @@ const SalesOrderNewPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderN
 const SalesOrderEditPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderEdit'))
 const SalesOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderDetail'))
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
+const PurchaseOrderNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderNew'))
 
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
@@ -370,9 +371,9 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'sales/new', element: SalesOrderNewPage() },
           { path: 'sales/:id', element: SalesOrderDetailPage() },
           { path: 'sales/:id/edit', element: SalesOrderEditPage() },
-          // Purchase order routes - will use placeholder until P3-FE-011/012 are implemented
-          { path: 'purchase/new', element: PurchaseOrdersPage() }, // TODO: P3-FE-011
-          { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: P3-FE-012/detail
+          // Purchase order routes
+          { path: 'purchase/new', element: PurchaseOrderNewPage() },
+          { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: detail page
           { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
           { path: 'purchase/:id/receive', element: PurchaseOrdersPage() } // TODO: P3-FE-012
         )
