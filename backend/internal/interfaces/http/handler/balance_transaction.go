@@ -84,7 +84,7 @@ type BalanceSummaryResponse struct {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        customerId path string true "Customer ID" format(uuid)
+// @Param        customer_id path string true "Customer ID" format(uuid)
 // @Param        request body RechargeRequest true "Recharge request"
 // @Success      201 {object} dto.Response{data=BalanceTransactionResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
@@ -93,7 +93,7 @@ type BalanceSummaryResponse struct {
 // @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /partner/customers/{customerId}/balance/recharge [post]
+// @Router       /partner/customers/{customer_id}/balance/recharge [post]
 func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -101,7 +101,7 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 		return
 	}
 
-	customerID, err := uuid.Parse(c.Param("customerId"))
+	customerID, err := uuid.Parse(c.Param("customer_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid customer ID format")
 		return
@@ -147,7 +147,7 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        customerId path string true "Customer ID" format(uuid)
+// @Param        customer_id path string true "Customer ID" format(uuid)
 // @Param        request body AdjustRequest true "Adjust request"
 // @Success      201 {object} dto.Response{data=BalanceTransactionResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
@@ -156,7 +156,7 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 // @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /partner/customers/{customerId}/balance/adjust [post]
+// @Router       /partner/customers/{customer_id}/balance/adjust [post]
 func (h *BalanceTransactionHandler) Adjust(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -164,7 +164,7 @@ func (h *BalanceTransactionHandler) Adjust(c *gin.Context) {
 		return
 	}
 
-	customerID, err := uuid.Parse(c.Param("customerId"))
+	customerID, err := uuid.Parse(c.Param("customer_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid customer ID format")
 		return
@@ -211,14 +211,14 @@ func (h *BalanceTransactionHandler) Adjust(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        customerId path string true "Customer ID" format(uuid)
+// @Param        customer_id path string true "Customer ID" format(uuid)
 // @Success      200 {object} dto.Response{data=object{balance=number}}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /partner/customers/{customerId}/balance [get]
+// @Router       /partner/customers/{customer_id}/balance [get]
 func (h *BalanceTransactionHandler) GetBalance(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -226,7 +226,7 @@ func (h *BalanceTransactionHandler) GetBalance(c *gin.Context) {
 		return
 	}
 
-	customerID, err := uuid.Parse(c.Param("customerId"))
+	customerID, err := uuid.Parse(c.Param("customer_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid customer ID format")
 		return
@@ -251,14 +251,14 @@ func (h *BalanceTransactionHandler) GetBalance(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        customerId path string true "Customer ID" format(uuid)
+// @Param        customer_id path string true "Customer ID" format(uuid)
 // @Success      200 {object} dto.Response{data=BalanceSummaryResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /partner/customers/{customerId}/balance/summary [get]
+// @Router       /partner/customers/{customer_id}/balance/summary [get]
 func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -266,7 +266,7 @@ func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 		return
 	}
 
-	customerID, err := uuid.Parse(c.Param("customerId"))
+	customerID, err := uuid.Parse(c.Param("customer_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid customer ID format")
 		return
@@ -288,7 +288,7 @@ func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        customerId path string true "Customer ID" format(uuid)
+// @Param        customer_id path string true "Customer ID" format(uuid)
 // @Param        transaction_type query string false "Transaction type" Enums(RECHARGE, CONSUME, REFUND, ADJUSTMENT, EXPIRE)
 // @Param        source_type query string false "Source type" Enums(MANUAL, SALES_ORDER, SALES_RETURN, RECEIPT_VOUCHER, SYSTEM)
 // @Param        date_from query string false "Start date (YYYY-MM-DD)"
@@ -301,7 +301,7 @@ func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /partner/customers/{customerId}/balance/transactions [get]
+// @Router       /partner/customers/{customer_id}/balance/transactions [get]
 func (h *BalanceTransactionHandler) ListTransactions(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -309,7 +309,7 @@ func (h *BalanceTransactionHandler) ListTransactions(c *gin.Context) {
 		return
 	}
 
-	customerID, err := uuid.Parse(c.Param("customerId"))
+	customerID, err := uuid.Parse(c.Param("customer_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid customer ID format")
 		return

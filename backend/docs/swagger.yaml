@@ -6980,7 +6980,7 @@ paths:
       summary: Discontinue a product
       tags:
       - products
-  /catalog/products/{productId}/units:
+  /catalog/products/{product_id}/units:
     get:
       consumes:
       - application/json
@@ -6993,7 +6993,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       produces:
@@ -7054,7 +7054,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       - description: Product unit creation request
@@ -7116,7 +7116,7 @@ paths:
       summary: Create a product unit
       tags:
       - product-units
-  /catalog/products/{productId}/units/{id}:
+  /catalog/products/{product_id}/units/{id}:
     delete:
       consumes:
       - application/json
@@ -7129,7 +7129,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       - description: Unit ID
@@ -7189,7 +7189,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       - description: Unit ID
@@ -7254,7 +7254,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       - description: Unit ID
@@ -7313,7 +7313,7 @@ paths:
       summary: Update product unit
       tags:
       - product-units
-  /catalog/products/{productId}/units/convert:
+  /catalog/products/{product_id}/units/convert:
     post:
       consumes:
       - application/json
@@ -7326,7 +7326,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       - description: Unit conversion request
@@ -7379,7 +7379,7 @@ paths:
       summary: Convert quantity between units
       tags:
       - product-units
-  /catalog/products/{productId}/units/default-purchase:
+  /catalog/products/{product_id}/units/default-purchase:
     get:
       consumes:
       - application/json
@@ -7392,7 +7392,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       produces:
@@ -7439,7 +7439,7 @@ paths:
       summary: Get default purchase unit
       tags:
       - product-units
-  /catalog/products/{productId}/units/default-sales:
+  /catalog/products/{product_id}/units/default-sales:
     get:
       consumes:
       - application/json
@@ -7452,7 +7452,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: productId
+        name: product_id
         required: true
         type: string
       produces:
@@ -14671,7 +14671,7 @@ paths:
       summary: Create a new customer
       tags:
       - customers
-  /partner/customers/{customerId}/balance:
+  /partner/customers/{customer_id}/balance:
     get:
       consumes:
       - application/json
@@ -14684,7 +14684,7 @@ paths:
       - description: Customer ID
         format: uuid
         in: path
-        name: customerId
+        name: customer_id
         required: true
         type: string
       produces:
@@ -14743,7 +14743,7 @@ paths:
       summary: Get customer balance
       tags:
       - balance
-  /partner/customers/{customerId}/balance/adjust:
+  /partner/customers/{customer_id}/balance/adjust:
     post:
       consumes:
       - application/json
@@ -14756,7 +14756,7 @@ paths:
       - description: Customer ID
         format: uuid
         in: path
-        name: customerId
+        name: customer_id
         required: true
         type: string
       - description: Adjust request
@@ -14827,7 +14827,7 @@ paths:
       summary: Adjust customer balance
       tags:
       - balance
-  /partner/customers/{customerId}/balance/recharge:
+  /partner/customers/{customer_id}/balance/recharge:
     post:
       consumes:
       - application/json
@@ -14840,7 +14840,7 @@ paths:
       - description: Customer ID
         format: uuid
         in: path
-        name: customerId
+        name: customer_id
         required: true
         type: string
       - description: Recharge request
@@ -14911,7 +14911,7 @@ paths:
       summary: Recharge customer balance
       tags:
       - balance
-  /partner/customers/{customerId}/balance/summary:
+  /partner/customers/{customer_id}/balance/summary:
     get:
       consumes:
       - application/json
@@ -14924,7 +14924,7 @@ paths:
       - description: Customer ID
         format: uuid
         in: path
-        name: customerId
+        name: customer_id
         required: true
         type: string
       produces:
@@ -14980,7 +14980,7 @@ paths:
       summary: Get customer balance summary
       tags:
       - balance
-  /partner/customers/{customerId}/balance/transactions:
+  /partner/customers/{customer_id}/balance/transactions:
     get:
       consumes:
       - application/json
@@ -14993,7 +14993,7 @@ paths:
       - description: Customer ID
         format: uuid
         in: path
-        name: customerId
+        name: customer_id
         required: true
         type: string
       - description: Transaction type

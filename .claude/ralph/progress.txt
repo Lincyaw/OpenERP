@@ -11636,3 +11636,65 @@ All 8 integration tests pass:
 ### PRD Status
 P0-QA-004: passes: true
 
+
+
+## 2026-01-25 01:52 - P0-QA-005 Backend Route Parameter Naming Standardization COMPLETED
+
+### Summary
+Standardized all backend route parameters to use snake_case naming convention.
+
+### Changes Made
+
+#### 1. Route Definitions (backend/cmd/server/main.go)
+Changed camelCase parameters to snake_case:
+- `:productId` → `:product_id` (8 routes)
+- `:customerId` → `:customer_id` (5 routes)
+
+Routes updated:
+- `/catalog/products/:product_id/units` (POST, GET)
+- `/catalog/products/:product_id/units/convert` (POST)
+- `/catalog/products/:product_id/units/default-purchase` (GET)
+- `/catalog/products/:product_id/units/default-sales` (GET)
+- `/catalog/products/:product_id/units/:id` (GET, PUT, DELETE)
+- `/partner/customers/:customer_id/balance/recharge` (POST)
+- `/partner/customers/:customer_id/balance/adjust` (POST)
+- `/partner/customers/:customer_id/balance` (GET)
+- `/partner/customers/:customer_id/balance/summary` (GET)
+- `/partner/customers/:customer_id/balance/transactions` (GET)
+
+#### 2. Handler Code Updates
+- `balance_transaction.go`: Changed `c.Param("customerId")` → `c.Param("customer_id")` (5 occurrences)
+- `product_unit.go`: Changed `c.Param("productId")` → `c.Param("product_id")` (5 occurrences)
+
+#### 3. Swagger Annotations Updated
+Updated `@Param` and `@Router` annotations in both handlers:
+- `@Param customerId` → `@Param customer_id`
+- `@Param productId` → `@Param product_id`
+- All route paths in `@Router` annotations updated to use snake_case
+
+#### 4. Regenerated OpenAPI Spec
+- Ran `make docs` to regenerate swagger.yaml
+- All paths now use `{customer_id}` and `{product_id}` in swagger.yaml
+
+#### 5. Regenerated Frontend SDK
+- Ran `npm run api:generate` to regenerate TypeScript SDK
+- SDK function parameters use JavaScript camelCase convention (normal behavior)
+- URL paths correctly interpolate parameter values
+
+### Verification
+- Backend builds successfully: `go build ./cmd/server/...`
+- Frontend builds successfully: `npm run build`
+- No breaking changes to API paths (parameter values are correctly passed)
+
+### Parameters Already Using Correct Format
+The following parameters were already using snake_case and did not need changes:
+- `:id` - Used for primary entity IDs (short form, acceptable)
+- `:code` - Used for code lookups
+- `:category_id`, `:warehouse_id`, `:product_id`, `:item_id` - Already correct
+- `:order_number`, `:return_number`, `:taking_number` - Already correct
+
+### Notes for Next Developer
+1. **Naming Convention Established**: All route parameters should use snake_case
+2. **Short `:id` is Acceptable**: Using `:id` for primary entity routes is fine
+3. **SDK Generation**: orval generates camelCase JavaScript parameters, which is correct
+4. **Remaining P0-QA Items**: P0-QA-006 (CI/CD automation) is the next P0 task

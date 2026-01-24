@@ -3616,7 +3616,7 @@
                 }
             }
         },
-        "/catalog/products/{productId}/units": {
+        "/catalog/products/{product_id}/units": {
             "get": {
                 "security": [
                     {
@@ -3645,7 +3645,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     }
@@ -3756,7 +3756,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
@@ -3864,7 +3864,7 @@
                 }
             }
         },
-        "/catalog/products/{productId}/units/convert": {
+        "/catalog/products/{product_id}/units/convert": {
             "post": {
                 "security": [
                     {
@@ -3893,7 +3893,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
@@ -3983,7 +3983,7 @@
                 }
             }
         },
-        "/catalog/products/{productId}/units/default-purchase": {
+        "/catalog/products/{product_id}/units/default-purchase": {
             "get": {
                 "security": [
                     {
@@ -4012,7 +4012,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     }
@@ -4093,7 +4093,7 @@
                 }
             }
         },
-        "/catalog/products/{productId}/units/default-sales": {
+        "/catalog/products/{product_id}/units/default-sales": {
             "get": {
                 "security": [
                     {
@@ -4122,7 +4122,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     }
@@ -4203,7 +4203,7 @@
                 }
             }
         },
-        "/catalog/products/{productId}/units/{id}": {
+        "/catalog/products/{product_id}/units/{id}": {
             "get": {
                 "security": [
                     {
@@ -4232,7 +4232,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
@@ -4348,7 +4348,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
@@ -4473,7 +4473,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Product ID",
-                        "name": "productId",
+                        "name": "product_id",
                         "in": "path",
                         "required": true
                     },
@@ -17519,7 +17519,7 @@
                 }
             }
         },
-        "/partner/customers/{customerId}/balance": {
+        "/partner/customers/{customer_id}/balance": {
             "get": {
                 "security": [
                     {
@@ -17548,7 +17548,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Customer ID",
-                        "name": "customerId",
+                        "name": "customer_id",
                         "in": "path",
                         "required": true
                     }
@@ -17652,7 +17652,7 @@
                 }
             }
         },
-        "/partner/customers/{customerId}/balance/adjust": {
+        "/partner/customers/{customer_id}/balance/adjust": {
             "post": {
                 "security": [
                     {
@@ -17681,7 +17681,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Customer ID",
-                        "name": "customerId",
+                        "name": "customer_id",
                         "in": "path",
                         "required": true
                     },
@@ -17807,7 +17807,7 @@
                 }
             }
         },
-        "/partner/customers/{customerId}/balance/recharge": {
+        "/partner/customers/{customer_id}/balance/recharge": {
             "post": {
                 "security": [
                     {
@@ -17836,7 +17836,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Customer ID",
-                        "name": "customerId",
+                        "name": "customer_id",
                         "in": "path",
                         "required": true
                     },
@@ -17962,7 +17962,7 @@
                 }
             }
         },
-        "/partner/customers/{customerId}/balance/summary": {
+        "/partner/customers/{customer_id}/balance/summary": {
             "get": {
                 "security": [
                     {
@@ -17991,7 +17991,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Customer ID",
-                        "name": "customerId",
+                        "name": "customer_id",
                         "in": "path",
                         "required": true
                     }
@@ -18090,7 +18090,7 @@
                 }
             }
         },
-        "/partner/customers/{customerId}/balance/transactions": {
+        "/partner/customers/{customer_id}/balance/transactions": {
             "get": {
                 "security": [
                     {
@@ -18119,7 +18119,7 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "Customer ID",
-                        "name": "customerId",
+                        "name": "customer_id",
                         "in": "path",
                         "required": true
                     },

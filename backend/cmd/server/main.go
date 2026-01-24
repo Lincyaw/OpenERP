@@ -295,14 +295,14 @@ func main() {
 	catalogRoutes.POST("/products/:id/deactivate", productHandler.Deactivate)
 	catalogRoutes.POST("/products/:id/discontinue", productHandler.Discontinue)
 	// Product unit routes
-	catalogRoutes.POST("/products/:productId/units", productUnitHandler.Create)
-	catalogRoutes.GET("/products/:productId/units", productUnitHandler.List)
-	catalogRoutes.GET("/products/:productId/units/convert", productUnitHandler.Convert)
-	catalogRoutes.GET("/products/:productId/units/default-purchase", productUnitHandler.GetDefaultPurchaseUnit)
-	catalogRoutes.GET("/products/:productId/units/default-sales", productUnitHandler.GetDefaultSalesUnit)
-	catalogRoutes.GET("/products/:productId/units/:id", productUnitHandler.GetByID)
-	catalogRoutes.PUT("/products/:productId/units/:id", productUnitHandler.Update)
-	catalogRoutes.DELETE("/products/:productId/units/:id", productUnitHandler.Delete)
+	catalogRoutes.POST("/products/:product_id/units", productUnitHandler.Create)
+	catalogRoutes.GET("/products/:product_id/units", productUnitHandler.List)
+	catalogRoutes.GET("/products/:product_id/units/convert", productUnitHandler.Convert)
+	catalogRoutes.GET("/products/:product_id/units/default-purchase", productUnitHandler.GetDefaultPurchaseUnit)
+	catalogRoutes.GET("/products/:product_id/units/default-sales", productUnitHandler.GetDefaultSalesUnit)
+	catalogRoutes.GET("/products/:product_id/units/:id", productUnitHandler.GetByID)
+	catalogRoutes.PUT("/products/:product_id/units/:id", productUnitHandler.Update)
+	catalogRoutes.DELETE("/products/:product_id/units/:id", productUnitHandler.Delete)
 	// Products by category
 	catalogRoutes.GET("/categories/:category_id/products", productHandler.GetByCategory)
 
@@ -342,11 +342,11 @@ func main() {
 	partnerRoutes.PUT("/customers/:id/level", customerHandler.SetLevel)
 
 	// Balance transaction routes (customer balance with transaction records)
-	partnerRoutes.POST("/customers/:customerId/balance/recharge", balanceTransactionHandler.Recharge)
-	partnerRoutes.POST("/customers/:customerId/balance/adjust", balanceTransactionHandler.Adjust)
-	partnerRoutes.GET("/customers/:customerId/balance", balanceTransactionHandler.GetBalance)
-	partnerRoutes.GET("/customers/:customerId/balance/summary", balanceTransactionHandler.GetBalanceSummary)
-	partnerRoutes.GET("/customers/:customerId/balance/transactions", balanceTransactionHandler.ListTransactions)
+	partnerRoutes.POST("/customers/:customer_id/balance/recharge", balanceTransactionHandler.Recharge)
+	partnerRoutes.POST("/customers/:customer_id/balance/adjust", balanceTransactionHandler.Adjust)
+	partnerRoutes.GET("/customers/:customer_id/balance", balanceTransactionHandler.GetBalance)
+	partnerRoutes.GET("/customers/:customer_id/balance/summary", balanceTransactionHandler.GetBalanceSummary)
+	partnerRoutes.GET("/customers/:customer_id/balance/transactions", balanceTransactionHandler.ListTransactions)
 	partnerRoutes.GET("/balance/transactions/:id", balanceTransactionHandler.GetTransaction)
 
 	// Supplier routes

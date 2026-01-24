@@ -87,7 +87,7 @@ type ConvertUnitResponse struct {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Param        request body CreateProductUnitRequest true "Product unit creation request"
 // @Success      201 {object} dto.Response{data=ProductUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
@@ -95,7 +95,7 @@ type ConvertUnitResponse struct {
 // @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units [post]
+// @Router       /catalog/products/{product_id}/units [post]
 func (h *ProductUnitHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -103,7 +103,7 @@ func (h *ProductUnitHandler) Create(c *gin.Context) {
 		return
 	}
 
-	productID, err := uuid.Parse(c.Param("productId"))
+	productID, err := uuid.Parse(c.Param("product_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid product ID format")
 		return
@@ -150,14 +150,14 @@ func (h *ProductUnitHandler) Create(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Param        id path string true "Unit ID" format(uuid)
 // @Success      200 {object} dto.Response{data=ProductUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/{id} [get]
+// @Router       /catalog/products/{product_id}/units/{id} [get]
 func (h *ProductUnitHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -187,13 +187,13 @@ func (h *ProductUnitHandler) GetByID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Success      200 {object} dto.Response{data=[]ProductUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units [get]
+// @Router       /catalog/products/{product_id}/units [get]
 func (h *ProductUnitHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -201,7 +201,7 @@ func (h *ProductUnitHandler) List(c *gin.Context) {
 		return
 	}
 
-	productID, err := uuid.Parse(c.Param("productId"))
+	productID, err := uuid.Parse(c.Param("product_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid product ID format")
 		return
@@ -223,7 +223,7 @@ func (h *ProductUnitHandler) List(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Param        id path string true "Unit ID" format(uuid)
 // @Param        request body UpdateProductUnitRequest true "Product unit update request"
 // @Success      200 {object} dto.Response{data=ProductUnitResponse}
@@ -231,7 +231,7 @@ func (h *ProductUnitHandler) List(c *gin.Context) {
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/{id} [put]
+// @Router       /catalog/products/{product_id}/units/{id} [put]
 func (h *ProductUnitHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -288,14 +288,14 @@ func (h *ProductUnitHandler) Update(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Param        id path string true "Unit ID" format(uuid)
 // @Success      200 {object} dto.Response
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/{id} [delete]
+// @Router       /catalog/products/{product_id}/units/{id} [delete]
 func (h *ProductUnitHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -324,14 +324,14 @@ func (h *ProductUnitHandler) Delete(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Param        request body ConvertUnitRequest true "Unit conversion request"
 // @Success      200 {object} dto.Response{data=ConvertUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/convert [post]
+// @Router       /catalog/products/{product_id}/units/convert [post]
 func (h *ProductUnitHandler) Convert(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -339,7 +339,7 @@ func (h *ProductUnitHandler) Convert(c *gin.Context) {
 		return
 	}
 
-	productID, err := uuid.Parse(c.Param("productId"))
+	productID, err := uuid.Parse(c.Param("product_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid product ID format")
 		return
@@ -374,13 +374,13 @@ func (h *ProductUnitHandler) Convert(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Success      200 {object} dto.Response{data=ProductUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/default-purchase [get]
+// @Router       /catalog/products/{product_id}/units/default-purchase [get]
 func (h *ProductUnitHandler) GetDefaultPurchaseUnit(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -388,7 +388,7 @@ func (h *ProductUnitHandler) GetDefaultPurchaseUnit(c *gin.Context) {
 		return
 	}
 
-	productID, err := uuid.Parse(c.Param("productId"))
+	productID, err := uuid.Parse(c.Param("product_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid product ID format")
 		return
@@ -410,13 +410,13 @@ func (h *ProductUnitHandler) GetDefaultPurchaseUnit(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        productId path string true "Product ID" format(uuid)
+// @Param        product_id path string true "Product ID" format(uuid)
 // @Success      200 {object} dto.Response{data=ProductUnitResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/products/{productId}/units/default-sales [get]
+// @Router       /catalog/products/{product_id}/units/default-sales [get]
 func (h *ProductUnitHandler) GetDefaultSalesUnit(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -424,7 +424,7 @@ func (h *ProductUnitHandler) GetDefaultSalesUnit(c *gin.Context) {
 		return
 	}
 
-	productID, err := uuid.Parse(c.Param("productId"))
+	productID, err := uuid.Parse(c.Param("product_id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid product ID format")
 		return

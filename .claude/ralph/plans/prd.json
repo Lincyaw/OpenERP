@@ -2412,7 +2412,7 @@
       "更新所有 handler 获取参数的代码",
       "更新 swagger 注解和前端 SDK"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-QA-006",
