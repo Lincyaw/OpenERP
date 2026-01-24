@@ -13022,3 +13022,92 @@ Implemented comprehensive end-to-end integration tests for all major business fl
 4. **Return workflow**: Set warehouse before submit/approve - cannot set warehouse after approval
 5. **Purchase returns**: Use `purchaseOrder.Items[0]` after receive to get updated `ReceivedQuantity`
 6. **Next priority items**: P8-002 (性能压力测试), P1-INT-003 (客户余额功能联调)
+
+---
+
+## 2026-01-25: P8-002 - Performance Stress Testing (性能压力测试)
+
+### Summary
+Implemented comprehensive performance stress testing suite with 11 test scenarios covering concurrent testing, load testing, and bottleneck identification. All tests pass with Performance Grade A.
+
+### Test Coverage
+
+**Concurrent Testing (执行并发测试):**
+1. `TestPerformance_ConcurrentProductList` - 10 users × 50 requests each
+2. `TestPerformance_ConcurrentProductGetByID` - Concurrent single-record queries
+3. `TestPerformance_ConcurrentMixedOperations` - 50% reads, 30% creates, 20% detail
+4. `TestPerformance_ConcurrentInventoryQueries` - Inventory list and detail queries
+5. `TestPerformance_ConcurrentCustomerOperations` - Customer CRUD operations
+6. `TestPerformance_ConcurrentWrites` - 100 concurrent product creates
+
+**Load Testing (执行负载测试):**
+7. `TestPerformance_SustainedLoad` - 100 RPS sustained for 10 seconds
+8. `TestPerformance_DatabaseConnectionPool` - 50 concurrent connections × 20 requests
+
+**Bottleneck Identification (识别性能瓶颈):**
+9. `TestPerformance_EndpointComparison` - 9 endpoints × 100 iterations each
+10. `TestPerformance_LargeResultSet` - Page sizes: 10, 20, 50, 100
+11. `TestPerformance_Summary` - Comprehensive mixed workload with grading
+
+### Performance Results
+
+**Key Metrics (from TestPerformance_Summary):**
+- Throughput: ~3,300 req/s
+- Error Rate: 0%
+- Average Response: ~2.8ms
+- P50: ~2.1ms
+- P90: ~5.1ms
+- P95: ~6.7ms
+- P99: ~13.2ms
+- **Performance Grade: A**
+
+**Endpoint Performance Analysis:**
+| Endpoint | Avg Response | Min | Max |
+|----------|-------------|-----|-----|
+| Product Detail | 1.27ms | 0.31ms | 4.33ms |
+| Warehouse List | 2.69ms | 0.53ms | 8.56ms |
+| Inventory List | 3.24ms | 0.79ms | 13.24ms |
+| Customer List | 2.98ms | 0.69ms | 10.28ms |
+| Product List | 3.16ms | 1.01ms | 18.81ms |
+
+**No Bottlenecks Identified** - All endpoints perform under 50ms average threshold
+
+### Implementation Details
+
+**Test Framework Features:**
+- `PerformanceConfig` - Configurable test parameters
+- `PerformanceMetrics` - Thread-safe metrics collection
+- `PerformanceReport` - Comprehensive reporting with percentiles
+- `PerformanceTestServer` - Full stack test server with pre-populated data
+
+**Pre-populated Test Data:**
+- 100 products
+- 50 customers
+- 5 warehouses
+- 100 inventory items (20 products × 5 warehouses)
+
+### Files Created
+- `backend/tests/integration/performance_test.go` (~1100 lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P8-002: passes: true)
+
+### How to Run Tests
+```bash
+# Run all performance tests
+cd backend && go test -v ./tests/integration/... -run "TestPerformance_" -timeout 600s
+
+# Run specific test
+go test -v ./tests/integration/... -run "TestPerformance_Summary" -timeout 300s
+
+# Run with verbose DB logging
+TEST_DB_DEBUG=1 go test -v ./tests/integration/... -run "TestPerformance_" -timeout 600s
+```
+
+### Notes for Next Developer
+1. **Performance Grade System**: A (excellent), B (good), C (fair), D (poor), F (fail)
+2. **Configurable thresholds**: Edit `DefaultPerformanceConfig()` to adjust expectations
+3. **Test isolation**: Each test spins up a fresh PostgreSQL container
+4. **Metrics collected**: Response time percentiles (P50/P90/P95/P99), throughput, error rate
+5. **Bottleneck analysis**: Endpoints exceeding 50ms average are flagged as potential bottlenecks
+6. **Next priority items**: P8-003 (安全渗透测试), P8-004 (UAT用户验收测试)
