@@ -620,7 +620,7 @@
       "测试供应商 API",
       "测试仓库 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-QA-005",

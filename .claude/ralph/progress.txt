@@ -13212,3 +13212,127 @@ go test -v ./tests/integration/... -run "TestPenetration_DataSecurity" -timeout 
 3. **JWT attacks tested**: none algorithm, algorithm confusion, signature tampering, payload modification
 4. **Input validation**: URL-encoded payloads for command injection, LDAP injection, XXE, header injection
 5. **Next priority items**: P8-004 (UAT用户验收测试), P8-005 (问题修复与回归)
+
+---
+
+## 2026-01-25: P1-QA-004 - Partner API Integration Tests (Partner API 集成测试)
+
+### Summary
+Implemented comprehensive integration tests for all three Partner module APIs: Customer, Supplier, and Warehouse. All 24 tests pass successfully, covering CRUD operations, status operations, special features, validation, and tenant isolation.
+
+### Test Coverage
+
+**Customer API Tests (测试客户 API):**
+1. `TestCustomerAPI_CRUD` - Full CRUD operations
+   - Create customer with all fields
+   - Get customer by ID
+   - Get customer by code
+   - Update customer details
+   - Update customer code
+   - Delete customer
+
+2. `TestCustomerAPI_StatusOperations` - Status management
+   - Deactivate active customer
+   - Activate inactive customer
+   - Suspend customer
+
+3. `TestCustomerAPI_BalanceOperations` - Balance management
+   - Add balance to customer
+   - Deduct balance from customer
+   - Reject excessive deduction (insufficient balance)
+
+4. `TestCustomerAPI_LevelOperations` - Customer level setting
+   - Set customer level to gold
+   - Set customer level to VIP
+
+5. `TestCustomerAPI_List` - List with pagination
+   - List with default pagination
+   - List with custom pagination
+   - Get status counts
+
+6. `TestCustomerAPI_Validation` - Input validation
+   - Missing required fields
+   - Invalid customer type
+   - Invalid UUID
+   - Update non-existent customer
+
+7. `TestCustomerAPI_DuplicateCode` - Duplicate handling
+   - Create with duplicate code fails
+
+8. `TestCustomerAPI_TenantIsolation` - Multi-tenant security
+   - Tenant 2 cannot see Tenant 1 customer
+   - Tenant 2 cannot update Tenant 1 customer
+   - Same code allowed for different tenants
+
+**Supplier API Tests (测试供应商 API):**
+1. `TestSupplierAPI_CRUD` - Full CRUD operations
+   - Create supplier with rating and credit terms
+   - Get supplier by ID/code
+   - Update supplier details and code
+   - Delete supplier
+
+2. `TestSupplierAPI_StatusOperations` - Status management
+   - Deactivate/Activate supplier
+   - Block supplier
+
+3. `TestSupplierAPI_RatingAndPaymentTerms` - Supplier attributes
+   - Set supplier rating (0-5)
+   - Set payment terms (credit days, credit limit)
+
+4. `TestSupplierAPI_List` - List with pagination
+
+5. `TestSupplierAPI_Validation` - Input validation
+   - Missing type, invalid type, invalid rating
+
+6. `TestSupplierAPI_TenantIsolation` - Multi-tenant security
+
+**Warehouse API Tests (测试仓库 API):**
+1. `TestWarehouseAPI_CRUD` - Full CRUD operations
+   - Create warehouse (physical, virtual, consign, transit)
+   - Get warehouse by ID/code
+   - Get default warehouse
+   - Update warehouse details and code
+   - Delete warehouse
+
+2. `TestWarehouseAPI_StatusOperations` - Status management
+   - Disable/Enable warehouse
+
+3. `TestWarehouseAPI_DefaultOperations` - Default warehouse
+   - Set warehouse as default
+   - Previous default becomes non-default
+
+4. `TestWarehouseAPI_List` - List with pagination
+
+5. `TestWarehouseAPI_Validation` - Input validation
+
+6. `TestWarehouseAPI_TenantIsolation` - Multi-tenant security
+
+### Files Created
+- `backend/tests/integration/partner_api_test.go` (~1200 lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P1-QA-004: passes: true)
+
+### How to Run Tests
+```bash
+# Run all Partner API tests
+cd backend && go test -v ./tests/integration/... -run "TestCustomerAPI_|TestSupplierAPI_|TestWarehouseAPI_" -timeout 600s
+
+# Run specific API tests
+go test -v ./tests/integration/... -run "TestCustomerAPI_CRUD" -timeout 300s
+go test -v ./tests/integration/... -run "TestSupplierAPI_CRUD" -timeout 300s
+go test -v ./tests/integration/... -run "TestWarehouseAPI_CRUD" -timeout 300s
+```
+
+### Technical Notes
+- Uses `PartnerTestServer` wrapper that sets up all three Partner APIs
+- Each test creates a fresh PostgreSQL container via testcontainers
+- Tests cover: CRUD, status operations, special features (balance, rating, default), validation, duplicate handling, tenant isolation
+- Test naming convention follows: `Test{Entity}API_{Feature}` pattern
+
+### Notes for Next Developer
+1. **Test infrastructure**: `PartnerTestServer` in `partner_api_test.go` provides HTTP test setup
+2. **Tenant isolation**: All tests verify cross-tenant access is blocked
+3. **Validation tests**: Cover both missing fields and invalid values
+4. **Status tests**: Cover all status transitions for each entity type
+5. **Next priority items**: P1-QA-005 (商品模块前端组件测试), P1-QA-006 (伙伴模块前端组件测试)
