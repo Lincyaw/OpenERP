@@ -444,7 +444,7 @@
       "实现余额增减操作",
       "实现余额查询"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-BE-017",
@@ -455,7 +455,7 @@
       "记录余额变动明细",
       "支持充值消费退款类型"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-BE-018",
@@ -466,7 +466,7 @@
       "实现充值 API",
       "实现余额流水查询 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-FE-001",

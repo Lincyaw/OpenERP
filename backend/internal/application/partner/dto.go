@@ -535,3 +535,89 @@ func ToWarehouseListResponses(warehouses []partner.Warehouse) []WarehouseListRes
 	}
 	return responses
 }
+
+// =============================================================================
+// Balance Transaction DTOs
+// =============================================================================
+
+// RechargeBalanceRequest represents a request to recharge customer balance
+type RechargeBalanceRequest struct {
+	Amount    float64 `json:"amount" binding:"required,gt=0"`
+	Reference string  `json:"reference" binding:"max=100"`
+	Remark    string  `json:"remark" binding:"max=500"`
+}
+
+// AdjustBalanceRequest represents a request to adjust customer balance
+type AdjustBalanceRequest struct {
+	Amount     float64 `json:"amount" binding:"required,gt=0"`
+	IsIncrease bool    `json:"is_increase"`
+	Reference  string  `json:"reference" binding:"max=100"`
+	Remark     string  `json:"remark" binding:"required,min=1,max=500"`
+}
+
+// BalanceTransactionResponse represents a balance transaction in API responses
+type BalanceTransactionResponse struct {
+	ID              uuid.UUID       `json:"id"`
+	TenantID        uuid.UUID       `json:"tenant_id"`
+	CustomerID      uuid.UUID       `json:"customer_id"`
+	TransactionType string          `json:"transaction_type"`
+	Amount          decimal.Decimal `json:"amount"`
+	BalanceBefore   decimal.Decimal `json:"balance_before"`
+	BalanceAfter    decimal.Decimal `json:"balance_after"`
+	SourceType      string          `json:"source_type"`
+	SourceID        *string         `json:"source_id,omitempty"`
+	Reference       string          `json:"reference"`
+	Remark          string          `json:"remark"`
+	OperatorID      *uuid.UUID      `json:"operator_id,omitempty"`
+	TransactionDate time.Time       `json:"transaction_date"`
+	CreatedAt       time.Time       `json:"created_at"`
+}
+
+// BalanceTransactionListFilter represents filter options for balance transaction list
+type BalanceTransactionListFilter struct {
+	CustomerID      *uuid.UUID `form:"-"`
+	TransactionType string     `form:"transaction_type" binding:"omitempty,oneof=RECHARGE CONSUME REFUND ADJUSTMENT EXPIRE"`
+	SourceType      string     `form:"source_type" binding:"omitempty,oneof=MANUAL SALES_ORDER SALES_RETURN RECEIPT_VOUCHER SYSTEM"`
+	DateFrom        string     `form:"date_from"`
+	DateTo          string     `form:"date_to"`
+	Page            int        `form:"page" binding:"min=1"`
+	PageSize        int        `form:"page_size" binding:"min=1,max=100"`
+}
+
+// BalanceSummaryResponse represents customer balance summary
+type BalanceSummaryResponse struct {
+	CustomerID     uuid.UUID       `json:"customer_id"`
+	CurrentBalance decimal.Decimal `json:"current_balance"`
+	TotalRecharge  decimal.Decimal `json:"total_recharge"`
+	TotalConsume   decimal.Decimal `json:"total_consume"`
+	TotalRefund    decimal.Decimal `json:"total_refund"`
+}
+
+// ToBalanceTransactionResponse converts a domain BalanceTransaction to BalanceTransactionResponse
+func ToBalanceTransactionResponse(t *partner.BalanceTransaction) BalanceTransactionResponse {
+	return BalanceTransactionResponse{
+		ID:              t.ID,
+		TenantID:        t.TenantID,
+		CustomerID:      t.CustomerID,
+		TransactionType: string(t.TransactionType),
+		Amount:          t.Amount,
+		BalanceBefore:   t.BalanceBefore,
+		BalanceAfter:    t.BalanceAfter,
+		SourceType:      string(t.SourceType),
+		SourceID:        t.SourceID,
+		Reference:       t.Reference,
+		Remark:          t.Remark,
+		OperatorID:      t.OperatorID,
+		TransactionDate: t.TransactionDate,
+		CreatedAt:       t.CreatedAt,
+	}
+}
+
+// ToBalanceTransactionResponses converts a slice of domain BalanceTransactions to BalanceTransactionResponses
+func ToBalanceTransactionResponses(transactions []*partner.BalanceTransaction) []BalanceTransactionResponse {
+	responses := make([]BalanceTransactionResponse, len(transactions))
+	for i, t := range transactions {
+		responses[i] = ToBalanceTransactionResponse(t)
+	}
+	return responses
+}

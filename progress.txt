@@ -50,3 +50,72 @@ Implemented sales order event handlers for inventory integration via domain even
 
 ### Tests
 All tests pass (`go test ./...`)
+
+## 2026-01-24: P1-BE-016, P1-BE-017, P1-BE-018 - Customer Balance Transaction Feature
+
+### Completed Features
+Implemented complete customer balance transaction tracking system with API endpoints.
+
+### Files Created
+- `backend/internal/domain/partner/balance_transaction.go`
+  - BalanceTransaction entity with transaction types (RECHARGE, CONSUME, REFUND, ADJUSTMENT, EXPIRE)
+  - BalanceTransactionSourceType (MANUAL, SALES_ORDER, SALES_RETURN, RECEIPT_VOUCHER, SYSTEM)
+  - Factory functions: CreateRechargeTransaction, CreateConsumeTransaction, CreateRefundTransaction, CreateAdjustmentTransaction
+  - Helper methods: GetSignedAmount, IsIncrease, IsDecrease, BalanceChange
+
+- `backend/internal/domain/partner/balance_transaction_repository.go`
+  - BalanceTransactionRepository interface with CRUD and query methods
+  - BalanceTransactionFilter for pagination and filtering
+
+- `backend/migrations/000016_create_balance_transactions.up.sql`
+  - Creates balance_transactions table with proper indexes
+  - Constraints for transaction types, source types, and amount validation
+
+- `backend/migrations/000016_create_balance_transactions.down.sql`
+  - Rollback migration
+
+- `backend/internal/infrastructure/persistence/balance_transaction_repository.go`
+  - GORM implementation of BalanceTransactionRepository
+  - Supports filtering by customer, type, source, date range
+  - Implements SumByCustomerIDAndType for summary queries
+
+- `backend/internal/application/partner/balance_transaction_service.go`
+  - Application service with Recharge, Consume, Refund, Adjust operations
+  - GetByID, ListByCustomer, GetBalanceSummary, GetBalance, HasSufficientBalance
+
+- `backend/internal/interfaces/http/handler/balance_transaction.go`
+  - HTTP handler with Swagger annotations for all endpoints
+  - POST /customers/:customerId/balance/recharge
+  - POST /customers/:customerId/balance/adjust
+  - GET /customers/:customerId/balance
+  - GET /customers/:customerId/balance/summary
+  - GET /customers/:customerId/balance/transactions
+  - GET /balance/transactions/:id
+
+### Files Modified
+- `backend/internal/application/partner/dto.go`
+  - Added BalanceTransaction DTOs: RechargeBalanceRequest, AdjustBalanceRequest
+  - Added BalanceTransactionResponse, BalanceTransactionListFilter, BalanceSummaryResponse
+  - Added converter functions: ToBalanceTransactionResponse, ToBalanceTransactionResponses
+
+- `backend/cmd/server/main.go`
+  - Registered BalanceTransactionRepository
+  - Registered BalanceTransactionService
+  - Registered BalanceTransactionHandler with routes under /partner
+
+### API Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /partner/customers/:customerId/balance/recharge | Recharge customer balance |
+| POST | /partner/customers/:customerId/balance/adjust | Adjust customer balance (increase/decrease) |
+| GET | /partner/customers/:customerId/balance | Get current balance |
+| GET | /partner/customers/:customerId/balance/summary | Get balance summary (totals) |
+| GET | /partner/customers/:customerId/balance/transactions | List balance transactions |
+| GET | /partner/balance/transactions/:id | Get transaction by ID |
+
+### OpenAPI & SDK
+- Regenerated OpenAPI spec with `swag init`
+- Regenerated frontend TypeScript SDK with `npm run api:generate`
+
+### Tests
+Backend builds successfully (`go build ./cmd/server/main.go`)

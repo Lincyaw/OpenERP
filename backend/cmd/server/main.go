@@ -102,6 +102,7 @@ func main() {
 	customerRepo := persistence.NewGormCustomerRepository(db.DB)
 	supplierRepo := persistence.NewGormSupplierRepository(db.DB)
 	warehouseRepo := persistence.NewGormWarehouseRepository(db.DB)
+	balanceTransactionRepo := persistence.NewGormBalanceTransactionRepository(db.DB)
 	inventoryItemRepo := persistence.NewGormInventoryItemRepository(db.DB)
 	stockBatchRepo := persistence.NewGormStockBatchRepository(db.DB)
 	stockLockRepo := persistence.NewGormStockLockRepository(db.DB)
@@ -118,6 +119,7 @@ func main() {
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
+	balanceTransactionService := partnerapp.NewBalanceTransactionService(balanceTransactionRepo, customerRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
@@ -176,6 +178,7 @@ func main() {
 	customerHandler := handler.NewCustomerHandler(customerService)
 	supplierHandler := handler.NewSupplierHandler(supplierService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
+	balanceTransactionHandler := handler.NewBalanceTransactionHandler(balanceTransactionService)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 	salesOrderHandler := handler.NewSalesOrderHandler(salesOrderService)
 	purchaseOrderHandler := handler.NewPurchaseOrderHandler(purchaseOrderService)
@@ -313,6 +316,14 @@ func main() {
 	partnerRoutes.POST("/customers/:id/balance/add", customerHandler.AddBalance)
 	partnerRoutes.POST("/customers/:id/balance/deduct", customerHandler.DeductBalance)
 	partnerRoutes.PUT("/customers/:id/level", customerHandler.SetLevel)
+
+	// Balance transaction routes (customer balance with transaction records)
+	partnerRoutes.POST("/customers/:customerId/balance/recharge", balanceTransactionHandler.Recharge)
+	partnerRoutes.POST("/customers/:customerId/balance/adjust", balanceTransactionHandler.Adjust)
+	partnerRoutes.GET("/customers/:customerId/balance", balanceTransactionHandler.GetBalance)
+	partnerRoutes.GET("/customers/:customerId/balance/summary", balanceTransactionHandler.GetBalanceSummary)
+	partnerRoutes.GET("/customers/:customerId/balance/transactions", balanceTransactionHandler.ListTransactions)
+	partnerRoutes.GET("/balance/transactions/:id", balanceTransactionHandler.GetTransaction)
 
 	// Supplier routes
 	partnerRoutes.POST("/suppliers", supplierHandler.Create)

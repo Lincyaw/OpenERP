@@ -237,6 +237,28 @@ definitions:
     - unit
     - unit_cost
     type: object
+  handler.AdjustRequest:
+    description: Request body for adjusting customer balance
+    properties:
+      amount:
+        example: 100
+        type: number
+      is_increase:
+        example: true
+        type: boolean
+      reference:
+        example: ADJ-20260124-001
+        maxLength: 100
+        type: string
+      remark:
+        example: Balance correction due to system error
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - amount
+    - remark
+    type: object
   handler.AdjustStockRequest:
     description: Request body for stock count adjustment
     properties:
@@ -312,6 +334,71 @@ definitions:
         type: number
     required:
     - amount
+    type: object
+  handler.BalanceSummaryResponse:
+    description: Customer balance summary response
+    properties:
+      current_balance:
+        example: 1500
+        type: number
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_consume:
+        example: 3500
+        type: number
+      total_recharge:
+        example: 5000
+        type: number
+      total_refund:
+        example: 0
+        type: number
+    type: object
+  handler.BalanceTransactionResponse:
+    description: Balance transaction response
+    properties:
+      amount:
+        example: 1000
+        type: number
+      balance_after:
+        example: 1500
+        type: number
+      balance_before:
+        example: 500
+        type: number
+      created_at:
+        example: "2026-01-24T10:00:00Z"
+        type: string
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      operator_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      reference:
+        example: RCH-20260124-001
+        type: string
+      remark:
+        example: Customer deposit
+        type: string
+      source_id:
+        example: ORD-001
+        type: string
+      source_type:
+        example: MANUAL
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      transaction_date:
+        example: "2026-01-24T10:00:00Z"
+        type: string
+      transaction_type:
+        example: RECHARGE
+        type: string
     type: object
   handler.CancelOrderRequest:
     description: Request body for cancelling an order
@@ -2553,6 +2640,23 @@ definitions:
       unit_cost:
         example: 50
         type: number
+    type: object
+  handler.RechargeRequest:
+    description: Request body for recharging customer balance
+    properties:
+      amount:
+        example: 1000
+        type: number
+      reference:
+        example: RCH-20260124-001
+        maxLength: 100
+        type: string
+      remark:
+        example: Customer deposit
+        maxLength: 500
+        type: string
+    required:
+    - amount
     type: object
   handler.ReconcilePaymentResultResponse:
     description: Reconcile payment result response
@@ -10711,6 +10815,75 @@ paths:
       summary: List inventory by warehouse
       tags:
       - inventory
+  /partner/balance/transactions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific balance transaction by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Transaction ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceTransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get balance transaction by ID
+      tags:
+      - balance
   /partner/customers:
     get:
       consumes:
@@ -10898,6 +11071,427 @@ paths:
       summary: Create a new customer
       tags:
       - customers
+  /partner/customers/{customerId}/balance:
+    get:
+      consumes:
+      - application/json
+      description: Get the current balance for a customer
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  properties:
+                    balance:
+                      type: number
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer balance
+      tags:
+      - balance
+  /partner/customers/{customerId}/balance/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Manually adjust a customer's balance (increase or decrease)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - description: Adjust request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AdjustRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceTransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Adjust customer balance
+      tags:
+      - balance
+  /partner/customers/{customerId}/balance/recharge:
+    post:
+      consumes:
+      - application/json
+      description: Add funds to a customer's prepaid balance
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - description: Recharge request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RechargeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceTransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Recharge customer balance
+      tags:
+      - balance
+  /partner/customers/{customerId}/balance/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get balance summary including total recharge, consume, and refund
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer balance summary
+      tags:
+      - balance
+  /partner/customers/{customerId}/balance/transactions:
+    get:
+      consumes:
+      - application/json
+      description: List balance transactions for a customer with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - description: Transaction type
+        enum:
+        - RECHARGE
+        - CONSUME
+        - REFUND
+        - ADJUSTMENT
+        - EXPIRE
+        in: query
+        name: transaction_type
+        type: string
+      - description: Source type
+        enum:
+        - MANUAL
+        - SALES_ORDER
+        - SALES_RETURN
+        - RECEIPT_VOUCHER
+        - SYSTEM
+        in: query
+        name: source_type
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.BalanceTransactionResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List balance transactions
+      tags:
+      - balance
   /partner/customers/{id}:
     delete:
       consumes:
