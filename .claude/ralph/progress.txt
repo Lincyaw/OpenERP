@@ -7155,3 +7155,99 @@ Implemented the Dashboard/Home page for the ERP system. This provides a comprehe
 - **Authentication**: Dashboard will need authentication integration when P6 is complete
 - **Real-time Updates**: Consider adding WebSocket or polling for live updates in future
 
+
+---
+
+## P5-BE-001 to P5-BE-005: Report Module Backend Implementation
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented comprehensive report backend module following CQRS pattern with read models for sales, inventory, and finance reports. This provides the data layer for dashboard and report pages.
+
+### Features Implemented
+
+1. **P5-BE-001: SalesReport Read Model**
+   - Sales summary with total orders, revenue, cost, and profit
+   - Daily sales trend data
+   - Product sales ranking (top N by sales)
+   - Customer sales ranking (top N by sales)
+   - Multi-dimensional filtering (by product, category, customer, date range)
+
+2. **P5-BE-002: InventoryTurnover Read Model**
+   - Inventory summary (totals, low stock, out of stock counts)
+   - Inventory turnover calculation per product/warehouse
+   - Inventory value by category breakdown
+   - Inventory value by warehouse breakdown
+   - Slow-moving products identification
+
+3. **P5-BE-003: ProfitLossStatement**
+   - P&L statement with revenue, COGS, gross profit, expenses
+   - Gross and net margin calculations
+   - Monthly profit trend analysis
+   - Profit by product analysis
+   - Profit by customer analysis
+
+4. **P5-BE-004: CashFlowStatement**
+   - Cash flow statement (operating activities)
+   - Receipts from customers tracking
+   - Payments to suppliers tracking
+   - Expense payments and other income
+   - Detailed cash flow item listing with running balance
+
+5. **P5-BE-005: Report API Endpoints**
+   - `/reports/sales/summary` - Sales summary
+   - `/reports/sales/daily-trend` - Daily sales trend
+   - `/reports/sales/products/ranking` - Product sales ranking
+   - `/reports/sales/customers/ranking` - Customer sales ranking
+   - `/reports/inventory/summary` - Inventory summary
+   - `/reports/inventory/turnover` - Inventory turnover
+   - `/reports/inventory/value-by-category` - Value by category
+   - `/reports/inventory/value-by-warehouse` - Value by warehouse
+   - `/reports/inventory/slow-moving` - Slow moving products
+   - `/reports/finance/profit-loss` - P&L statement
+   - `/reports/finance/monthly-trend` - Monthly profit trend
+   - `/reports/finance/profit-by-product` - Profit by product
+   - `/reports/finance/cash-flow` - Cash flow statement
+   - `/reports/finance/cash-flow/items` - Cash flow items
+
+### Files Created
+
+**Domain Layer:**
+- `backend/internal/domain/report/sales_report.go` - Sales report read models and repository interface
+- `backend/internal/domain/report/inventory_report.go` - Inventory report read models and repository interface
+- `backend/internal/domain/report/finance_report.go` - Finance report read models (P&L, Cash Flow) and repository interface
+
+**Application Layer:**
+- `backend/internal/application/report/report_service.go` - Report application service with all report operations
+
+**Infrastructure Layer:**
+- `backend/internal/infrastructure/persistence/sales_report_repository.go` - GORM sales report repository
+- `backend/internal/infrastructure/persistence/inventory_report_repository.go` - GORM inventory report repository
+- `backend/internal/infrastructure/persistence/finance_report_repository.go` - GORM finance report repository
+
+**Interface Layer:**
+- `backend/internal/interfaces/http/handler/report.go` - Report HTTP handler with all API endpoints
+
+### Technical Notes
+- **CQRS Pattern**: Read models separate from write models for optimized queries
+- **PostgreSQL Queries**: Complex aggregations using GROUP BY, JOINs, subqueries
+- **Date Range Filtering**: All reports support start/end date filtering
+- **Tenant Isolation**: All queries filtered by tenant_id
+- **Decimal Precision**: Uses shopspring/decimal for financial calculations
+- **Turnover Calculation**: Turnover rate = Sold Quantity / Average Stock
+- **Profit Margins**: Calculated as percentage of revenue
+
+### API Documentation
+All endpoints include Swagger annotations for OpenAPI spec generation.
+
+### Build Status
+- `go build ./...` ✅ PASSED
+
+### Notes for Next Developer
+- **P5-FE Integration**: Frontend report pages can now be implemented using these APIs
+- **Route Registration**: Report handler needs to be registered in the main router
+- **Database Tables**: Queries assume existing tables (sales_orders, sales_order_items, inventory_items, products, etc.)
+- **P5-BE-006**: Async aggregation (scheduled tasks) is pending if needed for performance optimization
+- **Authentication**: Currently uses X-Tenant-ID header; will integrate with P6 auth module
