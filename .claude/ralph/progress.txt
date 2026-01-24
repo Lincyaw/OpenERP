@@ -5037,3 +5037,104 @@ Implemented the PurchaseOrder aggregate root with complete lifecycle management 
 - **P3-BE-012** (PurchaseOrder Application Service) is the next logical task
 - The ReceivedItemInfo struct includes batch_number and expiry_date for inventory integration
 - Domain events can be used to trigger inventory updates when implementing P3-BE-011
+
+---
+
+## 2026-01-24 - P3-BE-012: PurchaseOrder Application Service Complete
+
+### Completed
+- **P3-BE-012**: PurchaseOrder Application Service
+
+### What was done
+1. Created Purchase Order DTOs in `internal/application/trade/dto.go`:
+   - `CreatePurchaseOrderRequest` / `CreatePurchaseOrderItemInput` - Order creation
+   - `UpdatePurchaseOrderRequest` / `UpdatePurchaseOrderItemRequest` - Order updates
+   - `AddPurchaseOrderItemRequest` - Adding items to order
+   - `ConfirmPurchaseOrderRequest` - Confirm order with optional warehouse
+   - `ReceiveItemInput` / `ReceivePurchaseOrderRequest` - Receive goods
+   - `CancelPurchaseOrderRequest` - Cancel with reason
+   - `PurchaseOrderListFilter` - List filtering with pagination
+   - `PurchaseOrderResponse` / `PurchaseOrderListItemResponse` - API responses
+   - `PurchaseOrderItemResponse` - Item response with remaining quantity
+   - `ReceivedItemResponse` / `ReceiveResultResponse` - Receive operation results
+   - `PurchaseOrderStatusSummary` - Status counts including pending receipt
+   - Converter functions: `ToPurchaseOrderResponse`, `ToPurchaseOrderListItemResponse`, etc.
+
+2. Created PurchaseOrderService in `internal/application/trade/purchase_order_service.go`:
+   - `NewPurchaseOrderService(repo)` - Constructor
+   - `Create(ctx, tenantID, req)` - Create new purchase order with items
+   - `GetByID(ctx, tenantID, orderID)` - Get order by ID
+   - `GetByOrderNumber(ctx, tenantID, orderNumber)` - Get order by number
+   - `List(ctx, tenantID, filter)` - List orders with filtering/pagination
+   - `ListBySupplier(ctx, tenantID, supplierID, filter)` - Filter by supplier
+   - `ListByStatus(ctx, tenantID, status, filter)` - Filter by status
+   - `ListPendingReceipt(ctx, tenantID, filter)` - Orders waiting for receipt
+   - `Update(ctx, tenantID, orderID, req)` - Update draft order
+   - `AddItem(ctx, tenantID, orderID, req)` - Add item to draft order
+   - `UpdateItem(ctx, tenantID, orderID, itemID, req)` - Update item in draft order
+   - `RemoveItem(ctx, tenantID, orderID, itemID)` - Remove item from draft order
+   - `Confirm(ctx, tenantID, orderID, req)` - Confirm order
+   - `Receive(ctx, tenantID, orderID, req)` - Receive goods with batch/expiry tracking
+   - `Cancel(ctx, tenantID, orderID, req)` - Cancel order with reason
+   - `Delete(ctx, tenantID, orderID)` - Delete draft order
+   - `GetStatusSummary(ctx, tenantID)` - Get order counts by status
+   - `GetReceivableItems(ctx, tenantID, orderID)` - Get items that can receive more goods
+
+3. Created comprehensive unit tests in `internal/application/trade/purchase_order_service_test.go`:
+   - MockPurchaseOrderRepository with all interface methods
+   - Test helpers for creating test orders
+   - 28+ test cases covering all service methods
+   - Tests for success paths, validation, and error handling
+   - Tests for partial receiving, cost override, expiry dates
+
+### Files created
+- `backend/internal/application/trade/purchase_order_service.go`
+- `backend/internal/application/trade/purchase_order_service_test.go`
+
+### Files modified
+- `backend/internal/application/trade/dto.go` (added Purchase Order DTOs)
+
+### Build Status
+- `go build ./...` passes
+- `go test ./...` passes (all 28 new tests pass)
+
+### Key Features Implemented
+| Feature | Status |
+|---------|--------|
+| Create purchase order | ✓ |
+| CRUD operations | ✓ |
+| Order confirmation | ✓ |
+| Partial receiving | ✓ |
+| Full receiving | ✓ |
+| Batch number tracking | ✓ |
+| Expiry date tracking | ✓ |
+| Cost override on receive | ✓ |
+| Order cancellation | ✓ |
+| Status summary | ✓ |
+| Pending receipt filter | ✓ |
+| Receive progress tracking | ✓ |
+| Optimistic locking | ✓ |
+
+### API Endpoints to be implemented (P3-BE-013)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /trade/purchase-orders | Create purchase order |
+| GET | /trade/purchase-orders | List purchase orders |
+| GET | /trade/purchase-orders/:id | Get purchase order |
+| PUT | /trade/purchase-orders/:id | Update purchase order |
+| DELETE | /trade/purchase-orders/:id | Delete purchase order |
+| POST | /trade/purchase-orders/:id/confirm | Confirm order |
+| POST | /trade/purchase-orders/:id/receive | Receive goods |
+| POST | /trade/purchase-orders/:id/cancel | Cancel order |
+| GET | /trade/purchase-orders/:id/receivable-items | Get receivable items |
+| GET | /trade/purchase-orders/status-summary | Get status counts |
+| GET | /trade/purchase-orders/pending-receipt | List pending receipt orders |
+
+### Notes for next developer
+- **P3-BE-013** (PurchaseOrder API) is the next task - add HTTP handlers using this service
+- **P3-BE-011** (采购收货逻辑) - The Receive() method is ready, but inventory integration via domain events is pending
+- The service follows the same patterns as SalesOrderService for consistency
+- ReceiveResultResponse includes all received item info including batch numbers and expiry dates
+- Domain events are raised during Receive() - subscribe to PurchaseOrderReceivedEvent for inventory updates
+- PendingReceipt includes both CONFIRMED and PARTIAL_RECEIVED orders
+- Use GetReceivableItems() to show remaining quantities for each item before receiving
