@@ -6701,3 +6701,82 @@ Implemented the Receipt Reconciliation page for the Finance module frontend. Thi
   - Use postFinancePaymentsIdReconcile API
 - **Future enhancement**: Add preview endpoint to show allocations before commit
 - **Future enhancement**: Add undo/reverse allocation functionality
+
+---
+
+## P4-FE-006: 付款核销页面 (Payment Reconciliation Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Completed the Payment Reconciliation page for the Finance module frontend. This page allows users to reconcile payment vouchers against outstanding payables, supporting both automatic (FIFO) and manual allocation strategies. This mirrors the Receipt Reconciliation page (P4-FE-004) with payment-specific adaptations.
+
+### Features Implemented
+
+1. **Payment Voucher Details Display**
+   - Shows voucher number, supplier, status, payment method, date
+   - Displays amount, allocated amount, and unallocated amount
+   - Status banner for vouchers not in CONFIRMED state
+
+2. **Pending Payables List**
+   - Lists all pending/partial payables for the supplier
+   - Shows payable number, source, amounts, due date, status
+   - Sortable table with proper formatting
+
+3. **Automatic Reconciliation (FIFO)**
+   - Allocates by due date order (First In First Out)
+   - Shows preview of allocations before confirming
+   - One-click reconciliation
+
+4. **Manual Reconciliation**
+   - Checkbox selection for each payable
+   - Custom amount input per payable
+   - Select all / deselect all functionality
+   - Amount validation (cannot exceed outstanding)
+
+5. **Reconciliation Summary**
+   - Shows available amount to reconcile
+   - Shows selected/preview allocation total
+   - Shows remaining amount after reconciliation
+
+6. **Reconciliation Result**
+   - Success/partial banner after reconciliation
+   - Updated voucher details
+   - List of reconciled payables with new status
+
+7. **Existing Allocations History**
+   - Shows previously reconciled allocations
+   - Displays payable number, amount, time, remarks
+
+### Files Created/Modified
+- `frontend/src/pages/finance/PaymentReconcile.tsx` (NEW) - Payment reconciliation page component
+- `frontend/src/pages/finance/PaymentReconcile.css` (NEW) - Styles for reconciliation page
+- `frontend/src/router/routes.tsx` (MODIFIED) - Added route for /finance/payments/:id/reconcile
+
+### Technical Notes
+- **Two reconciliation modes**: FIFO (automatic) and MANUAL (user selection)
+- **FIFO Strategy**: Sorts payables by due date then creation date
+- **Semi UI Components**: Tag, Table, Checkbox, InputNumber, Descriptions, Banner
+- **API Integration**: Uses postFinancePaymentsIdReconcile for reconciliation
+- **Type Safety**: Proper TypeScript types for Tag colors and Checkbox events
+- **Design System**: Uses CSS variables per frontend/README.md
+- **Responsive**: Mobile-first design with breakpoints at 768px
+- **Accessibility**: High contrast mode support, focus states
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Navigation
+- Access via: `/finance/payments/:id/reconcile`
+- Back button returns to `/finance/payables`
+
+### Notes for Next Developer
+- **Pattern mirrors P4-FE-004**: Receipt reconciliation page has same structure
+- **Backend not wired**: Finance API routes exist but persistence layer isn't fully connected
+- **Next Frontend Tasks**:
+  - P4-FE-010 (费用录入页面) - Expense entry page
+  - P4-FE-011 (其他收入录入页面) - Other income entry page
+  - P4-FE-012 (收支流水页面) - Cash flow list page
+- **Future enhancement**: Add preview endpoint to show allocations before commit
+- **Future enhancement**: Add undo/reverse allocation functionality
