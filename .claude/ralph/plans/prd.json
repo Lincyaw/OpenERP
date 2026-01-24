@@ -165,7 +165,7 @@
   {"id":"P5-FE-003","story":"库存周转报表页面","priority":"medium","requirements":["展示库存周转数据","实现周转率图表","支持商品筛选"],"passes":false},
   {"id":"P5-FE-004","story":"损益报表页面","priority":"medium","requirements":["展示损益表数据","支持期间选择","支持导出"],"passes":false},
   {"id":"P5-FE-005","story":"现金流量报表页面","priority":"medium","requirements":["展示现金流量数据","分类展示各项活动","支持期间对比"],"passes":false},
-  {"id":"P5-FE-006","story":"Dashboard 首页看板","priority":"high","requirements":["展示关键指标卡片","展示销售趋势图","展示待办事项"],"passes":false},
+  {"id":"P5-FE-006","story":"Dashboard 首页看板","priority":"high","requirements":["展示关键指标卡片","展示销售趋势图","展示待办事项"],"passes":true},
   {"id":"P5-INT-001","story":"报表模块联调","priority":"medium","requirements":["验证报表数据准确性","验证图表渲染","验证导出功能"],"passes":false},
   {"id":"P6-BE-001","story":"Tenant 聚合实现","priority":"high","requirements":["实现 Tenant 聚合","包含租户名称状态配置","支持租户启用停用"],"passes":false},
   {"id":"P6-BE-002","story":"租户中间件 (tenant_id 注入)","priority":"high","requirements":["实现租户识别中间件","从 Token 提取 tenant_id","注入请求上下文"],"passes":false},

@@ -7082,3 +7082,76 @@ Implemented the frontend Cash Flow page for the Finance module. This provides a 
 - **P4-INT-002 Ready**: Daily income/expense integration testing can now be performed
 - **Backend API**: Uses `getFinanceCashFlow` API with `include_items: true` parameter
 - **API Integration**: Currently using manual API client - will be replaced with orval-generated client when OpenAPI spec is available
+
+---
+
+## P5-FE-006: Dashboard 首页看板
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Dashboard/Home page for the ERP system. This provides a comprehensive business overview with key metrics, order statistics, recent orders, and pending tasks that require attention.
+
+### Features Implemented
+
+1. **Key Metrics Cards**
+   - Product count (total and active)
+   - Customer count (total and active)
+   - Sales order statistics (total and pending shipment)
+   - Low stock alerts count
+   - Account receivables (outstanding amount and pending count)
+   - Account payables (outstanding amount and pending count)
+   - Clickable cards navigate to respective module pages
+
+2. **Order Statistics Section**
+   - Circular progress chart showing order completion rate
+   - Breakdown of orders by status (Draft, Confirmed, Shipped, Completed)
+   - Visual color-coded status dots
+
+3. **Recent Orders List**
+   - Displays last 5 sales orders
+   - Shows order number, customer name, amount, status, and date
+   - Clickable rows navigate to order details
+   - "View All" link to full orders list
+
+4. **Pending Tasks Section**
+   - Draft orders awaiting confirmation
+   - Confirmed orders awaiting shipment
+   - Low stock alerts
+   - Pending receivables
+   - Pending payables
+   - Priority tags (High/Medium/Low)
+   - Clickable tasks navigate to relevant pages
+
+### Files Created
+- `frontend/src/pages/Dashboard.tsx` - Main dashboard component (replaced placeholder)
+- `frontend/src/pages/Dashboard.css` - Dashboard styles (responsive)
+
+### Technical Notes
+- **API Integration**: Uses parallel Promise.allSettled for efficient data fetching
+- **Error Handling**: Graceful handling of API failures (shows partial data)
+- **Responsive Design**: Mobile-first CSS with breakpoints for all screen sizes
+- **Accessibility**: Keyboard navigation support, proper ARIA roles
+- **Design System**: Uses project layout components (Container, Row, Stack)
+- **State Management**: Local React state with useCallback for memoization
+
+### APIs Used
+- `getCatalogProductsStatsCount` - Product statistics
+- `getPartnerCustomersStatsCount` - Customer statistics
+- `getTradeSalesOrdersStatsSummary` - Order status summary
+- `getInventoryItemsAlertsLowStock` - Low stock alerts
+- `getFinanceReceivablesSummary` - Receivables summary
+- `getFinancePayablesSummary` - Payables summary
+- `getTradeSalesOrders` - Recent orders list
+
+### Build Status
+- `npm run build` ✅ PASSED
+- `npm run format` ✅ PASSED
+
+### Notes for Next Developer
+- **Charts Integration**: Dashboard is prepared for chart library (ECharts/VChart) integration when P5-BE report APIs are available
+- **Sales Trend**: Currently shows order statistics; full trend charts will be added with P5-FE-001
+- **Authentication**: Dashboard will need authentication integration when P6 is complete
+- **Real-time Updates**: Consider adding WebSocket or polling for live updates in future
+
