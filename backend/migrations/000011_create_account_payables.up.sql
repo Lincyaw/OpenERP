@@ -63,7 +63,8 @@ CREATE INDEX idx_payable_status ON account_payables(tenant_id, status);
 CREATE INDEX idx_payable_source ON account_payables(tenant_id, source_type, source_id);
 CREATE INDEX idx_payable_due_date ON account_payables(due_date) WHERE due_date IS NOT NULL;
 CREATE INDEX idx_payable_outstanding ON account_payables(tenant_id, outstanding_amount) WHERE status IN ('PENDING', 'PARTIAL');
-CREATE INDEX idx_payable_overdue ON account_payables(tenant_id) WHERE status IN ('PENDING', 'PARTIAL') AND due_date < NOW();
+-- Note: "overdue" records should be calculated at query time using: WHERE due_date < CURRENT_TIMESTAMP
+-- Cannot use partial index with NOW() as it's not immutable
 
 -- Add update trigger for updated_at
 CREATE TRIGGER trg_account_payables_updated_at

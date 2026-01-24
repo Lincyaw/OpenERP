@@ -13,6 +13,7 @@ help:
 	@echo ""
 	@echo "  test               Run all tests"
 	@echo "  test-unit          Run unit tests only"
+	@echo "  test-integration   Run integration tests with real database"
 	@echo "  test-race          Run tests with race detector"
 	@echo "  test-coverage      Run tests with coverage report"
 	@echo "  test-coverage-html Generate HTML coverage report"
@@ -75,6 +76,11 @@ test:
 test-unit:
 	@echo "Running unit tests..."
 	$(GOTEST) -v -short $(UNIT_PACKAGES)
+
+test-integration:
+	@echo "Running integration tests with real database (testcontainers)..."
+	@echo "Note: Docker must be running for testcontainers to work."
+	$(GOTEST) -v -count=1 -p=1 ./tests/integration/...
 
 test-race:
 	@echo "Running tests with race detector..."

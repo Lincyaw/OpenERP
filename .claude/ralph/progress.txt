@@ -11589,3 +11589,50 @@ Comprehensive documentation including:
    - P0-QA-004: Backend integration tests (real database)
    - P0-QA-005: Backend route parameter naming
    - P0-QA-006: CI/CD automation
+
+
+## 2026-01-25 01:46 - P0-QA-004 Backend Integration Tests COMPLETED
+
+### Summary
+Implemented backend integration tests with real PostgreSQL database using testcontainers.
+
+### Changes Made
+
+#### 1. Test Infrastructure (backend/tests/integration/testdb.go)
+- Created TestDB struct with testcontainers PostgreSQL setup
+- Added migration runner using golang-migrate
+- Added helper functions for creating test fixtures:
+  - CreateTestTenant/CreateTestTenantWithUUID - creates tenant records
+  - CreateTestWarehouse - creates warehouse records for FK dependencies
+  - CreateTestProduct - creates product records for FK dependencies
+- Implemented container reuse for faster test execution
+- Added CleanupSharedContainer for proper cleanup
+
+#### 2. Integration Test Suites Created
+- **product_repository_test.go**: 15+ test cases covering CRUD, tenant isolation, optimistic locking
+- **customer_repository_test.go**: 15+ test cases covering CRUD, status filtering, balance operations
+- **inventory_repository_test.go**: 10+ test cases covering stock operations, locking, tenant isolation
+
+#### 3. Makefile Updates
+- Added `make test-integration` target for running integration tests
+
+#### 4. Migration Fixes
+- Fixed 000010_create_account_receivables.up.sql - removed NOW() partial index
+- Fixed 000011_create_account_payables.up.sql - removed NOW() partial index  
+- Created 000017_create_users.up.sql/down.sql - users table required by stock_takings
+- Renamed stock_takings migration from 000017 to 000018
+
+### Test Results
+All 8 integration tests pass:
+- TestProductRepository_Integration
+- TestProductRepository_TenantIsolation
+- TestProductRepository_OptimisticLocking
+- TestCustomerRepository_Integration
+- TestCustomerRepository_TenantIsolation
+- TestInventoryRepository_Integration
+- TestInventoryRepository_TenantIsolation
+- TestInventoryRepository_ConcurrentUpdates
+
+### PRD Status
+P0-QA-004: passes: true
+

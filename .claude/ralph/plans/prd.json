@@ -2399,7 +2399,7 @@
       "添加 make test-integration 目标",
       "集成测试覆盖核心业务流程"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-QA-005",
