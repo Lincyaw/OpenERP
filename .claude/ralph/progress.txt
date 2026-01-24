@@ -13456,3 +13456,86 @@ go test -coverprofile=cover.out ./internal/domain/finance/... && go tool cover -
 3. **70% overall coverage**: Domain finance module tests achieve 70% statement coverage
 4. **Events tested**: Domain events (Created, Updated, PartiallyPaid, FullyPaid, Reversed, Cancelled) all have dedicated tests
 5. **Next priority items**: P4-INT-002 (日常收支功能联调), P4-QA-005 (财务模块前端组件测试)
+
+---
+
+## 2026-01-25: Product Module Frontend Component Tests (P1-QA-005)
+
+### Summary
+Implemented comprehensive frontend component tests for the Product module, completing the P1-QA-005 story. Created a new test file for the Categories tree component, which was the missing piece.
+
+### Requirements Verified
+
+#### 1. 测试商品列表组件 ✅
+**File**: `frontend/src/pages/catalog/Products.test.tsx` (already existed)
+- Tests product list display with correct data
+- Tests product status tags (启用/禁用/停售)
+- Tests price formatting (¥ currency format)
+- Tests barcode display
+- Tests pagination parameters
+- Tests search and filter functionality
+- Tests error handling
+- Tests refresh and add product buttons
+- **15 tests total**
+
+#### 2. 测试商品表单组件 ✅
+**File**: `frontend/src/features/catalog/ProductForm.test.tsx` (already existed)
+- Tests create mode (title, form fields, submit)
+- Tests edit mode (title, pre-filled values, disabled fields)
+- Tests form validation (required fields, code format)
+- Tests error handling (create/update failures)
+- Tests price field decimal handling
+- Tests API request payload structure
+- Tests navigation after create/cancel
+- **22 tests total**
+
+#### 3. 测试分类树组件 ✅ (NEW)
+**File**: `frontend/src/pages/catalog/Categories.test.tsx` (newly created)
+- Tests tree display (page title, root categories, category codes)
+- Tests child categories auto-expand
+- Tests inactive status tag display (已停用)
+- Tests empty state handling
+- Tests header actions (refresh, add root category buttons)
+- Tests search functionality (filter by name, filter by code, empty results)
+- Tests expand/collapse all buttons
+- Tests create modal (open, form fields, cancel button, submit, validation)
+- Tests error handling (API failure, create failure)
+- Tests API integration (transform response, empty response, refresh after create)
+- Tests tree node actions (edit buttons, dropdown menus)
+- Tests validation (required code field, required name field)
+- Tests activate/deactivate functionality
+- **34 tests total**
+
+### Test Coverage Summary
+- **Products.test.tsx**: 15 tests ✅
+- **ProductForm.test.tsx**: 22 tests ✅
+- **Categories.test.tsx**: 34 tests ✅ (NEW)
+- **Total**: 71 tests passing
+
+### How to Run Tests
+```bash
+# Run all catalog module tests
+cd frontend && npm run test -- --run src/pages/catalog/*.test.tsx src/features/catalog/*.test.tsx
+
+# Run only Categories tests
+npm run test -- --run src/pages/catalog/Categories.test.tsx
+```
+
+### Technical Notes
+1. **Mock API Pattern**: Uses vi.mock() and vi.fn() to mock the API module
+2. **Toast Mocking**: Spies on Semi UI Toast methods for verification
+3. **Modal.confirm Mocking**: Auto-triggers onOk for testing confirmation dialogs
+4. **Button Selection**: Uses aria-label attributes (e.g., 'cancel', 'confirm') for modal buttons
+5. **Tree Data Structure**: Tests handle hierarchical category data with parent-child relationships
+
+### Files Created
+- `frontend/src/pages/catalog/Categories.test.tsx` (700+ lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P1-QA-005: passes: true)
+
+### Notes for Next Developer
+1. **Semi UI Modal Buttons**: Use `aria-label` attributes (not button text) to select modal buttons
+2. **Tree Auto-Expand**: Root categories are auto-expanded on load
+3. **Search Filtering**: Maintains parent nodes when filtering to preserve tree structure
+4. **Next priority items**: P1-QA-006 (伙伴模块前端组件测试), P1-INT-003 (客户余额功能联调)
