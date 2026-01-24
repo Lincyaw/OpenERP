@@ -6495,3 +6495,67 @@ Implemented the Account Payable (AP) list page for the Finance module frontend. 
   - P4-FE-005 (付款单创建页面) - Payment voucher creation
 - **Consistent patterns**: Receipt/Payment pages can follow similar structure to the list pages
 - **API generation**: Once backend implements persistence layer and regenerates swagger, run `npm run api:generate` to auto-generate TypeScript client
+
+---
+
+## P4-FE-003: 收款单创建页面 (Receipt Voucher Creation Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Receipt Voucher Creation page for the Finance module frontend. This page allows users to create receipt vouchers to record customer payments with customer selection, payment method, and amount validation.
+
+### Features Implemented
+1. **Customer Selection**
+   - Searchable dropdown with remote search
+   - Shows customer name and code
+   - Pre-fills if navigated from receivables page with customer_id param
+
+2. **Customer Receivables Summary**
+   - Shows banner with customer's outstanding receivables count and total amount
+   - Lists pending receivables as tags (up to 5 with "+N more" indicator)
+   - Helps user understand how much is due before creating receipt
+
+3. **Receipt Information Form**
+   - Amount input with currency prefix (¥) and 2 decimal precision
+   - Payment method selection (Cash, Bank Transfer, WeChat, Alipay, Check, Balance, Other)
+   - Receipt date picker (defaults to today)
+   - Optional payment reference field (for transaction IDs, check numbers, etc.)
+   - Optional remarks field
+
+4. **Form Validation**
+   - Required fields: customer, amount, payment method, receipt date
+   - Amount must be positive and max 999,999,999.99
+   - Payment reference max 100 characters
+   - Remarks max 500 characters
+
+5. **Navigation**
+   - Cancel returns to receivables list
+   - Successful creation shows toast and navigates to receivables list
+   - Can be accessed directly at /finance/receipts/new
+   - Can be pre-filled via /finance/receipts/new?customer_id=xxx
+
+### Files Created/Modified
+- `frontend/src/pages/finance/ReceiptVoucherNew.tsx` (NEW) - Receipt voucher creation page component
+- `frontend/src/pages/finance/ReceiptVoucherNew.css` (NEW) - Styles for receipt voucher page
+- `frontend/src/router/routes.tsx` (MODIFIED) - Added route for /finance/receipts/new
+
+### Technical Notes
+- **Zod Validation**: Uses zod schema with proper type inference for form validation
+- **React Hook Form**: Integrated via useFormWithValidation custom hook
+- **Customer Search**: Uses remote search with debounce to query customer API
+- **Design System**: Uses CSS variables for spacing, colors, typography per frontend/README.md
+- **Responsive**: Mobile-first design with breakpoints at 768px
+- **API Ready**: Uses existing finance API service (postFinanceReceipts)
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **Backend not wired**: Finance API routes exist but persistence layer isn't fully connected
+- **Next Frontend Tasks**:
+  - P4-FE-004 (收款核销页面) - Receipt reconciliation page
+  - P4-FE-005 (付款单创建页面) - Payment voucher creation (similar structure)
+- **Future enhancement**: Could pre-select specific receivable from URL param (receivable_id)
+- **Pattern available**: PaymentVoucherNew can follow same structure, swapping customer for supplier

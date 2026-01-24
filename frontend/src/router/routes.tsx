@@ -57,6 +57,7 @@ const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/Purc
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
 const PayablesPage = () => lazyLoad(() => import('@/pages/finance/Payables'))
+const ReceiptVoucherNewPage = () => lazyLoad(() => import('@/pages/finance/ReceiptVoucherNew'))
 
 /**
  * Application routes with metadata
@@ -377,6 +378,13 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: detail page
           { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
           { path: 'purchase/:id/receive', element: PurchaseOrderReceivePage() }
+        )
+      }
+
+      // Add finance module detail routes (not in menu)
+      if (route.path === '/finance') {
+        childRoutes.push(
+          { path: 'receipts/new', element: ReceiptVoucherNewPage() }
         )
       }
 
