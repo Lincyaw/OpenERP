@@ -13613,3 +13613,109 @@ npm run test -- --run src/features/partner/WarehouseForm.test.tsx
 4. **Form Validation**: Tests cover both Zod schema validation (empty fields, invalid formats) and API-level validation
 5. **Next priority items**: P1-INT-003 (客户余额功能联调), P2-QA-005 (库存模块前端组件测试)
 
+
+
+---
+
+## 2026-01-25: Inventory Module Frontend Component Tests (P2-QA-005)
+
+### Summary
+Implemented comprehensive frontend component tests for the Inventory module, completing the P2-QA-005 story. Created three new test files for StockTakingList, StockTakingCreate, and StockTakingExecute components. Verified existing tests for StockList and StockAdjust components were already in place.
+
+### Requirements Verified
+
+#### 1. 测试库存列表组件 ✅
+**Files**: 
+- `frontend/src/pages/inventory/StockList.test.tsx` (already existed)
+- Tests list display, warehouse filtering, product info, stock quantities
+- Tests pagination, sorting, status indicators
+- **Total: 38 tests**
+
+#### 2. 测试库存调整组件 ✅
+**Files**: 
+- `frontend/src/pages/inventory/StockAdjust.test.tsx` (already existed)
+- Tests warehouse/product selection, current stock display
+- Tests adjustment form, preview calculation, error handling
+- **Total: 20 tests**
+
+#### 3. 测试盘点组件 ✅
+**Files**: 
+- `frontend/src/pages/inventory/StockTakingList.test.tsx` (NEW)
+- `frontend/src/pages/inventory/StockTakingCreate.test.tsx` (NEW)
+- `frontend/src/pages/inventory/StockTakingExecute.test.tsx` (NEW)
+
+**StockTakingList tests (32 tests)**:
+- Page layout (title, buttons, search, refresh)
+- Stock taking list display (numbers, warehouses, creators)
+- Status tags (草稿/盘点中/待审批/已通过/已拒绝/已取消)
+- Progress display (counted/total with percentage)
+- Difference amount display (positive/negative/zero)
+- Filter dropdowns (warehouse, status)
+- API integration (pagination parameters)
+- Error handling (API failures, empty lists)
+- Navigation (create page, view details)
+- Row actions (view, execute)
+
+**StockTakingCreate tests (21 tests)**:
+- Page layout (title, sections, back button)
+- Form fields (warehouse, date, remark, submit, cancel)
+- Warehouse loading (API calls, error handling)
+- Product selection empty state
+- Navigation (back, cancel buttons)
+- API integration
+- Form state defaults
+
+**StockTakingExecute tests (33 tests)**:
+- Page layout (title, sections, back button)
+- Status-based button display (save draft, submit for approval, cancel)
+- Status badges (DRAFT, COUNTING, PENDING_APPROVAL, APPROVED)
+- Progress calculation (real-time)
+- Difference amount display
+- Item count table with counting inputs
+- API integration (loading stock taking, updating items)
+- Error handling
+- Navigation
+
+### Test Coverage Summary
+- **StockList.test.tsx**: 38 tests ✅ (existing)
+- **StockAdjust.test.tsx**: 20 tests ✅ (existing)
+- **StockTakingList.test.tsx**: 32 tests ✅ (NEW)
+- **StockTakingCreate.test.tsx**: 21 tests ✅ (NEW)
+- **StockTakingExecute.test.tsx**: 33 tests ✅ (NEW)
+- **Inventory module total**: 144 tests passing
+
+### How to Run Tests
+```bash
+# Run all inventory module tests
+cd frontend && npm run test -- --run src/pages/inventory/*.test.tsx
+
+# Run only StockTaking tests
+npm run test -- --run src/pages/inventory/StockTaking*.test.tsx
+
+# Run specific test file
+npm run test -- --run src/pages/inventory/StockTakingList.test.tsx
+```
+
+### Technical Notes
+1. **Mock API Pattern**: Uses vi.mock() for API modules and creates typed mock instances
+2. **Toast Mocking**: Spies on Semi UI Toast methods for error/success message verification
+3. **Navigation Mocking**: Uses vi.mock() for react-router-dom's useNavigate and useParams
+4. **Auth Store Mocking**: Mocks @/store for user context in StockTakingExecute tests
+5. **Duplicate Text Handling**: Uses getAllByText() when same text appears multiple times (e.g., "创建盘点单" as title and button)
+
+### Known Issue Documented
+- **TableAction condition property**: StockTakingList.tsx uses `condition` property on TableAction, but the TableAction type only supports `hidden`. This means conditional action visibility may not work as expected. Test documents this behavior.
+
+### Files Created
+- `frontend/src/pages/inventory/StockTakingList.test.tsx` (620+ lines)
+- `frontend/src/pages/inventory/StockTakingCreate.test.tsx` (430+ lines)
+- `frontend/src/pages/inventory/StockTakingExecute.test.tsx` (700+ lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P2-QA-005: passes: true)
+
+### Notes for Next Developer
+1. **Test Pattern**: Use vi.mock() for API modules and return objects with typed mock functions
+2. **Auth Mock**: StockTakingExecute requires auth store mock for user context
+3. **Status Workflow**: DRAFT → COUNTING → PENDING_APPROVAL → APPROVED/REJECTED/CANCELLED
+4. **Next priority items**: P2-INT-002 (盘点功能联调), P3-QA-005 (交易模块前端组件测试)
