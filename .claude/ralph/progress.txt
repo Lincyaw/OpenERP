@@ -7441,3 +7441,107 @@ Implemented the Sales Ranking Page with product and customer ranking tables, hor
 - **P5-FE-004**: Profit/Loss Report - uses different API endpoints
 - **Dimension Switching**: The pattern can be reused for other ranking pages
 - **ECharts**: Shared between SalesReport and SalesRanking pages (code-split together)
+
+---
+
+## P5-FE-003: Inventory Turnover Report Page (库存周转报表页面)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Inventory Turnover Report Page with metrics cards, distribution charts, warehouse distribution, and detailed product turnover table. The page provides comprehensive inventory turnover analysis with filtering capabilities.
+
+### Features Implemented
+
+1. **Summary Metrics Dashboard**
+   - Total products count
+   - Total inventory value
+   - Average turnover rate (周转次数/期)
+   - Slow-moving products count with out-of-stock indicator
+
+2. **Turnover Distribution Pie Chart**
+   - Groups products by turnover rate ranges:
+     - 滞销 (<2): Red
+     - 偏慢 (2-4): Amber
+     - 正常 (4-8): Green
+     - 良好 (8-12): Blue
+     - 优秀 (>12): Purple
+   - Interactive donut chart with legend
+
+3. **Category Inventory Value Bar Chart**
+   - Top 10 categories by inventory value
+   - Horizontal bar chart with gradient fill
+   - Value labels on bars
+
+4. **Warehouse Distribution Section**
+   - Grid layout showing all warehouses
+   - Each warehouse card shows:
+     - Warehouse name
+     - Product count
+     - Total inventory value
+     - Percentage progress bar
+     - Proportion percentage
+
+5. **Product Turnover Detail Table**
+   - Columns: Product Info (Name + SKU), Category, Warehouse, Beginning Stock, Ending Stock, Average Stock, Sold Quantity, Turnover Rate (with status tag), Days of Inventory, Stock Value
+   - Sortable columns for numeric fields
+   - Pagination (10/20/50/100 per page)
+   - Search by product name, SKU, or category
+
+6. **Filters**
+   - Category dropdown filter
+   - Warehouse dropdown filter
+   - Preset date ranges: 近30天, 近90天, 近半年, 近一年
+   - Custom date range picker
+
+### Files Created
+
+- `frontend/src/pages/report/InventoryTurnover.tsx` - Main inventory turnover report page component
+- `frontend/src/pages/report/InventoryTurnover.css` - Page-specific styles
+
+### Files Modified
+
+- `frontend/src/router/routes.tsx` - Added /report/inventory-turnover route and lazy-loaded component
+
+### Technical Details
+
+**Chart Library**: ECharts (echarts + echarts-for-react)
+- Pie chart for turnover distribution
+- Horizontal bar chart for category values
+- Gradient fills and responsive sizing
+
+**UI Components**: Semi Design
+- Grid for responsive metrics layout
+- Row with flex wrap for chart layout
+- Table with sorting and pagination
+- Select for filters
+- DatePicker with type="dateRange"
+- Tag for turnover status indicators
+- Progress for warehouse percentage
+
+**State Management**:
+- Local state with useState hooks
+- Parallel API calls with Promise.allSettled
+- Memoized chart options with useMemo
+- Client-side search filtering
+
+**Layout Components**: Custom design system
+- Container, Grid, Row from @/components/common/layout
+- Responsive grid with mobile/tablet/desktop breakpoints
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### API Endpoints Used
+- `GET /reports/inventory/summary` - Inventory summary metrics
+- `GET /reports/inventory/turnover` - Product turnover data
+- `GET /reports/inventory/value-by-category` - Category-wise inventory value
+- `GET /reports/inventory/value-by-warehouse` - Warehouse-wise inventory value
+
+### Notes for Next Developer
+- **P5-FE-004**: Profit/Loss Report - uses `/reports/finance/profit-loss` and `/reports/finance/monthly-trend` endpoints
+- **P5-FE-005**: Cash Flow Report - uses `/reports/finance/cash-flow` and `/reports/finance/cash-flow/items` endpoints
+- **Design Pattern**: Similar structure to SalesReport and SalesRanking pages - can reuse MetricCard component pattern
+- **Filter Logic**: Category/warehouse options are populated from API response data
+

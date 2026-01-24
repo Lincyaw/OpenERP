@@ -162,7 +162,7 @@
   {"id":"P5-BE-006","story":"报表数据异步聚合 (定时任务)","priority":"low","requirements":["实现报表数据预聚合","配置定时任务","支持手动刷新"],"passes":false},
   {"id":"P5-FE-001","story":"销售报表页面 (图表)","priority":"medium","requirements":["实现销售趋势图","实现销售构成图","支持时间范围切换"],"passes":true},
   {"id":"P5-FE-002","story":"销售排行榜页面","priority":"medium","requirements":["实现商品销售排行","实现客户销售排行","支持维度切换"],"passes":true},
-  {"id":"P5-FE-003","story":"库存周转报表页面","priority":"medium","requirements":["展示库存周转数据","实现周转率图表","支持商品筛选"],"passes":false},
+  {"id":"P5-FE-003","story":"库存周转报表页面","priority":"medium","requirements":["展示库存周转数据","实现周转率图表","支持商品筛选"],"passes":true},
   {"id":"P5-FE-004","story":"损益报表页面","priority":"medium","requirements":["展示损益表数据","支持期间选择","支持导出"],"passes":false},
   {"id":"P5-FE-005","story":"现金流量报表页面","priority":"medium","requirements":["展示现金流量数据","分类展示各项活动","支持期间对比"],"passes":false},
   {"id":"P5-FE-006","story":"Dashboard 首页看板","priority":"high","requirements":["展示关键指标卡片","展示销售趋势图","展示待办事项"],"passes":true},

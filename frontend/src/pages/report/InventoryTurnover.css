@@ -1,0 +1,229 @@
+/**
+ * Inventory Turnover Report Page Styles
+ */
+
+.inventory-turnover-page {
+  padding: var(--spacing-4);
+}
+
+/* Page Header */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.report-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.report-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.date-presets {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.preset-tag {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-tag:hover {
+  background-color: var(--semi-color-primary-light-default);
+  color: var(--semi-color-primary);
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  min-height: 400px;
+}
+
+/* Metrics Section */
+.report-metrics {
+  margin-bottom: var(--spacing-6);
+}
+
+/* Metric Card */
+.metric-card {
+  height: 100%;
+}
+
+.metric-card-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--semi-border-radius-medium);
+  flex-shrink: 0;
+}
+
+.metric-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-label {
+  display: block;
+  margin-bottom: var(--spacing-1);
+}
+
+.metric-value {
+  font-size: var(--font-size-2xl);
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+.metric-sub {
+  display: block;
+  margin-top: var(--spacing-1);
+}
+
+/* Charts Section */
+.report-charts {
+  margin-bottom: var(--spacing-6);
+}
+
+.chart-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.chart-pie {
+  flex: 1;
+}
+
+.chart-bar {
+  flex: 1;
+}
+
+.chart-card {
+  height: 100%;
+}
+
+.chart-card .semi-card-body {
+  padding: var(--spacing-4);
+}
+
+/* Warehouse Card */
+.warehouse-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.warehouse-item {
+  padding: var(--spacing-4);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+  background-color: var(--semi-color-bg-1);
+}
+
+.warehouse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.warehouse-value {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--semi-color-text-0);
+}
+
+/* Detail Card */
+.detail-card {
+  margin-bottom: var(--spacing-6);
+}
+
+/* Table Cells */
+.product-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.turnover-rate-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .report-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-filters > * {
+    width: 100% !important;
+  }
+
+  .date-presets {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .metric-card-content {
+    gap: var(--spacing-3);
+  }
+
+  .metric-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .metric-value {
+    font-size: var(--font-size-xl);
+  }
+
+  .warehouse-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .inventory-turnover-page {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1440px) {
+  .inventory-turnover-page {
+    padding: var(--spacing-8);
+  }
+}
