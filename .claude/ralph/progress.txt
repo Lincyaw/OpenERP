@@ -10948,3 +10948,104 @@ GORM will auto-migrate the following columns:
 - Next related tasks:
   - P3-BE-004: Pricing strategy (standard/tiered)
   - Frontend integration to use multi-unit conversion
+
+---
+
+## P3-BE-004: 定价策略实现 (标准/阶梯)
+**Date**: 2026-01-24
+**Status**: Completed
+
+### What was done
+
+1. **StandardPricingStrategy** (`backend/internal/domain/shared/strategy/pricing_impl.go`)
+   - Uses product's base selling price directly
+   - Implements `PricingStrategy` interface
+   - Returns `PricingResult` with unit price, total price, and applied rules
+
+2. **TieredPricingStrategy** (`backend/internal/domain/shared/strategy/pricing_impl.go`)
+   - Quantity-based tiered pricing with configurable tiers
+   - `PriceTier` struct with MinQuantity, MaxQuantity, UnitPrice
+   - Automatically sorts tiers by MinQuantity
+   - Calculates discount amount and percentage vs base price
+   - Supports unlimited upper bound (MaxQuantity=0)
+
+3. **CustomerSpecificPricingStrategy** (`backend/internal/domain/shared/strategy/pricing_impl.go`)
+   - Customer-specific pricing with priority ordering
+   - `CustomerPrice` struct with CustomerID, CustomerType, ProductID, UnitPrice, DiscountRate, MinQuantity, PriorityOrder
+   - Supports fixed customer prices
+   - Supports percentage discount rates
+   - Supports minimum quantity requirements
+   - Supports customer type-based pricing (e.g., VIP, wholesale)
+   - Falls back to standard pricing when no match found
+
+4. **CombinedPricingStrategy** (`backend/internal/domain/shared/strategy/pricing_impl.go`)
+   - Combines multiple pricing strategies
+   - SelectBest mode: chooses lowest price from all strategies
+   - Sequential mode: applies strategies in order, each modifying base price for next
+
+5. **Supporting Types**
+   - `PricingMethodType` enum: standard, tiered, customer_specific
+   - `PriceTier` struct for tiered pricing configuration
+   - `CustomerPrice` struct for customer-specific pricing rules
+
+6. **Comprehensive Unit Tests** (`backend/internal/domain/shared/strategy/pricing_impl_test.go`)
+   - Tests for StandardPricingStrategy (basic pricing, zero quantity, decimal quantity)
+   - Tests for TieredPricingStrategy (all tiers, boundaries, empty tiers)
+   - Tests for CustomerSpecificPricingStrategy (fixed price, discount rate, min qty, fallback)
+   - Tests for CombinedPricingStrategy (select best, sequential, empty)
+   - Tests for tier sorting and customer price priority
+
+### Requirements Met
+- ✅ 实现标准定价策略 (Implement standard pricing) - StandardPricingStrategy
+- ✅ 实现阶梯定价策略 (Implement tiered pricing) - TieredPricingStrategy with configurable tiers
+- ✅ 支持客户特殊价格 (Support customer special prices) - CustomerSpecificPricingStrategy with CustomerPrice rules
+
+### Files Created
+- `backend/internal/domain/shared/strategy/pricing_impl.go` - Pricing strategy implementations
+- `backend/internal/domain/shared/strategy/pricing_impl_test.go` - Comprehensive unit tests
+
+### Build Status
+- Backend compiles successfully
+- All unit tests pass (6 test functions with 25+ subtests)
+
+### API Usage Examples
+
+```go
+// Standard pricing
+standard := strategy.NewStandardPricingStrategy()
+result, _ := standard.CalculatePrice(ctx, strategy.PricingContext{
+    BasePrice: decimal.NewFromFloat(100.00),
+    Quantity:  decimal.NewFromInt(10),
+    Currency:  "CNY",
+})
+// result.UnitPrice = 100.00, result.TotalPrice = 1000.00
+
+// Tiered pricing
+tiers := []strategy.PriceTier{
+    {MinQuantity: decimal.NewFromInt(1), UnitPrice: decimal.NewFromFloat(100.00)},
+    {MinQuantity: decimal.NewFromInt(10), UnitPrice: decimal.NewFromFloat(90.00)},
+    {MinQuantity: decimal.NewFromInt(50), UnitPrice: decimal.NewFromFloat(80.00)},
+}
+tiered := strategy.NewTieredPricingStrategy(tiers)
+
+// Customer-specific pricing
+customerPrices := []strategy.CustomerPrice{
+    {CustomerID: "vip-1", UnitPrice: decimal.NewFromFloat(85.00)},
+    {CustomerType: "wholesale", DiscountRate: decimal.NewFromFloat(15.00)},
+}
+customerPricing := strategy.NewCustomerSpecificPricingStrategy(customerPrices, standard)
+
+// Combined pricing (select best price)
+combined := strategy.NewCombinedPricingStrategy(
+    []strategy.PricingStrategy{standard, tiered, customerPricing},
+    true, // selectBest
+)
+```
+
+### Notes for Next Developer
+- Pricing strategies are pure domain services with no external dependencies
+- Strategies implement the `PricingStrategy` interface from `pricing.go`
+- All strategies support the standard `PricingContext` and return `PricingResult`
+- Consider integrating with SalesOrder service to apply pricing during order creation
+- Customer prices can be stored in a database table and loaded at runtime
+- Tiered pricing configuration can be set per-product or globally
