@@ -48,6 +48,8 @@ const StockTransactionsPage = () => lazyLoad(() => import('@/pages/inventory/Sto
 const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdjust'))
 const StockTakingListPage = () => lazyLoad(() => import('@/pages/inventory/StockTakingList'))
 const StockTakingCreatePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingCreate'))
+const StockTakingExecutePage = () =>
+  lazyLoad(() => import('@/pages/inventory/StockTakingExecute'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
@@ -611,7 +613,9 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'stock/:id/transactions', element: StockTransactionsPage() },
           { path: 'adjust', element: StockAdjustPage() },
           { path: 'stock-taking', element: StockTakingListPage() },
-          { path: 'stock-taking/new', element: StockTakingCreatePage() }
+          { path: 'stock-taking/new', element: StockTakingCreatePage() },
+          { path: 'stock-taking/:id', element: StockTakingExecutePage() },
+          { path: 'stock-taking/:id/execute', element: StockTakingExecutePage() }
         )
       }
 
