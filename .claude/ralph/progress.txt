@@ -10521,3 +10521,83 @@ DRAFT -> COUNTING -> PENDING_APPROVAL -> APPROVED
 
 ### Build Status
 All tests pass, build succeeds
+
+---
+
+## 2026-01-24 - P2-BE-012: StockTaking API Complete
+
+### Completed
+- **P2-BE-012**: StockTaking API (盘点单 API)
+
+### What was done
+
+1. **Application Service DTOs** (`backend/internal/application/inventory/stock_taking_dto.go`)
+   - Request DTOs: CreateStockTakingRequest, UpdateStockTakingRequest, AddStockTakingItemRequest, etc.
+   - Response DTOs: StockTakingResponse, StockTakingListResponse, StockTakingProgressResponse, etc.
+   - Conversion functions to map between domain and DTO
+
+2. **Application Service** (`backend/internal/application/inventory/stock_taking_service.go`)
+   - Query methods: GetByID, GetByTakingNumber, List, ListByWarehouse, ListByStatus, ListPendingApproval, GetProgress
+   - Command methods: Create, Update, Delete, AddItem, AddItems, RemoveItem
+   - Execution methods: StartCounting, RecordCount, RecordCounts
+   - Approval methods: SubmitForApproval, Approve, Reject, Cancel
+   - Event publishing for domain events
+
+3. **Repository Implementation** (`backend/internal/infrastructure/persistence/stock_taking_repository.go`)
+   - Full GORM implementation of StockTakingRepository interface
+   - Support for all query methods with filtering and pagination
+   - SaveWithItems for transactional save with items
+   - GenerateTakingNumber with format ST-YYYYMMDD-XXXX
+
+4. **HTTP Handler** (`backend/internal/interfaces/http/handler/stock_taking.go`)
+   - Full RESTful API with Swagger annotations
+   - All CRUD operations
+   - Item management (add, add bulk, remove)
+   - Execution endpoints (start, count, counts)
+   - Approval workflow endpoints (submit, approve, reject, cancel)
+   - Progress tracking endpoint
+
+5. **Route Registration** (`backend/cmd/server/main.go`)
+   - Stock taking service and handler initialization
+   - 17 new API endpoints registered under /api/v1/inventory/stock-takings
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /stock-takings | Create new stock taking |
+| GET | /stock-takings | List stock takings (paginated, filtered) |
+| GET | /stock-takings/pending-approval | List pending approval |
+| GET | /stock-takings/by-number/:taking_number | Get by number |
+| GET | /stock-takings/:id | Get by ID |
+| GET | /stock-takings/:id/progress | Get progress |
+| PUT | /stock-takings/:id | Update (DRAFT only) |
+| DELETE | /stock-takings/:id | Delete (DRAFT only) |
+| POST | /stock-takings/:id/items | Add single item |
+| POST | /stock-takings/:id/items/bulk | Add multiple items |
+| DELETE | /stock-takings/:id/items/:product_id | Remove item |
+| POST | /stock-takings/:id/start | Start counting |
+| POST | /stock-takings/:id/count | Record single count |
+| POST | /stock-takings/:id/counts | Record multiple counts |
+| POST | /stock-takings/:id/submit | Submit for approval |
+| POST | /stock-takings/:id/approve | Approve |
+| POST | /stock-takings/:id/reject | Reject |
+| POST | /stock-takings/:id/cancel | Cancel |
+
+### Requirements Met
+- ✅ 实现盘点单 CRUD API (Create, Read, Update, Delete stock taking)
+- ✅ 实现盘点执行 API (Start counting, record counts, progress tracking)
+- ✅ 实现盘点审批 API (Submit, approve, reject, cancel)
+
+### Files Created
+- `backend/internal/application/inventory/stock_taking_dto.go`
+- `backend/internal/application/inventory/stock_taking_service.go`
+- `backend/internal/infrastructure/persistence/stock_taking_repository.go`
+- `backend/internal/interfaces/http/handler/stock_taking.go`
+
+### Files Modified
+- `backend/cmd/server/main.go` (added service, handler, routes)
+- `.claude/ralph/plans/prd.json` (marked P2-BE-012 as complete)
+
+### Build Status
+All files compile successfully

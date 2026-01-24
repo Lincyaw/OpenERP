@@ -111,6 +111,7 @@ func main() {
 	purchaseOrderRepo := persistence.NewGormPurchaseOrderRepository(db.DB)
 	salesReturnRepo := persistence.NewGormSalesReturnRepository(db.DB)
 	purchaseReturnRepo := persistence.NewGormPurchaseReturnRepository(db.DB)
+	stockTakingRepo := persistence.NewGormStockTakingRepository(db.DB)
 	userRepo := persistence.NewGormUserRepository(db.DB)
 	roleRepo := persistence.NewGormRoleRepository(db.DB)
 
@@ -127,6 +128,7 @@ func main() {
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
 	salesReturnService := tradeapp.NewSalesReturnService(salesReturnRepo, salesOrderRepo)
 	purchaseReturnService := tradeapp.NewPurchaseReturnService(purchaseReturnRepo, purchaseOrderRepo)
+	stockTakingService := inventoryapp.NewStockTakingService(stockTakingRepo, nil) // eventBus will be set later
 
 	// Identity services (auth, user, role)
 	jwtService := auth.NewJWTService(cfg.JWT)
@@ -200,6 +202,7 @@ func main() {
 	purchaseOrderHandler := handler.NewPurchaseOrderHandler(purchaseOrderService)
 	salesReturnHandler := handler.NewSalesReturnHandler(salesReturnService)
 	purchaseReturnHandler := handler.NewPurchaseReturnHandler(purchaseReturnService)
+	stockTakingHandler := handler.NewStockTakingHandler(stockTakingService)
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
 	roleHandler := handler.NewRoleHandler(roleService)
@@ -405,6 +408,26 @@ func main() {
 	// Transaction audit
 	inventoryRoutes.GET("/transactions", inventoryHandler.ListTransactions)
 	inventoryRoutes.GET("/transactions/:id", inventoryHandler.GetTransactionByID)
+
+	// Stock Taking routes
+	inventoryRoutes.POST("/stock-takings", stockTakingHandler.Create)
+	inventoryRoutes.GET("/stock-takings", stockTakingHandler.List)
+	inventoryRoutes.GET("/stock-takings/pending-approval", stockTakingHandler.ListPendingApproval)
+	inventoryRoutes.GET("/stock-takings/by-number/:taking_number", stockTakingHandler.GetByTakingNumber)
+	inventoryRoutes.GET("/stock-takings/:id", stockTakingHandler.GetByID)
+	inventoryRoutes.GET("/stock-takings/:id/progress", stockTakingHandler.GetProgress)
+	inventoryRoutes.PUT("/stock-takings/:id", stockTakingHandler.Update)
+	inventoryRoutes.DELETE("/stock-takings/:id", stockTakingHandler.Delete)
+	inventoryRoutes.POST("/stock-takings/:id/items", stockTakingHandler.AddItem)
+	inventoryRoutes.POST("/stock-takings/:id/items/bulk", stockTakingHandler.AddItems)
+	inventoryRoutes.DELETE("/stock-takings/:id/items/:product_id", stockTakingHandler.RemoveItem)
+	inventoryRoutes.POST("/stock-takings/:id/start", stockTakingHandler.StartCounting)
+	inventoryRoutes.POST("/stock-takings/:id/count", stockTakingHandler.RecordCount)
+	inventoryRoutes.POST("/stock-takings/:id/counts", stockTakingHandler.RecordCounts)
+	inventoryRoutes.POST("/stock-takings/:id/submit", stockTakingHandler.SubmitForApproval)
+	inventoryRoutes.POST("/stock-takings/:id/approve", stockTakingHandler.Approve)
+	inventoryRoutes.POST("/stock-takings/:id/reject", stockTakingHandler.Reject)
+	inventoryRoutes.POST("/stock-takings/:id/cancel", stockTakingHandler.Cancel)
 
 	// Trade domain (sales orders, purchase orders)
 	tradeRoutes := router.NewDomainGroup("trade", "/trade")

@@ -807,7 +807,7 @@
       "实现盘点执行 API",
       "实现盘点审批 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-FE-001",
