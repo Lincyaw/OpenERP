@@ -2,6 +2,38 @@
 
 ## 2026-01-25
 
+### P4-QA-005: 财务模块前端组件测试 - COMPLETED
+
+Created comprehensive frontend component tests for the Finance module.
+
+**Test Coverage:**
+- **Receivables List** (`Receivables.test.tsx`): 35 tests covering page layout, summary cards, list display, status tags, source type labels, actions, navigation, error handling, and API integration
+- **Payables List** (`Payables.test.tsx`): 35 tests covering page layout, summary cards, list display, status tags, source type labels, actions, navigation, error handling, and API integration
+- **Receipt Voucher Form** (`ReceiptVoucherNew.test.tsx`): 20 tests covering page layout, form fields, payment method options, navigation, form validation, and customer receivables summary
+- **Payment Voucher Form** (`PaymentVoucherNew.test.tsx`): 20 tests covering page layout, form fields, payment method options, navigation, form validation, and supplier payables summary
+- **Receipt Reconcile** (`ReceiptReconcile.test.tsx`): 49 tests covering voucher details, mode switching (FIFO/MANUAL), receivables table, allocation, reconciliation summary, actions, navigation, error handling, voucher status states, empty state, result display, and API integration
+- **Payment Reconcile** (`PaymentReconcile.test.tsx`): 49 tests covering voucher details, mode switching (FIFO/MANUAL), payables table, allocation, reconciliation summary, actions, navigation, error handling, voucher status states, empty state, result display, and API integration
+
+**Test Files Added:**
+- `frontend/src/pages/finance/Receivables.test.tsx` - 35 tests
+- `frontend/src/pages/finance/Payables.test.tsx` - 35 tests
+- `frontend/src/pages/finance/ReceiptVoucherNew.test.tsx` - 20 tests
+- `frontend/src/pages/finance/PaymentVoucherNew.test.tsx` - 20 tests
+- `frontend/src/pages/finance/ReceiptReconcile.test.tsx` - 49 tests
+- `frontend/src/pages/finance/PaymentReconcile.test.tsx` - 49 tests
+
+**Total: 208 tests, all passing**
+
+**Key Implementation Details:**
+- Used Vitest with React Testing Library
+- Mocked API modules with vi.mock() and vi.fn()
+- Mocked react-router-dom navigation
+- Spied on Toast methods for notification testing
+- Created mock data matching backend response structure
+- Tests cover all three P4-QA-005 requirements: 应收应付列表, 收付款表单, 核销组件
+
+---
+
 ### P2-QA-004: Inventory API Integration Tests - COMPLETED
 
 Created comprehensive integration tests for the Inventory API at `backend/tests/integration/inventory_api_test.go`.

@@ -1687,7 +1687,7 @@
       "测试收付款表单",
       "测试核销组件"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P4-INT-001",
