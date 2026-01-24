@@ -18,6 +18,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse, HandlerSalesOrderItemResponse } from '@/api/models'
+import { ShipOrderModal } from './components'
 import './SalesOrderDetail.css'
 
 const { Title, Text } = Typography
@@ -81,6 +82,7 @@ export default function SalesOrderDetailPage() {
   const [order, setOrder] = useState<HandlerSalesOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [shipModalVisible, setShipModalVisible] = useState(false)
 
   // Fetch order details
   const fetchOrder = useCallback(async () => {
@@ -130,30 +132,30 @@ export default function SalesOrderDetailPage() {
     })
   }, [order, salesOrderApi, fetchOrder])
 
-  // Handle ship order
-  const handleShip = useCallback(async () => {
-    if (!order?.id) return
-    Modal.confirm({
-      title: '发货',
-      content: `确定要为订单 "${order.order_number}" 发货吗？发货后将扣减库存。`,
-      okText: '确认发货',
-      cancelText: '取消',
-      onOk: async () => {
-        setActionLoading(true)
-        try {
-          await salesOrderApi.postTradeSalesOrdersIdShip(order.id!, {
-            warehouse_id: order.warehouse_id,
-          })
-          Toast.success('订单已发货')
-          fetchOrder()
-        } catch {
-          Toast.error('发货失败')
-        } finally {
-          setActionLoading(false)
-        }
-      },
-    })
-  }, [order, salesOrderApi, fetchOrder])
+  // Handle ship order - open modal
+  const handleShip = useCallback(() => {
+    setShipModalVisible(true)
+  }, [])
+
+  // Handle ship confirm from modal
+  const handleShipConfirm = useCallback(
+    async (warehouseId: string) => {
+      if (!order?.id) return
+
+      try {
+        await salesOrderApi.postTradeSalesOrdersIdShip(order.id, {
+          warehouse_id: warehouseId,
+        })
+        Toast.success('订单已发货')
+        setShipModalVisible(false)
+        fetchOrder()
+      } catch {
+        Toast.error('发货失败')
+        throw new Error('发货失败') // Re-throw to keep modal open
+      }
+    },
+    [order, salesOrderApi, fetchOrder]
+  )
 
   // Handle complete order
   const handleComplete = useCallback(async () => {
@@ -506,6 +508,26 @@ export default function SalesOrderDetailPage() {
           <Empty description="暂无状态记录" />
         )}
       </Card>
+
+      {/* Ship Order Modal */}
+      <ShipOrderModal
+        visible={shipModalVisible}
+        order={
+          order
+            ? {
+                id: order.id!,
+                order_number: order.order_number!,
+                customer_name: order.customer_name,
+                warehouse_id: order.warehouse_id,
+                item_count: order.item_count,
+                total_quantity: order.total_quantity,
+                payable_amount: order.payable_amount,
+              }
+            : null
+        }
+        onConfirm={handleShipConfirm}
+        onCancel={() => setShipModalVisible(false)}
+      />
     </Container>
   )
 }

@@ -29,6 +29,7 @@ import type {
   HandlerCustomerListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { ShipOrderModal } from './components'
 import './SalesOrders.css'
 
 const { Title } = Typography
@@ -135,6 +136,10 @@ export default function SalesOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [customerFilter, setCustomerFilter] = useState<string>('')
   const [dateRange, setDateRange] = useState<[Date, Date] | null>(null)
+
+  // Ship modal state
+  const [shipModalVisible, setShipModalVisible] = useState(false)
+  const [selectedOrderForShip, setSelectedOrderForShip] = useState<SalesOrder | null>(null)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -294,29 +299,32 @@ export default function SalesOrdersPage() {
     [salesOrderApi, fetchOrders]
   )
 
-  // Handle ship order
-  const handleShip = useCallback(
-    async (order: SalesOrder) => {
-      if (!order.id) return
-      Modal.confirm({
-        title: '发货',
-        content: `确定要为订单 "${order.order_number}" 发货吗？发货后将扣减库存。`,
-        okText: '确认发货',
-        cancelText: '取消',
-        onOk: async () => {
-          try {
-            await salesOrderApi.postTradeSalesOrdersIdShip(order.id!, {
-              warehouse_id: order.warehouse_id,
-            })
-            Toast.success(`订单 "${order.order_number}" 已发货`)
-            fetchOrders()
-          } catch {
-            Toast.error('发货失败')
-          }
-        },
-      })
+  // Handle ship order - open modal
+  const handleShip = useCallback((order: SalesOrder) => {
+    if (!order.id) return
+    setSelectedOrderForShip(order)
+    setShipModalVisible(true)
+  }, [])
+
+  // Handle ship confirm from modal
+  const handleShipConfirm = useCallback(
+    async (warehouseId: string) => {
+      if (!selectedOrderForShip?.id) return
+
+      try {
+        await salesOrderApi.postTradeSalesOrdersIdShip(selectedOrderForShip.id, {
+          warehouse_id: warehouseId,
+        })
+        Toast.success(`订单 "${selectedOrderForShip.order_number}" 已发货`)
+        setShipModalVisible(false)
+        setSelectedOrderForShip(null)
+        fetchOrders()
+      } catch {
+        Toast.error('发货失败')
+        throw new Error('发货失败') // Re-throw to keep modal open
+      }
     },
-    [salesOrderApi, fetchOrders]
+    [selectedOrderForShip, salesOrderApi, fetchOrders]
   )
 
   // Handle complete order
@@ -607,6 +615,28 @@ export default function SalesOrdersPage() {
           />
         </Spin>
       </Card>
+
+      {/* Ship Order Modal */}
+      <ShipOrderModal
+        visible={shipModalVisible}
+        order={
+          selectedOrderForShip
+            ? {
+                id: selectedOrderForShip.id!,
+                order_number: selectedOrderForShip.order_number!,
+                customer_name: selectedOrderForShip.customer_name,
+                warehouse_id: selectedOrderForShip.warehouse_id,
+                item_count: selectedOrderForShip.item_count,
+                payable_amount: selectedOrderForShip.payable_amount,
+              }
+            : null
+        }
+        onConfirm={handleShipConfirm}
+        onCancel={() => {
+          setShipModalVisible(false)
+          setSelectedOrderForShip(null)
+        }}
+      />
     </Container>
   )
 }

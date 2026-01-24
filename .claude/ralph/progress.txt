@@ -4882,3 +4882,77 @@ ok      github.com/erp/backend/internal/interfaces/http/handler  0.018s
 - Action buttons are context-sensitive based on current order status
 - Edit button navigates to `/trade/sales/:id/edit` for draft orders only
 - Amount summary calculates discount percentage from discount_amount and total_amount
+
+---
+
+## 2026-01-24 - P3-FE-004: Sales Order Shipping Operation Complete
+
+### Completed
+- **P3-FE-004**: 销售订单发货操作 (Sales Order Shipping Operation)
+
+### What was done
+1. Created `ShipOrderModal` component (`frontend/src/pages/trade/components/ShipOrderModal.tsx`):
+   - Modal dialog for shipping order confirmation
+   - Displays order summary (order number, customer, item count, quantity, payable amount)
+   - Warehouse selection dropdown with active warehouses only
+   - Auto-selects order's warehouse, or default warehouse, or first available warehouse
+   - Loading state for warehouse list fetch
+   - Warning message about inventory deduction
+   - Confirm/Cancel actions with loading state
+
+2. Created `ShipOrderModal.css` with design system tokens:
+   - Uses CSS variables from design tokens
+   - Responsive design for mobile
+   - Section styling with background colors
+   - Loading and empty state styling
+
+3. Updated `SalesOrderDetail.tsx`:
+   - Replaced simple Modal.confirm with ShipOrderModal
+   - Added state for modal visibility
+   - Integrated handleShipConfirm callback for modal
+
+4. Updated `SalesOrders.tsx` (list page):
+   - Replaced simple Modal.confirm with ShipOrderModal
+   - Added state for modal visibility and selected order
+   - Integrated handleShipConfirm callback for modal
+
+### Files created
+- `frontend/src/pages/trade/components/ShipOrderModal.tsx`
+- `frontend/src/pages/trade/components/ShipOrderModal.css`
+- `frontend/src/pages/trade/components/index.ts`
+
+### Files modified
+- `frontend/src/pages/trade/SalesOrderDetail.tsx` (integrated ShipOrderModal)
+- `frontend/src/pages/trade/SalesOrders.tsx` (integrated ShipOrderModal)
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Shipping confirmation modal | ✓ |
+| Order summary display | ✓ |
+| Warehouse selection dropdown | ✓ |
+| Active warehouses only | ✓ |
+| Auto-select warehouse (order > default > first) | ✓ |
+| Loading state for warehouse fetch | ✓ |
+| Empty state for no warehouses | ✓ |
+| Warning message | ✓ |
+| Integration in detail page | ✓ |
+| Integration in list page | ✓ |
+| Update order status after ship | ✓ |
+
+### API Endpoints Used
+- `GET /partner/warehouses` - Fetch active warehouses for selection
+- `POST /trade/sales-orders/{id}/ship` - Ship the order with selected warehouse_id
+
+### Notes for next developer
+- **P3-BE-010** (PurchaseOrder backend) is the next high-priority backend task
+- **P3-FE-010** (Purchase Order List) is the next high-priority frontend task
+- ShipOrderModal can be reused for other shipping scenarios
+- The modal automatically fetches warehouses when opened
+- Default warehouse selection priority: order's warehouse > default warehouse > first active warehouse
+- The ship API accepts an optional `warehouse_id` parameter

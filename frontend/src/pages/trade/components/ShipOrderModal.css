@@ -1,0 +1,58 @@
+.ship-order-modal .ship-order-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.ship-order-modal .section-title {
+  display: block;
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.ship-order-modal .order-summary-section {
+  padding: var(--spacing-4);
+  background-color: var(--color-fill-0);
+  border-radius: var(--radius-md);
+}
+
+.ship-order-modal .order-summary {
+  margin-top: var(--spacing-2);
+}
+
+.ship-order-modal .warehouse-selection-section {
+  padding: var(--spacing-4);
+  background-color: var(--color-fill-0);
+  border-radius: var(--radius-md);
+}
+
+.ship-order-modal .loading-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) 0;
+}
+
+.ship-order-modal .empty-warehouses {
+  padding: var(--spacing-4);
+}
+
+.ship-order-modal .warning-section {
+  padding: var(--spacing-3);
+  background-color: var(--color-warning-light-default);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-warning-light-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ship-order-modal {
+    width: 90vw !important;
+    max-width: 520px;
+  }
+
+  .ship-order-modal .order-summary-section,
+  .ship-order-modal .warehouse-selection-section {
+    padding: var(--spacing-3);
+  }
+}
