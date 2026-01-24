@@ -6262,3 +6262,114 @@ DRAFT → Confirm() → CONFIRMED → AllocateToPayable() → ALLOCATED
 - Preview methods are useful for UI to show allocation preview before confirmation
 - Events are generated automatically by aggregate methods - application layer should publish them
 - The service operates on value copies - application layer is responsible for persistence
+
+---
+
+## P4-BE-010: Finance API (应收/应付/收款/付款) ✅
+
+**Date**: 2026-01-24
+**Status**: COMPLETED
+
+### Requirements
+- ✅ 实现应收应付查询 API (Account Receivable/Payable Query API)
+- ✅ 实现收款付款 API (Receipt/Payment Voucher API)
+- ✅ 实现核销 API (Reconciliation API)
+
+### Files Created
+- `backend/internal/application/finance/finance_service.go` (NEW)
+- `backend/internal/interfaces/http/handler/finance.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/application/finance/...` ✅ PASSED
+
+### Implementation Summary
+
+#### 1. Finance Application Service (`finance_service.go`)
+Provides comprehensive business logic for all finance operations:
+
+**DTOs and Responses**:
+- `AccountReceivableResponse` - Receivable with payment records
+- `AccountPayableResponse` - Payable with payment records
+- `ReceiptVoucherResponse` - Receipt voucher with allocations
+- `PaymentVoucherResponse` - Payment voucher with allocations
+- `ReceivableSummaryResponse` - Aggregated receivable stats per customer
+- `PayableSummaryResponse` - Aggregated payable stats per supplier
+
+**List Filters**:
+- `ReceivableListFilters` - Filter by customer, status, date range, overdue
+- `PayableListFilters` - Filter by supplier, status, date range, overdue
+- `ReceiptVoucherListFilters` - Filter by customer, status, date range
+- `PaymentVoucherListFilters` - Filter by supplier, status, date range
+
+**Service Methods**:
+| Category | Methods |
+|----------|---------|
+| Receivables | `ListReceivables`, `GetReceivableByID`, `GetReceivableSummary` |
+| Payables | `ListPayables`, `GetPayableByID`, `GetPayableSummary` |
+| Receipt Vouchers | `CreateReceiptVoucher`, `ListReceiptVouchers`, `GetReceiptVoucherByID`, `ConfirmReceiptVoucher`, `CancelReceiptVoucher`, `ReconcileReceiptVoucher` |
+| Payment Vouchers | `CreatePaymentVoucher`, `ListPaymentVouchers`, `GetPaymentVoucherByID`, `ConfirmPaymentVoucher`, `CancelPaymentVoucher`, `ReconcilePaymentVoucher` |
+
+#### 2. Finance HTTP Handler (`finance.go`)
+REST API endpoints with full Swagger/OpenAPI documentation:
+
+**Account Receivable Endpoints**:
+- `GET /api/v1/finance/receivables` - List receivables with filters
+- `GET /api/v1/finance/receivables/:id` - Get receivable by ID
+- `GET /api/v1/finance/receivables/summary` - Get summary by customer
+
+**Account Payable Endpoints**:
+- `GET /api/v1/finance/payables` - List payables with filters
+- `GET /api/v1/finance/payables/:id` - Get payable by ID
+- `GET /api/v1/finance/payables/summary` - Get summary by supplier
+
+**Receipt Voucher Endpoints**:
+- `POST /api/v1/finance/receipt-vouchers` - Create receipt voucher
+- `GET /api/v1/finance/receipt-vouchers` - List receipt vouchers
+- `GET /api/v1/finance/receipt-vouchers/:id` - Get receipt voucher by ID
+- `POST /api/v1/finance/receipt-vouchers/:id/confirm` - Confirm voucher
+- `POST /api/v1/finance/receipt-vouchers/:id/cancel` - Cancel voucher
+- `POST /api/v1/finance/receipt-vouchers/:id/reconcile` - Reconcile voucher
+
+**Payment Voucher Endpoints**:
+- `POST /api/v1/finance/payment-vouchers` - Create payment voucher
+- `GET /api/v1/finance/payment-vouchers` - List payment vouchers
+- `GET /api/v1/finance/payment-vouchers/:id` - Get payment voucher by ID
+- `POST /api/v1/finance/payment-vouchers/:id/confirm` - Confirm voucher
+- `POST /api/v1/finance/payment-vouchers/:id/cancel` - Cancel voucher
+- `POST /api/v1/finance/payment-vouchers/:id/reconcile` - Reconcile voucher
+
+### API Design Patterns
+1. **Consistent Response Format**: Uses `dto.Response{data=...}` pattern
+2. **Pagination**: Standard `page`, `page_size`, `sort_by`, `sort_order` parameters
+3. **Filtering**: Query params for customer/supplier, status, date ranges
+4. **Tenant Support**: X-Tenant-ID header for multi-tenancy
+5. **Error Handling**: Proper HTTP status codes and error messages
+
+### Reconciliation Request DTOs
+```go
+type ReconcileReceiptRequest struct {
+    StrategyType string                    // "FIFO" or "MANUAL"
+    Allocations  []ManualReceivableAllocation  // For manual reconciliation
+}
+
+type ReconcilePaymentRequest struct {
+    StrategyType string                   // "FIFO" or "MANUAL"
+    Allocations  []ManualPayableAllocation    // For manual reconciliation
+}
+```
+
+### Notes for Next Developer
+- **Routes not wired in main.go**: Finance repositories don't exist yet in infrastructure/persistence
+- **Handler is API definition**: Can be used for OpenAPI/Swagger generation
+- **Wire up when ready**: Once `FinanceRepositoryImpl` is created, add to main.go:
+  ```go
+  financeService := financeapp.NewFinanceService(
+      receivableRepo, payableRepo, receiptRepo, paymentRepo,
+      customerRepo, supplierRepo, reconciliationSvc, sequenceGenerator,
+  )
+  financeHandler := handler.NewFinanceHandler(financeService)
+  financeHandler.RegisterRoutes(api)
+  ```
+- **Domain layer complete**: All aggregates, events, repositories interfaces, and reconciliation service are implemented
+- **Next features**: P4-FE-001 (应收账款列表页面) or P4-BE-015 (ExpenseRecord)
