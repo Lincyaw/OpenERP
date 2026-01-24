@@ -664,7 +664,7 @@
       "验证 CRUD 流程",
       "验证错误处理"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-INT-003",

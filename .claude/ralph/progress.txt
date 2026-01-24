@@ -11882,3 +11882,64 @@ P1-INT-001: passes: true
 2. **Semi UI React 19**: findDOMNode mock is needed due to Semi UI's internal tooltip implementation
 3. **Toast mocking**: Use vi.spyOn pattern instead of mocking the entire module
 4. **Next priority items**: P1-INT-002 (伙伴模块前后端联调) or P1-QA-004 (Partner API 集成测试)
+
+
+## 2026-01-25 - P1-INT-002 伙伴模块前后端联调 COMPLETED
+
+### Summary
+Implemented comprehensive frontend-backend integration tests for the Partner module (Customer, Supplier, Warehouse), verifying data flow, CRUD operations, and error handling.
+
+### Files Created
+1. `frontend/src/pages/partner/Customers.test.tsx` - Customer list page integration tests (19 tests)
+2. `frontend/src/pages/partner/Suppliers.test.tsx` - Supplier list page integration tests (17 tests)
+3. `frontend/src/pages/partner/Warehouses.test.tsx` - Warehouse list page integration tests (18 tests)
+4. `frontend/src/features/partner/CustomerForm.test.tsx` - Customer form integration tests (24 tests)
+
+### Test Coverage (78 tests total)
+
+#### CustomersPage Tests (19 tests)
+- **Customer List Display**: Verifies customer codes, names, status tags, level tags, type tags, contact info, location
+- **Search and Filter**: Tests search input and status/type/level filter dropdowns
+- **Error Handling**: Tests API failure error toasts and empty list handling
+- **Customer Actions**: Tests "新增客户" and "刷新" buttons
+- **API Integration**: Tests response transformation and request parameters
+
+#### SuppliersPage Tests (17 tests)
+- **Supplier List Display**: Verifies supplier codes, names, status tags, payment terms, contact info, location
+- **Search and Filter**: Tests search input and status/type filter dropdowns
+- **Error Handling**: Tests API failure error toasts and empty list handling
+- **Supplier Actions**: Tests "新增供应商" and "刷新" buttons
+- **API Integration**: Tests response transformation and request parameters
+
+#### WarehousesPage Tests (18 tests)
+- **Warehouse List Display**: Verifies warehouse codes, names, status tags, type tags, default indicator, sort order, location
+- **Search and Filter**: Tests search input and status/type filter dropdowns
+- **Error Handling**: Tests API failure error toasts and empty list handling
+- **Warehouse Actions**: Tests "新增仓库" and "刷新" buttons
+- **API Integration**: Tests response transformation and request parameters (sort by sort_order)
+
+#### CustomerForm Tests (24 tests)
+- **Create Mode**: Tests form sections, required fields, default values, create API calls, navigation
+- **Edit Mode**: Tests form population, disabled fields, customer level field, update API calls
+- **Form Validation**: Tests required field validation, code format validation, email format validation
+- **Error Handling**: Tests error messages for failed create/update operations
+- **Contact Information**: Tests contact details submission
+- **Address Information**: Tests address details submission
+- **API Payload**: Tests correct payload structure for create operations
+
+### Integration Verified
+1. **Customer List Display**: API response correctly transformed to table display with all fields
+2. **Supplier List Display**: API response correctly transformed with rating and payment terms
+3. **Warehouse List Display**: API response correctly transformed with default indicator and type tags
+4. **Customer CRUD Flow**: Create, read, update operations with proper API payload
+5. **Error Handling**: API failures show appropriate error toasts
+6. **Form Validation**: Frontend validation prevents invalid API calls
+
+### PRD Status
+P1-INT-002: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `npm run test:run -- src/pages/partner/Customers.test.tsx src/pages/partner/Suppliers.test.tsx src/pages/partner/Warehouses.test.tsx src/features/partner/CustomerForm.test.tsx`
+2. **Test naming**: Warehouse test data uses distinct names to avoid collision with type labels (普通仓库/虚拟仓库/中转仓库)
+3. **Toast mocking**: Use vi.spyOn pattern instead of mocking the entire module
+4. **Next priority items**: P1-INT-003 (客户余额功能联调), P1-QA-004 (Partner API 集成测试), or P2-INT-001 (库存模块前后端联调)
