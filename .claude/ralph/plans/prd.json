@@ -1973,7 +1973,7 @@
       "实现登出 API",
       "实现 Token 刷新 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-BE-017",

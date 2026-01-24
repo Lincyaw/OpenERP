@@ -8424,3 +8424,133 @@ router.GET("/custom", RequireCustomPermission(func(claims *auth.Claims, c *gin.C
 - **Admin Override**: Consider implementing an admin permission (e.g., `admin:all`) that bypasses all permission checks
 - **Caching**: For high-traffic applications, consider caching permission checks with Redis
 - **Audit Logging**: The `PermissionConfig.OnDenied` callback can be used to log unauthorized access attempts
+
+---
+
+## P6-BE-016: Auth API (登录/登出/刷新)
+
+### Date: 2026-01-24
+
+### Completion Status: ✅ COMPLETED
+
+### Requirements Fulfilled
+1. ✅ 实现登录 API - Login endpoint with password verification, account locking, and token generation
+2. ✅ 实现登出 API - Logout endpoint that invalidates the current session
+3. ✅ 实现 Token 刷新 API - Token refresh endpoint with refresh count tracking
+
+### Implementation Details
+
+#### Application Layer - Auth Service (`backend/internal/application/identity/`)
+
+**auth_service.go** - Core authentication service with:
+- `Login()` - Authenticates user with username/password, tracks login attempts, locks account after max failures
+- `RefreshToken()` - Validates refresh token and generates new token pair
+- `Logout()` - Invalidates current session (can be extended for token blacklisting)
+- `GetCurrentUser()` - Returns authenticated user's full profile with permissions
+- `ChangePassword()` - Changes user password with old password verification
+
+**dto.go** - Data transfer objects:
+- `LoginInput`, `LoginResult` - Login request/response
+- `RefreshTokenInput`, `RefreshTokenResult` - Token refresh request/response
+- `LogoutInput`, `ChangePasswordInput` - Other operation inputs
+- `GetCurrentUserInput`, `CurrentUserResult` - Current user profile
+- `UserInfo` - User information with permissions
+
+#### HTTP Layer - Auth Handler (`backend/internal/interfaces/http/handler/`)
+
+**auth.go** - HTTP handlers with Swagger documentation:
+- `POST /auth/login` - User login (public)
+- `POST /auth/refresh` - Token refresh (public)
+- `POST /auth/logout` - User logout (authenticated)
+- `GET /auth/me` - Get current user (authenticated)
+- `PUT /auth/password` - Change password (authenticated)
+
+**auth_dto.go** - HTTP request/response DTOs:
+- `LoginRequest`, `RefreshTokenRequest`, `ChangePasswordRequest`
+- `TokenResponse`, `AuthUserResponse`, `LoginResponse`, `RefreshTokenResponse`, etc.
+
+### Security Features
+
+1. **Account Locking**: After configurable max login attempts (default: 5), account is locked for a configurable duration (default: 15 minutes)
+2. **Password Verification**: Uses bcrypt for secure password hashing
+3. **Token Pair**: Separate access token (short-lived) and refresh token (long-lived)
+4. **Refresh Count Tracking**: Tokens include refresh count to limit total refreshes
+5. **IP Tracking**: Login records client IP address
+
+### Auth Service Configuration
+
+```go
+type AuthServiceConfig struct {
+    MaxLoginAttempts     int           // Default: 5
+    LockDuration         time.Duration // Default: 15 minutes
+    SessionTimeout       time.Duration // Default: 24 hours
+    PasswordMinLength    int           // Default: 8
+    RequirePasswordReset bool          // Default: false
+}
+```
+
+### API Endpoints
+
+```
+POST /api/v1/auth/login
+  Request: { "username": "string", "password": "string" }
+  Response: { "token": {...}, "user": {...} }
+
+POST /api/v1/auth/refresh
+  Request: { "refresh_token": "string" }
+  Response: { "token": {...} }
+
+POST /api/v1/auth/logout (requires JWT)
+  Response: { "message": "Logged out successfully" }
+
+GET /api/v1/auth/me (requires JWT)
+  Response: { "user": {...}, "permissions": [...] }
+
+PUT /api/v1/auth/password (requires JWT)
+  Request: { "old_password": "string", "new_password": "string" }
+  Response: { "message": "Password changed successfully" }
+```
+
+### Files Created/Modified
+
+- `backend/internal/application/identity/dto.go` - Auth DTOs
+- `backend/internal/application/identity/auth_service.go` - Auth service implementation
+- `backend/internal/application/identity/auth_service_test.go` - Auth service tests (13 tests)
+- `backend/internal/interfaces/http/handler/auth_dto.go` - HTTP DTOs
+- `backend/internal/interfaces/http/handler/auth.go` - HTTP handlers
+- `backend/internal/interfaces/http/handler/auth_test.go` - Handler tests (7 tests)
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/application/identity/...` ✅ PASSED (13 auth service tests)
+- `go test ./internal/interfaces/http/handler/...` ✅ PASSED (7 handler tests)
+
+### Test Coverage
+
+**Auth Service Tests (13 tests)**:
+- Login success, invalid credentials, user not found, locked account, deactivated account
+- RefreshToken success, invalid token, user not found
+- GetCurrentUser success
+- ChangePassword success, wrong old password
+- Logout success
+- Account locks after max attempts
+
+**Handler Tests (7 tests)**:
+- Login success, invalid request body
+- RefreshToken success
+- Logout success, unauthorized
+- GetCurrentUser success
+- ChangePassword success
+
+### Integration Notes
+
+- Uses existing JWT infrastructure from P6-BE-014
+- Uses existing User/Role domain models from P6-BE-010/P6-BE-011
+- Integrates with permission middleware from P6-BE-015
+- Follows existing handler patterns (BaseHandler, dto.Response)
+
+### Next Steps for Integration
+- **Route Registration**: Register auth routes in the main router setup
+- **Route Security**: Login and refresh should be public; logout, me, password require JWT
+- **OpenAPI Spec**: Run `swag init` to generate updated Swagger docs
+- **Frontend**: Generate SDK using `npm run api:generate`

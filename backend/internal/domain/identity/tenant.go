@@ -30,15 +30,15 @@ const (
 
 // TenantConfig holds configurable settings for a tenant
 type TenantConfig struct {
-	MaxUsers      int    `json:"max_users"`       // Maximum number of users allowed
-	MaxWarehouses int    `json:"max_warehouses"`  // Maximum number of warehouses
-	MaxProducts   int    `json:"max_products"`    // Maximum number of products
-	Features      string `json:"features"`        // JSON object of enabled features
-	Settings      string `json:"settings"`        // JSON object of tenant settings
-	CostStrategy  string `json:"cost_strategy"`   // Default cost calculation strategy (fifo, weighted_average)
-	Currency      string `json:"currency"`        // Default currency code
-	Timezone      string `json:"timezone"`        // Tenant timezone
-	Locale        string `json:"locale"`          // Tenant locale (e.g., zh-CN, en-US)
+	MaxUsers      int    `json:"max_users"`      // Maximum number of users allowed
+	MaxWarehouses int    `json:"max_warehouses"` // Maximum number of warehouses
+	MaxProducts   int    `json:"max_products"`   // Maximum number of products
+	Features      string `json:"features"`       // JSON object of enabled features
+	Settings      string `json:"settings"`       // JSON object of tenant settings
+	CostStrategy  string `json:"cost_strategy"`  // Default cost calculation strategy (fifo, weighted_average)
+	Currency      string `json:"currency"`       // Default currency code
+	Timezone      string `json:"timezone"`       // Tenant timezone
+	Locale        string `json:"locale"`         // Tenant locale (e.g., zh-CN, en-US)
 }
 
 // DefaultTenantConfig returns the default configuration for a new tenant
