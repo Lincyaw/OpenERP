@@ -313,6 +313,10 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 		return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
 	}
 
+	// Add lock to item's Locks slice so domain method can find it
+	// (Repository doesn't preload associations)
+	item.Locks = append(item.Locks, *lock)
+
 	// Record balance before
 	balanceBefore := item.AvailableQuantity
 
@@ -326,8 +330,9 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 		return err
 	}
 
-	// Update the lock record
-	if err := s.lockRepo.Save(ctx, lock); err != nil {
+	// Update the lock record (use the updated lock from item.Locks, not the original)
+	// The domain method marks the lock as Released in item.Locks
+	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
 		return err
 	}
 
@@ -378,6 +383,10 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
 	}
 
+	// Add lock to item's Locks slice so domain method can find it
+	// (Repository doesn't preload associations)
+	item.Locks = append(item.Locks, *lock)
+
 	// Record locked quantity before (deduct affects locked, not available)
 	lockedBefore := item.LockedQuantity
 
@@ -391,8 +400,9 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		return err
 	}
 
-	// Update the lock record
-	if err := s.lockRepo.Save(ctx, lock); err != nil {
+	// Update the lock record (use the updated lock from item.Locks, not the original)
+	// The domain method marks the lock as Consumed in item.Locks
+	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
 		return err
 	}
 
@@ -839,6 +849,10 @@ func (s *InventoryService) UnlockBySource(ctx context.Context, tenantID uuid.UUI
 			continue
 		}
 
+		// Add lock to item's Locks slice so domain method can find it
+		// (Repository doesn't preload associations)
+		item.Locks = append(item.Locks, lock)
+
 		// Unlock
 		if err := item.UnlockStock(lock.ID); err != nil {
 			continue
@@ -849,8 +863,9 @@ func (s *InventoryService) UnlockBySource(ctx context.Context, tenantID uuid.UUI
 			continue
 		}
 
-		// Update lock status
-		if err := s.lockRepo.Save(ctx, &lock); err != nil {
+		// Update lock status (use the updated lock from item.Locks, not the original)
+		// The domain method marks the lock as Released in item.Locks
+		if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
 			continue
 		}
 

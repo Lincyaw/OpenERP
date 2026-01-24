@@ -11987,3 +11987,79 @@ P2-INT-001: passes: true
 2. **Locked quantity**: Tests verify that locked stock displays correctly and that available + locked = total
 3. **Stock status logic**: "低库存" shown when is_below_minimum=true, "无库存" shown when total_quantity=0 and is_below_minimum=false
 4. **Next priority items**: P2-INT-002 (盘点功能联调), P3-INT-001 (销售订单前后端联调), or P3-QA-004 (订单-库存联动集成测试)
+
+
+## 2026-01-25 - P3-QA-004 订单-库存联动集成测试 COMPLETED
+
+### Summary
+Implemented comprehensive integration tests for order-inventory interactions, verifying that order confirmation locks stock, order shipment deducts stock, and order cancellation releases stock. Also fixed a critical bug in the inventory service where lock status (Consumed/Released) was not being persisted correctly.
+
+### Files Created
+1. `backend/tests/integration/order_inventory_test.go` - Order-inventory integration tests (12 tests)
+
+### Files Modified  
+1. `backend/internal/application/inventory/inventory_service.go` - Fixed lock status persistence bug
+
+### Test Coverage (12 tests across 5 test suites)
+
+#### TestOrderInventory_ConfirmLockStock (3 tests)
+- **confirm_order_locks_stock**: Verifies that confirming an order correctly locks the required stock quantity
+- **confirm_order_with_multiple_items_locks_all_stock**: Tests multi-item orders lock all product stocks correctly
+- **confirm_order_fails_with_insufficient_stock**: Verifies error when trying to lock more stock than available
+
+#### TestOrderInventory_ShipDeductStock (2 tests)
+- **ship_order_deducts_locked_stock**: Verifies that shipping an order deducts from locked stock and marks lock as consumed
+- **ship_order_with_multiple_items_deducts_all**: Tests multi-item shipments deduct all locked stocks correctly
+
+#### TestOrderInventory_CancelReleaseStock (3 tests)
+- **cancel_confirmed_order_releases_locked_stock**: Verifies cancellation releases locks and returns stock to available
+- **cancel_draft_order_does_not_affect_inventory**: Tests that canceling a draft order (no locks) doesn't affect inventory
+- **cancel_order_with_multiple_items_releases_all_locks**: Tests multi-item cancellation releases all locks
+
+#### TestOrderInventory_FullLifecycle (2 tests)
+- **complete_order_flow:_draft_->_confirm_->_ship**: End-to-end test of full order lifecycle
+- **concurrent_orders_lock_different_stock**: Tests concurrent orders correctly track their own locked portions
+
+#### TestOrderInventory_LockExpiry (1 test)
+- **lock_has_default_expiry_time**: Verifies that locks have a 24-hour default expiry time
+
+### Bug Fix: Lock Status Persistence
+
+**Problem**: After calling `item.DeductStock()` or `item.UnlockStock()`, the lock's `Consumed` or `Released` flag was updated in `item.Locks`, but the service was saving the original `lock` variable instead of the updated one from `item.Locks`.
+
+**Root Cause**: The inventory service methods (DeductStock, UnlockStock, UnlockBySource) were manually adding the lock to item.Locks so the domain method could find it, but then saving the wrong lock object after the domain operation modified it.
+
+**Fix**: Changed all three methods to save `&item.Locks[0]` (the updated lock) instead of the original `lock` variable:
+
+```go
+// Before (incorrect)
+if err := s.lockRepo.Save(ctx, lock); err != nil {
+    return err
+}
+
+// After (correct)
+if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
+    return err
+}
+```
+
+**Affected methods**:
+- `DeductStock` - line 402-405
+- `UnlockStock` - line 333-336  
+- `UnlockBySource` - line 864-867
+
+### Architecture Insights
+- Repository layer doesn't preload Lock associations for InventoryItem
+- Domain methods search item.Locks slice to find and modify locks
+- Service layer must manually add lock to item.Locks before calling domain methods
+- After domain operation, the updated lock is at item.Locks[index], not the original variable
+
+### PRD Status
+P3-QA-004: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `cd backend && go test -v ./tests/integration/... -run "TestOrderInventory" -count=1`
+2. **Dependencies**: Tests use testcontainers for PostgreSQL (requires Docker)
+3. **Test helpers**: Uses `OrderInventoryTestSetup` struct for common test setup
+4. **Lock persistence**: Remember that lock status updates happen in item.Locks slice, not original variable
+5. **Next priority items**: P3-QA-001 (SalesOrder聚合单元测试), P3-QA-002 (PurchaseOrder聚合单元测试), or P3-INT-001 (销售订单前后端联调)
