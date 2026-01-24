@@ -471,3 +471,157 @@ type OtherIncomeRecordRepository interface {
 	// GenerateIncomeNumber generates a unique income number for a tenant
 	GenerateIncomeNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// CreditMemoFilter defines filtering options for credit memo queries
+type CreditMemoFilter struct {
+	shared.Filter
+	SalesReturnID *uuid.UUID        // Filter by sales return
+	SalesOrderID  *uuid.UUID        // Filter by original sales order
+	CustomerID    *uuid.UUID        // Filter by customer
+	Status        *CreditMemoStatus // Filter by status
+	FromDate      *time.Time        // Filter by creation date range start
+	ToDate        *time.Time        // Filter by creation date range end
+	MinAmount     *decimal.Decimal  // Filter by minimum total credit
+	MaxAmount     *decimal.Decimal  // Filter by maximum total credit
+	HasRemaining  *bool             // Filter memos with remaining amount
+}
+
+// CreditMemoRepository defines the interface for credit memo persistence
+type CreditMemoRepository interface {
+	// FindByID finds a credit memo by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*CreditMemo, error)
+
+	// FindByIDForTenant finds a credit memo by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*CreditMemo, error)
+
+	// FindByMemoNumber finds by memo number for a tenant
+	FindByMemoNumber(ctx context.Context, tenantID uuid.UUID, memoNumber string) (*CreditMemo, error)
+
+	// FindBySalesReturn finds by sales return ID
+	FindBySalesReturn(ctx context.Context, tenantID, salesReturnID uuid.UUID) (*CreditMemo, error)
+
+	// FindAllForTenant finds all credit memos for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter CreditMemoFilter) ([]CreditMemo, error)
+
+	// FindByCustomer finds credit memos for a customer
+	FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter CreditMemoFilter) ([]CreditMemo, error)
+
+	// FindByStatus finds credit memos by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status CreditMemoStatus, filter CreditMemoFilter) ([]CreditMemo, error)
+
+	// FindWithRemainingCredit finds memos with remaining credit for a customer
+	FindWithRemainingCredit(ctx context.Context, tenantID, customerID uuid.UUID) ([]CreditMemo, error)
+
+	// Save creates or updates a credit memo
+	Save(ctx context.Context, memo *CreditMemo) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, memo *CreditMemo) error
+
+	// Delete soft deletes a credit memo
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes a credit memo for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts credit memos for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter CreditMemoFilter) (int64, error)
+
+	// CountByStatus counts credit memos by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status CreditMemoStatus) (int64, error)
+
+	// CountByCustomer counts credit memos for a customer
+	CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
+
+	// SumRemainingByCustomer calculates total remaining credit for a customer
+	SumRemainingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error)
+
+	// SumRemainingForTenant calculates total remaining credit for a tenant
+	SumRemainingForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByMemoNumber checks if a memo number exists for a tenant
+	ExistsByMemoNumber(ctx context.Context, tenantID uuid.UUID, memoNumber string) (bool, error)
+
+	// ExistsBySalesReturn checks if a credit memo exists for the given sales return
+	ExistsBySalesReturn(ctx context.Context, tenantID, salesReturnID uuid.UUID) (bool, error)
+
+	// GenerateMemoNumber generates a unique memo number for a tenant
+	GenerateMemoNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
+
+// DebitMemoFilter defines filtering options for debit memo queries
+type DebitMemoFilter struct {
+	shared.Filter
+	PurchaseReturnID *uuid.UUID       // Filter by purchase return
+	PurchaseOrderID  *uuid.UUID       // Filter by original purchase order
+	SupplierID       *uuid.UUID       // Filter by supplier
+	Status           *DebitMemoStatus // Filter by status
+	FromDate         *time.Time       // Filter by creation date range start
+	ToDate           *time.Time       // Filter by creation date range end
+	MinAmount        *decimal.Decimal // Filter by minimum total debit
+	MaxAmount        *decimal.Decimal // Filter by maximum total debit
+	HasRemaining     *bool            // Filter memos with remaining amount
+}
+
+// DebitMemoRepository defines the interface for debit memo persistence
+type DebitMemoRepository interface {
+	// FindByID finds a debit memo by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*DebitMemo, error)
+
+	// FindByIDForTenant finds a debit memo by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*DebitMemo, error)
+
+	// FindByMemoNumber finds by memo number for a tenant
+	FindByMemoNumber(ctx context.Context, tenantID uuid.UUID, memoNumber string) (*DebitMemo, error)
+
+	// FindByPurchaseReturn finds by purchase return ID
+	FindByPurchaseReturn(ctx context.Context, tenantID, purchaseReturnID uuid.UUID) (*DebitMemo, error)
+
+	// FindAllForTenant finds all debit memos for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter DebitMemoFilter) ([]DebitMemo, error)
+
+	// FindBySupplier finds debit memos for a supplier
+	FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter DebitMemoFilter) ([]DebitMemo, error)
+
+	// FindByStatus finds debit memos by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status DebitMemoStatus, filter DebitMemoFilter) ([]DebitMemo, error)
+
+	// FindWithRemainingDebit finds memos with remaining debit for a supplier
+	FindWithRemainingDebit(ctx context.Context, tenantID, supplierID uuid.UUID) ([]DebitMemo, error)
+
+	// Save creates or updates a debit memo
+	Save(ctx context.Context, memo *DebitMemo) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, memo *DebitMemo) error
+
+	// Delete soft deletes a debit memo
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes a debit memo for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts debit memos for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter DebitMemoFilter) (int64, error)
+
+	// CountByStatus counts debit memos by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status DebitMemoStatus) (int64, error)
+
+	// CountBySupplier counts debit memos for a supplier
+	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
+	// SumRemainingBySupplier calculates total remaining debit for a supplier
+	SumRemainingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error)
+
+	// SumRemainingForTenant calculates total remaining debit for a tenant
+	SumRemainingForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByMemoNumber checks if a memo number exists for a tenant
+	ExistsByMemoNumber(ctx context.Context, tenantID uuid.UUID, memoNumber string) (bool, error)
+
+	// ExistsByPurchaseReturn checks if a debit memo exists for the given purchase return
+	ExistsByPurchaseReturn(ctx context.Context, tenantID, purchaseReturnID uuid.UUID) (bool, error)
+
+	// GenerateMemoNumber generates a unique memo number for a tenant
+	GenerateMemoNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}

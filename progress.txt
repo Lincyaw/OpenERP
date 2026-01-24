@@ -1,0 +1,40 @@
+## Progress Log
+
+### 2026-01-24: P4-BE-004 - 红冲逻辑实现 (退货关联) - Credit/Debit Memo Implementation
+
+**Feature**: Credit Memo and Debit Memo domain entities for sales and purchase returns
+
+**Files Created**:
+- `backend/internal/domain/finance/credit_memo.go` - CreditMemo aggregate for sales returns
+- `backend/internal/domain/finance/credit_memo_events.go` - Domain events for CreditMemo
+- `backend/internal/domain/finance/debit_memo.go` - DebitMemo aggregate for purchase returns
+- `backend/internal/domain/finance/debit_memo_events.go` - Domain events for DebitMemo
+- `backend/internal/domain/finance/credit_memo_test.go` - Unit tests for CreditMemo
+- `backend/internal/domain/finance/debit_memo_test.go` - Unit tests for DebitMemo
+
+**Files Modified**:
+- `backend/internal/domain/finance/repository.go` - Added CreditMemoRepository and DebitMemoRepository interfaces
+
+**Implementation Details**:
+
+1. **CreditMemo (销售退货红冲单)**:
+   - Linked to SalesReturn, SalesOrder, Customer
+   - Can link to original AccountReceivable
+   - Statuses: PENDING, APPLIED, PARTIAL, VOIDED, REFUNDED
+   - Supports partial application to multiple receivables
+   - Domain events: Created, Applied, PartiallyApplied, Voided, Refunded
+
+2. **DebitMemo (采购退货红冲单)**:
+   - Linked to PurchaseReturn, PurchaseOrder, Supplier
+   - Can link to original AccountPayable
+   - Statuses: PENDING, APPLIED, PARTIAL, VOIDED, REFUNDED
+   - Supports partial application to multiple payables
+   - Domain events: Created, Applied, PartiallyApplied, Voided, RefundReceived
+
+3. **Requirements Met**:
+   - [x] 退货完成时生成红冲单 - Domain entities ready to be created on return completion
+   - [x] 关联原应收应付 - OriginalReceivableID/OriginalPayableID fields
+   - [x] 更新应收应付余额 - ApplyToReceivable/ApplyToPayable methods with amount tracking
+
+**Tests**: All unit tests passing (33 test cases for credit memo, 31 for debit memo)
+**Build**: Successful
