@@ -10840,3 +10840,111 @@ Backend compiles successfully with `go build ./...`
   - P4-BE-004: Red-flush logic for returns
   - P4-BE-006: Balance payment logic
   - P6-BE-013: DataScope data permissions
+
+---
+
+## 2026-01-24 - P3-BE-003: Multi-Unit Quantity Conversion Complete
+
+### Completed
+- **P3-BE-003**: 多单位数量换算 (Multi-unit quantity conversion)
+
+### What was done
+
+1. **UnitConversionService Domain Service** (`backend/internal/domain/shared/service/unit_conversion_service.go`)
+   - `ConvertToBaseUnit()` - Convert quantity from any unit to base units
+   - `ConvertFromBaseUnit()` - Convert quantity from base units to any unit
+   - `ConvertBetweenUnits()` - Convert between two arbitrary units via base unit
+   - `CalculateUnitPrice()` - Calculate unit price based on conversion rate
+   - `CalculateBaseUnitPrice()` - Calculate base unit price from unit price
+   - `ValidateConversionRate()` - Validate conversion rate
+   - `UnitInfo` struct for unit information
+   - `UnitConversionResult` struct for conversion results
+   - Helper functions `CreateBaseUnitInfo()` and `CreateUnitInfo()`
+
+2. **Unit Tests** (`backend/internal/domain/shared/service/unit_conversion_service_test.go`)
+   - Comprehensive tests for all conversion scenarios
+   - Tests for boxes to pieces, kg to g, dozen conversions
+   - Edge case tests (zero, negative, same unit conversions)
+   - Price calculation tests
+
+3. **SalesOrderItem Extended Fields** (`backend/internal/domain/trade/sales_order.go`)
+   - Added `ConversionRate decimal.Decimal` - rate to convert to base unit
+   - Added `BaseQuantity decimal.Decimal` - quantity in base units
+   - Added `BaseUnit string` - base unit code
+   - Updated `NewSalesOrderItem()` constructor with new parameters
+   - Updated `UpdateQuantity()` to recalculate BaseQuantity
+   - Updated `AddItem()` method signature
+
+4. **PurchaseOrderItem Extended Fields** (`backend/internal/domain/trade/purchase_order.go`)
+   - Added `ConversionRate decimal.Decimal` - rate to convert to base unit
+   - Added `BaseQuantity decimal.Decimal` - quantity in base units
+   - Added `BaseUnit string` - base unit code
+   - Updated `NewPurchaseOrderItem()` constructor with new parameters
+   - Updated `UpdateQuantity()` to recalculate BaseQuantity
+   - Updated `AddItem()` method signature
+
+5. **Application Service DTOs** (`backend/internal/application/trade/dto.go`)
+   - Updated `CreateSalesOrderItemInput` with `BaseUnit` and `ConversionRate`
+   - Updated `CreatePurchaseOrderItemInput` with `BaseUnit` and `ConversionRate`
+   - Updated `AddOrderItemRequest` with `BaseUnit` and `ConversionRate`
+   - Updated `AddPurchaseOrderItemRequest` with `BaseUnit` and `ConversionRate`
+
+6. **Application Services Updated**
+   - `SalesOrderService.Create()` now uses BaseUnit and ConversionRate from DTO
+   - `SalesOrderService.AddItem()` now uses BaseUnit and ConversionRate from DTO
+   - `PurchaseOrderService.Create()` now uses BaseUnit and ConversionRate from DTO
+   - `PurchaseOrderService.AddItem()` now uses BaseUnit and ConversionRate from DTO
+
+7. **Test Files Updated**
+   - All domain tests updated to use new signatures
+   - All service tests updated to use new signatures
+
+### Requirements Met
+- ✅ 实现单位换算逻辑 (Implement unit conversion logic) - UnitConversionService with ConvertToBaseUnit, ConvertFromBaseUnit, ConvertBetweenUnits
+- ✅ 支持基本单位和辅助单位 (Support base units and auxiliary units) - ConversionRate field tracks relationship to base unit
+- ✅ 在订单中正确换算 (Correct conversion in orders) - BaseQuantity field stores converted quantity for inventory
+
+### Files Created
+- `backend/internal/domain/shared/service/unit_conversion_service.go`
+- `backend/internal/domain/shared/service/unit_conversion_service_test.go`
+
+### Files Modified
+- `backend/internal/domain/trade/sales_order.go`
+- `backend/internal/domain/trade/sales_order_test.go`
+- `backend/internal/domain/trade/purchase_order.go`
+- `backend/internal/domain/trade/purchase_order_test.go`
+- `backend/internal/domain/trade/sales_return_test.go`
+- `backend/internal/domain/trade/purchase_return_test.go`
+- `backend/internal/application/trade/dto.go`
+- `backend/internal/application/trade/sales_order_service.go`
+- `backend/internal/application/trade/purchase_order_service.go`
+- `backend/internal/application/trade/sales_order_service_test.go`
+- `backend/internal/application/trade/purchase_order_service_test.go`
+- `.claude/ralph/plans/prd.json`
+
+### Build Status
+- Backend compiles successfully
+- All unit tests pass
+
+### API Changes (Breaking)
+The following DTOs now require additional fields:
+- `CreateSalesOrderItemInput`: added `base_unit` and `conversion_rate`
+- `CreatePurchaseOrderItemInput`: added `base_unit` and `conversion_rate`
+- `AddOrderItemRequest`: added `base_unit` and `conversion_rate`
+- `AddPurchaseOrderItemRequest`: added `base_unit` and `conversion_rate`
+
+Frontend needs to be updated to provide these fields. When using the base unit, set `conversion_rate = 1` and `base_unit = unit`.
+
+### Database Schema Changes
+GORM will auto-migrate the following columns:
+- `sales_order_items`: `conversion_rate`, `base_quantity`, `base_unit`
+- `purchase_order_items`: `conversion_rate`, `base_quantity`, `base_unit`
+
+### Notes for Next Developer
+- The UnitConversionService is a pure domain service with no dependencies
+- BaseQuantity should be used for all inventory operations (lock, deduct, increase)
+- Frontend needs to fetch product unit information to get ConversionRate
+- Consider creating API to get product units with their conversion rates
+- Next related tasks:
+  - P3-BE-004: Pricing strategy (standard/tiered)
+  - Frontend integration to use multi-unit conversion

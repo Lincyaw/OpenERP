@@ -22,13 +22,15 @@ type CreatePurchaseOrderRequest struct {
 
 // CreatePurchaseOrderItemInput represents an item in the create order request
 type CreatePurchaseOrderItemInput struct {
-	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
-	ProductName string          `json:"product_name" binding:"required,min=1,max=200"`
-	ProductCode string          `json:"product_code" binding:"required,min=1,max=50"`
-	Unit        string          `json:"unit" binding:"required,min=1,max=20"`
-	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
-	UnitCost    decimal.Decimal `json:"unit_cost" binding:"required"`
-	Remark      string          `json:"remark"`
+	ProductID      uuid.UUID       `json:"product_id" binding:"required"`
+	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
+	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
+	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
+	UnitCost       decimal.Decimal `json:"unit_cost" binding:"required"`
+	Remark         string          `json:"remark"`
 }
 
 // UpdatePurchaseOrderRequest represents a request to update a purchase order (only in DRAFT status)
@@ -40,13 +42,15 @@ type UpdatePurchaseOrderRequest struct {
 
 // AddPurchaseOrderItemRequest represents a request to add an item to a purchase order
 type AddPurchaseOrderItemRequest struct {
-	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
-	ProductName string          `json:"product_name" binding:"required,min=1,max=200"`
-	ProductCode string          `json:"product_code" binding:"required,min=1,max=50"`
-	Unit        string          `json:"unit" binding:"required,min=1,max=20"`
-	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
-	UnitCost    decimal.Decimal `json:"unit_cost" binding:"required"`
-	Remark      string          `json:"remark"`
+	ProductID      uuid.UUID       `json:"product_id" binding:"required"`
+	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
+	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
+	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit
+	UnitCost       decimal.Decimal `json:"unit_cost" binding:"required"`
+	Remark         string          `json:"remark"`
 }
 
 // UpdatePurchaseOrderItemRequest represents a request to update a purchase order item
@@ -312,13 +316,15 @@ type CreateSalesOrderRequest struct {
 
 // CreateSalesOrderItemInput represents an item in the create order request
 type CreateSalesOrderItemInput struct {
-	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
-	ProductName string          `json:"product_name" binding:"required,min=1,max=200"`
-	ProductCode string          `json:"product_code" binding:"required,min=1,max=50"`
-	Unit        string          `json:"unit" binding:"required,min=1,max=20"`
-	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
-	UnitPrice   decimal.Decimal `json:"unit_price" binding:"required"`
-	Remark      string          `json:"remark"`
+	ProductID      uuid.UUID       `json:"product_id" binding:"required"`
+	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
+	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
+	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
+	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`
+	Remark         string          `json:"remark"`
 }
 
 // UpdateSalesOrderRequest represents a request to update a sales order (only in DRAFT status)
@@ -330,13 +336,15 @@ type UpdateSalesOrderRequest struct {
 
 // AddOrderItemRequest represents a request to add an item to an order
 type AddOrderItemRequest struct {
-	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
-	ProductName string          `json:"product_name" binding:"required,min=1,max=200"`
-	ProductCode string          `json:"product_code" binding:"required,min=1,max=50"`
-	Unit        string          `json:"unit" binding:"required,min=1,max=20"`
-	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
-	UnitPrice   decimal.Decimal `json:"unit_price" binding:"required"`
-	Remark      string          `json:"remark"`
+	ProductID      uuid.UUID       `json:"product_id" binding:"required"`
+	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
+	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
+	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit
+	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`
+	Remark         string          `json:"remark"`
 }
 
 // UpdateOrderItemRequest represents a request to update an order item

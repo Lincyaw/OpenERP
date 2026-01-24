@@ -52,18 +52,21 @@ func (s OrderStatus) CanTransitionTo(target OrderStatus) bool {
 
 // SalesOrderItem represents a line item in a sales order
 type SalesOrderItem struct {
-	ID          uuid.UUID       `gorm:"type:uuid;primary_key"`
-	OrderID     uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ProductID   uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName string          `gorm:"type:varchar(200);not null"`
-	ProductCode string          `gorm:"type:varchar(50);not null"`
-	Quantity    decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	UnitPrice   decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Price per unit
-	Amount      decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity * UnitPrice
-	Unit        string          `gorm:"type:varchar(20);not null"`   // Unit of measure
-	Remark      string          `gorm:"type:varchar(500)"`
-	CreatedAt   time.Time       `gorm:"not null"`
-	UpdatedAt   time.Time       `gorm:"not null"`
+	ID             uuid.UUID       `gorm:"type:uuid;primary_key"`
+	OrderID        uuid.UUID       `gorm:"type:uuid;not null;index"`
+	ProductID      uuid.UUID       `gorm:"type:uuid;not null"`
+	ProductName    string          `gorm:"type:varchar(200);not null"`
+	ProductCode    string          `gorm:"type:varchar(50);not null"`
+	Quantity       decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity in the order unit
+	UnitPrice      decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Price per unit
+	Amount         decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity * UnitPrice
+	Unit           string          `gorm:"type:varchar(20);not null"`             // Unit of measure (may be auxiliary unit)
+	ConversionRate decimal.Decimal `gorm:"type:decimal(18,6);not null;default:1"` // Conversion rate to base unit
+	BaseQuantity   decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity in base units (for inventory)
+	BaseUnit       string          `gorm:"type:varchar(20);not null"`             // Base unit code
+	Remark         string          `gorm:"type:varchar(500)"`
+	CreatedAt      time.Time       `gorm:"not null"`
+	UpdatedAt      time.Time       `gorm:"not null"`
 }
 
 // TableName returns the table name for GORM
@@ -72,7 +75,16 @@ func (SalesOrderItem) TableName() string {
 }
 
 // NewSalesOrderItem creates a new sales order item
-func NewSalesOrderItem(orderID, productID uuid.UUID, productName, productCode, unit string, quantity decimal.Decimal, unitPrice valueobject.Money) (*SalesOrderItem, error) {
+// Parameters:
+//   - orderID: the parent order ID
+//   - productID: the product ID
+//   - productName, productCode: product display info
+//   - unit: the unit of measure (may be auxiliary unit)
+//   - baseUnit: the base unit code for the product
+//   - quantity: quantity in the order unit
+//   - conversionRate: conversion rate from order unit to base unit (1 if using base unit)
+//   - unitPrice: price per order unit
+func NewSalesOrderItem(orderID, productID uuid.UUID, productName, productCode, unit, baseUnit string, quantity, conversionRate decimal.Decimal, unitPrice valueobject.Money) (*SalesOrderItem, error) {
 	if productID == uuid.Nil {
 		return nil, shared.NewDomainError("INVALID_PRODUCT", "Product ID cannot be empty")
 	}
@@ -88,26 +100,37 @@ func NewSalesOrderItem(orderID, productID uuid.UUID, productName, productCode, u
 	if unit == "" {
 		return nil, shared.NewDomainError("INVALID_UNIT", "Unit cannot be empty")
 	}
+	if baseUnit == "" {
+		return nil, shared.NewDomainError("INVALID_BASE_UNIT", "Base unit cannot be empty")
+	}
+	if conversionRate.LessThanOrEqual(decimal.Zero) {
+		return nil, shared.NewDomainError("INVALID_CONVERSION_RATE", "Conversion rate must be positive")
+	}
 
 	now := time.Now()
 	amount := quantity.Mul(unitPrice.Amount())
+	// Calculate base quantity: quantity * conversionRate
+	baseQuantity := quantity.Mul(conversionRate).Round(4)
 
 	return &SalesOrderItem{
-		ID:          uuid.New(),
-		OrderID:     orderID,
-		ProductID:   productID,
-		ProductName: productName,
-		ProductCode: productCode,
-		Quantity:    quantity,
-		UnitPrice:   unitPrice.Amount(),
-		Amount:      amount,
-		Unit:        unit,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+		ID:             uuid.New(),
+		OrderID:        orderID,
+		ProductID:      productID,
+		ProductName:    productName,
+		ProductCode:    productCode,
+		Quantity:       quantity,
+		UnitPrice:      unitPrice.Amount(),
+		Amount:         amount,
+		Unit:           unit,
+		ConversionRate: conversionRate,
+		BaseQuantity:   baseQuantity,
+		BaseUnit:       baseUnit,
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	}, nil
 }
 
-// UpdateQuantity updates the item quantity and recalculates the amount
+// UpdateQuantity updates the item quantity and recalculates the amount and base quantity
 func (i *SalesOrderItem) UpdateQuantity(quantity decimal.Decimal) error {
 	if quantity.LessThanOrEqual(decimal.Zero) {
 		return shared.NewDomainError("INVALID_QUANTITY", "Quantity must be positive")
@@ -115,6 +138,7 @@ func (i *SalesOrderItem) UpdateQuantity(quantity decimal.Decimal) error {
 
 	i.Quantity = quantity
 	i.Amount = quantity.Mul(i.UnitPrice)
+	i.BaseQuantity = quantity.Mul(i.ConversionRate).Round(4)
 	i.UpdatedAt = time.Now()
 
 	return nil
@@ -209,7 +233,15 @@ func NewSalesOrder(tenantID uuid.UUID, orderNumber string, customerID uuid.UUID,
 
 // AddItem adds a new item to the order
 // Only allowed in DRAFT status
-func (o *SalesOrder) AddItem(productID uuid.UUID, productName, productCode, unit string, quantity decimal.Decimal, unitPrice valueobject.Money) (*SalesOrderItem, error) {
+// Parameters:
+//   - productID: the product ID
+//   - productName, productCode: product display info
+//   - unit: the unit of measure (may be auxiliary unit)
+//   - baseUnit: the base unit code for the product
+//   - quantity: quantity in the order unit
+//   - conversionRate: conversion rate from order unit to base unit (1 if using base unit)
+//   - unitPrice: price per order unit
+func (o *SalesOrder) AddItem(productID uuid.UUID, productName, productCode, unit, baseUnit string, quantity, conversionRate decimal.Decimal, unitPrice valueobject.Money) (*SalesOrderItem, error) {
 	if o.Status != OrderStatusDraft {
 		return nil, shared.NewDomainError("INVALID_STATE", "Cannot add items to a non-draft order")
 	}
@@ -221,7 +253,7 @@ func (o *SalesOrder) AddItem(productID uuid.UUID, productName, productCode, unit
 		}
 	}
 
-	item, err := NewSalesOrderItem(o.ID, productID, productName, productCode, unit, quantity, unitPrice)
+	item, err := NewSalesOrderItem(o.ID, productID, productName, productCode, unit, baseUnit, quantity, conversionRate, unitPrice)
 	if err != nil {
 		return nil, err
 	}

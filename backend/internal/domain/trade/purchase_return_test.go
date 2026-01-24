@@ -20,22 +20,12 @@ func createTestPurchaseOrderForReturn(t *testing.T) *PurchaseOrder {
 
 	// Add items
 	_, err = order.AddItem(
-		uuid.New(),
-		"Product A",
-		"PROD-A",
-		"个",
-		decimal.NewFromInt(10),
-		valueobject.NewMoneyCNY(decimal.NewFromInt(50)),
+		uuid.New(), "Product A", "PROD-A", "个", "个", decimal.NewFromInt(10), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(50)),
 	)
 	require.NoError(t, err)
 
 	_, err = order.AddItem(
-		uuid.New(),
-		"Product B",
-		"PROD-B",
-		"箱",
-		decimal.NewFromInt(5),
-		valueobject.NewMoneyCNY(decimal.NewFromInt(100)),
+		uuid.New(), "Product B", "PROD-B", "箱", "箱", decimal.NewFromInt(5), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(100)),
 	)
 	require.NoError(t, err)
 
@@ -64,12 +54,7 @@ func createPartiallyReceivedPurchaseOrder(t *testing.T) *PurchaseOrder {
 	require.NoError(t, err)
 
 	_, err = order.AddItem(
-		uuid.New(),
-		"Product A",
-		"PROD-A",
-		"个",
-		decimal.NewFromInt(10),
-		valueobject.NewMoneyCNY(decimal.NewFromInt(50)),
+		uuid.New(), "Product A", "PROD-A", "个", "个", decimal.NewFromInt(10), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(50)),
 	)
 	require.NoError(t, err)
 
@@ -142,7 +127,7 @@ func TestNewPurchaseReturn(t *testing.T) {
 	t.Run("fails with confirmed but not received order", func(t *testing.T) {
 		tenantID := uuid.New()
 		order, _ := NewPurchaseOrder(tenantID, "PO-001", uuid.New(), "Supplier")
-		order.AddItem(uuid.New(), "Product", "PROD", "个", decimal.NewFromInt(10), valueobject.NewMoneyCNY(decimal.NewFromInt(50)))
+		order.AddItem(uuid.New(), "Product", "PROD", "个", "个", decimal.NewFromInt(10), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(50)))
 		order.Confirm()
 
 		pr, err := NewPurchaseReturn(tenantID, "PR-001", order)

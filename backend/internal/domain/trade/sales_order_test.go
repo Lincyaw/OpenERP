@@ -22,7 +22,7 @@ func createTestOrder(t *testing.T) *SalesOrder {
 func addTestItem(t *testing.T, order *SalesOrder, productName string, quantity float64, price float64) *SalesOrderItem {
 	productID := uuid.New()
 	unitPrice := valueobject.NewMoneyCNYFromFloat(price)
-	item, err := order.AddItem(productID, productName, "SKU-001", "pcs", decimal.NewFromFloat(quantity), unitPrice)
+	item, err := order.AddItem(productID, productName, "SKU-001", "pcs", "pcs", decimal.NewFromFloat(quantity), decimal.NewFromInt(1), unitPrice)
 	require.NoError(t, err)
 	return item
 }
@@ -175,7 +175,7 @@ func TestNewSalesOrderItem(t *testing.T) {
 
 	t.Run("creates item with valid inputs", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		item, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		item, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -191,42 +191,42 @@ func TestNewSalesOrderItem(t *testing.T) {
 
 	t.Run("fails with nil product ID", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewSalesOrderItem(orderID, uuid.Nil, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		_, err := NewSalesOrderItem(orderID, uuid.Nil, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Product ID cannot be empty")
 	})
 
 	t.Run("fails with empty product name", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewSalesOrderItem(orderID, productID, "", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		_, err := NewSalesOrderItem(orderID, productID, "", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Product name cannot be empty")
 	})
 
 	t.Run("fails with zero quantity", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.Zero, unitPrice)
+		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.Zero, decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Quantity must be positive")
 	})
 
 	t.Run("fails with negative quantity", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(-5), unitPrice)
+		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(-5), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Quantity must be positive")
 	})
 
 	t.Run("fails with negative price", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(-10.00)
-		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Unit price cannot be negative")
 	})
 
 	t.Run("fails with empty unit", func(t *testing.T) {
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "", decimal.NewFromFloat(10), unitPrice)
+		_, err := NewSalesOrderItem(orderID, productID, "Test Product", "SKU-001", "", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Unit cannot be empty")
 	})
@@ -236,7 +236,7 @@ func TestSalesOrderItem_UpdateQuantity(t *testing.T) {
 	orderID := uuid.New()
 	productID := uuid.New()
 	unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-	item, _ := NewSalesOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+	item, _ := NewSalesOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 
 	t.Run("updates quantity and recalculates amount", func(t *testing.T) {
 		err := item.UpdateQuantity(decimal.NewFromFloat(20))
@@ -263,7 +263,7 @@ func TestSalesOrderItem_UpdateUnitPrice(t *testing.T) {
 	orderID := uuid.New()
 	productID := uuid.New()
 	unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-	item, _ := NewSalesOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+	item, _ := NewSalesOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 
 	t.Run("updates price and recalculates amount", func(t *testing.T) {
 		newPrice := valueobject.NewMoneyCNYFromFloat(150.00)
@@ -293,7 +293,7 @@ func TestSalesOrder_AddItem(t *testing.T) {
 
 		productID := uuid.New()
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		item, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		item, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -317,10 +317,10 @@ func TestSalesOrder_AddItem(t *testing.T) {
 		productID := uuid.New()
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
 
-		_, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		_, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 		require.NoError(t, err)
 
-		_, err = order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(5), unitPrice)
+		_, err = order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "already exists in order")
 	})
@@ -335,7 +335,7 @@ func TestSalesOrder_AddItem(t *testing.T) {
 
 		productID := uuid.New()
 		unitPrice := valueobject.NewMoneyCNYFromFloat(50.00)
-		_, err := order.AddItem(productID, "Product 2", "SKU-002", "pcs", decimal.NewFromFloat(5), unitPrice)
+		_, err := order.AddItem(productID, "Product 2", "SKU-002", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitPrice)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "non-draft order")
 	})
@@ -826,7 +826,7 @@ func TestSalesOrder_HelperMethods(t *testing.T) {
 		order := createTestOrder(t)
 		productID := uuid.New()
 		unitPrice := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitPrice)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitPrice)
 
 		found := order.GetItemByProduct(productID)
 		require.NotNil(t, found)

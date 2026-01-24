@@ -56,7 +56,9 @@ func (s *PurchaseOrderService) Create(ctx context.Context, tenantID uuid.UUID, r
 			item.ProductName,
 			item.ProductCode,
 			item.Unit,
+			item.BaseUnit,
 			item.Quantity,
+			item.ConversionRate,
 			unitCost,
 		)
 		if err != nil {
@@ -282,7 +284,9 @@ func (s *PurchaseOrderService) AddItem(ctx context.Context, tenantID, orderID uu
 		req.ProductName,
 		req.ProductCode,
 		req.Unit,
+		req.BaseUnit,
 		req.Quantity,
+		req.ConversionRate,
 		unitCost,
 	)
 	if err != nil {

@@ -20,22 +20,12 @@ func createTestSalesOrderForReturn(t *testing.T) *SalesOrder {
 
 	// Add items
 	_, err = order.AddItem(
-		uuid.New(),
-		"Product A",
-		"PROD-A",
-		"个",
-		decimal.NewFromInt(10),
-		valueobject.NewMoneyCNY(decimal.NewFromInt(100)),
+		uuid.New(), "Product A", "PROD-A", "个", "个", decimal.NewFromInt(10), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(100)),
 	)
 	require.NoError(t, err)
 
 	_, err = order.AddItem(
-		uuid.New(),
-		"Product B",
-		"PROD-B",
-		"箱",
-		decimal.NewFromInt(5),
-		valueobject.NewMoneyCNY(decimal.NewFromInt(200)),
+		uuid.New(), "Product B", "PROD-B", "箱", "箱", decimal.NewFromInt(5), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(200)),
 	)
 	require.NoError(t, err)
 

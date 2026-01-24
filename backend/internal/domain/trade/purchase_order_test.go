@@ -23,7 +23,7 @@ func createTestPurchaseOrder(t *testing.T) *PurchaseOrder {
 func addTestPurchaseOrderItem(t *testing.T, order *PurchaseOrder, productName string, quantity float64, cost float64) *PurchaseOrderItem {
 	productID := uuid.New()
 	unitCost := valueobject.NewMoneyCNYFromFloat(cost)
-	item, err := order.AddItem(productID, productName, "SKU-001", "pcs", decimal.NewFromFloat(quantity), unitCost)
+	item, err := order.AddItem(productID, productName, "SKU-001", "pcs", "pcs", decimal.NewFromFloat(quantity), decimal.NewFromInt(1), unitCost)
 	require.NoError(t, err)
 	return item
 }
@@ -197,7 +197,7 @@ func TestNewPurchaseOrderItem(t *testing.T) {
 
 	t.Run("creates item with valid inputs", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		item, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -214,42 +214,42 @@ func TestNewPurchaseOrderItem(t *testing.T) {
 
 	t.Run("fails with nil product ID", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewPurchaseOrderItem(orderID, uuid.Nil, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		_, err := NewPurchaseOrderItem(orderID, uuid.Nil, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Product ID cannot be empty")
 	})
 
 	t.Run("fails with empty product name", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewPurchaseOrderItem(orderID, productID, "", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		_, err := NewPurchaseOrderItem(orderID, productID, "", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Product name cannot be empty")
 	})
 
 	t.Run("fails with zero quantity", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.Zero, unitCost)
+		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.Zero, decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Quantity must be positive")
 	})
 
 	t.Run("fails with negative quantity", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(-5), unitCost)
+		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(-5), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Quantity must be positive")
 	})
 
 	t.Run("fails with negative cost", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(-10.00)
-		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Unit cost cannot be negative")
 	})
 
 	t.Run("fails with empty unit", func(t *testing.T) {
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "", decimal.NewFromFloat(10), unitCost)
+		_, err := NewPurchaseOrderItem(orderID, productID, "Test Product", "SKU-001", "", "", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Unit cannot be empty")
 	})
@@ -259,7 +259,7 @@ func TestPurchaseOrderItem_UpdateQuantity(t *testing.T) {
 	orderID := uuid.New()
 	productID := uuid.New()
 	unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-	item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+	item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 	t.Run("updates quantity and recalculates amount", func(t *testing.T) {
 		err := item.UpdateQuantity(decimal.NewFromFloat(20))
@@ -282,7 +282,7 @@ func TestPurchaseOrderItem_UpdateQuantity(t *testing.T) {
 	})
 
 	t.Run("fails when new quantity is less than received quantity", func(t *testing.T) {
-		item2, _ := NewPurchaseOrderItem(orderID, uuid.New(), "Test2", "SKU-002", "pcs", decimal.NewFromFloat(10), unitCost)
+		item2, _ := NewPurchaseOrderItem(orderID, uuid.New(), "Test2", "SKU-002", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		item2.ReceivedQuantity = decimal.NewFromFloat(8)
 
 		err := item2.UpdateQuantity(decimal.NewFromFloat(5)) // Less than received (8)
@@ -295,7 +295,7 @@ func TestPurchaseOrderItem_UpdateUnitCost(t *testing.T) {
 	orderID := uuid.New()
 	productID := uuid.New()
 	unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-	item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+	item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 	t.Run("updates cost and recalculates amount", func(t *testing.T) {
 		newCost := valueobject.NewMoneyCNYFromFloat(150.00)
@@ -320,7 +320,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
 
 	t.Run("RemainingQuantity returns correct value", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		assert.True(t, item.RemainingQuantity().Equal(decimal.NewFromFloat(10)))
 
 		item.ReceivedQuantity = decimal.NewFromFloat(3)
@@ -328,7 +328,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	})
 
 	t.Run("IsFullyReceived returns correct value", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		assert.False(t, item.IsFullyReceived())
 
 		item.ReceivedQuantity = decimal.NewFromFloat(10)
@@ -339,7 +339,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	})
 
 	t.Run("CanReceive returns correct value", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		assert.True(t, item.CanReceive())
 
 		item.ReceivedQuantity = decimal.NewFromFloat(10)
@@ -347,7 +347,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	})
 
 	t.Run("AddReceivedQuantity works correctly", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 		err := item.AddReceivedQuantity(decimal.NewFromFloat(5))
 		require.NoError(t, err)
@@ -359,7 +359,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	})
 
 	t.Run("AddReceivedQuantity fails with zero quantity", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 		err := item.AddReceivedQuantity(decimal.Zero)
 		require.Error(t, err)
@@ -367,7 +367,7 @@ func TestPurchaseOrderItem_ReceiveMethods(t *testing.T) {
 	})
 
 	t.Run("AddReceivedQuantity fails when exceeding ordered quantity", func(t *testing.T) {
-		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, _ := NewPurchaseOrderItem(orderID, productID, "Test", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		item.ReceivedQuantity = decimal.NewFromFloat(8)
 
 		err := item.AddReceivedQuantity(decimal.NewFromFloat(5)) // Would make total 13, but ordered only 10
@@ -387,7 +387,7 @@ func TestPurchaseOrder_AddItem(t *testing.T) {
 
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		item, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		item, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -411,10 +411,10 @@ func TestPurchaseOrder_AddItem(t *testing.T) {
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
 
-		_, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		_, err := order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		require.NoError(t, err)
 
-		_, err = order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(5), unitCost)
+		_, err = order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "already exists in order")
 	})
@@ -429,7 +429,7 @@ func TestPurchaseOrder_AddItem(t *testing.T) {
 
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(50.00)
-		_, err := order.AddItem(productID, "Product 2", "SKU-002", "pcs", decimal.NewFromFloat(5), unitCost)
+		_, err := order.AddItem(productID, "Product 2", "SKU-002", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitCost)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "non-draft order")
 	})
@@ -652,7 +652,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -672,7 +672,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -694,8 +694,8 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		product1ID := uuid.New()
 		product2ID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(product1ID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
-		order.AddItem(product2ID, "Product 2", "SKU-002", "pcs", decimal.NewFromFloat(5), unitCost)
+		order.AddItem(product1ID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
+		order.AddItem(product2ID, "Product 2", "SKU-002", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -715,7 +715,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -746,7 +746,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -771,7 +771,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 		_, err := order.Receive([]ReceiveItem{
 			{ProductID: productID, Quantity: decimal.NewFromFloat(5)},
@@ -784,7 +784,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		order.Confirm()
 
 		_, err := order.Receive([]ReceiveItem{
@@ -824,7 +824,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -840,7 +840,7 @@ func TestPurchaseOrder_Receive(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -911,7 +911,7 @@ func TestPurchaseOrder_Cancel(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -962,7 +962,7 @@ func TestPurchaseOrder_HelperMethods(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -975,7 +975,7 @@ func TestPurchaseOrder_HelperMethods(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -988,7 +988,7 @@ func TestPurchaseOrder_HelperMethods(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -1018,7 +1018,7 @@ func TestPurchaseOrder_HelperMethods(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 
 		found := order.GetItemByProduct(productID)
 		require.NotNil(t, found)
@@ -1033,8 +1033,8 @@ func TestPurchaseOrder_HelperMethods(t *testing.T) {
 		product1ID := uuid.New()
 		product2ID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(product1ID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
-		order.AddItem(product2ID, "Product 2", "SKU-002", "pcs", decimal.NewFromFloat(5), unitCost)
+		order.AddItem(product1ID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
+		order.AddItem(product2ID, "Product 2", "SKU-002", "pcs", "pcs", decimal.NewFromFloat(5), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()
@@ -1097,7 +1097,7 @@ func TestPurchaseOrder_StatusHelpers(t *testing.T) {
 
 	productID := uuid.New()
 	unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-	order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+	order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 	warehouseID := uuid.New()
 	order.SetWarehouse(warehouseID)
 	order.Confirm()
@@ -1165,7 +1165,7 @@ func TestPurchaseOrderEvents(t *testing.T) {
 		order := createTestPurchaseOrder(t)
 		productID := uuid.New()
 		unitCost := valueobject.NewMoneyCNYFromFloat(100.00)
-		order.AddItem(productID, "Product 1", "SKU-001", "pcs", decimal.NewFromFloat(10), unitCost)
+		order.AddItem(productID, "Product 1", "SKU-001", "pcs", "pcs", decimal.NewFromFloat(10), decimal.NewFromInt(1), unitCost)
 		warehouseID := uuid.New()
 		order.SetWarehouse(warehouseID)
 		order.Confirm()

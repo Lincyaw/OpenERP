@@ -56,7 +56,9 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 			item.ProductName,
 			item.ProductCode,
 			item.Unit,
+			item.BaseUnit,
 			item.Quantity,
+			item.ConversionRate,
 			unitPrice,
 		)
 		if err != nil {
@@ -241,7 +243,9 @@ func (s *SalesOrderService) AddItem(ctx context.Context, tenantID, orderID uuid.
 		req.ProductName,
 		req.ProductCode,
 		req.Unit,
+		req.BaseUnit,
 		req.Quantity,
+		req.ConversionRate,
 		unitPrice,
 	)
 	if err != nil {
