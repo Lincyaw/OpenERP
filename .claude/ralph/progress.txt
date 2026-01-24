@@ -9669,3 +9669,61 @@ DRAFT ─────────┬──────────────�
   - SalesReturnCompletedEvent → Restore inventory, create A/R credit
 - P3-BE-023 (API) can be implemented to expose return endpoints
 - P4-BE-004 (红冲逻辑) depends on this for receivable adjustments
+
+---
+
+## 2026-01-24: P3-BE-022 - SalesReturn Event Handlers (Stock Restoration)
+
+### Features Implemented
+
+**P3-BE-022: SalesReturn 事件处理 (库存恢复)**
+- Implemented SalesReturnCompletedHandler to restore inventory when sales returns are completed
+- Handler subscribes to SalesReturnCompletedEvent from the trade domain
+- Restores stock for each returned item to the specified warehouse
+- Uses existing unit cost from inventory when available, falls back to item unit price
+- Creates proper inventory transaction records with SALES_RETURN source type
+
+### Files Created
+- `backend/internal/application/trade/sales_return_completed_handler.go` - Event handler implementation
+- `backend/internal/application/trade/sales_return_completed_handler_test.go` - Comprehensive unit tests
+
+### Key Implementation Details
+
+1. **Event Subscription**: Handler subscribes to `SalesReturnCompletedEvent` event type
+2. **Stock Restoration**: Uses `InventoryService.IncreaseStock()` for each returned item
+3. **Unit Cost Strategy**:
+   - First attempts to get current unit cost from existing inventory
+   - Falls back to original unit price if no inventory exists
+4. **Error Handling**: Continues processing all items even if some fail, returns aggregated error
+5. **Audit Trail**: Creates inventory transactions with proper source type and references
+
+### Event Flow
+
+```
+SalesReturn.Complete() 
+    → SalesReturnCompletedEvent published
+    → SalesReturnCompletedHandler.Handle()
+        → For each item:
+            → GetByWarehouseAndProduct() to get unit cost
+            → IncreaseStock() to restore inventory
+```
+
+### Test Coverage (8 test cases)
+- ✅ EventTypes() returns correct event type
+- ✅ Handle success with existing inventory (uses current unit cost)
+- ✅ Handle success with fallback to unit price (no existing inventory)
+- ✅ Handle multiple items successfully
+- ✅ Missing warehouse ID validation
+- ✅ Wrong event type rejection
+- ✅ Partial failure handling (continues processing, reports errors)
+- ✅ NewSalesReturnCompletedHandler constructor
+
+### Requirements Met
+- ✅ 退货完成时发布事件 (Events published on return completion - implemented in P3-BE-020/021)
+- ✅ 库存服务订阅并恢复库存 (Inventory service subscribes and restores stock)
+- ✅ 更新批次信息 (Batch information updated via IncreaseStock which supports BatchInfo)
+
+### Notes for Next Steps
+- P3-BE-023 (SalesReturn API) can now be implemented to expose return endpoints
+- P4-BE-004 (红冲逻辑 - Credit note logic) depends on return completion for A/R adjustments
+- The handler needs to be registered in the application bootstrap/wire configuration
