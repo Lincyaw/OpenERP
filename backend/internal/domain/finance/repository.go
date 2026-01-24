@@ -330,3 +330,144 @@ type PaymentVoucherRepository interface {
 	// GenerateVoucherNumber generates a unique voucher number for a tenant
 	GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// ExpenseRecordFilter defines filtering options for expense record queries
+type ExpenseRecordFilter struct {
+	shared.Filter
+	Category      *ExpenseCategory // Filter by category
+	Status        *ExpenseStatus   // Filter by status
+	PaymentStatus *PaymentStatus   // Filter by payment status
+	FromDate      *time.Time       // Filter by incurred date range start
+	ToDate        *time.Time       // Filter by incurred date range end
+	MinAmount     *decimal.Decimal // Filter by minimum amount
+	MaxAmount     *decimal.Decimal // Filter by maximum amount
+}
+
+// ExpenseRecordRepository defines the interface for expense record persistence
+type ExpenseRecordRepository interface {
+	// FindByID finds an expense record by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*ExpenseRecord, error)
+
+	// FindByIDForTenant finds an expense record by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*ExpenseRecord, error)
+
+	// FindByExpenseNumber finds by expense number for a tenant
+	FindByExpenseNumber(ctx context.Context, tenantID uuid.UUID, expenseNumber string) (*ExpenseRecord, error)
+
+	// FindAllForTenant finds all expense records for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter ExpenseRecordFilter) ([]ExpenseRecord, error)
+
+	// FindByCategory finds expense records by category for a tenant
+	FindByCategory(ctx context.Context, tenantID uuid.UUID, category ExpenseCategory, filter ExpenseRecordFilter) ([]ExpenseRecord, error)
+
+	// FindByStatus finds expense records by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status ExpenseStatus, filter ExpenseRecordFilter) ([]ExpenseRecord, error)
+
+	// FindPendingApproval finds all expenses pending approval for a tenant
+	FindPendingApproval(ctx context.Context, tenantID uuid.UUID) ([]ExpenseRecord, error)
+
+	// Save creates or updates an expense record
+	Save(ctx context.Context, expense *ExpenseRecord) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, expense *ExpenseRecord) error
+
+	// Delete soft deletes an expense record
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes an expense record for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts expense records for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter ExpenseRecordFilter) (int64, error)
+
+	// CountByStatus counts expense records by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status ExpenseStatus) (int64, error)
+
+	// CountByCategory counts expense records by category for a tenant
+	CountByCategory(ctx context.Context, tenantID uuid.UUID, category ExpenseCategory) (int64, error)
+
+	// SumByCategory calculates total amount by category for a tenant within a date range
+	SumByCategory(ctx context.Context, tenantID uuid.UUID, category ExpenseCategory, from, to time.Time) (decimal.Decimal, error)
+
+	// SumForTenant calculates total expense amount for a tenant within a date range
+	SumForTenant(ctx context.Context, tenantID uuid.UUID, from, to time.Time) (decimal.Decimal, error)
+
+	// SumApprovedForTenant calculates total approved expense amount for a tenant within a date range
+	SumApprovedForTenant(ctx context.Context, tenantID uuid.UUID, from, to time.Time) (decimal.Decimal, error)
+
+	// ExistsByExpenseNumber checks if an expense number exists for a tenant
+	ExistsByExpenseNumber(ctx context.Context, tenantID uuid.UUID, expenseNumber string) (bool, error)
+
+	// GenerateExpenseNumber generates a unique expense number for a tenant
+	GenerateExpenseNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
+
+// OtherIncomeRecordFilter defines filtering options for other income record queries
+type OtherIncomeRecordFilter struct {
+	shared.Filter
+	Category      *IncomeCategory  // Filter by category
+	Status        *IncomeStatus    // Filter by status
+	ReceiptStatus *ReceiptStatus   // Filter by receipt status
+	FromDate      *time.Time       // Filter by received date range start
+	ToDate        *time.Time       // Filter by received date range end
+	MinAmount     *decimal.Decimal // Filter by minimum amount
+	MaxAmount     *decimal.Decimal // Filter by maximum amount
+}
+
+// OtherIncomeRecordRepository defines the interface for other income record persistence
+type OtherIncomeRecordRepository interface {
+	// FindByID finds an income record by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*OtherIncomeRecord, error)
+
+	// FindByIDForTenant finds an income record by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*OtherIncomeRecord, error)
+
+	// FindByIncomeNumber finds by income number for a tenant
+	FindByIncomeNumber(ctx context.Context, tenantID uuid.UUID, incomeNumber string) (*OtherIncomeRecord, error)
+
+	// FindAllForTenant finds all income records for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter OtherIncomeRecordFilter) ([]OtherIncomeRecord, error)
+
+	// FindByCategory finds income records by category for a tenant
+	FindByCategory(ctx context.Context, tenantID uuid.UUID, category IncomeCategory, filter OtherIncomeRecordFilter) ([]OtherIncomeRecord, error)
+
+	// FindByStatus finds income records by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status IncomeStatus, filter OtherIncomeRecordFilter) ([]OtherIncomeRecord, error)
+
+	// Save creates or updates an income record
+	Save(ctx context.Context, income *OtherIncomeRecord) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, income *OtherIncomeRecord) error
+
+	// Delete soft deletes an income record
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes an income record for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts income records for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter OtherIncomeRecordFilter) (int64, error)
+
+	// CountByStatus counts income records by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status IncomeStatus) (int64, error)
+
+	// CountByCategory counts income records by category for a tenant
+	CountByCategory(ctx context.Context, tenantID uuid.UUID, category IncomeCategory) (int64, error)
+
+	// SumByCategory calculates total amount by category for a tenant within a date range
+	SumByCategory(ctx context.Context, tenantID uuid.UUID, category IncomeCategory, from, to time.Time) (decimal.Decimal, error)
+
+	// SumForTenant calculates total income amount for a tenant within a date range
+	SumForTenant(ctx context.Context, tenantID uuid.UUID, from, to time.Time) (decimal.Decimal, error)
+
+	// SumConfirmedForTenant calculates total confirmed income amount for a tenant within a date range
+	SumConfirmedForTenant(ctx context.Context, tenantID uuid.UUID, from, to time.Time) (decimal.Decimal, error)
+
+	// ExistsByIncomeNumber checks if an income number exists for a tenant
+	ExistsByIncomeNumber(ctx context.Context, tenantID uuid.UUID, incomeNumber string) (bool, error)
+
+	// GenerateIncomeNumber generates a unique income number for a tenant
+	GenerateIncomeNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}

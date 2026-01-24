@@ -6780,3 +6780,103 @@ Completed the Payment Reconciliation page for the Finance module frontend. This 
   - P4-FE-012 (收支流水页面) - Cash flow list page
 - **Future enhancement**: Add preview endpoint to show allocations before commit
 - **Future enhancement**: Add undo/reverse allocation functionality
+
+---
+
+## P4-BE-015, P4-BE-016, P4-BE-017: 费用/其他收入 Backend Implementation
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the backend infrastructure for tracking non-trade expenses (ExpenseRecord) and non-trade income (OtherIncomeRecord) in the Finance module. This provides the domain model, events, repository interfaces, and application service for managing daily expenses (rent, utilities, salary, etc.) and other income sources (investment returns, subsidies, interest, etc.).
+
+### Features Implemented
+
+#### P4-BE-015: ExpenseRecord Aggregate
+1. **ExpenseRecord Domain Model** (`expense_record.go`)
+   - ExpenseCategory enum: RENT, UTILITIES, SALARY, OFFICE, TRAVEL, MARKETING, EQUIPMENT, MAINTENANCE, INSURANCE, TAX, OTHER
+   - ExpenseStatus enum: DRAFT, PENDING, APPROVED, REJECTED, CANCELLED
+   - PaymentStatus enum: UNPAID, PAID
+   - Full approval workflow: Draft → Submit → Approve/Reject
+   - Payment tracking after approval
+   - Support for attachments (URLs stored as JSON)
+   - Optimistic locking with version field
+
+2. **ExpenseRecord Events** (`expense_record_events.go`)
+   - ExpenseRecordCreatedEvent
+   - ExpenseRecordSubmittedEvent
+   - ExpenseRecordApprovedEvent
+   - ExpenseRecordRejectedEvent
+   - ExpenseRecordCancelledEvent
+   - ExpenseRecordPaidEvent
+
+#### P4-BE-016: OtherIncomeRecord Aggregate
+1. **OtherIncomeRecord Domain Model** (`other_income_record.go`)
+   - IncomeCategory enum: INVESTMENT, SUBSIDY, INTEREST, RENTAL, REFUND, COMPENSATION, ASSET_DISPOSAL, OTHER
+   - IncomeStatus enum: DRAFT, CONFIRMED, CANCELLED
+   - ReceiptStatus enum: PENDING, RECEIVED
+   - Confirmation workflow: Draft → Confirm
+   - Receipt tracking after confirmation
+   - Support for attachments (URLs stored as JSON)
+   - Optimistic locking with version field
+
+2. **OtherIncomeRecord Events** (`other_income_record_events.go`)
+   - OtherIncomeRecordCreatedEvent
+   - OtherIncomeRecordConfirmedEvent
+   - OtherIncomeRecordCancelledEvent
+   - OtherIncomeRecordReceivedEvent
+
+#### P4-BE-017: Expense/Income API
+1. **Repository Interfaces** (added to `repository.go`)
+   - ExpenseRecordFilter and ExpenseRecordRepository interface
+   - OtherIncomeRecordFilter and OtherIncomeRecordRepository interface
+   - Full CRUD operations with tenant isolation
+   - Summary and aggregation methods
+
+2. **Application Service** (`expense_income_service.go`)
+   - ExpenseIncomeService with full CRUD operations
+   - Expense workflow: Create → Update → Submit → Approve/Reject → MarkAsPaid
+   - Income workflow: Create → Update → Confirm → MarkAsReceived
+   - Summary endpoints: GetExpenseSummary, GetIncomeSummary
+   - Cash flow summary combining expenses and income
+   - Request/Response DTOs for API integration
+
+3. **Database Migration** (`000014_create_expense_income_records.up.sql`)
+   - expense_records table with all fields and constraints
+   - other_income_records table with all fields and constraints
+   - Proper indexes for query optimization
+   - Check constraints for valid categories and statuses
+   - Soft delete support with deleted_at column
+
+### Files Created
+- `backend/internal/domain/finance/expense_record.go` - ExpenseRecord aggregate
+- `backend/internal/domain/finance/expense_record_events.go` - Expense domain events
+- `backend/internal/domain/finance/other_income_record.go` - OtherIncomeRecord aggregate
+- `backend/internal/domain/finance/other_income_record_events.go` - Income domain events
+- `backend/internal/application/finance/expense_income_service.go` - Application service
+- `backend/migrations/000014_create_expense_income_records.up.sql` - Migration up
+- `backend/migrations/000014_create_expense_income_records.down.sql` - Migration down
+
+### Files Modified
+- `backend/internal/domain/finance/repository.go` - Added ExpenseRecordRepository and OtherIncomeRecordRepository interfaces
+
+### Technical Notes
+- **DDD Pattern**: ExpenseRecord and OtherIncomeRecord are aggregate roots with proper domain events
+- **Multi-tenancy**: All records are tenant-scoped via TenantAggregateRoot
+- **Approval Workflow**: Expenses require approval before payment; Income requires confirmation
+- **Category Display**: Both Category types have DisplayName() methods returning Chinese names
+- **Soft Delete**: Uses GORM soft delete pattern with deleted_at field
+- **PaymentMethod Reuse**: Uses existing PaymentMethod enum from finance package
+
+### Build Status
+- `go build ./...` ✅ PASSED
+
+### Notes for Next Developer
+- **Frontend Tasks Ready**: P4-FE-010, P4-FE-011, P4-FE-012 can now be implemented
+  - P4-FE-010: 费用录入页面 (Expense entry page)
+  - P4-FE-011: 其他收入录入页面 (Other income entry page)
+  - P4-FE-012: 收支流水页面 (Cash flow list page)
+- **Repository Implementation Needed**: The GORM repository implementations need to be created in infrastructure layer
+- **API Routes Needed**: HTTP handlers need to be created to expose the ExpenseIncomeService endpoints
+- **Integration with Cash Flow**: The CashFlowSummary method can be extended to include ReceiptVoucher and PaymentVoucher data
