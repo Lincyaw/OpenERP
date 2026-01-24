@@ -1,0 +1,136 @@
+/**
+ * Payment Voucher New Page Styles
+ *
+ * Follows the design system guidelines from frontend/README.md
+ * Uses CSS variables for spacing, colors, and typography
+ */
+
+.payment-voucher-new-page {
+  padding: var(--spacing-4);
+}
+
+@media (min-width: 768px) {
+  .payment-voucher-new-page {
+    padding: var(--spacing-6);
+  }
+}
+
+/* Form Card */
+.payment-voucher-form-card {
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+}
+
+.payment-voucher-form-header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+/* Supplier Select */
+.supplier-select-wrapper {
+  width: 100%;
+}
+
+.supplier-select-wrapper .semi-form-field-label {
+  display: block;
+  margin-bottom: var(--spacing-2);
+}
+
+.supplier-select-wrapper .semi-form-field-label-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.supplier-select-wrapper .semi-form-field-label-required {
+  color: var(--color-danger);
+  margin-right: var(--spacing-1);
+}
+
+/* Supplier Payables Summary */
+.supplier-payables-summary {
+  margin-bottom: var(--spacing-6);
+}
+
+.supplier-payables-summary .semi-banner {
+  margin-bottom: var(--spacing-4);
+}
+
+.payables-info {
+  line-height: var(--line-height-normal);
+}
+
+.amount-highlight {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Pending Payables List */
+.pending-payables-list {
+  padding: var(--spacing-4);
+  background: var(--color-bg-layout);
+  border-radius: var(--radius-md);
+}
+
+.pending-payables-list .list-title {
+  display: block;
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.payables-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.payable-tag {
+  font-size: var(--font-size-xs);
+}
+
+/* Form Layout */
+.payment-voucher-form-card .semi-form-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.payment-voucher-form-card .semi-form-section:last-of-type {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+  .payment-voucher-form-header {
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+  }
+
+  .supplier-payables-summary {
+    margin-bottom: var(--spacing-4);
+  }
+
+  .pending-payables-list {
+    padding: var(--spacing-3);
+  }
+
+  .payables-tags {
+    gap: var(--spacing-1);
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  .amount-highlight {
+    text-decoration: underline;
+  }
+
+  .pending-payables-list {
+    border: 2px solid var(--color-border-primary);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .pending-payables-list {
+    background: var(--color-bg-elevated);
+  }
+}

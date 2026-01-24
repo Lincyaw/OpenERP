@@ -6559,3 +6559,68 @@ Implemented the Receipt Voucher Creation page for the Finance module frontend. T
   - P4-FE-005 (付款单创建页面) - Payment voucher creation (similar structure)
 - **Future enhancement**: Could pre-select specific receivable from URL param (receivable_id)
 - **Pattern available**: PaymentVoucherNew can follow same structure, swapping customer for supplier
+
+---
+
+## P4-FE-005: 付款单创建页面 (Payment Voucher Creation Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Payment Voucher Creation page for the Finance module frontend. This page allows users to create payment vouchers to record supplier payments with supplier selection, payment method, and amount validation.
+
+### Features Implemented
+1. **Supplier Selection**
+   - Searchable dropdown with remote search
+   - Shows supplier name and code
+   - Pre-fills if navigated from payables page with supplier_id param
+
+2. **Supplier Payables Summary**
+   - Shows banner with supplier's outstanding payables count and total amount
+   - Lists pending payables as tags (up to 5 with "+N more" indicator)
+   - Helps user understand how much is owed before creating payment
+
+3. **Payment Information Form**
+   - Amount input with currency prefix (¥) and 2 decimal precision
+   - Payment method selection (Cash, Bank Transfer, WeChat, Alipay, Check, Balance, Other)
+   - Payment date picker (defaults to today)
+   - Optional payment reference field (for transaction IDs, check numbers, etc.)
+   - Optional remarks field
+
+4. **Form Validation**
+   - Required fields: supplier, amount, payment method, payment date
+   - Amount must be positive and max 999,999,999.99
+   - Payment reference max 100 characters
+   - Remarks max 500 characters
+
+5. **Navigation**
+   - Cancel returns to payables list
+   - Successful creation shows toast and navigates to payables list
+   - Can be accessed directly at /finance/payments/new
+   - Can be pre-filled via /finance/payments/new?supplier_id=xxx
+
+### Files Created/Modified
+- `frontend/src/pages/finance/PaymentVoucherNew.tsx` (NEW) - Payment voucher creation page component
+- `frontend/src/pages/finance/PaymentVoucherNew.css` (NEW) - Styles for payment voucher page
+- `frontend/src/router/routes.tsx` (MODIFIED) - Added route for /finance/payments/new
+
+### Technical Notes
+- **Pattern follows P4-FE-003**: Mirrors the Receipt Voucher page structure with payment-specific changes (supplier instead of customer, payables instead of receivables)
+- **Zod Validation**: Uses zod schema with proper type inference for form validation
+- **React Hook Form**: Integrated via useFormWithValidation custom hook
+- **Supplier Search**: Uses remote search with debounce to query supplier API
+- **Design System**: Uses CSS variables for spacing, colors, typography per frontend/README.md
+- **Responsive**: Mobile-first design with breakpoints at 768px
+- **API Ready**: Uses existing finance API service (postFinancePayments)
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **Backend not wired**: Finance API routes exist but persistence layer isn't fully connected
+- **Next Frontend Tasks**:
+  - P4-FE-004 (收款核销页面) - Receipt reconciliation page
+  - P4-FE-006 (付款核销页面) - Payment reconciliation page (similar structure)
+- **Future enhancement**: Could pre-select specific payable from URL param (payable_id)
+- **Default payment method**: Set to BANK_TRANSFER (vs CASH for receipts) since supplier payments are typically via bank transfer
