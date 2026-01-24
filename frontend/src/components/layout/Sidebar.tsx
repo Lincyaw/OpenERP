@@ -18,7 +18,7 @@ import {
   IconHistory,
 } from '@douyinfe/semi-icons'
 
-import { useAppStore } from '@/store'
+import { useAppStore, useAuthStore } from '@/store'
 import { appRoutes } from '@/router/routes'
 import type { AppRoute } from '@/router/types'
 
@@ -56,9 +56,40 @@ interface NavItem {
   items?: NavItem[]
 }
 
-function routeToNavItem(route: AppRoute): NavItem | null {
+/**
+ * Check if user has permission to access a route
+ * @param userPermissions - Array of user's permission codes
+ * @param routePermissions - Array of required permissions (any match grants access)
+ */
+function hasRoutePermission(
+  userPermissions: string[] | undefined,
+  routePermissions: string[] | undefined
+): boolean {
+  // If no permissions required, grant access
+  if (!routePermissions || routePermissions.length === 0) {
+    return true
+  }
+
+  // If user has no permissions, deny access to permission-protected routes
+  if (!userPermissions || userPermissions.length === 0) {
+    return false
+  }
+
+  // Check if user has ANY of the required permissions
+  return routePermissions.some((perm) => userPermissions.includes(perm))
+}
+
+/**
+ * Convert route to nav item, filtering by user permissions
+ */
+function routeToNavItem(route: AppRoute, userPermissions: string[] | undefined): NavItem | null {
   // Skip routes that should be hidden from menu
   if (route.meta?.hideInMenu || !route.path || route.path === '*') {
+    return null
+  }
+
+  // Check user permissions for this route
+  if (!hasRoutePermission(userPermissions, route.meta?.permissions)) {
     return null
   }
 
@@ -69,7 +100,7 @@ function routeToNavItem(route: AppRoute): NavItem | null {
   if (route.children && route.children.length > 0) {
     const childItems = route.children
       .filter((child) => !child.redirect && !child.meta?.hideInMenu)
-      .map(routeToNavItem)
+      .map((child) => routeToNavItem(child, userPermissions))
       .filter((item): item is NavItem => item !== null)
       .sort((a, b) => {
         const aOrder = appRoutes.find((r) => r.path === a.itemKey)?.meta?.order ?? 999
@@ -77,6 +108,7 @@ function routeToNavItem(route: AppRoute): NavItem | null {
         return aOrder - bOrder
       })
 
+    // If no accessible children, hide the parent menu item
     if (childItems.length === 0) {
       return null
     }
@@ -104,25 +136,27 @@ function routeToNavItem(route: AppRoute): NavItem | null {
  * - Navigation menu from route configuration
  * - Active state highlighting
  * - Nested menu support for module grouping
+ * - Permission-based menu filtering
  */
 export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
   const toggleSidebar = useAppStore((state) => state.toggleSidebar)
+  const userPermissions = useAuthStore((state) => state.user?.permissions)
 
-  // Generate navigation items from routes
+  // Generate navigation items from routes, filtered by user permissions
   const navItems = useMemo(() => {
     return appRoutes
       .filter((route) => !route.meta?.hideInMenu && route.path !== '*')
-      .map(routeToNavItem)
+      .map((route) => routeToNavItem(route, userPermissions))
       .filter((item): item is NavItem => item !== null)
       .sort((a, b) => {
         const aRoute = appRoutes.find((r) => r.path === a.itemKey)
         const bRoute = appRoutes.find((r) => r.path === b.itemKey)
         return (aRoute?.meta?.order ?? 999) - (bRoute?.meta?.order ?? 999)
       })
-  }, [])
+  }, [userPermissions])
 
   // Determine selected keys based on current path
   const selectedKeys = useMemo(() => {

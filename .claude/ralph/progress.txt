@@ -8725,3 +8725,134 @@ Wrapped RouterProvider with AuthProvider:
 - **P6-FE-003**: Route permission control can now use `isAuthenticated` from authStore
 - Token refresh is handled transparently - API calls will automatically retry with new tokens
 - The AuthProvider ensures auth state is initialized before any protected route renders
+
+---
+
+## P6-FE-003: 路由权限控制 (Route Permission Control)
+
+**Date**: 2026-01-24
+**Status**: COMPLETED ✅
+
+### Summary
+Implemented comprehensive route permission control system that filters menu items based on user permissions and redirects unauthorized users to a 403 page.
+
+### Implementation Details
+
+#### Permission Configuration (`frontend/src/config/permissions.ts`)
+
+Created a centralized permission configuration file:
+
+**Resource & Action Constants:**
+- Defined all resources (product, customer, inventory, etc.)
+- Defined all actions (create, read, update, delete, etc.)
+- Helper function `createPermission(resource, action)` for generating codes
+
+**Predefined Permission Codes:**
+- Complete set of permission codes matching backend definitions
+- Format: `resource:action` (e.g., `product:create`, `sales_order:read`)
+
+**Route Permission Mappings:**
+- `RoutePermissions` record mapping paths to required permissions
+- `hasRouteAccess(userPermissions, routePath)` - Check access by permissions
+
+#### Route Metadata Updates (`frontend/src/router/routes.tsx`)
+
+Added `permissions` array to route metadata:
+
+```typescript
+{
+  path: '/catalog',
+  meta: {
+    title: 'Catalog',
+    permissions: [Permissions.PRODUCT_READ, Permissions.CATEGORY_READ],
+  },
+  children: [
+    {
+      path: '/catalog/products',
+      meta: {
+        permissions: [Permissions.PRODUCT_READ],
+      },
+    },
+  ],
+}
+```
+
+Each module and child route now has appropriate permission requirements.
+
+#### Sidebar Menu Filtering (`frontend/src/components/layout/Sidebar.tsx`)
+
+Enhanced menu generation to filter by user permissions:
+
+**New `hasRoutePermission` function:**
+- Returns true if no permissions required
+- Returns false if user has no permissions but route requires them
+- Checks if user has ANY of the required permissions
+
+**Updated `routeToNavItem` function:**
+- Now accepts `userPermissions` parameter
+- Filters out routes user cannot access
+- Hides parent menus if all children are filtered out
+
+**Updated `Sidebar` component:**
+- Reads `user?.permissions` from auth store
+- Passes permissions to nav item generation
+- Menu updates reactively when user permissions change
+
+#### Enhanced Auth Guard (`frontend/src/router/guards.tsx`)
+
+Improved route guard with automatic permission detection:
+
+**New `findRoutePermissions` function:**
+- Finds permissions for exact path match
+- Falls back to parent route permissions for dynamic routes
+- Falls back to module-level permissions
+
+**Updated `AuthGuard` component:**
+- Handles auth loading state (prevents flash of login)
+- Stores redirect path in sessionStorage
+- Automatically determines required permissions from route config
+- Redirects to 403 for unauthorized access
+
+**Updated `GuestGuard` component:**
+- Handles auth loading state
+- Restores redirect path after login
+
+#### Enhanced 403 Page (`frontend/src/pages/Forbidden.tsx`)
+
+Improved forbidden page with:
+- Better visual design with Semi UI components
+- Shows attempted URL when available
+- "Back to Dashboard" and "Go Back" navigation options
+- Proper background color using design tokens
+
+### Requirements Fulfilled
+
+1. ✅ **实现路由守卫** - AuthGuard checks authentication and permissions
+2. ✅ **根据权限过滤菜单** - Sidebar filters menu items by user permissions
+3. ✅ **处理无权限访问** - 403 page with helpful navigation options
+
+### Key Design Decisions
+
+1. **Centralized Permissions**: All permission codes defined in one file for consistency
+2. **ANY Permission Logic**: User needs ANY of the listed permissions (not all) for access
+3. **Hierarchical Fallback**: Child routes inherit parent permissions if not specified
+4. **Reactive Menu**: Menu updates immediately when user permissions change
+5. **Graceful Loading**: Guards wait for auth state before redirecting
+
+### Build & Test Status
+- `npm run build` ✅ PASSED
+- `npx tsc --noEmit` ✅ PASSED (TypeScript check)
+
+### Files Created/Modified
+- `frontend/src/config/permissions.ts` (NEW) - Permission configuration
+- `frontend/src/config/index.ts` (NEW) - Config exports
+- `frontend/src/router/routes.tsx` (MODIFIED) - Added permissions to routes
+- `frontend/src/router/guards.tsx` (MODIFIED) - Enhanced permission checking
+- `frontend/src/components/layout/Sidebar.tsx` (MODIFIED) - Permission-filtered menu
+- `frontend/src/pages/Forbidden.tsx` (MODIFIED) - Improved 403 page
+
+### Notes for Next Steps
+- **P6-FE-004/005/006**: User/Role/Permission management pages can use these permission constants
+- **P6-INT-002**: Auth flow integration can verify permission filtering works end-to-end
+- Backend API should return user permissions in the login response (already done in P6-BE-016)
+- For testing, user permissions should include relevant permission codes from the backend

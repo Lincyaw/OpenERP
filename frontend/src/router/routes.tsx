@@ -3,6 +3,7 @@ import { lazyLoad } from './lazyLoad'
 import { AuthGuard, GuestGuard } from './guards'
 import { MainLayout } from '@/components/layout'
 import type { AppRoute } from './types'
+import { Permissions } from '@/config/permissions'
 
 /**
  * Application route configuration
@@ -79,9 +80,13 @@ const CashFlowReportPage = () => lazyLoad(() => import('@/pages/report/CashFlowR
  * Routes are organized into two groups:
  * 1. Public routes (login, error pages) - no layout
  * 2. Protected routes - wrapped in MainLayout
+ *
+ * Permission requirements:
+ * - Routes without permissions array are accessible to all authenticated users
+ * - Routes with permissions array require ANY of the listed permissions
  */
 export const appRoutes: AppRoute[] = [
-  // Dashboard (home)
+  // Dashboard (home) - accessible to all authenticated users
   {
     path: '/',
     meta: {
@@ -98,6 +103,7 @@ export const appRoutes: AppRoute[] = [
       title: 'Catalog',
       icon: 'IconGridView',
       order: 1,
+      permissions: [Permissions.PRODUCT_READ, Permissions.CATEGORY_READ],
     },
     children: [
       {
@@ -110,6 +116,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Products',
           icon: 'IconGridView',
           order: 1,
+          permissions: [Permissions.PRODUCT_READ],
         },
       },
       {
@@ -118,6 +125,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Categories',
           icon: 'IconTreeTriangleDown',
           order: 2,
+          permissions: [Permissions.CATEGORY_READ],
         },
       },
     ],
@@ -130,6 +138,11 @@ export const appRoutes: AppRoute[] = [
       title: 'Partners',
       icon: 'IconUserGroup',
       order: 2,
+      permissions: [
+        Permissions.CUSTOMER_READ,
+        Permissions.SUPPLIER_READ,
+        Permissions.WAREHOUSE_READ,
+      ],
     },
     children: [
       {
@@ -142,6 +155,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Customers',
           icon: 'IconUserGroup',
           order: 1,
+          permissions: [Permissions.CUSTOMER_READ],
         },
       },
       {
@@ -150,6 +164,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Suppliers',
           icon: 'IconUserCardVideo',
           order: 2,
+          permissions: [Permissions.SUPPLIER_READ],
         },
       },
       {
@@ -158,6 +173,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Warehouses',
           icon: 'IconInbox',
           order: 3,
+          permissions: [Permissions.WAREHOUSE_READ],
         },
       },
     ],
@@ -170,6 +186,7 @@ export const appRoutes: AppRoute[] = [
       title: 'Inventory',
       icon: 'IconList',
       order: 3,
+      permissions: [Permissions.INVENTORY_READ],
     },
     children: [
       {
@@ -182,6 +199,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Stock List',
           icon: 'IconList',
           order: 1,
+          permissions: [Permissions.INVENTORY_READ],
         },
       },
     ],
@@ -194,6 +212,7 @@ export const appRoutes: AppRoute[] = [
       title: 'Trade',
       icon: 'IconSend',
       order: 4,
+      permissions: [Permissions.SALES_ORDER_READ, Permissions.PURCHASE_ORDER_READ],
     },
     children: [
       {
@@ -206,6 +225,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Sales Orders',
           icon: 'IconSend',
           order: 1,
+          permissions: [Permissions.SALES_ORDER_READ],
         },
       },
       {
@@ -214,6 +234,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Purchase Orders',
           icon: 'IconDownload',
           order: 2,
+          permissions: [Permissions.PURCHASE_ORDER_READ],
         },
       },
     ],
@@ -226,6 +247,12 @@ export const appRoutes: AppRoute[] = [
       title: 'Finance',
       icon: 'IconPriceTag',
       order: 5,
+      permissions: [
+        Permissions.ACCOUNT_RECEIVABLE_READ,
+        Permissions.ACCOUNT_PAYABLE_READ,
+        Permissions.EXPENSE_READ,
+        Permissions.INCOME_READ,
+      ],
     },
     children: [
       {
@@ -238,6 +265,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Receivables',
           icon: 'IconPriceTag',
           order: 1,
+          permissions: [Permissions.ACCOUNT_RECEIVABLE_READ],
         },
       },
       {
@@ -246,6 +274,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Payables',
           icon: 'IconCreditCard',
           order: 2,
+          permissions: [Permissions.ACCOUNT_PAYABLE_READ],
         },
       },
       {
@@ -254,6 +283,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Expenses',
           icon: 'IconMinus',
           order: 3,
+          permissions: [Permissions.EXPENSE_READ],
         },
       },
       {
@@ -262,6 +292,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Other Income',
           icon: 'IconPlus',
           order: 4,
+          permissions: [Permissions.INCOME_READ],
         },
       },
       {
@@ -270,6 +301,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Cash Flow',
           icon: 'IconHistory',
           order: 5,
+          permissions: [Permissions.EXPENSE_READ, Permissions.INCOME_READ],
         },
       },
     ],
@@ -282,6 +314,7 @@ export const appRoutes: AppRoute[] = [
       title: 'Reports',
       icon: 'IconChartLine',
       order: 6,
+      permissions: [Permissions.REPORT_READ],
     },
     children: [
       {
@@ -294,6 +327,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Sales Report',
           icon: 'IconChartLine',
           order: 1,
+          permissions: [Permissions.REPORT_READ],
         },
       },
       {
@@ -302,6 +336,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Sales Ranking',
           icon: 'IconBarChartHStroked',
           order: 2,
+          permissions: [Permissions.REPORT_READ],
         },
       },
       {
@@ -310,6 +345,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Inventory Turnover',
           icon: 'IconRefresh',
           order: 3,
+          permissions: [Permissions.REPORT_READ],
         },
       },
       {
@@ -318,6 +354,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Profit & Loss',
           icon: 'IconPieChartStroked',
           order: 4,
+          permissions: [Permissions.REPORT_READ],
         },
       },
       {
@@ -326,6 +363,7 @@ export const appRoutes: AppRoute[] = [
           title: 'Cash Flow',
           icon: 'IconHistory',
           order: 5,
+          permissions: [Permissions.REPORT_READ],
         },
       },
     ],
