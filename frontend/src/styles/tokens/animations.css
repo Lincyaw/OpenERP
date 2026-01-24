@@ -37,7 +37,8 @@
   --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
 
   /* === Common Transitions === */
-  --transition-colors: color var(--duration-fast) var(--ease-default),
+  --transition-colors:
+    color var(--duration-fast) var(--ease-default),
     background-color var(--duration-fast) var(--ease-default),
     border-color var(--duration-fast) var(--ease-default);
 
@@ -52,18 +53,20 @@
   /* === Component-Specific Transitions === */
   --transition-button: var(--transition-colors), var(--transition-shadow);
 
-  --transition-input: border-color var(--duration-fast) var(--ease-default),
+  --transition-input:
+    border-color var(--duration-fast) var(--ease-default),
     box-shadow var(--duration-fast) var(--ease-default);
 
   --transition-card: var(--transition-shadow), var(--transition-transform);
 
-  --transition-modal: opacity var(--duration-normal) var(--ease-out),
-    transform var(--duration-normal) var(--ease-out);
+  --transition-modal:
+    opacity var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
 
-  --transition-dropdown: opacity var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+  --transition-dropdown:
+    opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 
-  --transition-sidebar: width var(--duration-normal) var(--ease-default),
+  --transition-sidebar:
+    width var(--duration-normal) var(--ease-default),
     transform var(--duration-normal) var(--ease-default);
 }
 

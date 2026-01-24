@@ -42,18 +42,21 @@ for ((i=1; i<=MAX_ITER; i++)); do
   log "========================================"
 
   ITER_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.log"
-  ITER_JSON_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.json"
+  ITER_JSON_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.jsonl"
   
-  result=$(claude --dangerously-skip-permissions -p --verbose --output-format stream-json "$PROMPT" 2>&1 | tee "$ITER_JSON_LOG" | \
+  TEMP_RESULT=$(mktemp)
+  
+  claude --dangerously-skip-permissions -p --verbose --output-format stream-json "$PROMPT" 2>&1 | \
+    tee "$ITER_JSON_LOG" | \
     while IFS= read -r line; do
       echo "$line" >> "$ITER_LOG"
-      if echo "$line" | grep -q '"type":"assistant"'; then
-        text=$(echo "$line" | jq -r '.message.content[]?.text // empty' 2>/dev/null)
-        if [ -n "$text" ]; then
-          echo "$text"
-        fi
+      if echo "$line" | jq -e 'select(.type == "assistant")' >/dev/null 2>&1; then
+        echo "$line" | jq -r '.message.content[]? | select(.type == "text") | .text // empty' 2>/dev/null >> "$TEMP_RESULT"
       fi
-    done)
+    done
+  
+  result=$(cat "$TEMP_RESULT")
+  rm -f "$TEMP_RESULT"
 
   echo "$result" >> "$MAIN_LOG"
   echo "$result"

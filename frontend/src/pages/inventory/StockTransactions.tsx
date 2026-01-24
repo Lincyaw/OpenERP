@@ -313,7 +313,7 @@ export default function StockTransactionsPage() {
   )
 
   // Handle date range change
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const handleDateRangeChange = useCallback(
     (dates: any) => {
       if (Array.isArray(dates) && dates.length === 2) {
@@ -486,7 +486,7 @@ export default function StockTransactionsPage() {
                 optionList={TRANSACTION_TYPE_OPTIONS}
                 style={{ width: 120 }}
               />
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {}
               <DatePicker
                 type="dateRange"
                 placeholder={['开始日期', '结束日期']}

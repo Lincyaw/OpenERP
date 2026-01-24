@@ -49,6 +49,7 @@ const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdju
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
 const SalesOrderNewPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderNew'))
 const SalesOrderEditPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderEdit'))
+const SalesOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderDetail'))
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
 
 // Finance module
@@ -367,6 +368,7 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/trade') {
         childRoutes.push(
           { path: 'sales/new', element: SalesOrderNewPage() },
+          { path: 'sales/:id', element: SalesOrderDetailPage() },
           { path: 'sales/:id/edit', element: SalesOrderEditPage() }
         )
       }

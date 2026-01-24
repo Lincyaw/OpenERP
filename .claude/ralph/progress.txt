@@ -4804,3 +4804,81 @@ ok      github.com/erp/backend/internal/interfaces/http/handler  0.018s
 - Customer field disabled in edit mode (API doesn't support customer change)
 - Consider adding product barcode scanning support
 - Consider adding quick product select from recent orders
+
+---
+
+## 2026-01-24 - P3-FE-003: Sales Order Detail Page Complete
+
+### Completed
+- **P3-FE-003**: 销售订单详情页面 (Sales Order Detail Page)
+
+### What was done
+1. Created `SalesOrderDetail.tsx` page component (`frontend/src/pages/trade/SalesOrderDetail.tsx`):
+   - Complete order information display via Descriptions component
+   - Order line items table with all fields (product code, name, unit, quantity, price, amount, remark)
+   - Amount summary section (subtotal, discount, payable amount)
+   - Status timeline showing order creation, confirmation, shipping, completion, or cancellation
+   - Status action buttons (Confirm, Ship, Complete, Cancel) based on current order status
+   - Edit button for draft orders
+   - Back to list navigation
+
+2. Created `SalesOrderDetail.css` with design system tokens:
+   - Uses CSS variables from design tokens
+   - Responsive design for mobile
+   - Styled amount summary section
+   - Timeline styling
+
+3. Updated `router/routes.tsx`:
+   - Added lazy load import for SalesOrderDetailPage
+   - Added route: `/trade/sales/:id` for order detail view
+
+### Files created
+- `frontend/src/pages/trade/SalesOrderDetail.tsx` (main detail page component)
+- `frontend/src/pages/trade/SalesOrderDetail.css` (styles)
+
+### Files modified
+- `frontend/src/router/routes.tsx` - Added detail page route
+
+### Build Status
+- `npm run type-check` passes
+- `npm run lint` passes (only pre-existing warnings)
+- `npm run build` passes
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Order basic info display | ✓ |
+| Order number, customer, status | ✓ |
+| Item count, total quantity | ✓ |
+| Created/updated timestamps | ✓ |
+| Order remark | ✓ |
+| Order items table | ✓ |
+| Product code, name, unit | ✓ |
+| Quantity, unit price, amount | ✓ |
+| Item remarks | ✓ |
+| Amount summary | ✓ |
+| Subtotal, discount, payable | ✓ |
+| Status timeline | ✓ |
+| Created → Confirmed → Shipped → Completed | ✓ |
+| Cancelled status with reason | ✓ |
+| Action buttons | ✓ |
+| Edit (draft only) | ✓ |
+| Confirm order | ✓ |
+| Ship order | ✓ |
+| Complete order | ✓ |
+| Cancel order | ✓ |
+| Navigation back to list | ✓ |
+
+### API Endpoints Used
+- `GET /trade/sales-orders/{id}` - Get order details
+- `POST /trade/sales-orders/{id}/confirm` - Confirm order
+- `POST /trade/sales-orders/{id}/ship` - Ship order
+- `POST /trade/sales-orders/{id}/complete` - Complete order
+- `POST /trade/sales-orders/{id}/cancel` - Cancel order
+
+### Notes for next developer
+- **P3-FE-004** (Sales Order Shipping): Ship action already integrated in detail page; may need warehouse selection modal for multi-warehouse scenarios
+- The timeline displays timestamps for each status change (created_at, confirmed_at, shipped_at, completed_at, cancelled_at)
+- Action buttons are context-sensitive based on current order status
+- Edit button navigates to `/trade/sales/:id/edit` for draft orders only
+- Amount summary calculates discount percentage from discount_amount and total_amount
