@@ -1,0 +1,554 @@
+package trade
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/valueobject"
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+)
+
+// ReturnStatus represents the status of a sales return
+type ReturnStatus string
+
+const (
+	ReturnStatusDraft     ReturnStatus = "DRAFT"
+	ReturnStatusPending   ReturnStatus = "PENDING"   // Waiting for approval
+	ReturnStatusApproved  ReturnStatus = "APPROVED"  // Approved, ready for processing
+	ReturnStatusRejected  ReturnStatus = "REJECTED"  // Rejected by approver
+	ReturnStatusCompleted ReturnStatus = "COMPLETED" // Return completed, stock restored
+	ReturnStatusCancelled ReturnStatus = "CANCELLED"
+)
+
+// IsValid checks if the status is a valid ReturnStatus
+func (s ReturnStatus) IsValid() bool {
+	switch s {
+	case ReturnStatusDraft, ReturnStatusPending, ReturnStatusApproved,
+		ReturnStatusRejected, ReturnStatusCompleted, ReturnStatusCancelled:
+		return true
+	}
+	return false
+}
+
+// String returns the string representation of ReturnStatus
+func (s ReturnStatus) String() string {
+	return string(s)
+}
+
+// CanTransitionTo checks if the status can transition to the target status
+func (s ReturnStatus) CanTransitionTo(target ReturnStatus) bool {
+	switch s {
+	case ReturnStatusDraft:
+		return target == ReturnStatusPending || target == ReturnStatusCancelled
+	case ReturnStatusPending:
+		return target == ReturnStatusApproved || target == ReturnStatusRejected || target == ReturnStatusCancelled
+	case ReturnStatusApproved:
+		return target == ReturnStatusCompleted || target == ReturnStatusCancelled
+	case ReturnStatusRejected, ReturnStatusCompleted, ReturnStatusCancelled:
+		return false // Terminal states
+	}
+	return false
+}
+
+// SalesReturnItem represents a line item in a sales return
+type SalesReturnItem struct {
+	ID                uuid.UUID       `gorm:"type:uuid;primary_key"`
+	ReturnID          uuid.UUID       `gorm:"type:uuid;not null;index"`
+	SalesOrderItemID  uuid.UUID       `gorm:"type:uuid;not null"` // Reference to original order item
+	ProductID         uuid.UUID       `gorm:"type:uuid;not null"`
+	ProductName       string          `gorm:"type:varchar(200);not null"`
+	ProductCode       string          `gorm:"type:varchar(50);not null"`
+	OriginalQuantity  decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity in original order
+	ReturnQuantity    decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity being returned
+	UnitPrice         decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Price per unit (from original order)
+	RefundAmount      decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitPrice
+	Unit              string          `gorm:"type:varchar(20);not null"`
+	Reason            string          `gorm:"type:varchar(500)"`
+	ConditionOnReturn string          `gorm:"type:varchar(100)"` // e.g., "damaged", "defective", "wrong_item"
+	CreatedAt         time.Time       `gorm:"not null"`
+	UpdatedAt         time.Time       `gorm:"not null"`
+}
+
+// TableName returns the table name for GORM
+func (SalesReturnItem) TableName() string {
+	return "sales_return_items"
+}
+
+// NewSalesReturnItem creates a new sales return item
+func NewSalesReturnItem(
+	returnID uuid.UUID,
+	salesOrderItemID uuid.UUID,
+	productID uuid.UUID,
+	productName, productCode, unit string,
+	originalQuantity, returnQuantity decimal.Decimal,
+	unitPrice valueobject.Money,
+) (*SalesReturnItem, error) {
+	if productID == uuid.Nil {
+		return nil, shared.NewDomainError("INVALID_PRODUCT", "Product ID cannot be empty")
+	}
+	if salesOrderItemID == uuid.Nil {
+		return nil, shared.NewDomainError("INVALID_ORDER_ITEM", "Sales order item ID cannot be empty")
+	}
+	if productName == "" {
+		return nil, shared.NewDomainError("INVALID_PRODUCT_NAME", "Product name cannot be empty")
+	}
+	if returnQuantity.LessThanOrEqual(decimal.Zero) {
+		return nil, shared.NewDomainError("INVALID_QUANTITY", "Return quantity must be positive")
+	}
+	if returnQuantity.GreaterThan(originalQuantity) {
+		return nil, shared.NewDomainError("INVALID_QUANTITY", "Return quantity cannot exceed original quantity")
+	}
+	if unit == "" {
+		return nil, shared.NewDomainError("INVALID_UNIT", "Unit cannot be empty")
+	}
+
+	now := time.Now()
+	refundAmount := returnQuantity.Mul(unitPrice.Amount())
+
+	return &SalesReturnItem{
+		ID:               uuid.New(),
+		ReturnID:         returnID,
+		SalesOrderItemID: salesOrderItemID,
+		ProductID:        productID,
+		ProductName:      productName,
+		ProductCode:      productCode,
+		OriginalQuantity: originalQuantity,
+		ReturnQuantity:   returnQuantity,
+		UnitPrice:        unitPrice.Amount(),
+		RefundAmount:     refundAmount,
+		Unit:             unit,
+		CreatedAt:        now,
+		UpdatedAt:        now,
+	}, nil
+}
+
+// UpdateReturnQuantity updates the return quantity and recalculates the refund amount
+func (i *SalesReturnItem) UpdateReturnQuantity(quantity decimal.Decimal) error {
+	if quantity.LessThanOrEqual(decimal.Zero) {
+		return shared.NewDomainError("INVALID_QUANTITY", "Return quantity must be positive")
+	}
+	if quantity.GreaterThan(i.OriginalQuantity) {
+		return shared.NewDomainError("INVALID_QUANTITY", "Return quantity cannot exceed original quantity")
+	}
+
+	i.ReturnQuantity = quantity
+	i.RefundAmount = quantity.Mul(i.UnitPrice)
+	i.UpdatedAt = time.Now()
+
+	return nil
+}
+
+// SetReason sets the return reason for the item
+func (i *SalesReturnItem) SetReason(reason string) {
+	i.Reason = reason
+	i.UpdatedAt = time.Now()
+}
+
+// SetCondition sets the condition of the returned item
+func (i *SalesReturnItem) SetCondition(condition string) {
+	i.ConditionOnReturn = condition
+	i.UpdatedAt = time.Now()
+}
+
+// GetRefundAmountMoney returns the refund amount as Money value object
+func (i *SalesReturnItem) GetRefundAmountMoney() valueobject.Money {
+	return valueobject.NewMoneyCNY(i.RefundAmount)
+}
+
+// GetUnitPriceMoney returns the unit price as Money value object
+func (i *SalesReturnItem) GetUnitPriceMoney() valueobject.Money {
+	return valueobject.NewMoneyCNY(i.UnitPrice)
+}
+
+// SalesReturn represents a sales return aggregate root
+// It manages the return of goods from a customer for a previous sales order
+type SalesReturn struct {
+	shared.TenantAggregateRoot
+	ReturnNumber     string            `gorm:"type:varchar(50);not null;uniqueIndex:idx_sales_return_tenant_number,priority:2"`
+	SalesOrderID     uuid.UUID         `gorm:"type:uuid;not null;index"` // Reference to original sales order
+	SalesOrderNumber string            `gorm:"type:varchar(50);not null"`
+	CustomerID       uuid.UUID         `gorm:"type:uuid;not null;index"`
+	CustomerName     string            `gorm:"type:varchar(200);not null"`
+	WarehouseID      *uuid.UUID        `gorm:"type:uuid;index"` // Warehouse where returned goods will be stored
+	Items            []SalesReturnItem `gorm:"foreignKey:ReturnID;references:ID"`
+	TotalRefund      decimal.Decimal   `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all item refunds
+	Status           ReturnStatus      `gorm:"type:varchar(20);not null;default:'DRAFT'"`
+	Reason           string            `gorm:"type:text"` // Overall return reason
+	Remark           string            `gorm:"type:text"`
+	SubmittedAt      *time.Time        `gorm:"index"` // When submitted for approval
+	ApprovedAt       *time.Time        `gorm:"index"`
+	ApprovedBy       *uuid.UUID        `gorm:"type:uuid"`
+	ApprovalNote     string            `gorm:"type:varchar(500)"`
+	RejectedAt       *time.Time
+	RejectedBy       *uuid.UUID `gorm:"type:uuid"`
+	RejectionReason  string     `gorm:"type:varchar(500)"`
+	CompletedAt      *time.Time
+	CancelledAt      *time.Time
+	CancelReason     string `gorm:"type:varchar(500)"`
+}
+
+// TableName returns the table name for GORM
+func (SalesReturn) TableName() string {
+	return "sales_returns"
+}
+
+// NewSalesReturn creates a new sales return
+func NewSalesReturn(
+	tenantID uuid.UUID,
+	returnNumber string,
+	salesOrder *SalesOrder,
+) (*SalesReturn, error) {
+	if returnNumber == "" {
+		return nil, shared.NewDomainError("INVALID_RETURN_NUMBER", "Return number cannot be empty")
+	}
+	if len(returnNumber) > 50 {
+		return nil, shared.NewDomainError("INVALID_RETURN_NUMBER", "Return number cannot exceed 50 characters")
+	}
+	if salesOrder == nil {
+		return nil, shared.NewDomainError("INVALID_ORDER", "Sales order cannot be nil")
+	}
+	if !salesOrder.IsShipped() && !salesOrder.IsCompleted() {
+		return nil, shared.NewDomainError("INVALID_ORDER_STATUS", "Can only create returns for shipped or completed orders")
+	}
+
+	sr := &SalesReturn{
+		TenantAggregateRoot: shared.NewTenantAggregateRoot(tenantID),
+		ReturnNumber:        returnNumber,
+		SalesOrderID:        salesOrder.ID,
+		SalesOrderNumber:    salesOrder.OrderNumber,
+		CustomerID:          salesOrder.CustomerID,
+		CustomerName:        salesOrder.CustomerName,
+		WarehouseID:         salesOrder.WarehouseID,
+		Items:               make([]SalesReturnItem, 0),
+		TotalRefund:         decimal.Zero,
+		Status:              ReturnStatusDraft,
+	}
+
+	sr.AddDomainEvent(NewSalesReturnCreatedEvent(sr))
+
+	return sr, nil
+}
+
+// AddItem adds a new item to the return
+// Only allowed in DRAFT status
+func (r *SalesReturn) AddItem(
+	salesOrderItem *SalesOrderItem,
+	returnQuantity decimal.Decimal,
+) (*SalesReturnItem, error) {
+	if r.Status != ReturnStatusDraft {
+		return nil, shared.NewDomainError("INVALID_STATE", "Cannot add items to a non-draft return")
+	}
+	if salesOrderItem == nil {
+		return nil, shared.NewDomainError("INVALID_ITEM", "Sales order item cannot be nil")
+	}
+
+	// Check if item already exists in return
+	for _, item := range r.Items {
+		if item.SalesOrderItemID == salesOrderItem.ID {
+			return nil, shared.NewDomainError("DUPLICATE_ITEM", "Item already exists in return, update quantity instead")
+		}
+	}
+
+	item, err := NewSalesReturnItem(
+		r.ID,
+		salesOrderItem.ID,
+		salesOrderItem.ProductID,
+		salesOrderItem.ProductName,
+		salesOrderItem.ProductCode,
+		salesOrderItem.Unit,
+		salesOrderItem.Quantity,
+		returnQuantity,
+		salesOrderItem.GetUnitPriceMoney(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Items = append(r.Items, *item)
+	r.recalculateTotalRefund()
+	r.UpdatedAt = time.Now()
+	r.IncrementVersion()
+
+	return item, nil
+}
+
+// UpdateItemQuantity updates the return quantity of an existing item
+// Only allowed in DRAFT status
+func (r *SalesReturn) UpdateItemQuantity(itemID uuid.UUID, quantity decimal.Decimal) error {
+	if r.Status != ReturnStatusDraft {
+		return shared.NewDomainError("INVALID_STATE", "Cannot update items in a non-draft return")
+	}
+
+	for idx := range r.Items {
+		if r.Items[idx].ID == itemID {
+			if err := r.Items[idx].UpdateReturnQuantity(quantity); err != nil {
+				return err
+			}
+			r.recalculateTotalRefund()
+			r.UpdatedAt = time.Now()
+			r.IncrementVersion()
+			return nil
+		}
+	}
+
+	return shared.NewDomainError("ITEM_NOT_FOUND", "Return item not found")
+}
+
+// RemoveItem removes an item from the return
+// Only allowed in DRAFT status
+func (r *SalesReturn) RemoveItem(itemID uuid.UUID) error {
+	if r.Status != ReturnStatusDraft {
+		return shared.NewDomainError("INVALID_STATE", "Cannot remove items from a non-draft return")
+	}
+
+	for idx, item := range r.Items {
+		if item.ID == itemID {
+			r.Items = append(r.Items[:idx], r.Items[idx+1:]...)
+			r.recalculateTotalRefund()
+			r.UpdatedAt = time.Now()
+			r.IncrementVersion()
+			return nil
+		}
+	}
+
+	return shared.NewDomainError("ITEM_NOT_FOUND", "Return item not found")
+}
+
+// SetReason sets the overall return reason
+func (r *SalesReturn) SetReason(reason string) {
+	r.Reason = reason
+	r.UpdatedAt = time.Now()
+	r.IncrementVersion()
+}
+
+// SetRemark sets the return remark
+func (r *SalesReturn) SetRemark(remark string) {
+	r.Remark = remark
+	r.UpdatedAt = time.Now()
+	r.IncrementVersion()
+}
+
+// SetWarehouse sets the warehouse for returned goods
+// Only allowed in DRAFT or PENDING status
+func (r *SalesReturn) SetWarehouse(warehouseID uuid.UUID) error {
+	if r.Status != ReturnStatusDraft && r.Status != ReturnStatusPending {
+		return shared.NewDomainError("INVALID_STATE", "Cannot set warehouse for return in current status")
+	}
+	if warehouseID == uuid.Nil {
+		return shared.NewDomainError("INVALID_WAREHOUSE", "Warehouse ID cannot be empty")
+	}
+
+	r.WarehouseID = &warehouseID
+	r.UpdatedAt = time.Now()
+	r.IncrementVersion()
+
+	return nil
+}
+
+// Submit submits the return for approval
+// Transitions from DRAFT to PENDING
+func (r *SalesReturn) Submit() error {
+	if !r.Status.CanTransitionTo(ReturnStatusPending) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot submit return in %s status", r.Status))
+	}
+	if len(r.Items) == 0 {
+		return shared.NewDomainError("NO_ITEMS", "Cannot submit return without items")
+	}
+	if r.TotalRefund.LessThanOrEqual(decimal.Zero) {
+		return shared.NewDomainError("INVALID_AMOUNT", "Return total refund must be positive")
+	}
+
+	now := time.Now()
+	r.Status = ReturnStatusPending
+	r.SubmittedAt = &now
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnSubmittedEvent(r))
+
+	return nil
+}
+
+// Approve approves the return
+// Transitions from PENDING to APPROVED
+func (r *SalesReturn) Approve(approverID uuid.UUID, note string) error {
+	if !r.Status.CanTransitionTo(ReturnStatusApproved) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot approve return in %s status", r.Status))
+	}
+	if approverID == uuid.Nil {
+		return shared.NewDomainError("INVALID_APPROVER", "Approver ID cannot be empty")
+	}
+
+	now := time.Now()
+	r.Status = ReturnStatusApproved
+	r.ApprovedAt = &now
+	r.ApprovedBy = &approverID
+	r.ApprovalNote = note
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnApprovedEvent(r))
+
+	return nil
+}
+
+// Reject rejects the return
+// Transitions from PENDING to REJECTED
+func (r *SalesReturn) Reject(rejecterID uuid.UUID, reason string) error {
+	if !r.Status.CanTransitionTo(ReturnStatusRejected) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot reject return in %s status", r.Status))
+	}
+	if rejecterID == uuid.Nil {
+		return shared.NewDomainError("INVALID_REJECTER", "Rejecter ID cannot be empty")
+	}
+	if reason == "" {
+		return shared.NewDomainError("INVALID_REASON", "Rejection reason is required")
+	}
+
+	now := time.Now()
+	r.Status = ReturnStatusRejected
+	r.RejectedAt = &now
+	r.RejectedBy = &rejecterID
+	r.RejectionReason = reason
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnRejectedEvent(r))
+
+	return nil
+}
+
+// Complete marks the return as completed
+// This should be called after stock has been restored
+// Transitions from APPROVED to COMPLETED
+func (r *SalesReturn) Complete() error {
+	if !r.Status.CanTransitionTo(ReturnStatusCompleted) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot complete return in %s status", r.Status))
+	}
+	if r.WarehouseID == nil {
+		return shared.NewDomainError("NO_WAREHOUSE", "Warehouse must be set before completing return")
+	}
+
+	now := time.Now()
+	r.Status = ReturnStatusCompleted
+	r.CompletedAt = &now
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnCompletedEvent(r))
+
+	return nil
+}
+
+// Cancel cancels the return
+// Allowed in DRAFT, PENDING, or APPROVED status
+func (r *SalesReturn) Cancel(reason string) error {
+	if !r.Status.CanTransitionTo(ReturnStatusCancelled) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot cancel return in %s status", r.Status))
+	}
+	if reason == "" {
+		return shared.NewDomainError("INVALID_REASON", "Cancel reason is required")
+	}
+
+	wasApproved := r.Status == ReturnStatusApproved
+	now := time.Now()
+	r.Status = ReturnStatusCancelled
+	r.CancelledAt = &now
+	r.CancelReason = reason
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnCancelledEvent(r, wasApproved))
+
+	return nil
+}
+
+// recalculateTotalRefund recalculates the total refund amount
+func (r *SalesReturn) recalculateTotalRefund() {
+	total := decimal.Zero
+	for _, item := range r.Items {
+		total = total.Add(item.RefundAmount)
+	}
+	r.TotalRefund = total
+}
+
+// GetTotalRefundMoney returns total refund as Money
+func (r *SalesReturn) GetTotalRefundMoney() valueobject.Money {
+	return valueobject.NewMoneyCNY(r.TotalRefund)
+}
+
+// ItemCount returns the number of items in the return
+func (r *SalesReturn) ItemCount() int {
+	return len(r.Items)
+}
+
+// TotalReturnQuantity returns the sum of all item return quantities
+func (r *SalesReturn) TotalReturnQuantity() decimal.Decimal {
+	total := decimal.Zero
+	for _, item := range r.Items {
+		total = total.Add(item.ReturnQuantity)
+	}
+	return total
+}
+
+// IsDraft returns true if return is in draft status
+func (r *SalesReturn) IsDraft() bool {
+	return r.Status == ReturnStatusDraft
+}
+
+// IsPending returns true if return is pending approval
+func (r *SalesReturn) IsPending() bool {
+	return r.Status == ReturnStatusPending
+}
+
+// IsApproved returns true if return is approved
+func (r *SalesReturn) IsApproved() bool {
+	return r.Status == ReturnStatusApproved
+}
+
+// IsRejected returns true if return is rejected
+func (r *SalesReturn) IsRejected() bool {
+	return r.Status == ReturnStatusRejected
+}
+
+// IsCompleted returns true if return is completed
+func (r *SalesReturn) IsCompleted() bool {
+	return r.Status == ReturnStatusCompleted
+}
+
+// IsCancelled returns true if return is cancelled
+func (r *SalesReturn) IsCancelled() bool {
+	return r.Status == ReturnStatusCancelled
+}
+
+// IsTerminal returns true if return is in a terminal state
+func (r *SalesReturn) IsTerminal() bool {
+	return r.IsCompleted() || r.IsCancelled() || r.IsRejected()
+}
+
+// CanModify returns true if the return can be modified
+func (r *SalesReturn) CanModify() bool {
+	return r.IsDraft()
+}
+
+// GetItem returns an item by its ID
+func (r *SalesReturn) GetItem(itemID uuid.UUID) *SalesReturnItem {
+	for idx := range r.Items {
+		if r.Items[idx].ID == itemID {
+			return &r.Items[idx]
+		}
+	}
+	return nil
+}
+
+// GetItemByOrderItem returns an item by its original order item ID
+func (r *SalesReturn) GetItemByOrderItem(orderItemID uuid.UUID) *SalesReturnItem {
+	for idx := range r.Items {
+		if r.Items[idx].SalesOrderItemID == orderItemID {
+			return &r.Items[idx]
+		}
+	}
+	return nil
+}

@@ -9583,3 +9583,89 @@ Comprehensive unit tests for inventory concurrency control, covering:
 4. **GetOrCreate Race Handling**: Uses PostgreSQL `ON CONFLICT DO NOTHING` to handle concurrent insertions.
 
 5. **Quantity Invariants**: Tests verify `TotalQuantity() = AvailableQuantity + LockedQuantity` is maintained through all operations.
+
+---
+
+## 2026-01-24: P3-BE-020 & P3-BE-021 - SalesReturn Aggregate & Approval Workflow
+
+### Features Implemented
+
+**P3-BE-020: SalesReturn 聚合根实现**
+- Implemented SalesReturn aggregate root with full status machine
+- Created SalesReturnItem entity for tracking returned items
+- Associated with original SalesOrder (reference by ID and OrderNumber)
+- Implemented return status machine: DRAFT → PENDING → APPROVED → COMPLETED
+- Alternative paths: PENDING → REJECTED, Any → CANCELLED
+
+**P3-BE-021: SalesReturn 审批流程**
+- Implemented Submit() to transition from DRAFT to PENDING
+- Implemented Approve() with approver ID and approval note
+- Implemented Reject() with rejecter ID and rejection reason
+- Implemented Complete() to finalize return processing
+- Implemented Cancel() from any non-terminal state
+
+### Files Created
+- `backend/internal/domain/trade/sales_return.go` - SalesReturn aggregate root and SalesReturnItem entity
+- `backend/internal/domain/trade/sales_return_events.go` - Domain events for sales returns
+- `backend/internal/domain/trade/sales_return_test.go` - Comprehensive unit tests (35 test cases)
+
+### Files Modified
+- `backend/internal/domain/trade/repository.go` - Added SalesReturnRepository interface
+
+### Domain Events
+- `SalesReturnCreatedEvent` - Raised when return is created
+- `SalesReturnSubmittedEvent` - Raised when return is submitted for approval
+- `SalesReturnApprovedEvent` - Triggers stock restoration workflow
+- `SalesReturnRejectedEvent` - Raised when return is rejected
+- `SalesReturnCompletedEvent` - Triggers A/R credit and inventory inbound
+- `SalesReturnCancelledEvent` - With WasApproved flag for cleanup
+
+### Status Machine
+
+```
+DRAFT ─────────┬────────────────────────────────────────┐
+               │ Submit()                               │
+               ↓                                        │ Cancel()
+           PENDING ────────┬──────────────────┐         │
+               │           │ Reject()         │         │
+               │ Approve() ↓                  │ Cancel()│
+               │       REJECTED               │         │
+               ↓                              │         │
+          APPROVED ────────────────────────────│─────────│
+               │                              │         │
+               │ Complete()                   │         │
+               ↓                              ↓         ↓
+          COMPLETED                      CANCELLED
+```
+
+### Key Business Rules
+1. Returns can only be created from SHIPPED or COMPLETED orders
+2. Return quantity cannot exceed original order quantity
+3. Warehouse must be set before completing a return
+4. Rejection requires a reason
+5. Cancel requires a reason
+6. Version tracking for optimistic concurrency control
+
+### Requirements Met
+- ✅ 实现 SalesReturn 聚合根 (Implement SalesReturn aggregate)
+- ✅ 关联原销售订单 (Associate with original sales order)
+- ✅ 实现退货状态机 (Implement return status machine)
+- ✅ 实现退货审批状态 (Implement return approval status)
+- ✅ 支持审批通过拒绝 (Support approve/reject)
+- ✅ 记录审批意见 (Record approval/rejection notes)
+
+### Test Coverage
+- 35 test cases covering:
+  - Aggregate creation with validation
+  - Item management (add, update, remove)
+  - All status transitions (valid and invalid)
+  - Event publishing
+  - Helper methods
+  - Edge cases
+
+### Notes for Next Steps
+- P3-BE-022 (Event Handlers) can now be implemented to handle:
+  - SalesReturnApprovedEvent → Lock stock for return processing
+  - SalesReturnCompletedEvent → Restore inventory, create A/R credit
+- P3-BE-023 (API) can be implemented to expose return endpoints
+- P4-BE-004 (红冲逻辑) depends on this for receivable adjustments
