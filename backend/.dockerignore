@@ -1,0 +1,43 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+*.test
+*.out
+
+# Development files
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+!migrations/
+
+# Test files
+*_test.go
+coverage.txt
+coverage.html
+
+# Temporary files
+tmp/
+temp/

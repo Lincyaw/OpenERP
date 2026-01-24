@@ -1,0 +1,41 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Backup files
+backups/
+*.sql
+*.dump
+
+# Docker volumes (if using local volumes)
+data/
+postgres-data/
+redis-data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+Thumbs.db
+
+# Secrets (extra safety)
+secrets/
+*.key
+*.pem
+*.crt

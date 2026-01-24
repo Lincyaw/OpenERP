@@ -1,0 +1,174 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: erp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-erp}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-erp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Application
+      APP_NAME: ${APP_NAME:-erp-backend}
+      APP_ENV: ${APP_ENV:-production}
+      APP_PORT: ${APP_PORT:-8080}
+
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      DB_NAME: ${DB_NAME:-erp}
+      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
+      DB_MAX_OPEN_CONNS: ${DB_MAX_OPEN_CONNS:-25}
+      DB_MAX_IDLE_CONNS: ${DB_MAX_IDLE_CONNS:-5}
+      DB_CONN_MAX_LIFETIME: ${DB_CONN_MAX_LIFETIME:-60}
+      DB_CONN_MAX_IDLE_TIME: ${DB_CONN_MAX_IDLE_TIME:-30}
+
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-change-this-super-secret-jwt-key-in-production}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-15m}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-168h}
+      JWT_ISSUER: ${JWT_ISSUER:-erp-backend}
+      JWT_MAX_REFRESH_COUNT: ${JWT_MAX_REFRESH_COUNT:-10}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      LOG_OUTPUT: ${LOG_OUTPUT:-stdout}
+
+      # HTTP Server
+      HTTP_READ_TIMEOUT: ${HTTP_READ_TIMEOUT:-15s}
+      HTTP_WRITE_TIMEOUT: ${HTTP_WRITE_TIMEOUT:-15s}
+      HTTP_IDLE_TIMEOUT: ${HTTP_IDLE_TIMEOUT:-60s}
+      HTTP_MAX_HEADER_BYTES: ${HTTP_MAX_HEADER_BYTES:-1048576}
+      HTTP_MAX_BODY_SIZE: ${HTTP_MAX_BODY_SIZE:-10485760}
+      HTTP_RATE_LIMIT_ENABLED: ${HTTP_RATE_LIMIT_ENABLED:-true}
+      HTTP_RATE_LIMIT_REQUESTS: ${HTTP_RATE_LIMIT_REQUESTS:-100}
+      HTTP_RATE_LIMIT_WINDOW: ${HTTP_RATE_LIMIT_WINDOW:-1m}
+      HTTP_CORS_ORIGINS: ${HTTP_CORS_ORIGINS:-*}
+      HTTP_CORS_METHODS: ${HTTP_CORS_METHODS:-GET,POST,PUT,DELETE,PATCH,OPTIONS}
+      HTTP_CORS_HEADERS: ${HTTP_CORS_HEADERS:-Content-Type,Authorization,X-Request-ID,X-Tenant-ID}
+
+      # Event Processing
+      EVENT_PROCESSOR_ENABLED: ${EVENT_PROCESSOR_ENABLED:-true}
+      EVENT_PROCESSOR_BATCH_SIZE: ${EVENT_PROCESSOR_BATCH_SIZE:-100}
+      EVENT_PROCESSOR_INTERVAL: ${EVENT_PROCESSOR_INTERVAL:-5s}
+      EVENT_MAX_RETRIES: ${EVENT_MAX_RETRIES:-5}
+      EVENT_CLEANUP_ENABLED: ${EVENT_CLEANUP_ENABLED:-true}
+      EVENT_CLEANUP_RETENTION: ${EVENT_CLEANUP_RETENTION:-168h}
+    ports:
+      - "8080:8080"
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Database Migration Runner (runs once)
+  migrate:
+    image: migrate/migrate:v4.17.0
+    container_name: erp-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/migrations:/migrations:ro
+    networks:
+      - erp-network
+    command: >
+      -path=/migrations
+      -database "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres123}@postgres:5432/${DB_NAME:-erp}?sslmode=disable"
+      up
+    restart: on-failure
+
+  # Frontend Web App
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: erp-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api/v1}
+      VITE_APP_NAME: ${VITE_APP_NAME:-ERP System}
+      VITE_APP_VERSION: ${VITE_APP_VERSION:-1.0.0}
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  erp-network:
+    driver: bridge
+    name: erp-network
+
+volumes:
+  postgres_data:
+    name: erp-postgres-data
+  redis_data:
+    name: erp-redis-data
