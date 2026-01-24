@@ -141,7 +141,7 @@
   {"id":"P4-FE-001","story":"应收账款列表页面","priority":"high","requirements":["实现应收账款列表","支持客户状态筛选","显示待收金额"],"passes":true},
   {"id":"P4-FE-002","story":"应付账款列表页面","priority":"high","requirements":["实现应付账款列表","支持供应商状态筛选","显示待付金额"],"passes":true},
   {"id":"P4-FE-003","story":"收款单创建页面","priority":"high","requirements":["选择客户","选择收款方式","输入收款金额"],"passes":true},
-  {"id":"P4-FE-004","story":"收款核销页面","priority":"high","requirements":["展示待核销应收","支持自动手动核销","显示核销结果"],"passes":false},
+  {"id":"P4-FE-004","story":"收款核销页面","priority":"high","requirements":["展示待核销应收","支持自动手动核销","显示核销结果"],"passes":true},
   {"id":"P4-FE-005","story":"付款单创建页面","priority":"high","requirements":["选择供应商","选择付款方式","输入付款金额"],"passes":true},
   {"id":"P4-FE-006","story":"付款核销页面","priority":"high","requirements":["展示待核销应付","支持自动手动核销","显示核销结果"],"passes":false},
   {"id":"P4-FE-010","story":"费用录入页面","priority":"medium","requirements":["实现费用录入表单","支持费用分类选择","支持附件上传"],"passes":false},

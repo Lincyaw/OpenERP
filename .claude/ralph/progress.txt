@@ -6624,3 +6624,80 @@ Implemented the Payment Voucher Creation page for the Finance module frontend. T
   - P4-FE-006 (付款核销页面) - Payment reconciliation page (similar structure)
 - **Future enhancement**: Could pre-select specific payable from URL param (payable_id)
 - **Default payment method**: Set to BANK_TRANSFER (vs CASH for receipts) since supplier payments are typically via bank transfer
+
+---
+
+## P4-FE-004: 收款核销页面 (Receipt Reconciliation Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Receipt Reconciliation page for the Finance module frontend. This page allows users to reconcile receipt vouchers against outstanding receivables, supporting both automatic (FIFO) and manual allocation strategies.
+
+### Features Implemented
+
+1. **Receipt Voucher Details Display**
+   - Shows voucher number, customer, status, payment method, date
+   - Displays amount, allocated amount, and unallocated amount
+   - Status banner for vouchers not in CONFIRMED state
+
+2. **Pending Receivables List**
+   - Lists all pending/partial receivables for the customer
+   - Shows receivable number, source, amounts, due date, status
+   - Sortable table with proper formatting
+
+3. **Automatic Reconciliation (FIFO)**
+   - Allocates by due date order (First In First Out)
+   - Shows preview of allocations before confirming
+   - One-click reconciliation
+
+4. **Manual Reconciliation**
+   - Checkbox selection for each receivable
+   - Custom amount input per receivable
+   - Select all / deselect all functionality
+   - Amount validation (cannot exceed outstanding)
+
+5. **Reconciliation Summary**
+   - Shows available amount to reconcile
+   - Shows selected/preview allocation total
+   - Shows remaining amount after reconciliation
+
+6. **Reconciliation Result**
+   - Success/partial banner after reconciliation
+   - Updated voucher details
+   - List of reconciled receivables with new status
+
+7. **Existing Allocations History**
+   - Shows previously reconciled allocations
+   - Displays receivable number, amount, time, remarks
+
+### Files Created/Modified
+- `frontend/src/pages/finance/ReceiptReconcile.tsx` (NEW) - Receipt reconciliation page component
+- `frontend/src/pages/finance/ReceiptReconcile.css` (NEW) - Styles for reconciliation page
+- `frontend/src/router/routes.tsx` (MODIFIED) - Added route for /finance/receipts/:id/reconcile
+
+### Technical Notes
+- **Two reconciliation modes**: FIFO (automatic) and MANUAL (user selection)
+- **FIFO Strategy**: Sorts receivables by due date then creation date
+- **Semi UI Components**: Tag, Table, Checkbox, InputNumber, Descriptions, Banner
+- **API Integration**: Uses postFinanceReceiptsIdReconcile for reconciliation
+- **Type Safety**: Proper TypeScript types for Tag colors and Checkbox events
+- **Design System**: Uses CSS variables per frontend/README.md
+- **Responsive**: Mobile-first design with breakpoints at 768px
+- **Accessibility**: High contrast mode support, focus states
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Navigation
+- Access via: `/finance/receipts/:id/reconcile`
+- Back button returns to `/finance/receivables`
+
+### Notes for Next Developer
+- **P4-FE-006**: Payment reconciliation page can follow similar pattern
+  - Replace customer with supplier
+  - Replace receivables with payables
+  - Use postFinancePaymentsIdReconcile API
+- **Future enhancement**: Add preview endpoint to show allocations before commit
+- **Future enhancement**: Add undo/reverse allocation functionality

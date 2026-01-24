@@ -1,0 +1,221 @@
+/**
+ * Receipt Reconcile Page Styles
+ *
+ * Follows the design system guidelines from frontend/README.md
+ * Uses CSS variables for spacing, colors, and typography
+ */
+
+.receipt-reconcile-page {
+  padding: var(--spacing-4);
+}
+
+@media (min-width: 768px) {
+  .receipt-reconcile-page {
+    padding: var(--spacing-6);
+  }
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+/* Voucher Details Card */
+.voucher-details-card {
+  margin-bottom: var(--spacing-6);
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+}
+
+.voucher-details-card .semi-descriptions {
+  margin-top: var(--spacing-4);
+}
+
+.status-warning {
+  margin-top: var(--spacing-4);
+}
+
+/* Reconcile Section Card */
+.reconcile-section-card {
+  margin-bottom: var(--spacing-6);
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+}
+
+.reconcile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.mode-description {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Receivables Table */
+.receivables-table {
+  margin-bottom: var(--spacing-4);
+}
+
+.receivables-table .outstanding-amount {
+  color: var(--color-warning);
+}
+
+/* Reconcile Summary */
+.reconcile-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-6);
+  padding: var(--spacing-4);
+  background: var(--color-bg-layout);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* Reconcile Actions */
+.reconcile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+/* Existing Allocations Card */
+.existing-allocations-card {
+  margin-bottom: var(--spacing-6);
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+}
+
+.existing-allocations-card .semi-typography-h5 {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Reconcile Result Card */
+.reconcile-result-card {
+  background: var(--color-bg-container);
+  border-radius: var(--radius-lg);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.result-summary {
+  margin-top: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-bg-layout);
+  border-radius: var(--radius-md);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .reconcile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mode-switch {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .reconcile-summary {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .reconcile-actions {
+    flex-direction: column;
+  }
+
+  .reconcile-actions .semi-button {
+    width: 100%;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  .reconcile-summary {
+    border: 2px solid var(--color-border-primary);
+  }
+
+  .reconcile-actions {
+    border-top-width: 2px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .reconcile-summary {
+    background: var(--color-bg-elevated);
+  }
+
+  .result-summary {
+    background: var(--color-bg-elevated);
+  }
+}
+
+/* Focus States for Accessibility */
+.mode-switch .semi-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Table Row Hover */
+.receivables-table .semi-table-tbody > tr:hover {
+  background: var(--color-bg-layout);
+}

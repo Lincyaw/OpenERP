@@ -59,6 +59,7 @@ const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables
 const PayablesPage = () => lazyLoad(() => import('@/pages/finance/Payables'))
 const ReceiptVoucherNewPage = () => lazyLoad(() => import('@/pages/finance/ReceiptVoucherNew'))
 const PaymentVoucherNewPage = () => lazyLoad(() => import('@/pages/finance/PaymentVoucherNew'))
+const ReceiptReconcilePage = () => lazyLoad(() => import('@/pages/finance/ReceiptReconcile'))
 
 /**
  * Application routes with metadata
@@ -386,6 +387,7 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/finance') {
         childRoutes.push(
           { path: 'receipts/new', element: ReceiptVoucherNewPage() },
+          { path: 'receipts/:id/reconcile', element: ReceiptReconcilePage() },
           { path: 'payments/new', element: PaymentVoucherNewPage() }
         )
       }
