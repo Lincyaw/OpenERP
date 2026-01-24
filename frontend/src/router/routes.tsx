@@ -55,6 +55,7 @@ const SalesOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesOrd
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
 const PurchaseOrderNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderNew'))
 const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderReceive'))
+const SalesReturnsPage = () => lazyLoad(() => import('@/pages/trade/SalesReturns'))
 
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
@@ -241,6 +242,15 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconDownload',
           order: 2,
           permissions: [Permissions.PURCHASE_ORDER_READ],
+        },
+      },
+      {
+        path: '/trade/sales-returns',
+        meta: {
+          title: 'Sales Returns',
+          icon: 'IconUndo',
+          order: 3,
+          permissions: [Permissions.SALES_ORDER_READ],
         },
       },
     ],
@@ -447,6 +457,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return SalesOrdersPage()
     case '/trade/purchase':
       return PurchaseOrdersPage()
+    case '/trade/sales-returns':
+      return SalesReturnsPage()
     case '/finance/receivables':
       return ReceivablesPage()
     case '/finance/payables':
@@ -583,7 +595,9 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'purchase/new', element: PurchaseOrderNewPage() },
           { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: detail page
           { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
-          { path: 'purchase/:id/receive', element: PurchaseOrderReceivePage() }
+          { path: 'purchase/:id/receive', element: PurchaseOrderReceivePage() },
+          // Sales returns routes
+          { path: 'sales-returns', element: SalesReturnsPage() }
         )
       }
 

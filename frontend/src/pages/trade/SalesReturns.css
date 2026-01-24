@@ -1,0 +1,82 @@
+/* Sales Returns Page Styles */
+
+.sales-returns-page {
+  padding: var(--spacing-6);
+}
+
+.sales-returns-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.sales-returns-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Return number styling */
+.return-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-primary);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Order number styling */
+.order-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Refund amount emphasis */
+.refund-amount {
+  font-weight: var(--semi-font-weight-bold);
+  color: var(--semi-color-danger);
+}
+
+/* Table container */
+.sales-returns-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sales-returns-page {
+    padding: var(--spacing-4);
+  }
+
+  .sales-returns-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Status tags */
+.sales-returns-page .semi-tag {
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Action buttons in table */
+.sales-returns-page .table-actions {
+  white-space: nowrap;
+}
+
+/* Loading overlay */
+.sales-returns-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Filter spacing */
+.sales-returns-page .table-toolbar {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Date picker adjustment */
+.sales-returns-page .semi-datepicker {
+  min-width: 240px;
+}

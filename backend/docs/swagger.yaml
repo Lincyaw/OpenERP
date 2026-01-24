@@ -237,6 +237,47 @@ definitions:
     - unit
     - unit_cost
     type: object
+  handler.AddPurchaseReturnItemRequest:
+    description: Request body for adding an item to a return
+    properties:
+      batch_number:
+        example: BATCH-001
+        type: string
+      condition_on_return:
+        example: defective
+        type: string
+      purchase_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      reason:
+        example: 商品有瑕疵
+        type: string
+      return_quantity:
+        example: 3
+        type: number
+    required:
+    - purchase_order_item_id
+    - return_quantity
+    type: object
+  handler.AddReturnItemRequest:
+    description: Request body for adding an item to a return
+    properties:
+      condition_on_return:
+        example: defective
+        type: string
+      reason:
+        example: 商品有瑕疵
+        type: string
+      return_quantity:
+        example: 3
+        type: number
+      sales_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    required:
+    - return_quantity
+    - sales_order_item_id
+    type: object
   handler.AdjustRequest:
     description: Request body for adjusting customer balance
     properties:
@@ -291,6 +332,20 @@ definitions:
     - product_id
     - reason
     - warehouse_id
+    type: object
+  handler.ApprovePurchaseReturnRequest:
+    description: Request body for approving a return
+    properties:
+      note:
+        example: 审批通过，同意退货
+        type: string
+    type: object
+  handler.ApproveReturnRequest:
+    description: Request body for approving a return
+    properties:
+      note:
+        example: 审批通过，同意退货
+        type: string
     type: object
   handler.AssignRolesRequest:
     properties:
@@ -416,6 +471,28 @@ definitions:
     properties:
       reason:
         example: 供应商无法供货
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
+  handler.CancelPurchaseReturnRequest:
+    description: Request body for cancelling a return
+    properties:
+      reason:
+        example: 供应商协商取消
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
+  handler.CancelReturnRequest:
+    description: Request body for cancelling a return
+    properties:
+      reason:
+        example: 客户撤销退货申请
         maxLength: 500
         minLength: 1
         type: string
@@ -635,6 +712,13 @@ definitions:
       requested_quantity:
         example: 10
         type: number
+    type: object
+  handler.CompleteReturnRequest:
+    description: Request body for completing a return
+    properties:
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
     type: object
   handler.ConfirmOrderRequest:
     description: Request body for confirming an order
@@ -985,6 +1069,52 @@ definitions:
     - supplier_id
     - supplier_name
     type: object
+  handler.CreatePurchaseReturnItemInput:
+    description: Return item for creation
+    properties:
+      batch_number:
+        example: BATCH-001
+        type: string
+      condition_on_return:
+        example: defective
+        type: string
+      purchase_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      reason:
+        example: 商品损坏
+        type: string
+      return_quantity:
+        example: 5
+        type: number
+    required:
+    - purchase_order_item_id
+    - return_quantity
+    type: object
+  handler.CreatePurchaseReturnRequest:
+    description: Request body for creating a new purchase return
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.CreatePurchaseReturnItemInput'
+        minItems: 1
+        type: array
+      purchase_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      reason:
+        example: 商品质量问题
+        type: string
+      remark:
+        example: 备注信息
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - items
+    - purchase_order_id
+    type: object
   handler.CreateReceiptVoucherRequest:
     description: Request body for creating a receipt voucher
     properties:
@@ -1105,6 +1235,49 @@ definitions:
     required:
     - customer_id
     - customer_name
+    type: object
+  handler.CreateSalesReturnItemInput:
+    description: Return item for creation
+    properties:
+      condition_on_return:
+        example: damaged
+        type: string
+      reason:
+        example: 商品损坏
+        type: string
+      return_quantity:
+        example: 5
+        type: number
+      sales_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    required:
+    - return_quantity
+    - sales_order_item_id
+    type: object
+  handler.CreateSalesReturnRequest:
+    description: Request body for creating a new sales return
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.CreateSalesReturnItemInput'
+        minItems: 1
+        type: array
+      reason:
+        example: 商品质量问题
+        type: string
+      remark:
+        example: 备注信息
+        type: string
+      sales_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - items
+    - sales_order_id
     type: object
   handler.CreateSupplierRequest:
     description: Request body for creating a new supplier
@@ -2466,6 +2639,228 @@ definitions:
         example: 121
         type: integer
     type: object
+  handler.PurchaseReturnItemResponse:
+    description: Purchase return item response
+    properties:
+      batch_number:
+        example: BATCH-001
+        type: string
+      condition_on_return:
+        example: defective
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440030
+        type: string
+      original_quantity:
+        example: 10
+        type: number
+      product_code:
+        example: SKU-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      product_name:
+        example: 测试商品
+        type: string
+      purchase_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      reason:
+        example: 商品损坏
+        type: string
+      refund_amount:
+        example: 499.95
+        type: number
+      return_quantity:
+        example: 5
+        type: number
+      shipped_at:
+        type: string
+      shipped_quantity:
+        example: 5
+        type: number
+      supplier_received_at:
+        type: string
+      supplier_received_qty:
+        example: 5
+        type: number
+      unit:
+        example: pcs
+        type: string
+      unit_cost:
+        example: 99.99
+        type: number
+      updated_at:
+        type: string
+    type: object
+  handler.PurchaseReturnListResponse:
+    description: Purchase return list item response
+    properties:
+      approved_at:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 2
+        type: integer
+      purchase_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      purchase_order_number:
+        example: PO-2026-00001
+        type: string
+      return_number:
+        example: PR-2026-00001
+        type: string
+      shipped_at:
+        type: string
+      status:
+        example: pending
+        type: string
+      submitted_at:
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      supplier_name:
+        example: 优质供应商
+        type: string
+      total_refund:
+        example: 799.92
+        type: number
+      updated_at:
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.PurchaseReturnResponse:
+    description: Purchase return response
+    properties:
+      approval_note:
+        type: string
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      cancel_reason:
+        type: string
+      cancelled_at:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 2
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/handler.PurchaseReturnItemResponse'
+        type: array
+      purchase_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      purchase_order_number:
+        example: PO-2026-00001
+        type: string
+      reason:
+        example: 商品质量问题
+        type: string
+      rejected_at:
+        type: string
+      rejected_by:
+        type: string
+      rejection_reason:
+        type: string
+      remark:
+        example: 备注信息
+        type: string
+      return_number:
+        example: PR-2026-00001
+        type: string
+      shipped_at:
+        type: string
+      shipped_by:
+        type: string
+      shipping_note:
+        type: string
+      status:
+        example: draft
+        type: string
+      submitted_at:
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      supplier_name:
+        example: 优质供应商
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_quantity:
+        example: 8
+        type: number
+      total_refund:
+        example: 799.92
+        type: number
+      tracking_number:
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.PurchaseReturnStatusSummaryResponse:
+    description: Return status summary response
+    properties:
+      approved:
+        example: 2
+        type: integer
+      cancelled:
+        example: 2
+        type: integer
+      completed:
+        example: 50
+        type: integer
+      draft:
+        example: 3
+        type: integer
+      pending:
+        example: 5
+        type: integer
+      pending_approval:
+        example: 5
+        type: integer
+      pending_shipment:
+        example: 2
+        type: integer
+      rejected:
+        example: 1
+        type: integer
+      shipped:
+        example: 3
+        type: integer
+      total:
+        example: 66
+        type: integer
+    type: object
   handler.ReceiptVoucherResponse:
     description: Receipt voucher response
     properties:
@@ -2721,6 +3116,28 @@ definitions:
       token:
         $ref: '#/definitions/handler.TokenResponse'
     type: object
+  handler.RejectPurchaseReturnRequest:
+    description: Request body for rejecting a return
+    properties:
+      reason:
+        example: 不符合退货条件
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
+  handler.RejectReturnRequest:
+    description: Request body for rejecting a return
+    properties:
+      reason:
+        example: 不符合退货条件
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
   handler.ResetPasswordRequest:
     properties:
       new_password:
@@ -2729,6 +3146,34 @@ definitions:
         type: string
     required:
     - new_password
+    type: object
+  handler.ReturnStatusSummaryResponse:
+    description: Return status summary response
+    properties:
+      approved:
+        example: 2
+        type: integer
+      cancelled:
+        example: 2
+        type: integer
+      completed:
+        example: 50
+        type: integer
+      draft:
+        example: 3
+        type: integer
+      pending:
+        example: 5
+        type: integer
+      pending_approval:
+        example: 5
+        type: integer
+      rejected:
+        example: 1
+        type: integer
+      total:
+        example: 63
+        type: integer
     type: object
   handler.RoleListResponse:
     properties:
@@ -2913,6 +3358,171 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
     type: object
+  handler.SalesReturnItemResponse:
+    description: Sales return item response
+    properties:
+      condition_on_return:
+        example: damaged
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440030
+        type: string
+      original_quantity:
+        example: 10
+        type: number
+      product_code:
+        example: SKU-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      product_name:
+        example: 测试商品
+        type: string
+      reason:
+        example: 商品损坏
+        type: string
+      refund_amount:
+        example: 499.95
+        type: number
+      return_quantity:
+        example: 5
+        type: number
+      sales_order_item_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      unit:
+        example: pcs
+        type: string
+      unit_price:
+        example: 99.99
+        type: number
+      updated_at:
+        type: string
+    type: object
+  handler.SalesReturnListResponse:
+    description: Sales return list item response
+    properties:
+      approved_at:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      customer_name:
+        example: 张三
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 2
+        type: integer
+      return_number:
+        example: SR-2026-00001
+        type: string
+      sales_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      sales_order_number:
+        example: SO-2026-00001
+        type: string
+      status:
+        example: pending
+        type: string
+      submitted_at:
+        type: string
+      total_refund:
+        example: 799.92
+        type: number
+      updated_at:
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.SalesReturnResponse:
+    description: Sales return response
+    properties:
+      approval_note:
+        type: string
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      cancel_reason:
+        type: string
+      cancelled_at:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      customer_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      customer_name:
+        example: 张三
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 2
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/handler.SalesReturnItemResponse'
+        type: array
+      reason:
+        example: 商品质量问题
+        type: string
+      rejected_at:
+        type: string
+      rejected_by:
+        type: string
+      rejection_reason:
+        type: string
+      remark:
+        example: 备注信息
+        type: string
+      return_number:
+        example: SR-2026-00001
+        type: string
+      sales_order_id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      sales_order_number:
+        example: SO-2026-00001
+        type: string
+      status:
+        example: draft
+        type: string
+      submitted_at:
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_quantity:
+        example: 8
+        type: number
+      total_refund:
+        example: 799.92
+        type: number
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
   handler.SalesSummaryResponse:
     description: Sales summary data for a period
     properties:
@@ -3015,6 +3625,16 @@ definitions:
     properties:
       warehouse_id:
         example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handler.ShipPurchaseReturnRequest:
+    description: Request body for shipping a return back to supplier
+    properties:
+      note:
+        example: 已发货，预计3天到达
+        type: string
+      tracking_number:
+        example: SF1234567890
         type: string
     type: object
   handler.StockLockResponse:
@@ -3512,6 +4132,48 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
+  handler.UpdatePurchaseReturnItemRequest:
+    description: Request body for updating a return item
+    properties:
+      batch_number:
+        example: BATCH-002
+        type: string
+      condition_on_return:
+        example: wrong_item
+        type: string
+      reason:
+        example: 更新原因
+        type: string
+      return_quantity:
+        example: 4
+        type: number
+    type: object
+  handler.UpdatePurchaseReturnRequest:
+    description: Request body for updating a purchase return (draft only)
+    properties:
+      reason:
+        example: 更新退货原因
+        type: string
+      remark:
+        example: 更新备注
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handler.UpdateReturnItemRequest:
+    description: Request body for updating a return item
+    properties:
+      condition_on_return:
+        example: wrong_item
+        type: string
+      reason:
+        example: 更新原因
+        type: string
+      return_quantity:
+        example: 4
+        type: number
+    type: object
   handler.UpdateRoleRequest:
     properties:
       description:
@@ -3529,6 +4191,19 @@ definitions:
       discount:
         example: 50
         type: number
+      remark:
+        example: 更新备注
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handler.UpdateSalesReturnRequest:
+    description: Request body for updating a sales return (draft only)
+    properties:
+      reason:
+        example: 更新退货原因
+        type: string
       remark:
         example: 更新备注
         type: string
@@ -16355,6 +17030,1316 @@ paths:
       summary: Get purchase order status summary
       tags:
       - purchase-orders
+  /trade/purchase-returns:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of purchase returns with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (return number, supplier name, order number)
+        in: query
+        name: search
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: query
+        name: supplier_id
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: query
+        name: purchase_order_id
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Return status
+        enum:
+        - DRAFT
+        - PENDING
+        - APPROVED
+        - REJECTED
+        - SHIPPED
+        - COMPLETED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - collectionFormat: csv
+        description: Multiple return statuses
+        in: query
+        items:
+          type: string
+        name: statuses
+        type: array
+      - description: Start date (ISO 8601)
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - description: Minimum refund amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum refund amount
+        in: query
+        name: max_amount
+        type: number
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PurchaseReturnListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List purchase returns
+      tags:
+      - purchase-returns
+    post:
+      consumes:
+      - application/json
+      description: Create a new purchase return from an existing purchase order
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase return creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a purchase return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a purchase return
+      tags:
+      - purchase-returns
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a purchase return by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get purchase return by ID
+      tags:
+      - purchase-returns
+    put:
+      consumes:
+      - application/json
+      description: Update a purchase return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Purchase return update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve a purchase return (transitions from PENDING to APPROVED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ApprovePurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Approve a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a purchase return (from DRAFT, PENDING, or APPROVED status
+        - before shipping)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel return request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CancelPurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Mark a purchase return as completed after supplier confirms receipt
+        (transitions from SHIPPED to COMPLETED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a purchase return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return item to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddPurchaseReturnItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/items/{item_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an item from a purchase return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from purchase return
+      tags:
+      - purchase-returns
+    put:
+      consumes:
+      - application/json
+      description: Update an item in a purchase return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Return item update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePurchaseReturnItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update return item
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject a purchase return (transitions from PENDING to REJECTED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Rejection request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RejectPurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Reject a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/ship:
+    post:
+      consumes:
+      - application/json
+      description: Mark a purchase return as shipped back to supplier (transitions
+        from APPROVED to SHIPPED, triggers inventory deduction)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Ship return request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ShipPurchaseReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Ship a purchase return
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit a purchase return for approval (transitions from DRAFT to
+        PENDING)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Submit a purchase return for approval
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/number/{return_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a purchase return by its return number
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Return Number
+        in: path
+        name: return_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get purchase return by return number
+      tags:
+      - purchase-returns
+  /trade/purchase-returns/stats/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get count of returns by status for dashboard
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseReturnStatusSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get return status summary
+      tags:
+      - purchase-returns
   /trade/sales-orders:
     get:
       consumes:
@@ -17474,6 +19459,1234 @@ paths:
       summary: Get order status summary
       tags:
       - sales-orders
+  /trade/sales-returns:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of sales returns with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (return number, customer name, order number)
+        in: query
+        name: search
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: query
+        name: customer_id
+        type: string
+      - description: Sales Order ID
+        format: uuid
+        in: query
+        name: sales_order_id
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Return status
+        enum:
+        - DRAFT
+        - PENDING
+        - APPROVED
+        - REJECTED
+        - COMPLETED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - collectionFormat: csv
+        description: Multiple return statuses
+        in: query
+        items:
+          type: string
+        name: statuses
+        type: array
+      - description: Start date (ISO 8601)
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - description: Minimum refund amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum refund amount
+        in: query
+        name: max_amount
+        type: number
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.SalesReturnListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List sales returns
+      tags:
+      - sales-returns
+    post:
+      consumes:
+      - application/json
+      description: Create a new sales return from an existing sales order
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales return creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateSalesReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a sales return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a sales return
+      tags:
+      - sales-returns
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a sales return by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get sales return by ID
+      tags:
+      - sales-returns
+    put:
+      consumes:
+      - application/json
+      description: Update a sales return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Sales return update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSalesReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve a sales return (transitions from PENDING to APPROVED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ApproveReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Approve a sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a sales return (from DRAFT, PENDING, or APPROVED status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel return request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CancelReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel a sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: Mark a sales return as completed (transitions from APPROVED to
+        COMPLETED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Complete return request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.CompleteReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a sales return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return item to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddReturnItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/items/{item_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an item from a sales return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from sales return
+      tags:
+      - sales-returns
+    put:
+      consumes:
+      - application/json
+      description: Update an item in a sales return (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Return Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Return item update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateReturnItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update return item
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject a sales return (transitions from PENDING to REJECTED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Rejection request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RejectReturnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Reject a sales return
+      tags:
+      - sales-returns
+  /trade/sales-returns/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit a sales return for approval (transitions from DRAFT to PENDING)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Sales Return ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Submit a sales return for approval
+      tags:
+      - sales-returns
+  /trade/sales-returns/number/{return_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a sales return by its return number
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Return Number
+        in: path
+        name: return_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.SalesReturnResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get sales return by return number
+      tags:
+      - sales-returns
+  /trade/sales-returns/stats/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get count of returns by status for dashboard
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ReturnStatusSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get return status summary
+      tags:
+      - sales-returns
 securityDefinitions:
   BearerAuth:
     description: 'Bearer token authentication. Format: "Bearer {token}"'

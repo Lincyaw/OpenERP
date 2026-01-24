@@ -10050,3 +10050,81 @@ SalesReturn.Complete()
 
 ### Build Status
 Backend builds successfully (`go build ./cmd/server/...`)
+
+---
+
+## 2026-01-24 - P3-FE-020: 销售退货列表页面 (Sales Returns List Page) Complete
+
+### Completed
+- **P3-FE-020**: 销售退货列表页面
+
+### What was done
+
+1. **Frontend API SDK Generation**
+   - Regenerated OpenAPI spec from backend using `swag init`
+   - Regenerated TypeScript SDK using `orval`
+   - Sales returns API now available at `@/api/sales-returns/sales-returns`
+
+2. **SalesReturns List Page** (`frontend/src/pages/trade/SalesReturns.tsx`)
+   - Full list page with DataTable component
+   - Return number, original order number, customer, item count, refund amount columns
+   - Status display with color-coded tags
+   - Date columns: created, submitted, completed
+   - Sortable columns: return_number, total_refund, created_at
+
+3. **Status Filter**
+   - Filter by: DRAFT, PENDING, APPROVED, REJECTED, COMPLETED, CANCELLED
+   - Status labels in Chinese
+   - Color-coded status tags (blue, orange, cyan, red, green, grey)
+
+4. **Customer Filter**
+   - Dropdown with customer list loaded from API
+   - Search/filter capability in dropdown
+
+5. **Date Range Filter**
+   - DatePicker range filter for filtering by date range
+
+6. **Row Actions**
+   - View: Navigate to detail page
+   - Submit: Submit draft for approval (DRAFT status only)
+   - Approve: Approve return (PENDING status only)
+   - Reject: Reject return (PENDING status only)
+   - Complete: Mark as completed (APPROVED status only)
+   - Cancel: Cancel return (DRAFT, PENDING, APPROVED status)
+   - Delete: Delete return (DRAFT status only)
+
+7. **Route Registration** (`frontend/src/router/routes.tsx`)
+   - Added SalesReturnsPage lazy load
+   - Added `/trade/sales-returns` route in menu with IconUndo icon
+   - Added route element mapping
+   - Added detail route in trade module routes
+
+8. **Styling** (`frontend/src/pages/trade/SalesReturns.css`)
+   - Consistent with SalesOrders page styling
+   - Return number styling
+   - Refund amount emphasis in danger color
+   - Responsive layout adjustments
+
+### Requirements Met
+- ✅ 实现退货单列表 (Return list with DataTable, pagination, sorting)
+- ✅ 支持状态筛选 (Status filter dropdown with all 6 states)
+- ✅ 支持客户筛选 (Customer filter dropdown with search)
+
+### Files Created
+- `frontend/src/pages/trade/SalesReturns.tsx`
+- `frontend/src/pages/trade/SalesReturns.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` (added route registration)
+
+### API Used
+- `GET /trade/sales-returns` - List sales returns with filters
+- `POST /trade/sales-returns/{id}/submit` - Submit for approval
+- `POST /trade/sales-returns/{id}/approve` - Approve return
+- `POST /trade/sales-returns/{id}/reject` - Reject return
+- `POST /trade/sales-returns/{id}/complete` - Complete return
+- `POST /trade/sales-returns/{id}/cancel` - Cancel return
+- `DELETE /trade/sales-returns/{id}` - Delete return
+
+### Build Status
+TypeScript check passes (no errors)
