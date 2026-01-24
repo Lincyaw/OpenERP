@@ -8091,3 +8091,107 @@ Implemented the User aggregate root for the Identity Context, following RBAC (Ro
 - **Unique Constraints**: Username and email should be unique per tenant (enforced at DB level)
 - **Password Security**: bcrypt cost is set to 12, adjust in production if needed
 - **Lock Duration**: Default is time-based lock; pass 0 duration for indefinite lock
+
+
+---
+
+## P6-BE-011: Role 聚合实现 (Role Aggregate Implementation)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Role aggregate root for the Identity Context, following the RBAC (Role-Based Access Control) model as specified in the design document. The Role aggregate manages roles, permissions (functional), and data scopes (data-level authorization).
+
+### Features Implemented
+
+1. **Permission Value Object** (`role.go`)
+   - `Permission` struct with Code, Resource, Action, Description
+   - Code format: `resource:action` (e.g., `product:create`)
+   - Factory functions: `NewPermission`, `NewPermissionFromCode`, `NewPermissionWithDescription`
+   - Validation: Resource/action must start with letter, contain only lowercase letters, numbers, underscores
+
+2. **DataScope Value Object** (`role.go`)
+   - `DataScope` struct with Resource, ScopeType, ScopeValues, Description
+   - `DataScopeType` enum: `all`, `self`, `department`, `custom`
+   - Factory functions: `NewDataScope`, `NewCustomDataScope`
+   - Custom scopes support arbitrary scope values for flexible filtering
+
+3. **Role Aggregate Root** (`role.go`)
+   - `Role` struct with TenantAggregateRoot (multi-tenant support)
+   - Code validation (2-50 chars, alphanumeric + underscore, starts with letter)
+   - Name validation (1-100 chars)
+   - System role flag (`IsSystemRole` - cannot be deleted)
+   - Enable/disable status with domain events
+
+4. **Permission Management**
+   - `GrantPermission(perm)` - Add permission with event
+   - `GrantPermissionByCode(code)` - Add by code string
+   - `RevokePermission(code)` - Remove permission with event
+   - `SetPermissions(permissions)` - Replace all (with deduplication)
+   - `HasPermission(code)` - Check if role has permission
+   - `HasPermissionForResource(resource)` - Check resource-level access
+   - `GetPermissionsForResource(resource)` - List all actions for resource
+
+5. **DataScope Management**
+   - `SetDataScope(ds)` - Set/update scope for resource (replaces if exists)
+   - `RemoveDataScope(resource)` - Remove scope for resource
+   - `SetDataScopes(scopes)` - Replace all (deduplicated by resource)
+   - `GetDataScope(resource)` - Get scope for resource
+   - `HasDataScope(resource)` - Check if scope exists
+
+6. **Domain Events** (`role_events.go`)
+   - `RoleCreatedEvent` - When role is created
+   - `RoleUpdatedEvent` - When role is updated
+   - `RoleDeletedEvent` - When role is deleted
+   - `RoleEnabledEvent` - When role is enabled
+   - `RoleDisabledEvent` - When role is disabled
+   - `RolePermissionGrantedEvent` - When permission granted
+   - `RolePermissionRevokedEvent` - When permission revoked
+   - `RoleDataScopeChangedEvent` - When data scope changes
+   - `RoleUsersChangedEvent` - When users assigned to role change
+
+7. **RoleRepository Interface** (`role_repository.go`)
+   - Standard CRUD operations
+   - `FindByCode` - Find by tenant + code
+   - `FindAll` with `RoleFilter` (keyword, enabled, system role, pagination)
+   - `ExistsByCode`, `ExistsByID` - Existence checks
+   - `FindByIDs` - Bulk find
+   - `FindSystemRoles` - Get all system roles
+   - `SavePermissions`, `LoadPermissions` - Permission persistence
+   - `SaveDataScopes`, `LoadDataScopes` - DataScope persistence
+   - `FindUsersWithRole`, `CountUsersWithRole` - User-role queries
+   - `FindRolesWithPermission` - Find roles by permission
+
+8. **Predefined Constants**
+   - Role codes: `ADMIN`, `OWNER`, `MANAGER`, `SALES`, `PURCHASER`, `WAREHOUSE`, `CASHIER`, `ACCOUNTANT`
+   - Resources: `product`, `category`, `customer`, `supplier`, `warehouse`, `inventory`, `sales_order`, `purchase_order`, etc.
+   - Actions: `create`, `read`, `update`, `delete`, `enable`, `disable`, `confirm`, `cancel`, `ship`, `receive`, `approve`, `reject`, `adjust`, `lock`, `unlock`, `reconcile`, `export`, `import`, `assign_role`, `view_all`
+
+9. **Supporting Entities**
+   - `RolePermission` - Many-to-many for role-permission storage
+   - `RoleDataScope` - Role data scope configuration storage
+
+### Files Created
+
+- `backend/internal/domain/identity/role.go` - Role aggregate, Permission/DataScope value objects
+- `backend/internal/domain/identity/role_events.go` - Role domain events
+- `backend/internal/domain/identity/role_repository.go` - Repository interface
+- `backend/internal/domain/identity/role_test.go` - Comprehensive unit tests (40+ test cases)
+
+### Also Completed
+- **P6-BE-012 (Permission权限模型实现)**: Permission value object with resource:action pattern fully implemented
+- Note: P6-BE-013 (DataScope数据权限实现) model is complete, but query-level filtering needs repository implementation
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/identity/...` ✅ PASSED (All tests pass)
+
+### Notes for Next Developer
+- **Repository Implementation**: Next step is to implement GORM-based RoleRepository
+- **Role Inheritance**: The spec mentions "支持角色继承" but current implementation uses flat permission model. Role inheritance could be added by including parent role references
+- **DataScope Query Filtering**: The DataScope model is ready but the actual query filtering logic needs to be implemented in repositories (P6-BE-013 requirement "在查询中应用数据权限")
+- **Unique Constraints**: Code should be unique per tenant (enforced at DB level)
+- **System Roles**: System roles (`IsSystemRole=true`) cannot be deleted - implement seed data for default system roles
+- **Permission Seeding**: Consider implementing a permission seeding mechanism for predefined permissions
+
