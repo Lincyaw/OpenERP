@@ -9490,3 +9490,96 @@ err = inventory.ApplyBatchDeductions(batchPtrs, result)
 - P2-BE-011/P2-BE-012 (StockTaking) could use these strategies for inventory reconciliation
 - Sales order shipment can use FIFO/FEFO strategy for batch selection
 - Consider adding batch selection UI in frontend for manual batch picking
+
+---
+
+## 2026-01-24: P2-QA-003 - Inventory Lock Concurrency Tests
+
+### Feature: 库存锁定并发测试 (Inventory Lock Concurrency Tests)
+
+### What Was Implemented
+Comprehensive unit tests for inventory concurrency control, covering:
+1. Optimistic locking mechanism verification
+2. Concurrent stock locking scenarios
+3. Overselling prevention at domain level
+4. Version increment validation for all inventory operations
+5. Race condition handling in GetOrCreate
+6. Stock lock repository operations
+7. Quantity invariants (Total = Available + Locked)
+8. Multiple concurrent locks accumulation
+9. Deduction and unlock interaction rules
+10. Lock expiration handling
+
+### Test File Created
+- `backend/internal/infrastructure/persistence/inventory_concurrency_test.go`
+
+### Test Coverage Summary
+
+#### TestSaveWithLock_OptimisticLocking
+- ✅ successful save with correct version
+- ✅ fails when version mismatch (concurrent modification)
+- ✅ handles database error gracefully
+
+#### TestSaveWithLock_UpdatedFields
+- ✅ updates all inventory fields correctly
+
+#### TestConcurrentLockScenario_Domain
+- ✅ simulates read-modify-write race condition prevention
+- ✅ repository SaveWithLock rejects stale version
+
+#### TestOversellPrevention_Domain
+- ✅ domain prevents locking more than available
+- ✅ domain correctly tracks available vs locked
+- ✅ CanFulfill correctly reports availability
+
+#### TestVersionIncrement
+- ✅ LockStock increments version
+- ✅ UnlockStock increments version
+- ✅ DeductStock increments version
+- ✅ IncreaseStock increments version
+- ✅ AdjustStock increments version
+
+#### TestGetOrCreate_RaceCondition
+- ✅ handles concurrent creation with ON CONFLICT
+
+#### TestStockLockRepository_Concurrency
+- ✅ FindActive filters correctly
+- ✅ ReleaseExpired updates expired locks
+
+#### TestQuantityInvariant
+- ✅ TotalQuantity always equals Available + Locked
+- ✅ lock-unlock cycle preserves total
+- ✅ deduction reduces total correctly
+
+#### TestConcurrentMultipleLocks
+- ✅ multiple locks accumulate locked quantity correctly
+- ✅ lock fails when exact available reached
+
+#### TestDeductionAndUnlockInteraction
+- ✅ cannot unlock a consumed lock
+- ✅ cannot deduct an already unlocked lock
+
+#### TestLockExpiration
+- ✅ GetExpiredLocks returns only expired locks
+- ✅ ReleaseExpiredLocks releases expired locks
+
+### Build Status
+- Go build: ✅ PASSED
+- All 23 test cases: ✅ PASSED
+
+### Requirements Met
+- ✅ 测试并发锁定场景 (Test concurrent locking scenarios)
+- ✅ 验证乐观锁正确性 (Verify optimistic locking correctness)
+- ✅ 测试超卖防护 (Test overselling prevention)
+
+### Key Implementation Details
+
+1. **Optimistic Locking**: SaveWithLock uses `WHERE version = item.Version - 1` to detect concurrent modifications. Returns 0 rows affected if version mismatch.
+
+2. **Domain-Level Overselling Prevention**: LockStock checks `AvailableQuantity.LessThan(quantity)` before allowing lock.
+
+3. **Version Increment**: Every mutation operation (LockStock, UnlockStock, DeductStock, IncreaseStock, AdjustStock) increments the version.
+
+4. **GetOrCreate Race Handling**: Uses PostgreSQL `ON CONFLICT DO NOTHING` to handle concurrent insertions.
+
+5. **Quantity Invariants**: Tests verify `TotalQuantity() = AvailableQuantity + LockedQuantity` is maintained through all operations.
