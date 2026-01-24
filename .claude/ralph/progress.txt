@@ -8963,3 +8963,78 @@ Implemented complete User and Role management API endpoints that enable frontend
 - **P6-FE-005**: Role management page can now use `/api/v1/identity/roles/*` endpoints
 - **P6-FE-006**: Permission assignment page can use `/api/v1/identity/roles/:id/permissions` and `/api/v1/identity/permissions`
 - **Swagger Fix**: The report.go swagger annotations need to be fixed separately (use full paths or local types instead of aliased imports)
+
+---
+
+## 2026-01-24: P6-FE-004 - 用户管理页面
+
+### Summary
+Implemented the User Management page frontend that allows administrators to manage system users, including CRUD operations, status management, role assignment, and password reset.
+
+### Implementation Details
+
+#### 1. API Client (`frontend/src/api/identity/`)
+- **types.ts**: TypeScript type definitions matching backend DTOs:
+  - User types (User, UserStatus, CreateUserRequest, UpdateUserRequest)
+  - Role types (Role, CreateRoleRequest, UpdateRoleRequest)
+  - Query and response types with pagination support
+  
+- **identity.ts**: API service factory with methods for:
+  - User CRUD: createUser, getUser, listUsers, updateUser, deleteUser
+  - User status: activateUser, deactivateUser, lockUser, unlockUser
+  - Password management: resetPassword
+  - Role assignment: assignRoles
+  - Role CRUD: createRole, getRole, listRoles, updateRole, deleteRole
+  - Role status: enableRole, disableRole
+  - Permission management: setRolePermissions, getAllPermissions
+
+#### 2. User Management Page (`frontend/src/pages/system/Users.tsx`)
+Features implemented:
+- User list with pagination and filtering (search, status, role)
+- Create user modal with form validation
+- Edit user modal for updating user details
+- Status management actions (activate/deactivate/lock/unlock)
+- Password reset with random password generation
+- Role assignment modal with checkbox selection
+- Bulk actions (bulk activate, bulk deactivate)
+- Table sorting and row selection
+
+#### 3. Route Configuration Updates
+- Added `/system` module to `appRoutes` in `routes.tsx`
+- Added `/system/users` route with USER_READ permission
+- Updated `permissions.ts` with system module route permissions
+- Added lazy-loaded `UsersPage` component
+
+### API Endpoints Used
+- `GET /identity/users` - List users with filtering
+- `POST /identity/users` - Create user
+- `GET /identity/users/:id` - Get user by ID
+- `PUT /identity/users/:id` - Update user
+- `DELETE /identity/users/:id` - Delete user
+- `POST /identity/users/:id/activate` - Activate user
+- `POST /identity/users/:id/deactivate` - Deactivate user
+- `POST /identity/users/:id/lock` - Lock user
+- `POST /identity/users/:id/unlock` - Unlock user
+- `POST /identity/users/:id/reset-password` - Reset password
+- `PUT /identity/users/:id/roles` - Assign roles
+- `GET /identity/roles` - List roles (for filter and assignment)
+
+### Build Status
+- TypeScript check: ✅ PASSED
+- Vite build: ✅ PASSED
+
+### Files Created
+- `frontend/src/api/identity/types.ts`
+- `frontend/src/api/identity/identity.ts`
+- `frontend/src/api/identity/index.ts`
+- `frontend/src/pages/system/Users.tsx`
+- `frontend/src/pages/system/Users.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` - Added system module routes
+- `frontend/src/config/permissions.ts` - Added system route permissions
+
+### Notes for Next Steps
+- **P6-FE-005**: Role management page can reuse the identity API client
+- **P6-FE-006**: Permission configuration page will use setRolePermissions and getAllPermissions APIs
+- The Users page includes role assignment which partially addresses user-role management

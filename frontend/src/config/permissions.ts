@@ -266,6 +266,10 @@ export const RoutePermissions: Record<string, string[]> = {
   '/report/inventory-turnover': [Permissions.REPORT_READ],
   '/report/profit-loss': [Permissions.REPORT_READ],
   '/report/cash-flow': [Permissions.REPORT_READ],
+
+  // System module
+  '/system': [Permissions.USER_READ, Permissions.ROLE_READ],
+  '/system/users': [Permissions.USER_READ],
 }
 
 /**

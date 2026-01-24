@@ -75,6 +75,9 @@ const InventoryTurnoverPage = () => lazyLoad(() => import('@/pages/report/Invent
 const ProfitLossPage = () => lazyLoad(() => import('@/pages/report/ProfitLoss'))
 const CashFlowReportPage = () => lazyLoad(() => import('@/pages/report/CashFlowReport'))
 
+// System module
+const UsersPage = () => lazyLoad(() => import('@/pages/system/Users'))
+
 /**
  * Application routes with metadata
  * Routes are organized into two groups:
@@ -368,6 +371,32 @@ export const appRoutes: AppRoute[] = [
       },
     ],
   },
+
+  // System module
+  {
+    path: '/system',
+    meta: {
+      title: 'System',
+      icon: 'IconSetting',
+      order: 7,
+      permissions: [Permissions.USER_READ, Permissions.ROLE_READ],
+    },
+    children: [
+      {
+        path: '/system',
+        redirect: '/system/users',
+      },
+      {
+        path: '/system/users',
+        meta: {
+          title: 'Users',
+          icon: 'IconUser',
+          order: 1,
+          permissions: [Permissions.USER_READ],
+        },
+      },
+    ],
+  },
 ]
 
 /**
@@ -417,6 +446,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return ProfitLossPage()
     case '/report/cash-flow':
       return CashFlowReportPage()
+    case '/system/users':
+      return UsersPage()
     default:
       return null
   }

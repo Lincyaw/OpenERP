@@ -1,0 +1,87 @@
+/* Users Page Styles */
+
+.users-page {
+  padding: var(--spacing-4);
+}
+
+.users-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.users-filter-container {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+/* User cells */
+.user-username {
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-text-0);
+}
+
+.user-display-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.user-display-name {
+  font-weight: 500;
+  color: var(--semi-color-text-0);
+}
+
+.user-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  font-size: var(--semi-font-size-small);
+}
+
+.user-email {
+  color: var(--semi-color-text-1);
+}
+
+.user-phone {
+  color: var(--semi-color-text-2);
+}
+
+/* Status colors */
+.status-pending {
+  color: var(--semi-color-text-2);
+}
+
+.status-active {
+  color: var(--semi-color-success);
+}
+
+.status-locked {
+  color: var(--semi-color-danger);
+}
+
+.status-deactivated {
+  color: var(--semi-color-text-3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .users-page {
+    padding: var(--spacing-2);
+  }
+
+  .users-filter-container {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .users-filter-container .semi-select {
+    width: 100% !important;
+  }
+}
