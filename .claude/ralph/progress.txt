@@ -13111,3 +13111,104 @@ TEST_DB_DEBUG=1 go test -v ./tests/integration/... -run "TestPerformance_" -time
 4. **Metrics collected**: Response time percentiles (P50/P90/P95/P99), throughput, error rate
 5. **Bottleneck analysis**: Endpoints exceeding 50ms average are flagged as potential bottlenecks
 6. **Next priority items**: P8-003 (安全渗透测试), P8-004 (UAT用户验收测试)
+
+---
+
+## 2026-01-25: P8-003 - Security Penetration Testing (安全渗透测试)
+
+### Summary
+Implemented comprehensive security penetration testing suite with 7 test categories covering IDOR, privilege escalation, authentication security, data security, session management, input validation, and DoS prevention. All 38 sub-tests pass.
+
+### Test Coverage
+
+**Penetration Testing (执行渗透测试):**
+1. `TestPenetration_IDOR` - Insecure Direct Object Reference tests
+   - Cross-tenant product access blocked
+   - Cross-tenant customer access blocked
+   - Sequential ID enumeration protection
+   - Token tenant claims verification
+
+2. `TestPenetration_PrivilegeEscalation` - Privilege escalation prevention
+   - Normal user blocked from admin endpoints
+   - Normal user blocked from user deletion
+   - Admin access verified
+   - JWT tampering detection
+   - Horizontal privilege escalation blocked
+
+**Authentication Security (测试认证安全):**
+3. `TestPenetration_AuthenticationSecurity` - Authentication attack prevention
+   - Brute force protection with account lockout
+   - Concurrent brute force detection
+   - Account enumeration prevention
+   - Token replay documentation
+   - JWT "none" algorithm attack blocked
+   - JWT algorithm confusion attack blocked
+   - Expired token rejection
+
+4. `TestPenetration_SessionManagement` - Session security
+   - Session fixation prevention
+   - Concurrent sessions independence
+   - Refresh token misuse blocked
+   - Access token misuse for refresh blocked
+
+**Data Security (测试数据安全):**
+5. `TestPenetration_DataSecurity` - Sensitive data protection
+   - Password never exposed in responses
+   - Sensitive endpoint doesn't leak internal data
+   - Error messages don't leak stack traces
+   - SQL errors don't leak schema
+   - JWT contains minimal claims
+   - Cross-tenant data access blocked
+
+6. `TestPenetration_InputValidation` - Input attack prevention
+   - Command injection blocked (URL-encoded payloads)
+   - LDAP injection handled safely
+   - XXE injection blocked
+   - Header injection blocked
+   - Unicode normalization attacks handled
+
+7. `TestPenetration_RateLimitingAndDoS` - DoS prevention
+   - Large request body rejected (2MB limit)
+   - Slowloris attack documentation
+   - Recursive JSON depth limited
+   - Many query parameters handled
+
+### Security Findings Summary
+
+**Protections Verified:**
+- Tenant isolation at repository layer
+- JWT signature verification
+- Permission-based access control
+- Password hashing (bcrypt)
+- Account lockout after failed attempts
+- Input validation at API boundaries
+- Security headers (X-Frame-Options, X-XSS-Protection, etc.)
+
+**Notes:**
+- Token replay prevention requires Redis-based blacklisting (documented)
+- Slowloris protection typically handled by reverse proxy (documented)
+- Concurrent brute force detection depends on database transaction serialization
+
+### Files Created
+- `backend/tests/integration/penetration_test.go` (~1100 lines)
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (P8-003: passes: true)
+
+### How to Run Tests
+```bash
+# Run all penetration tests
+cd backend && go test -v ./tests/integration/... -run "TestPenetration_" -timeout 600s
+
+# Run specific category
+go test -v ./tests/integration/... -run "TestPenetration_IDOR" -timeout 300s
+go test -v ./tests/integration/... -run "TestPenetration_AuthenticationSecurity" -timeout 300s
+go test -v ./tests/integration/... -run "TestPenetration_DataSecurity" -timeout 300s
+```
+
+### Notes for Next Developer
+1. **Security test categories**: IDOR, Privilege Escalation, Auth Security, Data Security, Session Management, Input Validation, Rate Limiting
+2. **Test infrastructure**: Uses `PenetrationTestServer` with full auth stack
+3. **JWT attacks tested**: none algorithm, algorithm confusion, signature tampering, payload modification
+4. **Input validation**: URL-encoded payloads for command injection, LDAP injection, XXE, header injection
+5. **Next priority items**: P8-004 (UAT用户验收测试), P8-005 (问题修复与回归)
