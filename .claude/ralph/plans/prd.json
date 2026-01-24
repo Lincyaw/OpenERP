@@ -653,7 +653,7 @@
       "验证商品 CRUD 流程",
       "验证错误处理"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-INT-002",

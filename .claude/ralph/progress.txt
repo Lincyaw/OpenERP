@@ -11835,3 +11835,50 @@ Created comprehensive integration tests for the Product API using testcontainers
 2. **Test isolation**: Each test gets its own PostgreSQL container
 3. **Pagination required**: Always pass page=1&page_size=20 when listing products
 4. **Next priority items**: P1-QA-004 (Partner API 集成测试) or P1-INT-001 (商品模块前后端联调)
+
+
+## 2026-01-25 - P1-INT-001 商品模块前后端联调 COMPLETED
+
+### Summary
+Implemented comprehensive frontend-backend integration tests for the Product module, verifying data flow, CRUD operations, and error handling.
+
+### Files Created
+1. `frontend/src/pages/catalog/Products.test.tsx` - Product list page integration tests
+2. `frontend/src/features/catalog/ProductForm.test.tsx` - Product form integration tests
+
+### Test Coverage (37 tests total)
+
+#### ProductsPage Tests (14 tests)
+- **Product List Display**: Verifies product data display including codes, names, status tags, prices, barcodes, and pagination
+- **Search and Filter**: Tests search input and status filter components
+- **Error Handling**: Tests API failure error toasts and empty list handling
+- **Product Actions**: Tests "新增商品" and "刷新" buttons
+- **API Integration**: Tests response transformation and request parameters
+
+#### ProductForm Tests (23 tests)
+- **Create Mode**: Tests form sections, required fields, default values, create API calls, navigation
+- **Edit Mode**: Tests form population, disabled fields, update API calls
+- **Form Validation**: Tests required field validation and code format validation
+- **Error Handling**: Tests error messages for failed create/update operations
+- **Price Fields**: Tests decimal price handling
+- **API Payload**: Tests correct payload structure for create operations
+
+### Test Infrastructure Updates
+- Added HTMLCanvasElement.getContext mock for lottie-web (used by Semi UI)
+- Added react-dom findDOMNode mock for React 19 compatibility with Semi UI
+- Updated Toast mocking pattern to use vi.spyOn instead of vi.mock
+
+### Integration Verified
+1. **Product List Display**: API response correctly transformed to table display
+2. **Product CRUD Flow**: Create, read, update operations with proper API payload
+3. **Error Handling**: API failures show appropriate error toasts
+4. **Form Validation**: Frontend validation prevents invalid API calls
+
+### PRD Status
+P1-INT-001: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `npm run test:run -- src/pages/catalog/Products.test.tsx src/features/catalog/ProductForm.test.tsx`
+2. **Semi UI React 19**: findDOMNode mock is needed due to Semi UI's internal tooltip implementation
+3. **Toast mocking**: Use vi.spyOn pattern instead of mocking the entire module
+4. **Next priority items**: P1-INT-002 (伙伴模块前后端联调) or P1-QA-004 (Partner API 集成测试)
