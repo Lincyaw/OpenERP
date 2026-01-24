@@ -939,7 +939,7 @@
       "验证库存调整流程",
       "验证并发锁定"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-INT-002",

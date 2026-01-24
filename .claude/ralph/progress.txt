@@ -11943,3 +11943,47 @@ P1-INT-002: passes: true
 2. **Test naming**: Warehouse test data uses distinct names to avoid collision with type labels (普通仓库/虚拟仓库/中转仓库)
 3. **Toast mocking**: Use vi.spyOn pattern instead of mocking the entire module
 4. **Next priority items**: P1-INT-003 (客户余额功能联调), P1-QA-004 (Partner API 集成测试), or P2-INT-001 (库存模块前后端联调)
+
+
+## 2026-01-25 - P2-INT-001 库存模块前后端联调 COMPLETED
+
+### Summary
+Implemented comprehensive frontend-backend integration tests for the Inventory module, verifying data flow, stock display, adjustment operations, and concurrent locking behavior.
+
+### Files Created
+1. `frontend/src/pages/inventory/StockList.test.tsx` - Stock list page integration tests (27 tests)
+2. `frontend/src/pages/inventory/StockAdjust.test.tsx` - Stock adjustment page integration tests (21 tests)
+
+### Test Coverage (48 tests total)
+
+#### StockListPage Tests (27 tests)
+- **Inventory List Display**: Verifies warehouse names, product names, available quantities, locked quantities, total quantities, unit cost, total value formatting
+- **Stock Status Display**: Tests normal/low stock/no stock status tags based on quantities and thresholds
+- **Search and Filter**: Tests search input, warehouse filter dropdown, stock status filter dropdown, refresh button
+- **Error Handling**: Tests API failure error toasts and empty list handling
+- **API Integration**: Tests correct pagination parameters, warehouse/product API calls for name resolution
+- **Locked Quantity Display (Concurrent Locking)**: 4 tests verifying locked quantity display, partial locks, zero locks, and total=available+locked consistency
+
+#### StockAdjustPage Tests (21 tests)
+- **Page Layout**: Tests page title, back button, selection section, adjustment info section
+- **Form Fields**: Tests warehouse select, product select, actual quantity, adjustment reason, remarks, submit/cancel buttons
+- **Warehouse and Product Loading**: Tests API calls with correct parameters, graceful failure handling
+- **Error Handling**: Tests inventory lookup failure, empty warehouse/product lists
+- **API Integration**: Tests correct parameter transformation for select options
+
+### Integration Verified
+1. **Inventory List Display**: API response correctly transformed to table display with warehouse/product name resolution
+2. **Stock Quantities**: Available, locked, and total quantities correctly formatted with 2 decimal places
+3. **Currency Formatting**: Unit cost and total value displayed with ¥ prefix
+4. **Stock Status**: Proper status tag display based on is_below_minimum flag and total_quantity
+5. **Locked Stock Display**: Concurrent locking behavior verified through locked_quantity display and consistency checks
+6. **Stock Adjustment Form**: Warehouse/product selection with active status filtering
+
+### PRD Status
+P2-INT-001: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `npm run test:run -- src/pages/inventory/StockList.test.tsx src/pages/inventory/StockAdjust.test.tsx`
+2. **Locked quantity**: Tests verify that locked stock displays correctly and that available + locked = total
+3. **Stock status logic**: "低库存" shown when is_below_minimum=true, "无库存" shown when total_quantity=0 and is_below_minimum=false
+4. **Next priority items**: P2-INT-002 (盘点功能联调), P3-INT-001 (销售订单前后端联调), or P3-QA-004 (订单-库存联动集成测试)
