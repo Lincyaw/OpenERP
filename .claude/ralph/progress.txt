@@ -5138,3 +5138,109 @@ Implemented the PurchaseOrder aggregate root with complete lifecycle management 
 - Domain events are raised during Receive() - subscribe to PurchaseOrderReceivedEvent for inventory updates
 - PendingReceipt includes both CONFIRMED and PARTIAL_RECEIVED orders
 - Use GetReceivableItems() to show remaining quantities for each item before receiving
+
+---
+
+## P3-BE-013: PurchaseOrder API Implementation
+
+**Date:** 2026-01-24
+**Status:** ✅ COMPLETED
+
+### Summary
+Implemented the full PurchaseOrder HTTP API handler with all CRUD operations, status transitions, item management, and receiving functionality.
+
+### Files Created/Modified
+
+#### Created Files:
+1. **`backend/internal/interfaces/http/handler/purchase_order.go`**
+   - Full HTTP handler implementation with 15+ endpoints
+   - All Swagger annotations for OpenAPI generation
+   - Request/Response DTO types with JSON binding validation
+
+#### Modified Files:
+1. **`backend/cmd/server/main.go`**
+   - Added `purchaseOrderRepo` initialization
+   - Added `purchaseOrderService` initialization
+   - Added `purchaseOrderHandler` initialization
+   - Registered 17 purchase order routes under `/trade/purchase-orders`
+
+### API Endpoints Implemented
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /trade/purchase-orders | Create purchase order |
+| GET | /trade/purchase-orders | List purchase orders |
+| GET | /trade/purchase-orders/:id | Get purchase order by ID |
+| GET | /trade/purchase-orders/number/:order_number | Get by order number |
+| GET | /trade/purchase-orders/stats/summary | Get status summary |
+| GET | /trade/purchase-orders/pending-receipt | List pending receipt |
+| GET | /trade/purchase-orders/:id/receivable-items | Get receivable items |
+| PUT | /trade/purchase-orders/:id | Update purchase order |
+| DELETE | /trade/purchase-orders/:id | Delete purchase order |
+| POST | /trade/purchase-orders/:id/items | Add item |
+| PUT | /trade/purchase-orders/:id/items/:item_id | Update item |
+| DELETE | /trade/purchase-orders/:id/items/:item_id | Remove item |
+| POST | /trade/purchase-orders/:id/confirm | Confirm order |
+| POST | /trade/purchase-orders/:id/receive | Receive goods |
+| POST | /trade/purchase-orders/:id/cancel | Cancel order |
+
+### Features Implemented
+| Feature | Status |
+|---------|--------|
+| Create purchase order | ✓ |
+| List with pagination | ✓ |
+| Filter by status/supplier/warehouse | ✓ |
+| Search by order number/supplier name | ✓ |
+| Update draft orders | ✓ |
+| Add/Update/Remove items | ✓ |
+| Confirm order | ✓ |
+| Partial receiving with batch info | ✓ |
+| Cancel order with reason | ✓ |
+| Status summary by count | ✓ |
+| Pending receipt listing | ✓ |
+| Receivable items query | ✓ |
+| OpenAPI/Swagger annotations | ✓ |
+
+### Handler Methods
+- `Create` - Create new purchase order with items
+- `GetByID` - Get order by UUID
+- `GetByOrderNumber` - Get order by order number string
+- `List` - List orders with filtering and pagination
+- `ListPendingReceipt` - List orders awaiting receipt
+- `Update` - Update draft order (warehouse, discount, remark)
+- `Delete` - Delete draft order
+- `AddItem` - Add item to draft order
+- `UpdateItem` - Update item quantity/cost/remark
+- `RemoveItem` - Remove item from draft order
+- `Confirm` - Confirm order (DRAFT → CONFIRMED)
+- `Receive` - Receive goods with batch info
+- `Cancel` - Cancel order with reason
+- `GetStatusSummary` - Get counts by status
+- `GetReceivableItems` - Get items that can still receive goods
+
+### Request/Response DTOs
+- `CreatePurchaseOrderRequest` - Order creation with items
+- `UpdatePurchaseOrderRequest` - Update warehouse/discount/remark
+- `AddPurchaseOrderItemRequest` - Add item details
+- `UpdatePurchaseOrderItemRequest` - Update quantity/cost/remark
+- `ConfirmPurchaseOrderRequest` - Confirm with optional warehouse
+- `ReceivePurchaseOrderRequest` - Receive items with batch info
+- `CancelPurchaseOrderRequest` - Cancel with reason
+- `PurchaseOrderResponse` - Full order response with items
+- `PurchaseOrderListResponse` - Paginated list response
+- `PurchaseOrderStatusSummaryResponse` - Status counts
+- `ReceiveResultResponse` - Receive operation result
+
+### Tests & Build
+- Build: ✅ PASSED
+- All tests: ✅ PASSED
+- OpenAPI generation: ✅ COMPLETED
+
+### Notes for Next Developer
+- **P3-FE-010** (采购订单列表页面) is a good next frontend task
+- **P3-FE-011** (采购开单页面) for order creation UI
+- **P3-FE-012** (采购收货页面) for receiving UI
+- **P3-BE-011** (采购收货逻辑 - inventory integration) still pending
+- The handler follows SalesOrderHandler patterns for consistency
+- All endpoints use tenant_id from context (currently hardcoded default)
+- Decimal amounts use string format in JSON for precision

@@ -83,6 +83,44 @@ definitions:
     - unit
     - unit_price
     type: object
+  handler.AddPurchaseOrderItemRequest:
+    description: Request body for adding an item to a purchase order
+    properties:
+      product_code:
+        example: SKU-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        maxLength: 200
+        minLength: 1
+        type: string
+      quantity:
+        example: 5
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        maxLength: 20
+        minLength: 1
+        type: string
+      unit_cost:
+        example: 60
+        type: number
+    required:
+    - product_code
+    - product_id
+    - product_name
+    - quantity
+    - unit
+    - unit_cost
+    type: object
   handler.AdjustStockRequest:
     description: Request body for stock count adjustment
     properties:
@@ -136,6 +174,17 @@ definitions:
     required:
     - reason
     type: object
+  handler.CancelPurchaseOrderRequest:
+    description: Request body for cancelling a purchase order
+    properties:
+      reason:
+        example: 供应商无法供货
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - reason
+    type: object
   handler.CheckAvailabilityRequest:
     description: Request body for checking if a quantity is available
     properties:
@@ -168,6 +217,13 @@ definitions:
     type: object
   handler.ConfirmOrderRequest:
     description: Request body for confirming an order
+    properties:
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handler.ConfirmPurchaseOrderRequest:
+    description: Request body for confirming a purchase order
     properties:
       warehouse_id:
         example: 550e8400-e29b-41d4-a716-446655440001
@@ -312,6 +368,72 @@ definitions:
     - code
     - name
     - unit
+    type: object
+  handler.CreatePurchaseOrderItemInput:
+    description: Purchase order item for creation
+    properties:
+      product_code:
+        example: SKU-001
+        maxLength: 50
+        minLength: 1
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        maxLength: 200
+        minLength: 1
+        type: string
+      quantity:
+        example: 10
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        maxLength: 20
+        minLength: 1
+        type: string
+      unit_cost:
+        example: 50
+        type: number
+    required:
+    - product_code
+    - product_id
+    - product_name
+    - quantity
+    - unit
+    - unit_cost
+    type: object
+  handler.CreatePurchaseOrderRequest:
+    description: Request body for creating a new purchase order
+    properties:
+      discount:
+        example: 100
+        type: number
+      items:
+        items:
+          $ref: '#/definitions/handler.CreatePurchaseOrderItemInput'
+        type: array
+      remark:
+        example: 备注信息
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      supplier_name:
+        example: 供应商A
+        maxLength: 200
+        minLength: 1
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - supplier_id
+    - supplier_name
     type: object
   handler.CreateSalesOrderItemInput:
     description: Order item for creation
@@ -1026,6 +1148,263 @@ definitions:
         example: 1
         type: integer
     type: object
+  handler.PurchaseOrderItemResponse:
+    description: Purchase order item response
+    properties:
+      amount:
+        example: 500
+        type: number
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      ordered_quantity:
+        example: 10
+        type: number
+      product_code:
+        example: SKU-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        type: string
+      received_quantity:
+        example: 5
+        type: number
+      remaining_quantity:
+        example: 5
+        type: number
+      remark:
+        example: 商品备注
+        type: string
+      unit:
+        example: pcs
+        type: string
+      unit_cost:
+        example: 50
+        type: number
+      updated_at:
+        type: string
+    type: object
+  handler.PurchaseOrderListResponse:
+    description: Purchase order list item response
+    properties:
+      completed_at:
+        type: string
+      confirmed_at:
+        type: string
+      created_at:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 3
+        type: integer
+      order_number:
+        example: PO-2026-00001
+        type: string
+      payable_amount:
+        example: 1400
+        type: number
+      receive_progress:
+        example: 33.33
+        type: number
+      status:
+        example: draft
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      supplier_name:
+        example: 供应商A
+        type: string
+      total_amount:
+        example: 1500
+        type: number
+      updated_at:
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.PurchaseOrderResponse:
+    description: Purchase order response
+    properties:
+      cancel_reason:
+        example: ""
+        type: string
+      cancelled_at:
+        type: string
+      completed_at:
+        type: string
+      confirmed_at:
+        type: string
+      created_at:
+        type: string
+      discount_amount:
+        example: 100
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440010
+        type: string
+      item_count:
+        example: 3
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/handler.PurchaseOrderItemResponse'
+        type: array
+      order_number:
+        example: PO-2026-00001
+        type: string
+      payable_amount:
+        example: 1400
+        type: number
+      receive_progress:
+        example: 33.33
+        type: number
+      received_quantity:
+        example: 10
+        type: number
+      remark:
+        example: 备注信息
+        type: string
+      status:
+        example: draft
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      supplier_name:
+        example: 供应商A
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      total_amount:
+        example: 1500
+        type: number
+      total_quantity:
+        example: 30
+        type: number
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  handler.PurchaseOrderStatusSummaryResponse:
+    description: Purchase order status summary response
+    properties:
+      cancelled:
+        example: 3
+        type: integer
+      completed:
+        example: 100
+        type: integer
+      confirmed:
+        example: 10
+        type: integer
+      draft:
+        example: 5
+        type: integer
+      partial_received:
+        example: 3
+        type: integer
+      pending_receipt:
+        example: 13
+        type: integer
+      total:
+        example: 121
+        type: integer
+    type: object
+  handler.ReceiveItemInput:
+    description: Item to receive in a purchase order
+    properties:
+      batch_number:
+        example: BATCH-2026-001
+        type: string
+      expiry_date:
+        example: "2027-12-31T00:00:00Z"
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      quantity:
+        example: 5
+        type: number
+      unit_cost:
+        example: 52
+        type: number
+    required:
+    - product_id
+    - quantity
+    type: object
+  handler.ReceivePurchaseOrderRequest:
+    description: Request body for receiving goods in a purchase order
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.ReceiveItemInput'
+        minItems: 1
+        type: array
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - items
+    type: object
+  handler.ReceiveResultResponse:
+    description: Receive operation result response
+    properties:
+      is_fully_received:
+        example: false
+        type: boolean
+      order:
+        $ref: '#/definitions/handler.PurchaseOrderResponse'
+      received_items:
+        items:
+          $ref: '#/definitions/handler.ReceivedItemResponse'
+        type: array
+    type: object
+  handler.ReceivedItemResponse:
+    description: Received item info response
+    properties:
+      batch_number:
+        example: BATCH-2026-001
+        type: string
+      expiry_date:
+        example: "2027-12-31T00:00:00Z"
+        type: string
+      item_id:
+        example: 550e8400-e29b-41d4-a716-446655440020
+        type: string
+      product_code:
+        example: SKU-001
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      product_name:
+        example: 测试商品
+        type: string
+      quantity:
+        example: 5
+        type: number
+      unit:
+        example: pcs
+        type: string
+      unit_cost:
+        example: 50
+        type: number
+    type: object
   handler.SalesOrderItemResponse:
     description: Sales order item response
     properties:
@@ -1641,6 +2020,32 @@ definitions:
       sort_order:
         example: 1
         type: integer
+    type: object
+  handler.UpdatePurchaseOrderItemRequest:
+    description: Request body for updating a purchase order item
+    properties:
+      quantity:
+        example: 8
+        type: number
+      remark:
+        example: 更新商品备注
+        type: string
+      unit_cost:
+        example: 55
+        type: number
+    type: object
+  handler.UpdatePurchaseOrderRequest:
+    description: Request body for updating a purchase order (draft only)
+    properties:
+      discount:
+        example: 50
+        type: number
+      remark:
+        example: 更新备注
+        type: string
+      warehouse_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
     type: object
   handler.UpdateSalesOrderRequest:
     description: Request body for updating a sales order (draft only)
@@ -7489,6 +7894,1216 @@ paths:
       summary: Ping the API
       tags:
       - system
+  /trade/purchase-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of purchase orders with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term (order number, supplier name)
+        in: query
+        name: search
+        type: string
+      - description: Supplier ID
+        format: uuid
+        in: query
+        name: supplier_id
+        type: string
+      - description: Warehouse ID
+        format: uuid
+        in: query
+        name: warehouse_id
+        type: string
+      - description: Order status
+        enum:
+        - draft
+        - confirmed
+        - partial_received
+        - completed
+        - cancelled
+        in: query
+        name: status
+        type: string
+      - collectionFormat: csv
+        description: Multiple order statuses
+        in: query
+        items:
+          type: string
+        name: statuses
+        type: array
+      - description: Start date (ISO 8601)
+        format: date-time
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        format: date-time
+        in: query
+        name: end_date
+        type: string
+      - description: Minimum payable amount
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum payable amount
+        in: query
+        name: max_amount
+        type: number
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PurchaseOrderListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List purchase orders
+      tags:
+      - purchase-orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new purchase order with optional items
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase order creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePurchaseOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a purchase order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a purchase order
+      tags:
+      - purchase-orders
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a purchase order by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get purchase order by ID
+      tags:
+      - purchase-orders
+    put:
+      consumes:
+      - application/json
+      description: Update a purchase order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Purchase order update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePurchaseOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a purchase order (only from DRAFT or CONFIRMED status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel order request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CancelPurchaseOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel a purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm a purchase order (transitions from DRAFT to CONFIRMED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirm order request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ConfirmPurchaseOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Confirm a purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/items:
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a purchase order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order item to add
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddPurchaseOrderItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Add item to purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/items/{item_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an item from a purchase order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Remove item from purchase order
+      tags:
+      - purchase-orders
+    put:
+      consumes:
+      - application/json
+      description: Update an item in a purchase order (only allowed in DRAFT status)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order Item ID
+        format: uuid
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Order item update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePurchaseOrderItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update order item
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/receivable-items:
+    get:
+      consumes:
+      - application/json
+      description: Get items that can still receive goods for a purchase order
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PurchaseOrderItemResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get receivable items for a purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/{id}/receive:
+    post:
+      consumes:
+      - application/json
+      description: Process receipt of goods for a purchase order (supports partial
+        receipt)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Purchase Order ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Receive goods request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ReceivePurchaseOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ReceiveResultResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Receive goods for a purchase order
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/number/{order_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a purchase order by its order number
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Order Number
+        in: path
+        name: order_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get purchase order by order number
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/pending-receipt:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve purchase orders that are waiting to receive goods (CONFIRMED
+        or PARTIAL_RECEIVED)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PurchaseOrderListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List purchase orders pending receipt
+      tags:
+      - purchase-orders
+  /trade/purchase-orders/stats/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get count of purchase orders by status for dashboard
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PurchaseOrderStatusSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get purchase order status summary
+      tags:
+      - purchase-orders
   /trade/sales-orders:
     get:
       consumes:

@@ -103,6 +103,7 @@ func main() {
 	stockLockRepo := persistence.NewGormStockLockRepository(db.DB)
 	inventoryTxRepo := persistence.NewGormInventoryTransactionRepository(db.DB)
 	salesOrderRepo := persistence.NewGormSalesOrderRepository(db.DB)
+	purchaseOrderRepo := persistence.NewGormPurchaseOrderRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -111,6 +112,7 @@ func main() {
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
+	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
@@ -119,6 +121,7 @@ func main() {
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 	salesOrderHandler := handler.NewSalesOrderHandler(salesOrderService)
+	purchaseOrderHandler := handler.NewPurchaseOrderHandler(purchaseOrderService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -313,6 +316,23 @@ func main() {
 	tradeRoutes.POST("/sales-orders/:id/ship", salesOrderHandler.Ship)
 	tradeRoutes.POST("/sales-orders/:id/complete", salesOrderHandler.Complete)
 	tradeRoutes.POST("/sales-orders/:id/cancel", salesOrderHandler.Cancel)
+
+	// Purchase Order routes
+	tradeRoutes.POST("/purchase-orders", purchaseOrderHandler.Create)
+	tradeRoutes.GET("/purchase-orders", purchaseOrderHandler.List)
+	tradeRoutes.GET("/purchase-orders/stats/summary", purchaseOrderHandler.GetStatusSummary)
+	tradeRoutes.GET("/purchase-orders/pending-receipt", purchaseOrderHandler.ListPendingReceipt)
+	tradeRoutes.GET("/purchase-orders/number/:order_number", purchaseOrderHandler.GetByOrderNumber)
+	tradeRoutes.GET("/purchase-orders/:id", purchaseOrderHandler.GetByID)
+	tradeRoutes.GET("/purchase-orders/:id/receivable-items", purchaseOrderHandler.GetReceivableItems)
+	tradeRoutes.PUT("/purchase-orders/:id", purchaseOrderHandler.Update)
+	tradeRoutes.DELETE("/purchase-orders/:id", purchaseOrderHandler.Delete)
+	tradeRoutes.POST("/purchase-orders/:id/items", purchaseOrderHandler.AddItem)
+	tradeRoutes.PUT("/purchase-orders/:id/items/:item_id", purchaseOrderHandler.UpdateItem)
+	tradeRoutes.DELETE("/purchase-orders/:id/items/:item_id", purchaseOrderHandler.RemoveItem)
+	tradeRoutes.POST("/purchase-orders/:id/confirm", purchaseOrderHandler.Confirm)
+	tradeRoutes.POST("/purchase-orders/:id/receive", purchaseOrderHandler.Receive)
+	tradeRoutes.POST("/purchase-orders/:id/cancel", purchaseOrderHandler.Cancel)
 
 	// Finance domain
 	financeRoutes := router.NewDomainGroup("finance", "/finance")
