@@ -8195,3 +8195,113 @@ Implemented the Role aggregate root for the Identity Context, following the RBAC
 - **System Roles**: System roles (`IsSystemRole=true`) cannot be deleted - implement seed data for default system roles
 - **Permission Seeding**: Consider implementing a permission seeding mechanism for predefined permissions
 
+
+## P6-BE-014: JWT 认证中间件 (JWT Authentication Middleware)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the JWT authentication middleware for the Identity Context, providing secure token-based authentication with access and refresh token support.
+
+### Features Implemented
+
+1. **JWT Service** (`backend/internal/infrastructure/auth/jwt.go`)
+   - `JWTService` struct with configurable access and refresh token settings
+   - Access token generation with full user claims (tenant, user, roles, permissions)
+   - Refresh token generation with minimal claims for security
+   - Token validation with proper error handling
+   - Token refresh with rotation and count limiting
+
+2. **Token Types**
+   - `TokenTypeAccess` - Short-lived access tokens (default 15 minutes)
+   - `TokenTypeRefresh` - Long-lived refresh tokens (default 7 days)
+   - Separate secrets support for access and refresh tokens
+
+3. **JWT Claims** (`Claims` struct)
+   - Standard JWT claims (issuer, subject, audience, expiry, etc.)
+   - Custom claims: TenantID, UserID, Username, RoleIDs, Permissions
+   - Token type identification
+   - Refresh count tracking for token rotation limits
+
+4. **Token Pair Generation**
+   - `GenerateTokenPair()` - Creates both access and refresh tokens
+   - `TokenPair` struct with token strings and expiration times
+   - Bearer token type for OAuth2 compatibility
+
+5. **Token Validation**
+   - `ValidateAccessToken()` - Validates access tokens only
+   - `ValidateRefreshToken()` - Validates refresh tokens only
+   - Token type checking to prevent cross-use
+   - Proper error types: ErrInvalidToken, ErrExpiredToken, ErrInvalidTokenType, etc.
+
+6. **Token Refresh**
+   - `RefreshTokenPair()` - Generates new token pair from valid refresh token
+   - Increments refresh count for rotation tracking
+   - Configurable maximum refresh count (default 10)
+   - Updated permissions can be passed during refresh
+
+7. **JWT Authentication Middleware** (`backend/internal/interfaces/http/middleware/jwt.go`)
+   - `JWTAuthMiddleware()` - Standard authentication middleware
+   - `JWTAuthMiddlewareWithConfig()` - Configurable middleware
+   - `OptionalJWTAuthMiddleware()` - Non-blocking auth for optional endpoints
+   - Bearer token extraction from Authorization header
+   - Automatic skip for public endpoints (health, auth/login, auth/refresh, swagger)
+
+8. **Context Helpers**
+   - `GetJWTClaims(c)` - Get full claims from context
+   - `GetJWTUserID(c)` - Get user ID from context
+   - `GetJWTTenantID(c)` - Get tenant ID from context
+   - `GetJWTUsername(c)` - Get username from context
+   - `GetJWTRoleIDs(c)` - Get role IDs from context
+   - `GetJWTPermissions(c)` - Get permissions from context
+   - `MustGetJWTClaims(c)` - Panic-on-missing variant
+
+9. **Claims Helpers**
+   - `GetTenantUUID()` - Parse tenant ID as UUID
+   - `GetUserUUID()` - Parse user ID as UUID
+   - `GetRoleUUIDs()` - Parse role IDs as UUIDs
+   - `HasPermission(permission)` - Check single permission
+   - `HasAnyPermission(permissions...)` - Check any permission
+   - `HasAllPermissions(permissions...)` - Check all permissions
+
+10. **Configuration Enhancement** (`backend/internal/infrastructure/config/config.go`)
+    - Extended `JWTConfig` struct with:
+      - `AccessTokenExpiration` (duration)
+      - `RefreshTokenExpiration` (duration)
+      - `Issuer` string
+      - `RefreshSecret` (optional separate secret)
+      - `MaxRefreshCount` (rotation limit)
+    - Environment variables: JWT_ACCESS_TOKEN_EXPIRATION, JWT_REFRESH_TOKEN_EXPIRATION, JWT_ISSUER, JWT_REFRESH_SECRET, JWT_MAX_REFRESH_COUNT
+
+11. **Error Handling**
+    - Proper HTTP status codes (401 Unauthorized)
+    - Specific error codes: UNAUTHORIZED, TOKEN_EXPIRED, INVALID_TOKEN, INVALID_TOKEN_TYPE, TOKEN_NOT_VALID
+    - Custom error handler support via `OnError` callback
+
+### Files Created/Modified
+
+- `backend/internal/infrastructure/auth/jwt.go` - JWT service implementation
+- `backend/internal/infrastructure/auth/jwt_test.go` - Comprehensive unit tests (23 test cases)
+- `backend/internal/interfaces/http/middleware/jwt.go` - JWT authentication middleware
+- `backend/internal/interfaces/http/middleware/jwt_test.go` - Middleware tests (27 test cases)
+- `backend/internal/infrastructure/config/config.go` - Extended JWTConfig
+- `backend/go.mod` - Added github.com/golang-jwt/jwt/v5
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/infrastructure/auth/...` ✅ PASSED (23 tests)
+- `go test ./internal/interfaces/http/middleware/...` ✅ PASSED (27 JWT tests + existing tests)
+
+### Integration with Existing Components
+- Integrates with existing TenantMiddleware (JWT claims provide tenant_id)
+- Uses existing logger infrastructure for context logging
+- Compatible with existing response format patterns
+
+### Notes for Next Developer
+- **P6-BE-015 (权限校验中间件)**: Permission checking middleware should use the Claims.HasPermission() methods
+- **P6-BE-016 (Auth API)**: Auth handlers should use JWTService for token generation and UserRepository for authentication
+- **Token Blacklisting**: For logout functionality, consider implementing a Redis-based token blacklist
+- **Refresh Token Storage**: For production, consider storing refresh tokens in database for revocation capability
+- **Rate Limiting**: Consider rate limiting the refresh endpoint to prevent abuse
+- **Password Hash**: User.VerifyPassword() from identity domain already handles bcrypt comparison

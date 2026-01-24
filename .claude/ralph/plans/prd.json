@@ -1951,7 +1951,7 @@
       "实现 Token 刷新机制",
       "处理 Token 过期"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-BE-015",
