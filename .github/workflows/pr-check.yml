@@ -1,0 +1,154 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main, master]
+    types: [opened, synchronize, reopened]
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Backend checks must pass
+  backend-checks:
+    name: Backend Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: backend/go.sum
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: backend
+
+      - name: Check formatting
+        working-directory: backend
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "::error::Backend code is not formatted. Run 'make fmt' in backend/"
+            gofmt -l .
+            exit 1
+          fi
+
+      - name: Run tests with coverage
+        working-directory: backend
+        run: |
+          mkdir -p coverage
+          go test -coverprofile=coverage/coverage.out -covermode=atomic ./...
+
+      - name: Check coverage threshold (80%)
+        working-directory: backend
+        run: |
+          COVERAGE=$(go tool cover -func=coverage/coverage.out | grep total | awk '{print $3}' | tr -d '%')
+          echo "Backend coverage: ${COVERAGE}%"
+          if [ $(echo "${COVERAGE} < 80" | bc -l) -eq 1 ]; then
+            echo "::error::Backend coverage ${COVERAGE}% is below required 80%"
+            exit 1
+          fi
+
+  # Frontend checks must pass
+  frontend-checks:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Check formatting
+        working-directory: frontend
+        run: |
+          npm run format:check || {
+            echo "::error::Frontend code is not formatted. Run 'npm run format' in frontend/"
+            exit 1
+          }
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: |
+          npm run lint || {
+            echo "::error::ESLint errors found. Run 'npm run lint:fix' in frontend/"
+            exit 1
+          }
+
+      - name: Type check (blocking)
+        working-directory: frontend
+        run: |
+          npm run type-check || {
+            echo "::error::TypeScript type errors found. Fix all type errors before merging."
+            exit 1
+          }
+
+      - name: Run tests with coverage
+        working-directory: frontend
+        run: |
+          npm run test:coverage || {
+            echo "::error::Tests failed or coverage below 80%. All tests must pass with 80%+ coverage."
+            exit 1
+          }
+
+  # SDK must be up-to-date
+  sdk-sync-check:
+    name: SDK Sync Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Check SDK is up-to-date
+        working-directory: frontend
+        run: |
+          npm run api:generate
+          if [ -n "$(git status --porcelain src/api/)" ]; then
+            echo "::error::Generated SDK differs from committed version. Run 'npm run api:generate' and commit changes."
+            git diff src/api/
+            exit 1
+          fi
+
+  # Summary job that all other jobs depend on
+  pr-ready:
+    name: PR Ready to Merge
+    runs-on: ubuntu-latest
+    needs: [backend-checks, frontend-checks, sdk-sync-check]
+    steps:
+      - name: All checks passed
+        run: |
+          echo "All CI checks passed!"
+          echo ""
+          echo "Summary:"
+          echo "  - Backend: lint, format, tests (80%+ coverage)"
+          echo "  - Frontend: lint, format, type-check, tests (80%+ coverage)"
+          echo "  - SDK: up-to-date with OpenAPI spec"
+          echo ""
+          echo "This PR is ready for review."

@@ -11698,3 +11698,65 @@ The following parameters were already using snake_case and did not need changes:
 2. **Short `:id` is Acceptable**: Using `:id` for primary entity routes is fine
 3. **SDK Generation**: orval generates camelCase JavaScript parameters, which is correct
 4. **Remaining P0-QA Items**: P0-QA-006 (CI/CD automation) is the next P0 task
+
+
+## 2026-01-25 02:15 - P0-QA-006 CI/CD Automation Pipeline COMPLETED
+
+### Summary
+Created comprehensive GitHub Actions workflows for continuous integration and deployment.
+
+### Files Created
+
+#### 1. `.github/workflows/backend.yml` - Backend CI
+- **Lint job**: golangci-lint + format check
+- **Test job**: Unit tests with PostgreSQL service container
+- **Coverage check**: 80% threshold enforcement
+- **Integration tests**: Separate job for testcontainers tests
+- **OpenAPI docs check**: Validates swagger.yaml is up-to-date
+- **Build job**: Compiles binary and uploads artifact
+
+#### 2. `.github/workflows/frontend.yml` - Frontend CI
+- **Lint & Format job**: ESLint + Prettier check
+- **Type check job**: TypeScript --noEmit check (blocking)
+- **Test job**: Vitest with coverage
+- **Build job**: Vite production build
+- **SDK check job**: Verifies generated SDK matches OpenAPI spec
+
+#### 3. `.github/workflows/docker.yml` - Docker Build Verification
+- **Build backend image**: Uses Docker Buildx with caching
+- **Build frontend image**: Uses Docker Buildx with caching
+- **Docker Compose validation**: Validates compose files syntax
+
+#### 4. `.github/workflows/pr-check.yml` - PR Gate
+- **Backend checks**: All lint, format, test, coverage (80%+)
+- **Frontend checks**: Lint, format, type-check, test, coverage (80%+)
+- **SDK sync check**: Ensures generated SDK is committed
+- **PR Ready summary**: Final job confirming all checks pass
+
+### Coverage Enforcement
+- **Backend**: 80% threshold in `test-coverage-ci` make target
+- **Frontend**: 80% threshold in vitest.config.ts (already configured)
+- **PR blocking**: Both workflows exit 1 if coverage < 80%
+
+### Type Check Blocking
+- Frontend `npm run type-check` runs `tsc --noEmit`
+- TypeScript errors block PR merge
+- Clear error messages with `::error::` annotations
+
+### Workflow Triggers
+| Workflow | Push | PR | Path Filters |
+|----------|------|-----|--------------|
+| backend.yml | main/master | main/master | backend/**, .github/workflows/backend.yml |
+| frontend.yml | main/master | main/master | frontend/**, .github/workflows/frontend.yml |
+| docker.yml | main/master | main/master | All paths |
+| pr-check.yml | - | main/master | All paths |
+
+### PRD Status
+P0-QA-006: passes: true
+
+### Notes for Next Developer
+1. **All P0 tasks are now complete** - Infrastructure layer is ready
+2. **To enable branch protection**: In GitHub repo settings, require `pr-ready` status check
+3. **Caching**: GitHub Actions cache is enabled for Go modules and npm packages
+4. **Docker builds**: Use GitHub Container Registry for production deployments
+5. **Next priority items**: P1-INT-001 (商品模块前后端联调) and P1-INT-002 (伙伴模块前后端联调)
