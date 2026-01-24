@@ -34,19 +34,19 @@ type CustomerResponse struct {
 // CustomerListResponse represents a customer list item
 // @Description Customer list item with basic information
 type CustomerListResponse struct {
-	ID          string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Code        string `json:"code" example:"CUST-001"`
-	Name        string `json:"name" example:"Acme Corp"`
-	ShortName   string `json:"short_name" example:"Acme"`
-	Type        string `json:"type" example:"organization" enums:"individual,organization"`
-	Level       string `json:"level" example:"normal" enums:"normal,silver,gold,platinum,vip"`
-	Status      string `json:"status" example:"active" enums:"active,inactive,suspended"`
-	Phone       string `json:"phone" example:"13800138000"`
-	Email       string `json:"email" example:"contact@acme.com"`
-	City        string `json:"city" example:"Shanghai"`
-	Province    string `json:"province" example:"Shanghai"`
-	SortOrder   int    `json:"sort_order" example:"0"`
-	CreatedAt   string `json:"created_at" example:"2026-01-24T12:00:00Z"`
+	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Code      string `json:"code" example:"CUST-001"`
+	Name      string `json:"name" example:"Acme Corp"`
+	ShortName string `json:"short_name" example:"Acme"`
+	Type      string `json:"type" example:"organization" enums:"individual,organization"`
+	Level     string `json:"level" example:"normal" enums:"normal,silver,gold,platinum,vip"`
+	Status    string `json:"status" example:"active" enums:"active,inactive,suspended"`
+	Phone     string `json:"phone" example:"13800138000"`
+	Email     string `json:"email" example:"contact@acme.com"`
+	City      string `json:"city" example:"Shanghai"`
+	Province  string `json:"province" example:"Shanghai"`
+	SortOrder int    `json:"sort_order" example:"0"`
+	CreatedAt string `json:"created_at" example:"2026-01-24T12:00:00Z"`
 }
 
 // CustomerCountResponse represents customer count statistics

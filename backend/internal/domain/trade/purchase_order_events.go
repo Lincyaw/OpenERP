@@ -112,9 +112,9 @@ type ReceivedItemInfo struct {
 	ProductID   uuid.UUID       `json:"product_id"`
 	ProductName string          `json:"product_name"`
 	ProductCode string          `json:"product_code"`
-	Quantity    decimal.Decimal `json:"quantity"`    // Quantity received in this operation
-	UnitCost    decimal.Decimal `json:"unit_cost"`   // Cost per unit
-	Unit        string          `json:"unit"`        // Unit of measure
+	Quantity    decimal.Decimal `json:"quantity"`  // Quantity received in this operation
+	UnitCost    decimal.Decimal `json:"unit_cost"` // Cost per unit
+	Unit        string          `json:"unit"`      // Unit of measure
 	BatchNumber string          `json:"batch_number,omitempty"`
 	ExpiryDate  *time.Time      `json:"expiry_date,omitempty"`
 }
@@ -191,13 +191,13 @@ func (e *PurchaseOrderCompletedEvent) EventType() string {
 // PurchaseOrderCancelledEvent is raised when a purchase order is cancelled
 type PurchaseOrderCancelledEvent struct {
 	shared.BaseDomainEvent
-	OrderID      uuid.UUID                 `json:"order_id"`
-	OrderNumber  string                    `json:"order_number"`
-	SupplierID   uuid.UUID                 `json:"supplier_id"`
-	WarehouseID  *uuid.UUID                `json:"warehouse_id,omitempty"`
-	Items        []PurchaseOrderItemInfo   `json:"items"`
-	CancelReason string                    `json:"cancel_reason"`
-	WasConfirmed bool                      `json:"was_confirmed"` // If true, supplier may need to be notified
+	OrderID      uuid.UUID               `json:"order_id"`
+	OrderNumber  string                  `json:"order_number"`
+	SupplierID   uuid.UUID               `json:"supplier_id"`
+	WarehouseID  *uuid.UUID              `json:"warehouse_id,omitempty"`
+	Items        []PurchaseOrderItemInfo `json:"items"`
+	CancelReason string                  `json:"cancel_reason"`
+	WasConfirmed bool                    `json:"was_confirmed"` // If true, supplier may need to be notified
 }
 
 // NewPurchaseOrderCancelledEvent creates a new PurchaseOrderCancelledEvent

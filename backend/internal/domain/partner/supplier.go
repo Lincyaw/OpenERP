@@ -48,10 +48,10 @@ type Supplier struct {
 	TaxID       string          `gorm:"type:varchar(50)"` // Tax identification number
 	BankName    string          `gorm:"type:varchar(200)"`
 	BankAccount string          `gorm:"type:varchar(100)"`
-	CreditDays  int             `gorm:"not null;default:0"`                         // Payment terms: days until payment due
-	CreditLimit decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`      // Maximum credit allowed
-	Balance     decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`      // Current accounts payable balance
-	Rating      int             `gorm:"not null;default:0;check:rating >= 0"`       // Supplier rating (0-5)
+	CreditDays  int             `gorm:"not null;default:0"`                    // Payment terms: days until payment due
+	CreditLimit decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Maximum credit allowed
+	Balance     decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Current accounts payable balance
+	Rating      int             `gorm:"not null;default:0;check:rating >= 0"`  // Supplier rating (0-5)
 	Notes       string          `gorm:"type:text"`
 	SortOrder   int             `gorm:"not null;default:0"`
 	Attributes  string          `gorm:"type:jsonb"` // Custom attributes

@@ -126,25 +126,25 @@ func (s SourceType) IsValid() bool {
 // Once created, transactions cannot be modified - corrections must be made with new transactions.
 type InventoryTransaction struct {
 	shared.BaseEntity
-	TenantID          uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_tenant_time,priority:1"`
-	InventoryItemID   uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_item"`
-	WarehouseID       uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_warehouse"`
-	ProductID         uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_product"`
-	TransactionType   TransactionType `gorm:"type:varchar(30);not null;index:idx_inv_tx_type"`
-	Quantity          decimal.Decimal `gorm:"type:decimal(18,4);not null"`                         // Always positive, direction determined by type
-	UnitCost          decimal.Decimal `gorm:"type:decimal(18,4);not null"`                         // Cost per unit at time of transaction
-	TotalCost         decimal.Decimal `gorm:"type:decimal(18,4);not null"`                         // Total cost (Quantity * UnitCost)
-	BalanceBefore     decimal.Decimal `gorm:"type:decimal(18,4);not null"`                         // Available quantity before transaction
-	BalanceAfter      decimal.Decimal `gorm:"type:decimal(18,4);not null"`                         // Available quantity after transaction
-	SourceType        SourceType      `gorm:"type:varchar(30);not null;index:idx_inv_tx_source"`   // Type of source document
-	SourceID          string          `gorm:"type:varchar(50);not null;index:idx_inv_tx_source"`   // ID of source document
-	SourceLineID      string          `gorm:"type:varchar(50)"`                                    // ID of source line item (optional)
-	BatchID           *uuid.UUID      `gorm:"type:uuid;index"`                                     // Related batch (optional)
-	LockID            *uuid.UUID      `gorm:"type:uuid;index"`                                     // Related lock (optional)
-	Reference         string          `gorm:"type:varchar(100)"`                                   // Reference number/code
-	Reason            string          `gorm:"type:varchar(255)"`                                   // Reason for transaction
-	OperatorID        *uuid.UUID      `gorm:"type:uuid"`                                           // User who performed the operation
-	TransactionDate   time.Time       `gorm:"type:timestamptz;not null;index:idx_inv_tx_tenant_time,priority:2"` // When the transaction occurred
+	TenantID        uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_tenant_time,priority:1"`
+	InventoryItemID uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_item"`
+	WarehouseID     uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_warehouse"`
+	ProductID       uuid.UUID       `gorm:"type:uuid;not null;index:idx_inv_tx_product"`
+	TransactionType TransactionType `gorm:"type:varchar(30);not null;index:idx_inv_tx_type"`
+	Quantity        decimal.Decimal `gorm:"type:decimal(18,4);not null"`                                       // Always positive, direction determined by type
+	UnitCost        decimal.Decimal `gorm:"type:decimal(18,4);not null"`                                       // Cost per unit at time of transaction
+	TotalCost       decimal.Decimal `gorm:"type:decimal(18,4);not null"`                                       // Total cost (Quantity * UnitCost)
+	BalanceBefore   decimal.Decimal `gorm:"type:decimal(18,4);not null"`                                       // Available quantity before transaction
+	BalanceAfter    decimal.Decimal `gorm:"type:decimal(18,4);not null"`                                       // Available quantity after transaction
+	SourceType      SourceType      `gorm:"type:varchar(30);not null;index:idx_inv_tx_source"`                 // Type of source document
+	SourceID        string          `gorm:"type:varchar(50);not null;index:idx_inv_tx_source"`                 // ID of source document
+	SourceLineID    string          `gorm:"type:varchar(50)"`                                                  // ID of source line item (optional)
+	BatchID         *uuid.UUID      `gorm:"type:uuid;index"`                                                   // Related batch (optional)
+	LockID          *uuid.UUID      `gorm:"type:uuid;index"`                                                   // Related lock (optional)
+	Reference       string          `gorm:"type:varchar(100)"`                                                 // Reference number/code
+	Reason          string          `gorm:"type:varchar(255)"`                                                 // Reason for transaction
+	OperatorID      *uuid.UUID      `gorm:"type:uuid"`                                                         // User who performed the operation
+	TransactionDate time.Time       `gorm:"type:timestamptz;not null;index:idx_inv_tx_tenant_time,priority:2"` // When the transaction occurred
 }
 
 // TableName returns the table name for GORM

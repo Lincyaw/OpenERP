@@ -12,12 +12,12 @@ import (
 
 // CreatePurchaseOrderRequest represents a request to create a purchase order
 type CreatePurchaseOrderRequest struct {
-	SupplierID   uuid.UUID                     `json:"supplier_id" binding:"required"`
-	SupplierName string                        `json:"supplier_name" binding:"required,min=1,max=200"`
-	WarehouseID  *uuid.UUID                    `json:"warehouse_id"`
+	SupplierID   uuid.UUID                      `json:"supplier_id" binding:"required"`
+	SupplierName string                         `json:"supplier_name" binding:"required,min=1,max=200"`
+	WarehouseID  *uuid.UUID                     `json:"warehouse_id"`
 	Items        []CreatePurchaseOrderItemInput `json:"items"`
-	Discount     *decimal.Decimal              `json:"discount"`
-	Remark       string                        `json:"remark"`
+	Discount     *decimal.Decimal               `json:"discount"`
+	Remark       string                         `json:"remark"`
 }
 
 // CreatePurchaseOrderItemInput represents an item in the create order request
@@ -63,16 +63,16 @@ type ConfirmPurchaseOrderRequest struct {
 
 // ReceiveItemInput represents a single item to receive
 type ReceiveItemInput struct {
-	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
-	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
+	ProductID   uuid.UUID        `json:"product_id" binding:"required"`
+	Quantity    decimal.Decimal  `json:"quantity" binding:"required"`
 	UnitCost    *decimal.Decimal `json:"unit_cost"` // Optional: override cost if different
-	BatchNumber string          `json:"batch_number"`
-	ExpiryDate  *time.Time      `json:"expiry_date"`
+	BatchNumber string           `json:"batch_number"`
+	ExpiryDate  *time.Time       `json:"expiry_date"`
 }
 
 // ReceivePurchaseOrderRequest represents a request to receive goods for a purchase order
 type ReceivePurchaseOrderRequest struct {
-	WarehouseID *uuid.UUID       `json:"warehouse_id"` // Optional warehouse override (must be set if not already)
+	WarehouseID *uuid.UUID         `json:"warehouse_id"` // Optional warehouse override (must be set if not already)
 	Items       []ReceiveItemInput `json:"items" binding:"required,min=1"`
 }
 
@@ -83,46 +83,46 @@ type CancelPurchaseOrderRequest struct {
 
 // PurchaseOrderListFilter represents filter options for purchase order list
 type PurchaseOrderListFilter struct {
-	Search      string                      `form:"search"`
-	SupplierID  *uuid.UUID                  `form:"supplier_id"`
-	WarehouseID *uuid.UUID                  `form:"warehouse_id"`
-	Status      *trade.PurchaseOrderStatus  `form:"status"`
-	Statuses    []string                    `form:"statuses"`
-	StartDate   *time.Time                  `form:"start_date"`
-	EndDate     *time.Time                  `form:"end_date"`
-	MinAmount   *decimal.Decimal            `form:"min_amount"`
-	MaxAmount   *decimal.Decimal            `form:"max_amount"`
-	Page        int                         `form:"page" binding:"min=1"`
-	PageSize    int                         `form:"page_size" binding:"min=1,max=100"`
-	OrderBy     string                      `form:"order_by"`
-	OrderDir    string                      `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	Search      string                     `form:"search"`
+	SupplierID  *uuid.UUID                 `form:"supplier_id"`
+	WarehouseID *uuid.UUID                 `form:"warehouse_id"`
+	Status      *trade.PurchaseOrderStatus `form:"status"`
+	Statuses    []string                   `form:"statuses"`
+	StartDate   *time.Time                 `form:"start_date"`
+	EndDate     *time.Time                 `form:"end_date"`
+	MinAmount   *decimal.Decimal           `form:"min_amount"`
+	MaxAmount   *decimal.Decimal           `form:"max_amount"`
+	Page        int                        `form:"page" binding:"min=1"`
+	PageSize    int                        `form:"page_size" binding:"min=1,max=100"`
+	OrderBy     string                     `form:"order_by"`
+	OrderDir    string                     `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
 
 // PurchaseOrderResponse represents a purchase order in API responses
 type PurchaseOrderResponse struct {
-	ID              uuid.UUID                   `json:"id"`
-	TenantID        uuid.UUID                   `json:"tenant_id"`
-	OrderNumber     string                      `json:"order_number"`
-	SupplierID      uuid.UUID                   `json:"supplier_id"`
-	SupplierName    string                      `json:"supplier_name"`
-	WarehouseID     *uuid.UUID                  `json:"warehouse_id,omitempty"`
-	Items           []PurchaseOrderItemResponse `json:"items"`
-	ItemCount       int                         `json:"item_count"`
-	TotalQuantity   decimal.Decimal             `json:"total_quantity"`
-	ReceivedQuantity decimal.Decimal            `json:"received_quantity"`
-	TotalAmount     decimal.Decimal             `json:"total_amount"`
-	DiscountAmount  decimal.Decimal             `json:"discount_amount"`
-	PayableAmount   decimal.Decimal             `json:"payable_amount"`
-	Status          string                      `json:"status"`
-	ReceiveProgress decimal.Decimal             `json:"receive_progress"`
-	Remark          string                      `json:"remark"`
-	ConfirmedAt     *time.Time                  `json:"confirmed_at,omitempty"`
-	CompletedAt     *time.Time                  `json:"completed_at,omitempty"`
-	CancelledAt     *time.Time                  `json:"cancelled_at,omitempty"`
-	CancelReason    string                      `json:"cancel_reason,omitempty"`
-	CreatedAt       time.Time                   `json:"created_at"`
-	UpdatedAt       time.Time                   `json:"updated_at"`
-	Version         int                         `json:"version"`
+	ID               uuid.UUID                   `json:"id"`
+	TenantID         uuid.UUID                   `json:"tenant_id"`
+	OrderNumber      string                      `json:"order_number"`
+	SupplierID       uuid.UUID                   `json:"supplier_id"`
+	SupplierName     string                      `json:"supplier_name"`
+	WarehouseID      *uuid.UUID                  `json:"warehouse_id,omitempty"`
+	Items            []PurchaseOrderItemResponse `json:"items"`
+	ItemCount        int                         `json:"item_count"`
+	TotalQuantity    decimal.Decimal             `json:"total_quantity"`
+	ReceivedQuantity decimal.Decimal             `json:"received_quantity"`
+	TotalAmount      decimal.Decimal             `json:"total_amount"`
+	DiscountAmount   decimal.Decimal             `json:"discount_amount"`
+	PayableAmount    decimal.Decimal             `json:"payable_amount"`
+	Status           string                      `json:"status"`
+	ReceiveProgress  decimal.Decimal             `json:"receive_progress"`
+	Remark           string                      `json:"remark"`
+	ConfirmedAt      *time.Time                  `json:"confirmed_at,omitempty"`
+	CompletedAt      *time.Time                  `json:"completed_at,omitempty"`
+	CancelledAt      *time.Time                  `json:"cancelled_at,omitempty"`
+	CancelReason     string                      `json:"cancel_reason,omitempty"`
+	CreatedAt        time.Time                   `json:"created_at"`
+	UpdatedAt        time.Time                   `json:"updated_at"`
+	Version          int                         `json:"version"`
 }
 
 // PurchaseOrderListItemResponse represents a purchase order in list responses (less detail)
@@ -145,19 +145,19 @@ type PurchaseOrderListItemResponse struct {
 
 // PurchaseOrderItemResponse represents a purchase order item in API responses
 type PurchaseOrderItemResponse struct {
-	ID               uuid.UUID       `json:"id"`
-	ProductID        uuid.UUID       `json:"product_id"`
-	ProductName      string          `json:"product_name"`
-	ProductCode      string          `json:"product_code"`
-	OrderedQuantity  decimal.Decimal `json:"ordered_quantity"`
-	ReceivedQuantity decimal.Decimal `json:"received_quantity"`
+	ID                uuid.UUID       `json:"id"`
+	ProductID         uuid.UUID       `json:"product_id"`
+	ProductName       string          `json:"product_name"`
+	ProductCode       string          `json:"product_code"`
+	OrderedQuantity   decimal.Decimal `json:"ordered_quantity"`
+	ReceivedQuantity  decimal.Decimal `json:"received_quantity"`
 	RemainingQuantity decimal.Decimal `json:"remaining_quantity"`
-	UnitCost         decimal.Decimal `json:"unit_cost"`
-	Amount           decimal.Decimal `json:"amount"`
-	Unit             string          `json:"unit"`
-	Remark           string          `json:"remark,omitempty"`
-	CreatedAt        time.Time       `json:"created_at"`
-	UpdatedAt        time.Time       `json:"updated_at"`
+	UnitCost          decimal.Decimal `json:"unit_cost"`
+	Amount            decimal.Decimal `json:"amount"`
+	Unit              string          `json:"unit"`
+	Remark            string          `json:"remark,omitempty"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
 }
 
 // ReceivedItemResponse represents received item info in responses
@@ -175,9 +175,9 @@ type ReceivedItemResponse struct {
 
 // ReceiveResultResponse represents the result of a receive operation
 type ReceiveResultResponse struct {
-	Order          PurchaseOrderResponse  `json:"order"`
-	ReceivedItems  []ReceivedItemResponse `json:"received_items"`
-	IsFullyReceived bool                  `json:"is_fully_received"`
+	Order           PurchaseOrderResponse  `json:"order"`
+	ReceivedItems   []ReceivedItemResponse `json:"received_items"`
+	IsFullyReceived bool                   `json:"is_fully_received"`
 }
 
 // PurchaseOrderStatusSummary represents a summary of purchase orders by status
@@ -363,19 +363,19 @@ type CancelOrderRequest struct {
 
 // SalesOrderListFilter represents filter options for sales order list
 type SalesOrderListFilter struct {
-	Search      string            `form:"search"`
-	CustomerID  *uuid.UUID        `form:"customer_id"`
-	WarehouseID *uuid.UUID        `form:"warehouse_id"`
+	Search      string             `form:"search"`
+	CustomerID  *uuid.UUID         `form:"customer_id"`
+	WarehouseID *uuid.UUID         `form:"warehouse_id"`
 	Status      *trade.OrderStatus `form:"status"`
-	Statuses    []string          `form:"statuses"`
-	StartDate   *time.Time        `form:"start_date"`
-	EndDate     *time.Time        `form:"end_date"`
-	MinAmount   *decimal.Decimal  `form:"min_amount"`
-	MaxAmount   *decimal.Decimal  `form:"max_amount"`
-	Page        int               `form:"page" binding:"min=1"`
-	PageSize    int               `form:"page_size" binding:"min=1,max=100"`
-	OrderBy     string            `form:"order_by"`
-	OrderDir    string            `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	Statuses    []string           `form:"statuses"`
+	StartDate   *time.Time         `form:"start_date"`
+	EndDate     *time.Time         `form:"end_date"`
+	MinAmount   *decimal.Decimal   `form:"min_amount"`
+	MaxAmount   *decimal.Decimal   `form:"max_amount"`
+	Page        int                `form:"page" binding:"min=1"`
+	PageSize    int                `form:"page_size" binding:"min=1,max=100"`
+	OrderBy     string             `form:"order_by"`
+	OrderDir    string             `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
 
 // SalesOrderResponse represents a sales order in API responses
@@ -438,12 +438,12 @@ type SalesOrderItemResponse struct {
 
 // OrderStatusSummary represents a summary of orders by status
 type OrderStatusSummary struct {
-	Draft     int64           `json:"draft"`
-	Confirmed int64           `json:"confirmed"`
-	Shipped   int64           `json:"shipped"`
-	Completed int64           `json:"completed"`
-	Cancelled int64           `json:"cancelled"`
-	Total     int64           `json:"total"`
+	Draft       int64           `json:"draft"`
+	Confirmed   int64           `json:"confirmed"`
+	Shipped     int64           `json:"shipped"`
+	Completed   int64           `json:"completed"`
+	Cancelled   int64           `json:"cancelled"`
+	Total       int64           `json:"total"`
 	TotalAmount decimal.Decimal `json:"total_amount"`
 }
 

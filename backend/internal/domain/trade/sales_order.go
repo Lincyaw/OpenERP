@@ -153,21 +153,21 @@ func (i *SalesOrderItem) GetUnitPriceMoney() valueobject.Money {
 // It manages the lifecycle of a customer order from creation to completion
 type SalesOrder struct {
 	shared.TenantAggregateRoot
-	OrderNumber    string             `gorm:"type:varchar(50);not null;uniqueIndex:idx_sales_order_tenant_number,priority:2"`
-	CustomerID     uuid.UUID          `gorm:"type:uuid;not null;index"`
-	CustomerName   string             `gorm:"type:varchar(200);not null"`
-	WarehouseID    *uuid.UUID         `gorm:"type:uuid;index"` // Warehouse for shipment (set on confirm/ship)
-	Items          []SalesOrderItem   `gorm:"foreignKey:OrderID;references:ID"`
-	TotalAmount    decimal.Decimal    `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
-	DiscountAmount decimal.Decimal    `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
-	PayableAmount  decimal.Decimal    `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
-	Status         OrderStatus        `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Remark         string             `gorm:"type:text"`
-	ConfirmedAt    *time.Time         `gorm:"index"`
-	ShippedAt      *time.Time         `gorm:"index"`
+	OrderNumber    string           `gorm:"type:varchar(50);not null;uniqueIndex:idx_sales_order_tenant_number,priority:2"`
+	CustomerID     uuid.UUID        `gorm:"type:uuid;not null;index"`
+	CustomerName   string           `gorm:"type:varchar(200);not null"`
+	WarehouseID    *uuid.UUID       `gorm:"type:uuid;index"` // Warehouse for shipment (set on confirm/ship)
+	Items          []SalesOrderItem `gorm:"foreignKey:OrderID;references:ID"`
+	TotalAmount    decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
+	DiscountAmount decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
+	PayableAmount  decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
+	Status         OrderStatus      `gorm:"type:varchar(20);not null;default:'DRAFT'"`
+	Remark         string           `gorm:"type:text"`
+	ConfirmedAt    *time.Time       `gorm:"index"`
+	ShippedAt      *time.Time       `gorm:"index"`
 	CompletedAt    *time.Time
 	CancelledAt    *time.Time
-	CancelReason   string             `gorm:"type:varchar(500)"`
+	CancelReason   string `gorm:"type:varchar(500)"`
 }
 
 // TableName returns the table name for GORM

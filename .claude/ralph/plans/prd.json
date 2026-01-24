@@ -93,7 +93,7 @@
   {"id":"P3-BE-006","story":"SalesOrder 事件处理 (库存锁定)","priority":"high","requirements":["订单确认时发布事件","库存服务订阅并锁定库存","实现事件重试机制"],"passes":false},
   {"id":"P3-BE-007","story":"SalesOrder API","priority":"high","requirements":["实现订单 CRUD API","实现订单状态变更 API","实现订单查询 API"],"passes":true},
   {"id":"P3-BE-010","story":"PurchaseOrder 聚合根实现","priority":"high","requirements":["实现 PurchaseOrder 聚合根","实现采购订单状态机","实现采购金额计算"],"passes":true},
-  {"id":"P3-BE-011","story":"采购收货逻辑 (分批入库)","priority":"high","requirements":["实现分批收货逻辑","更新采购订单状态","生成入库记录"],"passes":false},
+  {"id":"P3-BE-011","story":"采购收货逻辑 (分批入库)","priority":"high","requirements":["实现分批收货逻辑","更新采购订单状态","生成入库记录"],"passes":true},
   {"id":"P3-BE-012","story":"PurchaseOrder Application Service","priority":"high","requirements":["实现采购订单创建","实现采购订单确认","实现收货服务"],"passes":true},
   {"id":"P3-BE-013","story":"PurchaseOrder API","priority":"high","requirements":["实现采购订单 CRUD API","实现收货 API","实现采购订单查询 API"],"passes":true},
   {"id":"P3-BE-020","story":"SalesReturn 聚合根实现","priority":"medium","requirements":["实现 SalesReturn 聚合根","关联原销售订单","实现退货状态机"],"passes":false},

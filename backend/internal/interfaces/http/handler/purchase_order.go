@@ -27,12 +27,12 @@ func NewPurchaseOrderHandler(orderService *tradeapp.PurchaseOrderService) *Purch
 // CreatePurchaseOrderRequest represents a request to create a new purchase order
 // @Description Request body for creating a new purchase order
 type CreatePurchaseOrderRequest struct {
-	SupplierID   string                          `json:"supplier_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	SupplierName string                          `json:"supplier_name" binding:"required,min=1,max=200" example:"供应商A"`
-	WarehouseID  *string                         `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Items        []CreatePurchaseOrderItemInput  `json:"items"`
-	Discount     *float64                        `json:"discount" example:"100.00"`
-	Remark       string                          `json:"remark" example:"备注信息"`
+	SupplierID   string                         `json:"supplier_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	SupplierName string                         `json:"supplier_name" binding:"required,min=1,max=200" example:"供应商A"`
+	WarehouseID  *string                        `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Items        []CreatePurchaseOrderItemInput `json:"items"`
+	Discount     *float64                       `json:"discount" example:"100.00"`
+	Remark       string                         `json:"remark" example:"备注信息"`
 }
 
 // CreatePurchaseOrderItemInput represents an item in the create order request
@@ -107,29 +107,29 @@ type CancelPurchaseOrderRequest struct {
 // PurchaseOrderResponse represents a purchase order in API responses
 // @Description Purchase order response
 type PurchaseOrderResponse struct {
-	ID               string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	TenantID         string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrderNumber      string                         `json:"order_number" example:"PO-2026-00001"`
-	SupplierID       string                         `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	SupplierName     string                         `json:"supplier_name" example:"供应商A"`
-	WarehouseID      *string                        `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Items            []PurchaseOrderItemResponse    `json:"items"`
-	ItemCount        int                            `json:"item_count" example:"3"`
-	TotalQuantity    float64                        `json:"total_quantity" example:"30"`
-	ReceivedQuantity float64                        `json:"received_quantity" example:"10"`
-	TotalAmount      float64                        `json:"total_amount" example:"1500.00"`
-	DiscountAmount   float64                        `json:"discount_amount" example:"100.00"`
-	PayableAmount    float64                        `json:"payable_amount" example:"1400.00"`
-	Status           string                         `json:"status" example:"draft"`
-	ReceiveProgress  float64                        `json:"receive_progress" example:"33.33"`
-	Remark           string                         `json:"remark" example:"备注信息"`
-	ConfirmedAt      *time.Time                     `json:"confirmed_at,omitempty"`
-	CompletedAt      *time.Time                     `json:"completed_at,omitempty"`
-	CancelledAt      *time.Time                     `json:"cancelled_at,omitempty"`
-	CancelReason     string                         `json:"cancel_reason,omitempty" example:""`
-	CreatedAt        time.Time                      `json:"created_at"`
-	UpdatedAt        time.Time                      `json:"updated_at"`
-	Version          int                            `json:"version" example:"1"`
+	ID               string                      `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	TenantID         string                      `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrderNumber      string                      `json:"order_number" example:"PO-2026-00001"`
+	SupplierID       string                      `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	SupplierName     string                      `json:"supplier_name" example:"供应商A"`
+	WarehouseID      *string                     `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Items            []PurchaseOrderItemResponse `json:"items"`
+	ItemCount        int                         `json:"item_count" example:"3"`
+	TotalQuantity    float64                     `json:"total_quantity" example:"30"`
+	ReceivedQuantity float64                     `json:"received_quantity" example:"10"`
+	TotalAmount      float64                     `json:"total_amount" example:"1500.00"`
+	DiscountAmount   float64                     `json:"discount_amount" example:"100.00"`
+	PayableAmount    float64                     `json:"payable_amount" example:"1400.00"`
+	Status           string                      `json:"status" example:"draft"`
+	ReceiveProgress  float64                     `json:"receive_progress" example:"33.33"`
+	Remark           string                      `json:"remark" example:"备注信息"`
+	ConfirmedAt      *time.Time                  `json:"confirmed_at,omitempty"`
+	CompletedAt      *time.Time                  `json:"completed_at,omitempty"`
+	CancelledAt      *time.Time                  `json:"cancelled_at,omitempty"`
+	CancelReason     string                      `json:"cancel_reason,omitempty" example:""`
+	CreatedAt        time.Time                   `json:"created_at"`
+	UpdatedAt        time.Time                   `json:"updated_at"`
+	Version          int                         `json:"version" example:"1"`
 }
 
 // PurchaseOrderListResponse represents a purchase order in list responses
@@ -194,13 +194,13 @@ type ReceiveResultResponse struct {
 // PurchaseOrderStatusSummaryResponse represents order count summary by status
 // @Description Purchase order status summary response
 type PurchaseOrderStatusSummaryResponse struct {
-	Draft           int64   `json:"draft" example:"5"`
-	Confirmed       int64   `json:"confirmed" example:"10"`
-	PartialReceived int64   `json:"partial_received" example:"3"`
-	Completed       int64   `json:"completed" example:"100"`
-	Cancelled       int64   `json:"cancelled" example:"3"`
-	Total           int64   `json:"total" example:"121"`
-	PendingReceipt  int64   `json:"pending_receipt" example:"13"`
+	Draft           int64 `json:"draft" example:"5"`
+	Confirmed       int64 `json:"confirmed" example:"10"`
+	PartialReceived int64 `json:"partial_received" example:"3"`
+	Completed       int64 `json:"completed" example:"100"`
+	Cancelled       int64 `json:"cancelled" example:"3"`
+	Total           int64 `json:"total" example:"121"`
+	PendingReceipt  int64 `json:"pending_receipt" example:"13"`
 }
 
 // Create godoc

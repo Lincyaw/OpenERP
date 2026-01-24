@@ -177,14 +177,14 @@ type InventoryTransactionRepository interface {
 // InventoryFilter extends shared.Filter with inventory-specific filters
 type InventoryFilter struct {
 	shared.Filter
-	WarehouseID   *uuid.UUID
-	ProductID     *uuid.UUID
-	BelowMinimum  bool
-	AboveMaximum  bool
-	HasStock      bool
-	NoStock       bool
-	MinQuantity   *decimal.Decimal
-	MaxQuantity   *decimal.Decimal
+	WarehouseID  *uuid.UUID
+	ProductID    *uuid.UUID
+	BelowMinimum bool
+	AboveMaximum bool
+	HasStock     bool
+	NoStock      bool
+	MinQuantity  *decimal.Decimal
+	MaxQuantity  *decimal.Decimal
 }
 
 // TransactionFilter extends shared.Filter with transaction-specific filters

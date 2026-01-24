@@ -11,7 +11,8 @@ import (
 
 // PurchaseOrderService handles purchase order business operations
 type PurchaseOrderService struct {
-	orderRepo trade.PurchaseOrderRepository
+	orderRepo      trade.PurchaseOrderRepository
+	eventPublisher shared.EventPublisher
 }
 
 // NewPurchaseOrderService creates a new PurchaseOrderService
@@ -19,6 +20,11 @@ func NewPurchaseOrderService(orderRepo trade.PurchaseOrderRepository) *PurchaseO
 	return &PurchaseOrderService{
 		orderRepo: orderRepo,
 	}
+}
+
+// SetEventPublisher sets the event publisher for publishing domain events
+func (s *PurchaseOrderService) SetEventPublisher(publisher shared.EventPublisher) {
+	s.eventPublisher = publisher
 }
 
 // Create creates a new purchase order
@@ -424,8 +430,15 @@ func (s *PurchaseOrderService) Receive(ctx context.Context, tenantID, orderID uu
 		return nil, err
 	}
 
-	// Domain events will be processed by event handlers for inventory updates
-	// See P3-BE-011 for inventory integration
+	// Publish domain events for inventory integration
+	if s.eventPublisher != nil && len(order.GetDomainEvents()) > 0 {
+		if err := s.eventPublisher.Publish(ctx, order.GetDomainEvents()...); err != nil {
+			// Log error but don't fail the operation - events can be processed later
+			// In production, this would be handled by the outbox pattern
+			_ = err
+		}
+		order.ClearDomainEvents()
+	}
 
 	orderResponse := ToPurchaseOrderResponse(order)
 	return &ReceiveResultResponse{

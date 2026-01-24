@@ -27,12 +27,12 @@ func NewSalesOrderHandler(orderService *tradeapp.SalesOrderService) *SalesOrderH
 // CreateSalesOrderRequest represents a request to create a new sales order
 // @Description Request body for creating a new sales order
 type CreateSalesOrderRequest struct {
-	CustomerID   string                       `json:"customer_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
-	CustomerName string                       `json:"customer_name" binding:"required,min=1,max=200" example:"张三"`
-	WarehouseID  *string                      `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Items        []CreateSalesOrderItemInput  `json:"items"`
-	Discount     *float64                     `json:"discount" example:"100.00"`
-	Remark       string                       `json:"remark" example:"备注信息"`
+	CustomerID   string                      `json:"customer_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	CustomerName string                      `json:"customer_name" binding:"required,min=1,max=200" example:"张三"`
+	WarehouseID  *string                     `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Items        []CreateSalesOrderItemInput `json:"items"`
+	Discount     *float64                    `json:"discount" example:"100.00"`
+	Remark       string                      `json:"remark" example:"备注信息"`
 }
 
 // CreateSalesOrderItemInput represents an item in the create order request
@@ -96,28 +96,28 @@ type CancelOrderRequest struct {
 // SalesOrderResponse represents a sales order in API responses
 // @Description Sales order response
 type SalesOrderResponse struct {
-	ID             string                    `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	TenantID       string                    `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrderNumber    string                    `json:"order_number" example:"SO-2026-00001"`
-	CustomerID     string                    `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	CustomerName   string                    `json:"customer_name" example:"张三"`
-	WarehouseID    *string                   `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Items          []SalesOrderItemResponse  `json:"items"`
-	ItemCount      int                       `json:"item_count" example:"3"`
-	TotalQuantity  float64                   `json:"total_quantity" example:"30"`
-	TotalAmount    float64                   `json:"total_amount" example:"2999.70"`
-	DiscountAmount float64                   `json:"discount_amount" example:"100.00"`
-	PayableAmount  float64                   `json:"payable_amount" example:"2899.70"`
-	Status         string                    `json:"status" example:"draft"`
-	Remark         string                    `json:"remark" example:"备注信息"`
-	ConfirmedAt    *time.Time                `json:"confirmed_at,omitempty"`
-	ShippedAt      *time.Time                `json:"shipped_at,omitempty"`
-	CompletedAt    *time.Time                `json:"completed_at,omitempty"`
-	CancelledAt    *time.Time                `json:"cancelled_at,omitempty"`
-	CancelReason   string                    `json:"cancel_reason,omitempty" example:""`
-	CreatedAt      time.Time                 `json:"created_at"`
-	UpdatedAt      time.Time                 `json:"updated_at"`
-	Version        int                       `json:"version" example:"1"`
+	ID             string                   `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	TenantID       string                   `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrderNumber    string                   `json:"order_number" example:"SO-2026-00001"`
+	CustomerID     string                   `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	CustomerName   string                   `json:"customer_name" example:"张三"`
+	WarehouseID    *string                  `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Items          []SalesOrderItemResponse `json:"items"`
+	ItemCount      int                      `json:"item_count" example:"3"`
+	TotalQuantity  float64                  `json:"total_quantity" example:"30"`
+	TotalAmount    float64                  `json:"total_amount" example:"2999.70"`
+	DiscountAmount float64                  `json:"discount_amount" example:"100.00"`
+	PayableAmount  float64                  `json:"payable_amount" example:"2899.70"`
+	Status         string                   `json:"status" example:"draft"`
+	Remark         string                   `json:"remark" example:"备注信息"`
+	ConfirmedAt    *time.Time               `json:"confirmed_at,omitempty"`
+	ShippedAt      *time.Time               `json:"shipped_at,omitempty"`
+	CompletedAt    *time.Time               `json:"completed_at,omitempty"`
+	CancelledAt    *time.Time               `json:"cancelled_at,omitempty"`
+	CancelReason   string                   `json:"cancel_reason,omitempty" example:""`
+	CreatedAt      time.Time                `json:"created_at"`
+	UpdatedAt      time.Time                `json:"updated_at"`
+	Version        int                      `json:"version" example:"1"`
 }
 
 // SalesOrderListResponse represents a sales order in list responses
@@ -157,12 +157,12 @@ type SalesOrderItemResponse struct {
 // OrderStatusSummaryResponse represents order count summary by status
 // @Description Order status summary response
 type OrderStatusSummaryResponse struct {
-	Draft     int64   `json:"draft" example:"5"`
-	Confirmed int64   `json:"confirmed" example:"10"`
-	Shipped   int64   `json:"shipped" example:"8"`
-	Completed int64   `json:"completed" example:"100"`
-	Cancelled int64   `json:"cancelled" example:"3"`
-	Total     int64   `json:"total" example:"126"`
+	Draft     int64 `json:"draft" example:"5"`
+	Confirmed int64 `json:"confirmed" example:"10"`
+	Shipped   int64 `json:"shipped" example:"8"`
+	Completed int64 `json:"completed" example:"100"`
+	Cancelled int64 `json:"cancelled" example:"3"`
+	Total     int64 `json:"total" example:"126"`
 }
 
 // Create godoc

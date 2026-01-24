@@ -13,6 +13,7 @@ import (
 	partnerapp "github.com/erp/backend/internal/application/partner"
 	tradeapp "github.com/erp/backend/internal/application/trade"
 	"github.com/erp/backend/internal/infrastructure/config"
+	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	"github.com/erp/backend/internal/interfaces/http/handler"
@@ -113,6 +114,29 @@ func main() {
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
+
+	// Initialize event bus and handlers
+	eventBus := event.NewInMemoryEventBus(log)
+
+	// Register event handlers for cross-context integration
+	purchaseOrderReceivedHandler := tradeapp.NewPurchaseOrderReceivedHandler(inventoryService, log)
+	eventBus.Subscribe(purchaseOrderReceivedHandler)
+	log.Info("Event handlers registered",
+		zap.Strings("purchase_order_received_events", purchaseOrderReceivedHandler.EventTypes()),
+	)
+
+	// Start event bus
+	if err := eventBus.Start(context.Background()); err != nil {
+		log.Fatal("Failed to start event bus", zap.Error(err))
+	}
+	defer func() {
+		if err := eventBus.Stop(context.Background()); err != nil {
+			log.Error("Error stopping event bus", zap.Error(err))
+		}
+	}()
+
+	// Inject event bus into services that publish events
+	purchaseOrderService.SetEventPublisher(eventBus)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)

@@ -186,12 +186,12 @@ type TransactionListFilter struct {
 
 // InventorySummaryResponse represents inventory summary statistics
 type InventorySummaryResponse struct {
-	TotalItems          int64           `json:"total_items"`
-	TotalValue          decimal.Decimal `json:"total_value"`
-	ItemsBelowMinimum   int64           `json:"items_below_minimum"`
-	TotalAvailable      decimal.Decimal `json:"total_available"`
-	TotalLocked         decimal.Decimal `json:"total_locked"`
-	WarehouseBreakdown  []WarehouseSummary `json:"warehouse_breakdown,omitempty"`
+	TotalItems         int64              `json:"total_items"`
+	TotalValue         decimal.Decimal    `json:"total_value"`
+	ItemsBelowMinimum  int64              `json:"items_below_minimum"`
+	TotalAvailable     decimal.Decimal    `json:"total_available"`
+	TotalLocked        decimal.Decimal    `json:"total_locked"`
+	WarehouseBreakdown []WarehouseSummary `json:"warehouse_breakdown,omitempty"`
 }
 
 // WarehouseSummary represents inventory summary for a warehouse

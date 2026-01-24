@@ -5431,3 +5431,108 @@ Implemented the Purchase Order Creation page (采购开单页面) with full CRUD
 - Empty items (without product_id) are filtered out before API submission
 - Navigation goes back to `/trade/purchase` after successful submit
 - Default warehouse is auto-selected if available
+
+
+---
+
+## 2026-01-24 - P3-BE-011: Purchase Order Receiving Logic (Inventory Integration) Complete
+
+**Date:** 2026-01-24
+**Status:** ✅ COMPLETED
+
+### Summary
+Implemented the purchase order receiving logic that integrates the trade context with the inventory context via domain events. When goods are received on a purchase order, the system automatically increases inventory stock with batch tracking, expiry dates, and moving weighted average cost calculation.
+
+### What was done
+1. Created `PurchaseOrderReceivedHandler` at `internal/application/trade/purchase_order_received_handler.go`:
+   - Subscribes to `PurchaseOrderReceivedEvent` from the trade domain
+   - For each received item, calls `InventoryService.IncreaseStock()` to update inventory
+   - Passes batch number and expiry date for batch tracking
+   - Uses `PURCHASE_ORDER` source type and order ID for audit trail
+   - Implements partial failure handling - continues processing remaining items if one fails
+   - Comprehensive logging for debugging and monitoring
+
+2. Updated `PurchaseOrderService` at `internal/application/trade/purchase_order_service.go`:
+   - Added `eventPublisher` field of type `shared.EventPublisher`
+   - Added `SetEventPublisher()` method for dependency injection
+   - Modified `Receive()` method to publish domain events after successful save
+   - Events are cleared from aggregate after publishing
+
+3. Updated `main.go` to wire up the event system:
+   - Creates `InMemoryEventBus` instance
+   - Creates and registers `PurchaseOrderReceivedHandler`
+   - Injects event publisher into `PurchaseOrderService`
+   - Starts event bus on server startup
+   - Stops event bus gracefully on shutdown
+
+4. Created comprehensive unit tests at `internal/application/trade/purchase_order_received_handler_test.go`:
+   - `TestPurchaseOrderReceivedHandler_EventTypes` - verifies event subscription
+   - `TestPurchaseOrderReceivedHandler_Handle_Success` - single item success case
+   - `TestPurchaseOrderReceivedHandler_Handle_MissingWarehouse` - error on missing warehouse
+   - `TestPurchaseOrderReceivedHandler_Handle_WrongEventType` - error on wrong event type
+   - `TestPurchaseOrderReceivedHandler_Handle_MultipleItems` - multiple items processing
+   - `TestPurchaseOrderReceivedHandler_Handle_PartialFailure` - partial failure handling
+   - `TestNewPurchaseOrderReceivedHandler` - constructor test
+
+### Files created
+- `backend/internal/application/trade/purchase_order_received_handler.go` (new)
+- `backend/internal/application/trade/purchase_order_received_handler_test.go` (new)
+
+### Files modified
+- `backend/internal/application/trade/purchase_order_service.go` (added event publishing)
+- `backend/cmd/server/main.go` (added event bus and handler registration)
+- `.claude/ralph/plans/prd.json` (marked P3-BE-011 as completed)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./...` ✅ PASSED (all 7 new handler tests pass)
+
+### Event Flow
+```
+1. HTTP POST /trade/purchase-orders/{id}/receive
+   ↓
+2. PurchaseOrderHandler.Receive()
+   ↓
+3. PurchaseOrderService.Receive()
+   ↓
+4. PurchaseOrder.Receive() [Domain]
+   - Validates order status (CONFIRMED or PARTIAL_RECEIVED)
+   - Updates ReceivedQuantity for each item
+   - Transitions status to COMPLETED if all received
+   - Raises PurchaseOrderReceivedEvent
+   ↓
+5. PurchaseOrderRepository.SaveWithLock()
+   ↓
+6. EventBus.Publish(PurchaseOrderReceivedEvent)
+   ↓
+7. PurchaseOrderReceivedHandler.Handle()
+   - For each received item:
+     → InventoryService.IncreaseStock()
+       - Gets/creates InventoryItem (warehouse+product)
+       - Recalculates moving weighted average cost
+       - Creates StockBatch if batch number provided
+       - Creates InventoryTransaction audit record
+```
+
+### Inventory Integration Details
+- **Source Type:** `PURCHASE_ORDER`
+- **Source ID:** Purchase Order UUID
+- **Reference:** `PO:<order_number>` (e.g., `PO:PO-2024-00001`)
+- **Reason:** `Purchase order receiving`
+- **Batch Tracking:** Passes batch number and expiry date if provided
+- **Cost Calculation:** Moving weighted average recalculated on stock increase
+
+### Key Design Decisions
+1. **Event-Driven Architecture:** Uses in-memory event bus for synchronous cross-context communication
+2. **Partial Failure Tolerance:** Continues processing remaining items if one fails
+3. **Error Logging:** Errors are logged but don't rollback the order save (eventual consistency)
+4. **Dependency Injection:** Event publisher is injected into service, not constructor dependency
+5. **No Rollback:** If inventory update fails, the receive operation is still recorded (can be retried)
+
+### Notes for next developer
+- **P3-FE-012** (采购收货页面) is now unblocked - backend supports full receiving workflow
+- Event handler is registered on server startup - no database configuration needed
+- For production, consider implementing outbox pattern for reliable event delivery
+- The `WarehouseID` is required for receiving - validation happens in handler
+- Use `LOG_LEVEL=debug` to see detailed inventory increase logs
+- If receiving fails for some items, check server logs for specific product failures

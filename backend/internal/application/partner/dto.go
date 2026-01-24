@@ -14,43 +14,43 @@ import (
 
 // CreateCustomerRequest represents a request to create a new customer
 type CreateCustomerRequest struct {
-	Code        string `json:"code" binding:"required,min=1,max=50"`
-	Name        string `json:"name" binding:"required,min=1,max=200"`
-	ShortName   string `json:"short_name" binding:"max=100"`
-	Type        string `json:"type" binding:"required,oneof=individual organization"`
-	ContactName string `json:"contact_name" binding:"max=100"`
-	Phone       string `json:"phone" binding:"max=50"`
-	Email       string `json:"email" binding:"omitempty,email,max=200"`
-	Address     string `json:"address" binding:"max=500"`
-	City        string `json:"city" binding:"max=100"`
-	Province    string `json:"province" binding:"max=100"`
-	PostalCode  string `json:"postal_code" binding:"max=20"`
-	Country     string `json:"country" binding:"max=100"`
-	TaxID       string `json:"tax_id" binding:"max=50"`
+	Code        string           `json:"code" binding:"required,min=1,max=50"`
+	Name        string           `json:"name" binding:"required,min=1,max=200"`
+	ShortName   string           `json:"short_name" binding:"max=100"`
+	Type        string           `json:"type" binding:"required,oneof=individual organization"`
+	ContactName string           `json:"contact_name" binding:"max=100"`
+	Phone       string           `json:"phone" binding:"max=50"`
+	Email       string           `json:"email" binding:"omitempty,email,max=200"`
+	Address     string           `json:"address" binding:"max=500"`
+	City        string           `json:"city" binding:"max=100"`
+	Province    string           `json:"province" binding:"max=100"`
+	PostalCode  string           `json:"postal_code" binding:"max=20"`
+	Country     string           `json:"country" binding:"max=100"`
+	TaxID       string           `json:"tax_id" binding:"max=50"`
 	CreditLimit *decimal.Decimal `json:"credit_limit"`
-	Notes       string `json:"notes"`
-	SortOrder   *int   `json:"sort_order"`
-	Attributes  string `json:"attributes"`
+	Notes       string           `json:"notes"`
+	SortOrder   *int             `json:"sort_order"`
+	Attributes  string           `json:"attributes"`
 }
 
 // UpdateCustomerRequest represents a request to update a customer
 type UpdateCustomerRequest struct {
-	Name        *string `json:"name" binding:"omitempty,min=1,max=200"`
-	ShortName   *string `json:"short_name" binding:"omitempty,max=100"`
-	ContactName *string `json:"contact_name" binding:"omitempty,max=100"`
-	Phone       *string `json:"phone" binding:"omitempty,max=50"`
-	Email       *string `json:"email" binding:"omitempty,email,max=200"`
-	Address     *string `json:"address" binding:"omitempty,max=500"`
-	City        *string `json:"city" binding:"omitempty,max=100"`
-	Province    *string `json:"province" binding:"omitempty,max=100"`
-	PostalCode  *string `json:"postal_code" binding:"omitempty,max=20"`
-	Country     *string `json:"country" binding:"omitempty,max=100"`
-	TaxID       *string `json:"tax_id" binding:"omitempty,max=50"`
+	Name        *string          `json:"name" binding:"omitempty,min=1,max=200"`
+	ShortName   *string          `json:"short_name" binding:"omitempty,max=100"`
+	ContactName *string          `json:"contact_name" binding:"omitempty,max=100"`
+	Phone       *string          `json:"phone" binding:"omitempty,max=50"`
+	Email       *string          `json:"email" binding:"omitempty,email,max=200"`
+	Address     *string          `json:"address" binding:"omitempty,max=500"`
+	City        *string          `json:"city" binding:"omitempty,max=100"`
+	Province    *string          `json:"province" binding:"omitempty,max=100"`
+	PostalCode  *string          `json:"postal_code" binding:"omitempty,max=20"`
+	Country     *string          `json:"country" binding:"omitempty,max=100"`
+	TaxID       *string          `json:"tax_id" binding:"omitempty,max=50"`
 	CreditLimit *decimal.Decimal `json:"credit_limit"`
-	Level       *string `json:"level" binding:"omitempty,oneof=normal silver gold platinum vip"`
-	Notes       *string `json:"notes"`
-	SortOrder   *int    `json:"sort_order"`
-	Attributes  *string `json:"attributes"`
+	Level       *string          `json:"level" binding:"omitempty,oneof=normal silver gold platinum vip"`
+	Notes       *string          `json:"notes"`
+	SortOrder   *int             `json:"sort_order"`
+	Attributes  *string          `json:"attributes"`
 }
 
 // UpdateCustomerCodeRequest represents a request to update a customer's code
@@ -108,16 +108,16 @@ type CustomerListResponse struct {
 
 // CustomerListFilter represents filter options for customer list
 type CustomerListFilter struct {
-	Search   string  `form:"search"`
-	Status   string  `form:"status" binding:"omitempty,oneof=active inactive suspended"`
-	Type     string  `form:"type" binding:"omitempty,oneof=individual organization"`
-	Level    string  `form:"level" binding:"omitempty,oneof=normal silver gold platinum vip"`
-	City     string  `form:"city"`
-	Province string  `form:"province"`
-	Page     int     `form:"page" binding:"min=1"`
-	PageSize int     `form:"page_size" binding:"min=1,max=100"`
-	OrderBy  string  `form:"order_by"`
-	OrderDir string  `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	Search   string `form:"search"`
+	Status   string `form:"status" binding:"omitempty,oneof=active inactive suspended"`
+	Type     string `form:"type" binding:"omitempty,oneof=individual organization"`
+	Level    string `form:"level" binding:"omitempty,oneof=normal silver gold platinum vip"`
+	City     string `form:"city"`
+	Province string `form:"province"`
+	Page     int    `form:"page" binding:"min=1"`
+	PageSize int    `form:"page_size" binding:"min=1,max=100"`
+	OrderBy  string `form:"order_by"`
+	OrderDir string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
 
 // ToCustomerResponse converts a domain Customer to CustomerResponse
@@ -187,50 +187,50 @@ func ToCustomerListResponses(customers []partner.Customer) []CustomerListRespons
 
 // CreateSupplierRequest represents a request to create a new supplier
 type CreateSupplierRequest struct {
-	Code        string `json:"code" binding:"required,min=1,max=50"`
-	Name        string `json:"name" binding:"required,min=1,max=200"`
-	ShortName   string `json:"short_name" binding:"max=100"`
-	Type        string `json:"type" binding:"required,oneof=manufacturer distributor retailer service"`
-	ContactName string `json:"contact_name" binding:"max=100"`
-	Phone       string `json:"phone" binding:"max=50"`
-	Email       string `json:"email" binding:"omitempty,email,max=200"`
-	Address     string `json:"address" binding:"max=500"`
-	City        string `json:"city" binding:"max=100"`
-	Province    string `json:"province" binding:"max=100"`
-	PostalCode  string `json:"postal_code" binding:"max=20"`
-	Country     string `json:"country" binding:"max=100"`
-	TaxID       string `json:"tax_id" binding:"max=50"`
-	BankName    string `json:"bank_name" binding:"max=200"`
-	BankAccount string `json:"bank_account" binding:"max=100"`
-	CreditDays  *int   `json:"credit_days"`
+	Code        string           `json:"code" binding:"required,min=1,max=50"`
+	Name        string           `json:"name" binding:"required,min=1,max=200"`
+	ShortName   string           `json:"short_name" binding:"max=100"`
+	Type        string           `json:"type" binding:"required,oneof=manufacturer distributor retailer service"`
+	ContactName string           `json:"contact_name" binding:"max=100"`
+	Phone       string           `json:"phone" binding:"max=50"`
+	Email       string           `json:"email" binding:"omitempty,email,max=200"`
+	Address     string           `json:"address" binding:"max=500"`
+	City        string           `json:"city" binding:"max=100"`
+	Province    string           `json:"province" binding:"max=100"`
+	PostalCode  string           `json:"postal_code" binding:"max=20"`
+	Country     string           `json:"country" binding:"max=100"`
+	TaxID       string           `json:"tax_id" binding:"max=50"`
+	BankName    string           `json:"bank_name" binding:"max=200"`
+	BankAccount string           `json:"bank_account" binding:"max=100"`
+	CreditDays  *int             `json:"credit_days"`
 	CreditLimit *decimal.Decimal `json:"credit_limit"`
-	Rating      *int   `json:"rating" binding:"omitempty,min=0,max=5"`
-	Notes       string `json:"notes"`
-	SortOrder   *int   `json:"sort_order"`
-	Attributes  string `json:"attributes"`
+	Rating      *int             `json:"rating" binding:"omitempty,min=0,max=5"`
+	Notes       string           `json:"notes"`
+	SortOrder   *int             `json:"sort_order"`
+	Attributes  string           `json:"attributes"`
 }
 
 // UpdateSupplierRequest represents a request to update a supplier
 type UpdateSupplierRequest struct {
-	Name        *string `json:"name" binding:"omitempty,min=1,max=200"`
-	ShortName   *string `json:"short_name" binding:"omitempty,max=100"`
-	ContactName *string `json:"contact_name" binding:"omitempty,max=100"`
-	Phone       *string `json:"phone" binding:"omitempty,max=50"`
-	Email       *string `json:"email" binding:"omitempty,email,max=200"`
-	Address     *string `json:"address" binding:"omitempty,max=500"`
-	City        *string `json:"city" binding:"omitempty,max=100"`
-	Province    *string `json:"province" binding:"omitempty,max=100"`
-	PostalCode  *string `json:"postal_code" binding:"omitempty,max=20"`
-	Country     *string `json:"country" binding:"omitempty,max=100"`
-	TaxID       *string `json:"tax_id" binding:"omitempty,max=50"`
-	BankName    *string `json:"bank_name" binding:"omitempty,max=200"`
-	BankAccount *string `json:"bank_account" binding:"omitempty,max=100"`
-	CreditDays  *int    `json:"credit_days"`
+	Name        *string          `json:"name" binding:"omitempty,min=1,max=200"`
+	ShortName   *string          `json:"short_name" binding:"omitempty,max=100"`
+	ContactName *string          `json:"contact_name" binding:"omitempty,max=100"`
+	Phone       *string          `json:"phone" binding:"omitempty,max=50"`
+	Email       *string          `json:"email" binding:"omitempty,email,max=200"`
+	Address     *string          `json:"address" binding:"omitempty,max=500"`
+	City        *string          `json:"city" binding:"omitempty,max=100"`
+	Province    *string          `json:"province" binding:"omitempty,max=100"`
+	PostalCode  *string          `json:"postal_code" binding:"omitempty,max=20"`
+	Country     *string          `json:"country" binding:"omitempty,max=100"`
+	TaxID       *string          `json:"tax_id" binding:"omitempty,max=50"`
+	BankName    *string          `json:"bank_name" binding:"omitempty,max=200"`
+	BankAccount *string          `json:"bank_account" binding:"omitempty,max=100"`
+	CreditDays  *int             `json:"credit_days"`
 	CreditLimit *decimal.Decimal `json:"credit_limit"`
-	Rating      *int    `json:"rating" binding:"omitempty,min=0,max=5"`
-	Notes       *string `json:"notes"`
-	SortOrder   *int    `json:"sort_order"`
-	Attributes  *string `json:"attributes"`
+	Rating      *int             `json:"rating" binding:"omitempty,min=0,max=5"`
+	Notes       *string          `json:"notes"`
+	SortOrder   *int             `json:"sort_order"`
+	Attributes  *string          `json:"attributes"`
 }
 
 // UpdateSupplierCodeRequest represents a request to update a supplier's code
@@ -293,17 +293,17 @@ type SupplierListResponse struct {
 
 // SupplierListFilter represents filter options for supplier list
 type SupplierListFilter struct {
-	Search    string  `form:"search"`
-	Status    string  `form:"status" binding:"omitempty,oneof=active inactive blocked"`
-	Type      string  `form:"type" binding:"omitempty,oneof=manufacturer distributor retailer service"`
-	City      string  `form:"city"`
-	Province  string  `form:"province"`
-	MinRating *int    `form:"min_rating" binding:"omitempty,min=0,max=5"`
-	MaxRating *int    `form:"max_rating" binding:"omitempty,min=0,max=5"`
-	Page      int     `form:"page" binding:"min=1"`
-	PageSize  int     `form:"page_size" binding:"min=1,max=100"`
-	OrderBy   string  `form:"order_by"`
-	OrderDir  string  `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	Search    string `form:"search"`
+	Status    string `form:"status" binding:"omitempty,oneof=active inactive blocked"`
+	Type      string `form:"type" binding:"omitempty,oneof=manufacturer distributor retailer service"`
+	City      string `form:"city"`
+	Province  string `form:"province"`
+	MinRating *int   `form:"min_rating" binding:"omitempty,min=0,max=5"`
+	MaxRating *int   `form:"max_rating" binding:"omitempty,min=0,max=5"`
+	Page      int    `form:"page" binding:"min=1"`
+	PageSize  int    `form:"page_size" binding:"min=1,max=100"`
+	OrderBy   string `form:"order_by"`
+	OrderDir  string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
 
 // ToSupplierResponse converts a domain Supplier to SupplierResponse

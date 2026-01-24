@@ -12,13 +12,13 @@ import (
 type StockLock struct {
 	shared.BaseEntity
 	InventoryItemID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	Quantity        decimal.Decimal `gorm:"type:decimal(18,4);not null"`                  // Locked quantity
-	SourceType      string          `gorm:"type:varchar(50);not null;index:idx_lock_src"` // e.g., "sales_order", "transfer"
+	Quantity        decimal.Decimal `gorm:"type:decimal(18,4);not null"`                   // Locked quantity
+	SourceType      string          `gorm:"type:varchar(50);not null;index:idx_lock_src"`  // e.g., "sales_order", "transfer"
 	SourceID        string          `gorm:"type:varchar(100);not null;index:idx_lock_src"` // ID of the source document
-	ExpireAt        time.Time       `gorm:"not null;index"`                               // When the lock expires
-	Released        bool            `gorm:"not null;default:false"`                       // Whether the lock was released (cancelled)
-	Consumed        bool            `gorm:"not null;default:false"`                       // Whether the lock was consumed (fulfilled)
-	ReleasedAt      *time.Time      `gorm:"type:timestamp"`                               // When the lock was released/consumed
+	ExpireAt        time.Time       `gorm:"not null;index"`                                // When the lock expires
+	Released        bool            `gorm:"not null;default:false"`                        // Whether the lock was released (cancelled)
+	Consumed        bool            `gorm:"not null;default:false"`                        // Whether the lock was consumed (fulfilled)
+	ReleasedAt      *time.Time      `gorm:"type:timestamp"`                                // When the lock was released/consumed
 }
 
 // TableName returns the table name for GORM

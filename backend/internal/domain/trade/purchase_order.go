@@ -209,20 +209,20 @@ type ReceiveItem struct {
 // It manages the lifecycle of a supplier order from creation to completion
 type PurchaseOrder struct {
 	shared.TenantAggregateRoot
-	OrderNumber    string               `gorm:"type:varchar(50);not null;uniqueIndex:idx_purchase_order_tenant_number,priority:2"`
-	SupplierID     uuid.UUID            `gorm:"type:uuid;not null;index"`
-	SupplierName   string               `gorm:"type:varchar(200);not null"`
-	WarehouseID    *uuid.UUID           `gorm:"type:uuid;index"` // Target warehouse for receiving
-	Items          []PurchaseOrderItem  `gorm:"foreignKey:OrderID;references:ID"`
-	TotalAmount    decimal.Decimal      `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
-	DiscountAmount decimal.Decimal      `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
-	PayableAmount  decimal.Decimal      `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
-	Status         PurchaseOrderStatus  `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Remark         string               `gorm:"type:text"`
-	ConfirmedAt    *time.Time           `gorm:"index"`
+	OrderNumber    string              `gorm:"type:varchar(50);not null;uniqueIndex:idx_purchase_order_tenant_number,priority:2"`
+	SupplierID     uuid.UUID           `gorm:"type:uuid;not null;index"`
+	SupplierName   string              `gorm:"type:varchar(200);not null"`
+	WarehouseID    *uuid.UUID          `gorm:"type:uuid;index"` // Target warehouse for receiving
+	Items          []PurchaseOrderItem `gorm:"foreignKey:OrderID;references:ID"`
+	TotalAmount    decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
+	DiscountAmount decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
+	PayableAmount  decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
+	Status         PurchaseOrderStatus `gorm:"type:varchar(20);not null;default:'DRAFT'"`
+	Remark         string              `gorm:"type:text"`
+	ConfirmedAt    *time.Time          `gorm:"index"`
 	CompletedAt    *time.Time
 	CancelledAt    *time.Time
-	CancelReason   string               `gorm:"type:varchar(500)"`
+	CancelReason   string `gorm:"type:varchar(500)"`
 }
 
 // TableName returns the table name for GORM

@@ -136,16 +136,16 @@ func (m *MockPurchaseOrderRepository) GenerateOrderNumber(ctx context.Context, t
 
 // Purchase Order Test helpers
 var (
-	testPOTenantID     = uuid.New()
-	testSupplierID     = uuid.New()
-	testPOProductID    = uuid.New()
-	testPOWarehouseID  = uuid.New()
-	testPOOrderID      = uuid.New()
-	testPOOrderNumber  = "PO-2024-00001"
-	testSupplierName   = "Test Supplier"
-	testPOProductName  = "Test Product"
-	testPOProductCode  = "TEST-001"
-	testPOUnit         = "pcs"
+	testPOTenantID    = uuid.New()
+	testSupplierID    = uuid.New()
+	testPOProductID   = uuid.New()
+	testPOWarehouseID = uuid.New()
+	testPOOrderID     = uuid.New()
+	testPOOrderNumber = "PO-2024-00001"
+	testSupplierName  = "Test Supplier"
+	testPOProductName = "Test Product"
+	testPOProductCode = "TEST-001"
+	testPOUnit        = "pcs"
 )
 
 func createTestPurchaseOrder() *trade.PurchaseOrder {

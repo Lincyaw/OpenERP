@@ -12,13 +12,13 @@ const AggregateTypeInventoryItem = "InventoryItem"
 
 // Event type constants
 const (
-	EventTypeStockIncreased        = "StockIncreased"
-	EventTypeStockLocked           = "StockLocked"
-	EventTypeStockUnlocked         = "StockUnlocked"
-	EventTypeStockDeducted         = "StockDeducted"
-	EventTypeStockAdjusted         = "StockAdjusted"
-	EventTypeInventoryCostChanged  = "InventoryCostChanged"
-	EventTypeStockBelowThreshold   = "StockBelowThreshold"
+	EventTypeStockIncreased       = "StockIncreased"
+	EventTypeStockLocked          = "StockLocked"
+	EventTypeStockUnlocked        = "StockUnlocked"
+	EventTypeStockDeducted        = "StockDeducted"
+	EventTypeStockAdjusted        = "StockAdjusted"
+	EventTypeInventoryCostChanged = "InventoryCostChanged"
+	EventTypeStockBelowThreshold  = "StockBelowThreshold"
 )
 
 // StockIncreasedEvent is raised when stock is increased (e.g., receiving inventory)
@@ -208,13 +208,13 @@ func (e *InventoryCostChangedEvent) EventType() string {
 // StockBelowThresholdEvent is raised when stock falls below minimum threshold
 type StockBelowThresholdEvent struct {
 	shared.BaseDomainEvent
-	InventoryItemID    uuid.UUID       `json:"inventory_item_id"`
-	WarehouseID        uuid.UUID       `json:"warehouse_id"`
-	ProductID          uuid.UUID       `json:"product_id"`
-	CurrentQuantity    decimal.Decimal `json:"current_quantity"`
-	MinimumQuantity    decimal.Decimal `json:"minimum_quantity"`
-	AvailableQuantity  decimal.Decimal `json:"available_quantity"`
-	LockedQuantity     decimal.Decimal `json:"locked_quantity"`
+	InventoryItemID   uuid.UUID       `json:"inventory_item_id"`
+	WarehouseID       uuid.UUID       `json:"warehouse_id"`
+	ProductID         uuid.UUID       `json:"product_id"`
+	CurrentQuantity   decimal.Decimal `json:"current_quantity"`
+	MinimumQuantity   decimal.Decimal `json:"minimum_quantity"`
+	AvailableQuantity decimal.Decimal `json:"available_quantity"`
+	LockedQuantity    decimal.Decimal `json:"locked_quantity"`
 }
 
 // NewStockBelowThresholdEvent creates a new StockBelowThresholdEvent
