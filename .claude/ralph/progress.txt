@@ -10128,3 +10128,86 @@ Backend builds successfully (`go build ./cmd/server/...`)
 
 ### Build Status
 TypeScript check passes (no errors)
+
+---
+
+## 2026-01-24 - P3-FE-030: 采购退货列表页面 (Purchase Returns List Page) Complete
+
+### Completed
+- **P3-FE-030**: 采购退货列表页面
+
+### What was done
+
+1. **PurchaseReturns List Page** (`frontend/src/pages/trade/PurchaseReturns.tsx`)
+   - Full list page with DataTable component
+   - Return number, original purchase order number, supplier, item count, refund amount columns
+   - Status display with color-coded tags
+   - Date columns: created, submitted, shipped, completed
+   - Sortable columns: return_number, total_refund, created_at
+
+2. **Status Filter**
+   - Filter by: DRAFT, PENDING, APPROVED, REJECTED, SHIPPED, COMPLETED, CANCELLED
+   - Status labels in Chinese
+   - Color-coded status tags (blue, orange, cyan, red, violet, green, grey)
+   - Additional SHIPPED status (violet) compared to Sales Returns
+
+3. **Supplier Filter**
+   - Dropdown with supplier list loaded from API
+   - Search/filter capability in dropdown
+
+4. **Date Range Filter**
+   - DatePicker range filter for filtering by date range
+
+5. **Row Actions**
+   - View: Navigate to detail page
+   - Submit: Submit draft for approval (DRAFT status only)
+   - Approve: Approve return (PENDING status only)
+   - Reject: Reject return (PENDING status only)
+   - Ship: Ship goods back to supplier (APPROVED status only) - triggers inventory deduction
+   - Complete: Mark as completed (SHIPPED status only)
+   - Cancel: Cancel return (DRAFT, PENDING, APPROVED status - before shipping)
+   - Delete: Delete return (DRAFT status only)
+
+6. **Route Registration** (`frontend/src/router/routes.tsx`)
+   - Added PurchaseReturnsPage lazy load
+   - Added `/trade/purchase-returns` route in menu with IconRedo icon
+   - Added route element mapping
+   - Added detail route in trade module routes
+
+7. **Styling** (`frontend/src/pages/trade/PurchaseReturns.css`)
+   - Consistent with SalesReturns page styling
+   - Return number styling
+   - Refund amount emphasis in danger color
+   - Responsive layout adjustments
+
+### Requirements Met
+- ✅ 实现采购退货列表 (Return list with DataTable, pagination, sorting)
+- ✅ 支持状态筛选 (Status filter dropdown with all 7 states including SHIPPED)
+- ✅ 支持供应商筛选 (Supplier filter dropdown with search)
+
+### Files Created
+- `frontend/src/pages/trade/PurchaseReturns.tsx`
+- `frontend/src/pages/trade/PurchaseReturns.css`
+
+### Files Modified
+- `frontend/src/router/routes.tsx` (added route registration)
+
+### API Used
+- `GET /trade/purchase-returns` - List purchase returns with filters
+- `POST /trade/purchase-returns/{id}/submit` - Submit for approval
+- `POST /trade/purchase-returns/{id}/approve` - Approve return
+- `POST /trade/purchase-returns/{id}/reject` - Reject return
+- `POST /trade/purchase-returns/{id}/ship` - Ship return (triggers inventory deduction)
+- `POST /trade/purchase-returns/{id}/complete` - Complete return
+- `POST /trade/purchase-returns/{id}/cancel` - Cancel return
+- `DELETE /trade/purchase-returns/{id}` - Delete return
+
+### Key Differences from Sales Returns
+- Has SHIPPED status (sales returns go directly from APPROVED to COMPLETED when goods are received)
+- Ship action deducts inventory (purchase returns send goods back to supplier)
+- Filters by supplier instead of customer
+- Uses IconRedo instead of IconUndo in menu
+
+### Build Status
+TypeScript check passes (no errors)
+
