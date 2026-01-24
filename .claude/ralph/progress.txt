@@ -8012,3 +8012,82 @@ db.WithContext(ctx).Find(&products) // WHERE tenant_id = 'xxx' auto-added
 - **Validation**: Both UUID format validation and required tenant checks are enforced
 - **Context Integration**: Works with `logger.GetTenantID(ctx)` which is set by tenant middleware
 
+
+---
+
+## P6-BE-010: User 聚合实现 (User Aggregate Implementation)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the User aggregate root for the Identity Context, following RBAC (Role-Based Access Control) model as specified in the design document. The User aggregate manages user authentication, authorization, and status lifecycle.
+
+### Features Implemented
+
+1. **User Aggregate Root** (`user.go`)
+   - `User` struct with TenantAggregateRoot (multi-tenant support)
+   - Username validation (3-100 chars, alphanumeric + special chars)
+   - Password validation (8-128 chars, must contain letter + number)
+   - Password hashing using bcrypt (cost=12)
+   - Email and phone validation
+
+2. **User Status Management**
+   - `UserStatus` enum: `pending`, `active`, `locked`, `deactivated`
+   - Status transitions: `Activate()`, `Deactivate()`, `Lock()`, `Unlock()`
+   - Lock with optional duration (auto-expiry support)
+   - Failed login attempt tracking with auto-lock
+
+3. **Role Management**
+   - `AssignRole(roleID)` - Add role to user
+   - `RemoveRole(roleID)` - Remove role from user
+   - `SetRoles(roleIDs)` - Replace all roles (with deduplication)
+   - `HasRole(roleID)` - Check if user has specific role
+   - `UserRole` entity for many-to-many relationship
+
+4. **Password Operations**
+   - `VerifyPassword(password)` - Validate password
+   - `ChangePassword(old, new)` - Change with old password verification
+   - `SetPassword(new)` - Admin password reset
+   - `ForcePasswordChange()` - Flag for mandatory password change
+
+5. **Login Tracking**
+   - `RecordLoginSuccess(ip)` - Record successful login
+   - `RecordLoginFailure(maxAttempts, duration)` - Track failed attempts
+   - `CanLogin()` - Check if user can authenticate
+   - Last login timestamp and IP tracking
+
+6. **Domain Events** (`user_events.go`)
+   - `UserCreatedEvent` - When user is created
+   - `UserDeactivatedEvent` - When user is deactivated
+   - `UserPasswordChangedEvent` - When password changes
+   - `UserRoleAssignedEvent` - When role is assigned
+   - `UserRoleRemovedEvent` - When role is removed
+   - `UserStatusChangedEvent` - When status changes
+
+7. **UserRepository Interface** (`user_repository.go`)
+   - `Create`, `Update`, `Delete`, `FindByID`
+   - `FindByUsername`, `FindByEmail`, `FindByPhone`
+   - `FindAll` with `UserFilter` (keyword, status, role, pagination)
+   - `ExistsByUsername`, `ExistsByEmail`
+   - `SaveUserRoles`, `LoadUserRoles`
+   - `Count` for tenant user limit checks
+
+### Files Created
+
+- `backend/internal/domain/identity/user.go` - User aggregate root
+- `backend/internal/domain/identity/user_events.go` - User domain events
+- `backend/internal/domain/identity/user_repository.go` - Repository interface
+- `backend/internal/domain/identity/user_test.go` - Comprehensive unit tests
+
+### Build & Test Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/identity/...` ✅ PASSED (50+ test cases)
+
+### Notes for Next Developer
+- **Repository Implementation**: Next step is to implement GORM-based UserRepository
+- **Role Aggregate**: P6-BE-011 implements the Role aggregate that User references
+- **JWT Integration**: P6-BE-014 implements JWT authentication using User aggregate
+- **Unique Constraints**: Username and email should be unique per tenant (enforced at DB level)
+- **Password Security**: bcrypt cost is set to 12, adjust in production if needed
+- **Lock Duration**: Default is time-based lock; pass 0 duration for indefinite lock
