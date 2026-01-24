@@ -11154,3 +11154,81 @@ result, err := balancePaymentSvc.RefundBalancePayment(ctx, tenantID, customerID,
 - Consider adding event publishing (CustomerBalanceChangedEvent) after balance changes
 - The service is designed to be transactional - in production, wrap ProcessBalancePayment in a database transaction
 - For high concurrency scenarios, consider adding optimistic locking on customer balance updates
+
+---
+
+## 2026-01-25: QA Tests Verification and PRD Update
+
+### Session Summary
+Verified existing QA tests and marked completed items in PRD.
+
+### Items Verified and Marked Complete
+
+1. **P1-QA-001: Product 聚合单元测试** (Product Aggregate Unit Tests)
+   - Location: `backend/internal/domain/catalog/product_test.go` (644 lines)
+   - Coverage:
+     - ✅ 测试 Product 创建逻辑 - `TestNewProduct`, `TestNewProductWithPrices`
+     - ✅ 测试状态变更逻辑 - `TestProductStatus` (activate, deactivate, discontinue)
+     - ✅ 测试不变量校验 - Validation tests for code, name, unit, barcode, prices, attributes
+   - Status: All tests passing
+
+2. **P1-QA-003: Partner 聚合单元测试** (Partner Aggregate Unit Tests)
+   - Locations:
+     - `backend/internal/domain/partner/customer_test.go`
+     - `backend/internal/domain/partner/supplier_test.go`
+     - `backend/internal/domain/partner/warehouse_test.go`
+   - Coverage:
+     - ✅ 测试 Customer 聚合
+     - ✅ 测试 Supplier 聚合
+     - ✅ 测试 Warehouse 聚合
+   - Status: All tests passing
+
+3. **P2-QA-001: InventoryItem 聚合单元测试** (InventoryItem Aggregate Unit Tests)
+   - Location: `backend/internal/domain/inventory/inventory_item_test.go` (600 lines)
+   - Coverage:
+     - ✅ 测试库存增减逻辑 - `TestInventoryItem_IncreaseStock`, `TestInventoryItem_DecreaseStock`
+     - ✅ 测试锁定释放逻辑 - Lock/unlock tests
+     - ✅ 测试不变量校验 - Validation tests
+   - Status: All tests passing
+
+4. **P2-QA-002: 成本计算策略单元测试** (Cost Calculation Strategy Unit Tests)
+   - Locations:
+     - `backend/internal/infrastructure/strategy/cost/moving_average_test.go`
+     - `backend/internal/infrastructure/strategy/cost/fifo_test.go`
+   - Coverage:
+     - ✅ 测试移动加权算法 - `TestMovingAverageCostStrategy_*`
+     - ✅ 测试 FIFO 算法 - `TestFIFOCostStrategy_*`
+     - ✅ 测试边界情况 - Edge case tests including real-world scenarios
+   - Status: All tests passing
+
+5. **P6-QA-001: 租户隔离测试** (Tenant Isolation Tests)
+   - Locations:
+     - `backend/internal/infrastructure/persistence/tenant/scope_test.go` (433 lines)
+     - `backend/internal/interfaces/http/middleware/tenant_test.go` (578 lines)
+   - Coverage:
+     - ✅ 测试租户数据隔离 - `TestTenantDB_MultiTenantIsolation`, `TestTenantScope`
+     - ✅ 测试跨租户访问拒绝 - Tests for missing tenant, invalid tenant ID
+     - ✅ 测试 SQL 注入防护 - `TestTenantDB_SQLInjectionPrevention`
+   - Status: All tests passing
+
+6. **P6-QA-002: 权限控制测试** (Permission Control Tests)
+   - Location: `backend/internal/interfaces/http/middleware/permission_test.go` (879 lines)
+   - Coverage:
+     - ✅ 测试无权限访问拒绝 - `TestRequirePermission_WithoutPermission`, `TestRequirePermission_WithoutAuth`
+     - ✅ 测试权限继承 - `RequireAnyPermission`, `RequireAllPermissions` tests
+     - ✅ 测试数据权限 - `RoutePermissionMiddleware` tests
+   - Status: All tests passing
+
+### PRD Changes
+Updated the following items to `"passes": true`:
+- P1-QA-001
+- P1-QA-003
+- P2-QA-001
+- P2-QA-002
+- P6-QA-001
+- P6-QA-002
+
+### Notes for Next Developer
+- The remaining incomplete QA items are either integration tests (INT) that require full system verification, or items like P6-QA-003 (安全漏洞扫描) which requires external security scanning tools
+- High-priority incomplete items are now mostly integration tests (P1-INT-001, P1-INT-002, etc.) which are verification tasks rather than implementation tasks
+- Category tests in `backend/internal/domain/catalog/category_test.go` (371 lines) are also comprehensive but Category is part of Product domain so covered under P1-QA-001

@@ -587,7 +587,7 @@
       "测试状态变更逻辑",
       "测试不变量校验"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-QA-002",
@@ -609,7 +609,7 @@
       "测试 Supplier 聚合",
       "测试 Warehouse 聚合"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-QA-004",
@@ -884,7 +884,7 @@
       "测试锁定释放逻辑",
       "测试不变量校验"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-QA-002",
@@ -895,7 +895,7 @@
       "测试 FIFO 算法",
       "测试边界情况"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-QA-003",
@@ -2072,7 +2072,7 @@
       "测试跨租户访问拒绝",
       "测试 SQL 注入防护"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-QA-002",
@@ -2083,7 +2083,7 @@
       "测试权限继承",
       "测试数据权限"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-QA-003",
