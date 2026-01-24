@@ -9879,3 +9879,77 @@ SalesReturn.Complete()
 - `backend/internal/domain/trade/purchase_return.go`
 - `backend/internal/domain/trade/purchase_return_events.go`
 - `backend/internal/domain/trade/purchase_return_test.go`
+
+---
+
+## 2026-01-24 - P3-BE-031: PurchaseReturn Shipping Flow Complete
+
+### Completed
+- **P3-BE-031**: PurchaseReturn 发货流程
+
+### What was done
+
+1. **Domain Enhancement** (`backend/internal/domain/inventory/inventory_item.go`)
+   - Added `DecreaseStock` method to `InventoryItem` aggregate for direct stock deduction
+   - This is different from `DeductStock` which works with locked stock
+   - Used for operations like purchase returns where goods are shipped back to supplier
+   - Validates: quantity positive, sufficient available stock, source type/ID required
+   - Emits `StockDecreasedEvent` and `StockBelowThresholdEvent` when applicable
+
+2. **Domain Event** (`backend/internal/domain/inventory/inventory_events.go`)
+   - Added `StockDecreasedEvent` for direct stock reduction operations
+   - Includes warehouse, product, quantity, unit cost, source type/ID, and reason
+   - Different from `StockDeductedEvent` which requires a lock
+
+3. **Application Service** (`backend/internal/application/inventory/inventory_service.go`)
+   - Added `DecreaseStock` service method
+   - Validates source type
+   - Creates outbound transaction record for audit
+   - Uses optimistic locking for concurrent safety
+
+4. **DTO** (`backend/internal/application/inventory/dto.go`)
+   - Added `DecreaseStockRequest` for the new service method
+   - Supports warehouse, product, quantity, source type/ID, reference, reason, operator
+
+5. **Event Handler** (`backend/internal/application/trade/purchase_return_shipped_handler.go`)
+   - Created `PurchaseReturnShippedHandler` that listens for `PurchaseReturnShippedEvent`
+   - Deducts inventory for each item in the purchase return
+   - Continues processing even if some items fail (partial failure support)
+   - Logs all operations for debugging
+
+6. **Unit Tests** 
+   - `backend/internal/domain/inventory/inventory_item_test.go`: 9 test cases for `DecreaseStock`
+     - Success cases: decrease available, emit events, below threshold
+     - Failure cases: zero/negative quantity, insufficient stock, empty source
+   - `backend/internal/application/trade/purchase_return_shipped_handler_test.go`: 9 test cases
+     - Success: single item, multiple items, empty items
+     - Failure: missing warehouse, wrong event type, partial failure, insufficient stock
+
+### Key Design Decisions
+
+1. **Direct Stock Deduction**: Unlike sales orders which lock-then-deduct, purchase returns directly deduct from available stock since the goods are being physically shipped out to the supplier.
+
+2. **Separation from Lock Pattern**: Added `DecreaseStock` method separate from `DeductStock` to maintain the integrity of the lock-based pattern for sales orders while supporting direct deduction for returns.
+
+3. **Event-Driven Architecture**: The handler subscribes to `PurchaseReturnShippedEvent` which is emitted when the `Ship()` method is called on the PurchaseReturn aggregate.
+
+4. **Partial Failure Handling**: If one item fails to deduct, the handler continues with other items and reports the error at the end.
+
+### Requirements Met
+- ✅ 实现退货发货逻辑 (Shipping logic triggers `PurchaseReturnShippedEvent`)
+- ✅ 扣减库存 (`DecreaseStock` method and `PurchaseReturnShippedHandler`)
+- ✅ 更新退货状态 (Status machine already in P3-BE-030 updates to SHIPPED)
+
+### Files Created/Modified
+- Created: `backend/internal/application/trade/purchase_return_shipped_handler.go`
+- Created: `backend/internal/application/trade/purchase_return_shipped_handler_test.go`
+- Modified: `backend/internal/domain/inventory/inventory_item.go` (added DecreaseStock)
+- Modified: `backend/internal/domain/inventory/inventory_events.go` (added StockDecreasedEvent)
+- Modified: `backend/internal/domain/inventory/inventory_item_test.go` (added tests)
+- Modified: `backend/internal/application/inventory/dto.go` (added DecreaseStockRequest)
+- Modified: `backend/internal/application/inventory/inventory_service.go` (added DecreaseStock)
+
+### Next Steps
+- P3-BE-032 (PurchaseReturn API) - Implement REST API endpoints with shipping endpoint
+- The shipping endpoint should call `Ship()` on the aggregate, which emits the event
+- Handler registration in DI/bootstrap for event processing

@@ -423,6 +423,63 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 	return nil
 }
 
+// DecreaseStock directly decreases available stock (without requiring a prior lock)
+// This is used for operations like purchase returns where goods are shipped back to supplier
+func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID, req DecreaseStockRequest) error {
+	// Validate source type
+	sourceType := inventory.SourceType(req.SourceType)
+	if !sourceType.IsValid() {
+		return shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+	}
+
+	// Get inventory item
+	item, err := s.inventoryRepo.FindByWarehouseAndProduct(ctx, tenantID, req.WarehouseID, req.ProductID)
+	if err != nil {
+		return err
+	}
+
+	// Record balance before
+	balanceBefore := item.AvailableQuantity
+
+	// Decrease stock
+	if err := item.DecreaseStock(req.Quantity, req.SourceType, req.SourceID, req.Reason); err != nil {
+		return err
+	}
+
+	// Save with optimistic locking
+	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
+		return err
+	}
+
+	// Create transaction record for the decrease (outbound)
+	tx, err := inventory.CreateOutboundTransaction(
+		tenantID,
+		item.ID,
+		item.WarehouseID,
+		item.ProductID,
+		req.Quantity,
+		item.UnitCost,
+		balanceBefore,
+		item.AvailableQuantity,
+		sourceType,
+		req.SourceID,
+	)
+	if err == nil {
+		if req.Reference != "" {
+			tx.WithReference(req.Reference)
+		}
+		if req.Reason != "" {
+			tx.WithReason(req.Reason)
+		}
+		if req.OperatorID != nil {
+			tx.WithOperatorID(*req.OperatorID)
+		}
+		_ = s.transactionRepo.Create(ctx, tx)
+	}
+
+	return nil
+}
+
 // AdjustStock adjusts the stock to match actual quantity
 func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, req AdjustStockRequest) (*InventoryItemResponse, error) {
 	// Get or create inventory item

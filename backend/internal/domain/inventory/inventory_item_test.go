@@ -339,6 +339,100 @@ func TestInventoryItem_DeductStock(t *testing.T) {
 	})
 }
 
+func TestInventoryItem_DecreaseStock(t *testing.T) {
+	t.Run("decreases available stock successfully", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+		item.ClearDomainEvents()
+
+		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.NoError(t, err)
+		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity)
+		assert.True(t, item.LockedQuantity.IsZero())
+	})
+
+	t.Run("emits StockDecreased event", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+		item.ClearDomainEvents()
+
+		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.NoError(t, err)
+		events := item.GetDomainEvents()
+		require.Len(t, events, 1)
+		assert.Equal(t, EventTypeStockDecreased, events[0].EventType())
+	})
+
+	t.Run("emits StockBelowThreshold when below minimum", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+		item.MinQuantity = decimal.NewFromInt(80) // Set minimum threshold
+		item.ClearDomainEvents()
+
+		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.NoError(t, err)
+		events := item.GetDomainEvents()
+		require.Len(t, events, 2)
+		assert.Equal(t, EventTypeStockDecreased, events[0].EventType())
+		assert.Equal(t, EventTypeStockBelowThreshold, events[1].EventType())
+	})
+
+	t.Run("fails with zero quantity", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		err := item.DecreaseStock(decimal.Zero, "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "positive")
+	})
+
+	t.Run("fails with negative quantity", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		err := item.DecreaseStock(decimal.NewFromInt(-10), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "positive")
+	})
+
+	t.Run("fails with insufficient stock", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		err := item.DecreaseStock(decimal.NewFromInt(150), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Insufficient")
+	})
+
+	t.Run("fails with empty source type", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		err := item.DecreaseStock(decimal.NewFromInt(30), "", "PR-001", "Purchase return")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Source type and ID are required")
+	})
+
+	t.Run("fails with empty source ID", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "", "Purchase return")
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Source type and ID are required")
+	})
+
+	t.Run("decreases all available stock", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+		item.ClearDomainEvents()
+
+		err := item.DecreaseStock(decimal.NewFromInt(100), "PURCHASE_RETURN", "PR-001", "Purchase return")
+
+		require.NoError(t, err)
+		assert.True(t, item.AvailableQuantity.IsZero())
+	})
+}
+
 func TestInventoryItem_AdjustStock(t *testing.T) {
 	t.Run("adjusts stock successfully (increase)", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 100)

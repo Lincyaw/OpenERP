@@ -109,6 +109,19 @@ type DeductStockRequest struct {
 	OperatorID *uuid.UUID `json:"operator_id"`
 }
 
+// DecreaseStockRequest represents a request to directly decrease available stock
+// This is used for operations like purchase returns where goods are shipped back to supplier
+type DecreaseStockRequest struct {
+	WarehouseID uuid.UUID       `json:"warehouse_id" binding:"required"`
+	ProductID   uuid.UUID       `json:"product_id" binding:"required"`
+	Quantity    decimal.Decimal `json:"quantity" binding:"required"`
+	SourceType  string          `json:"source_type" binding:"required"` // e.g., "PURCHASE_RETURN"
+	SourceID    string          `json:"source_id" binding:"required"`
+	Reference   string          `json:"reference"`
+	Reason      string          `json:"reason"`
+	OperatorID  *uuid.UUID      `json:"operator_id"`
+}
+
 // AdjustStockRequest represents a request to adjust stock
 type AdjustStockRequest struct {
 	WarehouseID    uuid.UUID       `json:"warehouse_id" binding:"required"`

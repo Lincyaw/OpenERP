@@ -1137,7 +1137,7 @@
       "扣减库存",
       "更新退货状态"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-BE-032",

@@ -107,6 +107,36 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 	return nil
 }
 
+// DecreaseStock directly decreases available stock (without requiring a prior lock)
+// This is used for operations like purchase returns where goods are shipped back to supplier
+// Different from DeductStock which works with locked stock
+func (i *InventoryItem) DecreaseStock(quantity decimal.Decimal, sourceType, sourceID, reason string) error {
+	if quantity.LessThanOrEqual(decimal.Zero) {
+		return shared.NewDomainError("INVALID_QUANTITY", "Quantity must be positive")
+	}
+	if i.AvailableQuantity.LessThan(quantity) {
+		return shared.NewDomainError("INSUFFICIENT_STOCK", "Insufficient available stock to decrease")
+	}
+	if sourceType == "" || sourceID == "" {
+		return shared.NewDomainError("INVALID_SOURCE", "Source type and ID are required")
+	}
+
+	// Decrease available quantity
+	i.AvailableQuantity = i.AvailableQuantity.Sub(quantity)
+	i.UpdatedAt = time.Now()
+	i.IncrementVersion()
+
+	// Emit event
+	i.AddDomainEvent(NewStockDecreasedEvent(i, quantity, sourceType, sourceID, reason))
+
+	// Check if below minimum threshold
+	if i.MinQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().LessThan(i.MinQuantity) {
+		i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+	}
+
+	return nil
+}
+
 // LockStock locks a quantity of stock for a pending order
 // Returns the lock ID that must be used to unlock or deduct
 func (i *InventoryItem) LockStock(quantity decimal.Decimal, sourceType, sourceID string, expireAt time.Time) (*StockLock, error) {

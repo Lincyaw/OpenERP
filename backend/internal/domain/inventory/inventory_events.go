@@ -13,6 +13,7 @@ const AggregateTypeInventoryItem = "InventoryItem"
 // Event type constants
 const (
 	EventTypeStockIncreased       = "StockIncreased"
+	EventTypeStockDecreased       = "StockDecreased"
 	EventTypeStockLocked          = "StockLocked"
 	EventTypeStockUnlocked        = "StockUnlocked"
 	EventTypeStockDeducted        = "StockDeducted"
@@ -52,6 +53,40 @@ func NewStockIncreasedEvent(item *InventoryItem, quantity, unitCost decimal.Deci
 // EventType returns the event type name
 func (e *StockIncreasedEvent) EventType() string {
 	return EventTypeStockIncreased
+}
+
+// StockDecreasedEvent is raised when stock is directly decreased (e.g., purchase return shipping)
+// This is different from StockDeducted which deducts from locked stock
+type StockDecreasedEvent struct {
+	shared.BaseDomainEvent
+	InventoryItemID uuid.UUID       `json:"inventory_item_id"`
+	WarehouseID     uuid.UUID       `json:"warehouse_id"`
+	ProductID       uuid.UUID       `json:"product_id"`
+	Quantity        decimal.Decimal `json:"quantity"`
+	UnitCost        decimal.Decimal `json:"unit_cost"`
+	SourceType      string          `json:"source_type"`
+	SourceID        string          `json:"source_id"`
+	Reason          string          `json:"reason,omitempty"`
+}
+
+// NewStockDecreasedEvent creates a new StockDecreasedEvent
+func NewStockDecreasedEvent(item *InventoryItem, quantity decimal.Decimal, sourceType, sourceID, reason string) *StockDecreasedEvent {
+	return &StockDecreasedEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(EventTypeStockDecreased, AggregateTypeInventoryItem, item.ID, item.TenantID),
+		InventoryItemID: item.ID,
+		WarehouseID:     item.WarehouseID,
+		ProductID:       item.ProductID,
+		Quantity:        quantity,
+		UnitCost:        item.UnitCost,
+		SourceType:      sourceType,
+		SourceID:        sourceID,
+		Reason:          reason,
+	}
+}
+
+// EventType returns the event type name
+func (e *StockDecreasedEvent) EventType() string {
+	return EventTypeStockDecreased
 }
 
 // StockLockedEvent is raised when stock is locked for a pending order
