@@ -6169,3 +6169,96 @@ DRAFT → Confirm() → CONFIRMED → AllocateToPayable() → ALLOCATED
 - Consider adding more strategies (e.g., LIFO, Priority-based) if needed
 - The FIFO strategy filters out non-payable items automatically (terminal states, zero outstanding)
 - Manual strategy allows fine-grained control over allocation order and amounts
+
+---
+
+## 2026-01-24 - P4-BE-009: ReconciliationService 核销服务 Implementation Complete
+
+### Completed
+- **P4-BE-009**: ReconciliationService 核销服务
+
+### What was done
+1. Created `reconciliation_service.go` with comprehensive ReconciliationService domain service:
+   - `ReconciliationService` struct that coordinates voucher allocation to receivables/payables
+   - Uses strategies from P4-BE-008 (FIFO and Manual)
+   - Ensures vouchers are confirmed before allocation
+   - Filters receivables/payables by customer/supplier respectively
+
+2. Receipt Voucher Reconciliation:
+   - `ReconcileReceiptRequest` and `ReconcileReceiptResult` structs
+   - `ReconcileReceipt()` - main method for receipt reconciliation
+   - `AutoReconcileReceipt()` - convenience method using FIFO strategy
+   - `ManualReconcileReceipt()` - convenience method using manual allocations
+   - `PreviewReconcileReceipt()` - preview allocations without applying them
+
+3. Payment Voucher Reconciliation:
+   - `ReconcilePaymentRequest` and `ReconcilePaymentResult` structs
+   - `ReconcilePayment()` - main method for payment reconciliation
+   - `AutoReconcilePayment()` - convenience method using FIFO strategy
+   - `ManualReconcilePayment()` - convenience method using manual allocations
+   - `PreviewReconcilePayment()` - preview allocations without applying them
+
+4. Comprehensive unit tests at `reconciliation_service_test.go`:
+   - 30+ test cases covering all functionality
+   - Tests for nil voucher handling
+   - Tests for unconfirmed voucher rejection
+   - Tests for FIFO ordering with multiple receivables/payables
+   - Tests for partial allocation scenarios
+   - Tests for excess voucher amounts
+   - Tests for customer/supplier filtering
+   - Tests for manual allocation order
+   - Tests for preview functionality (non-mutating)
+   - Tests for cancelled/paid receivables/payables filtering
+   - Tests for domain event generation
+
+### Files created/modified
+- `backend/internal/domain/finance/reconciliation_service.go` (NEW)
+- `backend/internal/domain/finance/reconciliation_service_test.go` (NEW)
+
+### Build Status
+- `go build ./...` ✅ PASSED
+- `go test ./internal/domain/finance/...` ✅ PASSED (All tests pass including 30+ new tests)
+
+### Design Decisions
+1. **Domain service pattern**: ReconciliationService coordinates across aggregates (Voucher + Receivable/Payable)
+2. **Strategy delegation**: Uses ReconciliationStrategyFactory from P4-BE-008
+3. **Customer/Supplier filtering**: Service ensures vouchers only reconcile with matching customer/supplier receivables/payables
+4. **Preview capability**: PreviewReconcileXxx methods allow UI to show what would happen before committing
+5. **Result structs**: Return comprehensive results including updated entities, allocations made, and reconciliation status
+6. **Bidirectional updates**: Service updates both the voucher (AllocateToReceivable/Payable) and the receivable/payable (ApplyPayment)
+
+### Reconciliation Flow
+```
+1. Validate voucher (not nil, confirmed, has unallocated amount)
+2. Validate strategy type
+3. Filter receivables/payables by customer/supplier
+4. Get strategy and calculate allocations
+5. For each allocation:
+   a. Allocate on voucher (creates ReceivableAllocation/PayableAllocation)
+   b. Apply payment to receivable/payable (creates PaymentRecord)
+   c. Update voucher and receivable/payable status
+6. Return result with all updated entities
+```
+
+### Service Methods Summary
+| Method | Description |
+|--------|-------------|
+| `ReconcileReceipt` | Main reconciliation with full control over strategy |
+| `AutoReconcileReceipt` | FIFO reconciliation (oldest receivables first) |
+| `ManualReconcileReceipt` | User-specified allocation order and amounts |
+| `PreviewReconcileReceipt` | Calculate allocations without applying |
+| `ReconcilePayment` | Main payment reconciliation with full control |
+| `AutoReconcilePayment` | FIFO payment reconciliation |
+| `ManualReconcilePayment` | User-specified payment allocation |
+| `PreviewReconcilePayment` | Calculate payment allocations without applying |
+
+### Notes for next developer
+- **P4-BE-010** (Finance API) is next - will expose reconciliation service operations via REST endpoints
+- Application service layer will need to coordinate:
+  1. Load voucher and receivables/payables from repositories
+  2. Call ReconciliationService methods
+  3. Save all updated entities with optimistic locking
+- Consider adding transaction support in application layer for atomicity
+- Preview methods are useful for UI to show allocation preview before confirmation
+- Events are generated automatically by aggregate methods - application layer should publish them
+- The service operates on value copies - application layer is responsible for persistence
