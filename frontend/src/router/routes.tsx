@@ -58,6 +58,7 @@ const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/Purc
 const SalesReturnsPage = () => lazyLoad(() => import('@/pages/trade/SalesReturns'))
 const SalesReturnNewPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnNew'))
 const PurchaseReturnsPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturns'))
+const PurchaseReturnNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturnNew'))
 
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
@@ -613,7 +614,8 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'sales-returns', element: SalesReturnsPage() },
           { path: 'sales-returns/new', element: SalesReturnNewPage() },
           // Purchase returns routes
-          { path: 'purchase-returns', element: PurchaseReturnsPage() }
+          { path: 'purchase-returns', element: PurchaseReturnsPage() },
+          { path: 'purchase-returns/new', element: PurchaseReturnNewPage() }
         )
       }
 

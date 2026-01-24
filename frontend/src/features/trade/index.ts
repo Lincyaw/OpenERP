@@ -4,3 +4,4 @@
 export { SalesOrderForm } from './SalesOrderForm'
 export { PurchaseOrderForm } from './PurchaseOrderForm'
 export { SalesReturnForm } from './SalesReturnForm'
+export { PurchaseReturnForm } from './PurchaseReturnForm'

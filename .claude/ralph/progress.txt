@@ -10285,3 +10285,79 @@ TypeScript check passes (no errors)
 
 ### Build Status
 TypeScript check passes (no errors)
+
+
+---
+
+## 2026-01-24 - P3-FE-031: 采购退货创建页面 (Purchase Return Create Page) Complete
+
+### Completed
+- **P3-FE-031**: 采购退货创建页面
+
+### What was done
+
+1. **PurchaseReturnForm Component** (`frontend/src/features/trade/PurchaseReturnForm.tsx`)
+   - Full form component for creating purchase returns
+   - Search and select existing purchase order (filtered to PARTIAL_RECEIVED/COMPLETED orders only)
+   - Display order details after selection including receive progress
+   - Only shows items that have received quantity > 0 (can only return received goods)
+   - Checkbox selection for order items to include in return
+   - Return quantity input (capped at received quantity, not ordered quantity)
+   - Real-time refund amount calculation per item (uses unit_cost from purchase order)
+   - Product condition selector (intact, damaged, defective, quality_issue, other)
+   - Per-item batch number field for tracking inventory batches
+   - Per-item and global return reason fields
+   - Warehouse selection for return goods (outbound warehouse)
+   - Select all / Deselect all buttons for items
+   - Form validation with Zod
+   - Summary section showing total items, quantity, and refund amount
+
+2. **PurchaseReturnForm CSS** (`frontend/src/features/trade/PurchaseReturnForm.css`)
+   - Consistent styling with SalesReturnForm component
+   - Order info section with background highlight
+   - Responsive layout for form rows
+   - Refund amount emphasized in danger color
+   - Summary section styling
+
+3. **PurchaseReturnNew Page** (`frontend/src/pages/trade/PurchaseReturnNew.tsx`)
+   - Renders PurchaseReturnForm component
+   - Supports pre-selection via `?order_id=` query parameter
+   - Allows creating return directly from order detail page
+
+4. **Route Registration** (`frontend/src/router/routes.tsx`)
+   - Added PurchaseReturnNewPage lazy load
+   - Added `/trade/purchase-returns/new` route
+
+5. **Feature Export** (`frontend/src/features/trade/index.ts`)
+   - Added PurchaseReturnForm export
+
+### Requirements Met
+- ✅ 选择原采购订单 (Select original order with search, filter to received orders)
+- ✅ 选择退货商品和数量 (Checkbox selection, quantity input with max validation based on received qty)
+- ✅ 填写退货原因 (Global reason field + per-item reason fields)
+
+### Files Created
+- `frontend/src/features/trade/PurchaseReturnForm.tsx`
+- `frontend/src/features/trade/PurchaseReturnForm.css`
+- `frontend/src/pages/trade/PurchaseReturnNew.tsx`
+
+### Files Modified
+- `frontend/src/features/trade/index.ts` (added PurchaseReturnForm export)
+- `frontend/src/router/routes.tsx` (added route registration)
+
+### API Used
+- `GET /trade/purchase-orders` - List orders for selection (filtered by status: PARTIAL_RECEIVED, COMPLETED)
+- `GET /trade/purchase-orders/{id}` - Get order details with items
+- `GET /partner/warehouses` - Get warehouses for selection
+- `POST /trade/purchase-returns` - Create purchase return
+
+### Key Differences from Sales Returns
+- Filters orders by PARTIAL_RECEIVED/COMPLETED (sales returns use SHIPPED/COMPLETED)
+- Uses `received_quantity` as max return quantity (sales returns use original quantity)
+- Uses `unit_cost` for refund calculation (sales returns use `unit_price`)
+- Adds batch_number field for inventory tracking
+- Condition options include `quality_issue` instead of `wrong_item`
+- Warehouse label is "退货出库仓库" (outbound) vs "退货入库仓库" (inbound)
+
+### Build Status
+TypeScript check passes (no errors)
