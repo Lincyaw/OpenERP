@@ -12220,3 +12220,192 @@ P3-INT-001: passes: true
 2. **All 72 tests pass** (38 for SalesOrders, 34 for SalesOrderDetail)
 3. **Test patterns**: Follow the established patterns in StockList.test.tsx and these new test files for consistency
 4. **Next priority items**: P3-INT-002 (采购订单前后端联调), P4-QA-003 (交易-财务联动集成测试), or P4-INT-001 (财务核心功能联调)
+
+---
+
+## P3-INT-002: 采购订单前后端联调 (Purchase Order Frontend-Backend Integration)
+
+**Date**: 2026-01-25
+
+### Summary
+Implemented comprehensive frontend integration tests for the Purchase Order module, covering:
+- Purchase order list display and filtering
+- Order status display (draft, confirmed, partial_received, completed, cancelled)
+- Order actions (confirm, receive, cancel, delete)
+- Navigation to receiving page
+- Receiving flow (warehouse selection, item quantities, batch numbers, expiry dates)
+- Inventory integration verification
+
+### Test Files Created
+
+#### frontend/src/pages/trade/PurchaseOrders.test.tsx (44 tests)
+Tests for the purchase order list page covering:
+
+**Order List Display (4 tests)**
+- Displays order list with correct data
+- Displays item counts correctly
+- Displays amounts formatted as currency
+- Displays page title
+
+**Order Status Display (5 tests)**
+- Draft status tag
+- Confirmed status tag
+- Partial_received status tag
+- Completed status tag
+- Cancelled status tag
+
+**Search and Filter (5 tests)**
+- Has search input
+- Has status filter dropdown
+- Has supplier filter dropdown
+- Has refresh button
+- Has new order button
+
+**Navigation (1 test)**
+- Navigates to new order page
+
+**Error Handling (3 tests)**
+- Shows error toast on API failure
+- Handles empty order list gracefully
+- Handles supplier API failure gracefully
+
+**API Integration (4 tests)**
+- Correct pagination parameters
+- Loads supplier filter options
+- Transforms API response correctly
+- Handles missing optional fields
+
+**Order Status Actions (9 tests)**
+- Confirm action for draft orders
+- Receive action for confirmed orders
+- Receive action for partial_received orders
+- Cancel action for draft orders
+- Cancel action for confirmed orders
+- Delete action for draft orders
+- Edit action for draft orders
+- No actions for completed orders
+- No actions for cancelled orders
+
+**Date Display (2 tests)**
+- Created date display
+- Confirmed datetime display
+
+**Order List Sorting (1 test)**
+- Default sort parameters
+
+**Refresh/Search Functionality (2 tests)**
+- Refresh button reloads data
+- Search calls API with search parameter
+
+**Receive Progress Display (3 tests)**
+- Progress for confirmed orders
+- Partial receive progress
+- 100% progress for completed orders
+
+**Flow Verification (5 tests)**
+- Order confirmation flow
+- Navigate to receive page for confirmed orders
+- Navigate to receive page for partial_received orders
+- Cancel confirmation dialog
+- Inventory integration data display
+
+#### frontend/src/pages/trade/PurchaseOrderReceive.test.tsx (41 tests)
+Tests for the purchase order receiving page covering:
+
+**Page Loading (2 tests)**
+- Loading state display
+- Page title display
+
+**Order Summary Display (5 tests)**
+- Order number display
+- Supplier name display
+- Order status tag
+- Total and payable amounts
+- Order information section
+
+**Receivable Items Table (4 tests)**
+- Table columns display
+- Product information in rows
+- Remaining quantities display
+- Unit costs display
+
+**Warehouse Selection (3 tests)**
+- Warehouse dropdown display
+- Loads warehouse options from API
+- Default warehouse selection
+
+**Receive Quantity Actions (4 tests)**
+- Receive all button
+- Clear all button
+- Submit button
+- Cancel button
+
+**Error Handling (6 tests)**
+- Order fetch failure
+- Empty order state
+- Cannot receive draft orders
+- Cannot receive completed orders
+- Cannot receive cancelled orders
+- Warehouse API failure
+
+**Navigation (3 tests)**
+- Back button navigation
+- Cancel button navigation
+- Return to list button on empty state
+
+**API Integration (3 tests)**
+- Order detail API with correct id
+- Receivable items API with correct id
+- Refresh button reloads data
+
+**Partial Receiving Support (2 tests)**
+- Allows partial_received orders to be received
+- Displays already received quantities
+
+**Inventory Integration Tests (7 tests)**
+- Submit receive request with correct warehouse id
+- Success message on partial receive
+- Success message on full receive
+- Error message on failure
+- Validation for warehouse selection
+- Submit button enabled with quantities
+
+**Batch and Expiry Date Entry (2 tests)**
+- Batch number input fields
+- Expiry date picker fields
+
+### Key Testing Patterns Used
+
+1. **API Mocking**: Used vi.mock() to mock the API factory functions
+```typescript
+vi.mock('@/api/purchase-orders/purchase-orders', () => ({
+  getPurchaseOrders: vi.fn(),
+}))
+
+mockPurchaseOrderApiInstance = {
+  getTradePurchaseOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+  postTradePurchaseOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
+  // ...
+}
+```
+
+2. **Semi Design Mocking**: Mocked Toast, Modal.confirm
+3. **React Router Mocking**: Mocked useNavigate and useParams hooks
+4. **Test Utilities**: Used render helper from @/tests/utils.tsx with providers
+
+### Technical Insights
+
+1. **TableActions Component**: Uses maxVisible=3, so only first 2 actions shown directly, rest in dropdown
+2. **Status Tags**: Different colors for different order statuses (blue=draft, cyan=confirmed, orange=partial_received, green=completed, grey=cancelled)
+3. **Receive Progress**: Progress bar shown for confirmed/partial_received/completed orders
+4. **Receiving Form**: Default receive_quantity is set to remaining_quantity for each item
+5. **Warehouse Selection**: Auto-selects from order's warehouse_id or default warehouse
+
+### PRD Status
+P3-INT-002: passes: true
+
+### Notes for Next Developer
+1. **Run tests**: `cd frontend && npm run test:run -- src/pages/trade/PurchaseOrders.test.tsx src/pages/trade/PurchaseOrderReceive.test.tsx`
+2. **All 85 tests pass** (44 for PurchaseOrders, 41 for PurchaseOrderReceive)
+3. **Test patterns**: Follow the established patterns for consistency
+4. **Next priority items**: P4-INT-001 (财务核心功能联调), P6-INT-001 (多租户隔离联调), P6-INT-002 (认证授权联调)

@@ -1368,7 +1368,7 @@
       "验证收货流程",
       "验证库存入库"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-INT-003",
