@@ -774,3 +774,284 @@ func ToSalesReturnItemResponse(item *trade.SalesReturnItem) SalesReturnItemRespo
 		UpdatedAt:         item.UpdatedAt,
 	}
 }
+
+// ==================== Purchase Return DTOs ====================
+
+// CreatePurchaseReturnRequest represents a request to create a purchase return
+type CreatePurchaseReturnRequest struct {
+	PurchaseOrderID uuid.UUID                       `json:"purchase_order_id" binding:"required"`
+	WarehouseID     *uuid.UUID                      `json:"warehouse_id"`
+	Items           []CreatePurchaseReturnItemInput `json:"items" binding:"required,min=1"`
+	Reason          string                          `json:"reason"`
+	Remark          string                          `json:"remark"`
+}
+
+// CreatePurchaseReturnItemInput represents an item in the create return request
+type CreatePurchaseReturnItemInput struct {
+	PurchaseOrderItemID uuid.UUID       `json:"purchase_order_item_id" binding:"required"`
+	ReturnQuantity      decimal.Decimal `json:"return_quantity" binding:"required"`
+	Reason              string          `json:"reason"`
+	ConditionOnReturn   string          `json:"condition_on_return"` // defective, excess, wrong_item, etc.
+	BatchNumber         string          `json:"batch_number"`
+}
+
+// UpdatePurchaseReturnRequest represents a request to update a purchase return (only in DRAFT status)
+type UpdatePurchaseReturnRequest struct {
+	WarehouseID *uuid.UUID `json:"warehouse_id"`
+	Reason      *string    `json:"reason"`
+	Remark      *string    `json:"remark"`
+}
+
+// UpdatePurchaseReturnItemRequest represents a request to update a return item
+type UpdatePurchaseReturnItemRequest struct {
+	ReturnQuantity    *decimal.Decimal `json:"return_quantity"`
+	Reason            *string          `json:"reason"`
+	ConditionOnReturn *string          `json:"condition_on_return"`
+	BatchNumber       *string          `json:"batch_number"`
+}
+
+// AddPurchaseReturnItemRequest represents a request to add an item to a return
+type AddPurchaseReturnItemRequest struct {
+	PurchaseOrderItemID uuid.UUID       `json:"purchase_order_item_id" binding:"required"`
+	ReturnQuantity      decimal.Decimal `json:"return_quantity" binding:"required"`
+	Reason              string          `json:"reason"`
+	ConditionOnReturn   string          `json:"condition_on_return"`
+	BatchNumber         string          `json:"batch_number"`
+}
+
+// ApprovePurchaseReturnRequest represents a request to approve a return
+type ApprovePurchaseReturnRequest struct {
+	Note string `json:"note"`
+}
+
+// RejectPurchaseReturnRequest represents a request to reject a return
+type RejectPurchaseReturnRequest struct {
+	Reason string `json:"reason" binding:"required,min=1,max=500"`
+}
+
+// CancelPurchaseReturnRequest represents a request to cancel a return
+type CancelPurchaseReturnRequest struct {
+	Reason string `json:"reason" binding:"required,min=1,max=500"`
+}
+
+// ShipPurchaseReturnRequest represents a request to ship a return back to supplier
+type ShipPurchaseReturnRequest struct {
+	TrackingNumber string `json:"tracking_number"`
+	Note           string `json:"note"`
+}
+
+// CompletePurchaseReturnRequest represents a request to complete a return
+type CompletePurchaseReturnRequest struct {
+	// No additional fields needed - just marks the return as completed after supplier confirms receipt
+}
+
+// PurchaseReturnListFilter represents filter options for purchase return list
+type PurchaseReturnListFilter struct {
+	Search          string                      `form:"search"`
+	SupplierID      *uuid.UUID                  `form:"supplier_id"`
+	PurchaseOrderID *uuid.UUID                  `form:"purchase_order_id"`
+	WarehouseID     *uuid.UUID                  `form:"warehouse_id"`
+	Status          *trade.PurchaseReturnStatus `form:"status"`
+	Statuses        []string                    `form:"statuses"`
+	StartDate       *time.Time                  `form:"start_date"`
+	EndDate         *time.Time                  `form:"end_date"`
+	MinAmount       *decimal.Decimal            `form:"min_amount"`
+	MaxAmount       *decimal.Decimal            `form:"max_amount"`
+	Page            int                         `form:"page" binding:"min=1"`
+	PageSize        int                         `form:"page_size" binding:"min=1,max=100"`
+	OrderBy         string                      `form:"order_by"`
+	OrderDir        string                      `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+}
+
+// PurchaseReturnResponse represents a purchase return in API responses
+type PurchaseReturnResponse struct {
+	ID                  uuid.UUID                    `json:"id"`
+	TenantID            uuid.UUID                    `json:"tenant_id"`
+	ReturnNumber        string                       `json:"return_number"`
+	PurchaseOrderID     uuid.UUID                    `json:"purchase_order_id"`
+	PurchaseOrderNumber string                       `json:"purchase_order_number"`
+	SupplierID          uuid.UUID                    `json:"supplier_id"`
+	SupplierName        string                       `json:"supplier_name"`
+	WarehouseID         *uuid.UUID                   `json:"warehouse_id,omitempty"`
+	Items               []PurchaseReturnItemResponse `json:"items"`
+	ItemCount           int                          `json:"item_count"`
+	TotalQuantity       decimal.Decimal              `json:"total_quantity"`
+	TotalRefund         decimal.Decimal              `json:"total_refund"`
+	Status              string                       `json:"status"`
+	Reason              string                       `json:"reason,omitempty"`
+	Remark              string                       `json:"remark,omitempty"`
+	SubmittedAt         *time.Time                   `json:"submitted_at,omitempty"`
+	ApprovedAt          *time.Time                   `json:"approved_at,omitempty"`
+	ApprovedBy          *uuid.UUID                   `json:"approved_by,omitempty"`
+	ApprovalNote        string                       `json:"approval_note,omitempty"`
+	RejectedAt          *time.Time                   `json:"rejected_at,omitempty"`
+	RejectedBy          *uuid.UUID                   `json:"rejected_by,omitempty"`
+	RejectionReason     string                       `json:"rejection_reason,omitempty"`
+	ShippedAt           *time.Time                   `json:"shipped_at,omitempty"`
+	ShippedBy           *uuid.UUID                   `json:"shipped_by,omitempty"`
+	ShippingNote        string                       `json:"shipping_note,omitempty"`
+	TrackingNumber      string                       `json:"tracking_number,omitempty"`
+	CompletedAt         *time.Time                   `json:"completed_at,omitempty"`
+	CancelledAt         *time.Time                   `json:"cancelled_at,omitempty"`
+	CancelReason        string                       `json:"cancel_reason,omitempty"`
+	CreatedAt           time.Time                    `json:"created_at"`
+	UpdatedAt           time.Time                    `json:"updated_at"`
+	Version             int                          `json:"version"`
+}
+
+// PurchaseReturnListItemResponse represents a purchase return in list responses (less detail)
+type PurchaseReturnListItemResponse struct {
+	ID                  uuid.UUID       `json:"id"`
+	ReturnNumber        string          `json:"return_number"`
+	PurchaseOrderID     uuid.UUID       `json:"purchase_order_id"`
+	PurchaseOrderNumber string          `json:"purchase_order_number"`
+	SupplierID          uuid.UUID       `json:"supplier_id"`
+	SupplierName        string          `json:"supplier_name"`
+	WarehouseID         *uuid.UUID      `json:"warehouse_id,omitempty"`
+	ItemCount           int             `json:"item_count"`
+	TotalRefund         decimal.Decimal `json:"total_refund"`
+	Status              string          `json:"status"`
+	SubmittedAt         *time.Time      `json:"submitted_at,omitempty"`
+	ApprovedAt          *time.Time      `json:"approved_at,omitempty"`
+	ShippedAt           *time.Time      `json:"shipped_at,omitempty"`
+	CompletedAt         *time.Time      `json:"completed_at,omitempty"`
+	CreatedAt           time.Time       `json:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at"`
+}
+
+// PurchaseReturnItemResponse represents a return item in API responses
+type PurchaseReturnItemResponse struct {
+	ID                  uuid.UUID       `json:"id"`
+	PurchaseOrderItemID uuid.UUID       `json:"purchase_order_item_id"`
+	ProductID           uuid.UUID       `json:"product_id"`
+	ProductName         string          `json:"product_name"`
+	ProductCode         string          `json:"product_code"`
+	OriginalQuantity    decimal.Decimal `json:"original_quantity"`
+	ReturnQuantity      decimal.Decimal `json:"return_quantity"`
+	UnitCost            decimal.Decimal `json:"unit_cost"`
+	RefundAmount        decimal.Decimal `json:"refund_amount"`
+	Unit                string          `json:"unit"`
+	Reason              string          `json:"reason,omitempty"`
+	ConditionOnReturn   string          `json:"condition_on_return,omitempty"`
+	BatchNumber         string          `json:"batch_number,omitempty"`
+	ShippedQuantity     decimal.Decimal `json:"shipped_quantity"`
+	ShippedAt           *time.Time      `json:"shipped_at,omitempty"`
+	SupplierReceivedQty decimal.Decimal `json:"supplier_received_qty"`
+	SupplierReceivedAt  *time.Time      `json:"supplier_received_at,omitempty"`
+	CreatedAt           time.Time       `json:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at"`
+}
+
+// PurchaseReturnStatusSummary represents a summary of purchase returns by status
+type PurchaseReturnStatusSummary struct {
+	Draft           int64           `json:"draft"`
+	Pending         int64           `json:"pending"`
+	Approved        int64           `json:"approved"`
+	Rejected        int64           `json:"rejected"`
+	Shipped         int64           `json:"shipped"`
+	Completed       int64           `json:"completed"`
+	Cancelled       int64           `json:"cancelled"`
+	Total           int64           `json:"total"`
+	PendingApproval int64           `json:"pending_approval"` // Same as Pending, for convenience
+	PendingShipment int64           `json:"pending_shipment"` // Same as Approved, for convenience
+	TotalRefund     decimal.Decimal `json:"total_refund"`
+}
+
+// ToPurchaseReturnResponse converts domain PurchaseReturn to response DTO
+func ToPurchaseReturnResponse(pr *trade.PurchaseReturn) PurchaseReturnResponse {
+	items := make([]PurchaseReturnItemResponse, len(pr.Items))
+	for i := range pr.Items {
+		items[i] = ToPurchaseReturnItemResponse(&pr.Items[i])
+	}
+
+	return PurchaseReturnResponse{
+		ID:                  pr.ID,
+		TenantID:            pr.TenantID,
+		ReturnNumber:        pr.ReturnNumber,
+		PurchaseOrderID:     pr.PurchaseOrderID,
+		PurchaseOrderNumber: pr.PurchaseOrderNumber,
+		SupplierID:          pr.SupplierID,
+		SupplierName:        pr.SupplierName,
+		WarehouseID:         pr.WarehouseID,
+		Items:               items,
+		ItemCount:           pr.ItemCount(),
+		TotalQuantity:       pr.TotalReturnQuantity(),
+		TotalRefund:         pr.TotalRefund,
+		Status:              string(pr.Status),
+		Reason:              pr.Reason,
+		Remark:              pr.Remark,
+		SubmittedAt:         pr.SubmittedAt,
+		ApprovedAt:          pr.ApprovedAt,
+		ApprovedBy:          pr.ApprovedBy,
+		ApprovalNote:        pr.ApprovalNote,
+		RejectedAt:          pr.RejectedAt,
+		RejectedBy:          pr.RejectedBy,
+		RejectionReason:     pr.RejectionReason,
+		ShippedAt:           pr.ShippedAt,
+		ShippedBy:           pr.ShippedBy,
+		ShippingNote:        pr.ShippingNote,
+		TrackingNumber:      pr.TrackingNumber,
+		CompletedAt:         pr.CompletedAt,
+		CancelledAt:         pr.CancelledAt,
+		CancelReason:        pr.CancelReason,
+		CreatedAt:           pr.CreatedAt,
+		UpdatedAt:           pr.UpdatedAt,
+		Version:             pr.Version,
+	}
+}
+
+// ToPurchaseReturnListItemResponse converts domain PurchaseReturn to list response DTO
+func ToPurchaseReturnListItemResponse(pr *trade.PurchaseReturn) PurchaseReturnListItemResponse {
+	return PurchaseReturnListItemResponse{
+		ID:                  pr.ID,
+		ReturnNumber:        pr.ReturnNumber,
+		PurchaseOrderID:     pr.PurchaseOrderID,
+		PurchaseOrderNumber: pr.PurchaseOrderNumber,
+		SupplierID:          pr.SupplierID,
+		SupplierName:        pr.SupplierName,
+		WarehouseID:         pr.WarehouseID,
+		ItemCount:           pr.ItemCount(),
+		TotalRefund:         pr.TotalRefund,
+		Status:              string(pr.Status),
+		SubmittedAt:         pr.SubmittedAt,
+		ApprovedAt:          pr.ApprovedAt,
+		ShippedAt:           pr.ShippedAt,
+		CompletedAt:         pr.CompletedAt,
+		CreatedAt:           pr.CreatedAt,
+		UpdatedAt:           pr.UpdatedAt,
+	}
+}
+
+// ToPurchaseReturnListItemResponses converts a slice of domain returns to list responses
+func ToPurchaseReturnListItemResponses(returns []trade.PurchaseReturn) []PurchaseReturnListItemResponse {
+	responses := make([]PurchaseReturnListItemResponse, len(returns))
+	for i := range returns {
+		responses[i] = ToPurchaseReturnListItemResponse(&returns[i])
+	}
+	return responses
+}
+
+// ToPurchaseReturnItemResponse converts domain PurchaseReturnItem to response DTO
+func ToPurchaseReturnItemResponse(item *trade.PurchaseReturnItem) PurchaseReturnItemResponse {
+	return PurchaseReturnItemResponse{
+		ID:                  item.ID,
+		PurchaseOrderItemID: item.PurchaseOrderItemID,
+		ProductID:           item.ProductID,
+		ProductName:         item.ProductName,
+		ProductCode:         item.ProductCode,
+		OriginalQuantity:    item.OriginalQuantity,
+		ReturnQuantity:      item.ReturnQuantity,
+		UnitCost:            item.UnitCost,
+		RefundAmount:        item.RefundAmount,
+		Unit:                item.Unit,
+		Reason:              item.Reason,
+		ConditionOnReturn:   item.ConditionOnReturn,
+		BatchNumber:         item.BatchNumber,
+		ShippedQuantity:     item.ShippedQuantity,
+		ShippedAt:           item.ShippedAt,
+		SupplierReceivedQty: item.SupplierReceivedQty,
+		SupplierReceivedAt:  item.SupplierReceivedAt,
+		CreatedAt:           item.CreatedAt,
+		UpdatedAt:           item.UpdatedAt,
+	}
+}

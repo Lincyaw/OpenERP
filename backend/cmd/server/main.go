@@ -109,6 +109,8 @@ func main() {
 	inventoryTxRepo := persistence.NewGormInventoryTransactionRepository(db.DB)
 	salesOrderRepo := persistence.NewGormSalesOrderRepository(db.DB)
 	purchaseOrderRepo := persistence.NewGormPurchaseOrderRepository(db.DB)
+	salesReturnRepo := persistence.NewGormSalesReturnRepository(db.DB)
+	purchaseReturnRepo := persistence.NewGormPurchaseReturnRepository(db.DB)
 	userRepo := persistence.NewGormUserRepository(db.DB)
 	roleRepo := persistence.NewGormRoleRepository(db.DB)
 
@@ -123,6 +125,8 @@ func main() {
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
+	salesReturnService := tradeapp.NewSalesReturnService(salesReturnRepo, salesOrderRepo)
+	purchaseReturnService := tradeapp.NewPurchaseReturnService(purchaseReturnRepo, purchaseOrderRepo)
 
 	// Identity services (auth, user, role)
 	jwtService := auth.NewJWTService(cfg.JWT)
@@ -150,11 +154,21 @@ func main() {
 	salesOrderCancelledHandler := tradeapp.NewSalesOrderCancelledHandler(inventoryService, log)
 	eventBus.Subscribe(salesOrderCancelledHandler)
 
+	// Sales return completed -> inventory restoration
+	salesReturnCompletedHandler := tradeapp.NewSalesReturnCompletedHandler(inventoryService, log)
+	eventBus.Subscribe(salesReturnCompletedHandler)
+
+	// Purchase return shipped -> inventory deduction
+	purchaseReturnShippedHandler := tradeapp.NewPurchaseReturnShippedHandler(inventoryService, log)
+	eventBus.Subscribe(purchaseReturnShippedHandler)
+
 	log.Info("Event handlers registered",
 		zap.Strings("purchase_order_received_events", purchaseOrderReceivedHandler.EventTypes()),
 		zap.Strings("sales_order_confirmed_events", salesOrderConfirmedHandler.EventTypes()),
 		zap.Strings("sales_order_shipped_events", salesOrderShippedHandler.EventTypes()),
 		zap.Strings("sales_order_cancelled_events", salesOrderCancelledHandler.EventTypes()),
+		zap.Strings("sales_return_completed_events", salesReturnCompletedHandler.EventTypes()),
+		zap.Strings("purchase_return_shipped_events", purchaseReturnShippedHandler.EventTypes()),
 	)
 
 	// Start event bus
@@ -170,6 +184,8 @@ func main() {
 	// Inject event bus into services that publish events
 	purchaseOrderService.SetEventPublisher(eventBus)
 	salesOrderService.SetEventPublisher(eventBus)
+	salesReturnService.SetEventPublisher(eventBus)
+	purchaseReturnService.SetEventPublisher(eventBus)
 
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
@@ -182,6 +198,8 @@ func main() {
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 	salesOrderHandler := handler.NewSalesOrderHandler(salesOrderService)
 	purchaseOrderHandler := handler.NewPurchaseOrderHandler(purchaseOrderService)
+	salesReturnHandler := handler.NewSalesReturnHandler(salesReturnService)
+	purchaseReturnHandler := handler.NewPurchaseReturnHandler(purchaseReturnService)
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
 	roleHandler := handler.NewRoleHandler(roleService)
@@ -426,6 +444,41 @@ func main() {
 	tradeRoutes.POST("/purchase-orders/:id/confirm", purchaseOrderHandler.Confirm)
 	tradeRoutes.POST("/purchase-orders/:id/receive", purchaseOrderHandler.Receive)
 	tradeRoutes.POST("/purchase-orders/:id/cancel", purchaseOrderHandler.Cancel)
+
+	// Sales Return routes
+	tradeRoutes.POST("/sales-returns", salesReturnHandler.Create)
+	tradeRoutes.GET("/sales-returns", salesReturnHandler.List)
+	tradeRoutes.GET("/sales-returns/stats/summary", salesReturnHandler.GetStatusSummary)
+	tradeRoutes.GET("/sales-returns/number/:return_number", salesReturnHandler.GetByReturnNumber)
+	tradeRoutes.GET("/sales-returns/:id", salesReturnHandler.GetByID)
+	tradeRoutes.PUT("/sales-returns/:id", salesReturnHandler.Update)
+	tradeRoutes.DELETE("/sales-returns/:id", salesReturnHandler.Delete)
+	tradeRoutes.POST("/sales-returns/:id/items", salesReturnHandler.AddItem)
+	tradeRoutes.PUT("/sales-returns/:id/items/:item_id", salesReturnHandler.UpdateItem)
+	tradeRoutes.DELETE("/sales-returns/:id/items/:item_id", salesReturnHandler.RemoveItem)
+	tradeRoutes.POST("/sales-returns/:id/submit", salesReturnHandler.Submit)
+	tradeRoutes.POST("/sales-returns/:id/approve", salesReturnHandler.Approve)
+	tradeRoutes.POST("/sales-returns/:id/reject", salesReturnHandler.Reject)
+	tradeRoutes.POST("/sales-returns/:id/complete", salesReturnHandler.Complete)
+	tradeRoutes.POST("/sales-returns/:id/cancel", salesReturnHandler.Cancel)
+
+	// Purchase Return routes
+	tradeRoutes.POST("/purchase-returns", purchaseReturnHandler.Create)
+	tradeRoutes.GET("/purchase-returns", purchaseReturnHandler.List)
+	tradeRoutes.GET("/purchase-returns/stats/summary", purchaseReturnHandler.GetStatusSummary)
+	tradeRoutes.GET("/purchase-returns/number/:return_number", purchaseReturnHandler.GetByReturnNumber)
+	tradeRoutes.GET("/purchase-returns/:id", purchaseReturnHandler.GetByID)
+	tradeRoutes.PUT("/purchase-returns/:id", purchaseReturnHandler.Update)
+	tradeRoutes.DELETE("/purchase-returns/:id", purchaseReturnHandler.Delete)
+	tradeRoutes.POST("/purchase-returns/:id/items", purchaseReturnHandler.AddItem)
+	tradeRoutes.PUT("/purchase-returns/:id/items/:item_id", purchaseReturnHandler.UpdateItem)
+	tradeRoutes.DELETE("/purchase-returns/:id/items/:item_id", purchaseReturnHandler.RemoveItem)
+	tradeRoutes.POST("/purchase-returns/:id/submit", purchaseReturnHandler.Submit)
+	tradeRoutes.POST("/purchase-returns/:id/approve", purchaseReturnHandler.Approve)
+	tradeRoutes.POST("/purchase-returns/:id/reject", purchaseReturnHandler.Reject)
+	tradeRoutes.POST("/purchase-returns/:id/ship", purchaseReturnHandler.Ship)
+	tradeRoutes.POST("/purchase-returns/:id/complete", purchaseReturnHandler.Complete)
+	tradeRoutes.POST("/purchase-returns/:id/cancel", purchaseReturnHandler.Cancel)
 
 	// Finance domain
 	financeRoutes := router.NewDomainGroup("finance", "/finance")

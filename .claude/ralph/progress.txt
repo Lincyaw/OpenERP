@@ -9953,3 +9953,100 @@ SalesReturn.Complete()
 - P3-BE-032 (PurchaseReturn API) - Implement REST API endpoints with shipping endpoint
 - The shipping endpoint should call `Ship()` on the aggregate, which emits the event
 - Handler registration in DI/bootstrap for event processing
+
+---
+
+## 2026-01-24 - P3-BE-032: PurchaseReturn API Complete
+
+### Completed
+- **P3-BE-032**: PurchaseReturn API
+
+### What was done
+
+1. **Application Service** (`backend/internal/application/trade/purchase_return_service.go`)
+   - Full PurchaseReturnService with all CRUD and workflow operations
+   - Methods: Create, GetByID, GetByReturnNumber, List, ListByPurchaseOrder, ListPendingApproval
+   - Methods: Update, Delete, AddItem, UpdateItem, RemoveItem
+   - Workflow methods: Submit, Approve, Reject, Ship, Complete, Cancel
+   - GetStatusSummary for dashboard metrics
+   - Integrates with event publisher for domain events
+
+2. **DTOs** (`backend/internal/application/trade/dto.go`)
+   - CreatePurchaseReturnRequest, CreatePurchaseReturnItemRequest
+   - UpdatePurchaseReturnRequest, UpdatePurchaseReturnItemRequest
+   - AddPurchaseReturnItemRequest
+   - PurchaseReturnResponse, PurchaseReturnItemResponse
+   - PurchaseReturnListItemResponse, PurchaseReturnListFilter
+   - ApprovePurchaseReturnRequest, RejectPurchaseReturnRequest
+   - ShipPurchaseReturnRequest, CompletePurchaseReturnRequest
+   - CancelPurchaseReturnRequest, PurchaseReturnStatusSummary
+   - Converter functions: ToPurchaseReturnResponse, ToPurchaseReturnListItemResponses
+
+3. **HTTP Handler** (`backend/internal/interfaces/http/handler/purchase_return.go`)
+   - Full REST API with OpenAPI/Swagger annotations
+   - CRUD endpoints: Create, GetByID, GetByReturnNumber, List, Update, Delete
+   - Item management: AddItem, UpdateItem, RemoveItem
+   - Workflow endpoints: Submit, Approve, Reject, Ship, Complete, Cancel
+   - Dashboard: GetStatusSummary
+   - Proper error handling and response formatting
+
+4. **Repository** (`backend/internal/infrastructure/persistence/purchase_return_repository.go`)
+   - GormPurchaseReturnRepository implementing PurchaseReturnRepository interface
+   - All query methods: FindByID, FindByIDForTenant, FindByReturnNumber, etc.
+   - Count methods: CountForTenant, CountByStatus, CountBySupplier, etc.
+   - Save/SaveWithLock with optimistic locking support
+   - Delete methods with soft delete support
+   - GenerateReturnNumber with format PR-YYYY-NNNNN
+   - Full filtering support: status, supplier, warehouse, date range, amount range
+
+5. **Domain Repository Interface** (`backend/internal/domain/trade/repository.go`)
+   - Added PurchaseReturnRepository interface (already existed from previous work)
+
+6. **Route Registration** (`backend/cmd/server/main.go`)
+   - Registered purchaseReturnRepo, purchaseReturnService, purchaseReturnHandler
+   - Registered salesReturnRepo, salesReturnService, salesReturnHandler
+   - Registered PurchaseReturnShippedHandler for inventory deduction
+   - Registered SalesReturnCompletedHandler for inventory restoration
+   - Added all routes under /trade domain group
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /trade/purchase-returns | Create purchase return |
+| GET | /trade/purchase-returns | List purchase returns |
+| GET | /trade/purchase-returns/stats/summary | Get status summary |
+| GET | /trade/purchase-returns/number/:return_number | Get by return number |
+| GET | /trade/purchase-returns/:id | Get by ID |
+| PUT | /trade/purchase-returns/:id | Update return |
+| DELETE | /trade/purchase-returns/:id | Delete return |
+| POST | /trade/purchase-returns/:id/items | Add item |
+| PUT | /trade/purchase-returns/:id/items/:item_id | Update item |
+| DELETE | /trade/purchase-returns/:id/items/:item_id | Remove item |
+| POST | /trade/purchase-returns/:id/submit | Submit for approval |
+| POST | /trade/purchase-returns/:id/approve | Approve return |
+| POST | /trade/purchase-returns/:id/reject | Reject return |
+| POST | /trade/purchase-returns/:id/ship | Ship return to supplier |
+| POST | /trade/purchase-returns/:id/complete | Mark as completed |
+| POST | /trade/purchase-returns/:id/cancel | Cancel return |
+
+### Also Registered (SalesReturn)
+- Sales Return routes registered in the same update
+- All CRUD and workflow endpoints for sales returns now available
+
+### Requirements Met
+- ✅ 实现采购退货 CRUD API (Create, Read, Update, Delete)
+- ✅ 实现发货 API (Ship endpoint triggers inventory deduction)
+- ✅ 实现退货完成 API (Complete endpoint)
+
+### Files Created
+- `backend/internal/application/trade/purchase_return_service.go`
+- `backend/internal/interfaces/http/handler/purchase_return.go`
+- `backend/internal/infrastructure/persistence/purchase_return_repository.go`
+
+### Files Modified
+- `backend/internal/application/trade/dto.go` (added PurchaseReturn DTOs)
+- `backend/cmd/server/main.go` (registered repos, services, handlers, routes)
+
+### Build Status
+Backend builds successfully (`go build ./cmd/server/...`)

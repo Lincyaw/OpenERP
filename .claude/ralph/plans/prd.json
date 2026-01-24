@@ -1148,7 +1148,7 @@
       "实现发货 API",
       "实现退货完成 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-FE-001",

@@ -174,3 +174,63 @@ type SalesReturnRepository interface {
 	// GenerateReturnNumber generates a unique return number for a tenant
 	GenerateReturnNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// PurchaseReturnRepository defines the interface for purchase return persistence
+type PurchaseReturnRepository interface {
+	// FindByID finds a purchase return by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*PurchaseReturn, error)
+
+	// FindByIDForTenant finds a purchase return by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*PurchaseReturn, error)
+
+	// FindByReturnNumber finds a purchase return by return number for a tenant
+	FindByReturnNumber(ctx context.Context, tenantID uuid.UUID, returnNumber string) (*PurchaseReturn, error)
+
+	// FindAllForTenant finds all purchase returns for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]PurchaseReturn, error)
+
+	// FindBySupplier finds purchase returns for a supplier
+	FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter shared.Filter) ([]PurchaseReturn, error)
+
+	// FindByPurchaseOrder finds purchase returns for a purchase order
+	FindByPurchaseOrder(ctx context.Context, tenantID, purchaseOrderID uuid.UUID) ([]PurchaseReturn, error)
+
+	// FindByStatus finds purchase returns by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status PurchaseReturnStatus, filter shared.Filter) ([]PurchaseReturn, error)
+
+	// FindPendingApproval finds purchase returns pending approval
+	FindPendingApproval(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]PurchaseReturn, error)
+
+	// Save creates or updates a purchase return
+	Save(ctx context.Context, pr *PurchaseReturn) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, pr *PurchaseReturn) error
+
+	// Delete deletes a purchase return (soft delete)
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant deletes a purchase return for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts purchase returns for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error)
+
+	// CountByStatus counts purchase returns by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status PurchaseReturnStatus) (int64, error)
+
+	// CountBySupplier counts purchase returns for a supplier
+	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
+	// CountByPurchaseOrder counts purchase returns for a purchase order
+	CountByPurchaseOrder(ctx context.Context, tenantID, purchaseOrderID uuid.UUID) (int64, error)
+
+	// CountPendingApproval counts returns pending approval for a tenant
+	CountPendingApproval(ctx context.Context, tenantID uuid.UUID) (int64, error)
+
+	// ExistsByReturnNumber checks if a return number exists for a tenant
+	ExistsByReturnNumber(ctx context.Context, tenantID uuid.UUID, returnNumber string) (bool, error)
+
+	// GenerateReturnNumber generates a unique return number for a tenant
+	GenerateReturnNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}
