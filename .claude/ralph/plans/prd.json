@@ -2006,7 +2006,7 @@
       "实现自动刷新",
       "处理 Token 过期"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-FE-003",

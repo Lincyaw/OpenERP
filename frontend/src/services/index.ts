@@ -3,6 +3,17 @@
 
 export { axiosInstance, customInstance } from './axios-instance'
 
+// Token refresh service for automatic token management
+export {
+  isTokenExpired,
+  isTokenCompletelyExpired,
+  getTokenExpiration,
+  getTimeUntilExpiry,
+  refreshAccessToken,
+  setupAutoRefresh,
+  redirectToLogin,
+} from './token-refresh'
+
 // Re-export generated API clients
 export * from '../api/system/system'
 

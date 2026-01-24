@@ -1,5 +1,12 @@
 import axios from 'axios'
-import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import type { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import {
+  isTokenExpired,
+  refreshAccessToken,
+  isCurrentlyRefreshing,
+  waitForRefresh,
+  redirectToLogin,
+} from './token-refresh'
 
 // API base URL - use environment variable or default to localhost
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
@@ -13,10 +20,46 @@ export const axiosInstance = axios.create({
   },
 })
 
-// Request interceptor - add auth token and tenant ID if available
+// URLs that don't require authentication
+const PUBLIC_URLS = ['/auth/login', '/auth/refresh']
+
+// Check if URL is public (doesn't require auth)
+function isPublicUrl(url?: string): boolean {
+  if (!url) return false
+  return PUBLIC_URLS.some((publicUrl) => url.includes(publicUrl))
+}
+
+// Request interceptor - add auth token and handle token refresh
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access_token')
+  async (config: InternalAxiosRequestConfig) => {
+    // Skip auth for public URLs
+    if (isPublicUrl(config.url)) {
+      return config
+    }
+
+    let token = localStorage.getItem('access_token')
+
+    // Check if token needs refresh before making request
+    if (token && isTokenExpired(token)) {
+      // If already refreshing, wait for it to complete
+      if (isCurrentlyRefreshing()) {
+        const newToken = await waitForRefresh()
+        if (newToken) {
+          token = newToken
+        }
+      } else {
+        // Start refresh
+        const newToken = await refreshAccessToken()
+        if (newToken) {
+          token = newToken
+        } else {
+          // Refresh failed, token will be null
+          token = null
+        }
+      }
+    }
+
+    // Add auth header if we have a token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -44,24 +87,96 @@ axiosInstance.interceptors.request.use(
   }
 )
 
-// Response interceptor - handle common error cases
+// Track failed requests for retry after refresh
+interface FailedRequest {
+  resolve: (value: AxiosResponse) => void
+  reject: (error: AxiosError) => void
+  config: InternalAxiosRequestConfig
+}
+
+let failedQueue: FailedRequest[] = []
+let isRefreshingFromResponse = false
+
+// Process failed queue after refresh
+function processQueue(token: string | null): void {
+  failedQueue.forEach((request) => {
+    if (token) {
+      // Retry with new token
+      request.config.headers.Authorization = `Bearer ${token}`
+      axiosInstance(request.config)
+        .then((response) => request.resolve(response))
+        .catch((error) => request.reject(error))
+    } else {
+      // Reject if refresh failed
+      request.reject(new axios.AxiosError('Token refresh failed'))
+    }
+  })
+  failedQueue = []
+}
+
+// Response interceptor - handle 401 and other errors
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     return response
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't retry for auth endpoints
+      if (isPublicUrl(originalRequest.url)) {
+        return Promise.reject(error)
+      }
+
+      // Mark as retry to prevent infinite loop
+      originalRequest._retry = true
+
+      // If already refreshing, queue this request
+      if (isRefreshingFromResponse) {
+        return new Promise<AxiosResponse>((resolve, reject) => {
+          failedQueue.push({
+            resolve,
+            reject,
+            config: originalRequest,
+          })
+        })
+      }
+
+      isRefreshingFromResponse = true
+
+      try {
+        const newToken = await refreshAccessToken()
+
+        if (newToken) {
+          // Process queued requests
+          processQueue(newToken)
+
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+          return axiosInstance(originalRequest)
+        }
+
+        // Refresh failed, process queue with null
+        processQueue(null)
+
+        // Clear auth state and redirect to login
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('user')
+        redirectToLogin('Session expired. Please log in again.')
+
+        return Promise.reject(error)
+      } finally {
+        isRefreshingFromResponse = false
+      }
+    }
+
+    // Handle other errors
     if (error.response) {
       const status = error.response.status
 
       switch (status) {
-        case 401:
-          // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          localStorage.removeItem('user')
-          // Optionally redirect to login page
-          // window.location.href = '/login'
-          break
         case 403:
           // Forbidden - user doesn't have permission
           console.error('Access forbidden')

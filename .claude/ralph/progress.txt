@@ -8622,3 +8622,106 @@ Created a new auth API module with the following files:
 - **P6-FE-003**: Route permission control - implement route guards that check permissions from auth store.
 - The auth API module can be regenerated using orval once the backend swagger docs are updated.
 
+
+---
+
+## P6-FE-002: Token 存储与刷新逻辑 (Token Storage & Refresh Logic)
+
+**Date**: 2026-01-24
+**Status**: COMPLETED ✅
+
+### Summary
+Implemented comprehensive token storage and automatic refresh logic for JWT authentication.
+
+### Implementation Details
+
+#### Token Refresh Service (`frontend/src/services/token-refresh.ts`)
+
+Created a complete token refresh service with the following features:
+
+**JWT Token Utilities:**
+- `getTokenExpiration(token)` - Decode JWT to get expiration timestamp
+- `isTokenExpired(token)` - Check if token needs refresh (1 min buffer)
+- `isTokenCompletelyExpired(token)` - Check if token is past expiration
+- `getTimeUntilExpiry(token)` - Get milliseconds until expiration
+
+**Refresh Logic:**
+- `refreshAccessToken()` - Singleton pattern to prevent multiple simultaneous refresh requests
+- `performRefresh(refreshToken)` - Makes the actual API call to /auth/refresh
+- Queues concurrent requests and serves them with the new token
+
+**Auto-Refresh System:**
+- `setupAutoRefresh()` - Sets up a timer to refresh before token expires
+- Subscribes to auth store changes to re-schedule on token updates
+- Returns cleanup function for proper React lifecycle management
+
+**Redirect Handling:**
+- `redirectToLogin(message?)` - Redirects to login with optional message
+- Stores redirect path in sessionStorage for post-login navigation
+
+#### Axios Interceptor Updates (`frontend/src/services/axios-instance.ts`)
+
+Enhanced the axios instance with:
+
+**Request Interceptor:**
+- Checks token expiration BEFORE making requests
+- If token expired, waits for refresh or triggers one
+- Skips auth for public URLs (/auth/login, /auth/refresh)
+
+**Response Interceptor:**
+- Handles 401 responses with automatic token refresh
+- Queues failed requests during refresh, then retries with new token
+- Prevents infinite retry loops with `_retry` flag
+- Clears auth state and redirects on refresh failure
+
+#### Auth Provider Component (`frontend/src/components/auth/AuthProvider.tsx`)
+
+Created a provider component that:
+- Initializes auth state from localStorage on app mount
+- Sets up automatic token refresh when user is authenticated
+- Displays session expired messages from redirect
+- Properly cleans up refresh timers on unmount
+
+**Helper exports:**
+- `useAuthRedirectPath()` - Get path user was trying to access before redirect
+- `clearAuthRedirectPath()` - Clear stored path after successful navigation
+
+#### Updated Main Entry (`frontend/src/main.tsx`)
+
+Wrapped RouterProvider with AuthProvider:
+```tsx
+<AuthProvider>
+  <RouterProvider router={router} />
+</AuthProvider>
+```
+
+### Requirements Fulfilled
+
+1. ✅ **实现 Token 存储** - Token storage in localStorage (via existing authStore) + sessionStorage for redirect state
+2. ✅ **实现自动刷新** - Automatic refresh before token expiration with 1-minute buffer
+3. ✅ **处理 Token 过期** - Graceful handling with redirect to login and message display
+
+### Key Design Decisions
+
+1. **Singleton Refresh Pattern**: Prevents race conditions when multiple API calls fail simultaneously
+2. **Proactive Refresh**: Refreshes 1 minute before expiration, not after failure
+3. **Request Queuing**: Failed requests are queued during refresh and retried with new token
+4. **Clean Logout Flow**: Clears all auth state and redirects with informative message
+5. **React Integration**: AuthProvider properly manages timers with useEffect cleanup
+
+### Build & Test Status
+- `npm run build` ✅ PASSED
+- `npx tsc --noEmit` ✅ PASSED (TypeScript check)
+
+### Files Created/Modified
+- `frontend/src/services/token-refresh.ts` (NEW) - Token refresh service
+- `frontend/src/services/axios-instance.ts` (MODIFIED) - Enhanced interceptors
+- `frontend/src/services/index.ts` (MODIFIED) - Export token utilities
+- `frontend/src/components/auth/AuthProvider.tsx` (NEW) - Auth provider component
+- `frontend/src/components/auth/index.ts` (NEW) - Component exports
+- `frontend/src/main.tsx` (MODIFIED) - Wrapped with AuthProvider
+
+### Notes for Next Steps
+- **P6-FE-003**: Route permission control can now use `isAuthenticated` from authStore
+- Token refresh is handled transparently - API calls will automatically retry with new tokens
+- The AuthProvider ensures auth state is initialized before any protected route renders
