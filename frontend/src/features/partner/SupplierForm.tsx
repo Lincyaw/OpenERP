@@ -193,7 +193,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
       name: initialData.name || '',
       short_name: initialData.short_name || '',
       type:
-        (initialData.status as 'manufacturer' | 'distributor' | 'retailer' | 'service') ||
+        (initialData.type as 'manufacturer' | 'distributor' | 'retailer' | 'service') ||
         'manufacturer',
       contact_name: initialData.contact_name || '',
       phone: initialData.phone || '',

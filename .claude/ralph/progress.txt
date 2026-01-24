@@ -13539,3 +13539,77 @@ npm run test -- --run src/pages/catalog/Categories.test.tsx
 2. **Tree Auto-Expand**: Root categories are auto-expanded on load
 3. **Search Filtering**: Maintains parent nodes when filtering to preserve tree structure
 4. **Next priority items**: P1-QA-006 (伙伴模块前端组件测试), P1-INT-003 (客户余额功能联调)
+
+
+---
+
+## 2026-01-25: Partner Module Frontend Component Tests (P1-QA-006)
+
+### Summary
+Implemented comprehensive frontend component tests for the Partner module, completing the P1-QA-006 story. Created new test files for SupplierForm and WarehouseForm components, and fixed a bug in SupplierForm where `initialData.status` was used instead of `initialData.type`.
+
+### Requirements Verified
+
+#### 1. 测试客户列表组件 ✅
+**Files**: 
+- `frontend/src/pages/partner/Customers.test.tsx` (already existed)
+- `frontend/src/features/partner/CustomerForm.test.tsx` (already existed)
+- Tests list display, status/level/type tags, search/filter, error handling
+- Tests form create/edit modes, validation, API integration
+- **Total: 47 tests**
+
+#### 2. 测试供应商列表组件 ✅
+**Files**: 
+- `frontend/src/pages/partner/Suppliers.test.tsx` (already existed)
+- `frontend/src/features/partner/SupplierForm.test.tsx` (NEW)
+- Tests list display, status tags, contact info, location
+- Tests form create/edit modes, validation, bank info, procurement settings
+- **Total: 50 tests**
+
+#### 3. 测试仓库列表组件 ✅
+**Files**: 
+- `frontend/src/pages/partner/Warehouses.test.tsx` (already existed)
+- `frontend/src/features/partner/WarehouseForm.test.tsx` (NEW)
+- Tests list display, type/status tags, default indicator, sort order
+- Tests form create/edit modes, validation, default warehouse toggle
+- **Total: 55 tests**
+
+### Test Coverage Summary
+- **Customers.test.tsx**: 23 tests ✅
+- **CustomerForm.test.tsx**: 24 tests ✅
+- **Suppliers.test.tsx**: 20 tests ✅
+- **SupplierForm.test.tsx**: 30 tests ✅ (NEW)
+- **Warehouses.test.tsx**: 21 tests ✅
+- **WarehouseForm.test.tsx**: 34 tests ✅ (NEW)
+- **Partner module total**: 152 tests passing
+
+### How to Run Tests
+```bash
+# Run all partner module tests
+cd frontend && npm run test -- --run src/features/partner/*.test.tsx src/pages/partner/*.test.tsx
+
+# Run only SupplierForm tests
+npm run test -- --run src/features/partner/SupplierForm.test.tsx
+
+# Run only WarehouseForm tests
+npm run test -- --run src/features/partner/WarehouseForm.test.tsx
+```
+
+### Bug Fix
+- Fixed bug in `SupplierForm.tsx` line 195-197: Changed `initialData.status` to `initialData.type` for correct supplier type initialization in edit mode
+
+### Files Created
+- `frontend/src/features/partner/SupplierForm.test.tsx` (450+ lines)
+- `frontend/src/features/partner/WarehouseForm.test.tsx` (500+ lines)
+
+### Files Modified
+- `frontend/src/features/partner/SupplierForm.tsx` (bug fix)
+- `.claude/ralph/plans/prd.json` (P1-QA-006: passes: true)
+
+### Notes for Next Developer
+1. **Test Pattern**: Use `vi.mock()` for API modules and `vi.spyOn()` for Toast methods
+2. **Mock Setup**: Return value from `getSuppliers()` / `getWarehouses()` should be an object with API method functions
+3. **Error Tests**: The create API error tests work well; update API error tests may have timing complexity
+4. **Form Validation**: Tests cover both Zod schema validation (empty fields, invalid formats) and API-level validation
+5. **Next priority items**: P1-INT-003 (客户余额功能联调), P2-QA-005 (库存模块前端组件测试)
+
