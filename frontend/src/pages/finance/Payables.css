@@ -1,0 +1,214 @@
+/* Payables Page Styles */
+
+.payables-page {
+  padding: var(--spacing-6);
+}
+
+/* Summary Section */
+.payables-summary {
+  margin-bottom: var(--spacing-6);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+  padding: var(--spacing-4);
+}
+
+.payables-page .summary-descriptions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.payables-page .summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-4);
+  min-width: 120px;
+}
+
+.payables-page .summary-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+}
+
+.payables-page .summary-value {
+  font-size: var(--semi-font-size-header-4);
+  font-weight: var(--semi-font-weight-semibold);
+  color: var(--semi-color-text-0);
+}
+
+.payables-page .summary-value.primary {
+  color: var(--semi-color-primary);
+}
+
+.payables-page .summary-value.danger {
+  color: var(--semi-color-danger);
+}
+
+.payables-page .summary-value.warning {
+  color: var(--semi-color-warning);
+}
+
+/* Main Card */
+.payables-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.payables-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Payable number styling */
+.payable-number-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.payable-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+.payables-page .overdue-icon {
+  color: var(--semi-color-danger);
+  font-size: 14px;
+}
+
+/* Supplier name styling */
+.supplier-name {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+/* Source cell */
+.payables-page .source-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.payables-page .source-number {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-0);
+}
+
+.payables-page .source-type {
+  font-size: var(--semi-font-size-extra-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Amount styling */
+.payables-page .amount-cell {
+  font-family: var(--semi-font-family-code);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+.payables-page .total-amount {
+  color: var(--semi-color-text-0);
+}
+
+.payables-page .paid-amount {
+  color: var(--semi-color-success);
+}
+
+.payables-page .outstanding-amount {
+  color: var(--semi-color-primary);
+}
+
+.payables-page .outstanding-amount.overdue {
+  color: var(--semi-color-danger);
+}
+
+/* Date styling */
+.payables-page .date-cell {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-1);
+}
+
+.payables-page .date-cell.overdue {
+  color: var(--semi-color-danger);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Table container */
+.payables-page .data-table-container {
+  margin-top: var(--spacing-4);
+}
+
+/* Filter container */
+.payables-filter-container {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Status tags */
+.payables-page .semi-tag {
+  min-width: 64px;
+  text-align: center;
+}
+
+/* Loading overlay */
+.payables-page .semi-spin-wrapper {
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .payables-page .summary-descriptions {
+    flex-wrap: wrap;
+  }
+
+  .payables-page .summary-item {
+    min-width: 100px;
+    flex: 1 1 calc(33.33% - var(--spacing-4));
+  }
+}
+
+@media (max-width: 768px) {
+  .payables-page {
+    padding: var(--spacing-4);
+  }
+
+  .payables-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .payables-filter-container {
+    flex-direction: column;
+  }
+
+  .payables-filter-container .semi-select {
+    width: 100% !important;
+  }
+
+  .payables-filter-container .semi-datePicker {
+    width: 100% !important;
+  }
+
+  .payables-page .summary-item {
+    flex: 1 1 calc(50% - var(--spacing-4));
+  }
+
+  .payables-page .summary-value {
+    font-size: var(--semi-font-size-header-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .payables-page .summary-item {
+    flex: 1 1 100%;
+  }
+}

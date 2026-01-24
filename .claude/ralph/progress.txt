@@ -6434,3 +6434,64 @@ Implemented the Account Receivable (AR) list page for the Finance module fronten
 - **Next Frontend Tasks**: P4-FE-002 (应付账款列表页面), P4-FE-003 (收款单创建页面)
 - **API generation**: Once backend implements persistence layer and regenerates swagger, run `npm run api:generate` to auto-generate TypeScript client, then replace manual API service
 - **Similar pattern**: The Payables page (P4-FE-002) can follow the same structure - just swap customer for supplier and receivables for payables
+
+---
+
+## P4-FE-002: 应付账款列表页面 (Account Payable List Page)
+
+**Date**: 2026-01-24
+**Status**: ✅ COMPLETED
+
+### Summary
+Implemented the Account Payable (AP) list page for the Finance module frontend. This page allows users to view, filter, and manage account payables with summary metrics.
+
+### Features Implemented
+1. **Summary Dashboard**
+   - Total outstanding amount display
+   - Total overdue amount display
+   - Pending payables count
+   - Partial payment count
+   - Overdue payables count
+
+2. **Data Table**
+   - Payable number with overdue indicator icon
+   - Supplier name
+   - Source document (order number and type: Purchase Order, Purchase Return, Manual)
+   - Total amount, Paid amount, Outstanding amount
+   - Due date with overdue highlighting
+   - Status tags (PENDING/PARTIAL/PAID/REVERSED/CANCELLED)
+   - Created date
+   - Row actions: View, Pay (create payment voucher)
+
+3. **Filtering & Search**
+   - Search by payable number, supplier name
+   - Status filter dropdown
+   - Source type filter (Purchase Order, Purchase Return, Manual)
+   - Overdue filter toggle
+   - Date range picker
+
+4. **Navigation**
+   - View action navigates to payable detail page
+   - Pay action navigates to payment voucher creation with pre-filled supplier
+
+### Files Created/Modified
+- `frontend/src/pages/finance/Payables.tsx` (MODIFIED) - Complete implementation replacing placeholder
+- `frontend/src/pages/finance/Payables.css` (NEW) - Styles for payables page
+
+### Technical Notes
+- **Pattern follows P4-FE-001**: Mirrors the Receivables page structure with AP-specific changes (supplier instead of customer, payment instead of receipt)
+- **API already available**: Finance API service (`getFinancePayables`, `getFinancePayablesSummary`) already implemented in P4-FE-001
+- **Types already defined**: `AccountPayable`, `PayableSummary`, `GetPayablesParams` already in types.ts
+- **Design System**: Used CSS variables for spacing, colors, typography per frontend/README.md guidelines
+- **Responsive**: Mobile-first design with breakpoints at 768px and 1024px
+
+### Build Status
+- `npm run build` ✅ PASSED
+
+### Notes for Next Developer
+- **Backend not wired**: Finance API routes exist but repositories not implemented yet
+- **Next Frontend Tasks**: 
+  - P4-FE-003 (收款单创建页面) - Receipt voucher creation
+  - P4-FE-005 (付款单创建页面) - Payment voucher creation
+- **Consistent patterns**: Receipt/Payment pages can follow similar structure to the list pages
+- **API generation**: Once backend implements persistence layer and regenerates swagger, run `npm run api:generate` to auto-generate TypeScript client
