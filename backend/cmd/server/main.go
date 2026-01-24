@@ -114,6 +114,7 @@ func main() {
 	stockTakingRepo := persistence.NewGormStockTakingRepository(db.DB)
 	userRepo := persistence.NewGormUserRepository(db.DB)
 	roleRepo := persistence.NewGormRoleRepository(db.DB)
+	tenantRepo := persistence.NewGormTenantRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -130,11 +131,12 @@ func main() {
 	purchaseReturnService := tradeapp.NewPurchaseReturnService(purchaseReturnRepo, purchaseOrderRepo)
 	stockTakingService := inventoryapp.NewStockTakingService(stockTakingRepo, nil) // eventBus will be set later
 
-	// Identity services (auth, user, role)
+	// Identity services (auth, user, role, tenant)
 	jwtService := auth.NewJWTService(cfg.JWT)
 	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, identityapp.DefaultAuthServiceConfig(), log)
 	userService := identityapp.NewUserService(userRepo, roleRepo, log)
 	roleService := identityapp.NewRoleService(roleRepo, userRepo, log)
+	tenantService := identityapp.NewTenantService(tenantRepo, log)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -206,6 +208,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
 	roleHandler := handler.NewRoleHandler(roleService)
+	tenantHandler := handler.NewTenantHandler(tenantService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -554,6 +557,21 @@ func main() {
 
 	// Permission management
 	identityRoutes.GET("/permissions", roleHandler.GetPermissions)
+
+	// Tenant management routes
+	identityRoutes.POST("/tenants", tenantHandler.Create)
+	identityRoutes.GET("/tenants", tenantHandler.List)
+	identityRoutes.GET("/tenants/stats", tenantHandler.GetStats)
+	identityRoutes.GET("/tenants/stats/count", tenantHandler.Count)
+	identityRoutes.GET("/tenants/:id", tenantHandler.GetByID)
+	identityRoutes.GET("/tenants/code/:code", tenantHandler.GetByCode)
+	identityRoutes.PUT("/tenants/:id", tenantHandler.Update)
+	identityRoutes.PUT("/tenants/:id/config", tenantHandler.UpdateConfig)
+	identityRoutes.PUT("/tenants/:id/plan", tenantHandler.SetPlan)
+	identityRoutes.DELETE("/tenants/:id", tenantHandler.Delete)
+	identityRoutes.POST("/tenants/:id/activate", tenantHandler.Activate)
+	identityRoutes.POST("/tenants/:id/deactivate", tenantHandler.Deactivate)
+	identityRoutes.POST("/tenants/:id/suspend", tenantHandler.Suspend)
 
 	// Register all domain groups
 	r.Register(catalogRoutes).

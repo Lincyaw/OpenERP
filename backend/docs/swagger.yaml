@@ -1464,6 +1464,54 @@ definitions:
     - name
     - type
     type: object
+  handler.CreateTenantRequest:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      code:
+        maxLength: 50
+        minLength: 2
+        type: string
+      contact_email:
+        maxLength: 200
+        type: string
+      contact_name:
+        maxLength: 100
+        type: string
+      contact_phone:
+        maxLength: 50
+        type: string
+      domain:
+        maxLength: 200
+        type: string
+      logo_url:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        type: string
+      plan:
+        enum:
+        - free
+        - basic
+        - pro
+        - enterprise
+        type: string
+      short_name:
+        maxLength: 100
+        type: string
+      trial_days:
+        maximum: 365
+        minimum: 1
+        type: integer
+    required:
+    - code
+    - name
+    type: object
   handler.CreateUserRequest:
     properties:
       display_name:
@@ -3739,6 +3787,18 @@ definitions:
     required:
     - rating
     type: object
+  handler.SetTenantPlanRequest:
+    properties:
+      plan:
+        enum:
+        - free
+        - basic
+        - pro
+        - enterprise
+        type: string
+    required:
+    - plan
+    type: object
   handler.SetThresholdsRequest:
     description: Request body for setting inventory alert thresholds
     properties:
@@ -4189,6 +4249,90 @@ definitions:
       version:
         example: 1.0.0
         type: string
+    type: object
+  handler.TenantConfigResponse:
+    properties:
+      cost_strategy:
+        type: string
+      currency:
+        type: string
+      locale:
+        type: string
+      max_products:
+        type: integer
+      max_users:
+        type: integer
+      max_warehouses:
+        type: integer
+      timezone:
+        type: string
+    type: object
+  handler.TenantListResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      tenants:
+        items:
+          $ref: '#/definitions/handler.TenantResponse'
+        type: array
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  handler.TenantResponse:
+    properties:
+      address:
+        type: string
+      code:
+        type: string
+      config:
+        $ref: '#/definitions/handler.TenantConfigResponse'
+      contact_email:
+        type: string
+      contact_name:
+        type: string
+      contact_phone:
+        type: string
+      created_at:
+        type: string
+      domain:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+      notes:
+        type: string
+      plan:
+        type: string
+      short_name:
+        type: string
+      status:
+        type: string
+      trial_ends_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.TenantStatsResponse:
+    properties:
+      active:
+        type: integer
+      inactive:
+        type: integer
+      suspended:
+        type: integer
+      total:
+        type: integer
+      trial:
+        type: integer
     type: object
   handler.TokenResponse:
     properties:
@@ -4651,6 +4795,61 @@ definitions:
       tax_id:
         example: 91440300MA5FL8L972
         maxLength: 50
+        type: string
+    type: object
+  handler.UpdateTenantConfigRequest:
+    properties:
+      cost_strategy:
+        enum:
+        - fifo
+        - weighted_average
+        type: string
+      currency:
+        type: string
+      locale:
+        maxLength: 10
+        type: string
+      max_products:
+        minimum: 0
+        type: integer
+      max_users:
+        minimum: 0
+        type: integer
+      max_warehouses:
+        minimum: 0
+        type: integer
+      timezone:
+        maxLength: 50
+        type: string
+    type: object
+  handler.UpdateTenantRequest:
+    properties:
+      address:
+        maxLength: 500
+        type: string
+      contact_email:
+        maxLength: 200
+        type: string
+      contact_name:
+        maxLength: 100
+        type: string
+      contact_phone:
+        maxLength: 50
+        type: string
+      domain:
+        maxLength: 200
+        type: string
+      logo_url:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 200
+        minLength: 1
+        type: string
+      notes:
+        type: string
+      short_name:
+        maxLength: 100
         type: string
     type: object
   handler.UpdateUserRequest:
@@ -9468,6 +9667,922 @@ paths:
       summary: Get system roles
       tags:
       - roles
+  /identity/tenants:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of tenants
+      parameters:
+      - description: Search keyword
+        in: query
+        name: keyword
+        type: string
+      - description: Tenant status
+        enum:
+        - active
+        - inactive
+        - suspended
+        - trial
+        in: query
+        name: status
+        type: string
+      - description: Subscription plan
+        enum:
+        - free
+        - basic
+        - pro
+        - enterprise
+        in: query
+        name: plan
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - description: Sort by field
+        enum:
+        - code
+        - name
+        - status
+        - plan
+        - created_at
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List tenants
+      tags:
+      - tenants
+    post:
+      consumes:
+      - application/json
+      description: Create a new tenant in the system
+      parameters:
+      - description: Tenant creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new tenant
+      tags:
+      - tenants
+  /identity/tenants/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a tenant from the system (only inactive tenants can be deleted)
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a tenant
+      tags:
+      - tenants
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a tenant by its ID
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get a tenant by ID
+      tags:
+      - tenants
+    put:
+      consumes:
+      - application/json
+      description: Update a tenant's information
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Tenant update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a tenant
+      tags:
+      - tenants
+  /identity/tenants/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate a tenant account
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Activate a tenant
+      tags:
+      - tenants
+  /identity/tenants/{id}/config:
+    put:
+      consumes:
+      - application/json
+      description: Update a tenant's configuration settings
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Configuration update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTenantConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update tenant configuration
+      tags:
+      - tenants
+  /identity/tenants/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate a tenant account
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate a tenant
+      tags:
+      - tenants
+  /identity/tenants/{id}/plan:
+    put:
+      consumes:
+      - application/json
+      description: Update a tenant's subscription plan
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Plan update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SetTenantPlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set tenant plan
+      tags:
+      - tenants
+  /identity/tenants/{id}/suspend:
+    post:
+      consumes:
+      - application/json
+      description: Suspend a tenant account (e.g., due to payment issues)
+      parameters:
+      - description: Tenant ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Suspend a tenant
+      tags:
+      - tenants
+  /identity/tenants/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a tenant by its unique code
+      parameters:
+      - description: Tenant code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get a tenant by code
+      tags:
+      - tenants
+  /identity/tenants/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get statistics about tenants in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TenantStatsResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get tenant statistics
+      tags:
+      - tenants
+  /identity/tenants/stats/count:
+    get:
+      consumes:
+      - application/json
+      description: Get the total number of tenants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  properties:
+                    count:
+                      format: int64
+                      type: integer
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get tenant count
+      tags:
+      - tenants
   /identity/users:
     get:
       consumes:

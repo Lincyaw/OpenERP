@@ -1896,7 +1896,7 @@
       "实现租户状态变更 API",
       "实现租户配置 API"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P6-BE-010",

@@ -10749,3 +10749,94 @@ TypeScript compilation passes successfully
 - Next features to consider:
   - P2-FE-006: Stock alert configuration page (low priority)
   - P2-QA series: Unit tests for inventory module
+
+---
+
+## 2026-01-24 - P6-BE-004: Tenant API Complete
+
+### Completed
+- **P6-BE-004**: Tenant API (租户 CRUD API, 租户状态变更 API, 租户配置 API)
+
+### What was done
+
+1. **Tenant Repository Implementation** (`backend/internal/infrastructure/persistence/tenant_repository.go`)
+   - Implements `TenantRepository` interface from domain layer
+   - GORM-based implementation with PostgreSQL
+   - FindByID, FindByCode, FindByDomain, FindAll, FindByStatus, FindByPlan
+   - FindActive, FindTrialExpiring, FindSubscriptionExpiring
+   - Save, Delete, Count, CountByStatus, CountByPlan
+   - ExistsByCode, ExistsByDomain for uniqueness checks
+
+2. **Tenant Application Service** (`backend/internal/application/identity/tenant_service.go`)
+   - CreateTenantInput, UpdateTenantInput, TenantConfigInput structs
+   - TenantDTO, TenantConfigDTO, TenantFilter, TenantListResult, TenantStatsDTO
+   - Create (with trial support), GetByID, GetByCode, List
+   - Update, UpdateConfig, SetPlan
+   - Activate, Deactivate, Suspend, Delete
+   - Count, GetStats
+
+3. **Tenant HTTP Handler** (`backend/internal/interfaces/http/handler/tenant.go`)
+   - CreateTenantRequest, UpdateTenantRequest, UpdateTenantConfigRequest, SetTenantPlanRequest DTOs
+   - TenantResponse, TenantConfigResponse, TenantListResponse, TenantStatsResponse DTOs
+   - Full Swagger annotations for all endpoints
+   - Endpoints:
+     - POST /identity/tenants - Create tenant
+     - GET /identity/tenants - List tenants (with filters)
+     - GET /identity/tenants/stats - Get tenant statistics
+     - GET /identity/tenants/stats/count - Get total count
+     - GET /identity/tenants/:id - Get by ID
+     - GET /identity/tenants/code/:code - Get by code
+     - PUT /identity/tenants/:id - Update tenant
+     - PUT /identity/tenants/:id/config - Update configuration
+     - PUT /identity/tenants/:id/plan - Set subscription plan
+     - DELETE /identity/tenants/:id - Delete (inactive only)
+     - POST /identity/tenants/:id/activate - Activate
+     - POST /identity/tenants/:id/deactivate - Deactivate
+     - POST /identity/tenants/:id/suspend - Suspend
+
+4. **DTO Definitions** (`backend/internal/interfaces/http/handler/tenant_dto.go`)
+   - Request/response DTOs with validation bindings
+   - TenantListQuery for list filtering
+
+5. **Routes Registration** (`backend/cmd/server/main.go`)
+   - Added tenantRepo initialization
+   - Added tenantService initialization
+   - Added tenantHandler initialization
+   - Registered all tenant routes under /identity/tenants
+
+6. **API Documentation**
+   - Regenerated swagger.yaml and swagger.json with tenant endpoints
+
+### Requirements Met
+- ✅ 实现租户 CRUD API (Tenant CRUD API - create, read, update, delete)
+- ✅ 实现租户状态变更 API (Tenant status change API - activate, deactivate, suspend)
+- ✅ 实现租户配置 API (Tenant configuration API - update config, set plan)
+
+### Files Created
+- `backend/internal/infrastructure/persistence/tenant_repository.go`
+- `backend/internal/application/identity/tenant_service.go`
+- `backend/internal/interfaces/http/handler/tenant.go`
+- `backend/internal/interfaces/http/handler/tenant_dto.go`
+
+### Files Modified
+- `backend/cmd/server/main.go` (added tenant initialization and routes)
+- `backend/docs/swagger.yaml` (regenerated)
+- `backend/docs/swagger.json` (regenerated)
+- `.claude/ralph/plans/prd.json` (marked P6-BE-004 as complete)
+
+### Build Status
+Backend compiles successfully with `go build ./...`
+
+### Notes for Next Developer
+- Tenant API follows the same patterns as User/Role APIs in the identity module
+- Trial tenants can be created by passing `trial_days` > 0 in the create request
+- Only inactive tenants can be deleted (safety feature)
+- Tenant configuration can be updated separately from basic info
+- Plan changes automatically update config limits based on the plan tier
+- Consider implementing P6-FE-007 (Tenant switching component) as a frontend task
+- Other remaining medium-priority backend tasks:
+  - P3-BE-003: Multi-unit conversion logic
+  - P3-BE-004: Pricing strategy (standard/tiered)
+  - P4-BE-004: Red-flush logic for returns
+  - P4-BE-006: Balance payment logic
+  - P6-BE-013: DataScope data permissions
