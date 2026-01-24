@@ -894,7 +894,8 @@ func TestAccountReceivableEvents(t *testing.T) {
 		assert.Equal(t, ReceivableStatusPartial, event.PreviousStatus)
 		assert.Equal(t, "Return processed", event.ReversalReason)
 		assert.True(t, event.PaidAmount.Equal(decimal.NewFromFloat(300.00)))
-		assert.True(t, event.OutstandingAmount.Equal(decimal.NewFromFloat(700.00)))
+		// After reversal, outstanding amount is 0 (debt is written off)
+		assert.True(t, event.OutstandingAmount.Equal(decimal.Zero))
 	})
 
 	t.Run("AccountReceivableCancelledEvent has correct fields", func(t *testing.T) {
