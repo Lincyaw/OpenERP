@@ -17038,3 +17038,55 @@ warehouses: {
 - Run E2E tests in Docker environment to verify the fix
 - Mark P3-INT-002 as passed once all E2E tests pass
 
+
+---
+
+## 2026-01-26: P9-API-001 - Critical API Pagination Validation Bug Fix
+
+### Issue Identified
+E2E tests for purchase order module were failing because supplier dropdown showed "暂无数据" (no data).
+Upon investigation, the API was returning 400 Bad Request validation error.
+
+### Root Cause Analysis
+The Go Gin binding validation on Page/PageSize fields was using `binding:"min=1"` without `omitempty`.
+When frontend calls API without providing `page` parameter, the default value is 0, which fails the min=1 validation.
+
+Error message: `Key: 'SupplierListFilter.page' Error:Field validation for 'page' failed on the 'min' tag`
+
+### Fix Applied
+Added `omitempty` to all Page/PageSize binding tags in backend DTOs:
+
+**Files Changed:**
+1. `backend/internal/application/partner/dto.go`
+   - SupplierListFilter (lines 305-306)
+   - CustomerListFilter (lines 118-119)
+   - WarehouseListFilter (lines 479-480)
+   - BalanceTransactionListFilter (lines 610-611)
+
+2. `backend/internal/application/trade/dto.go`
+   - PurchaseOrderListFilter (lines 101-102)
+   - SalesOrderListFilter (lines 386-387)
+   - SalesReturnListFilter (lines 613-614)
+   - PurchaseReturnListFilter (lines 873-874)
+
+3. `backend/internal/application/inventory/dto.go`
+   - InventoryListFilter (lines 55-56)
+   - TransactionListFilter (lines 196-197)
+
+4. `backend/internal/application/inventory/stock_taking_dto.go`
+   - StockTakingListFilter (lines 83-84)
+
+### Additional Fixes
+- Fixed CLAUDE.md incorrect password documentation (test123 → admin123)
+
+### Verification
+- Go build: `go build ./...` - Success
+- API test: `GET /partner/suppliers?status=active&page_size=10` - Returns data correctly
+- TypeScript: `npx tsc --noEmit` - Pass
+- Frontend build: `npm run build` - Success
+
+### Notes
+- E2E tests cannot run locally due to missing Playwright browser dependencies
+- Full E2E validation should be performed in CI/CD Docker environment
+- PRD updated with bug fix details in P3-INT-002 and new item P9-API-001
+

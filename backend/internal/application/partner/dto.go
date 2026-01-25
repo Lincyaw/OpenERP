@@ -302,8 +302,8 @@ type SupplierListFilter struct {
 	Province  string `form:"province"`
 	MinRating *int   `form:"min_rating" binding:"omitempty,min=0,max=5"`
 	MaxRating *int   `form:"max_rating" binding:"omitempty,min=0,max=5"`
-	Page      int    `form:"page" binding:"min=1"`
-	PageSize  int    `form:"page_size" binding:"min=1,max=100"`
+	Page      int    `form:"page" binding:"omitempty,min=1"`
+	PageSize  int    `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy   string `form:"order_by"`
 	OrderDir  string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
@@ -607,8 +607,8 @@ type BalanceTransactionListFilter struct {
 	SourceType      string     `form:"source_type" binding:"omitempty,oneof=MANUAL SALES_ORDER SALES_RETURN RECEIPT_VOUCHER SYSTEM"`
 	DateFrom        string     `form:"date_from"`
 	DateTo          string     `form:"date_to"`
-	Page            int        `form:"page" binding:"min=1"`
-	PageSize        int        `form:"page_size" binding:"min=1,max=100"`
+	Page            int        `form:"page" binding:"omitempty,min=1"`
+	PageSize        int        `form:"page_size" binding:"omitempty,min=1,max=100"`
 }
 
 // BalanceSummaryResponse represents customer balance summary

@@ -28,7 +28,7 @@ type CreatePurchaseOrderItemInput struct {
 	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
 	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
-	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
 	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
 	UnitCost       decimal.Decimal `json:"unit_cost" binding:"required"`
@@ -48,7 +48,7 @@ type AddPurchaseOrderItemRequest struct {
 	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
 	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
-	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
 	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit
 	UnitCost       decimal.Decimal `json:"unit_cost" binding:"required"`
@@ -98,8 +98,8 @@ type PurchaseOrderListFilter struct {
 	EndDate     *time.Time                 `form:"end_date"`
 	MinAmount   *decimal.Decimal           `form:"min_amount"`
 	MaxAmount   *decimal.Decimal           `form:"max_amount"`
-	Page        int                        `form:"page" binding:"min=1"`
-	PageSize    int                        `form:"page_size" binding:"min=1,max=100"`
+	Page        int                        `form:"page" binding:"omitempty,min=1"`
+	PageSize    int                        `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy     string                     `form:"order_by"`
 	OrderDir    string                     `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
@@ -323,7 +323,7 @@ type CreateSalesOrderItemInput struct {
 	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
 	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
-	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
 	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
 	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`
@@ -343,7 +343,7 @@ type AddOrderItemRequest struct {
 	ProductName    string          `json:"product_name" binding:"required,min=1,max=200"`
 	ProductCode    string          `json:"product_code" binding:"required,min=1,max=50"`
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
-	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"`           // Base unit code
+	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
 	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit
 	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`
@@ -383,8 +383,8 @@ type SalesOrderListFilter struct {
 	EndDate     *time.Time         `form:"end_date"`
 	MinAmount   *decimal.Decimal   `form:"min_amount"`
 	MaxAmount   *decimal.Decimal   `form:"max_amount"`
-	Page        int                `form:"page" binding:"min=1"`
-	PageSize    int                `form:"page_size" binding:"min=1,max=100"`
+	Page        int                `form:"page" binding:"omitempty,min=1"`
+	PageSize    int                `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy     string             `form:"order_by"`
 	OrderDir    string             `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
@@ -610,8 +610,8 @@ type SalesReturnListFilter struct {
 	EndDate      *time.Time          `form:"end_date"`
 	MinAmount    *decimal.Decimal    `form:"min_amount"`
 	MaxAmount    *decimal.Decimal    `form:"max_amount"`
-	Page         int                 `form:"page" binding:"min=1"`
-	PageSize     int                 `form:"page_size" binding:"min=1,max=100"`
+	Page         int                 `form:"page" binding:"omitempty,min=1"`
+	PageSize     int                 `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy      string              `form:"order_by"`
 	OrderDir     string              `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
@@ -870,8 +870,8 @@ type PurchaseReturnListFilter struct {
 	EndDate         *time.Time                  `form:"end_date"`
 	MinAmount       *decimal.Decimal            `form:"min_amount"`
 	MaxAmount       *decimal.Decimal            `form:"max_amount"`
-	Page            int                         `form:"page" binding:"min=1"`
-	PageSize        int                         `form:"page_size" binding:"min=1,max=100"`
+	Page            int                         `form:"page" binding:"omitempty,min=1"`
+	PageSize        int                         `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy         string                      `form:"order_by"`
 	OrderDir        string                      `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }

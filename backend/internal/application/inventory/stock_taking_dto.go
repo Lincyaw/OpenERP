@@ -80,8 +80,8 @@ type StockTakingListFilter struct {
 	StartDate   *time.Time                   `form:"start_date"`
 	EndDate     *time.Time                   `form:"end_date"`
 	CreatedByID *uuid.UUID                   `form:"created_by_id"`
-	Page        int                          `form:"page" binding:"min=1"`
-	PageSize    int                          `form:"page_size" binding:"min=1,max=100"`
+	Page        int                          `form:"page" binding:"omitempty,min=1"`
+	PageSize    int                          `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy     string                       `form:"order_by"`
 	OrderDir    string                       `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }

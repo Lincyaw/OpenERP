@@ -112,7 +112,7 @@ make setup
 ```bash
 make docker-up      # Start all services
 # Access: http://localhost:3000
-# Login:  admin / test123
+# Login:  admin / admin123
 make docker-down    # Stop all services
 ```
 

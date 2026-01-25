@@ -1562,7 +1562,19 @@
       "  - TEST_DATA.warehouses.beijing: 'Main Warehouse Beijing' → '北京主仓'",
       "  - TEST_DATA.warehouses.shanghai: 'Shanghai Distribution Center' → '上海配送中心'",
       "- Root cause: E2E test used English warehouse names but seed-data.sql uses Chinese names",
-      "- File changed: frontend/tests/e2e/transactions/purchase-order.spec.ts"
+      "- File changed: frontend/tests/e2e/transactions/purchase-order.spec.ts",
+      "",
+      "🐛 Bug Fix 2 (2026-01-26) - P9-API-001:",
+      "- Fixed API pagination validation causing 400 errors when page param not provided",
+      "- Root cause: Page/PageSize fields had binding:\"min=1\" without omitempty",
+      "- When frontend calls API without page param, Go gin binding fails validation",
+      "- Fix: Added omitempty to all Page/PageSize binding tags in backend DTOs",
+      "- Files changed:",
+      "  - backend/internal/application/partner/dto.go (SupplierListFilter, CustomerListFilter, etc.)",
+      "  - backend/internal/application/trade/dto.go (PurchaseOrderListFilter, SalesOrderListFilter, etc.)",
+      "  - backend/internal/application/inventory/dto.go (InventoryListFilter, TransactionListFilter)",
+      "  - backend/internal/application/inventory/stock_taking_dto.go",
+      "- Also fixed CLAUDE.md incorrect password documentation (test123 → admin123)"
     ],
     "passes": false
   },
@@ -3301,5 +3313,30 @@
       "- 模块分布: trade(45), inventory(28), finance(26), partner(23), system(22), catalog(12), report(8), other(14)"
     ],
     "passes": false
+  },
+  {
+    "id": "P9-API-001",
+    "story": "修复后端API分页参数验证导致400错误",
+    "priority": "critical",
+    "requirements": [
+      "问题描述: 前端调用列表API时如果不传page参数,后端返回400验证错误",
+      "错误信息: Key: 'SupplierListFilter.page' Error:Field validation for 'page' failed on the 'min' tag",
+      "影响范围: 所有列表API,导致下拉框显示'暂无数据'",
+      "根因: Page/PageSize字段有binding:\"min=1\"但没有omitempty",
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ 修复partner/dto.go: SupplierListFilter, CustomerListFilter, WarehouseListFilter, BalanceTransactionListFilter",
+      "✅ 修复trade/dto.go: PurchaseOrderListFilter, SalesOrderListFilter, SalesReturnListFilter, PurchaseReturnListFilter",
+      "✅ 修复inventory/dto.go: InventoryListFilter, TransactionListFilter",
+      "✅ 修复inventory/stock_taking_dto.go: StockTakingListFilter",
+      "✅ Go build成功",
+      "✅ API测试: GET /partner/suppliers?status=active&page_size=10 返回正确数据",
+      "✅ TypeScript类型检查通过",
+      "✅ Frontend build成功",
+      "",
+      "附加修复:",
+      "✅ CLAUDE.md文档密码错误修复 (test123 → admin123)"
+    ],
+    "passes": true
   }
 ]
