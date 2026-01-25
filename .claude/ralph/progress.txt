@@ -14385,3 +14385,101 @@ npm run e2e:report
 4. **Role Permissions**: Configured in seed-data.sql with specific permissions per role
 5. **Screenshots**: Screenshots saved to test-results/screenshots/auth/
 6. **Next Tasks**: P6-INT-001 (Multi-tenant isolation E2E), P6-INT-003 (User role management E2E)
+
+---
+
+## 2026-01-25: P2-INT-001 - Inventory Module E2E Integration Tests
+
+### What Was Done
+Implemented comprehensive E2E tests for the inventory module (P2-INT-001) with the following components:
+
+### Files Created/Changed
+| File | Change |
+|------|--------|
+| `frontend/tests/e2e/pages/InventoryPage.ts` | Created Page Object for inventory module |
+| `frontend/tests/e2e/inventory/inventory.spec.ts` | Created E2E test suite (30+ tests) |
+| `frontend/tests/e2e/pages/index.ts` | Added InventoryPage export |
+| `frontend/tests/e2e/fixtures/test-fixtures.ts` | Added inventoryPage fixture |
+| `.claude/ralph/plans/prd.json` | P2-INT-001: passes: true |
+
+### Test Coverage
+**Total Tests**: 30+ tests across 8 test suites
+
+**Stock List Display Tests** (5 tests):
+1. Display inventory list with seed data
+2. Verify available/locked quantities calculation
+3. Display stock from seed data for Main Warehouse Beijing
+4. Display locked quantity indicator
+5. Verify total = available + locked
+
+**Warehouse and Product Filtering Tests** (7 tests):
+1. Filter stock by warehouse
+2. Filter stock by status - has stock
+3. Filter stock by status - low stock warning
+4. Search stock by product name
+5. Clear filter and show all stock
+6. Combine warehouse and status filters
+7. Verify filter reset
+
+**Stock Adjustment Operations Tests** (5 tests):
+1. Navigate to stock adjustment page from list
+2. Display current stock info when selecting warehouse/product
+3. Show adjustment preview with difference calculation
+4. Successfully submit stock adjustment
+5. Verify quantity changes after adjustment
+
+**Stock Transaction History Tests** (5 tests):
+1. Navigate to transaction history from stock list
+2. Display transaction history with seed data
+3. Show transaction item info summary
+4. Filter transactions by type
+5. Display transaction details correctly
+
+**Concurrent Adjustment Tests (Optimistic Locking)** (2 tests):
+1. Handle concurrent adjustments with optimistic locking
+2. Verify final quantity after concurrent adjustments
+
+**Video Recording Tests** (1 test):
+1. Record complete stock adjustment workflow
+
+**Documentation Screenshot Tests** (3 tests):
+1. Capture stock list page with filters
+2. Capture stock adjustment page
+3. Capture transaction history page
+
+### Seed Data Used
+From `docker/seed-data.sql`:
+- 10 inventory items across 3 warehouses
+- 4 stock batches for tracking
+- Products: iPhone 15 Pro, Samsung Galaxy S24, Xiaomi 14, MacBook Pro 14, USB-C Charger, etc.
+- Warehouses: Main Warehouse Beijing (WH001), Shanghai DC (WH002), Shenzhen Warehouse (WH003)
+- Stock locks for pending orders demonstrating locked quantities
+
+### How to Run Tests
+```bash
+# Start test environment
+./docker/quick-test.sh start
+./docker/quick-test.sh seed
+
+# Run all inventory E2E tests
+cd frontend && npx playwright test tests/e2e/inventory/ --project=chromium
+
+# Run with headed mode for debugging
+npx playwright test tests/e2e/inventory/ --project=chromium --headed
+
+# Run with video recording
+npx playwright test tests/e2e/inventory/ --project=chromium --video=on
+
+# Generate HTML report
+npm run e2e:report
+```
+
+### Notes for Next Developer
+1. **Docker Required**: Tests require docker-compose.test.yml environment running
+2. **Seed Data**: Tests depend on seed-data.sql inventory items (10 items, 4 batches)
+3. **Auth Setup**: Tests use shared authentication state from auth.setup.ts
+4. **Page Object**: InventoryPage provides reusable methods for all inventory operations
+5. **Concurrency Tests**: Two browser contexts simulate concurrent users for optimistic locking tests
+6. **Data Modification**: Some tests modify data (stock adjustments) - run in isolation if needed
+7. **Next Tasks**: P3-INT-001 (Sales order E2E), P3-INT-002 (Purchase order E2E)
+

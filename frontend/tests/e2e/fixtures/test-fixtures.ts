@@ -1,5 +1,12 @@
 import { test as base } from '@playwright/test'
-import { LoginPage, ProductsPage, CustomersPage, SuppliersPage, WarehousesPage } from '../pages'
+import {
+  LoginPage,
+  ProductsPage,
+  CustomersPage,
+  SuppliersPage,
+  WarehousesPage,
+  InventoryPage,
+} from '../pages'
 
 /**
  * Test Users - Seed data users for testing
@@ -45,6 +52,7 @@ export const test = base.extend<{
   customersPage: CustomersPage
   suppliersPage: SuppliersPage
   warehousesPage: WarehousesPage
+  inventoryPage: InventoryPage
 }>({
   /**
    * Login page fixture - provides a fresh LoginPage instance
@@ -94,6 +102,14 @@ export const test = base.extend<{
   warehousesPage: async ({ page }, use) => {
     const warehousesPage = new WarehousesPage(page)
     await use(warehousesPage)
+  },
+
+  /**
+   * Inventory page fixture - provides an InventoryPage instance
+   */
+  inventoryPage: async ({ page }, use) => {
+    const inventoryPage = new InventoryPage(page)
+    await use(inventoryPage)
   },
 })
 
