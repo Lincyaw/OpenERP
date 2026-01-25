@@ -1,0 +1,219 @@
+/* Stock Alerts Page Styles */
+
+.stock-alerts-page {
+  padding: var(--spacing-6, 24px);
+}
+
+.stock-alerts-card {
+  width: 100%;
+}
+
+.stock-alerts-header {
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.stock-alerts-description {
+  margin-top: var(--spacing-1, 4px);
+  font-size: 14px;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: flex;
+  gap: var(--spacing-4, 16px);
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.summary-card {
+  flex: 1;
+  padding: var(--spacing-4, 16px);
+  background-color: var(--semi-color-fill-0, #f5f5f5);
+  border-radius: var(--semi-border-radius-medium, 8px);
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: var(--semi-color-text-2, #666);
+  margin-bottom: var(--spacing-2, 8px);
+}
+
+.summary-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--semi-color-text-0, #1c1f23);
+}
+
+.summary-critical {
+  background-color: rgba(249, 57, 32, 0.1);
+}
+
+.summary-critical .summary-value {
+  color: var(--semi-color-danger, #f93920);
+}
+
+.summary-warning {
+  background-color: rgba(255, 121, 0, 0.1);
+}
+
+.summary-warning .summary-value {
+  color: var(--semi-color-warning, #ff7900);
+}
+
+/* Quantity cell with warning icon */
+.quantity-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-1, 4px);
+}
+
+/* Warning styling for low stock */
+.quantity-warning {
+  color: var(--semi-color-warning, #ff7900);
+  font-weight: 600;
+}
+
+/* Critical styling for very low/no stock */
+.quantity-critical {
+  color: var(--semi-color-danger, #f93920);
+  font-weight: 600;
+}
+
+/* Shortage quantity styling */
+.quantity-shortage {
+  color: var(--semi-color-danger, #f93920);
+  font-weight: 600;
+}
+
+/* Warning icon */
+.warning-icon {
+  color: var(--semi-color-warning, #ff7900);
+  font-size: 14px;
+}
+
+/* Critical icon */
+.critical-icon {
+  color: var(--semi-color-danger, #f93920);
+  font-size: 14px;
+}
+
+/* Product name in cell */
+.product-name-cell {
+  color: var(--semi-color-text-0, #1c1f23);
+  font-weight: 500;
+}
+
+/* Empty state */
+.empty-state {
+  padding: var(--spacing-8, 32px) 0;
+}
+
+/* Threshold Modal */
+.threshold-modal-info {
+  background-color: var(--semi-color-fill-0, #f5f5f5);
+  border-radius: var(--semi-border-radius-medium, 8px);
+  padding: var(--spacing-4, 16px);
+  margin-bottom: var(--spacing-4, 16px);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2, 8px);
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  color: var(--semi-color-text-2, #666);
+}
+
+.info-value {
+  font-weight: 500;
+  color: var(--semi-color-text-0, #1c1f23);
+}
+
+.threshold-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2, 8px);
+  margin-top: var(--spacing-4, 16px);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .stock-alerts-page {
+    padding: var(--spacing-4, 16px);
+  }
+
+  .summary-cards {
+    flex-direction: column;
+  }
+
+  .summary-card {
+    padding: var(--spacing-3, 12px);
+  }
+
+  .summary-value {
+    font-size: 24px;
+  }
+}
+
+/* Table row hover effect */
+.stock-alerts-card :global(.semi-table-row:hover) {
+  background-color: var(--semi-color-fill-0, #f5f5f5);
+}
+
+/* Status tags alignment */
+.stock-alerts-card :global(.semi-tag) {
+  font-size: 12px;
+}
+
+/* Filter select styling */
+.stock-alerts-card :global(.semi-select) {
+  min-width: 120px;
+}
+
+/* Dark mode adjustments */
+[theme-mode='dark'] .product-name-cell {
+  color: var(--semi-color-text-0, #fff);
+}
+
+[theme-mode='dark'] .summary-card {
+  background-color: var(--semi-color-fill-1, #2c2c2c);
+}
+
+[theme-mode='dark'] .summary-value {
+  color: var(--semi-color-text-0, #fff);
+}
+
+[theme-mode='dark'] .summary-critical {
+  background-color: rgba(249, 57, 32, 0.2);
+}
+
+[theme-mode='dark'] .summary-warning {
+  background-color: rgba(255, 121, 0, 0.2);
+}
+
+[theme-mode='dark'] .threshold-modal-info {
+  background-color: var(--semi-color-fill-1, #2c2c2c);
+}
+
+[theme-mode='dark'] .info-value {
+  color: var(--semi-color-text-0, #fff);
+}
+
+[theme-mode='dark'] .quantity-warning {
+  color: var(--semi-color-warning, #ffa940);
+}
+
+[theme-mode='dark'] .quantity-critical {
+  color: var(--semi-color-danger, #ff4d4f);
+}
+
+[theme-mode='dark'] .quantity-shortage {
+  color: var(--semi-color-danger, #ff4d4f);
+}

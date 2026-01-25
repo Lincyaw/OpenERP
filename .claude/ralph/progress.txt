@@ -15740,3 +15740,63 @@ Completed comprehensive review and enhancement of English translations for the E
 - Several components still have hardcoded Chinese strings (SalesReturnApproval, Reports, etc.)
 - These components need separate i18n migration in future tasks
 - The translation files themselves are complete and ready for use
+
+## 2026-01-25: P2-FE-006 Stock Alerts Page Implementation Complete
+
+### Task ID: P2-FE-006
+### Task: 库存预警配置页面 (Inventory Alert Configuration Page)
+
+### Summary
+Implemented the Stock Alerts page that displays low stock items and allows setting inventory thresholds (safety stock). The page integrates with existing backend APIs.
+
+### Changes Made
+
+1. **i18n Translations Added**
+   - `frontend/src/locales/zh-CN/inventory.json`: Added `alerts` section with all Chinese translations
+   - `frontend/src/locales/en-US/inventory.json`: Added `alerts` section with all English translations
+   - Keys include: title, description, columns, status, actions, empty states, summary, messages, and threshold modal
+
+2. **StockAlerts Page Component** (`frontend/src/pages/inventory/StockAlerts.tsx`)
+   - Displays low stock items using the `getInventoryItemsAlertsLowStock` API
+   - Summary cards showing: Total Alerts, Critical Shortage (stock < 20% of min), Low Stock Warning
+   - Filter by warehouse
+   - Client-side search by product name
+   - Status tags (Critical in red, Warning in orange)
+   - Actions: Set Threshold, View Detail, Adjust Stock
+   - Threshold modal for setting min/max quantity using `putInventoryThresholds` API
+   - Empty state when no alerts exist
+
+3. **StockAlerts Stylesheet** (`frontend/src/pages/inventory/StockAlerts.css`)
+   - Summary cards with colored backgrounds for critical/warning
+   - Quantity cells with warning/critical styling
+   - Dark mode support
+   - Responsive design for mobile
+
+4. **Route Configuration** (`frontend/src/router/routes.tsx`)
+   - Added lazy-loaded `StockAlertsPage` component
+   - Added route `/inventory/alerts` to inventory module children
+   - Added navigation menu item with `IconAlertTriangle` icon
+   - Permission: `INVENTORY_READ`
+
+### API Integration
+- `GET /inventory/items/alerts/low-stock` - Fetch items below minimum threshold
+- `PUT /inventory/thresholds` - Set min/max quantity thresholds
+
+### Files Created
+- `frontend/src/pages/inventory/StockAlerts.tsx`
+- `frontend/src/pages/inventory/StockAlerts.css`
+
+### Files Modified
+- `frontend/src/locales/zh-CN/inventory.json`
+- `frontend/src/locales/en-US/inventory.json`
+- `frontend/src/router/routes.tsx`
+
+### Build Verification
+- `npm run build` passes with no TypeScript errors
+- All types properly inferred from generated API SDK
+
+### Notes
+- The backend already had all required APIs implemented (P2-BE-007 through P2-BE-009)
+- The page uses client-side filtering for search since the API doesn't support server-side search
+- Summary statistics are calculated from the displayed items only
+- Critical items are defined as having stock <= 0 or < 20% of minimum quantity

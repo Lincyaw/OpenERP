@@ -339,5 +339,63 @@
         "cancelError": "Failed to cancel"
       }
     }
+  },
+  "alerts": {
+    "title": "Stock Alerts",
+    "description": "View and manage low stock alert items",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search products...",
+    "selectWarehouse": "Select Warehouse",
+    "allWarehouses": "All Warehouses",
+    "columns": {
+      "warehouse": "Warehouse",
+      "product": "Product",
+      "availableQuantity": "Available Qty",
+      "lockedQuantity": "Locked Qty",
+      "totalQuantity": "Total Qty",
+      "minQuantity": "Safety Stock",
+      "shortage": "Shortage",
+      "status": "Status",
+      "updatedAt": "Updated At"
+    },
+    "status": {
+      "critical": "Critical Shortage",
+      "warning": "Below Safety Stock",
+      "normal": "Normal"
+    },
+    "actions": {
+      "setThreshold": "Set Threshold",
+      "viewDetail": "View Details",
+      "adjustStock": "Adjust Stock"
+    },
+    "empty": {
+      "title": "No Low Stock Alerts",
+      "description": "All products have sufficient stock, or safety stock thresholds have not been set"
+    },
+    "summary": {
+      "totalAlerts": "Total Alert Items",
+      "criticalCount": "Critical Shortage",
+      "warningCount": "Low Stock Warning"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch alert list",
+      "setThresholdSuccess": "Safety stock threshold set successfully",
+      "setThresholdError": "Failed to set safety stock threshold"
+    },
+    "thresholdModal": {
+      "title": "Set Stock Threshold",
+      "description": "Set safety stock and maximum stock thresholds for product",
+      "product": "Product",
+      "warehouse": "Warehouse",
+      "currentStock": "Current Stock",
+      "minQuantity": "Min Quantity (Safety Stock)",
+      "minQuantityPlaceholder": "Enter minimum quantity",
+      "minQuantityHelper": "Alert will be triggered when stock falls below this value",
+      "maxQuantity": "Max Quantity",
+      "maxQuantityPlaceholder": "Enter maximum quantity",
+      "maxQuantityHelper": "Stock should not exceed this value",
+      "submit": "Save Settings",
+      "cancel": "Cancel"
+    }
   }
 }

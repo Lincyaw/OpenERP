@@ -339,5 +339,63 @@
         "cancelError": "取消失败"
       }
     }
+  },
+  "alerts": {
+    "title": "库存预警",
+    "description": "查看和管理低库存预警商品",
+    "refresh": "刷新",
+    "searchPlaceholder": "搜索商品...",
+    "selectWarehouse": "选择仓库",
+    "allWarehouses": "全部仓库",
+    "columns": {
+      "warehouse": "仓库",
+      "product": "商品",
+      "availableQuantity": "可用数量",
+      "lockedQuantity": "锁定数量",
+      "totalQuantity": "总数量",
+      "minQuantity": "安全库存",
+      "shortage": "缺货数量",
+      "status": "状态",
+      "updatedAt": "更新时间"
+    },
+    "status": {
+      "critical": "严重缺货",
+      "warning": "低于安全库存",
+      "normal": "正常"
+    },
+    "actions": {
+      "setThreshold": "设置阈值",
+      "viewDetail": "查看详情",
+      "adjustStock": "调整库存"
+    },
+    "empty": {
+      "title": "暂无低库存预警",
+      "description": "所有商品库存充足，或尚未设置安全库存阈值"
+    },
+    "summary": {
+      "totalAlerts": "预警商品总数",
+      "criticalCount": "严重缺货",
+      "warningCount": "低库存警告"
+    },
+    "messages": {
+      "fetchError": "获取预警列表失败",
+      "setThresholdSuccess": "安全库存设置成功",
+      "setThresholdError": "设置安全库存失败"
+    },
+    "thresholdModal": {
+      "title": "设置库存阈值",
+      "description": "为商品设置安全库存和最大库存阈值",
+      "product": "商品",
+      "warehouse": "仓库",
+      "currentStock": "当前库存",
+      "minQuantity": "最小库存（安全库存）",
+      "minQuantityPlaceholder": "请输入最小库存",
+      "minQuantityHelper": "当库存低于此值时将触发预警",
+      "maxQuantity": "最大库存",
+      "maxQuantityPlaceholder": "请输入最大库存",
+      "maxQuantityHelper": "库存不应超过此值",
+      "submit": "保存设置",
+      "cancel": "取消"
+    }
   }
 }

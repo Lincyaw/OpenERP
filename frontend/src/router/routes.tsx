@@ -49,6 +49,7 @@ const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdju
 const StockTakingListPage = () => lazyLoad(() => import('@/pages/inventory/StockTakingList'))
 const StockTakingCreatePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingCreate'))
 const StockTakingExecutePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingExecute'))
+const StockAlertsPage = () => lazyLoad(() => import('@/pages/inventory/StockAlerts'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))
@@ -223,6 +224,15 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconCheckList',
           order: 2,
           permissions: [Permissions.INVENTORY_ADJUST],
+        },
+      },
+      {
+        path: '/inventory/alerts',
+        meta: {
+          title: 'Stock Alerts',
+          icon: 'IconAlertTriangle',
+          order: 3,
+          permissions: [Permissions.INVENTORY_READ],
         },
       },
     ],
@@ -480,6 +490,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return StockListPage()
     case '/inventory/stock-taking':
       return StockTakingListPage()
+    case '/inventory/alerts':
+      return StockAlertsPage()
     case '/trade/sales':
       return SalesOrdersPage()
     case '/trade/purchase':
