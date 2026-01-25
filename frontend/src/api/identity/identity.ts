@@ -122,7 +122,10 @@ export const getIdentity = () => {
   /**
    * Lock a user account
    */
-  const lockUser = (id: string, request?: LockUserRequest): Promise<ApiResponse<{ message: string }>> => {
+  const lockUser = (
+    id: string,
+    request?: LockUserRequest
+  ): Promise<ApiResponse<{ message: string }>> => {
     return customInstance<ApiResponse<{ message: string }>>({
       url: `/identity/users/${id}/lock`,
       method: 'POST',
@@ -144,7 +147,10 @@ export const getIdentity = () => {
   /**
    * Reset a user's password
    */
-  const resetPassword = (id: string, request: ResetPasswordRequest): Promise<ApiResponse<{ message: string }>> => {
+  const resetPassword = (
+    id: string,
+    request: ResetPasswordRequest
+  ): Promise<ApiResponse<{ message: string }>> => {
     return customInstance<ApiResponse<{ message: string }>>({
       url: `/identity/users/${id}/reset-password`,
       method: 'POST',
@@ -156,7 +162,10 @@ export const getIdentity = () => {
   /**
    * Assign roles to a user
    */
-  const assignRoles = (id: string, request: AssignRolesRequest): Promise<ApiResponse<{ message: string }>> => {
+  const assignRoles = (
+    id: string,
+    request: AssignRolesRequest
+  ): Promise<ApiResponse<{ message: string }>> => {
     return customInstance<ApiResponse<{ message: string }>>({
       url: `/identity/users/${id}/roles`,
       method: 'PUT',
@@ -266,7 +275,10 @@ export const getIdentity = () => {
   /**
    * Set permissions for a role
    */
-  const setRolePermissions = (id: string, request: SetPermissionsRequest): Promise<ApiResponse<{ message: string }>> => {
+  const setRolePermissions = (
+    id: string,
+    request: SetPermissionsRequest
+  ): Promise<ApiResponse<{ message: string }>> => {
     return customInstance<ApiResponse<{ message: string }>>({
       url: `/identity/roles/${id}/permissions`,
       method: 'PUT',
