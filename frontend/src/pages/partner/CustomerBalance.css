@@ -76,7 +76,11 @@
 
 /* Balance card variants */
 .balance-card.current-balance {
-  background: linear-gradient(135deg, var(--semi-color-primary-light-active), var(--semi-color-primary-light-default));
+  background: linear-gradient(
+    135deg,
+    var(--semi-color-primary-light-active),
+    var(--semi-color-primary-light-default)
+  );
 }
 
 .balance-card.current-balance .balance-card-value {

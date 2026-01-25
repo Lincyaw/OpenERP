@@ -92,7 +92,9 @@ describe('CustomerForm', () => {
       getPartnerCustomersId: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
     }
 
-    vi.mocked(customersApi.getCustomers).mockReturnValue(mockApi as unknown as ReturnType<typeof customersApi.getCustomers>)
+    vi.mocked(customersApi.getCustomers).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof customersApi.getCustomers>
+    )
   })
 
   describe('Create Mode', () => {

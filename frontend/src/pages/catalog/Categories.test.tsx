@@ -102,7 +102,7 @@ const createMockTreeResponse = (tree = mockCategoryTree) => ({
   data: tree,
 })
 
-const createMockCategoryResponse = (category: typeof mockCategoryTree[0]) => ({
+const createMockCategoryResponse = (category: (typeof mockCategoryTree)[0]) => ({
   success: true,
   data: category,
 })
@@ -124,15 +124,27 @@ describe('CategoriesPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       getCatalogCategoriesTree: vi.fn().mockResolvedValue(createMockTreeResponse()),
-      postCatalogCategories: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      putCatalogCategoriesId: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      postCatalogCategories: vi
+        .fn()
+        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      putCatalogCategoriesId: vi
+        .fn()
+        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
       deleteCatalogCategoriesId: vi.fn().mockResolvedValue({ success: true }),
-      postCatalogCategoriesIdActivate: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      postCatalogCategoriesIdDeactivate: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      postCatalogCategoriesIdMove: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      postCatalogCategoriesIdActivate: vi
+        .fn()
+        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      postCatalogCategoriesIdDeactivate: vi
+        .fn()
+        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      postCatalogCategoriesIdMove: vi
+        .fn()
+        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
     }
 
-    vi.mocked(categoriesApi.getCategories).mockReturnValue(mockApi as unknown as ReturnType<typeof categoriesApi.getCategories>)
+    vi.mocked(categoriesApi.getCategories).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof categoriesApi.getCategories>
+    )
   })
 
   describe('Tree Display', () => {
@@ -357,7 +369,9 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
         expect(screen.getByPlaceholderText('请输入分类名称')).toBeInTheDocument()
         expect(screen.getByPlaceholderText('请输入分类描述')).toBeInTheDocument()
         expect(screen.getByPlaceholderText('数值越小越靠前')).toBeInTheDocument()
@@ -375,7 +389,9 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
       // Verify cancel button exists (has aria-label="cancel")
@@ -394,11 +410,16 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
       // Fill form
-      await user.type(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'), 'new-cat')
+      await user.type(
+        screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'),
+        'new-cat'
+      )
       await user.type(screen.getByPlaceholderText('请输入分类名称'), '新分类')
 
       // Click create button (has aria-label="confirm")
@@ -426,10 +447,15 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
-      await user.type(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'), 'new-cat')
+      await user.type(
+        screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'),
+        'new-cat'
+      )
       await user.type(screen.getByPlaceholderText('请输入分类名称'), '新分类')
 
       // Click create button (has aria-label="confirm")
@@ -469,10 +495,15 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
-      await user.type(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'), 'existing-code')
+      await user.type(
+        screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'),
+        'existing-code'
+      )
       await user.type(screen.getByPlaceholderText('请输入分类名称'), '测试')
 
       // Click create button (has aria-label="confirm")
@@ -550,10 +581,15 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
-      await user.type(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'), 'new-cat')
+      await user.type(
+        screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'),
+        'new-cat'
+      )
       await user.type(screen.getByPlaceholderText('请输入分类名称'), '新分类')
 
       // Click create button (has aria-label="confirm")
@@ -632,11 +668,16 @@ describe('CategoriesPage', () => {
       await user.click(addButton)
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')).toBeInTheDocument()
+        expect(
+          screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing')
+        ).toBeInTheDocument()
       })
 
       // Only fill code, not name
-      await user.type(screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'), 'test-code')
+      await user.type(
+        screen.getByPlaceholderText('请输入分类编码，如 electronics、clothing'),
+        'test-code'
+      )
 
       // Click create button (has aria-label="confirm")
       const createButton = screen.getByRole('button', { name: 'confirm' })

@@ -204,11 +204,7 @@ export const RoutePermissions: Record<string, string[]> = {
   '/catalog/categories': [Permissions.CATEGORY_READ],
 
   // Partner module
-  '/partner': [
-    Permissions.CUSTOMER_READ,
-    Permissions.SUPPLIER_READ,
-    Permissions.WAREHOUSE_READ,
-  ],
+  '/partner': [Permissions.CUSTOMER_READ, Permissions.SUPPLIER_READ, Permissions.WAREHOUSE_READ],
   '/partner/customers': [Permissions.CUSTOMER_READ],
   '/partner/customers/new': [Permissions.CUSTOMER_CREATE],
   '/partner/customers/:id/edit': [Permissions.CUSTOMER_UPDATE],

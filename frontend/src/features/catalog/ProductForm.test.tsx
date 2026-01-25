@@ -84,7 +84,9 @@ describe('ProductForm', () => {
       getCatalogProductsId: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
     }
 
-    vi.mocked(productsApi.getProducts).mockReturnValue(mockApi as unknown as ReturnType<typeof productsApi.getProducts>)
+    vi.mocked(productsApi.getProducts).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof productsApi.getProducts>
+    )
   })
 
   describe('Create Mode', () => {
@@ -186,19 +188,17 @@ describe('ProductForm', () => {
 
   describe('Edit Mode', () => {
     it('should display edit mode title', () => {
-      renderWithProviders(
-        <ProductForm productId={mockProduct.id} initialData={mockProduct} />,
-        { route: `/catalog/products/${mockProduct.id}/edit` }
-      )
+      renderWithProviders(<ProductForm productId={mockProduct.id} initialData={mockProduct} />, {
+        route: `/catalog/products/${mockProduct.id}/edit`,
+      })
 
       expect(screen.getByText('编辑商品')).toBeInTheDocument()
     })
 
     it('should populate form with initial data', () => {
-      renderWithProviders(
-        <ProductForm productId={mockProduct.id} initialData={mockProduct} />,
-        { route: `/catalog/products/${mockProduct.id}/edit` }
-      )
+      renderWithProviders(<ProductForm productId={mockProduct.id} initialData={mockProduct} />, {
+        route: `/catalog/products/${mockProduct.id}/edit`,
+      })
 
       expect(screen.getByPlaceholderText('请输入商品编码 (SKU)')).toHaveValue('SKU-001')
       expect(screen.getByPlaceholderText('请输入商品名称')).toHaveValue('测试商品')
@@ -207,30 +207,27 @@ describe('ProductForm', () => {
     })
 
     it('should have disabled code field in edit mode', () => {
-      renderWithProviders(
-        <ProductForm productId={mockProduct.id} initialData={mockProduct} />,
-        { route: `/catalog/products/${mockProduct.id}/edit` }
-      )
+      renderWithProviders(<ProductForm productId={mockProduct.id} initialData={mockProduct} />, {
+        route: `/catalog/products/${mockProduct.id}/edit`,
+      })
 
       const codeInput = screen.getByPlaceholderText('请输入商品编码 (SKU)')
       expect(codeInput).toBeDisabled()
     })
 
     it('should have disabled unit field in edit mode', () => {
-      renderWithProviders(
-        <ProductForm productId={mockProduct.id} initialData={mockProduct} />,
-        { route: `/catalog/products/${mockProduct.id}/edit` }
-      )
+      renderWithProviders(<ProductForm productId={mockProduct.id} initialData={mockProduct} />, {
+        route: `/catalog/products/${mockProduct.id}/edit`,
+      })
 
       const unitInput = screen.getByPlaceholderText('请输入计量单位')
       expect(unitInput).toBeDisabled()
     })
 
     it('should display save button in edit mode', () => {
-      renderWithProviders(
-        <ProductForm productId={mockProduct.id} initialData={mockProduct} />,
-        { route: `/catalog/products/${mockProduct.id}/edit` }
-      )
+      renderWithProviders(<ProductForm productId={mockProduct.id} initialData={mockProduct} />, {
+        route: `/catalog/products/${mockProduct.id}/edit`,
+      })
 
       expect(screen.getByRole('button', { name: /保存/i })).toBeInTheDocument()
     })

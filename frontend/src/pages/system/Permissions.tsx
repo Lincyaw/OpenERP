@@ -256,9 +256,7 @@ export default function PermissionsPage() {
       if (response.success && response.data) {
         setAllPermissions(response.data.permissions || [])
         // Initially expand all resource groups
-        const resources = new Set(
-          (response.data.permissions || []).map((p) => p.split(':')[0])
-        )
+        const resources = new Set((response.data.permissions || []).map((p) => p.split(':')[0]))
         setExpandedKeys(Array.from(resources))
       }
     } catch {
@@ -363,15 +361,9 @@ export default function PermissionsPage() {
             <Title heading={4} style={{ margin: 0 }}>
               权限配置
             </Title>
-            <Text type="tertiary">
-              查看系统所有权限及其分配情况
-            </Text>
+            <Text type="tertiary">查看系统所有权限及其分配情况</Text>
           </div>
-          <Button
-            icon={<IconRefresh />}
-            onClick={handleRefresh}
-            loading={loading}
-          >
+          <Button icon={<IconRefresh />} onClick={handleRefresh} loading={loading}>
             刷新
           </Button>
         </div>
@@ -425,9 +417,7 @@ export default function PermissionsPage() {
               <Tree
                 treeData={treeData}
                 expandedKeys={expandedKeys}
-                onExpand={(
-                  expandedKeys: string[],
-                ) => {
+                onExpand={(expandedKeys: string[]) => {
                   setExpandedKeys(expandedKeys)
                 }}
                 className="permissions-tree"
@@ -435,9 +425,7 @@ export default function PermissionsPage() {
               />
             </div>
           ) : (
-            <Empty
-              description={searchKeyword ? '未找到匹配的权限' : '暂无权限数据'}
-            />
+            <Empty description={searchKeyword ? '未找到匹配的权限' : '暂无权限数据'} />
           )}
         </Spin>
 
@@ -464,9 +452,7 @@ export default function PermissionsPage() {
                       {role.permissions && role.permissions.length > 0 && (
                         <>
                           {' - '}
-                          {Array.from(
-                            new Set(role.permissions.map((p) => p.split(':')[0]))
-                          )
+                          {Array.from(new Set(role.permissions.map((p) => p.split(':')[0])))
                             .slice(0, 5)
                             .map((r) => RESOURCE_LABELS[r] || r)
                             .join('、')}

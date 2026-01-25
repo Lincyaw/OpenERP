@@ -48,8 +48,7 @@ const StockTransactionsPage = () => lazyLoad(() => import('@/pages/inventory/Sto
 const StockAdjustPage = () => lazyLoad(() => import('@/pages/inventory/StockAdjust'))
 const StockTakingListPage = () => lazyLoad(() => import('@/pages/inventory/StockTakingList'))
 const StockTakingCreatePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingCreate'))
-const StockTakingExecutePage = () =>
-  lazyLoad(() => import('@/pages/inventory/StockTakingExecute'))
+const StockTakingExecutePage = () => lazyLoad(() => import('@/pages/inventory/StockTakingExecute'))
 
 // Trade module
 const SalesOrdersPage = () => lazyLoad(() => import('@/pages/trade/SalesOrders'))

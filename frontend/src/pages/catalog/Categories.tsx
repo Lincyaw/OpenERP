@@ -208,23 +208,26 @@ export default function CategoriesPage() {
   }, [categoryTree, searchKeyword, nodeMap])
 
   // Handle search
-  const handleSearch = useCallback((value: string) => {
-    setSearchKeyword(value)
-    // Expand all nodes when searching
-    if (value) {
-      const allKeys: string[] = []
-      const collectKeys = (nodes: CategoryNode[]): void => {
-        for (const node of nodes) {
-          allKeys.push(node.id)
-          if (node.children) {
-            collectKeys(node.children)
+  const handleSearch = useCallback(
+    (value: string) => {
+      setSearchKeyword(value)
+      // Expand all nodes when searching
+      if (value) {
+        const allKeys: string[] = []
+        const collectKeys = (nodes: CategoryNode[]): void => {
+          for (const node of nodes) {
+            allKeys.push(node.id)
+            if (node.children) {
+              collectKeys(node.children)
+            }
           }
         }
+        collectKeys(categoryTree)
+        setExpandedKeys(allKeys)
       }
-      collectKeys(categoryTree)
-      setExpandedKeys(allKeys)
-    }
-  }, [categoryTree])
+    },
+    [categoryTree]
+  )
 
   // Handle create root category
   const handleCreateRoot = useCallback(() => {
@@ -243,12 +246,15 @@ export default function CategoriesPage() {
   }, [])
 
   // Handle edit category
-  const handleEdit = useCallback((category: CategoryNode) => {
-    setModalMode('edit')
-    setEditingCategory(category)
-    setParentCategory(category.parent_id ? nodeMap.get(category.parent_id) || null : null)
-    setModalVisible(true)
-  }, [nodeMap])
+  const handleEdit = useCallback(
+    (category: CategoryNode) => {
+      setModalMode('edit')
+      setEditingCategory(category)
+      setParentCategory(category.parent_id ? nodeMap.get(category.parent_id) || null : null)
+      setModalVisible(true)
+    },
+    [nodeMap]
+  )
 
   // Handle view detail
   const handleViewDetail = useCallback((category: CategoryNode) => {
@@ -435,9 +441,7 @@ export default function CategoriesPage() {
       return (
         <div className="category-tree-node">
           <div className="category-tree-node-content">
-            <span className={`category-name ${isInactive ? 'inactive' : ''}`}>
-              {label}
-            </span>
+            <span className={`category-name ${isInactive ? 'inactive' : ''}`}>{label}</span>
             <Tag size="small" className="category-code">
               {category.code}
             </Tag>
@@ -463,24 +467,16 @@ export default function CategoriesPage() {
               position="bottomRight"
               render={
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => handleViewDetail(category)}>
-                    查看详情
-                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleViewDetail(category)}>查看详情</Dropdown.Item>
                   <Dropdown.Item onClick={() => handleCreateChild(category)}>
                     添加子分类
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleEdit(category)}>
-                    编辑
-                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleEdit(category)}>编辑</Dropdown.Item>
                   <Dropdown.Divider />
                   {isInactive ? (
-                    <Dropdown.Item onClick={() => handleActivate(category)}>
-                      启用
-                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleActivate(category)}>启用</Dropdown.Item>
                   ) : (
-                    <Dropdown.Item onClick={() => handleDeactivate(category)}>
-                      停用
-                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleDeactivate(category)}>停用</Dropdown.Item>
                   )}
                   <Dropdown.Item type="danger" onClick={() => handleDelete(category)}>
                     删除
@@ -500,7 +496,14 @@ export default function CategoriesPage() {
         </div>
       )
     },
-    [handleViewDetail, handleCreateChild, handleEdit, handleActivate, handleDeactivate, handleDelete]
+    [
+      handleViewDetail,
+      handleCreateChild,
+      handleEdit,
+      handleActivate,
+      handleDeactivate,
+      handleDelete,
+    ]
   )
 
   // Refresh handler
@@ -532,10 +535,7 @@ export default function CategoriesPage() {
       <Card className="categories-card">
         <div className="categories-header">
           <div className="categories-header-left">
-            <IconTreeTriangleDown
-              size="large"
-              style={{ color: 'var(--semi-color-primary)' }}
-            />
+            <IconTreeTriangleDown size="large" style={{ color: 'var(--semi-color-primary)' }} />
             <Title heading={4} style={{ margin: 0 }}>
               商品分类
             </Title>
@@ -587,17 +587,11 @@ export default function CategoriesPage() {
                 image={<IconTreeTriangleDown size="extra-large" />}
                 title={searchKeyword ? '未找到匹配的分类' : '暂无分类数据'}
                 description={
-                  searchKeyword
-                    ? '请尝试其他搜索关键词'
-                    : '点击"新增根分类"按钮创建第一个分类'
+                  searchKeyword ? '请尝试其他搜索关键词' : '点击"新增根分类"按钮创建第一个分类'
                 }
               >
                 {!searchKeyword && (
-                  <Button
-                    type="primary"
-                    icon={<IconPlus />}
-                    onClick={handleCreateRoot}
-                  >
+                  <Button type="primary" icon={<IconPlus />} onClick={handleCreateRoot}>
                     新增根分类
                   </Button>
                 )}

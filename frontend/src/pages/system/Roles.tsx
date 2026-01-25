@@ -27,12 +27,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getIdentity } from '@/api/identity'
-import type {
-  Role,
-  RoleListQuery,
-  CreateRoleRequest,
-  UpdateRoleRequest,
-} from '@/api/identity'
+import type { Role, RoleListQuery, CreateRoleRequest, UpdateRoleRequest } from '@/api/identity'
 import './Roles.css'
 
 const { Title, Text } = Typography
@@ -514,25 +509,28 @@ export default function RolesPage() {
   }, [api, permissionRole, selectedPermissions, fetchRoles])
 
   // Handle permission tree selection
-  const handlePermissionChange = useCallback((value?: string | number | TreeNodeData | (string | number | TreeNodeData)[]) => {
-    // Normalize to array of strings (permission codes only, not resource groups)
-    let permissions: string[] = []
+  const handlePermissionChange = useCallback(
+    (value?: string | number | TreeNodeData | (string | number | TreeNodeData)[]) => {
+      // Normalize to array of strings (permission codes only, not resource groups)
+      let permissions: string[] = []
 
-    if (value === undefined) {
-      setSelectedPermissions([])
-      return
-    }
+      if (value === undefined) {
+        setSelectedPermissions([])
+        return
+      }
 
-    if (Array.isArray(value)) {
-      permissions = value
-        .map((v) => (typeof v === 'object' && v !== null ? v.value : v) as string)
-        .filter((v) => v && v.includes(':')) // Only include permission codes (contain ':')
-    } else if (typeof value === 'string' && value.includes(':')) {
-      permissions = [value]
-    }
+      if (Array.isArray(value)) {
+        permissions = value
+          .map((v) => (typeof v === 'object' && v !== null ? v.value : v) as string)
+          .filter((v) => v && v.includes(':')) // Only include permission codes (contain ':')
+      } else if (typeof value === 'string' && value.includes(':')) {
+        permissions = [value]
+      }
 
-    setSelectedPermissions(permissions)
-  }, [])
+      setSelectedPermissions(permissions)
+    },
+    []
+  )
 
   // Refresh handler
   const handleRefresh = useCallback(() => {
@@ -574,9 +572,7 @@ export default function RolesPage() {
         dataIndex: 'description',
         width: 200,
         ellipsis: true,
-        render: (desc: unknown) => (
-          <Text type="tertiary">{(desc as string) || '-'}</Text>
-        ),
+        render: (desc: unknown) => <Text type="tertiary">{(desc as string) || '-'}</Text>,
       },
       {
         title: '权限数',
@@ -586,11 +582,7 @@ export default function RolesPage() {
         render: (permissions: unknown) => {
           const perms = permissions as string[] | undefined
           const count = perms?.length || 0
-          return (
-            <Tag color={count > 0 ? 'cyan' : 'grey'}>
-              {count} 项
-            </Tag>
-          )
+          return <Tag color={count > 0 ? 'cyan' : 'grey'}>{count} 项</Tag>
         },
       },
       {
@@ -598,9 +590,7 @@ export default function RolesPage() {
         dataIndex: 'user_count',
         width: 90,
         align: 'center',
-        render: (count: unknown) => (
-          <Text type="secondary">{(count as number) || 0}</Text>
-        ),
+        render: (count: unknown) => <Text type="secondary">{(count as number) || 0}</Text>,
       },
       {
         title: '状态',
@@ -609,11 +599,7 @@ export default function RolesPage() {
         align: 'center',
         render: (isEnabled: unknown) => {
           const enabled = isEnabled as boolean
-          return (
-            <Tag color={enabled ? 'green' : 'grey'}>
-              {enabled ? '已启用' : '已禁用'}
-            </Tag>
-          )
+          return <Tag color={enabled ? 'green' : 'grey'}>{enabled ? '已启用' : '已禁用'}</Tag>
         },
       },
       {
@@ -678,7 +664,14 @@ export default function RolesPage() {
         hidden: (record) => record.is_system_role,
       },
     ],
-    [handleViewDetail, handleEdit, handleConfigurePermissions, handleEnable, handleDisable, handleDelete]
+    [
+      handleViewDetail,
+      handleEdit,
+      handleConfigurePermissions,
+      handleEnable,
+      handleDisable,
+      handleDelete,
+    ]
   )
 
   return (
@@ -783,7 +776,10 @@ export default function RolesPage() {
               { required: true, message: '请输入角色编码' },
               { min: 2, message: '角色编码至少2个字符' },
               { max: 50, message: '角色编码最多50个字符' },
-              { pattern: /^[a-z][a-z0-9_]*$/, message: '角色编码必须以小写字母开头，只能包含小写字母、数字和下划线' },
+              {
+                pattern: /^[a-z][a-z0-9_]*$/,
+                message: '角色编码必须以小写字母开头，只能包含小写字母、数字和下划线',
+              },
             ]}
             disabled={modalMode === 'edit'}
           />
@@ -840,16 +836,10 @@ export default function RolesPage() {
             已选择 <Text strong>{selectedPermissions.length}</Text> 项权限
           </Text>
           <Space>
-            <Button
-              size="small"
-              onClick={() => setSelectedPermissions(allPermissions)}
-            >
+            <Button size="small" onClick={() => setSelectedPermissions(allPermissions)}>
               全选
             </Button>
-            <Button
-              size="small"
-              onClick={() => setSelectedPermissions([])}
-            >
+            <Button size="small" onClick={() => setSelectedPermissions([])}>
               清空
             </Button>
           </Space>
@@ -879,9 +869,7 @@ export default function RolesPage() {
         title="角色详情"
         visible={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
-        footer={
-          <Button onClick={() => setDetailModalVisible(false)}>关闭</Button>
-        }
+        footer={<Button onClick={() => setDetailModalVisible(false)}>关闭</Button>}
         width={600}
       >
         {detailRole && (

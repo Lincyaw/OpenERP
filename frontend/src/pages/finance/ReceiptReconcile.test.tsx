@@ -274,9 +274,7 @@ describe('ReceiptReconcilePage', () => {
       renderWithProviders(<ReceiptReconcilePage />, { route: '/finance/receipts/rv-001/reconcile' })
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/自动核销将按照应收账款到期日期从早到晚的顺序/)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/自动核销将按照应收账款到期日期从早到晚的顺序/)).toBeInTheDocument()
       })
     })
 

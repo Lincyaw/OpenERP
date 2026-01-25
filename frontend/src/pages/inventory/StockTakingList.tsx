@@ -172,7 +172,9 @@ export default function StockTakingListPage() {
         warehouse_id: warehouseFilter || undefined,
         status: (statusFilter as GetInventoryStockTakingsParams['status']) || undefined,
         order_by: (state.sort.field || 'created_at') as GetInventoryStockTakingsOrderBy,
-        order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as GetInventoryStockTakingsOrderDir,
+        order_dir: (state.sort.order === 'asc'
+          ? 'asc'
+          : 'desc') as GetInventoryStockTakingsOrderDir,
       }
 
       const response = await stockTakingApi.getInventoryStockTakings(params)
@@ -279,9 +281,7 @@ export default function StockTakingListPage() {
         title: '盘点单号',
         dataIndex: 'taking_number',
         width: 160,
-        render: (number: unknown) => (
-          <span className="taking-number">{number as string}</span>
-        ),
+        render: (number: unknown) => <span className="taking-number">{number as string}</span>,
       },
       {
         title: '仓库',
@@ -332,7 +332,8 @@ export default function StockTakingListPage() {
           }
           return (
             <span className={diff > 0 ? 'diff-positive' : 'diff-negative'}>
-              {diff > 0 ? '+' : ''}{formatCurrency(diff)}
+              {diff > 0 ? '+' : ''}
+              {formatCurrency(diff)}
             </span>
           )
         },
@@ -379,11 +380,7 @@ export default function StockTakingListPage() {
           <Title heading={4} style={{ margin: 0 }}>
             盘点管理
           </Title>
-          <Button
-            type="primary"
-            icon={<IconPlus />}
-            onClick={handleCreate}
-          >
+          <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
             新建盘点
           </Button>
         </div>

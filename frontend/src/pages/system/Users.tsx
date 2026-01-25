@@ -504,7 +504,9 @@ export default function UsersPage() {
         dataIndex: 'username',
         width: 140,
         sortable: true,
-        render: (username: unknown) => <span className="user-username">{(username as string) || '-'}</span>,
+        render: (username: unknown) => (
+          <span className="user-username">{(username as string) || '-'}</span>
+        ),
       },
       {
         title: '显示名称',
@@ -631,7 +633,16 @@ export default function UsersPage() {
         onClick: handleDelete,
       },
     ],
-    [handleEdit, handleAssignRoles, handleResetPassword, handleActivate, handleDeactivate, handleLock, handleUnlock, handleDelete]
+    [
+      handleEdit,
+      handleAssignRoles,
+      handleResetPassword,
+      handleActivate,
+      handleDeactivate,
+      handleLock,
+      handleUnlock,
+      handleDelete,
+    ]
   )
 
   // Row selection handler
@@ -801,28 +812,16 @@ export default function UsersPage() {
               }
             />
           )}
-          <Form.Input
-            field="display_name"
-            label="显示名称"
-            placeholder="请输入显示名称"
-          />
+          <Form.Input field="display_name" label="显示名称" placeholder="请输入显示名称" />
           <Form.Input
             field="email"
             label="邮箱"
             placeholder="请输入邮箱"
             rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]}
           />
-          <Form.Input
-            field="phone"
-            label="电话"
-            placeholder="请输入电话号码"
-          />
+          <Form.Input field="phone" label="电话" placeholder="请输入电话号码" />
           {modalMode === 'create' && (
-            <Form.CheckboxGroup
-              field="role_ids"
-              label="分配角色"
-              direction="horizontal"
-            >
+            <Form.CheckboxGroup field="role_ids" label="分配角色" direction="horizontal">
               {roles.map((role) => (
                 <Checkbox key={role.id} value={role.id}>
                   {role.name}
@@ -830,12 +829,7 @@ export default function UsersPage() {
               ))}
             </Form.CheckboxGroup>
           )}
-          <Form.TextArea
-            field="notes"
-            label="备注"
-            placeholder="请输入备注信息"
-            rows={3}
-          />
+          <Form.TextArea field="notes" label="备注" placeholder="请输入备注信息" rows={3} />
         </Form>
       </Modal>
 
@@ -851,7 +845,9 @@ export default function UsersPage() {
       >
         <div style={{ marginBottom: 16 }}>
           <Text>
-            即将为用户 <Text strong>{resetPasswordUser?.display_name || resetPasswordUser?.username}</Text> 重置密码
+            即将为用户{' '}
+            <Text strong>{resetPasswordUser?.display_name || resetPasswordUser?.username}</Text>{' '}
+            重置密码
           </Text>
         </div>
         <div style={{ marginBottom: 16 }}>
@@ -888,7 +884,8 @@ export default function UsersPage() {
       >
         <div style={{ marginBottom: 16 }}>
           <Text>
-            为用户 <Text strong>{roleAssignUser?.display_name || roleAssignUser?.username}</Text> 分配角色
+            为用户 <Text strong>{roleAssignUser?.display_name || roleAssignUser?.username}</Text>{' '}
+            分配角色
           </Text>
         </div>
         <div>

@@ -23,29 +23,16 @@ import {
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'
-import {
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-} from 'echarts/components'
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
-import type {
-  ProductSalesRanking,
-  CustomerSalesRanking,
-} from '@/api/reports'
+import type { ProductSalesRanking, CustomerSalesRanking } from '@/api/reports'
 import type { TagColor } from '@douyinfe/semi-ui/lib/es/tag'
 import './SalesRanking.css'
 
 // Register ECharts components
-echarts.use([
-  BarChart,
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-  CanvasRenderer,
-])
+echarts.use([BarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 
 const { Title, Text } = Typography
 
@@ -348,10 +335,11 @@ export default function SalesRankingPage() {
     if (sortedProductRankings.length === 0) return null
 
     const top10 = sortedProductRankings.slice(0, 10)
-    const names = top10.map((p) => p.product_name.length > 12
-      ? p.product_name.substring(0, 12) + '...'
-      : p.product_name
-    ).reverse()
+    const names = top10
+      .map((p) =>
+        p.product_name.length > 12 ? p.product_name.substring(0, 12) + '...' : p.product_name
+      )
+      .reverse()
     const values = top10.map((p) => getDimensionValue(p, dimension)).reverse()
 
     return {
@@ -424,10 +412,11 @@ export default function SalesRankingPage() {
     if (sortedCustomerRankings.length === 0) return null
 
     const top10 = sortedCustomerRankings.slice(0, 10)
-    const names = top10.map((c) => c.customer_name.length > 12
-      ? c.customer_name.substring(0, 12) + '...'
-      : c.customer_name
-    ).reverse()
+    const names = top10
+      .map((c) =>
+        c.customer_name.length > 12 ? c.customer_name.substring(0, 12) + '...' : c.customer_name
+      )
+      .reverse()
     const values = top10.map((c) => getDimensionValue(c, dimension)).reverse()
 
     return {
@@ -544,7 +533,8 @@ export default function SalesRankingPage() {
       dataIndex: 'total_amount',
       key: 'total_amount',
       align: 'right' as const,
-      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) => (a?.total_amount ?? 0) - (b?.total_amount ?? 0),
+      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) =>
+        (a?.total_amount ?? 0) - (b?.total_amount ?? 0),
       render: (amount: number) => (
         <Text strong={dimension === 'amount'}>{formatCurrency(amount)}</Text>
       ),
@@ -554,10 +544,9 @@ export default function SalesRankingPage() {
       dataIndex: 'total_quantity',
       key: 'total_quantity',
       align: 'right' as const,
-      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) => (a?.total_quantity ?? 0) - (b?.total_quantity ?? 0),
-      render: (qty: number) => (
-        <Text strong={dimension === 'quantity'}>{formatNumber(qty)}</Text>
-      ),
+      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) =>
+        (a?.total_quantity ?? 0) - (b?.total_quantity ?? 0),
+      render: (qty: number) => <Text strong={dimension === 'quantity'}>{formatNumber(qty)}</Text>,
     },
     {
       title: '订单数',
@@ -571,7 +560,8 @@ export default function SalesRankingPage() {
       dataIndex: 'total_profit',
       key: 'total_profit',
       align: 'right' as const,
-      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) => (a?.total_profit ?? 0) - (b?.total_profit ?? 0),
+      sorter: (a?: ProductSalesRanking, b?: ProductSalesRanking) =>
+        (a?.total_profit ?? 0) - (b?.total_profit ?? 0),
       render: (profit: number) => (
         <Text
           strong={dimension === 'profit'}
@@ -620,7 +610,8 @@ export default function SalesRankingPage() {
       dataIndex: 'total_amount',
       key: 'total_amount',
       align: 'right' as const,
-      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) => (a?.total_amount ?? 0) - (b?.total_amount ?? 0),
+      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) =>
+        (a?.total_amount ?? 0) - (b?.total_amount ?? 0),
       render: (amount: number) => (
         <Text strong={dimension === 'amount'}>{formatCurrency(amount)}</Text>
       ),
@@ -630,10 +621,9 @@ export default function SalesRankingPage() {
       dataIndex: 'total_quantity',
       key: 'total_quantity',
       align: 'right' as const,
-      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) => (a?.total_quantity ?? 0) - (b?.total_quantity ?? 0),
-      render: (qty: number) => (
-        <Text strong={dimension === 'quantity'}>{formatNumber(qty)}</Text>
-      ),
+      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) =>
+        (a?.total_quantity ?? 0) - (b?.total_quantity ?? 0),
+      render: (qty: number) => <Text strong={dimension === 'quantity'}>{formatNumber(qty)}</Text>,
     },
     {
       title: '订单数',
@@ -647,7 +637,8 @@ export default function SalesRankingPage() {
       dataIndex: 'total_profit',
       key: 'total_profit',
       align: 'right' as const,
-      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) => (a?.total_profit ?? 0) - (b?.total_profit ?? 0),
+      sorter: (a?: CustomerSalesRanking, b?: CustomerSalesRanking) =>
+        (a?.total_profit ?? 0) - (b?.total_profit ?? 0),
       render: (profit: number) => (
         <Text
           strong={dimension === 'profit'}
@@ -727,7 +718,9 @@ export default function SalesRankingPage() {
         {/* Dimension Selector */}
         <Card className="dimension-card">
           <div className="dimension-selector">
-            <Text strong style={{ marginRight: 16 }}>排序维度：</Text>
+            <Text strong style={{ marginRight: 16 }}>
+              排序维度：
+            </Text>
             <RadioGroup
               type="button"
               value={dimension}
@@ -755,7 +748,10 @@ export default function SalesRankingPage() {
               <Row gap="lg" wrap="wrap" className="ranking-content">
                 {/* Chart */}
                 <div className="ranking-chart-container">
-                  <Card title={`商品${getDimensionLabel(dimension)}Top 10`} className="ranking-chart-card">
+                  <Card
+                    title={`商品${getDimensionLabel(dimension)}Top 10`}
+                    className="ranking-chart-card"
+                  >
                     {productChartOptions ? (
                       <ReactEChartsCore
                         echarts={echarts}
@@ -800,7 +796,10 @@ export default function SalesRankingPage() {
               <Row gap="lg" wrap="wrap" className="ranking-content">
                 {/* Chart */}
                 <div className="ranking-chart-container">
-                  <Card title={`客户${getDimensionLabel(dimension)}Top 10`} className="ranking-chart-card">
+                  <Card
+                    title={`客户${getDimensionLabel(dimension)}Top 10`}
+                    className="ranking-chart-card"
+                  >
                     {customerChartOptions ? (
                       <ReactEChartsCore
                         echarts={echarts}

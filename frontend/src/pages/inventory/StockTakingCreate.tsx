@@ -131,15 +131,20 @@ export default function StockTakingCreatePage() {
   )
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { control, handleFormSubmit, isSubmitting, watch, setValue: _setValue } =
-    useFormWithValidation<StockTakingCreateFormData>({
-      schema: stockTakingCreateSchema,
-      defaultValues,
-      successMessage: '盘点单创建成功',
-      onSuccess: () => {
-        navigate('/inventory/stock-taking')
-      },
-    })
+  const {
+    control,
+    handleFormSubmit,
+    isSubmitting,
+    watch,
+    setValue: _setValue,
+  } = useFormWithValidation<StockTakingCreateFormData>({
+    schema: stockTakingCreateSchema,
+    defaultValues,
+    successMessage: '盘点单创建成功',
+    onSuccess: () => {
+      navigate('/inventory/stock-taking')
+    },
+  })
 
   // Watch warehouse_id for fetching inventory
   const warehouseId = watch('warehouse_id')
@@ -455,20 +460,14 @@ export default function StockTakingCreatePage() {
           {/* Product Selection Section */}
           <FormSection title="盘点商品" description="选择要盘点的商品，将导入系统当前库存数量">
             {!warehouseId ? (
-              <Empty
-                title="请先选择仓库"
-                description="选择仓库后可导入该仓库的库存商品"
-              />
+              <Empty title="请先选择仓库" description="选择仓库后可导入该仓库的库存商品" />
             ) : loadingInventory ? (
               <div className="loading-container">
                 <Spin />
                 <Text type="tertiary">正在加载库存数据...</Text>
               </div>
             ) : inventoryItems.length === 0 ? (
-              <Empty
-                title="暂无库存数据"
-                description="该仓库暂无可盘点的库存商品"
-              />
+              <Empty title="暂无库存数据" description="该仓库暂无可盘点的库存商品" />
             ) : (
               <>
                 {/* Toolbar */}
@@ -487,16 +486,10 @@ export default function StockTakingCreatePage() {
                     >
                       刷新
                     </Button>
-                    <Button
-                      icon={<IconPlus />}
-                      onClick={handleOpenProductModal}
-                    >
+                    <Button icon={<IconPlus />} onClick={handleOpenProductModal}>
                       选择商品
                     </Button>
-                    <Button
-                      type="primary"
-                      onClick={handleImportAll}
-                    >
+                    <Button type="primary" onClick={handleImportAll}>
                       全部导入
                     </Button>
                   </div>
@@ -546,7 +539,9 @@ export default function StockTakingCreatePage() {
         <div className="product-modal-content">
           <div className="modal-toolbar">
             <Checkbox
-              checked={modalSelectedKeys.length === inventoryItems.length && inventoryItems.length > 0}
+              checked={
+                modalSelectedKeys.length === inventoryItems.length && inventoryItems.length > 0
+              }
               indeterminate={
                 modalSelectedKeys.length > 0 && modalSelectedKeys.length < inventoryItems.length
               }

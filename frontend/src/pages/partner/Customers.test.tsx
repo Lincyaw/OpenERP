@@ -94,13 +94,21 @@ describe('CustomersPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       getPartnerCustomers: vi.fn().mockResolvedValue(createMockListResponse()),
-      postPartnerCustomersIdActivate: vi.fn().mockResolvedValue({ success: true, data: mockCustomers[1] }),
-      postPartnerCustomersIdDeactivate: vi.fn().mockResolvedValue({ success: true, data: mockCustomers[0] }),
-      postPartnerCustomersIdSuspend: vi.fn().mockResolvedValue({ success: true, data: mockCustomers[0] }),
+      postPartnerCustomersIdActivate: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockCustomers[1] }),
+      postPartnerCustomersIdDeactivate: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockCustomers[0] }),
+      postPartnerCustomersIdSuspend: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockCustomers[0] }),
       deletePartnerCustomersId: vi.fn().mockResolvedValue({ success: true }),
     }
 
-    vi.mocked(customersApi.getCustomers).mockReturnValue(mockApi as unknown as ReturnType<typeof customersApi.getCustomers>)
+    vi.mocked(customersApi.getCustomers).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof customersApi.getCustomers>
+    )
   })
 
   describe('Customer List Display', () => {
@@ -322,7 +330,9 @@ describe('CustomersPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getPartnerCustomers.mockResolvedValueOnce(createMockListResponse([detailedCustomer], 1))
+      mockApi.getPartnerCustomers.mockResolvedValueOnce(
+        createMockListResponse([detailedCustomer], 1)
+      )
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
@@ -350,7 +360,9 @@ describe('CustomersPage', () => {
         // No phone, email, province, city
       }
 
-      mockApi.getPartnerCustomers.mockResolvedValueOnce(createMockListResponse([minimalCustomer], 1))
+      mockApi.getPartnerCustomers.mockResolvedValueOnce(
+        createMockListResponse([minimalCustomer], 1)
+      )
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 

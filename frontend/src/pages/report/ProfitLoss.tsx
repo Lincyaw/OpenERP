@@ -34,11 +34,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
-import type {
-  ProfitLossStatement,
-  MonthlyProfitTrend,
-  ProfitByProduct,
-} from '@/api/reports'
+import type { ProfitLossStatement, MonthlyProfitTrend, ProfitByProduct } from '@/api/reports'
 import './ProfitLoss.css'
 
 // Register ECharts components
@@ -266,9 +262,7 @@ export default function ProfitLossPage() {
           let result = `${params[0].axisValue}<br/>`
           params.forEach((param) => {
             const isPercent = param.seriesName.includes('率')
-            const value = isPercent
-              ? `${param.value.toFixed(1)}%`
-              : formatCurrency(param.value)
+            const value = isPercent ? `${param.value.toFixed(1)}%` : formatCurrency(param.value)
             result += `${param.seriesName}: ${value}<br/>`
           })
           return result
@@ -398,7 +392,8 @@ export default function ProfitLossPage() {
       dataIndex: 'sales_revenue',
       key: 'sales_revenue',
       align: 'right' as const,
-      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) => (a?.sales_revenue ?? 0) - (b?.sales_revenue ?? 0),
+      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) =>
+        (a?.sales_revenue ?? 0) - (b?.sales_revenue ?? 0),
       render: (amount: number) => formatCurrency(amount),
     },
     {
@@ -413,11 +408,10 @@ export default function ProfitLossPage() {
       dataIndex: 'gross_profit',
       key: 'gross_profit',
       align: 'right' as const,
-      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) => (a?.gross_profit ?? 0) - (b?.gross_profit ?? 0),
+      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) =>
+        (a?.gross_profit ?? 0) - (b?.gross_profit ?? 0),
       render: (profit: number) => (
-        <Text style={{ color: profit >= 0 ? '#00B42A' : '#F53F3F' }}>
-          {formatCurrency(profit)}
-        </Text>
+        <Text style={{ color: profit >= 0 ? '#00B42A' : '#F53F3F' }}>{formatCurrency(profit)}</Text>
       ),
     },
     {
@@ -425,7 +419,8 @@ export default function ProfitLossPage() {
       dataIndex: 'gross_margin',
       key: 'gross_margin',
       align: 'right' as const,
-      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) => (a?.gross_margin ?? 0) - (b?.gross_margin ?? 0),
+      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) =>
+        (a?.gross_margin ?? 0) - (b?.gross_margin ?? 0),
       render: (margin: number) => {
         const color = margin >= 0.3 ? 'green' : margin >= 0.1 ? 'orange' : 'red'
         return <Tag color={color}>{formatPercent(margin)}</Tag>
@@ -436,7 +431,8 @@ export default function ProfitLossPage() {
       dataIndex: 'contribution',
       key: 'contribution',
       align: 'right' as const,
-      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) => (a?.contribution ?? 0) - (b?.contribution ?? 0),
+      sorter: (a?: ProfitByProduct, b?: ProfitByProduct) =>
+        (a?.contribution ?? 0) - (b?.contribution ?? 0),
       render: (contribution: number) => formatPercent(contribution),
     },
   ]
@@ -464,17 +460,17 @@ export default function ProfitLossPage() {
       ['净利率', (statement.net_margin * 100).toFixed(2) + '%'],
     ]
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n')
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
 
     // Create and download file
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `损益报表_${formatDateParam(dateRange[0])}_${formatDateParam(dateRange[1])}.csv`)
+    link.setAttribute(
+      'download',
+      `损益报表_${formatDateParam(dateRange[0])}_${formatDateParam(dateRange[1])}.csv`
+    )
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -567,7 +563,9 @@ export default function ProfitLossPage() {
                       <Divider margin="8px" />
                       <div className="statement-row subtotal">
                         <span>净销售收入</span>
-                        <span className="amount">{formatCurrency(statement.net_sales_revenue)}</span>
+                        <span className="amount">
+                          {formatCurrency(statement.net_sales_revenue)}
+                        </span>
                       </div>
                     </div>
                   ),
@@ -616,13 +614,23 @@ export default function ProfitLossPage() {
                   key: '净利润',
                   value: (
                     <div className="statement-section">
-                      <div className={`statement-row total ${statement.net_profit >= 0 ? 'positive' : 'negative'}`}>
+                      <div
+                        className={`statement-row total ${statement.net_profit >= 0 ? 'positive' : 'negative'}`}
+                      >
                         <span>净利润</span>
                         <span className="amount">{formatCurrency(statement.net_profit)}</span>
                       </div>
                       <div className="statement-row info">
                         <span>净利率</span>
-                        <Tag color={statement.net_margin >= 0.1 ? 'green' : statement.net_margin >= 0 ? 'orange' : 'red'}>
+                        <Tag
+                          color={
+                            statement.net_margin >= 0.1
+                              ? 'green'
+                              : statement.net_margin >= 0
+                                ? 'orange'
+                                : 'red'
+                          }
+                        >
                           {formatPercent(statement.net_margin)}
                         </Tag>
                       </div>

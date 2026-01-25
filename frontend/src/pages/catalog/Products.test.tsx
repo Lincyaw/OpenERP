@@ -88,13 +88,21 @@ describe('ProductsPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       getCatalogProducts: vi.fn().mockResolvedValue(createMockListResponse()),
-      postCatalogProductsIdActivate: vi.fn().mockResolvedValue({ success: true, data: mockProducts[1] }),
-      postCatalogProductsIdDeactivate: vi.fn().mockResolvedValue({ success: true, data: mockProducts[0] }),
-      postCatalogProductsIdDiscontinue: vi.fn().mockResolvedValue({ success: true, data: mockProducts[0] }),
+      postCatalogProductsIdActivate: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockProducts[1] }),
+      postCatalogProductsIdDeactivate: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockProducts[0] }),
+      postCatalogProductsIdDiscontinue: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockProducts[0] }),
       deleteCatalogProductsId: vi.fn().mockResolvedValue({ success: true }),
     }
 
-    vi.mocked(productsApi.getProducts).mockReturnValue(mockApi as unknown as ReturnType<typeof productsApi.getProducts>)
+    vi.mocked(productsApi.getProducts).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof productsApi.getProducts>
+    )
   })
 
   describe('Product List Display', () => {

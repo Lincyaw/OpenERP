@@ -246,17 +246,14 @@ export default function InventoryTurnoverPage() {
   /**
    * Handle date range change
    */
-  const handleDateChange = useCallback(
-    (dates: Date | Date[] | string | string[] | undefined) => {
-      if (Array.isArray(dates) && dates.length === 2) {
-        const [start, end] = dates as [Date | string, Date | string]
-        const startDate = typeof start === 'string' ? new Date(start) : start
-        const endDate = typeof end === 'string' ? new Date(end) : end
-        setDateRange([startDate, endDate])
-      }
-    },
-    []
-  )
+  const handleDateChange = useCallback((dates: Date | Date[] | string | string[] | undefined) => {
+    if (Array.isArray(dates) && dates.length === 2) {
+      const [start, end] = dates as [Date | string, Date | string]
+      const startDate = typeof start === 'string' ? new Date(start) : start
+      const endDate = typeof end === 'string' ? new Date(end) : end
+      setDateRange([startDate, endDate])
+    }
+  }, [])
 
   /**
    * Apply preset date range

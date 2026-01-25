@@ -191,21 +191,25 @@ describe('StockTakingExecutePage', () => {
     // Setup mock stock taking API
     mockStockTakingApiInstance = {
       getInventoryStockTakingsId: vi.fn().mockResolvedValue(createMockStockTakingResponse()),
-      postInventoryStockTakingsIdStart: vi.fn().mockResolvedValue(
-        createMockStockTakingResponse({ ...mockStockTakingDraft, status: 'COUNTING' })
-      ),
-      postInventoryStockTakingsIdCount: vi.fn().mockResolvedValue(
-        createMockStockTakingResponse(mockStockTakingCounting)
-      ),
-      postInventoryStockTakingsIdCounts: vi.fn().mockResolvedValue(
-        createMockStockTakingResponse(mockStockTakingFullyCounted)
-      ),
-      postInventoryStockTakingsIdSubmit: vi.fn().mockResolvedValue(
-        createMockStockTakingResponse(mockStockTakingPendingApproval)
-      ),
-      postInventoryStockTakingsIdCancel: vi.fn().mockResolvedValue(
-        createMockStockTakingResponse({ ...mockStockTakingDraft, status: 'CANCELLED' })
-      ),
+      postInventoryStockTakingsIdStart: vi
+        .fn()
+        .mockResolvedValue(
+          createMockStockTakingResponse({ ...mockStockTakingDraft, status: 'COUNTING' })
+        ),
+      postInventoryStockTakingsIdCount: vi
+        .fn()
+        .mockResolvedValue(createMockStockTakingResponse(mockStockTakingCounting)),
+      postInventoryStockTakingsIdCounts: vi
+        .fn()
+        .mockResolvedValue(createMockStockTakingResponse(mockStockTakingFullyCounted)),
+      postInventoryStockTakingsIdSubmit: vi
+        .fn()
+        .mockResolvedValue(createMockStockTakingResponse(mockStockTakingPendingApproval)),
+      postInventoryStockTakingsIdCancel: vi
+        .fn()
+        .mockResolvedValue(
+          createMockStockTakingResponse({ ...mockStockTakingDraft, status: 'CANCELLED' })
+        ),
     }
 
     vi.mocked(stockTakingApi.getStockTaking).mockReturnValue(
@@ -215,7 +219,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Page Layout', () => {
     it('should display back button', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(mockStockTakingApiInstance.getInventoryStockTakingsId).toHaveBeenCalled()
@@ -225,7 +231,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display page title with taking number', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText(/盘点执行 - ST-20240120-001/)).toBeInTheDocument()
@@ -233,7 +241,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display status tag', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('草稿')).toBeInTheDocument()
@@ -243,7 +253,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Summary Card Display', () => {
     it('should display warehouse name', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('主仓库')).toBeInTheDocument()
@@ -251,7 +263,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display creator name', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('张三')).toBeInTheDocument()
@@ -259,7 +273,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display remark', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('月度盘点')).toBeInTheDocument()
@@ -267,7 +283,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display progress information', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('盘点进度')).toBeInTheDocument()
@@ -276,7 +294,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display difference amount total', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('差异金额合计')).toBeInTheDocument()
@@ -286,7 +306,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Items Table Display', () => {
     it('should display items table header', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('盘点明细')).toBeInTheDocument()
@@ -294,7 +316,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display product codes', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('SKU-001')).toBeInTheDocument()
@@ -304,7 +328,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display product names', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('商品A')).toBeInTheDocument()
@@ -314,7 +340,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display units', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('件')).toBeInTheDocument()
@@ -324,7 +352,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display system quantities', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('100.00')).toBeInTheDocument()
@@ -334,7 +364,9 @@ describe('StockTakingExecutePage', () => {
     })
 
     it('should display uncounted status tags', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         const uncountedTags = screen.getAllByText('未盘')
@@ -345,7 +377,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Status-Based Button Display', () => {
     it('should display start counting button for DRAFT status', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('开始盘点')).toBeInTheDocument()
@@ -357,7 +391,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingCounting)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('盘点中')).toBeInTheDocument()
@@ -372,7 +408,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingApproved)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('已通过')).toBeInTheDocument()
@@ -392,7 +430,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingCounting)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('1/3 项已盘点')).toBeInTheDocument()
@@ -404,7 +444,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingCounting)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('已盘')).toBeInTheDocument()
@@ -418,7 +460,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingFullyCounted)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('3/3 项已盘点')).toBeInTheDocument()
@@ -430,7 +474,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingFullyCounted)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         const submitButton = screen.getByText('提交审批')
@@ -442,7 +488,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('API Integration', () => {
     it('should call get stock taking API with correct ID', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(mockStockTakingApiInstance.getInventoryStockTakingsId).toHaveBeenCalledWith('st-001')
@@ -462,7 +510,9 @@ describe('StockTakingExecutePage', () => {
       await user.click(startButton)
 
       await waitFor(() => {
-        expect(mockStockTakingApiInstance.postInventoryStockTakingsIdStart).toHaveBeenCalledWith('st-001')
+        expect(mockStockTakingApiInstance.postInventoryStockTakingsIdStart).toHaveBeenCalledWith(
+          'st-001'
+        )
         expect(Toast.success).toHaveBeenCalledWith('已开始盘点')
       })
     })
@@ -474,7 +524,9 @@ describe('StockTakingExecutePage', () => {
         new Error('Not found')
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(Toast.error).toHaveBeenCalledWith('获取盘点单失败')
@@ -545,7 +597,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Status Tag Colors', () => {
     it('should display grey tag for DRAFT', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('草稿')).toBeInTheDocument()
@@ -557,7 +611,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingCounting)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('盘点中')).toBeInTheDocument()
@@ -569,7 +625,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingPendingApproval)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('待审批')).toBeInTheDocument()
@@ -581,7 +639,9 @@ describe('StockTakingExecutePage', () => {
         createMockStockTakingResponse(mockStockTakingApproved)
       )
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('已通过')).toBeInTheDocument()
@@ -598,7 +658,9 @@ describe('StockTakingExecutePage', () => {
       })
       mockStockTakingApiInstance.getInventoryStockTakingsId.mockReturnValueOnce(pendingPromise)
 
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       // Should show loading state
       expect(screen.getByText('加载中...')).toBeInTheDocument()
@@ -615,7 +677,9 @@ describe('StockTakingExecutePage', () => {
 
   describe('Refresh Functionality', () => {
     it('should have refresh button in items section', async () => {
-      renderWithProviders(<StockTakingExecutePage />, { route: '/inventory/stock-taking/st-001/execute' })
+      renderWithProviders(<StockTakingExecutePage />, {
+        route: '/inventory/stock-taking/st-001/execute',
+      })
 
       await waitFor(() => {
         // Find refresh button in items card (using getAllByRole to handle multiple buttons)

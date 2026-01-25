@@ -129,7 +129,10 @@ const mockInventoryItems = [
 ]
 
 // Mock API response helpers
-const createMockInventoryListResponse = (items = mockInventoryItems, total = mockInventoryItems.length) => ({
+const createMockInventoryListResponse = (
+  items = mockInventoryItems,
+  total = mockInventoryItems.length
+) => ({
   success: true,
   data: items,
   meta: {
@@ -193,9 +196,15 @@ describe('StockListPage', () => {
       getCatalogProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
-    vi.mocked(inventoryApi.getInventory).mockReturnValue(mockInventoryApiInstance as unknown as ReturnType<typeof inventoryApi.getInventory>)
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>)
-    vi.mocked(productsApi.getProducts).mockReturnValue(mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>)
+    vi.mocked(inventoryApi.getInventory).mockReturnValue(
+      mockInventoryApiInstance as unknown as ReturnType<typeof inventoryApi.getInventory>
+    )
+    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
+      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
+    )
+    vi.mocked(productsApi.getProducts).mockReturnValue(
+      mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>
+    )
   })
 
   describe('Inventory List Display', () => {
@@ -381,7 +390,9 @@ describe('StockListPage', () => {
     })
 
     it('should handle empty inventory list gracefully', async () => {
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([], 0))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([], 0)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -394,7 +405,9 @@ describe('StockListPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -465,7 +478,7 @@ describe('StockListPage', () => {
         available_quantity: 120.25,
         locked_quantity: 30.25,
         unit_cost: 99.99,
-        total_value: 15048.50,
+        total_value: 15048.5,
         min_quantity: 20,
         max_quantity: 300,
         is_below_minimum: false,
@@ -475,7 +488,9 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([detailedItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([detailedItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -509,7 +524,9 @@ describe('StockListPage', () => {
         // Missing unit_cost, total_value, min_quantity, max_quantity
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([minimalItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([minimalItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -543,7 +560,9 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([lockedItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([lockedItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -577,7 +596,9 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([partiallyLockedItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([partiallyLockedItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -611,7 +632,9 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([unlockedItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([unlockedItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -644,7 +667,9 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(createMockInventoryListResponse([consistentItem], 1))
+      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+        createMockInventoryListResponse([consistentItem], 1)
+      )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 

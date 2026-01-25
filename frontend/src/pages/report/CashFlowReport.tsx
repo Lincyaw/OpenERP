@@ -37,10 +37,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
-import type {
-  CashFlowStatement,
-  CashFlowItem,
-} from '@/api/reports'
+import type { CashFlowStatement, CashFlowItem } from '@/api/reports'
 import './CashFlowReport.css'
 
 // Register ECharts components
@@ -307,7 +304,10 @@ export default function CashFlowReportPage() {
   }, [fetchReportData])
 
   // Calculate change percentage
-  const calculateChange = (current?: number, previous?: number): { value: string; trend: 'up' | 'down' | 'neutral' } | null => {
+  const calculateChange = (
+    current?: number,
+    previous?: number
+  ): { value: string; trend: 'up' | 'down' | 'neutral' } | null => {
     if (current === undefined || previous === undefined || previous === 0) {
       return null
     }
@@ -362,7 +362,9 @@ export default function CashFlowReportPage() {
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        formatter: (params: Array<{ seriesName: string; value: number | string; axisValue: string }>) => {
+        formatter: (
+          params: Array<{ seriesName: string; value: number | string; axisValue: string }>
+        ) => {
           const index = categories.indexOf(params[0].axisValue)
           const value = values[index]
           const formattedValue = formatCurrency(Math.abs(value))
@@ -501,7 +503,8 @@ export default function CashFlowReportPage() {
         const isInflow = record?.type === 'RECEIPT' || record?.type === 'INCOME'
         return (
           <Text style={{ color: isInflow ? '#00B42A' : '#F53F3F' }}>
-            {isInflow ? '+' : '-'}{formatCurrency(Math.abs(amount))}
+            {isInflow ? '+' : '-'}
+            {formatCurrency(Math.abs(amount))}
           </Text>
         )
       },
@@ -512,7 +515,7 @@ export default function CashFlowReportPage() {
       key: 'running_balance',
       width: 140,
       align: 'right' as const,
-      render: (balance?: number) => balance !== undefined ? formatCurrency(balance) : '-',
+      render: (balance?: number) => (balance !== undefined ? formatCurrency(balance) : '-'),
     },
   ]
 
@@ -537,17 +540,17 @@ export default function CashFlowReportPage() {
       ['期末现金余额', statement.ending_cash.toFixed(2)],
     ]
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n')
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
 
     // Create and download file
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `现金流量报表_${formatDateParam(dateRange[0])}_${formatDateParam(dateRange[1])}.csv`)
+    link.setAttribute(
+      'download',
+      `现金流量报表_${formatDateParam(dateRange[0])}_${formatDateParam(dateRange[1])}.csv`
+    )
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -563,7 +566,10 @@ export default function CashFlowReportPage() {
 
   // Operating cash flow change
   const operatingCashFlowChange = comparisonStatement
-    ? calculateChange(statement?.net_operating_cash_flow, comparisonStatement.net_operating_cash_flow)
+    ? calculateChange(
+        statement?.net_operating_cash_flow,
+        comparisonStatement.net_operating_cash_flow
+      )
     : null
 
   return (
@@ -622,15 +628,31 @@ export default function CashFlowReportPage() {
               title="现金净增加"
               value={formatCurrency(statement?.net_cash_flow)}
               subLabel="对比期间"
-              subValue={comparisonStatement ? formatCurrency(comparisonStatement.net_cash_flow) : '-'}
-              icon={statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0 ? <IconArrowUp size="large" /> : <IconArrowDown size="large" />}
-              color={statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0 ? 'var(--semi-color-success)' : 'var(--semi-color-danger)'}
+              subValue={
+                comparisonStatement ? formatCurrency(comparisonStatement.net_cash_flow) : '-'
+              }
+              icon={
+                statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0 ? (
+                  <IconArrowUp size="large" />
+                ) : (
+                  <IconArrowDown size="large" />
+                )
+              }
+              color={
+                statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0
+                  ? 'var(--semi-color-success)'
+                  : 'var(--semi-color-danger)'
+              }
             />
             <MetricCard
               title="经营活动现金流"
               value={formatCurrency(statement?.net_operating_cash_flow)}
               subLabel="对比期间"
-              subValue={comparisonStatement ? formatCurrency(comparisonStatement.net_operating_cash_flow) : '-'}
+              subValue={
+                comparisonStatement
+                  ? formatCurrency(comparisonStatement.net_operating_cash_flow)
+                  : '-'
+              }
               icon={<IconTick size="large" />}
               color="var(--semi-color-success)"
               trend={operatingCashFlowChange?.trend}
@@ -669,11 +691,15 @@ export default function CashFlowReportPage() {
                     <div className="statement-section">
                       <div className="statement-row positive">
                         <span>加: 客户收款</span>
-                        <span className="amount">{formatCurrency(statement.receipts_from_customers)}</span>
+                        <span className="amount">
+                          {formatCurrency(statement.receipts_from_customers)}
+                        </span>
                       </div>
                       <div className="statement-row negative">
                         <span>减: 供应商付款</span>
-                        <span className="amount">{formatCurrency(statement.payments_to_suppliers)}</span>
+                        <span className="amount">
+                          {formatCurrency(statement.payments_to_suppliers)}
+                        </span>
                       </div>
                       <div className="statement-row positive">
                         <span>加: 其他收入</span>
@@ -684,9 +710,13 @@ export default function CashFlowReportPage() {
                         <span className="amount">{formatCurrency(statement.expense_payments)}</span>
                       </div>
                       <Divider margin="8px" />
-                      <div className={`statement-row subtotal ${statement.net_operating_cash_flow >= 0 ? 'positive' : 'negative'}`}>
+                      <div
+                        className={`statement-row subtotal ${statement.net_operating_cash_flow >= 0 ? 'positive' : 'negative'}`}
+                      >
                         <span>经营活动现金流净额</span>
-                        <span className="amount">{formatCurrency(statement.net_operating_cash_flow)}</span>
+                        <span className="amount">
+                          {formatCurrency(statement.net_operating_cash_flow)}
+                        </span>
                       </div>
                     </div>
                   ),
@@ -695,7 +725,9 @@ export default function CashFlowReportPage() {
                   key: '期末余额',
                   value: (
                     <div className="statement-section">
-                      <div className={`statement-row ${statement.net_cash_flow >= 0 ? 'positive' : 'negative'}`}>
+                      <div
+                        className={`statement-row ${statement.net_cash_flow >= 0 ? 'positive' : 'negative'}`}
+                      >
                         <span>现金净增加额</span>
                         <span className="amount">{formatCurrency(statement.net_cash_flow)}</span>
                       </div>

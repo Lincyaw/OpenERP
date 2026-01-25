@@ -194,7 +194,9 @@ describe('StockTakingCreatePage', () => {
     // Setup mock stock taking API
     mockStockTakingApiInstance = {
       postInventoryStockTakings: vi.fn().mockResolvedValue(createMockStockTakingCreateResponse()),
-      postInventoryStockTakingsIdItemsBulk: vi.fn().mockResolvedValue(createMockAddItemsBulkResponse()),
+      postInventoryStockTakingsIdItemsBulk: vi
+        .fn()
+        .mockResolvedValue(createMockAddItemsBulkResponse()),
     }
 
     // Setup mock warehouse API
@@ -303,7 +305,9 @@ describe('StockTakingCreatePage', () => {
     })
 
     it('should show error toast when warehouse API fails', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 

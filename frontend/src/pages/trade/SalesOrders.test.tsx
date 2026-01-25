@@ -139,10 +139,7 @@ const mockSalesOrders = [
 ]
 
 // Mock API response helpers
-const createMockOrderListResponse = (
-  orders = mockSalesOrders,
-  total = mockSalesOrders.length
-) => ({
+const createMockOrderListResponse = (orders = mockSalesOrders, total = mockSalesOrders.length) => ({
   success: true,
   data: orders,
   meta: {
@@ -422,9 +419,7 @@ describe('SalesOrdersPage', () => {
     })
 
     it('should handle customer API failure gracefully', async () => {
-      mockCustomerApiInstance.getPartnerCustomers.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      mockCustomerApiInstance.getPartnerCustomers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 

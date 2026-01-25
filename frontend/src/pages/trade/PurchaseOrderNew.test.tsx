@@ -185,7 +185,9 @@ describe('PurchaseOrderNewPage', () => {
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
-      mockPurchaseOrderApiInstance as unknown as ReturnType<typeof purchaseOrdersApi.getPurchaseOrders>
+      mockPurchaseOrderApiInstance as unknown as ReturnType<
+        typeof purchaseOrdersApi.getPurchaseOrders
+      >
     )
     vi.mocked(suppliersApi.getSuppliers).mockReturnValue(
       mockSupplierApiInstance as unknown as ReturnType<typeof suppliersApi.getSuppliers>
@@ -345,7 +347,9 @@ describe('PurchaseOrderNewPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
@@ -463,7 +467,9 @@ describe('PurchaseOrderNewPage', () => {
 
   describe('Navigation', () => {
     it('should navigate to purchase orders list when clicking cancel', async () => {
-      const { user } = renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
+      const { user } = renderWithProviders(<PurchaseOrderNewPage />, {
+        route: '/trade/purchase/new',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('取消')).toBeInTheDocument()
@@ -478,7 +484,9 @@ describe('PurchaseOrderNewPage', () => {
 
   describe('Form Validation', () => {
     it('should show error when submitting without supplier', async () => {
-      const { user } = renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
+      const { user } = renderWithProviders(<PurchaseOrderNewPage />, {
+        route: '/trade/purchase/new',
+      })
 
       await waitFor(() => {
         expect(screen.getByText('创建订单')).toBeInTheDocument()
@@ -580,7 +588,9 @@ describe('PurchaseOrderNewPage - Form Submission', () => {
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
-      mockPurchaseOrderApiInstance as unknown as ReturnType<typeof purchaseOrdersApi.getPurchaseOrders>
+      mockPurchaseOrderApiInstance as unknown as ReturnType<
+        typeof purchaseOrdersApi.getPurchaseOrders
+      >
     )
     vi.mocked(suppliersApi.getSuppliers).mockReturnValue(
       mockSupplierApiInstance as unknown as ReturnType<typeof suppliersApi.getSuppliers>

@@ -96,13 +96,21 @@ describe('WarehousesPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       getPartnerWarehouses: vi.fn().mockResolvedValue(createMockListResponse()),
-      postPartnerWarehousesIdEnable: vi.fn().mockResolvedValue({ success: true, data: mockWarehouses[2] }),
-      postPartnerWarehousesIdDisable: vi.fn().mockResolvedValue({ success: true, data: mockWarehouses[1] }),
-      postPartnerWarehousesIdSetDefault: vi.fn().mockResolvedValue({ success: true, data: mockWarehouses[1] }),
+      postPartnerWarehousesIdEnable: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockWarehouses[2] }),
+      postPartnerWarehousesIdDisable: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockWarehouses[1] }),
+      postPartnerWarehousesIdSetDefault: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: mockWarehouses[1] }),
       deletePartnerWarehousesId: vi.fn().mockResolvedValue({ success: true }),
     }
 
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(mockApi as unknown as ReturnType<typeof warehousesApi.getWarehouses>)
+    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
+      mockApi as unknown as ReturnType<typeof warehousesApi.getWarehouses>
+    )
   })
 
   describe('Warehouse List Display', () => {
@@ -314,7 +322,9 @@ describe('WarehousesPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getPartnerWarehouses.mockResolvedValueOnce(createMockListResponse([detailedWarehouse], 1))
+      mockApi.getPartnerWarehouses.mockResolvedValueOnce(
+        createMockListResponse([detailedWarehouse], 1)
+      )
 
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 
@@ -343,7 +353,9 @@ describe('WarehousesPage', () => {
         // No province, city, short_name
       }
 
-      mockApi.getPartnerWarehouses.mockResolvedValueOnce(createMockListResponse([minimalWarehouse], 1))
+      mockApi.getPartnerWarehouses.mockResolvedValueOnce(
+        createMockListResponse([minimalWarehouse], 1)
+      )
 
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 

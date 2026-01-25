@@ -345,7 +345,9 @@ describe('SalesOrderNewPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<SalesOrderNewPage />, { route: '/trade/sales/new' })
 

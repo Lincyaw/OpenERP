@@ -168,9 +168,15 @@ describe('StockAdjustPage', () => {
       getCatalogProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
-    vi.mocked(inventoryApi.getInventory).mockReturnValue(mockInventoryApiInstance as unknown as ReturnType<typeof inventoryApi.getInventory>)
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>)
-    vi.mocked(productsApi.getProducts).mockReturnValue(mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>)
+    vi.mocked(inventoryApi.getInventory).mockReturnValue(
+      mockInventoryApiInstance as unknown as ReturnType<typeof inventoryApi.getInventory>
+    )
+    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
+      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
+    )
+    vi.mocked(productsApi.getProducts).mockReturnValue(
+      mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>
+    )
   })
 
   describe('Page Layout', () => {
@@ -277,7 +283,9 @@ describe('StockAdjustPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<StockAdjustPage />, { route: '/inventory/adjust' })
 
@@ -325,7 +333,9 @@ describe('StockAdjustPage', () => {
     })
 
     it('should handle empty warehouse list gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockResolvedValueOnce(createMockWarehouseListResponse([]))
+      mockWarehouseApiInstance.getPartnerWarehouses.mockResolvedValueOnce(
+        createMockWarehouseListResponse([])
+      )
 
       renderWithProviders(<StockAdjustPage />, { route: '/inventory/adjust' })
 
@@ -334,7 +344,9 @@ describe('StockAdjustPage', () => {
     })
 
     it('should handle empty product list gracefully', async () => {
-      mockProductApiInstance.getCatalogProducts.mockResolvedValueOnce(createMockProductListResponse([]))
+      mockProductApiInstance.getCatalogProducts.mockResolvedValueOnce(
+        createMockProductListResponse([])
+      )
 
       renderWithProviders(<StockAdjustPage />, { route: '/inventory/adjust' })
 
