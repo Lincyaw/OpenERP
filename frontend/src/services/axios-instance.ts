@@ -12,6 +12,7 @@ import {
   waitForRefresh,
   redirectToLogin,
 } from './token-refresh'
+import i18n from '@/i18n'
 
 // API base URL - use environment variable or default to localhost
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
@@ -169,7 +170,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
-        redirectToLogin('Session expired. Please log in again.')
+        redirectToLogin(i18n.t('auth:token.expired'))
 
         return Promise.reject(error)
       } finally {

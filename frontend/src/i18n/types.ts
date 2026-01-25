@@ -184,23 +184,47 @@ export interface ValidationTranslations {
  * Auth namespace translation keys
  */
 export interface AuthTranslations {
+  // Login
   'login.title': string
   'login.subtitle': string
   'login.username': string
+  'login.usernamePlaceholder': string
   'login.password': string
+  'login.passwordPlaceholder': string
   'login.rememberMe': string
   'login.forgotPassword': string
   'login.submit': string
   'login.success': string
   'login.failed': string
   'login.invalidCredentials': string
+  'login.accountLocked': string
+  'login.accountDisabled': string
+  'login.userNotFound': string
+  // Logout
   'logout.title': string
   'logout.confirm': string
   'logout.success': string
+  // Token
   'token.expired': string
-  'token.refresh': string
+  'token.refreshFailed': string
+  'token.invalid': string
+  // Permission
   'permission.denied': string
   'permission.noAccess': string
+  // Forbidden page
+  'forbidden.title': string
+  'forbidden.code': string
+  'forbidden.description': string
+  'forbidden.attemptedPath': string
+  'forbidden.backToDashboard': string
+  'forbidden.goBack': string
+  // Validation
+  'validation.usernameRequired': string
+  'validation.usernameMinLength': string
+  'validation.usernameMaxLength': string
+  'validation.passwordRequired': string
+  'validation.passwordMinLength': string
+  'validation.passwordMaxLength': string
 }
 
 /**

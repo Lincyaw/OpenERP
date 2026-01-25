@@ -15095,3 +15095,71 @@ cd frontend && npx tsc --noEmit
 - For full dynamic language switching in forms, a page reload is needed
 - LanguageSwitcher can be configured with `showLabel` prop to display current language name
 - All Semi Design table components now support i18n through useTranslation hook
+
+
+---
+
+## 2026-01-25 - P0-I18N-003: Auth Module i18n Migration
+
+### Completed
+- **P0-I18N-003**: Auth 模块 i18n 迁移
+
+### What was done
+
+1. **Created Auth Translation Files**
+   - `frontend/src/locales/zh-CN/auth.json` - Chinese translations for auth module
+   - `frontend/src/locales/en-US/auth.json` - English translations for auth module
+   - Includes: login, logout, token, permission, forbidden, and validation messages
+
+2. **Updated i18n Configuration**
+   - `frontend/src/i18n/index.ts` - Added auth namespace imports
+   - `frontend/src/i18n/types.ts` - Extended AuthTranslations interface with all new keys
+
+3. **Updated Login Page**
+   - `frontend/src/pages/Login.tsx`
+   - All form labels, placeholders, error messages now use i18n
+   - Added check for redirect message (e.g., session expired) on mount
+   - Error codes (INVALID_CREDENTIALS, ACCOUNT_LOCKED, etc.) mapped to i18n keys
+
+4. **Updated Forbidden Page**
+   - `frontend/src/pages/Forbidden.tsx`
+   - Title, description, and button texts now use i18n
+   - "Attempted to access" message uses i18n
+
+5. **Updated Token Refresh Service**
+   - `frontend/src/services/token-refresh.ts`
+   - Session expired message now uses i18n.t('auth:token.expired')
+   - Added helper function getTokenExpiredMessage()
+
+6. **Updated Axios Instance**
+   - `frontend/src/services/axios-instance.ts`
+   - Session expired redirect message now uses i18n
+
+### Files Created
+- `frontend/src/locales/zh-CN/auth.json`
+- `frontend/src/locales/en-US/auth.json`
+
+### Files Modified
+- `frontend/src/i18n/index.ts`
+- `frontend/src/i18n/types.ts`
+- `frontend/src/pages/Login.tsx`
+- `frontend/src/pages/Forbidden.tsx`
+- `frontend/src/services/token-refresh.ts`
+- `frontend/src/services/axios-instance.ts`
+
+### Translation Keys Added
+- login.* (title, subtitle, username, password, placeholders, success/error messages)
+- logout.* (title, confirm, success)
+- token.* (expired, refreshFailed, invalid)
+- permission.* (denied, noAccess)
+- forbidden.* (title, code, description, attemptedPath, backToDashboard, goBack)
+- validation.* (usernameRequired, usernameMinLength, passwordRequired, etc.)
+
+### Build Verification
+- `npm run build` - SUCCESS (TypeScript check passed)
+
+### Notes
+- Auth namespace is now fully functional
+- Service files (token-refresh.ts, axios-instance.ts) import i18n directly since they're not React components
+- Session expired messages now show in the user's current language
+- Login page checks for redirect messages on mount to display session expired notifications

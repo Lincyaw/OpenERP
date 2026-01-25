@@ -13,9 +13,17 @@
 
 import { getAuth } from '@/api/auth'
 import { useAuthStore } from '@/store'
+import i18n from '@/i18n'
 
 // Create auth API instance
 const authApi = getAuth()
+
+/**
+ * Get translated message for token expiration
+ */
+function getTokenExpiredMessage(): string {
+  return i18n.t('auth:token.expired')
+}
 
 // Token expiration buffer (refresh 1 minute before expiry)
 const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000
@@ -158,7 +166,7 @@ async function performRefresh(refreshToken: string): Promise<string | null> {
     if (!response.success || !response.data) {
       // Refresh failed, logout user
       logout()
-      redirectToLogin('Session expired. Please log in again.')
+      redirectToLogin(getTokenExpiredMessage())
       return null
     }
 
@@ -171,12 +179,12 @@ async function performRefresh(refreshToken: string): Promise<string | null> {
     }
 
     logout()
-    redirectToLogin('Session expired. Please log in again.')
+    redirectToLogin(getTokenExpiredMessage())
     return null
-  } catch (error) {
+  } catch {
     // Refresh failed, logout user
     logout()
-    redirectToLogin('Session expired. Please log in again.')
+    redirectToLogin(getTokenExpiredMessage())
     return null
   }
 }

@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button, Typography, Space } from '@douyinfe/semi-ui'
 import { IconLock, IconHome } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -13,6 +14,7 @@ const { Title, Paragraph, Text } = Typography
 export default function ForbiddenPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation('auth')
 
   return (
     <div
@@ -36,26 +38,25 @@ export default function ForbiddenPage() {
           }}
         />
         <Title heading={1} style={{ margin: 0, color: 'var(--semi-color-text-0)' }}>
-          403
+          {t('forbidden.code')}
         </Title>
         <Title heading={3} style={{ margin: 0 }}>
-          Access Denied
+          {t('forbidden.title')}
         </Title>
         <Paragraph type="secondary" style={{ maxWidth: '400px' }}>
-          You do not have permission to access this page. Please contact your administrator if you
-          believe this is a mistake.
+          {t('forbidden.description')}
         </Paragraph>
         {location.state?.from?.pathname && (
           <Text type="tertiary" size="small">
-            Attempted to access: <code>{location.state.from.pathname}</code>
+            {t('forbidden.attemptedPath')}: <code>{location.state.from.pathname}</code>
           </Text>
         )}
         <Space style={{ marginTop: '16px' }}>
           <Button icon={<IconHome />} type="primary" onClick={() => navigate('/')}>
-            Back to Dashboard
+            {t('forbidden.backToDashboard')}
           </Button>
           <Button type="tertiary" onClick={() => navigate(-1)}>
-            Go Back
+            {t('forbidden.goBack')}
           </Button>
         </Space>
       </Space>

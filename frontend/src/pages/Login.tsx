@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store'
 import { getAuth } from '@/api/auth'
 import type { User } from '@/store/types'
@@ -30,6 +31,7 @@ interface ApiError {
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation('auth')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const login = useAuthStore((state) => state.login)
@@ -37,6 +39,15 @@ export default function LoginPage() {
 
   // Get intended destination from location state
   const from = (location.state as { from?: Location })?.from?.pathname || '/'
+
+  // Check for redirect message (e.g., session expired)
+  useEffect(() => {
+    const message = sessionStorage.getItem('auth_redirect_message')
+    if (message) {
+      setError(message)
+      sessionStorage.removeItem('auth_redirect_message')
+    }
+  }, [])
 
   const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true)
@@ -49,13 +60,13 @@ export default function LoginPage() {
       })
 
       if (!response.success || !response.data) {
-        throw new Error(response.error?.message || 'Login failed')
+        throw new Error(response.error?.message || t('login.failed'))
       }
 
       const { token, user: apiUser } = response.data
 
       if (!apiUser || !token) {
-        throw new Error('Invalid login response: missing user or token')
+        throw new Error(t('login.failed'))
       }
 
       // Convert API user response to store User type
@@ -73,30 +84,30 @@ export default function LoginPage() {
       // Use auth store to login with tokens
       login(user, token.access_token ?? '', token.refresh_token ?? '')
 
-      Toast.success({ content: 'Login successful!' })
+      Toast.success({ content: t('login.success') })
 
       // Redirect to intended destination
       navigate(from, { replace: true })
     } catch (err) {
       const axiosError = err as AxiosError<ApiError>
-      let errorMessage = 'Login failed. Please check your credentials.'
+      let errorMessage = t('login.failed')
 
       if (axiosError.response?.data?.error) {
         const apiError = axiosError.response.data.error
         // Handle specific error codes
         switch (apiError.code) {
           case 'INVALID_CREDENTIALS':
-            errorMessage = 'Invalid username or password'
+            errorMessage = t('login.invalidCredentials')
             break
           case 'ACCOUNT_LOCKED':
-            errorMessage = 'Account is locked. Please try again later.'
+            errorMessage = t('login.accountLocked')
             break
           case 'ACCOUNT_DISABLED':
           case 'ACCOUNT_DEACTIVATED':
-            errorMessage = 'Account is disabled. Please contact support.'
+            errorMessage = t('login.accountDisabled')
             break
           case 'USER_NOT_FOUND':
-            errorMessage = 'User not found'
+            errorMessage = t('login.userNotFound')
             break
           default:
             errorMessage = apiError.message || errorMessage
@@ -131,8 +142,8 @@ export default function LoginPage() {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-6)' }}>
-          <Title heading={3}>ERP System</Title>
-          <Text type="secondary">Sign in to your account</Text>
+          <Title heading={3}>{t('login.title')}</Title>
+          <Text type="secondary">{t('login.subtitle')}</Text>
         </div>
 
         {error && (
@@ -147,27 +158,27 @@ export default function LoginPage() {
         <Form onSubmit={handleSubmit} labelPosition="top">
           <Form.Input
             field="username"
-            label="Username"
+            label={t('login.username')}
             prefix={<IconUser />}
-            placeholder="Enter username"
+            placeholder={t('login.usernamePlaceholder')}
             rules={[
-              { required: true, message: 'Username is required' },
-              { min: 3, message: 'Username must be at least 3 characters' },
-              { max: 100, message: 'Username must be at most 100 characters' },
+              { required: true, message: t('validation.usernameRequired') },
+              { min: 3, message: t('validation.usernameMinLength') },
+              { max: 100, message: t('validation.usernameMaxLength') },
             ]}
             disabled={loading}
           />
 
           <Form.Input
             field="password"
-            label="Password"
+            label={t('login.password')}
             mode="password"
             prefix={<IconLock />}
-            placeholder="Enter password"
+            placeholder={t('login.passwordPlaceholder')}
             rules={[
-              { required: true, message: 'Password is required' },
-              { min: 8, message: 'Password must be at least 8 characters' },
-              { max: 128, message: 'Password must be at most 128 characters' },
+              { required: true, message: t('validation.passwordRequired') },
+              { min: 8, message: t('validation.passwordMinLength') },
+              { max: 128, message: t('validation.passwordMaxLength') },
             ]}
             disabled={loading}
           />
@@ -180,7 +191,7 @@ export default function LoginPage() {
             loading={loading}
             style={{ marginTop: 'var(--spacing-4)' }}
           >
-            Sign In
+            {t('login.submit')}
           </Button>
         </Form>
       </Card>

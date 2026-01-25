@@ -27,6 +27,8 @@ import zhCNCommon from '../locales/zh-CN/common.json'
 import enUSCommon from '../locales/en-US/common.json'
 import zhCNValidation from '../locales/zh-CN/validation.json'
 import enUSValidation from '../locales/en-US/validation.json'
+import zhCNAuth from '../locales/zh-CN/auth.json'
+import enUSAuth from '../locales/en-US/auth.json'
 
 /**
  * Translation resources
@@ -38,10 +40,12 @@ const resources = {
   'zh-CN': {
     common: zhCNCommon,
     validation: zhCNValidation,
+    auth: zhCNAuth,
   },
   'en-US': {
     common: enUSCommon,
     validation: enUSValidation,
+    auth: enUSAuth,
   },
 }
 
