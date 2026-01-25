@@ -270,14 +270,171 @@ export interface AuthTranslations {
 }
 
 /**
+ * Catalog namespace translation keys
+ */
+export interface CatalogTranslations {
+  // Products
+  'products.title': string
+  'products.searchPlaceholder': string
+  'products.addProduct': string
+  'products.editProduct': string
+  'products.createProduct': string
+  'products.statusFilter': string
+  'products.allStatus': string
+  'products.status.active': string
+  'products.status.inactive': string
+  'products.status.discontinued': string
+  'products.columns.code': string
+  'products.columns.name': string
+  'products.columns.unit': string
+  'products.columns.purchasePrice': string
+  'products.columns.sellingPrice': string
+  'products.columns.status': string
+  'products.columns.createdAt': string
+  'products.actions.view': string
+  'products.actions.edit': string
+  'products.actions.activate': string
+  'products.actions.deactivate': string
+  'products.actions.discontinue': string
+  'products.actions.delete': string
+  'products.actions.batchActivate': string
+  'products.actions.batchDeactivate': string
+  'products.messages.fetchError': string
+  'products.messages.activateSuccess': string
+  'products.messages.activateError': string
+  'products.messages.deactivateSuccess': string
+  'products.messages.deactivateError': string
+  'products.messages.discontinueSuccess': string
+  'products.messages.discontinueError': string
+  'products.messages.deleteSuccess': string
+  'products.messages.deleteError': string
+  'products.messages.batchActivateSuccess': string
+  'products.messages.batchActivateError': string
+  'products.messages.batchDeactivateSuccess': string
+  'products.messages.batchDeactivateError': string
+  'products.messages.invalidId': string
+  'products.messages.loadError': string
+  'products.messages.createSuccess': string
+  'products.messages.updateSuccess': string
+  'products.messages.createError': string
+  'products.messages.updateError': string
+  'products.confirm.discontinueTitle': string
+  'products.confirm.discontinueContent': string
+  'products.confirm.discontinueOk': string
+  'products.confirm.deleteTitle': string
+  'products.confirm.deleteContent': string
+  'products.confirm.deleteOk': string
+  'products.form.basicInfo': string
+  'products.form.basicInfoDesc': string
+  'products.form.priceInfo': string
+  'products.form.priceInfoDesc': string
+  'products.form.stockSettings': string
+  'products.form.stockSettingsDesc': string
+  'products.form.code': string
+  'products.form.codePlaceholder': string
+  'products.form.codeHelperCreate': string
+  'products.form.codeHelperEdit': string
+  'products.form.codeRegexError': string
+  'products.form.name': string
+  'products.form.namePlaceholder': string
+  'products.form.unit': string
+  'products.form.unitPlaceholder': string
+  'products.form.unitHelperCreate': string
+  'products.form.unitHelperEdit': string
+  'products.form.barcode': string
+  'products.form.barcodePlaceholder': string
+  'products.form.description': string
+  'products.form.descriptionPlaceholder': string
+  'products.form.purchasePrice': string
+  'products.form.purchasePricePlaceholder': string
+  'products.form.sellingPrice': string
+  'products.form.sellingPricePlaceholder': string
+  'products.form.minStock': string
+  'products.form.minStockPlaceholder': string
+  'products.form.minStockHelper': string
+  'products.form.sortOrder': string
+  'products.form.sortOrderPlaceholder': string
+  'products.form.sortOrderHelper': string
+  // Categories
+  'categories.title': string
+  'categories.searchPlaceholder': string
+  'categories.addRootCategory': string
+  'categories.addChildCategory': string
+  'categories.editCategory': string
+  'categories.createChildTitle': string
+  'categories.createRootTitle': string
+  'categories.expandAll': string
+  'categories.collapseAll': string
+  'categories.deactivated': string
+  'categories.rootCategory': string
+  'categories.status.active': string
+  'categories.status.inactive': string
+  'categories.actions.viewDetail': string
+  'categories.actions.addChild': string
+  'categories.actions.edit': string
+  'categories.actions.activate': string
+  'categories.actions.deactivate': string
+  'categories.actions.delete': string
+  'categories.messages.fetchError': string
+  'categories.messages.createSuccess': string
+  'categories.messages.createError': string
+  'categories.messages.updateSuccess': string
+  'categories.messages.updateError': string
+  'categories.messages.deleteSuccess': string
+  'categories.messages.deleteError': string
+  'categories.messages.activateSuccess': string
+  'categories.messages.activateError': string
+  'categories.messages.deactivateSuccess': string
+  'categories.messages.deactivateError': string
+  'categories.messages.moveSuccess': string
+  'categories.messages.moveError': string
+  'categories.messages.hasChildren': string
+  'categories.confirm.deleteTitle': string
+  'categories.confirm.deleteContent': string
+  'categories.confirm.deleteOk': string
+  'categories.confirm.deactivateTitle': string
+  'categories.confirm.deactivateContent': string
+  'categories.confirm.deactivateOk': string
+  'categories.form.code': string
+  'categories.form.codePlaceholder': string
+  'categories.form.codeRequired': string
+  'categories.form.codeMinLength': string
+  'categories.form.codeMaxLength': string
+  'categories.form.name': string
+  'categories.form.namePlaceholder': string
+  'categories.form.nameRequired': string
+  'categories.form.nameMinLength': string
+  'categories.form.nameMaxLength': string
+  'categories.form.description': string
+  'categories.form.descriptionPlaceholder': string
+  'categories.form.sortOrder': string
+  'categories.form.sortOrderPlaceholder': string
+  'categories.form.parentCategory': string
+  'categories.detail.title': string
+  'categories.detail.code': string
+  'categories.detail.name': string
+  'categories.detail.description': string
+  'categories.detail.status': string
+  'categories.detail.level': string
+  'categories.detail.sortOrder': string
+  'categories.detail.childCount': string
+  'categories.detail.parentCategory': string
+  'categories.detail.childCategories': string
+  'categories.empty.title': string
+  'categories.empty.titleSearch': string
+  'categories.empty.description': string
+  'categories.empty.descriptionSearch': string
+}
+
+/**
  * Translation keys type mapping by namespace
  */
 export interface TranslationKeys {
   common: CommonTranslations
   validation: ValidationTranslations
   auth: AuthTranslations
+  catalog: CatalogTranslations
   // Other namespaces will be added as they are implemented
-  catalog: Record<string, string>
   partner: Record<string, string>
   trade: Record<string, string>
   inventory: Record<string, string>

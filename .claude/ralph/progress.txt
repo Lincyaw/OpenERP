@@ -15223,3 +15223,63 @@ cd frontend && npx tsc --noEmit
 - All hardcoded Chinese strings have been replaced with i18n translation keys
 - The dashboard will automatically update text when the user switches language
 
+
+---
+
+## P0-I18N-005: Catalog 模块 i18n 迁移 (商品/分类)
+**Date**: 2026-01-25
+**Status**: ✅ COMPLETED
+
+### Summary
+Migrated the Catalog module (Products and Categories) to use internationalization (i18n) with react-i18next.
+
+### Changes Made
+
+#### Created Files
+- `frontend/src/locales/zh-CN/catalog.json` - Chinese translations (~180 keys)
+- `frontend/src/locales/en-US/catalog.json` - English translations (~180 keys)
+
+#### Modified Files
+- `frontend/src/i18n/index.ts` - Added catalog namespace imports
+- `frontend/src/i18n/types.ts` - Added CatalogTranslations interface
+- `frontend/src/pages/catalog/Products.tsx` - Replaced all hardcoded strings with i18n keys
+- `frontend/src/pages/catalog/ProductEdit.tsx` - Added i18n for loading and error messages
+- `frontend/src/features/catalog/ProductForm.tsx` - Added i18n for form labels, placeholders, helpers
+- `frontend/src/pages/catalog/Categories.tsx` - Full i18n migration for tree, modals, forms, actions
+
+### Translation Structure
+```
+catalog.json
+├── products
+│   ├── title, searchPlaceholder, addProduct, editProduct, createProduct
+│   ├── status (active, inactive, discontinued)
+│   ├── columns (code, name, unit, purchasePrice, sellingPrice, status, createdAt)
+│   ├── actions (view, edit, activate, deactivate, discontinue, delete, batch*)
+│   ├── messages (success/error for all CRUD operations)
+│   ├── confirm (titles, content, buttons for dangerous actions)
+│   └── form (all form field labels, placeholders, helpers, validation)
+└── categories
+    ├── title, searchPlaceholder, addRootCategory, addChildCategory
+    ├── status (active, inactive)
+    ├── actions (viewDetail, addChild, edit, activate, deactivate, delete)
+    ├── messages (success/error for all operations)
+    ├── confirm (delete, deactivate with interpolation)
+    ├── form (code, name, description, sortOrder fields)
+    ├── detail (all detail modal fields)
+    └── empty (empty state messages)
+```
+
+### Technical Notes
+- Used `useTranslation(['catalog', 'common'])` to allow cross-namespace access (e.g., `t('common:actions.cancel')`)
+- Interpolation used for dynamic content: `{{ name }}`, `{{ count }}`
+- Memoized translation-dependent values (STATUS_OPTIONS) with useMemo and t dependency
+- Used `useFormatters` hook for locale-aware currency and date formatting
+- Fixed JSON syntax error with Chinese quotation marks (「」 instead of "")
+
+### Build Verification
+- `npm run build` - SUCCESS (TypeScript check passed)
+
+### Notes for Next Developer
+- ProductDetail.tsx mentioned in PRD doesn't exist - ProductEdit.tsx is the actual edit page
+- CategoryForm.tsx doesn't exist as separate file - form is inline in Categories.tsx
+- When using cross-namespace translations, pass array of namespaces to useTranslation

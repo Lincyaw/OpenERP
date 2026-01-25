@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { Card, Typography } from '@douyinfe/semi-ui'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormActions,
@@ -20,60 +21,64 @@ import './ProductForm.css'
 
 const { Title } = Typography
 
-// Form validation schema
-const productFormSchema = z.object({
-  code: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(50, validationMessages.maxLength(50))
-    .regex(/^[A-Za-z0-9_-]+$/, '编码只能包含字母、数字、下划线和横线'),
-  name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
-  unit: z.string().min(1, validationMessages.required).max(20, validationMessages.maxLength(20)),
-  barcode: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  description: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-  purchase_price: z
-    .number()
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  selling_price: z
-    .number()
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  min_stock: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  sort_order: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-})
-
-type ProductFormData = z.infer<typeof productFormSchema>
+type ProductFormData = z.infer<ReturnType<typeof createProductFormSchema>>
 
 interface ProductFormProps {
   /** Product ID for edit mode, undefined for create mode */
   productId?: string
   /** Initial product data for edit mode */
   initialData?: HandlerProductResponse
+}
+
+/**
+ * Create form validation schema with i18n support
+ */
+function createProductFormSchema(codeRegexError: string) {
+  return z.object({
+    code: z
+      .string()
+      .min(1, validationMessages.required)
+      .max(50, validationMessages.maxLength(50))
+      .regex(/^[A-Za-z0-9_-]+$/, codeRegexError),
+    name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
+    unit: z.string().min(1, validationMessages.required).max(20, validationMessages.maxLength(20)),
+    barcode: z
+      .string()
+      .max(50, validationMessages.maxLength(50))
+      .optional()
+      .transform((val) => val || undefined),
+    description: z
+      .string()
+      .max(2000, validationMessages.maxLength(2000))
+      .optional()
+      .transform((val) => val || undefined),
+    purchase_price: z
+      .number()
+      .nonnegative(validationMessages.nonNegative)
+      .optional()
+      .nullable()
+      .transform((val) => val ?? undefined),
+    selling_price: z
+      .number()
+      .nonnegative(validationMessages.nonNegative)
+      .optional()
+      .nullable()
+      .transform((val) => val ?? undefined),
+    min_stock: z
+      .number()
+      .int(validationMessages.integer)
+      .nonnegative(validationMessages.nonNegative)
+      .optional()
+      .nullable()
+      .transform((val) => val ?? undefined),
+    sort_order: z
+      .number()
+      .int(validationMessages.integer)
+      .nonnegative(validationMessages.nonNegative)
+      .optional()
+      .nullable()
+      .transform((val) => val ?? undefined),
+  })
 }
 
 /**
@@ -87,8 +92,15 @@ interface ProductFormProps {
  */
 export function ProductForm({ productId, initialData }: ProductFormProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation(['catalog', 'common'])
   const api = useMemo(() => getProducts(), [])
   const isEditMode = Boolean(productId)
+
+  // Create schema with i18n error messages
+  const productFormSchema = useMemo(
+    () => createProductFormSchema(t('products.form.codeRegexError')),
+    [t]
+  )
 
   // Transform API data to form values
   const defaultValues: Partial<ProductFormData> = useMemo(() => {
@@ -96,7 +108,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       return {
         code: '',
         name: '',
-        unit: '个',
+        unit: '',
         barcode: '',
         description: '',
         purchase_price: undefined,
@@ -108,7 +120,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
     return {
       code: initialData.code || '',
       name: initialData.name || '',
-      unit: initialData.unit || '个',
+      unit: initialData.unit || '',
       barcode: initialData.barcode || '',
       description: initialData.description || '',
       purchase_price: initialData.purchase_price ?? undefined,
@@ -122,7 +134,9 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
     {
       schema: productFormSchema,
       defaultValues,
-      successMessage: isEditMode ? '商品更新成功' : '商品创建成功',
+      successMessage: isEditMode
+        ? t('products.messages.updateSuccess')
+        : t('products.messages.createSuccess'),
       onSuccess: () => {
         navigate('/catalog/products')
       },
@@ -150,7 +164,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         sort_order: data.sort_order,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '更新失败')
+        throw new Error(response.error?.message || t('products.messages.updateError'))
       }
     } else {
       // Create new product
@@ -166,7 +180,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         sort_order: data.sort_order,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+        throw new Error(response.error?.message || t('products.messages.createError'))
       }
     }
   }
@@ -180,27 +194,27 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       <Card className="product-form-card">
         <div className="product-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑商品' : '新增商品'}
+            {isEditMode ? t('products.editProduct') : t('products.createProduct')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="基本信息" description="商品的基本属性和标识信息">
+          <FormSection title={t('products.form.basicInfo')} description={t('products.form.basicInfoDesc')}>
             <FormRow cols={2}>
               <TextField
                 name="code"
                 control={control}
-                label="商品编码"
-                placeholder="请输入商品编码 (SKU)"
+                label={t('products.form.code')}
+                placeholder={t('products.form.codePlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? '编码创建后不可修改' : '支持字母、数字、下划线和横线'}
+                helperText={isEditMode ? t('products.form.codeHelperEdit') : t('products.form.codeHelperCreate')}
               />
               <TextField
                 name="name"
                 control={control}
-                label="商品名称"
-                placeholder="请输入商品名称"
+                label={t('products.form.name')}
+                placeholder={t('products.form.namePlaceholder')}
                 required
               />
             </FormRow>
@@ -208,36 +222,36 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               <TextField
                 name="unit"
                 control={control}
-                label="单位"
-                placeholder="请输入计量单位"
+                label={t('products.form.unit')}
+                placeholder={t('products.form.unitPlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? '单位创建后不可修改' : '例如：个、件、箱、千克'}
+                helperText={isEditMode ? t('products.form.unitHelperEdit') : t('products.form.unitHelperCreate')}
               />
               <TextField
                 name="barcode"
                 control={control}
-                label="条形码"
-                placeholder="请输入条形码 (可选)"
+                label={t('products.form.barcode')}
+                placeholder={t('products.form.barcodePlaceholder')}
               />
             </FormRow>
             <TextAreaField
               name="description"
               control={control}
-              label="商品描述"
-              placeholder="请输入商品描述 (可选)"
+              label={t('products.form.description')}
+              placeholder={t('products.form.descriptionPlaceholder')}
               rows={3}
               maxCount={2000}
             />
           </FormSection>
 
-          <FormSection title="价格信息" description="商品的进货价和销售价">
+          <FormSection title={t('products.form.priceInfo')} description={t('products.form.priceInfoDesc')}>
             <FormRow cols={2}>
               <NumberField
                 name="purchase_price"
                 control={control}
-                label="进货价"
-                placeholder="请输入进货价"
+                label={t('products.form.purchasePrice')}
+                placeholder={t('products.form.purchasePricePlaceholder')}
                 min={0}
                 precision={2}
                 prefix="¥"
@@ -245,8 +259,8 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               <NumberField
                 name="selling_price"
                 control={control}
-                label="销售价"
-                placeholder="请输入销售价"
+                label={t('products.form.sellingPrice')}
+                placeholder={t('products.form.sellingPricePlaceholder')}
                 min={0}
                 precision={2}
                 prefix="¥"
@@ -254,31 +268,31 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             </FormRow>
           </FormSection>
 
-          <FormSection title="库存设置" description="库存相关的配置">
+          <FormSection title={t('products.form.stockSettings')} description={t('products.form.stockSettingsDesc')}>
             <FormRow cols={2}>
               <NumberField
                 name="min_stock"
                 control={control}
-                label="最低库存"
-                placeholder="请输入最低库存预警值"
+                label={t('products.form.minStock')}
+                placeholder={t('products.form.minStockPlaceholder')}
                 min={0}
                 precision={0}
-                helperText="库存低于此值时会触发预警"
+                helperText={t('products.form.minStockHelper')}
               />
               <NumberField
                 name="sort_order"
                 control={control}
-                label="排序"
-                placeholder="请输入排序值"
+                label={t('products.form.sortOrder')}
+                placeholder={t('products.form.sortOrderPlaceholder')}
                 min={0}
                 precision={0}
-                helperText="数值越小越靠前"
+                helperText={t('products.form.sortOrderHelper')}
               />
             </FormRow>
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={isEditMode ? t('common:actions.save') : t('common:actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

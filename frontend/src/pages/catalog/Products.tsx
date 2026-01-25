@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -11,6 +12,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getProducts } from '@/api/products/products'
 import type {
   HandlerProductListResponse,
@@ -26,47 +28,11 @@ const { Title } = Typography
 // Product type with index signature for DataTable compatibility
 type Product = HandlerProductListResponse & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '启用', value: 'active' },
-  { label: '禁用', value: 'inactive' },
-  { label: '停售', value: 'discontinued' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<HandlerProductListResponseStatus, 'green' | 'grey' | 'red'> = {
   active: 'green',
   inactive: 'grey',
   discontinued: 'red',
-}
-
-// Status labels
-const STATUS_LABELS: Record<HandlerProductListResponseStatus, string> = {
-  active: '启用',
-  inactive: '禁用',
-  discontinued: '停售',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 /**
@@ -81,6 +47,8 @@ function formatDate(dateStr?: string): string {
  */
 export default function ProductsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['catalog', 'common'])
+  const { formatCurrency, formatDate } = useFormatters()
   const api = useMemo(() => getProducts(), [])
 
   // State for data
@@ -127,7 +95,7 @@ export default function ProductsPage() {
         }
       }
     } catch {
-      Toast.error('获取商品列表失败')
+      Toast.error(t('products.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -171,13 +139,13 @@ export default function ProductsPage() {
       if (!product.id) return
       try {
         await api.postCatalogProductsIdActivate(product.id)
-        Toast.success(`商品 "${product.name}" 已启用`)
+        Toast.success(t('products.messages.activateSuccess', { name: product.name }))
         fetchProducts()
       } catch {
-        Toast.error('启用商品失败')
+        Toast.error(t('products.messages.activateError'))
       }
     },
-    [api, fetchProducts]
+    [api, fetchProducts, t]
   )
 
   // Handle deactivate product
@@ -186,13 +154,13 @@ export default function ProductsPage() {
       if (!product.id) return
       try {
         await api.postCatalogProductsIdDeactivate(product.id)
-        Toast.success(`商品 "${product.name}" 已禁用`)
+        Toast.success(t('products.messages.deactivateSuccess', { name: product.name }))
         fetchProducts()
       } catch {
-        Toast.error('禁用商品失败')
+        Toast.error(t('products.messages.deactivateError'))
       }
     },
-    [api, fetchProducts]
+    [api, fetchProducts, t]
   )
 
   // Handle discontinue product
@@ -200,23 +168,23 @@ export default function ProductsPage() {
     async (product: Product) => {
       if (!product.id) return
       Modal.confirm({
-        title: '确认停售',
-        content: `确定要停售商品 "${product.name}" 吗？停售后将无法恢复。`,
-        okText: '确认停售',
-        cancelText: '取消',
+        title: t('products.confirm.discontinueTitle'),
+        content: t('products.confirm.discontinueContent', { name: product.name }),
+        okText: t('products.confirm.discontinueOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.postCatalogProductsIdDiscontinue(product.id!)
-            Toast.success(`商品 "${product.name}" 已停售`)
+            Toast.success(t('products.messages.discontinueSuccess', { name: product.name }))
             fetchProducts()
           } catch {
-            Toast.error('停售商品失败')
+            Toast.error(t('products.messages.discontinueError'))
           }
         },
       })
     },
-    [api, fetchProducts]
+    [api, fetchProducts, t]
   )
 
   // Handle delete product
@@ -224,23 +192,23 @@ export default function ProductsPage() {
     async (product: Product) => {
       if (!product.id) return
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除商品 "${product.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('products.confirm.deleteTitle'),
+        content: t('products.confirm.deleteContent', { name: product.name }),
+        okText: t('products.confirm.deleteOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.deleteCatalogProductsId(product.id!)
-            Toast.success(`商品 "${product.name}" 已删除`)
+            Toast.success(t('products.messages.deleteSuccess', { name: product.name }))
             fetchProducts()
           } catch {
-            Toast.error('删除商品失败')
+            Toast.error(t('products.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchProducts]
+    [api, fetchProducts, t]
   )
 
   // Handle edit product
@@ -267,38 +235,49 @@ export default function ProductsPage() {
   const handleBulkActivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postCatalogProductsIdActivate(id)))
-      Toast.success(`已启用 ${selectedRowKeys.length} 个商品`)
+      Toast.success(t('products.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchProducts()
     } catch {
-      Toast.error('批量启用失败')
+      Toast.error(t('products.messages.batchActivateError'))
     }
-  }, [api, selectedRowKeys, fetchProducts])
+  }, [api, selectedRowKeys, fetchProducts, t])
 
   // Handle bulk deactivate
   const handleBulkDeactivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postCatalogProductsIdDeactivate(id)))
-      Toast.success(`已禁用 ${selectedRowKeys.length} 个商品`)
+      Toast.success(t('products.messages.batchDeactivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchProducts()
     } catch {
-      Toast.error('批量禁用失败')
+      Toast.error(t('products.messages.batchDeactivateError'))
     }
-  }, [api, selectedRowKeys, fetchProducts])
+  }, [api, selectedRowKeys, fetchProducts, t])
+
+  // Status options for filter - memoized with t dependency
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('products.allStatus'), value: '' },
+      { label: t('products.status.active'), value: 'active' },
+      { label: t('products.status.inactive'), value: 'inactive' },
+      { label: t('products.status.discontinued'), value: 'discontinued' },
+    ],
+    [t]
+  )
 
   // Table columns
   const tableColumns: DataTableColumn<Product>[] = useMemo(
     () => [
       {
-        title: '商品编码',
+        title: t('products.columns.code'),
         dataIndex: 'code',
         width: 120,
         sortable: true,
         render: (code: unknown) => <span className="product-code">{(code as string) || '-'}</span>,
       },
       {
-        title: '商品名称',
+        title: t('products.columns.name'),
         dataIndex: 'name',
         sortable: true,
         ellipsis: true,
@@ -310,47 +289,63 @@ export default function ProductsPage() {
         ),
       },
       {
-        title: '单位',
+        title: t('products.columns.unit'),
         dataIndex: 'unit',
         width: 80,
         align: 'center',
       },
       {
-        title: '进价',
+        title: t('products.columns.purchasePrice'),
         dataIndex: 'purchase_price',
         width: 100,
         align: 'right',
         sortable: true,
-        render: (price: unknown) => formatPrice(price as number | undefined),
+        render: (price: unknown) => {
+          const priceValue = price as number | undefined
+          if (priceValue === undefined || priceValue === null) return '-'
+          return formatCurrency(priceValue)
+        },
       },
       {
-        title: '售价',
+        title: t('products.columns.sellingPrice'),
         dataIndex: 'selling_price',
         width: 100,
         align: 'right',
         sortable: true,
-        render: (price: unknown) => formatPrice(price as number | undefined),
+        render: (price: unknown) => {
+          const priceValue = price as number | undefined
+          if (priceValue === undefined || priceValue === null) return '-'
+          return formatCurrency(priceValue)
+        },
       },
       {
-        title: '状态',
+        title: t('products.columns.status'),
         dataIndex: 'status',
         width: 90,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as HandlerProductListResponseStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`products.status.${statusValue}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('products.columns.createdAt'),
         dataIndex: 'created_at',
         width: 120,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const dateStr = date as string | undefined
+          if (!dateStr) return '-'
+          return formatDate(new Date(dateStr), 'short')
+        },
       },
     ],
-    []
+    [t, formatCurrency, formatDate]
   )
 
   // Table row actions
@@ -358,44 +353,44 @@ export default function ProductsPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('products.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('products.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.status === 'discontinued',
       },
       {
         key: 'activate',
-        label: '启用',
+        label: t('products.actions.activate'),
         type: 'primary',
         onClick: handleActivate,
         hidden: (record) => record.status !== 'inactive',
       },
       {
         key: 'deactivate',
-        label: '禁用',
+        label: t('products.actions.deactivate'),
         type: 'warning',
         onClick: handleDeactivate,
         hidden: (record) => record.status !== 'active',
       },
       {
         key: 'discontinue',
-        label: '停售',
+        label: t('products.actions.discontinue'),
         type: 'danger',
         onClick: handleDiscontinue,
         hidden: (record) => record.status === 'discontinued',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('products.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
       },
     ],
-    [handleView, handleEdit, handleActivate, handleDeactivate, handleDiscontinue, handleDelete]
+    [t, handleView, handleEdit, handleActivate, handleDeactivate, handleDiscontinue, handleDelete]
   )
 
   // Row selection handler
@@ -413,23 +408,23 @@ export default function ProductsPage() {
       <Card className="products-card">
         <div className="products-header">
           <Title heading={4} style={{ margin: 0 }}>
-            商品管理
+            {t('products.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索商品名称、编码、条码..."
+          searchPlaceholder={t('products.searchPlaceholder')}
           primaryAction={{
-            label: '新增商品',
+            label: t('products.addProduct'),
             icon: <IconPlus />,
             onClick: () => navigate('/catalog/products/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common:actions.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -437,7 +432,7 @@ export default function ProductsPage() {
           filters={
             <Space>
               <Select
-                placeholder="状态筛选"
+                placeholder={t('products.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
@@ -453,10 +448,10 @@ export default function ProductsPage() {
             onCancel={() => setSelectedRowKeys([])}
           >
             <Tag color="blue" onClick={handleBulkActivate} style={{ cursor: 'pointer' }}>
-              批量启用
+              {t('products.actions.batchActivate')}
             </Tag>
             <Tag color="orange" onClick={handleBulkDeactivate} style={{ cursor: 'pointer' }}>
-              批量禁用
+              {t('products.actions.batchDeactivate')}
             </Tag>
           </BulkActionBar>
         )}

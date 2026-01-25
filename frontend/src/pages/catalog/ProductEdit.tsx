@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui'
+import { useTranslation } from 'react-i18next'
 import { ProductForm } from '@/features/catalog/ProductForm'
 import { getProducts } from '@/api/products/products'
 import type { HandlerProductResponse } from '@/api/models'
@@ -14,6 +15,7 @@ import { Container } from '@/components/common/layout'
 export default function ProductEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation(['catalog', 'common'])
   const api = useMemo(() => getProducts(), [])
 
   const [loading, setLoading] = useState(true)
@@ -22,7 +24,7 @@ export default function ProductEditPage() {
   // Load product data
   useEffect(() => {
     if (!id) {
-      Toast.error('商品ID无效')
+      Toast.error(t('products.messages.invalidId'))
       navigate('/catalog/products')
       return
     }
@@ -34,11 +36,11 @@ export default function ProductEditPage() {
         if (response.success && response.data) {
           setProduct(response.data)
         } else {
-          Toast.error(response.error?.message || '加载商品失败')
+          Toast.error(response.error?.message || t('products.messages.loadError'))
           navigate('/catalog/products')
         }
       } catch {
-        Toast.error('加载商品失败')
+        Toast.error(t('products.messages.loadError'))
         navigate('/catalog/products')
       } finally {
         setLoading(false)
@@ -46,12 +48,12 @@ export default function ProductEditPage() {
     }
 
     loadProduct()
-  }, [id, api, navigate])
+  }, [id, api, navigate, t])
 
   if (loading) {
     return (
       <Container size="md" style={{ padding: '48px 0', textAlign: 'center' }}>
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large" tip={t('common:messages.loading')} />
       </Container>
     )
   }

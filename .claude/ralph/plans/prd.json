@@ -2737,7 +2737,7 @@
       "npm run build 类型检查通过",
       "商品/分类页面中英文切换正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-I18N-006",

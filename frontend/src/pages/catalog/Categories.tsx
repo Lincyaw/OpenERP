@@ -27,6 +27,7 @@ import {
   IconFolder,
   IconFolderOpen,
 } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { getCategories } from '@/api/categories/categories'
 import type {
@@ -147,6 +148,7 @@ function buildNodeMap(nodes: CategoryNode[]): Map<string, CategoryNode> {
  * - Activate/deactivate categories
  */
 export default function CategoriesPage() {
+  const { t } = useTranslation(['catalog', 'common'])
   const api = useMemo(() => getCategories(), [])
 
   // State for data
@@ -190,11 +192,11 @@ export default function CategoriesPage() {
         setExpandedKeys(rootKeys)
       }
     } catch {
-      Toast.error('获取分类树失败')
+      Toast.error(t('categories.messages.fetchError'))
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, t])
 
   // Fetch on mount
   useEffect(() => {
@@ -281,11 +283,11 @@ export default function CategoriesPage() {
         }
         const response = await api.postCatalogCategories(request)
         if (response.success) {
-          Toast.success('分类创建成功')
+          Toast.success(t('categories.messages.createSuccess'))
           setModalVisible(false)
           fetchCategoryTree()
         } else {
-          Toast.error(response.error?.message || '创建分类失败')
+          Toast.error(response.error?.message || t('categories.messages.createError'))
         }
       } else if (editingCategory) {
         const request: HandlerUpdateCategoryRequest = {
@@ -295,11 +297,11 @@ export default function CategoriesPage() {
         }
         const response = await api.putCatalogCategoriesId(editingCategory.id, request)
         if (response.success) {
-          Toast.success('分类更新成功')
+          Toast.success(t('categories.messages.updateSuccess'))
           setModalVisible(false)
           fetchCategoryTree()
         } else {
-          Toast.error(response.error?.message || '更新分类失败')
+          Toast.error(response.error?.message || t('categories.messages.updateError'))
         }
       }
     } catch {
@@ -307,34 +309,34 @@ export default function CategoriesPage() {
     } finally {
       setModalLoading(false)
     }
-  }, [modalMode, editingCategory, parentCategory, api, fetchCategoryTree])
+  }, [modalMode, editingCategory, parentCategory, api, fetchCategoryTree, t])
 
   // Handle delete category
   const handleDelete = useCallback(
     async (category: CategoryNode) => {
       if (category.children && category.children.length > 0) {
-        Toast.warning('该分类有子分类，请先删除子分类')
+        Toast.warning(t('categories.messages.hasChildren'))
         return
       }
 
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除分类 "${category.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('categories.confirm.deleteTitle'),
+        content: t('categories.confirm.deleteContent', { name: category.name }),
+        okText: t('categories.confirm.deleteOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.deleteCatalogCategoriesId(category.id)
-            Toast.success(`分类 "${category.name}" 已删除`)
+            Toast.success(t('categories.messages.deleteSuccess', { name: category.name }))
             fetchCategoryTree()
           } catch {
-            Toast.error('删除分类失败')
+            Toast.error(t('categories.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchCategoryTree]
+    [api, fetchCategoryTree, t]
   )
 
   // Handle activate category
@@ -343,43 +345,43 @@ export default function CategoriesPage() {
       try {
         const response = await api.postCatalogCategoriesIdActivate(category.id)
         if (response.success) {
-          Toast.success(`分类 "${category.name}" 已启用`)
+          Toast.success(t('categories.messages.activateSuccess', { name: category.name }))
           fetchCategoryTree()
         } else {
-          Toast.error(response.error?.message || '启用分类失败')
+          Toast.error(response.error?.message || t('categories.messages.activateError'))
         }
       } catch {
-        Toast.error('启用分类失败')
+        Toast.error(t('categories.messages.activateError'))
       }
     },
-    [api, fetchCategoryTree]
+    [api, fetchCategoryTree, t]
   )
 
   // Handle deactivate category
   const handleDeactivate = useCallback(
     async (category: CategoryNode) => {
       Modal.confirm({
-        title: '确认停用',
-        content: `确定要停用分类 "${category.name}" 吗？停用后该分类下的商品将无法正常展示。`,
-        okText: '确认停用',
-        cancelText: '取消',
+        title: t('categories.confirm.deactivateTitle'),
+        content: t('categories.confirm.deactivateContent', { name: category.name }),
+        okText: t('categories.confirm.deactivateOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
             const response = await api.postCatalogCategoriesIdDeactivate(category.id)
             if (response.success) {
-              Toast.success(`分类 "${category.name}" 已停用`)
+              Toast.success(t('categories.messages.deactivateSuccess', { name: category.name }))
               fetchCategoryTree()
             } else {
-              Toast.error(response.error?.message || '停用分类失败')
+              Toast.error(response.error?.message || t('categories.messages.deactivateError'))
             }
           } catch {
-            Toast.error('停用分类失败')
+            Toast.error(t('categories.messages.deactivateError'))
           }
         },
       })
     },
-    [api, fetchCategoryTree]
+    [api, fetchCategoryTree, t]
   )
 
   // Handle drag and drop
@@ -411,17 +413,17 @@ export default function CategoriesPage() {
             parent_id: newParentId,
           })
           if (response.success) {
-            Toast.success('分类移动成功')
+            Toast.success(t('categories.messages.moveSuccess'))
             fetchCategoryTree()
           } else {
-            Toast.error(response.error?.message || '移动分类失败')
+            Toast.error(response.error?.message || t('categories.messages.moveError'))
           }
         } catch {
-          Toast.error('移动分类失败')
+          Toast.error(t('categories.messages.moveError'))
         }
       }
     },
-    [api, fetchCategoryTree, nodeMap]
+    [api, fetchCategoryTree, nodeMap, t]
   )
 
   // Handle expand change
@@ -447,7 +449,7 @@ export default function CategoriesPage() {
             </Tag>
             {isInactive && (
               <Tag size="small" color="grey">
-                已停用
+                {t('categories.deactivated')}
               </Tag>
             )}
           </div>
@@ -467,19 +469,27 @@ export default function CategoriesPage() {
               position="bottomRight"
               render={
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => handleViewDetail(category)}>查看详情</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleCreateChild(category)}>
-                    添加子分类
+                  <Dropdown.Item onClick={() => handleViewDetail(category)}>
+                    {t('categories.actions.viewDetail')}
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleEdit(category)}>编辑</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleCreateChild(category)}>
+                    {t('categories.actions.addChild')}
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleEdit(category)}>
+                    {t('categories.actions.edit')}
+                  </Dropdown.Item>
                   <Dropdown.Divider />
                   {isInactive ? (
-                    <Dropdown.Item onClick={() => handleActivate(category)}>启用</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleActivate(category)}>
+                      {t('categories.actions.activate')}
+                    </Dropdown.Item>
                   ) : (
-                    <Dropdown.Item onClick={() => handleDeactivate(category)}>停用</Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleDeactivate(category)}>
+                      {t('categories.actions.deactivate')}
+                    </Dropdown.Item>
                   )}
                   <Dropdown.Item type="danger" onClick={() => handleDelete(category)}>
-                    删除
+                    {t('categories.actions.delete')}
                   </Dropdown.Item>
                 </Dropdown.Menu>
               }
@@ -497,6 +507,7 @@ export default function CategoriesPage() {
       )
     },
     [
+      t,
       handleViewDetail,
       handleCreateChild,
       handleEdit,
@@ -530,6 +541,16 @@ export default function CategoriesPage() {
     setExpandedKeys([])
   }, [])
 
+  // Get modal title
+  const getModalTitle = useCallback(() => {
+    if (modalMode === 'create') {
+      return parentCategory
+        ? t('categories.createChildTitle', { name: parentCategory.name })
+        : t('categories.createRootTitle')
+    }
+    return t('categories.editCategory')
+  }, [modalMode, parentCategory, t])
+
   return (
     <Container size="full" className="categories-page">
       <Card className="categories-card">
@@ -537,15 +558,15 @@ export default function CategoriesPage() {
           <div className="categories-header-left">
             <IconTreeTriangleDown size="large" style={{ color: 'var(--semi-color-primary)' }} />
             <Title heading={4} style={{ margin: 0 }}>
-              商品分类
+              {t('categories.title')}
             </Title>
           </div>
           <Space>
             <Button icon={<IconRefresh />} onClick={handleRefresh}>
-              刷新
+              {t('common:actions.refresh')}
             </Button>
             <Button icon={<IconPlus />} type="primary" onClick={handleCreateRoot}>
-              新增根分类
+              {t('categories.addRootCategory')}
             </Button>
           </Space>
         </div>
@@ -553,7 +574,7 @@ export default function CategoriesPage() {
         <div className="categories-toolbar">
           <Input
             prefix={<IconSearch />}
-            placeholder="搜索分类名称或编码..."
+            placeholder={t('categories.searchPlaceholder')}
             value={searchKeyword}
             onChange={handleSearch}
             showClear
@@ -561,10 +582,10 @@ export default function CategoriesPage() {
           />
           <Space>
             <Button size="small" theme="borderless" onClick={handleExpandAll}>
-              全部展开
+              {t('categories.expandAll')}
             </Button>
             <Button size="small" theme="borderless" onClick={handleCollapseAll}>
-              全部收起
+              {t('categories.collapseAll')}
             </Button>
           </Space>
         </div>
@@ -585,14 +606,16 @@ export default function CategoriesPage() {
             ) : (
               <Empty
                 image={<IconTreeTriangleDown size="extra-large" />}
-                title={searchKeyword ? '未找到匹配的分类' : '暂无分类数据'}
+                title={searchKeyword ? t('categories.empty.titleSearch') : t('categories.empty.title')}
                 description={
-                  searchKeyword ? '请尝试其他搜索关键词' : '点击"新增根分类"按钮创建第一个分类'
+                  searchKeyword
+                    ? t('categories.empty.descriptionSearch')
+                    : t('categories.empty.description')
                 }
               >
                 {!searchKeyword && (
                   <Button type="primary" icon={<IconPlus />} onClick={handleCreateRoot}>
-                    新增根分类
+                    {t('categories.addRootCategory')}
                   </Button>
                 )}
               </Empty>
@@ -603,20 +626,14 @@ export default function CategoriesPage() {
 
       {/* Create/Edit Category Modal */}
       <Modal
-        title={
-          modalMode === 'create'
-            ? parentCategory
-              ? `新增子分类 - ${parentCategory.name}`
-              : '新增根分类'
-            : '编辑分类'
-        }
+        title={getModalTitle()}
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleModalSubmit}
         confirmLoading={modalLoading}
         width={500}
-        okText={modalMode === 'create' ? '创建' : '保存'}
-        cancelText="取消"
+        okText={modalMode === 'create' ? t('common:actions.create') : t('common:actions.save')}
+        cancelText={t('common:actions.cancel')}
       >
         <Form
           getFormApi={(api) => {
@@ -637,42 +654,42 @@ export default function CategoriesPage() {
         >
           <Form.Input
             field="code"
-            label="分类编码"
-            placeholder="请输入分类编码，如 electronics、clothing"
+            label={t('categories.form.code')}
+            placeholder={t('categories.form.codePlaceholder')}
             rules={[
-              { required: true, message: '请输入分类编码' },
-              { min: 1, message: '分类编码至少1个字符' },
-              { max: 50, message: '分类编码最多50个字符' },
+              { required: true, message: t('categories.form.codeRequired') },
+              { min: 1, message: t('categories.form.codeMinLength') },
+              { max: 50, message: t('categories.form.codeMaxLength') },
             ]}
             disabled={modalMode === 'edit'}
           />
           <Form.Input
             field="name"
-            label="分类名称"
-            placeholder="请输入分类名称"
+            label={t('categories.form.name')}
+            placeholder={t('categories.form.namePlaceholder')}
             rules={[
-              { required: true, message: '请输入分类名称' },
-              { min: 1, message: '分类名称至少1个字符' },
-              { max: 100, message: '分类名称最多100个字符' },
+              { required: true, message: t('categories.form.nameRequired') },
+              { min: 1, message: t('categories.form.nameMinLength') },
+              { max: 100, message: t('categories.form.nameMaxLength') },
             ]}
           />
           <Form.TextArea
             field="description"
-            label="描述"
-            placeholder="请输入分类描述"
+            label={t('categories.form.description')}
+            placeholder={t('categories.form.descriptionPlaceholder')}
             rows={3}
             maxLength={2000}
           />
           <Form.InputNumber
             field="sort_order"
-            label="排序值"
-            placeholder="数值越小越靠前"
+            label={t('categories.form.sortOrder')}
+            placeholder={t('categories.form.sortOrderPlaceholder')}
             min={0}
             max={9999}
             style={{ width: '100%' }}
           />
           {parentCategory && (
-            <Form.Slot label="父分类">
+            <Form.Slot label={t('categories.form.parentCategory')}>
               <Tag color="blue">{parentCategory.name}</Tag>
             </Form.Slot>
           )}
@@ -681,7 +698,7 @@ export default function CategoriesPage() {
 
       {/* Category Detail Modal */}
       <Modal
-        title="分类详情"
+        title={t('categories.detail.title')}
         visible={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={
@@ -694,7 +711,7 @@ export default function CategoriesPage() {
                     handleEdit(detailCategory)
                   }}
                 >
-                  编辑
+                  {t('common:actions.edit')}
                 </Button>
                 <Button
                   type="primary"
@@ -703,11 +720,11 @@ export default function CategoriesPage() {
                     handleCreateChild(detailCategory)
                   }}
                 >
-                  添加子分类
+                  {t('categories.addChildCategory')}
                 </Button>
               </>
             )}
-            <Button onClick={() => setDetailModalVisible(false)}>关闭</Button>
+            <Button onClick={() => setDetailModalVisible(false)}>{t('common:actions.close')}</Button>
           </Space>
         }
         width={600}
@@ -716,31 +733,36 @@ export default function CategoriesPage() {
           <div className="category-detail">
             <Descriptions
               data={[
-                { key: '分类编码', value: detailCategory.code },
-                { key: '分类名称', value: detailCategory.name },
-                { key: '描述', value: detailCategory.description || '-' },
+                { key: t('categories.detail.code'), value: detailCategory.code },
+                { key: t('categories.detail.name'), value: detailCategory.name },
+                { key: t('categories.detail.description'), value: detailCategory.description || '-' },
                 {
-                  key: '状态',
-                  value: detailCategory.status === 'active' ? '已启用' : '已停用',
+                  key: t('categories.detail.status'),
+                  value:
+                    detailCategory.status === 'active'
+                      ? t('categories.status.active')
+                      : t('categories.status.inactive'),
                 },
-                { key: '层级', value: String(detailCategory.level) },
-                { key: '排序值', value: String(detailCategory.sort_order || 0) },
+                { key: t('categories.detail.level'), value: String(detailCategory.level) },
+                { key: t('categories.detail.sortOrder'), value: String(detailCategory.sort_order || 0) },
                 {
-                  key: '子分类数',
+                  key: t('categories.detail.childCount'),
                   value: String(detailCategory.children?.length || 0),
                 },
                 {
-                  key: '父分类',
+                  key: t('categories.detail.parentCategory'),
                   value: detailCategory.parent_id
                     ? nodeMap.get(detailCategory.parent_id)?.name || '-'
-                    : '(根分类)',
+                    : t('categories.rootCategory'),
                 },
               ]}
             />
 
             {detailCategory.children && detailCategory.children.length > 0 && (
               <div className="category-children-section">
-                <Title heading={6}>子分类 ({detailCategory.children.length})</Title>
+                <Title heading={6}>
+                  {t('categories.detail.childCategories', { count: detailCategory.children.length })}
+                </Title>
                 <div className="category-children-list">
                   {detailCategory.children.map((child) => (
                     <Tag
