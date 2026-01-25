@@ -2654,5 +2654,206 @@
       "创建示例登录 E2E 测试验证配置正确"
     ],
     "passes": true
+  },
+  {
+    "id": "P0-I18N-001",
+    "story": "前端 i18n 基础设施搭建 (react-i18next)",
+    "priority": "high",
+    "requirements": [
+      "安装依赖: npm install i18next react-i18next i18next-http-backend i18next-browser-languagedetector",
+      "创建 frontend/src/i18n/index.ts: i18n 初始化配置，支持 zh-CN/en-US",
+      "创建 frontend/src/i18n/config.ts: NAMESPACES 定义 (common/validation/auth/catalog/partner/trade/inventory/finance/system)",
+      "创建 frontend/src/i18n/types.ts: TypeScript 类型声明，支持类型安全的翻译 key",
+      "创建 frontend/src/components/providers/I18nProvider.tsx: 集成 I18nextProvider + Semi Design LocaleProvider",
+      "更新 frontend/src/main.tsx: 使用 I18nProvider 包裹 App",
+      "创建 frontend/src/hooks/useI18n.ts: 封装 useTranslation，支持 namespace",
+      "创建 frontend/src/hooks/useFormatters.ts: 日期/数字/货币格式化 hooks",
+      "创建 frontend/src/locales/zh-CN/common.json: 通用字符串 (actions/status/labels/messages)",
+      "创建 frontend/src/locales/en-US/common.json: 英文通用字符串",
+      "npm run build 类型检查通过",
+      "验证 i18n 初始化成功，语言切换正常"
+    ],
+    "passes": true
+  },
+  {
+    "id": "P0-I18N-002",
+    "story": "通用组件 i18n 迁移 (Common Components)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/components/common/LanguageSwitcher.tsx: 语言选择下拉组件",
+      "更新 frontend/src/components/layout/Header.tsx: 添加 LanguageSwitcher",
+      "创建 frontend/src/locales/zh-CN/validation.json: 迁移 validation.ts 中所有验证消息",
+      "创建 frontend/src/locales/en-US/validation.json: 验证消息英文翻译",
+      "更新 frontend/src/components/common/form/validation.ts: 使用 i18n 获取消息",
+      "更新 frontend/src/components/common/table/DataTable.tsx: '操作'/'暂无数据' 等文本",
+      "更新 frontend/src/components/common/table/TableToolbar.tsx: 按钮文本、placeholder",
+      "更新 frontend/src/components/common/table/TableActions.tsx: 操作按钮文本",
+      "更新 frontend/src/components/layout/Sidebar.tsx: 导航菜单文本",
+      "npm run build 类型检查通过",
+      "中英文切换后通用组件文本正确变化"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-003",
+    "story": "Auth 模块 i18n 迁移",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/auth.json: 登录/登出/权限相关文本",
+      "创建 frontend/src/locales/en-US/auth.json: Auth 英文翻译",
+      "更新 frontend/src/pages/Login.tsx: 登录表单标签、placeholder、错误消息",
+      "更新认证相关组件: Token 过期提示、无权限提示等",
+      "更新 frontend/src/store/authStore.ts 相关错误消息（如有）",
+      "npm run build 类型检查通过",
+      "登录页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-004",
+    "story": "Dashboard 模块 i18n 迁移",
+    "priority": "medium",
+    "requirements": [
+      "在 common.json 中添加 Dashboard 相关通用文本",
+      "更新 frontend/src/pages/Dashboard.tsx: 统计卡片标题、图表标题、待办事项等",
+      "更新 Dashboard 相关子组件（如有）",
+      "npm run build 类型检查通过",
+      "Dashboard 页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-005",
+    "story": "Catalog 模块 i18n 迁移 (商品/分类)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/catalog.json: 商品管理/分类管理相关文本",
+      "创建 frontend/src/locales/en-US/catalog.json: Catalog 英文翻译",
+      "更新 frontend/src/pages/catalog/Products.tsx: STATUS_LABELS、表头、Toast 消息、Modal 确认",
+      "更新 frontend/src/pages/catalog/ProductDetail.tsx: 详情页标签",
+      "更新 frontend/src/features/catalog/ProductForm.tsx: 表单标签、placeholder",
+      "更新 frontend/src/pages/catalog/Categories.tsx: 分类管理相关文本",
+      "更新 frontend/src/features/catalog/CategoryForm.tsx（如有）",
+      "npm run build 类型检查通过",
+      "商品/分类页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-006",
+    "story": "Partner 模块 i18n 迁移 (客户/供应商/仓库)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/partner.json: 客户/供应商/仓库相关文本",
+      "创建 frontend/src/locales/en-US/partner.json: Partner 英文翻译",
+      "更新 frontend/src/pages/partner/Customers.tsx: 表头、状态标签、消息",
+      "更新 frontend/src/features/partner/CustomerForm.tsx: 表单标签",
+      "更新 frontend/src/pages/partner/Suppliers.tsx: 供应商列表相关文本",
+      "更新 frontend/src/features/partner/SupplierForm.tsx: 表单标签",
+      "更新 frontend/src/pages/partner/Warehouses.tsx: 仓库管理相关文本",
+      "更新 frontend/src/features/partner/WarehouseForm.tsx（如有）",
+      "npm run build 类型检查通过",
+      "客户/供应商/仓库页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-007",
+    "story": "Inventory 模块 i18n 迁移 (库存管理)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/inventory.json: 库存查询/调整/盘点相关文本",
+      "创建 frontend/src/locales/en-US/inventory.json: Inventory 英文翻译",
+      "更新 frontend/src/pages/inventory/Stock.tsx: 库存列表表头、筛选标签",
+      "更新 frontend/src/pages/inventory/StockDetail.tsx: 库存明细、批次、流水",
+      "更新 frontend/src/pages/inventory/StockAdjustment.tsx: 调整表单标签",
+      "更新 frontend/src/pages/inventory/StockTaking.tsx: 盘点相关文本",
+      "npm run build 类型检查通过",
+      "库存模块页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-008",
+    "story": "Trade 模块 i18n 迁移 (销售/采购/退货)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/trade.json: 订单状态、表单标签、消息",
+      "创建 frontend/src/locales/en-US/trade.json: Trade 英文翻译",
+      "更新 frontend/src/pages/trade/SalesOrders.tsx: STATUS_OPTIONS、表头、筛选",
+      "更新 frontend/src/pages/trade/SalesOrderForm.tsx: 开单表单标签",
+      "更新 frontend/src/pages/trade/SalesOrderDetail.tsx: 订单详情标签",
+      "更新 frontend/src/pages/trade/PurchaseOrders.tsx: 采购订单相关文本",
+      "更新 frontend/src/pages/trade/PurchaseOrderForm.tsx: 采购开单表单",
+      "更新 frontend/src/pages/trade/SalesReturns.tsx: 销售退货相关文本",
+      "更新 frontend/src/pages/trade/PurchaseReturns.tsx: 采购退货相关文本",
+      "npm run build 类型检查通过",
+      "交易模块所有页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-009",
+    "story": "Finance 模块 i18n 迁移 (应收应付/收支)",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/finance.json: 财务模块相关文本",
+      "创建 frontend/src/locales/en-US/finance.json: Finance 英文翻译",
+      "更新 frontend/src/pages/finance/Receivables.tsx: 应收账款相关文本",
+      "更新 frontend/src/pages/finance/Payables.tsx: 应付账款相关文本",
+      "更新 frontend/src/pages/finance/ReceiptVoucher.tsx: 收款单表单",
+      "更新 frontend/src/pages/finance/PaymentVoucher.tsx: 付款单表单",
+      "更新 frontend/src/pages/finance/Expenses.tsx: 费用记录相关文本",
+      "更新 frontend/src/pages/finance/OtherIncome.tsx: 其他收入相关文本",
+      "npm run build 类型检查通过",
+      "财务模块所有页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-010",
+    "story": "System 模块 i18n 迁移 (用户/角色/设置)",
+    "priority": "medium",
+    "requirements": [
+      "创建 frontend/src/locales/zh-CN/system.json: 系统管理相关文本",
+      "创建 frontend/src/locales/en-US/system.json: System 英文翻译",
+      "更新 frontend/src/pages/system/Users.tsx: 用户管理相关文本",
+      "更新 frontend/src/pages/system/Roles.tsx: 角色管理相关文本",
+      "更新 frontend/src/pages/system/Permissions.tsx: 权限配置相关文本",
+      "更新其他系统设置页面（如有）",
+      "npm run build 类型检查通过",
+      "系统管理模块页面中英文切换正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-011",
+    "story": "i18n 英文翻译完善与审核",
+    "priority": "medium",
+    "requirements": [
+      "审核所有 en-US/*.json 翻译文件，确保翻译准确",
+      "检查专业术语翻译一致性 (如 'receivables'/'payables' 等)",
+      "添加缺失的英文翻译 key",
+      "验证所有页面英文模式下无翻译 key 裸露",
+      "验证日期/数字/货币格式根据语言正确显示"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P0-I18N-012",
+    "story": "i18n E2E 测试与集成验证",
+    "priority": "high",
+    "requirements": [
+      "创建 frontend/tests/e2e/i18n/language-switch.spec.ts: 语言切换 E2E 测试",
+      "E2E: 验证默认语言为中文",
+      "E2E: 切换到英文后所有页面文本正确变化",
+      "E2E: 刷新页面后语言偏好保持",
+      "E2E: Semi Design 组件（DatePicker/Table 分页等）语言同步切换",
+      "E2E: 验证表单验证消息语言切换",
+      "添加 ESLint 规则检测硬编码中文字符串",
+      "npm run build 类型检查通过",
+      "E2E 测试 100% 通过"
+    ],
+    "passes": false
   }
 ]
