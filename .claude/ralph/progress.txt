@@ -15678,3 +15678,65 @@ Implemented comprehensive E2E tests for the Customer Balance module using Playwr
 - `frontend/tests/e2e/fixtures/test-fixtures.ts`
 - `frontend/src/pages/partner/CustomerBalance.tsx`
 - `docker/seed-data.sql`
+
+## 2026-01-25: P0-I18N-011 i18n English Translation Review Complete
+
+### Task ID: P0-I18N-011
+### Task: i18n 英文翻译完善与审核
+
+### Summary
+Completed comprehensive review and enhancement of English translations for the ERP i18n system. All translation files are now complete with consistent terminology and professional translations.
+
+### Changes Made
+
+1. **Translation Key Completeness**
+   - Verified all zh-CN keys have corresponding en-US translations
+   - Used automated script to compare keys across all 9 translation namespaces
+   - Result: 100% key parity between Chinese and English
+
+2. **Translation Files Reviewed**
+   - `common.json` - General UI strings (actions, status, labels, messages, pagination, table, dashboard, nav)
+   - `auth.json` - Authentication (login, logout, token, permission, forbidden)
+   - `validation.json` - Form validation messages
+   - `catalog.json` - Product and category management
+   - `partner.json` - Customer, supplier, warehouse, balance management
+   - `inventory.json` - Stock, stock detail, adjustment, stock taking
+   - `trade.json` - Sales orders, purchase orders, returns, shipping
+   - `finance.json` - Receivables, payables, vouchers, expenses, income, reconciliation
+   - `system.json` - Users, roles, permissions
+
+3. **Terminology Consistency Verified**
+   - "Receivables" / "Payables" used consistently for accounts
+   - "Voucher" for payment/receipt documents
+   - "Reconciliation" for allocation/matching
+   - "Stock Taking" for inventory counting
+   - Professional finance terminology (FIFO, outstanding, allocation, etc.)
+
+4. **Added Missing Translation Keys**
+   - Added to `trade.json` shipModal section:
+     - `orderInfo`, `loadingWarehouses`, `noWarehouses`
+     - `defaultWarehouseLabel`, `itemsUnit`, `warning`
+   - Updated ShipOrderModal.tsx to use i18n translations
+
+5. **Formatting Hooks Verified**
+   - `useDateFormatter` - Locale-aware date formatting
+   - `useNumberFormatter` - Locale-aware number/currency formatting
+   - Currency defaults to CNY for zh-CN, USD for en-US
+   - Date formats respect locale conventions
+
+6. **Build Verification**
+   - `npm run build` passes with no TypeScript errors
+   - All translation imports resolve correctly
+
+### Files Created
+- None (existing files updated)
+
+### Files Modified
+- `frontend/src/locales/zh-CN/trade.json` - Added shipModal keys
+- `frontend/src/locales/en-US/trade.json` - Added shipModal keys
+- `frontend/src/pages/trade/components/ShipOrderModal.tsx` - Migrated to i18n
+
+### Notes
+- Several components still have hardcoded Chinese strings (SalesReturnApproval, Reports, etc.)
+- These components need separate i18n migration in future tasks
+- The translation files themselves are complete and ready for use

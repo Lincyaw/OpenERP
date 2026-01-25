@@ -247,6 +247,7 @@
   },
   "shipModal": {
     "title": "发货确认",
+    "orderInfo": "订单信息",
     "orderNumber": "订单编号",
     "customerName": "客户名称",
     "itemCount": "商品数量",
@@ -257,6 +258,11 @@
     "warehouseRequired": "请选择发货仓库",
     "confirm": "确认发货",
     "cancel": "取消",
+    "loadingWarehouses": "加载仓库列表...",
+    "noWarehouses": "暂无可用仓库",
+    "defaultWarehouseLabel": "{{name}} (默认)",
+    "itemsUnit": "件",
+    "warning": "提示：发货后将扣减所选仓库的库存，请确认仓库选择正确。",
     "messages": {
       "fetchWarehousesError": "获取仓库列表失败"
     }

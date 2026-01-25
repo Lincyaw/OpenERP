@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Modal, Select, Toast, Typography, Descriptions, Spin, Empty } from '@douyinfe/semi-ui'
+import { useTranslation } from 'react-i18next'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'
 import './ShipOrderModal.css'
@@ -48,6 +49,7 @@ export default function ShipOrderModal({
   onConfirm,
   onCancel,
 }: ShipOrderModalProps) {
+  const { t } = useTranslation('trade')
   const warehouseApi = useMemo(() => getWarehouses(), [])
 
   const [warehouses, setWarehouses] = useState<HandlerWarehouseResponse[]>([])
@@ -67,11 +69,11 @@ export default function ShipOrderModal({
         setWarehouses(response.data)
       }
     } catch {
-      Toast.error('获取仓库列表失败')
+      Toast.error(t('shipModal.messages.fetchWarehousesError'))
     } finally {
       setWarehousesLoading(false)
     }
-  }, [warehouseApi])
+  }, [warehouseApi, t])
 
   // Load warehouses when modal opens
   useEffect(() => {
@@ -116,7 +118,7 @@ export default function ShipOrderModal({
   // Handle confirm
   const handleConfirm = useCallback(async () => {
     if (!selectedWarehouseId) {
-      Toast.warning('请选择发货仓库')
+      Toast.warning(t('shipModal.warehouseRequired'))
       return
     }
 
@@ -126,29 +128,32 @@ export default function ShipOrderModal({
     } finally {
       setSubmitting(false)
     }
-  }, [selectedWarehouseId, onConfirm])
+  }, [selectedWarehouseId, onConfirm, t])
 
   // Warehouse options for select
   const warehouseOptions = useMemo(
     () =>
       warehouses.map((w) => ({
         value: w.id,
-        label: w.is_default ? `${w.name} (默认)` : w.name,
+        label: w.is_default ? t('shipModal.defaultWarehouseLabel', { name: w.name }) : w.name,
       })),
-    [warehouses]
+    [warehouses, t]
   )
 
   // Order summary data
   const orderSummary = useMemo(() => {
     if (!order) return []
     return [
-      { key: '订单编号', value: order.order_number },
-      { key: '客户名称', value: order.customer_name || '-' },
-      { key: '商品数量', value: `${order.item_count || 0} 件` },
-      { key: '总数量', value: order.total_quantity?.toFixed(2) || '0.00' },
-      { key: '应付金额', value: formatPrice(order.payable_amount) },
+      { key: t('shipModal.orderNumber'), value: order.order_number },
+      { key: t('shipModal.customerName'), value: order.customer_name || '-' },
+      {
+        key: t('shipModal.itemCount'),
+        value: `${order.item_count || 0} ${t('shipModal.itemsUnit')}`,
+      },
+      { key: t('shipModal.totalQuantity'), value: order.total_quantity?.toFixed(2) || '0.00' },
+      { key: t('shipModal.payableAmount'), value: formatPrice(order.payable_amount) },
     ]
-  }, [order])
+  }, [order, t])
 
   if (!order) {
     return null
@@ -156,12 +161,12 @@ export default function ShipOrderModal({
 
   return (
     <Modal
-      title="发货确认"
+      title={t('shipModal.title')}
       visible={visible}
       onOk={handleConfirm}
       onCancel={onCancel}
-      okText="确认发货"
-      cancelText="取消"
+      okText={t('shipModal.confirm')}
+      cancelText={t('shipModal.cancel')}
       confirmLoading={submitting || loading}
       maskClosable={false}
       className="ship-order-modal"
@@ -171,7 +176,7 @@ export default function ShipOrderModal({
         {/* Order summary */}
         <div className="order-summary-section">
           <Text strong className="section-title">
-            订单信息
+            {t('shipModal.orderInfo')}
           </Text>
           <Descriptions data={orderSummary} row className="order-summary" />
         </div>
@@ -179,17 +184,17 @@ export default function ShipOrderModal({
         {/* Warehouse selection */}
         <div className="warehouse-selection-section">
           <Text strong className="section-title">
-            发货仓库 <Text type="danger">*</Text>
+            {t('shipModal.warehouse')} <Text type="danger">*</Text>
           </Text>
           {warehousesLoading ? (
             <div className="loading-container">
               <Spin size="small" />
-              <Text type="secondary">加载仓库列表...</Text>
+              <Text type="secondary">{t('shipModal.loadingWarehouses')}</Text>
             </div>
           ) : warehouses.length === 0 ? (
             <Empty
               className="empty-warehouses"
-              description="暂无可用仓库"
+              description={t('shipModal.noWarehouses')}
               style={{ padding: 'var(--spacing-4)' }}
             />
           ) : (
@@ -197,7 +202,7 @@ export default function ShipOrderModal({
               value={selectedWarehouseId}
               onChange={(value) => setSelectedWarehouseId(value as string)}
               optionList={warehouseOptions}
-              placeholder="请选择发货仓库"
+              placeholder={t('shipModal.warehousePlaceholder')}
               style={{ width: '100%' }}
               filter
               showClear={false}
@@ -208,7 +213,7 @@ export default function ShipOrderModal({
         {/* Warning message */}
         <div className="warning-section">
           <Text type="warning" size="small">
-            提示：发货后将扣减所选仓库的库存，请确认仓库选择正确。
+            {t('shipModal.warning')}
           </Text>
         </div>
       </div>

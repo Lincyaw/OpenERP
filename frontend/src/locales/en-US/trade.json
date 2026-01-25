@@ -247,6 +247,7 @@
   },
   "shipModal": {
     "title": "Ship Confirmation",
+    "orderInfo": "Order Information",
     "orderNumber": "Order Number",
     "customerName": "Customer Name",
     "itemCount": "Item Count",
@@ -257,6 +258,11 @@
     "warehouseRequired": "Please select a shipping warehouse",
     "confirm": "Confirm Ship",
     "cancel": "Cancel",
+    "loadingWarehouses": "Loading warehouses...",
+    "noWarehouses": "No available warehouses",
+    "defaultWarehouseLabel": "{{name}} (Default)",
+    "itemsUnit": "items",
+    "warning": "Note: Stock will be deducted from the selected warehouse after shipping. Please confirm the warehouse selection.",
     "messages": {
       "fetchWarehousesError": "Failed to fetch warehouse list"
     }
