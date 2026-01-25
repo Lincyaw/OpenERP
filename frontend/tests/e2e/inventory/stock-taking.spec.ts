@@ -154,11 +154,11 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should display new stock taking in list with DRAFT status', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      // Get the first row (most recent stock taking)
-      const firstRow = await inventoryPage.getStockTakingRow(0)
+      // Get the current stock taking row (by stored taking number)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
 
       // Verify status is DRAFT (草稿)
-      const statusTag = firstRow.locator('.semi-tag').filter({ hasText: '草稿' })
+      const statusTag = currentRow.locator('.semi-tag').filter({ hasText: '草稿' })
       await expect(statusTag).toBeVisible()
 
       await inventoryPage.screenshotStockTaking('stock-taking-draft-status')
@@ -167,9 +167,9 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should navigate to execute page and display items', async ({ page }) => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      // Click execute on the first row
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      // Click execute on the current stock taking row
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Verify we're on the execute page
       await expect(page).toHaveURL(/\/inventory\/stock-taking\/[^/]+/)
@@ -184,8 +184,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should start counting when clicking "开始盘点"', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Click start counting
       await inventoryPage.clickStartCounting()
@@ -200,8 +200,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should allow entering actual quantities', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Start counting first
       await inventoryPage.clickStartCounting()
@@ -223,8 +223,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should calculate difference after entering quantity', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Start counting
       await inventoryPage.clickStartCounting()
@@ -256,8 +256,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should save counts and update progress', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Start counting
       await inventoryPage.clickStartCounting()
@@ -292,8 +292,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
     test('should submit for approval when all items are counted', async () => {
       await inventoryPage.navigateToStockTakingListPage()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
 
       // Start counting
       await inventoryPage.clickStartCounting()
@@ -340,8 +340,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
 
       // Execute
       await inventoryPage.navigateToStockTakingListPage()
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
       await inventoryPage.clickStartCounting()
 
       // Enter higher quantity for first item
@@ -380,8 +380,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
 
       // Execute
       await inventoryPage.navigateToStockTakingListPage()
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
       await inventoryPage.clickStartCounting()
 
       // Enter lower quantity for first item
@@ -438,9 +438,9 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       await page.waitForTimeout(1000)
       await inventoryPage.screenshotStockTaking('video-5-created-success')
 
-      // Step 6: Execute stock taking
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      // Step 6: Execute stock taking (use current stock taking to ensure isolation)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
       await page.waitForTimeout(1000)
       await inventoryPage.screenshotStockTaking('video-6-execute-page')
 
@@ -564,8 +564,8 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       await inventoryPage.submitStockTakingCreate()
       await inventoryPage.waitForStockTakingCreateSuccess()
 
-      const firstRow = await inventoryPage.getStockTakingRow(0)
-      await inventoryPage.clickStockTakingExecute(firstRow)
+      const currentRow = await inventoryPage.getCurrentStockTakingRow()
+      await inventoryPage.clickStockTakingExecute(currentRow)
       await inventoryPage.screenshotStockTaking('doc-stock-taking-execute-draft')
 
       await inventoryPage.clickStartCounting()

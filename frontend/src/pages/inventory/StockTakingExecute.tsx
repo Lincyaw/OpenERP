@@ -91,10 +91,13 @@ export default function StockTakingExecutePage() {
 
   /**
    * Format quantity for display with 2 decimal places
+   * Handles both number and string types (API may return decimal as string)
    */
-  const formatQuantity = useCallback((quantity?: number): string => {
+  const formatQuantity = useCallback((quantity?: number | string): string => {
     if (quantity === undefined || quantity === null) return '-'
-    return quantity.toFixed(2)
+    const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+    if (isNaN(num)) return '-'
+    return num.toFixed(2)
   }, [])
 
   // State for stock taking data
@@ -123,9 +126,14 @@ export default function StockTakingExecutePage() {
         const newLocalItems = new Map<string, LocalItemState>()
         response.data.items?.forEach((item) => {
           if (item.product_id) {
+            // Convert string to number (API may return decimal as string)
+            const actualQty =
+              typeof item.actual_quantity === 'string'
+                ? parseFloat(item.actual_quantity)
+                : item.actual_quantity
             newLocalItems.set(item.product_id, {
               product_id: item.product_id,
-              actual_quantity: item.counted ? (item.actual_quantity ?? 0) : null,
+              actual_quantity: item.counted ? (actualQty ?? 0) : null,
               remark: item.remark || '',
               dirty: false,
             })
@@ -270,7 +278,9 @@ export default function StockTakingExecutePage() {
 
       const response = await stockTakingApi.postInventoryStockTakingsIdCounts(id, { counts })
       if (response.success && response.data) {
-        Toast.success(t('stockTaking.execute.messages.saveAllSuccess', { count: dirtyItems.length }))
+        Toast.success(
+          t('stockTaking.execute.messages.saveAllSuccess', { count: dirtyItems.length })
+        )
         setStockTaking(response.data)
         // Clear dirty flags
         setLocalItems((prev) => {
@@ -343,8 +353,13 @@ export default function StockTakingExecutePage() {
     (item: HandlerStockTakingItemResponse): { qty: number | null; amount: number | null } => {
       const localItem = localItems.get(item.product_id || '')
       const actualQty = localItem?.actual_quantity
-      const systemQty = item.system_quantity || 0
-      const unitCost = item.unit_cost || 0
+      // Convert string to number (API may return decimal as string)
+      const systemQty =
+        typeof item.system_quantity === 'string'
+          ? parseFloat(item.system_quantity)
+          : item.system_quantity || 0
+      const unitCost =
+        typeof item.unit_cost === 'string' ? parseFloat(item.unit_cost) : item.unit_cost || 0
 
       if (actualQty === null || actualQty === undefined) {
         return { qty: null, amount: null }
@@ -371,14 +386,23 @@ export default function StockTakingExecutePage() {
     stockTaking?.items?.forEach((item) => {
       const localItem = localItems.get(item.product_id || '')
       if (localItem?.actual_quantity !== null && localItem?.actual_quantity !== undefined) {
-        const systemQty = item.system_quantity || 0
-        const unitCost = item.unit_cost || 0
+        // Convert string to number (API may return decimal as string)
+        const systemQty =
+          typeof item.system_quantity === 'string'
+            ? parseFloat(item.system_quantity)
+            : item.system_quantity || 0
+        const unitCost =
+          typeof item.unit_cost === 'string' ? parseFloat(item.unit_cost) : item.unit_cost || 0
         const diffQty = localItem.actual_quantity - systemQty
         totalDiff += diffQty * unitCost
         countedItems++
       } else if (item.counted) {
         // Already counted items from server
-        totalDiff += item.difference_amount || 0
+        const diffAmount =
+          typeof item.difference_amount === 'string'
+            ? parseFloat(item.difference_amount)
+            : item.difference_amount || 0
+        totalDiff += diffAmount
         countedItems++
       }
     })
@@ -588,7 +612,11 @@ export default function StockTakingExecutePage() {
             {t('stockTaking.execute.title')} - {stockTaking.taking_number}
           </Title>
           <Tag color={STATUS_COLORS[stockTaking.status || ''] || 'grey'}>
-            {String(t(`stockTaking.list.status.${stockTaking.status}`, { defaultValue: stockTaking.status }))}
+            {String(
+              t(`stockTaking.list.status.${stockTaking.status}`, {
+                defaultValue: stockTaking.status,
+              })
+            )}
           </Tag>
         </div>
         <div className="header-right">
@@ -632,19 +660,28 @@ export default function StockTakingExecutePage() {
       <Card className="stock-taking-summary-card">
         <div className="summary-grid">
           <Descriptions row>
-            <Descriptions.Item itemKey={t('stockTaking.execute.summary.warehouse')}>{stockTaking.warehouse_name}</Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.warehouse')}>
+              {stockTaking.warehouse_name}
+            </Descriptions.Item>
             <Descriptions.Item itemKey={t('stockTaking.execute.summary.takingDate')}>
               {formatDate(stockTaking.taking_date, 'date')}
             </Descriptions.Item>
-            <Descriptions.Item itemKey={t('stockTaking.execute.summary.createdBy')}>{stockTaking.created_by_name}</Descriptions.Item>
-            <Descriptions.Item itemKey={t('stockTaking.execute.summary.remark')}>{stockTaking.remark || '-'}</Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.createdBy')}>
+              {stockTaking.created_by_name}
+            </Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.remark')}>
+              {stockTaking.remark || '-'}
+            </Descriptions.Item>
           </Descriptions>
 
           <div className="progress-section">
             <div className="progress-info">
               <Text strong>{t('stockTaking.execute.summary.progress')}</Text>
               <Text type="tertiary">
-                {t('stockTaking.execute.summary.progressCount', { counted: localTotals.countedItems, total: localTotals.totalItems })}
+                {t('stockTaking.execute.summary.progressCount', {
+                  counted: localTotals.countedItems,
+                  total: localTotals.totalItems,
+                })}
               </Text>
             </div>
             <Progress

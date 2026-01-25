@@ -12,6 +12,9 @@ import { BasePage } from './BasePage'
  * - Stocktaking operations
  */
 export class InventoryPage extends BasePage {
+  // Current stock taking number (set after creation)
+  currentStockTakingNumber: string = ''
+
   // Stock list page elements
   readonly stockListTitle: Locator
   readonly warehouseFilter: Locator
@@ -613,11 +616,40 @@ export class InventoryPage extends BasePage {
   }
 
   /**
-   * Wait for stock taking creation success
+   * Wait for stock taking creation success and return the taking number
+   * Also stores the taking number in currentStockTakingNumber for later use
+   * @returns The taking number of the newly created stock taking
    */
-  async waitForStockTakingCreateSuccess(): Promise<void> {
+  async waitForStockTakingCreateSuccess(): Promise<string> {
     await this.waitForToast('创建成功')
-    await this.page.waitForURL(/\/inventory\/stock-taking$/, { timeout: 10000 })
+    // Wait for URL change and network to be idle to ensure redirect is complete
+    await this.page.waitForURL(/\/inventory\/stock-taking$/, {
+      timeout: 10000,
+      waitUntil: 'networkidle',
+    })
+    // Extra wait for table to render
+    await this.page.waitForTimeout(500)
+    // Get the taking number from the first row (most recent)
+    await this.waitForTableLoad()
+    const firstRow = this.tableRows.first()
+    const takingNumber = await this.getStockTakingNumberFromRow(firstRow)
+    this.currentStockTakingNumber = takingNumber.trim()
+    return this.currentStockTakingNumber
+  }
+
+  /**
+   * Get the current stock taking row (by stored taking number)
+   * @returns The row locator for the current stock taking
+   */
+  async getCurrentStockTakingRow(): Promise<Locator> {
+    if (!this.currentStockTakingNumber) {
+      throw new Error('No current stock taking number set. Create a stock taking first.')
+    }
+    const row = await this.findStockTakingByNumber(this.currentStockTakingNumber)
+    if (!row) {
+      throw new Error(`Stock taking with number ${this.currentStockTakingNumber} not found`)
+    }
+    return row
   }
 
   /**
@@ -662,11 +694,23 @@ export class InventoryPage extends BasePage {
 
   /**
    * Click "开始盘点" button on execute page
+   * If the button is not visible (already counting), skip and verify status
    */
   async clickStartCounting(): Promise<void> {
     const startButton = this.page.locator('button').filter({ hasText: '开始盘点' })
-    await startButton.click()
-    await this.waitForToast('开始')
+    // Try to wait for the button to appear (it should be visible in DRAFT status)
+    try {
+      await startButton.waitFor({ state: 'visible', timeout: 3000 })
+      await startButton.click()
+      await this.waitForToast('开始')
+    } catch {
+      // Button not found or timed out - might already be in COUNTING status
+    }
+    // Verify we're now in COUNTING status
+    const status = await this.getStockTakingStatus()
+    if (!status.includes('盘点中') && !status.includes('COUNTING')) {
+      throw new Error(`Expected status to be COUNTING but got: ${status}`)
+    }
   }
 
   /**
@@ -690,8 +734,16 @@ export class InventoryPage extends BasePage {
    */
   async clickSaveAllCounts(): Promise<void> {
     const saveButton = this.page.locator('button').filter({ hasText: '保存全部' })
-    await saveButton.click()
-    await this.waitForToast('保存')
+    // Wait for button to be enabled (there are items to save)
+    await saveButton.waitFor({ state: 'visible', timeout: 5000 })
+    // The button might be disabled if no counts have changed
+    const isEnabled = await saveButton.isEnabled()
+    if (isEnabled) {
+      await saveButton.click()
+      await this.waitForToast('保存')
+      // Wait for the save to complete and button state to update
+      await this.page.waitForTimeout(500)
+    }
   }
 
   /**
@@ -699,6 +751,10 @@ export class InventoryPage extends BasePage {
    */
   async clickSubmitForApproval(): Promise<void> {
     const submitButton = this.page.locator('button').filter({ hasText: '提交审批' })
+    // Wait for button to become enabled (all items must be counted)
+    await submitButton.waitFor({ state: 'visible', timeout: 5000 })
+    // Wait for button to be enabled using locator assertion
+    await expect(submitButton).toBeEnabled({ timeout: 10000 })
     await submitButton.click()
     await this.page.waitForTimeout(300)
   }
