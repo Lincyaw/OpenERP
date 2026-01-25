@@ -31,6 +31,7 @@ type CreateCustomerRequest struct {
 	Notes       string           `json:"notes"`
 	SortOrder   *int             `json:"sort_order"`
 	Attributes  string           `json:"attributes"`
+	CreatedBy   *uuid.UUID       `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateCustomerRequest represents a request to update a customer
@@ -208,6 +209,7 @@ type CreateSupplierRequest struct {
 	Notes       string           `json:"notes"`
 	SortOrder   *int             `json:"sort_order"`
 	Attributes  string           `json:"attributes"`
+	CreatedBy   *uuid.UUID       `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateSupplierRequest represents a request to update a supplier
@@ -378,23 +380,24 @@ func ToSupplierListResponses(suppliers []partner.Supplier) []SupplierListRespons
 
 // CreateWarehouseRequest represents a request to create a new warehouse
 type CreateWarehouseRequest struct {
-	Code        string `json:"code" binding:"required,min=1,max=50"`
-	Name        string `json:"name" binding:"required,min=1,max=200"`
-	ShortName   string `json:"short_name" binding:"max=100"`
-	Type        string `json:"type" binding:"required,oneof=physical virtual consign transit"`
-	ContactName string `json:"contact_name" binding:"max=100"`
-	Phone       string `json:"phone" binding:"max=50"`
-	Email       string `json:"email" binding:"omitempty,email,max=200"`
-	Address     string `json:"address" binding:"max=500"`
-	City        string `json:"city" binding:"max=100"`
-	Province    string `json:"province" binding:"max=100"`
-	PostalCode  string `json:"postal_code" binding:"max=20"`
-	Country     string `json:"country" binding:"max=100"`
-	IsDefault   *bool  `json:"is_default"`
-	Capacity    *int   `json:"capacity"`
-	Notes       string `json:"notes"`
-	SortOrder   *int   `json:"sort_order"`
-	Attributes  string `json:"attributes"`
+	Code        string     `json:"code" binding:"required,min=1,max=50"`
+	Name        string     `json:"name" binding:"required,min=1,max=200"`
+	ShortName   string     `json:"short_name" binding:"max=100"`
+	Type        string     `json:"type" binding:"required,oneof=physical virtual consign transit"`
+	ContactName string     `json:"contact_name" binding:"max=100"`
+	Phone       string     `json:"phone" binding:"max=50"`
+	Email       string     `json:"email" binding:"omitempty,email,max=200"`
+	Address     string     `json:"address" binding:"max=500"`
+	City        string     `json:"city" binding:"max=100"`
+	Province    string     `json:"province" binding:"max=100"`
+	PostalCode  string     `json:"postal_code" binding:"max=20"`
+	Country     string     `json:"country" binding:"max=100"`
+	IsDefault   *bool      `json:"is_default"`
+	Capacity    *int       `json:"capacity"`
+	Notes       string     `json:"notes"`
+	SortOrder   *int       `json:"sort_order"`
+	Attributes  string     `json:"attributes"`
+	CreatedBy   *uuid.UUID `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateWarehouseRequest represents a request to update a warehouse

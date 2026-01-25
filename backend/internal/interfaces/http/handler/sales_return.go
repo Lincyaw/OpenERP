@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"errors"
 	"time"
 
 	tradeapp "github.com/erp/backend/internal/application/trade"
 	"github.com/erp/backend/internal/domain/trade"
 	"github.com/erp/backend/internal/interfaces/http/dto"
-	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -24,15 +22,6 @@ func NewSalesReturnHandler(returnService *tradeapp.SalesReturnService) *SalesRet
 	return &SalesReturnHandler{
 		returnService: returnService,
 	}
-}
-
-// getUserID retrieves the user ID from JWT claims in context
-func getUserID(c *gin.Context) (uuid.UUID, error) {
-	userIDStr := middleware.GetJWTUserID(c)
-	if userIDStr == "" {
-		return uuid.Nil, errors.New("user not authenticated")
-	}
-	return uuid.Parse(userIDStr)
 }
 
 // CreateSalesReturnRequest represents a request to create a new sales return
@@ -224,10 +213,18 @@ func (h *SalesReturnHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	appReq := tradeapp.CreateSalesReturnRequest{
 		SalesOrderID: salesOrderID,
 		Reason:       req.Reason,
 		Remark:       req.Remark,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	// Convert warehouse ID

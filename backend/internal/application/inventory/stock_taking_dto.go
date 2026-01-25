@@ -18,6 +18,7 @@ type CreateStockTakingRequest struct {
 	Remark        string     `json:"remark"`
 	CreatedByID   uuid.UUID  `json:"created_by_id" binding:"required"`
 	CreatedByName string     `json:"created_by_name" binding:"required"`
+	CreatedBy     *uuid.UUID `json:"-"` // Set from JWT context for data scope filtering
 }
 
 // UpdateStockTakingRequest represents a request to update a stock taking

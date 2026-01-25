@@ -21,6 +21,7 @@ type CreateProductRequest struct {
 	MinStock      *decimal.Decimal `json:"min_stock"`
 	SortOrder     *int             `json:"sort_order"`
 	Attributes    string           `json:"attributes"`
+	CreatedBy     *uuid.UUID       `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateProductRequest represents a request to update a product
@@ -154,6 +155,7 @@ type CreateCategoryRequest struct {
 	Description string     `json:"description" binding:"max=2000"`
 	ParentID    *uuid.UUID `json:"parent_id"`
 	SortOrder   *int       `json:"sort_order"`
+	CreatedBy   *uuid.UUID `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateCategoryRequest represents a request to update a category

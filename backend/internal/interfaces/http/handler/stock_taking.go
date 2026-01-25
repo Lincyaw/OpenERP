@@ -482,12 +482,20 @@ func (h *StockTakingHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	appReq := inventoryapp.CreateStockTakingRequest{
 		WarehouseID:   warehouseID,
 		WarehouseName: req.WarehouseName,
 		Remark:        req.Remark,
 		CreatedByID:   createdByID,
 		CreatedByName: req.CreatedByName,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	// Parse optional taking date

@@ -18,6 +18,7 @@ type CreatePurchaseOrderRequest struct {
 	Items        []CreatePurchaseOrderItemInput `json:"items"`
 	Discount     *decimal.Decimal               `json:"discount"`
 	Remark       string                         `json:"remark"`
+	CreatedBy    *uuid.UUID                     `json:"-"` // Set from JWT context, not from request body
 }
 
 // CreatePurchaseOrderItemInput represents an item in the create order request
@@ -312,6 +313,7 @@ type CreateSalesOrderRequest struct {
 	Items        []CreateSalesOrderItemInput `json:"items"`
 	Discount     *decimal.Decimal            `json:"discount"`
 	Remark       string                      `json:"remark"`
+	CreatedBy    *uuid.UUID                  `json:"-"` // Set from JWT context, not from request body
 }
 
 // CreateSalesOrderItemInput represents an item in the create order request
@@ -542,6 +544,7 @@ type CreateSalesReturnRequest struct {
 	Items        []CreateSalesReturnItemInput `json:"items" binding:"required,min=1"`
 	Reason       string                       `json:"reason"`
 	Remark       string                       `json:"remark"`
+	CreatedBy    *uuid.UUID                   `json:"-"` // Set from JWT context, not from request body
 }
 
 // CreateSalesReturnItemInput represents an item in the create return request
@@ -792,6 +795,7 @@ type CreatePurchaseReturnRequest struct {
 	Items           []CreatePurchaseReturnItemInput `json:"items" binding:"required,min=1"`
 	Reason          string                          `json:"reason"`
 	Remark          string                          `json:"remark"`
+	CreatedBy       *uuid.UUID                      `json:"-"` // Set from JWT context, not from request body
 }
 
 // CreatePurchaseReturnItemInput represents an item in the create return request

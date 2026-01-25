@@ -14301,3 +14301,87 @@ npm run e2e:report
 4. **Page Objects**: CustomersPage, SuppliersPage, WarehousesPage provide reusable methods
 5. **Status Tests**: Some tests modify status and restore - run in isolation if needed
 6. **Next Tasks**: P1-INT-003 (Customer balance E2E), P2-INT-001 (Inventory module E2E)
+
+---
+
+## 2026-01-25: P6-INT-002 - Authentication and Authorization E2E Tests
+
+### What Was Done
+Implemented comprehensive E2E tests for authentication and authorization (P6-INT-002) with the following:
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `docker/seed-data.sql` | Added test users (sales, warehouse, finance) with bcrypt hashed passwords |
+| `frontend/tests/e2e/fixtures/test-fixtures.ts` | Updated TEST_USERS with correct password (admin123) |
+| `frontend/tests/e2e/auth/auth.spec.ts` | Created comprehensive auth E2E tests |
+| `.claude/ralph/plans/prd.json` | P6-INT-002: passes: true |
+
+### Test Coverage
+**Total Tests**: 23 tests across 6 test suites
+
+**Login Page Tests** (6 tests):
+1. Display login page with all required elements
+2. Login successfully with valid admin credentials
+3. Show error with invalid credentials
+4. Login with sales user
+5. Login with warehouse user
+6. Login with finance user
+
+**Session Management Tests** (3 tests):
+1. Redirect to login when not authenticated
+2. Persist login state after page reload
+3. Clear token and redirect to login after logout
+
+**Permission-Based Access Tests** (5 tests):
+1. Redirect unauthorized user to 403 or show access denied
+2. Sales user should access sales routes
+3. Warehouse user should access inventory routes
+4. Finance user should access finance routes
+5. Admin user should access all routes
+
+**Role-Based Menu Visibility Tests** (4 tests):
+1. Admin should see all menu items
+2. Sales user should see limited menu items
+3. Warehouse user should see inventory menu
+4. Finance user should see finance menu
+
+**Token Handling Tests** (2 tests):
+1. Store token in localStorage after login
+2. Handle expired token gracefully
+
+**Screenshot Tests** (6 tests):
+1. Login page screenshot
+2. Admin home screenshot
+3. Sales home screenshot
+4. Warehouse home screenshot
+5. Finance home screenshot
+6. 403 forbidden page screenshot
+
+### Seed Data Users Added
+| Username | Password | Role | Permissions |
+|----------|----------|------|-------------|
+| admin | admin123 | System Administrator | All permissions |
+| sales | admin123 | Sales Manager | sales_order, customer, product:read, inventory:read |
+| warehouse | admin123 | Warehouse Manager | inventory, warehouse, product:read |
+| finance | admin123 | Finance Manager | receivable, payable, expense, income, report |
+
+### How to Run Tests
+```bash
+# Run all auth E2E tests
+cd frontend && npx playwright test tests/e2e/auth/ --project=chromium
+
+# Run with headed mode for debugging
+npx playwright test tests/e2e/auth/ --project=chromium --headed
+
+# Generate HTML report
+npm run e2e:report
+```
+
+### Notes for Next Developer
+1. **Docker Required**: Tests require docker-compose.test.yml environment running
+2. **Seed Data**: Tests depend on seed-data.sql users (admin, sales, warehouse, finance)
+3. **Password**: All test users use password `admin123` (bcrypt hashed in seed)
+4. **Role Permissions**: Configured in seed-data.sql with specific permissions per role
+5. **Screenshots**: Screenshots saved to test-results/screenshots/auth/
+6. **Next Tasks**: P6-INT-001 (Multi-tenant isolation E2E), P6-INT-003 (User role management E2E)

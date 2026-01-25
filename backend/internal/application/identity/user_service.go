@@ -40,6 +40,7 @@ type CreateUserInput struct {
 	DisplayName string
 	Notes       string
 	RoleIDs     []uuid.UUID
+	CreatedBy   *uuid.UUID // Set from JWT context for data scope filtering
 }
 
 // UpdateUserInput contains input for updating a user
@@ -153,6 +154,11 @@ func (s *UserService) Create(ctx context.Context, input CreateUserInput) (*UserD
 			}
 			return nil, err
 		}
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if input.CreatedBy != nil {
+		user.SetCreatedBy(*input.CreatedBy)
 	}
 
 	// Save user

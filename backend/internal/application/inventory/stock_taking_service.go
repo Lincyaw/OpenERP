@@ -197,6 +197,11 @@ func (s *StockTakingService) Create(ctx context.Context, tenantID uuid.UUID, req
 		st.SetRemark(req.Remark)
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		st.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save to repository
 	if err := s.stockTakingRepo.SaveWithItems(ctx, st); err != nil {
 		return nil, err

@@ -88,6 +88,11 @@ func (s *SalesReturnService) Create(ctx context.Context, tenantID uuid.UUID, req
 		sr.SetRemark(req.Remark)
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		sr.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save the return
 	if err := s.returnRepo.Save(ctx, sr); err != nil {
 		return nil, err

@@ -20,6 +20,110 @@ INSERT INTO tenants (id, name, code, status, settings) VALUES
 ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================================
+-- IDENTITY MODULE - Test Users and Role Permissions
+-- ============================================================================
+
+-- Test users for E2E testing (password: admin123 - bcrypt hash)
+-- Note: admin user is created in migration 000017_create_users.up.sql
+INSERT INTO users (id, tenant_id, username, password_hash, display_name, status) VALUES
+('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'sales', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Sales Manager', 'active'),
+('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'warehouse', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Warehouse Manager', 'active'),
+('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'finance', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Finance Manager', 'active')
+ON CONFLICT (tenant_id, username) DO NOTHING;
+
+-- Assign roles to test users
+INSERT INTO user_roles (user_id, role_id, tenant_id) VALUES
+-- sales user gets SALES role
+('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000001'),
+-- warehouse user gets WAREHOUSE role
+('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000001'),
+-- finance user gets ACCOUNTANT role
+('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000001')
+ON CONFLICT DO NOTHING;
+
+-- Add permissions to SALES role (sales operations + customer/product read)
+INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
+SELECT
+    '00000000-0000-0000-0000-000000000012',
+    '00000000-0000-0000-0000-000000000001',
+    p.code,
+    p.resource,
+    p.action,
+    p.description
+FROM (VALUES
+    ('product:read', 'product', 'read', 'View products'),
+    ('category:read', 'category', 'read', 'View categories'),
+    ('customer:read', 'customer', 'read', 'View customers'),
+    ('customer:create', 'customer', 'create', 'Create customers'),
+    ('customer:update', 'customer', 'update', 'Update customers'),
+    ('sales_order:read', 'sales_order', 'read', 'View sales orders'),
+    ('sales_order:create', 'sales_order', 'create', 'Create sales orders'),
+    ('sales_order:update', 'sales_order', 'update', 'Update sales orders'),
+    ('sales_order:delete', 'sales_order', 'delete', 'Delete sales orders'),
+    ('inventory:read', 'inventory', 'read', 'View inventory'),
+    ('account_receivable:read', 'account_receivable', 'read', 'View receivables'),
+    ('receipt:create', 'receipt', 'create', 'Create receipts'),
+    ('receipt:read', 'receipt', 'read', 'View receipts'),
+    ('report:read', 'report', 'read', 'View reports')
+) AS p(code, resource, action, description)
+ON CONFLICT DO NOTHING;
+
+-- Add permissions to WAREHOUSE role (inventory operations + product read)
+INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
+SELECT
+    '00000000-0000-0000-0000-000000000014',
+    '00000000-0000-0000-0000-000000000001',
+    p.code,
+    p.resource,
+    p.action,
+    p.description
+FROM (VALUES
+    ('product:read', 'product', 'read', 'View products'),
+    ('category:read', 'category', 'read', 'View categories'),
+    ('warehouse:read', 'warehouse', 'read', 'View warehouses'),
+    ('inventory:read', 'inventory', 'read', 'View inventory'),
+    ('inventory:adjust', 'inventory', 'adjust', 'Adjust inventory'),
+    ('inventory:lock', 'inventory', 'lock', 'Lock inventory'),
+    ('inventory:unlock', 'inventory', 'unlock', 'Unlock inventory'),
+    ('purchase_order:receive', 'purchase_order', 'receive', 'Receive goods'),
+    ('purchase_order:read', 'purchase_order', 'read', 'View purchase orders')
+) AS p(code, resource, action, description)
+ON CONFLICT DO NOTHING;
+
+-- Add permissions to ACCOUNTANT role (finance operations)
+INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
+SELECT
+    '00000000-0000-0000-0000-000000000016',
+    '00000000-0000-0000-0000-000000000001',
+    p.code,
+    p.resource,
+    p.action,
+    p.description
+FROM (VALUES
+    ('account_receivable:read', 'account_receivable', 'read', 'View receivables'),
+    ('account_receivable:reconcile', 'account_receivable', 'reconcile', 'Reconcile receivables'),
+    ('account_payable:read', 'account_payable', 'read', 'View payables'),
+    ('account_payable:reconcile', 'account_payable', 'reconcile', 'Reconcile payables'),
+    ('receipt:create', 'receipt', 'create', 'Create receipts'),
+    ('receipt:read', 'receipt', 'read', 'View receipts'),
+    ('payment:create', 'payment', 'create', 'Create payments'),
+    ('payment:read', 'payment', 'read', 'View payments'),
+    ('expense:create', 'expense', 'create', 'Create expenses'),
+    ('expense:read', 'expense', 'read', 'View expenses'),
+    ('expense:update', 'expense', 'update', 'Update expenses'),
+    ('expense:delete', 'expense', 'delete', 'Delete expenses'),
+    ('income:create', 'income', 'create', 'Create income'),
+    ('income:read', 'income', 'read', 'View income'),
+    ('income:update', 'income', 'update', 'Update income'),
+    ('income:delete', 'income', 'delete', 'Delete income'),
+    ('report:read', 'report', 'read', 'View reports'),
+    ('report:export', 'report', 'export', 'Export reports'),
+    ('customer:read', 'customer', 'read', 'View customers'),
+    ('supplier:read', 'supplier', 'read', 'View suppliers')
+) AS p(code, resource, action, description)
+ON CONFLICT DO NOTHING;
+
+-- ============================================================================
 -- CATALOG MODULE - Categories and Products
 -- ============================================================================
 

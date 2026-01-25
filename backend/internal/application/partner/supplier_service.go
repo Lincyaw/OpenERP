@@ -135,6 +135,11 @@ func (s *SupplierService) Create(ctx context.Context, tenantID uuid.UUID, req Cr
 		}
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		supplier.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save the supplier
 	if err := s.supplierRepo.Save(ctx, supplier); err != nil {
 		return nil, err

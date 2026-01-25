@@ -529,6 +529,9 @@ func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	appReq := financeapp.CreateReceiptVoucherRequest{
 		CustomerID:       customerID,
 		CustomerName:     req.CustomerName,
@@ -537,6 +540,11 @@ func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 		PaymentReference: req.PaymentReference,
 		ReceiptDate:      receiptDate,
 		Remark:           req.Remark,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	voucher, err := h.financeService.CreateReceiptVoucher(c.Request.Context(), tenantID, appReq)
@@ -823,6 +831,9 @@ func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	appReq := financeapp.CreatePaymentVoucherRequest{
 		SupplierID:       supplierID,
 		SupplierName:     req.SupplierName,
@@ -831,6 +842,11 @@ func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 		PaymentReference: req.PaymentReference,
 		PaymentDate:      paymentDate,
 		Remark:           req.Remark,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	voucher, err := h.financeService.CreatePaymentVoucher(c.Request.Context(), tenantID, appReq)

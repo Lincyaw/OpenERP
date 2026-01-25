@@ -363,6 +363,7 @@ type CreateReceiptVoucherRequest struct {
 	PaymentReference string          `json:"payment_reference"`
 	ReceiptDate      time.Time       `json:"receipt_date"`
 	Remark           string          `json:"remark"`
+	CreatedBy        *uuid.UUID      `json:"-"` // Set from JWT context, not from request body
 }
 
 // ReceiptVoucherListFilter defines filtering options for receipt voucher list queries
@@ -409,6 +410,11 @@ func (s *FinanceService) CreateReceiptVoucher(ctx context.Context, tenantID uuid
 		if err := voucher.SetRemark(req.Remark); err != nil {
 			return nil, err
 		}
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		voucher.SetCreatedBy(*req.CreatedBy)
 	}
 
 	if err := s.receiptVoucherRepo.Save(ctx, voucher); err != nil {
@@ -553,6 +559,7 @@ type CreatePaymentVoucherRequest struct {
 	PaymentReference string          `json:"payment_reference"`
 	PaymentDate      time.Time       `json:"payment_date"`
 	Remark           string          `json:"remark"`
+	CreatedBy        *uuid.UUID      `json:"-"` // Set from JWT context, not from request body
 }
 
 // PaymentVoucherListFilter defines filtering options for payment voucher list queries
@@ -599,6 +606,11 @@ func (s *FinanceService) CreatePaymentVoucher(ctx context.Context, tenantID uuid
 		if err := voucher.SetRemark(req.Remark); err != nil {
 			return nil, err
 		}
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		voucher.SetCreatedBy(*req.CreatedBy)
 	}
 
 	if err := s.paymentVoucherRepo.Save(ctx, voucher); err != nil {

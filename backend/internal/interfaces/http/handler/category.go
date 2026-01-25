@@ -118,11 +118,19 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	// Convert to application DTO
 	appReq := catalogapp.CreateCategoryRequest{
 		Code:        req.Code,
 		Name:        req.Name,
 		Description: req.Description,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	// Convert parent ID

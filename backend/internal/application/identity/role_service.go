@@ -36,8 +36,9 @@ type CreateRoleInput struct {
 	Code        string
 	Name        string
 	Description string
-	Permissions []string // Permission codes like "product:create"
+	Permissions []string   // Permission codes like "product:create"
 	SortOrder   int
+	CreatedBy   *uuid.UUID // Set from JWT context for data scope filtering
 }
 
 // UpdateRoleInput contains input for updating a role
@@ -112,6 +113,11 @@ func (s *RoleService) Create(ctx context.Context, input CreateRoleInput) (*RoleD
 			}
 			return nil, err
 		}
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if input.CreatedBy != nil {
+		role.SetCreatedBy(*input.CreatedBy)
 	}
 
 	// Save role

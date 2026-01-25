@@ -113,6 +113,11 @@ func (s *CustomerService) Create(ctx context.Context, tenantID uuid.UUID, req Cr
 		}
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		customer.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save the customer
 	if err := s.customerRepo.Save(ctx, customer); err != nil {
 		return nil, err

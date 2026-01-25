@@ -95,6 +95,9 @@ func (h *WarehouseHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	// Convert to application DTO
 	appReq := partnerapp.CreateWarehouseRequest{
 		Code:        req.Code,
@@ -114,6 +117,11 @@ func (h *WarehouseHandler) Create(c *gin.Context) {
 		Notes:       req.Notes,
 		SortOrder:   req.SortOrder,
 		Attributes:  req.Attributes,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	warehouse, err := h.warehouseService.Create(c.Request.Context(), tenantID, appReq)

@@ -117,6 +117,9 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	// Convert to application DTO
 	appReq := partnerapp.CreateSupplierRequest{
 		Code:        req.Code,
@@ -137,6 +140,11 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 		Rating:      req.Rating,
 		Notes:       req.Notes,
 		Attributes:  req.Attributes,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	if req.CreditDays != nil {

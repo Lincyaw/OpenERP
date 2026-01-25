@@ -72,6 +72,11 @@ func (s *CategoryService) Create(ctx context.Context, tenantID uuid.UUID, req Cr
 		category.SetSortOrder(*req.SortOrder)
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		category.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save the category
 	if err := s.categoryRepo.Save(ctx, category); err != nil {
 		return nil, err

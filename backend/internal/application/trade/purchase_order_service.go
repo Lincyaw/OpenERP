@@ -82,6 +82,11 @@ func (s *PurchaseOrderService) Create(ctx context.Context, tenantID uuid.UUID, r
 		order.SetRemark(req.Remark)
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		order.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save order
 	if err := s.orderRepo.Save(ctx, order); err != nil {
 		return nil, err

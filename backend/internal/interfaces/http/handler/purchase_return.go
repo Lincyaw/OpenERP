@@ -230,10 +230,18 @@ func (h *PurchaseReturnHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	appReq := tradeapp.CreatePurchaseReturnRequest{
 		PurchaseOrderID: purchaseOrderID,
 		Reason:          req.Reason,
 		Remark:          req.Remark,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	// Convert warehouse ID

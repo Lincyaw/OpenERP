@@ -4,27 +4,32 @@ import { LoginPage, ProductsPage, CustomersPage, SuppliersPage, WarehousesPage }
 /**
  * Test Users - Seed data users for testing
  * These credentials match the users in docker/seed-data.sql
+ * Password: admin123 (bcrypt hash in migration/seed)
  */
 export const TEST_USERS = {
   admin: {
     username: 'admin',
-    password: 'test123',
+    password: 'admin123',
     role: 'System Administrator',
+    // Has all permissions (ADMIN role)
   },
   sales: {
     username: 'sales',
-    password: 'test123',
+    password: 'admin123',
     role: 'Sales Manager',
+    // Has sales, customer, product:read, inventory:read permissions
   },
   warehouse: {
     username: 'warehouse',
-    password: 'test123',
+    password: 'admin123',
     role: 'Warehouse Manager',
+    // Has inventory, warehouse, product:read permissions
   },
   finance: {
     username: 'finance',
-    password: 'test123',
+    password: 'admin123',
     role: 'Finance Manager',
+    // Has finance (receivable, payable, expense, income) permissions
   },
 } as const
 

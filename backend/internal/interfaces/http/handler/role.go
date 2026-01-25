@@ -56,6 +56,9 @@ func (h *RoleHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	input := identity.CreateRoleInput{
 		TenantID:    tenantID,
 		Code:        req.Code,
@@ -63,6 +66,11 @@ func (h *RoleHandler) Create(c *gin.Context) {
 		Description: req.Description,
 		Permissions: req.Permissions,
 		SortOrder:   req.SortOrder,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		input.CreatedBy = &userID
 	}
 
 	role, err := h.roleService.Create(c.Request.Context(), input)

@@ -92,6 +92,11 @@ func (s *WarehouseService) Create(ctx context.Context, tenantID uuid.UUID, req C
 		warehouse.SetDefault(true)
 	}
 
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		warehouse.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Save the warehouse
 	if err := s.warehouseRepo.Save(ctx, warehouse); err != nil {
 		return nil, err

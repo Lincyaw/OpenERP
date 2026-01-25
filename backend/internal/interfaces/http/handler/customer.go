@@ -109,6 +109,9 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	// Convert to application DTO
 	appReq := partnerapp.CreateCustomerRequest{
 		Code:        req.Code,
@@ -126,6 +129,11 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 		TaxID:       req.TaxID,
 		Notes:       req.Notes,
 		Attributes:  req.Attributes,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	if req.CreditLimit != nil {

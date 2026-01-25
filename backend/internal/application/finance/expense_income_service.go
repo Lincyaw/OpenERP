@@ -67,6 +67,7 @@ type CreateExpenseRecordRequest struct {
 	IncurredAt     time.Time       `json:"incurred_at" binding:"required"`
 	Remark         string          `json:"remark"`
 	AttachmentURLs string          `json:"attachment_urls"`
+	CreatedBy      *uuid.UUID      `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateExpenseRecordRequest represents a request to update an expense record
@@ -118,6 +119,11 @@ func (s *ExpenseIncomeService) CreateExpenseRecord(ctx context.Context, tenantID
 	}
 	if req.AttachmentURLs != "" {
 		expense.SetAttachmentURLs(req.AttachmentURLs)
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		expense.SetCreatedBy(*req.CreatedBy)
 	}
 
 	if err := s.expenseRepo.Save(ctx, expense); err != nil {
@@ -416,6 +422,7 @@ type CreateOtherIncomeRecordRequest struct {
 	ReceivedAt     time.Time       `json:"received_at" binding:"required"`
 	Remark         string          `json:"remark"`
 	AttachmentURLs string          `json:"attachment_urls"`
+	CreatedBy      *uuid.UUID      `json:"-"` // Set from JWT context, not from request body
 }
 
 // UpdateOtherIncomeRecordRequest represents a request to update an other income record
@@ -467,6 +474,11 @@ func (s *ExpenseIncomeService) CreateOtherIncomeRecord(ctx context.Context, tena
 	}
 	if req.AttachmentURLs != "" {
 		income.SetAttachmentURLs(req.AttachmentURLs)
+	}
+
+	// Set created_by if provided (from JWT context via handler)
+	if req.CreatedBy != nil {
+		income.SetCreatedBy(*req.CreatedBy)
 	}
 
 	if err := s.incomeRepo.Save(ctx, income); err != nil {
