@@ -9,6 +9,7 @@ import (
 	"time"
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
+	financeapp "github.com/erp/backend/internal/application/finance"
 	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
@@ -121,6 +122,8 @@ func main() {
 	inventoryReportRepo := persistence.NewGormInventoryReportRepository(db.DB)
 	financeReportRepo := persistence.NewGormFinanceReportRepository(db.DB)
 	reportCacheRepo := reportapp.NewGormReportCacheRepository(db.DB)
+	receiptVoucherRepo := persistence.NewGormReceiptVoucherRepository(db.DB)
+	accountReceivableRepo := persistence.NewGormAccountReceivableRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -149,6 +152,16 @@ func main() {
 	reportAggregationService := reportapp.NewReportAggregationService(
 		salesReportRepo, inventoryReportRepo, financeReportRepo, reportCacheRepo, log,
 	)
+
+	// Payment callback service (for external payment gateway notifications)
+	// Note: Payment gateways (WeChat, Alipay) are registered at runtime via config
+	paymentCallbackService := financeapp.NewPaymentCallbackService(financeapp.PaymentCallbackServiceConfig{
+		Gateways:           nil, // Gateways will be registered via RegisterGateway()
+		ReceiptVoucherRepo: receiptVoucherRepo,
+		ReceivableRepo:     accountReceivableRepo,
+		EventPublisher:     nil, // Will be set after event bus init
+		Logger:             log,
+	})
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -247,6 +260,7 @@ func main() {
 	tenantHandler := handler.NewTenantHandler(tenantService)
 	reportHandler := handler.NewReportHandler(reportService)
 	reportHandler.SetAggregationService(reportAggregationService)
+	paymentCallbackHandler := handler.NewPaymentCallbackHandler(paymentCallbackService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -308,6 +322,14 @@ func main() {
 
 	// Swagger documentation endpoint
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Payment gateway callback endpoints (no authentication required)
+	// These endpoints are called directly by external payment gateways
+	paymentCallbackGroup := engine.Group("/api/v1/payment/callback")
+	paymentCallbackGroup.POST("/wechat", paymentCallbackHandler.HandleWechatPaymentCallback)
+	paymentCallbackGroup.POST("/wechat/refund", paymentCallbackHandler.HandleWechatRefundCallback)
+	paymentCallbackGroup.POST("/alipay", paymentCallbackHandler.HandleAlipayPaymentCallback)
+	paymentCallbackGroup.POST("/alipay/refund", paymentCallbackHandler.HandleAlipayRefundCallback)
 
 	// Setup API routes using router
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))

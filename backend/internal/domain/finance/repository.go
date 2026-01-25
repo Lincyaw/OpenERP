@@ -256,6 +256,11 @@ type ReceiptVoucherRepository interface {
 
 	// GenerateVoucherNumber generates a unique voucher number for a tenant
 	GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+
+	// FindByPaymentReference finds a receipt voucher by payment reference (e.g., gateway order number)
+	// This is used for payment callback processing to locate the voucher by the order number
+	// sent to the payment gateway
+	FindByPaymentReference(ctx context.Context, paymentReference string) (*ReceiptVoucher, error)
 }
 
 // PaymentVoucherFilter defines filtering options for payment voucher queries

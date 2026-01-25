@@ -156,3 +156,62 @@
 ### Build Verification:
 - `go build ./...` passes successfully
 
+---
+
+## P7-BE-004: Payment Callback Service
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+
+1. Created domain events for payment gateway callbacks:
+   - `backend/internal/domain/finance/payment_gateway_events.go` - Defines GatewayPaymentCompletedEvent and GatewayRefundCompletedEvent
+
+2. Implemented PaymentCallbackService in application layer:
+   - `backend/internal/application/finance/payment_callback_service.go` - Core callback processing service
+   - Implements `finance.PaymentCallbackHandler` interface from domain layer
+   - Supports multiple payment gateways (WeChat Pay, Alipay)
+   - Provides idempotency checking using sync.Map to prevent duplicate processing
+   - Integrates with auto-reconciliation using FIFO strategy
+
+3. Created HTTP handlers for payment callbacks:
+   - `backend/internal/interfaces/http/handler/payment_callback.go` - HTTP handlers for gateway callbacks
+   - Endpoints registered outside authentication (gateways call directly)
+
+4. Registered callback routes in main.go:
+   - `POST /api/v1/payment/callback/wechat` - WeChat Pay payment callback
+   - `POST /api/v1/payment/callback/wechat/refund` - WeChat Pay refund callback
+   - `POST /api/v1/payment/callback/alipay` - Alipay payment callback
+   - `POST /api/v1/payment/callback/alipay/refund` - Alipay refund callback
+
+5. Added repository method for callback processing:
+   - `FindByPaymentReference` method in `ReceiptVoucherRepository` interface
+   - Implementation in `GormReceiptVoucherRepository`
+
+6. Created unit tests:
+   - `backend/internal/application/finance/payment_callback_service_test.go` - 11 test cases covering:
+     - Gateway registration and retrieval
+     - Callback verification failures
+     - Payment status handling
+     - Voucher not found scenarios
+     - Idempotent callback processing
+     - Refund callback handling
+
+### Key Features:
+- **Callback Verification**: Delegates to gateway adapters for signature verification
+- **Idempotency**: Uses transaction ID to prevent duplicate processing
+- **Auto-Reconciliation**: Automatically reconciles with outstanding receivables using FIFO strategy
+- **Event Publishing**: Publishes `GatewayPaymentCompletedEvent` and `GatewayRefundCompletedEvent`
+- **Gateway-Specific Responses**: Returns responses in format expected by each gateway
+
+### Requirements Fulfilled:
+- [x] 实现回调验签 (Callback verification via gateway adapters)
+- [x] 更新支付状态 (Payment status update via voucher confirmation)
+- [x] 发布支付完成事件 (Payment completed event publishing)
+
+### Build Verification:
+- `go build ./...` passes successfully
+- All 11 unit tests pass
+
+---
+
