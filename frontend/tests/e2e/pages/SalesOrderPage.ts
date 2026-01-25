@@ -394,10 +394,15 @@ export class SalesOrderPage extends BasePage {
   }
 
   async waitForOrderCreateSuccess(): Promise<void> {
+    // Use a more robust waiting strategy for cross-browser compatibility
+    // Firefox can be slower with URL navigation detection
     await Promise.race([
-      this.page.waitForURL('**/trade/sales', { timeout: 10000 }),
+      this.page.waitForURL('**/trade/sales', { timeout: 15000 }),
+      this.page.waitForURL('**/trade/sales/**', { timeout: 15000 }),
       this.waitForToast('成功'),
     ])
+    // Additional wait to ensure page has fully loaded after navigation
+    await this.page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
   }
 
   // Detail page methods
@@ -441,11 +446,17 @@ export class SalesOrderPage extends BasePage {
   }
 
   async confirmOrder(): Promise<void> {
+    // Wait for confirm button to be visible and enabled before clicking
+    // This fixes timeout issues on webkit and mobile browsers
+    await this.confirmButton.waitFor({ state: 'visible', timeout: 10000 })
+    await expect(this.confirmButton).toBeEnabled({ timeout: 5000 })
     await this.confirmButton.click()
 
     // Handle confirmation modal
-    await this.page.locator('.semi-modal').waitFor()
-    await this.page.locator('.semi-modal-footer .semi-button-primary').click()
+    await this.page.locator('.semi-modal').waitFor({ state: 'visible', timeout: 5000 })
+    const modalPrimaryButton = this.page.locator('.semi-modal-footer .semi-button-primary')
+    await modalPrimaryButton.waitFor({ state: 'visible', timeout: 5000 })
+    await modalPrimaryButton.click()
 
     await this.waitForToast('确认')
 

@@ -105,9 +105,9 @@ if [ "$RUN_E2E" = true ]; then
     # Give frontend a moment to be ready
     sleep 3
 
-    # Load seed data
+    # Load seed data using local-test.sh
     echo "  → Loading seed data..."
-    ./docker/quick-test.sh seed || {
+    ./docker/local-test.sh seed || {
         echo "❌ Failed to load seed data"
         docker compose -f docker-compose.test.yml down -v
         exit 1

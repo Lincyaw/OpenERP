@@ -435,7 +435,10 @@ test.describe('Sales Order Module E2E Tests', () => {
       const warehouseSelect = shipModal.locator('.semi-select')
       await warehouseSelect.click()
       await page.waitForTimeout(200)
-      await page.locator('.semi-select-option').filter({ hasText: TEST_DATA.warehouses.beijing.name }).click()
+      await page
+        .locator('.semi-select-option')
+        .filter({ hasText: TEST_DATA.warehouses.beijing.name })
+        .click()
       await page.waitForTimeout(200)
       await shipModal.locator('.semi-button-primary').click()
 
@@ -491,11 +494,11 @@ test.describe('Sales Order Module E2E Tests', () => {
       await expect(page.locator('text=客户名称')).toBeVisible()
       await expect(page.locator('text=订单状态')).toBeVisible()
 
-      // Verify items card
-      await expect(page.locator('.items-card, text=商品明细')).toBeVisible()
+      // Verify items card - use filter with hasText to find card containing the title
+      await expect(page.locator('.semi-card').filter({ hasText: '商品明细' }).first()).toBeVisible()
 
-      // Verify timeline card
-      await expect(page.locator('.timeline-card, text=状态变更')).toBeVisible()
+      // Verify timeline card - use filter with hasText to find card containing the title
+      await expect(page.locator('.semi-card').filter({ hasText: '状态变更' }).first()).toBeVisible()
 
       // Verify timeline shows creation event
       await salesOrderPage.assertTimelineContains('订单创建')

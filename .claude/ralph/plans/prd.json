@@ -1500,9 +1500,30 @@
       "  - 修复: SaveWithLock检查currentVersion == order.Version - 1 (domain已递增版本)",
       "✅ 修复: E2E测试仓库名称硬编码 - 使用TEST_DATA.warehouses.beijing.name替代'Main Warehouse'",
       "✅ E2E测试通过: 12/14 基础测试场景",
-      "⏳ 剩余问题: 部分复杂场景(多商品订单提交后重定向)存在timing问题,属于E2E稳定性优化范畴"
+      "⏳ 剩余问题: 部分复杂场景(多商品订单提交后重定向)存在timing问题,属于E2E稳定性优化范畴",
+      "",
+      "⚠️ 进一步修复 - 2026-01-25:",
+      "✅ 修复: InventoryPage.filterByWarehouse选择器 - 使用.table-toolbar-filters wrapper定位仓库下拉框",
+      "✅ 修复: SalesOrderPage.remarkInput选择器 - 使用精确placeholder='请输入备注信息'避免匹配多个元素",
+      "✅ 修复: sales-order.spec.ts line 489严格模式冲突 - 使用.first()选择第一个info-card",
+      "✅ TypeScript类型检查通过",
+      "",
+      "⚠️ 最终修复 - 2026-01-25:",
+      "✅ 修复: Error 1 (chromium) - items-card选择器严格模式冲突",
+      "  - 问题: .items-card.or(getByText('商品明细'))匹配2个元素",
+      "  - 修复: 改用.semi-card.filter({ hasText: '商品明细' }).first()",
+      "✅ 修复: Errors 3-5 (webkit/mobile-chrome/mobile-safari) - confirmOrder超时",
+      "  - 问题: 确认订单按钮在webkit/mobile浏览器上点击前未完全可见",
+      "  - 修复: SalesOrderPage.confirmOrder()添加waitFor({ state: 'visible' })和toBeEnabled()检查",
+      "  - 修复: modal和modal按钮也添加显式等待",
+      "✅ 修复: Error 2 (firefox) - waitForURL超时",
+      "  - 问题: Firefox URL导航检测较慢",
+      "  - 修复: waitForOrderCreateSuccess()超时增加到15000ms",
+      "  - 修复: 添加**/trade/sales/**模式支持详情页导航",
+      "  - 修复: 添加waitForLoadState('domcontentloaded')确保页面完全加载",
+      "✅ E2E测试通过: 16/16 (原5个失败测试全部通过，跨5个浏览器配置)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-INT-002",

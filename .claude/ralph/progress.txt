@@ -16317,3 +16317,321 @@ The 5 failing tests are for "should create and confirm order, verifying inventor
 ### PRD Status
 - P3-INT-001: Still `passes: false` (91% tests pass, 5 inventory-related failures remain)
 - Core sales order CRUD operations now work
+
+
+
+## P3-INT-001: Sales Order E2E Integration - Selector Fixes
+**Status**: ⏳ In Progress (E2E Selector Fixes Applied)
+**Date**: 2026-01-25
+
+### Changes Made:
+
+1. Fixed InventoryPage.filterByWarehouse selector:
+   - `frontend/tests/e2e/pages/InventoryPage.ts` - Line 45-78
+   - Problem: `.semi-select.first()` was selecting wrong dropdown
+   - Solution: Use `.table-toolbar-filters` wrapper to scope selector to the correct warehouse filter
+
+2. Fixed SalesOrderPage.remarkInput selector:
+   - `frontend/tests/e2e/pages/SalesOrderPage.ts` - Line 93
+   - Problem: `input[placeholder*="备注"]` matched 2 elements (order-level and item-level remarks)
+   - Solution: Use exact placeholder `input[placeholder="请输入备注信息"]`
+
+3. Fixed strict mode violation in sales-order.spec.ts:
+   - `frontend/tests/e2e/transactions/sales-order.spec.ts` - Line 489
+   - Problem: `.info-card, .order-basic-info` resolved to 2 elements
+   - Solution: Added `.first()` to select only the first matching element
+
+### Build Verification:
+- `npx tsc --noEmit` passes successfully with no errors
+
+### Test Status:
+- E2E tests could not run directly (missing browser dependencies on host)
+- Tests should be run via Docker: `./docker/local-test.sh run-e2e tests/e2e/transactions/sales-order.spec.ts`
+
+---
+
+## P0-I18N-008: Trade Module i18n Migration
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Created locale files:
+   - `frontend/src/locales/zh-CN/trade.json` - Chinese translations
+   - `frontend/src/locales/en-US/trade.json` - English translations
+
+2. Updated i18n configuration:
+   - `frontend/src/i18n/index.ts` - Added trade namespace
+
+3. Migrated trade module pages with i18n:
+   - `frontend/src/pages/trade/SalesOrders.tsx`
+   - `frontend/src/pages/trade/SalesOrderDetail.tsx`
+   - `frontend/src/pages/trade/SalesOrderEdit.tsx`
+   - `frontend/src/pages/trade/SalesReturns.tsx`
+   - `frontend/src/pages/trade/PurchaseOrders.tsx`
+   - `frontend/src/pages/trade/PurchaseOrderReceive.tsx`
+   - `frontend/src/pages/trade/PurchaseReturns.tsx`
+
+4. Migrated trade module feature components:
+   - `frontend/src/features/trade/SalesOrderForm.tsx`
+   - `frontend/src/features/trade/PurchaseOrderForm.tsx`
+
+### Implementation Pattern:
+- Used `useI18n({ ns: 'trade' })` hook for translations
+- Used `useFormatters()` hook for locale-aware date/currency formatting
+- Moved Zod validation schemas inside components with useMemo for i18n support
+- Memoized table columns with t() dependency
+
+### Build Verification:
+- `npm run build` passes successfully
+
+---
+
+## P1-INT-002: Partner Module E2E Integration Tests
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Fixed customer.spec.ts E2E tests:
+   - `frontend/tests/e2e/partners/customer.spec.ts` - Fixed test data uniqueness and status management tests
+
+2. Improved CustomersPage.ts Page Object:
+   - `frontend/tests/e2e/pages/CustomersPage.ts` - Enhanced filter methods with better wait handling
+
+3. Fixed CustomerForm.tsx validation:
+   - `frontend/src/features/partner/CustomerForm.tsx` - Fixed Zod schema for credit_limit and sort_order fields
+
+### Key Fixes:
+- **Phone/Email Conflict (409)**: Generated unique test data using timestamps
+  ```typescript
+  const timestamp = Date.now()
+  const uniquePhone = `138${timestamp.toString().slice(-8)}`
+  const uniqueEmail = `test-${timestamp}@example.com`
+  ```
+- **Type Conversion Error**: Changed `z.number()` to `z.coerce.number()` for fields receiving string values from API
+- **Status Management Tests**: Made tests robust by checking current status before attempting state changes
+- **Filter Method Timeouts**: Improved Semi UI dropdown handling with scoped selectors and increased timeouts
+
+### Test Results:
+- All 25 customer tests pass (100% pass rate)
+- Verified stable across 3 consecutive runs
+- No flaky tests detected
+
+---
+
+## P0-I18N-010: System Module i18n Migration
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Created locale files:
+   - `frontend/src/locales/zh-CN/system.json` - Chinese translations for system module
+   - `frontend/src/locales/en-US/system.json` - English translations for system module
+
+2. Updated i18n configuration:
+   - `frontend/src/i18n/index.ts` - Added system namespace imports
+
+3. Migrated system module pages with i18n:
+   - `frontend/src/pages/system/Users.tsx` - User management page
+   - `frontend/src/pages/system/Roles.tsx` - Role management page
+   - `frontend/src/pages/system/Permissions.tsx` - Permission configuration page
+
+### Implementation Pattern:
+- Used `useTranslation('system')` hook for translations
+- Moved STATUS_OPTIONS, TYPE_OPTIONS inside components with useMemo for i18n support
+- Moved RESOURCE_LABELS, ACTION_LABELS, ACTION_DESCRIPTIONS to i18n translations
+- Used `String(t(...))` pattern to ensure TypeScript compatibility with react-i18next
+- Memoized table columns and actions with t() dependency
+- Updated date formatting to use i18n.language for locale-aware display
+
+### Key Translation Categories:
+- `system.users.*` - User management (titles, form fields, messages, confirmations)
+- `system.roles.*` - Role management (titles, form fields, messages, confirmations, permission config)
+- `system.permissions.*` - Permission configuration (resources, actions, descriptions, stats)
+- `system.common.*` - Shared system module labels (refresh, save, cancel, etc.)
+
+### Build Verification:
+- `npm run build` passes successfully with no TypeScript errors
+
+---
+
+## P5-BE-006: Report Data Async Aggregation (Scheduled Tasks)
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+
+1. Created database migration for report cache tables:
+   - `backend/migrations/000024_create_report_cache.up.sql` - Creates cache tables for pre-computed reports
+   - `backend/migrations/000024_create_report_cache.down.sql` - Drop migration
+
+2. Created scheduler infrastructure:
+   - `backend/internal/infrastructure/scheduler/scheduler.go` - Core scheduler with worker pool pattern
+   - `backend/internal/infrastructure/scheduler/errors.go` - Error definitions
+   - `backend/internal/infrastructure/scheduler/cron_trigger.go` - CronTrigger for time-based scheduling
+
+3. Created ReportAggregationService:
+   - `backend/internal/application/report/aggregation_service.go` - Service for computing and caching reports
+   - Implements `scheduler.JobExecutor` interface
+   - Includes GORM repository implementation for cache storage
+
+4. Added manual refresh API endpoints:
+   - `POST /api/v1/reports/refresh` - Refresh single report type
+   - `POST /api/v1/reports/refresh/all` - Refresh all report types
+   - `GET /api/v1/reports/scheduler/status` - Get scheduler status
+
+5. Updated configuration:
+   - `backend/internal/infrastructure/config/config.go` - Added SchedulerConfig
+
+6. Wired report module into main application:
+   - `backend/cmd/server/main.go` - Added report repositories, services, handlers, and routes
+
+### Database Tables Created:
+- `report_cache_metadata` - Tracks cache metadata and validity
+- `report_sales_summary_cache` - Pre-computed sales summary
+- `report_sales_daily_cache` - Pre-computed daily sales trend
+- `report_inventory_summary_cache` - Pre-computed inventory summary
+- `report_pnl_monthly_cache` - Pre-computed monthly P&L
+- `report_product_ranking_cache` - Pre-computed product rankings
+- `report_customer_ranking_cache` - Pre-computed customer rankings
+- `report_scheduler_jobs` - Scheduled job configuration
+
+### Report Types Supported:
+- SALES_SUMMARY - Overall sales metrics
+- SALES_DAILY_TREND - Daily sales trend data
+- INVENTORY_SUMMARY - Inventory status snapshot
+- PROFIT_LOSS_MONTHLY - Monthly P&L calculations
+- PRODUCT_RANKING - Product sales rankings
+- CUSTOMER_RANKING - Customer sales rankings
+
+### Build Verification:
+- `go build ./...` passes successfully
+
+---
+
+## P7-BE-004: Payment Callback Service
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+
+1. Created domain events for payment gateway callbacks:
+   - `backend/internal/domain/finance/payment_gateway_events.go` - Defines GatewayPaymentCompletedEvent and GatewayRefundCompletedEvent
+
+2. Implemented PaymentCallbackService in application layer:
+   - `backend/internal/application/finance/payment_callback_service.go` - Core callback processing service
+   - Implements `finance.PaymentCallbackHandler` interface from domain layer
+   - Supports multiple payment gateways (WeChat Pay, Alipay)
+   - Provides idempotency checking using sync.Map to prevent duplicate processing
+   - Integrates with auto-reconciliation using FIFO strategy
+
+3. Created HTTP handlers for payment callbacks:
+   - `backend/internal/interfaces/http/handler/payment_callback.go` - HTTP handlers for gateway callbacks
+   - Endpoints registered outside authentication (gateways call directly)
+
+4. Registered callback routes in main.go:
+   - `POST /api/v1/payment/callback/wechat` - WeChat Pay payment callback
+   - `POST /api/v1/payment/callback/wechat/refund` - WeChat Pay refund callback
+   - `POST /api/v1/payment/callback/alipay` - Alipay payment callback
+   - `POST /api/v1/payment/callback/alipay/refund` - Alipay refund callback
+
+5. Added repository method for callback processing:
+   - `FindByPaymentReference` method in `ReceiptVoucherRepository` interface
+   - Implementation in `GormReceiptVoucherRepository`
+
+6. Created unit tests:
+   - `backend/internal/application/finance/payment_callback_service_test.go` - 11 test cases covering:
+     - Gateway registration and retrieval
+     - Callback verification failures
+     - Payment status handling
+     - Voucher not found scenarios
+     - Idempotent callback processing
+     - Refund callback handling
+
+### Key Features:
+- **Callback Verification**: Delegates to gateway adapters for signature verification
+- **Idempotency**: Uses transaction ID to prevent duplicate processing
+- **Auto-Reconciliation**: Automatically reconciles with outstanding receivables using FIFO strategy
+- **Event Publishing**: Publishes `GatewayPaymentCompletedEvent` and `GatewayRefundCompletedEvent`
+- **Gateway-Specific Responses**: Returns responses in format expected by each gateway
+
+### Requirements Fulfilled:
+- [x] 实现回调验签 (Callback verification via gateway adapters)
+- [x] 更新支付状态 (Payment status update via voucher confirmation)
+- [x] 发布支付完成事件 (Payment completed event publishing)
+
+### Build Verification:
+- `go build ./...` passes successfully
+- All 11 unit tests pass
+
+---
+
+
+---
+
+## P3-INT-001: Sales Order E2E Test Fixes
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Issues Fixed:
+
+**Error 1 (chromium): `should display order detail with complete information`**
+- Problem: Strict mode violation - selector `.items-card.or(getByText('商品明细'))` matched 2 elements
+- Root cause: Both the Card with class `.items-card` AND the text span "商品明细" were matching
+- Fix: Changed to `.semi-card.filter({ hasText: '商品明细' }).first()` in `sales-order.spec.ts`
+
+**Errors 3-5 (webkit/mobile-chrome/mobile-safari): `should create and confirm order, verifying inventory lock`**
+- Problem: Timeout clicking "确认订单" button on webkit and mobile browsers
+- Root cause: Button not visible/clickable in time before click attempt
+- Fix in `SalesOrderPage.ts` `confirmOrder()` method:
+  ```typescript
+  // Added explicit waits before clicking
+  await this.confirmButton.waitFor({ state: 'visible', timeout: 10000 })
+  await expect(this.confirmButton).toBeEnabled({ timeout: 5000 })
+  await this.confirmButton.click()
+  
+  // Also added waits for modal elements
+  await this.page.locator('.semi-modal').waitFor({ state: 'visible', timeout: 5000 })
+  const modalPrimaryButton = this.page.locator('.semi-modal-footer .semi-button-primary')
+  await modalPrimaryButton.waitFor({ state: 'visible', timeout: 5000 })
+  ```
+
+**Error 2 (firefox): `should ship confirmed order and verify inventory deduction`**
+- Problem: Timeout in `waitForURL` - Firefox slower with URL navigation detection
+- Fix in `SalesOrderPage.ts` `waitForOrderCreateSuccess()` method:
+  ```typescript
+  // Increased timeout and added fallback patterns
+  await Promise.race([
+    this.page.waitForURL('**/trade/sales', { timeout: 15000 }),
+    this.page.waitForURL('**/trade/sales/**', { timeout: 15000 }),
+    this.waitForToast('成功'),
+  ])
+  // Additional wait for page load
+  await this.page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
+  ```
+
+### Files Modified:
+- `frontend/tests/e2e/pages/SalesOrderPage.ts`
+  - `confirmOrder()`: Added explicit visibility waits for confirm button, modal, and modal button
+  - `waitForOrderCreateSuccess()`: Increased timeout, added URL patterns, added loadState wait
+- `frontend/tests/e2e/transactions/sales-order.spec.ts` (already had fix for Error 1)
+
+### Test Results:
+- All 16 test runs pass (3 originally failing tests × 5 browser configs + setup)
+- Test command: `npx playwright test --grep "should display order detail with complete information|should ship confirmed order and verify inventory deduction|should create and confirm order, verifying inventory lock"`
+- Browsers tested: chromium, firefox, webkit, mobile-chrome, mobile-safari
+
+### Verification:
+```bash
+# Docker Playwright test run
+docker run --rm --network=host \
+  -v $(pwd)/frontend:/app -w /app \
+  -e E2E_BASE_URL=http://localhost:3001 \
+  mcr.microsoft.com/playwright:v1.58.0-noble \
+  npx playwright test tests/e2e/transactions/sales-order.spec.ts \
+    --grep "should display order detail|should ship confirmed order|should create and confirm order" \
+    --reporter=list
+
+# Result: 16 passed (58.9s)
+```
+
+---
