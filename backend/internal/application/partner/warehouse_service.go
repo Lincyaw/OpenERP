@@ -167,7 +167,7 @@ func (s *WarehouseService) List(ctx context.Context, tenantID uuid.UUID, filter 
 
 	// Add specific filters
 	if filter.Status != "" {
-		domainFilter.Filters["status"] = filter.Status
+		domainFilter.Filters["status"] = mapAPIStatusToDomain(filter.Status)
 	}
 	if filter.Type != "" {
 		domainFilter.Filters["type"] = filter.Type

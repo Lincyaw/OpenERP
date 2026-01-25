@@ -3137,15 +3137,22 @@
       "根因: 后端返回 active/inactive, 前端期望 enabled/disabled",
       "后端定义: backend/internal/domain/partner/warehouse.go:15-16 (active/inactive)",
       "前端翻译: frontend/src/locales/zh-CN/partner.json (只有enabled/disabled)",
-      "修复文件:",
-      "- frontend/src/locales/zh-CN/partner.json",
-      "- frontend/src/locales/en-US/partner.json",
-      "添加内容:",
-      "  warehouses.status.active: 启用 / Active",
-      "  warehouses.status.inactive: 停用 / Inactive",
-      "验证: 仓库列表状态列显示正确翻译"
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ 修复方案: 在后端DTO层添加状态映射 (active→enabled, inactive→disabled)",
+      "✅ 文件修改: backend/internal/application/partner/dto.go",
+      "  - 添加 mapWarehouseStatus() 将domain状态映射到API状态",
+      "  - 添加 mapAPIStatusToDomain() 将API过滤参数映射到domain状态",
+      "  - 更新 ToWarehouseResponse() 使用 mapWarehouseStatus()",
+      "  - 更新 ToWarehouseListResponse() 使用 mapWarehouseStatus()",
+      "  - 更新 WarehouseListFilter.Status 验证为 enabled/disabled",
+      "✅ 文件修改: backend/internal/application/partner/warehouse_service.go",
+      "  - List() 方法使用 mapAPIStatusToDomain() 转换状态过滤参数",
+      "✅ 验证: go build ./... 成功",
+      "✅ 验证: go test ./internal/application/partner/... 全部通过",
+      "✅ 验证: 前端TypeScript类型检查通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-H4H5H6",

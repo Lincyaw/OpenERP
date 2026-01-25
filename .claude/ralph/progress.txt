@@ -16727,3 +16727,51 @@ Added `clickToHide` prop to the Dropdown component in TableActions.tsx:
 - The menu item onClick handlers work independently; clickToHide controls dropdown visibility
 
 ---
+
+---
+
+## P9-UI-001-H3: Fix Warehouse Status Translation (HIGH)
+**Status**: ✅ Completed
+**Date**: 2026-01-26
+
+### Problem
+Warehouse status column displayed raw translation key `warehouse.status.active` instead of the translated text. The backend API returns `active`/`inactive` but the frontend SDK (generated from Swagger) and translation files expected `enabled`/`disabled`.
+
+### Root Cause Analysis
+- Domain model uses: `active` / `inactive` (warehouse.go:15-16)
+- API response was returning: `active` / `inactive` (direct string conversion in dto.go)
+- Swagger documentation says: `enabled` / `disabled` (warehouse_dto.go in handler)
+- Frontend SDK expects: `enabled` / `disabled` (generated from Swagger)
+- Frontend translations have: `enabled` / `disabled`
+
+### Solution
+Added status mapping functions in the backend DTO layer to convert between domain status and API status:
+
+1. **mapWarehouseStatus()** - Converts domain status to API status:
+   - `active` → `enabled`
+   - `inactive` → `disabled`
+
+2. **mapAPIStatusToDomain()** - Converts API filter parameter to domain status:
+   - `enabled` → `active`
+   - `disabled` → `inactive`
+
+### Files Modified
+1. `backend/internal/application/partner/dto.go`:
+   - Added `mapWarehouseStatus()` function
+   - Added `mapAPIStatusToDomain()` function
+   - Updated `ToWarehouseResponse()` to use `mapWarehouseStatus()`
+   - Updated `ToWarehouseListResponse()` to use `mapWarehouseStatus()`
+   - Updated `WarehouseListFilter.Status` validation from `active|inactive` to `enabled|disabled`
+
+2. `backend/internal/application/partner/warehouse_service.go`:
+   - Updated `List()` to use `mapAPIStatusToDomain()` when converting filter status
+
+### Verification
+- `go build ./...` - Success
+- `go test ./internal/application/partner/...` - All tests pass
+- `npx tsc --noEmit` - TypeScript type check passes
+
+### Notes
+This fix ensures the API response matches the Swagger documentation and frontend expectations without changing the domain model. The mapping is done at the DTO boundary which is the appropriate place for API contract transformations.
+
+---

@@ -471,7 +471,7 @@ type WarehouseListResponse struct {
 // WarehouseListFilter represents filter options for warehouse list
 type WarehouseListFilter struct {
 	Search    string `form:"search"`
-	Status    string `form:"status" binding:"omitempty,oneof=active inactive"`
+	Status    string `form:"status" binding:"omitempty,oneof=enabled disabled"`
 	Type      string `form:"type" binding:"omitempty,oneof=physical virtual consign transit"`
 	City      string `form:"city"`
 	Province  string `form:"province"`
@@ -480,6 +480,30 @@ type WarehouseListFilter struct {
 	PageSize  int    `form:"page_size" binding:"omitempty,min=1,max=100"`
 	OrderBy   string `form:"order_by"`
 	OrderDir  string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+}
+
+// mapWarehouseStatus maps domain status (active/inactive) to API status (enabled/disabled)
+func mapWarehouseStatus(status partner.WarehouseStatus) string {
+	switch status {
+	case partner.WarehouseStatusActive:
+		return "enabled"
+	case partner.WarehouseStatusInactive:
+		return "disabled"
+	default:
+		return string(status)
+	}
+}
+
+// mapAPIStatusToDomain maps API status (enabled/disabled) to domain status (active/inactive)
+func mapAPIStatusToDomain(status string) string {
+	switch status {
+	case "enabled":
+		return string(partner.WarehouseStatusActive)
+	case "disabled":
+		return string(partner.WarehouseStatusInactive)
+	default:
+		return status
+	}
 }
 
 // ToWarehouseResponse converts a domain Warehouse to WarehouseResponse
@@ -491,7 +515,7 @@ func ToWarehouseResponse(w *partner.Warehouse) WarehouseResponse {
 		Name:        w.Name,
 		ShortName:   w.ShortName,
 		Type:        string(w.Type),
-		Status:      string(w.Status),
+		Status:      mapWarehouseStatus(w.Status),
 		ContactName: w.ContactName,
 		Phone:       w.Phone,
 		Email:       w.Email,
@@ -520,7 +544,7 @@ func ToWarehouseListResponse(w *partner.Warehouse) WarehouseListResponse {
 		Name:        w.Name,
 		ShortName:   w.ShortName,
 		Type:        string(w.Type),
-		Status:      string(w.Status),
+		Status:      mapWarehouseStatus(w.Status),
 		ContactName: w.ContactName,
 		Phone:       w.Phone,
 		City:        w.City,
