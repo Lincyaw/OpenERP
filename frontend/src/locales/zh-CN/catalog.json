@@ -94,6 +94,28 @@
       "sortOrderHelper": "数值越小越靠前"
     }
   },
+  "productDetail": {
+    "title": "商品详情",
+    "back": "返回列表",
+    "notExist": "商品不存在",
+    "notExistDesc": "该商品可能已被删除或不存在",
+    "timestamps": "时间信息",
+    "fields": {
+      "code": "商品编码",
+      "name": "商品名称",
+      "unit": "计量单位",
+      "barcode": "条形码",
+      "status": "状态",
+      "description": "商品描述",
+      "purchasePrice": "进货价",
+      "sellingPrice": "销售价",
+      "profitMargin": "利润率",
+      "minStock": "最低库存",
+      "sortOrder": "排序值",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间"
+    }
+  },
   "categories": {
     "title": "商品分类",
     "searchPlaceholder": "搜索分类名称或编码...",

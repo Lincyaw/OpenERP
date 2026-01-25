@@ -16775,3 +16775,44 @@ Added status mapping functions in the backend DTO layer to convert between domai
 This fix ensures the API response matches the Swagger documentation and frontend expectations without changing the domain model. The mapping is done at the DTO boundary which is the appropriate place for API contract transformations.
 
 ---
+
+## 2026-01-26: P9-UI-001-H1 - Create Product Detail Page
+
+### Summary
+Created the missing product detail page (`/catalog/products/:id`) that was causing navigation to fail when clicking "View" from the product list.
+
+### Files Created
+1. `frontend/src/pages/catalog/ProductDetail.tsx` - Complete product detail page with:
+   - Product basic info display (code, name, unit, barcode, status, description)
+   - Price info display (purchase price, selling price, profit margin)
+   - Stock settings display (min stock, sort order)
+   - Timestamps display (created_at, updated_at)
+   - Action buttons (edit, activate, deactivate, discontinue, delete)
+   - Loading state and empty state handling
+
+2. `frontend/src/pages/catalog/ProductDetail.css` - Page styling with responsive design
+
+### Files Modified
+1. `frontend/src/router/routes.tsx`:
+   - Added lazy load import for ProductDetailPage
+   - Added route `products/:id` in catalog module
+
+2. `frontend/src/locales/zh-CN/catalog.json`:
+   - Added `productDetail` translation section
+
+3. `frontend/src/locales/en-US/catalog.json`:
+   - Added `productDetail` translation section
+
+4. `frontend/src/i18n/types.ts`:
+   - Added `productDetail.*` keys to CatalogTranslations interface
+
+### Verification
+- `npx tsc --noEmit` - TypeScript type check passes
+- `npm run build` - Build successful
+
+### Notes
+- Used `@douyinfe/semi-ui-19` import (project convention) instead of `@douyinfe/semi-ui`
+- Follows existing pattern from SalesOrderDetail.tsx for consistency
+- Includes status-based action buttons (can only edit if not discontinued)
+
+---

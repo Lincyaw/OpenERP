@@ -94,6 +94,28 @@
       "sortOrderHelper": "Lower values appear first"
     }
   },
+  "productDetail": {
+    "title": "Product Detail",
+    "back": "Back to List",
+    "notExist": "Product Not Found",
+    "notExistDesc": "This product may have been deleted or does not exist",
+    "timestamps": "Timestamps",
+    "fields": {
+      "code": "Product Code",
+      "name": "Product Name",
+      "unit": "Unit",
+      "barcode": "Barcode",
+      "status": "Status",
+      "description": "Description",
+      "purchasePrice": "Purchase Price",
+      "sellingPrice": "Selling Price",
+      "profitMargin": "Profit Margin",
+      "minStock": "Min Stock",
+      "sortOrder": "Sort Order",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    }
+  },
   "categories": {
     "title": "Categories",
     "searchPlaceholder": "Search by name or code...",

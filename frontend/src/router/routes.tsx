@@ -27,6 +27,7 @@ const ForbiddenPage = () => lazyLoad(() => import('@/pages/Forbidden'))
 const ProductsPage = () => lazyLoad(() => import('@/pages/catalog/Products'))
 const ProductNewPage = () => lazyLoad(() => import('@/pages/catalog/ProductNew'))
 const ProductEditPage = () => lazyLoad(() => import('@/pages/catalog/ProductEdit'))
+const ProductDetailPage = () => lazyLoad(() => import('@/pages/catalog/ProductDetail'))
 const CategoriesPage = () => lazyLoad(() => import('@/pages/catalog/Categories'))
 
 // Partner module
@@ -600,6 +601,7 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/catalog') {
         childRoutes.push(
           { path: 'products/new', element: ProductNewPage() },
+          { path: 'products/:id', element: ProductDetailPage() },
           { path: 'products/:id/edit', element: ProductEditPage() }
         )
       }

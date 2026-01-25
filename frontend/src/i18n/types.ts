@@ -424,6 +424,25 @@ export interface CatalogTranslations {
   'categories.empty.titleSearch': string
   'categories.empty.description': string
   'categories.empty.descriptionSearch': string
+  // Product Detail
+  'productDetail.title': string
+  'productDetail.back': string
+  'productDetail.notExist': string
+  'productDetail.notExistDesc': string
+  'productDetail.timestamps': string
+  'productDetail.fields.code': string
+  'productDetail.fields.name': string
+  'productDetail.fields.unit': string
+  'productDetail.fields.barcode': string
+  'productDetail.fields.status': string
+  'productDetail.fields.description': string
+  'productDetail.fields.purchasePrice': string
+  'productDetail.fields.sellingPrice': string
+  'productDetail.fields.profitMargin': string
+  'productDetail.fields.minStock': string
+  'productDetail.fields.sortOrder': string
+  'productDetail.fields.createdAt': string
+  'productDetail.fields.updatedAt': string
 }
 
 /**
