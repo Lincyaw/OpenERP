@@ -39,6 +39,8 @@ import zhCNTrade from '../locales/zh-CN/trade.json'
 import enUSTrade from '../locales/en-US/trade.json'
 import zhCNFinance from '../locales/zh-CN/finance.json'
 import enUSFinance from '../locales/en-US/finance.json'
+import zhCNSystem from '../locales/zh-CN/system.json'
+import enUSSystem from '../locales/en-US/system.json'
 
 /**
  * Translation resources
@@ -56,6 +58,7 @@ const resources = {
     inventory: zhCNInventory,
     trade: zhCNTrade,
     finance: zhCNFinance,
+    system: zhCNSystem,
   },
   'en-US': {
     common: enUSCommon,
@@ -66,6 +69,7 @@ const resources = {
     inventory: enUSInventory,
     trade: enUSTrade,
     finance: enUSFinance,
+    system: enUSSystem,
   },
 }
 

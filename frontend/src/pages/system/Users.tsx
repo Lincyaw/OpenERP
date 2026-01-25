@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -41,38 +42,13 @@ const { Title, Text } = Typography
 // User type with index signature for DataTable compatibility
 type UserRow = User & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '待激活', value: 'pending' },
-  { label: '正常', value: 'active' },
-  { label: '已锁定', value: 'locked' },
-  { label: '已停用', value: 'deactivated' },
-]
-
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<UserStatus, 'white' | 'green' | 'red' | 'grey'> = {
-  pending: 'white',
-  active: 'green',
-  locked: 'red',
-  deactivated: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<UserStatus, string> = {
-  pending: '待激活',
-  active: '正常',
-  locked: '已锁定',
-  deactivated: '已停用',
-}
-
 /**
  * Format date for display
  */
-function formatDate(dateStr?: string): string {
+function formatDate(dateStr?: string, locale?: string): string {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString(locale || 'zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -106,7 +82,28 @@ function generatePassword(): string {
  * - Password reset
  */
 export default function UsersPage() {
+  const { t, i18n } = useTranslation('system')
   const api = useMemo(() => getIdentity(), [])
+
+  // Status tag color mapping
+  const STATUS_TAG_COLORS: Record<UserStatus, 'white' | 'green' | 'red' | 'grey'> = {
+    pending: 'white',
+    active: 'green',
+    locked: 'red',
+    deactivated: 'grey',
+  }
+
+  // Status options for filter - using useMemo to react to language changes
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('users.allStatus'), value: '' },
+      { label: t('users.status.pending'), value: 'pending' },
+      { label: t('users.status.active'), value: 'active' },
+      { label: t('users.status.locked'), value: 'locked' },
+      { label: t('users.status.deactivated'), value: 'deactivated' },
+    ],
+    [t]
+  )
 
   // State for data
   const [userList, setUserList] = useState<UserRow[]>([])
@@ -181,7 +178,7 @@ export default function UsersPage() {
         setTotal(response.data.total)
       }
     } catch {
-      Toast.error('获取用户列表失败')
+      Toast.error(t('users.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -268,11 +265,11 @@ export default function UsersPage() {
         }
         const response = await api.createUser(request)
         if (response.success) {
-          Toast.success('用户创建成功')
+          Toast.success(t('users.messages.createSuccess'))
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || '创建用户失败')
+          Toast.error(response.error?.message || t('users.messages.createError'))
         }
       } else if (editingUser) {
         const request: UpdateUserRequest = {
@@ -283,11 +280,11 @@ export default function UsersPage() {
         }
         const response = await api.updateUser(editingUser.id, request)
         if (response.success) {
-          Toast.success('用户更新成功')
+          Toast.success(t('users.messages.updateSuccess'))
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || '更新用户失败')
+          Toast.error(response.error?.message || t('users.messages.updateError'))
         }
       }
     } catch {
@@ -303,70 +300,76 @@ export default function UsersPage() {
       try {
         const response = await api.activateUser(user.id)
         if (response.success) {
-          Toast.success(`用户 "${user.display_name || user.username}" 已激活`)
+          Toast.success(
+            t('users.messages.activateSuccess', { name: user.display_name || user.username })
+          )
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || '激活用户失败')
+          Toast.error(response.error?.message || t('users.messages.activateError'))
         }
       } catch {
-        Toast.error('激活用户失败')
+        Toast.error(t('users.messages.activateError'))
       }
     },
-    [api, fetchUsers]
+    [api, fetchUsers, t]
   )
 
   // Handle deactivate user
   const handleDeactivate = useCallback(
     async (user: UserRow) => {
       Modal.confirm({
-        title: '确认停用',
-        content: `确定要停用用户 "${user.display_name || user.username}" 吗？停用后该用户将无法登录。`,
-        okText: '确认停用',
-        cancelText: '取消',
+        title: t('users.confirm.deactivateTitle'),
+        content: t('users.confirm.deactivateContent', { name: user.display_name || user.username }),
+        okText: t('users.confirm.deactivateOk'),
+        cancelText: t('common.cancel'),
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
             const response = await api.deactivateUser(user.id)
             if (response.success) {
-              Toast.success(`用户 "${user.display_name || user.username}" 已停用`)
+              Toast.success(
+                t('users.messages.deactivateSuccess', { name: user.display_name || user.username })
+              )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || '停用用户失败')
+              Toast.error(response.error?.message || t('users.messages.deactivateError'))
             }
           } catch {
-            Toast.error('停用用户失败')
+            Toast.error(t('users.messages.deactivateError'))
           }
         },
       })
     },
-    [api, fetchUsers]
+    [api, fetchUsers, t]
   )
 
   // Handle lock user
   const handleLock = useCallback(
     async (user: UserRow) => {
       Modal.confirm({
-        title: '确认锁定',
-        content: `确定要锁定用户 "${user.display_name || user.username}" 吗？锁定后该用户将无法登录。`,
-        okText: '确认锁定',
-        cancelText: '取消',
+        title: t('users.confirm.lockTitle'),
+        content: t('users.confirm.lockContent', { name: user.display_name || user.username }),
+        okText: t('users.confirm.lockOk'),
+        cancelText: t('common.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             const response = await api.lockUser(user.id)
             if (response.success) {
-              Toast.success(`用户 "${user.display_name || user.username}" 已锁定`)
+              Toast.success(
+                t('users.messages.lockSuccess', { name: user.display_name || user.username })
+              )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || '锁定用户失败')
+              Toast.error(response.error?.message || t('users.messages.lockError'))
             }
           } catch {
-            Toast.error('锁定用户失败')
+            Toast.error(t('users.messages.lockError'))
           }
         },
       })
     },
-    [api, fetchUsers]
+    [api, fetchUsers, t]
   )
 
   // Handle unlock user
@@ -375,43 +378,47 @@ export default function UsersPage() {
       try {
         const response = await api.unlockUser(user.id)
         if (response.success) {
-          Toast.success(`用户 "${user.display_name || user.username}" 已解锁`)
+          Toast.success(
+            t('users.messages.unlockSuccess', { name: user.display_name || user.username })
+          )
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || '解锁用户失败')
+          Toast.error(response.error?.message || t('users.messages.unlockError'))
         }
       } catch {
-        Toast.error('解锁用户失败')
+        Toast.error(t('users.messages.unlockError'))
       }
     },
-    [api, fetchUsers]
+    [api, fetchUsers, t]
   )
 
   // Handle delete user
   const handleDelete = useCallback(
     async (user: UserRow) => {
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除用户 "${user.display_name || user.username}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('users.confirm.deleteTitle'),
+        content: t('users.confirm.deleteContent', { name: user.display_name || user.username }),
+        okText: t('users.confirm.deleteOk'),
+        cancelText: t('common.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             const response = await api.deleteUser(user.id)
             if (response.success) {
-              Toast.success(`用户 "${user.display_name || user.username}" 已删除`)
+              Toast.success(
+                t('users.messages.deleteSuccess', { name: user.display_name || user.username })
+              )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || '删除用户失败')
+              Toast.error(response.error?.message || t('users.messages.deleteError'))
             }
           } catch {
-            Toast.error('删除用户失败')
+            Toast.error(t('users.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchUsers]
+    [api, fetchUsers, t]
   )
 
   // Handle reset password
@@ -428,15 +435,15 @@ export default function UsersPage() {
     try {
       const response = await api.resetPassword(resetPasswordUser.id, { new_password: newPassword })
       if (response.success) {
-        Toast.success('密码重置成功')
+        Toast.success(t('users.messages.resetPasswordSuccess'))
         setResetPasswordVisible(false)
       } else {
-        Toast.error(response.error?.message || '密码重置失败')
+        Toast.error(response.error?.message || t('users.messages.resetPasswordError'))
       }
     } catch {
-      Toast.error('密码重置失败')
+      Toast.error(t('users.messages.resetPasswordError'))
     }
-  }, [api, resetPasswordUser, newPassword])
+  }, [api, resetPasswordUser, newPassword, t])
 
   // Handle assign roles
   const handleAssignRoles = useCallback((user: UserRow) => {
@@ -452,40 +459,40 @@ export default function UsersPage() {
     try {
       const response = await api.assignRoles(roleAssignUser.id, { role_ids: selectedRoleIds })
       if (response.success) {
-        Toast.success('角色分配成功')
+        Toast.success(t('users.messages.assignRolesSuccess'))
         setRoleModalVisible(false)
         fetchUsers()
       } else {
-        Toast.error(response.error?.message || '角色分配失败')
+        Toast.error(response.error?.message || t('users.messages.assignRolesError'))
       }
     } catch {
-      Toast.error('角色分配失败')
+      Toast.error(t('users.messages.assignRolesError'))
     }
-  }, [api, roleAssignUser, selectedRoleIds, fetchUsers])
+  }, [api, roleAssignUser, selectedRoleIds, fetchUsers, t])
 
   // Handle bulk activate
   const handleBulkActivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.activateUser(id)))
-      Toast.success(`已激活 ${selectedRowKeys.length} 个用户`)
+      Toast.success(t('users.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchUsers()
     } catch {
-      Toast.error('批量激活失败')
+      Toast.error(t('users.messages.batchActivateError'))
     }
-  }, [api, selectedRowKeys, fetchUsers])
+  }, [api, selectedRowKeys, fetchUsers, t])
 
   // Handle bulk deactivate
   const handleBulkDeactivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.deactivateUser(id)))
-      Toast.success(`已停用 ${selectedRowKeys.length} 个用户`)
+      Toast.success(t('users.messages.batchDeactivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchUsers()
     } catch {
-      Toast.error('批量停用失败')
+      Toast.error(t('users.messages.batchDeactivateError'))
     }
-  }, [api, selectedRowKeys, fetchUsers])
+  }, [api, selectedRowKeys, fetchUsers, t])
 
   // Get role name by ID
   const getRoleName = useCallback(
@@ -500,7 +507,7 @@ export default function UsersPage() {
   const tableColumns: DataTableColumn<UserRow>[] = useMemo(
     () => [
       {
-        title: '用户名',
+        title: t('users.columns.username'),
         dataIndex: 'username',
         width: 140,
         sortable: true,
@@ -509,7 +516,7 @@ export default function UsersPage() {
         ),
       },
       {
-        title: '显示名称',
+        title: t('users.columns.displayName'),
         dataIndex: 'display_name',
         sortable: true,
         ellipsis: true,
@@ -520,7 +527,7 @@ export default function UsersPage() {
         ),
       },
       {
-        title: '联系方式',
+        title: t('users.columns.contact'),
         dataIndex: 'email',
         width: 200,
         render: (_email: unknown, record: UserRow) => (
@@ -532,13 +539,13 @@ export default function UsersPage() {
         ),
       },
       {
-        title: '角色',
+        title: t('users.columns.role'),
         dataIndex: 'role_ids',
         width: 200,
         render: (roleIds: unknown) => {
           const ids = roleIds as string[] | undefined
           if (!ids || ids.length === 0) {
-            return <Text type="tertiary">无角色</Text>
+            return <Text type="tertiary">{t('users.noRole')}</Text>
           }
           return (
             <TagGroup
@@ -550,32 +557,34 @@ export default function UsersPage() {
         },
       },
       {
-        title: '状态',
+        title: t('users.columns.status'),
         dataIndex: 'status',
         width: 90,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as UserStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`users.status.${statusValue}`)}</Tag>
+          )
         },
       },
       {
-        title: '最后登录',
+        title: t('users.columns.lastLogin'),
         dataIndex: 'last_login_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
       },
       {
-        title: '创建时间',
+        title: t('users.columns.createdAt'),
         dataIndex: 'created_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
       },
     ],
-    [getRoleName]
+    [getRoleName, t, i18n.language, STATUS_TAG_COLORS]
   )
 
   // Table row actions
@@ -583,37 +592,37 @@ export default function UsersPage() {
     () => [
       {
         key: 'edit',
-        label: '编辑',
+        label: t('users.actions.edit'),
         onClick: handleEdit,
       },
       {
         key: 'roles',
-        label: '分配角色',
+        label: t('users.actions.assignRoles'),
         onClick: handleAssignRoles,
       },
       {
         key: 'reset-password',
-        label: '重置密码',
+        label: t('users.actions.resetPassword'),
         icon: <IconKey size="small" />,
         onClick: handleResetPassword,
       },
       {
         key: 'activate',
-        label: '激活',
+        label: t('users.actions.activate'),
         type: 'primary',
         onClick: handleActivate,
         hidden: (record) => record.status === 'active',
       },
       {
         key: 'deactivate',
-        label: '停用',
+        label: t('users.actions.deactivate'),
         type: 'warning',
         onClick: handleDeactivate,
         hidden: (record) => record.status === 'deactivated',
       },
       {
         key: 'lock',
-        label: '锁定',
+        label: t('users.actions.lock'),
         type: 'warning',
         icon: <IconLock size="small" />,
         onClick: handleLock,
@@ -621,14 +630,14 @@ export default function UsersPage() {
       },
       {
         key: 'unlock',
-        label: '解锁',
+        label: t('users.actions.unlock'),
         icon: <IconUnlock size="small" />,
         onClick: handleUnlock,
         hidden: (record) => record.status !== 'locked',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('users.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
       },
@@ -642,6 +651,7 @@ export default function UsersPage() {
       handleLock,
       handleUnlock,
       handleDelete,
+      t,
     ]
   )
 
@@ -657,35 +667,35 @@ export default function UsersPage() {
 
   // Role filter options
   const roleOptions = useMemo(() => {
-    const options = [{ label: '全部角色', value: '' }]
+    const options = [{ label: t('users.allRoles'), value: '' }]
     roles.forEach((role) => {
       options.push({ label: role.name, value: role.id })
     })
     return options
-  }, [roles])
+  }, [roles, t])
 
   return (
     <Container size="full" className="users-page">
       <Card className="users-card">
         <div className="users-header">
           <Title heading={4} style={{ margin: 0 }}>
-            用户管理
+            {t('users.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索用户名、姓名、邮箱、电话..."
+          searchPlaceholder={t('users.searchPlaceholder')}
           primaryAction={{
-            label: '新增用户',
+            label: t('users.addUser'),
             icon: <IconPlus />,
             onClick: handleCreate,
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -693,14 +703,14 @@ export default function UsersPage() {
           filters={
             <Space className="users-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('users.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="角色筛选"
+                placeholder={t('users.roleFilter')}
                 value={roleFilter}
                 onChange={handleRoleChange}
                 optionList={roleOptions}
@@ -716,10 +726,10 @@ export default function UsersPage() {
             onCancel={() => setSelectedRowKeys([])}
           >
             <Tag color="blue" onClick={handleBulkActivate} style={{ cursor: 'pointer' }}>
-              批量激活
+              {t('users.actions.batchActivate')}
             </Tag>
             <Tag color="orange" onClick={handleBulkDeactivate} style={{ cursor: 'pointer' }}>
-              批量停用
+              {t('users.actions.batchDeactivate')}
             </Tag>
           </BulkActionBar>
         )}
@@ -750,14 +760,14 @@ export default function UsersPage() {
 
       {/* Create/Edit User Modal */}
       <Modal
-        title={modalMode === 'create' ? '新增用户' : '编辑用户'}
+        title={modalMode === 'create' ? t('users.addUser') : t('users.editUser')}
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleModalSubmit}
         confirmLoading={modalLoading}
         width={600}
-        okText={modalMode === 'create' ? '创建' : '保存'}
-        cancelText="取消"
+        okText={modalMode === 'create' ? t('common.create') : t('common.save')}
+        cancelText={t('common.cancel')}
       >
         <Form
           getFormApi={(api) => {
@@ -779,25 +789,25 @@ export default function UsersPage() {
         >
           <Form.Input
             field="username"
-            label="用户名"
-            placeholder="请输入用户名"
+            label={t('users.form.username')}
+            placeholder={t('users.form.usernamePlaceholder')}
             rules={[
-              { required: true, message: '请输入用户名' },
-              { min: 3, message: '用户名至少3个字符' },
-              { max: 100, message: '用户名最多100个字符' },
+              { required: true, message: t('users.form.usernamePlaceholder') },
+              { min: 3, message: t('users.form.usernameMinError') },
+              { max: 100, message: t('users.form.usernameMaxError') },
             ]}
             disabled={modalMode === 'edit'}
           />
           {modalMode === 'create' && (
             <Form.Input
               field="password"
-              label="密码"
+              label={t('users.form.password')}
               mode="password"
-              placeholder="请输入密码"
+              placeholder={t('users.form.passwordPlaceholder')}
               rules={[
-                { required: true, message: '请输入密码' },
-                { min: 8, message: '密码至少8个字符' },
-                { max: 128, message: '密码最多128个字符' },
+                { required: true, message: t('users.form.passwordPlaceholder') },
+                { min: 8, message: t('users.form.passwordMinError') },
+                { max: 128, message: t('users.form.passwordMaxError') },
               ]}
               extraText={
                 <Button
@@ -807,21 +817,33 @@ export default function UsersPage() {
                     formApiRef.current?.setValue('password', generatePassword())
                   }}
                 >
-                  生成随机密码
+                  {t('users.form.generatePassword')}
                 </Button>
               }
             />
           )}
-          <Form.Input field="display_name" label="显示名称" placeholder="请输入显示名称" />
+          <Form.Input
+            field="display_name"
+            label={t('users.form.displayName')}
+            placeholder={t('users.form.displayNamePlaceholder')}
+          />
           <Form.Input
             field="email"
-            label="邮箱"
-            placeholder="请输入邮箱"
-            rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]}
+            label={t('users.form.email')}
+            placeholder={t('users.form.emailPlaceholder')}
+            rules={[{ type: 'email', message: t('users.form.emailError') }]}
           />
-          <Form.Input field="phone" label="电话" placeholder="请输入电话号码" />
+          <Form.Input
+            field="phone"
+            label={t('users.form.phone')}
+            placeholder={t('users.form.phonePlaceholder')}
+          />
           {modalMode === 'create' && (
-            <Form.CheckboxGroup field="role_ids" label="分配角色" direction="horizontal">
+            <Form.CheckboxGroup
+              field="role_ids"
+              label={t('users.form.assignRoles')}
+              direction="horizontal"
+            >
               {roles.map((role) => (
                 <Checkbox key={role.id} value={role.id}>
                   {role.name}
@@ -829,29 +851,34 @@ export default function UsersPage() {
               ))}
             </Form.CheckboxGroup>
           )}
-          <Form.TextArea field="notes" label="备注" placeholder="请输入备注信息" rows={3} />
+          <Form.TextArea
+            field="notes"
+            label={t('users.form.notes')}
+            placeholder={t('users.form.notesPlaceholder')}
+            rows={3}
+          />
         </Form>
       </Modal>
 
       {/* Reset Password Modal */}
       <Modal
-        title="重置密码"
+        title={t('users.resetPassword.title')}
         visible={resetPasswordVisible}
         onCancel={() => setResetPasswordVisible(false)}
         onOk={handleSubmitResetPassword}
-        okText="确认重置"
-        cancelText="取消"
+        okText={t('users.resetPassword.confirmReset')}
+        cancelText={t('common.cancel')}
         width={500}
       >
         <div style={{ marginBottom: 16 }}>
           <Text>
-            即将为用户{' '}
-            <Text strong>{resetPasswordUser?.display_name || resetPasswordUser?.username}</Text>{' '}
-            重置密码
+            {t('users.resetPassword.description', {
+              name: resetPasswordUser?.display_name || resetPasswordUser?.username,
+            })}
           </Text>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <Text type="secondary">新密码：</Text>
+          <Text type="secondary">{t('users.resetPassword.newPassword')}</Text>
           <Input
             value={newPassword}
             onChange={(v) => setNewPassword(v)}
@@ -862,30 +889,31 @@ export default function UsersPage() {
                 size="small"
                 onClick={() => setNewPassword(generatePassword())}
               >
-                重新生成
+                {t('users.resetPassword.regenerate')}
               </Button>
             }
           />
         </div>
         <div>
-          <Text type="warning">请记录新密码并安全地告知用户。密码一旦重置，旧密码将立即失效。</Text>
+          <Text type="warning">{t('users.resetPassword.warning')}</Text>
         </div>
       </Modal>
 
       {/* Role Assignment Modal */}
       <Modal
-        title="分配角色"
+        title={t('users.roleAssignment.title')}
         visible={roleModalVisible}
         onCancel={() => setRoleModalVisible(false)}
         onOk={handleSubmitRoles}
-        okText="保存"
-        cancelText="取消"
+        okText={t('common.save')}
+        cancelText={t('common.cancel')}
         width={500}
       >
         <div style={{ marginBottom: 16 }}>
           <Text>
-            为用户 <Text strong>{roleAssignUser?.display_name || roleAssignUser?.username}</Text>{' '}
-            分配角色
+            {t('users.roleAssignment.description', {
+              name: roleAssignUser?.display_name || roleAssignUser?.username,
+            })}
           </Text>
         </div>
         <div>
@@ -905,7 +933,7 @@ export default function UsersPage() {
                   )}
                   {role.is_system_role && (
                     <Tag size="small" color="blue" style={{ marginLeft: 8 }}>
-                      系统角色
+                      {t('users.roleAssignment.systemRole')}
                     </Tag>
                   )}
                 </div>

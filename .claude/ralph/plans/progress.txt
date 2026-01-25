@@ -65,3 +65,40 @@
 - All 25 customer tests pass (100% pass rate)
 - Verified stable across 3 consecutive runs
 - No flaky tests detected
+
+---
+
+## P0-I18N-010: System Module i18n Migration
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Created locale files:
+   - `frontend/src/locales/zh-CN/system.json` - Chinese translations for system module
+   - `frontend/src/locales/en-US/system.json` - English translations for system module
+
+2. Updated i18n configuration:
+   - `frontend/src/i18n/index.ts` - Added system namespace imports
+
+3. Migrated system module pages with i18n:
+   - `frontend/src/pages/system/Users.tsx` - User management page
+   - `frontend/src/pages/system/Roles.tsx` - Role management page
+   - `frontend/src/pages/system/Permissions.tsx` - Permission configuration page
+
+### Implementation Pattern:
+- Used `useTranslation('system')` hook for translations
+- Moved STATUS_OPTIONS, TYPE_OPTIONS inside components with useMemo for i18n support
+- Moved RESOURCE_LABELS, ACTION_LABELS, ACTION_DESCRIPTIONS to i18n translations
+- Used `String(t(...))` pattern to ensure TypeScript compatibility with react-i18next
+- Memoized table columns and actions with t() dependency
+- Updated date formatting to use i18n.language for locale-aware display
+
+### Key Translation Categories:
+- `system.users.*` - User management (titles, form fields, messages, confirmations)
+- `system.roles.*` - Role management (titles, form fields, messages, confirmations, permission config)
+- `system.permissions.*` - Permission configuration (resources, actions, descriptions, stats)
+- `system.common.*` - Shared system module labels (refresh, save, cancel, etc.)
+
+### Build Verification:
+- `npm run build` passes successfully with no TypeScript errors
+

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -35,27 +36,13 @@ const { Title, Text } = Typography
 // Role type with index signature for DataTable compatibility
 type RoleRow = Role & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '已启用', value: 'true' },
-  { label: '已禁用', value: 'false' },
-]
-
-// Type options for filter
-const TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '系统角色', value: 'true' },
-  { label: '自定义角色', value: 'false' },
-]
-
 /**
  * Format date for display
  */
-function formatDate(dateStr?: string): string {
+function formatDate(dateStr: string | undefined, locale: string): string {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -85,107 +72,6 @@ function groupPermissionsByResource(permissions: string[]): Map<string, string[]
 }
 
 /**
- * Resource name labels (Chinese)
- */
-const RESOURCE_LABELS: Record<string, string> = {
-  product: '商品',
-  category: '分类',
-  customer: '客户',
-  supplier: '供应商',
-  warehouse: '仓库',
-  inventory: '库存',
-  sales_order: '销售订单',
-  purchase_order: '采购订单',
-  sales_return: '销售退货',
-  purchase_return: '采购退货',
-  account_receivable: '应收账款',
-  account_payable: '应付账款',
-  receipt: '收款单',
-  payment: '付款单',
-  expense: '费用',
-  income: '其他收入',
-  report: '报表',
-  user: '用户',
-  role: '角色',
-  tenant: '租户',
-}
-
-/**
- * Action name labels (Chinese)
- */
-const ACTION_LABELS: Record<string, string> = {
-  create: '创建',
-  read: '查看',
-  update: '修改',
-  delete: '删除',
-  enable: '启用',
-  disable: '停用',
-  confirm: '确认',
-  cancel: '取消',
-  ship: '发货',
-  receive: '收货',
-  approve: '审批',
-  reject: '拒绝',
-  adjust: '调整',
-  lock: '锁定',
-  unlock: '解锁',
-  reconcile: '核销',
-  export: '导出',
-  import: '导入',
-  assign_role: '分配角色',
-  view_all: '查看全部',
-}
-
-/**
- * Get readable permission label
- */
-function getPermissionLabel(permission: string): string {
-  const parts = permission.split(':')
-  if (parts.length !== 2) return permission
-
-  const [resource, action] = parts
-  const resourceLabel = RESOURCE_LABELS[resource] || resource
-  const actionLabel = ACTION_LABELS[action] || action
-
-  return `${actionLabel}${resourceLabel}`
-}
-
-/**
- * Convert permissions to tree data
- */
-function permissionsToTreeData(permissions: string[]): TreeNodeData[] {
-  const grouped = groupPermissionsByResource(permissions)
-  const treeData: TreeNodeData[] = []
-
-  grouped.forEach((perms, resource) => {
-    const resourceLabel = RESOURCE_LABELS[resource] || resource
-    treeData.push({
-      key: resource,
-      label: resourceLabel,
-      value: resource,
-      children: perms.map((perm) => {
-        const action = perm.split(':')[1]
-        const actionLabel = ACTION_LABELS[action] || action
-        return {
-          key: perm,
-          label: actionLabel,
-          value: perm,
-        }
-      }),
-    })
-  })
-
-  // Sort by resource name
-  treeData.sort((a, b) => {
-    const aLabel = a.label as string
-    const bLabel = b.label as string
-    return aLabel.localeCompare(bLabel, 'zh-CN')
-  })
-
-  return treeData
-}
-
-/**
  * Roles management page
  *
  * Features:
@@ -197,7 +83,85 @@ function permissionsToTreeData(permissions: string[]): TreeNodeData[] {
  * - Permission configuration
  */
 export default function RolesPage() {
+  const { t, i18n } = useTranslation('system')
   const api = useMemo(() => getIdentity(), [])
+
+  // Status options for filter (with i18n)
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('roles.allStatus'), value: '' },
+      { label: t('roles.enabled'), value: 'true' },
+      { label: t('roles.disabled'), value: 'false' },
+    ],
+    [t]
+  )
+
+  // Type options for filter (with i18n)
+  const TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('roles.allTypes'), value: '' },
+      { label: t('roles.systemRole'), value: 'true' },
+      { label: t('roles.customRole'), value: 'false' },
+    ],
+    [t]
+  )
+
+  /**
+   * Get readable permission label
+   */
+  const getPermissionLabel = useCallback(
+    (permission: string): string => {
+      const parts = permission.split(':')
+      if (parts.length !== 2) return permission
+
+      const [resource, action] = parts
+      const resourceLabel = String(t(`permissions.resources.${resource}`)) || resource
+      const actionLabel = String(t(`permissions.actions.${action}`)) || action
+
+      return i18n.language === 'zh-CN'
+        ? `${actionLabel}${resourceLabel}`
+        : `${actionLabel} ${resourceLabel}`
+    },
+    [t, i18n.language]
+  )
+
+  /**
+   * Convert permissions to tree data
+   */
+  const permissionsToTreeData = useCallback(
+    (permissions: string[]): TreeNodeData[] => {
+      const grouped = groupPermissionsByResource(permissions)
+      const treeData: TreeNodeData[] = []
+
+      grouped.forEach((perms, resource) => {
+        const resourceLabel = String(t(`permissions.resources.${resource}`)) || resource
+        treeData.push({
+          key: resource,
+          label: resourceLabel,
+          value: resource,
+          children: perms.map((perm) => {
+            const action = perm.split(':')[1]
+            const actionLabel = String(t(`permissions.actions.${action}`)) || action
+            return {
+              key: perm,
+              label: actionLabel,
+              value: perm,
+            }
+          }),
+        })
+      })
+
+      // Sort by resource name
+      treeData.sort((a, b) => {
+        const aLabel = a.label as string
+        const bLabel = b.label as string
+        return aLabel.localeCompare(bLabel, i18n.language)
+      })
+
+      return treeData
+    },
+    [t, i18n.language]
+  )
 
   // State for data
   const [roleList, setRoleList] = useState<RoleRow[]>([])
@@ -273,7 +237,7 @@ export default function RolesPage() {
         setTotal(response.data.total)
       }
     } catch {
-      Toast.error('获取角色列表失败')
+      Toast.error(t('roles.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -332,15 +296,18 @@ export default function RolesPage() {
   }, [])
 
   // Handle edit role
-  const handleEdit = useCallback((role: RoleRow) => {
-    if (role.is_system_role) {
-      Toast.warning('系统角色不能编辑')
-      return
-    }
-    setModalMode('edit')
-    setEditingRole(role)
-    setModalVisible(true)
-  }, [])
+  const handleEdit = useCallback(
+    (role: RoleRow) => {
+      if (role.is_system_role) {
+        Toast.warning(t('roles.messages.cannotEditSystem'))
+        return
+      }
+      setModalMode('edit')
+      setEditingRole(role)
+      setModalVisible(true)
+    },
+    [t]
+  )
 
   // Handle view role details
   const handleViewDetail = useCallback((role: RoleRow) => {
@@ -366,11 +333,11 @@ export default function RolesPage() {
         }
         const response = await api.createRole(request)
         if (response.success) {
-          Toast.success('角色创建成功')
+          Toast.success(t('roles.messages.createSuccess'))
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || '创建角色失败')
+          Toast.error(response.error?.message || t('roles.messages.createError'))
         }
       } else if (editingRole) {
         const request: UpdateRoleRequest = {
@@ -380,11 +347,11 @@ export default function RolesPage() {
         }
         const response = await api.updateRole(editingRole.id, request)
         if (response.success) {
-          Toast.success('角色更新成功')
+          Toast.success(t('roles.messages.updateSuccess'))
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || '更新角色失败')
+          Toast.error(response.error?.message || t('roles.messages.updateError'))
         }
       }
     } catch {
@@ -392,7 +359,7 @@ export default function RolesPage() {
     } finally {
       setModalLoading(false)
     }
-  }, [modalMode, editingRole, api, fetchRoles])
+  }, [modalMode, editingRole, api, fetchRoles, t])
 
   // Handle enable role
   const handleEnable = useCallback(
@@ -400,82 +367,82 @@ export default function RolesPage() {
       try {
         const response = await api.enableRole(role.id)
         if (response.success) {
-          Toast.success(`角色 "${role.name}" 已启用`)
+          Toast.success(t('roles.messages.enableSuccess', { name: role.name }))
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || '启用角色失败')
+          Toast.error(response.error?.message || t('roles.messages.enableError'))
         }
       } catch {
-        Toast.error('启用角色失败')
+        Toast.error(t('roles.messages.enableError'))
       }
     },
-    [api, fetchRoles]
+    [api, fetchRoles, t]
   )
 
   // Handle disable role
   const handleDisable = useCallback(
     async (role: RoleRow) => {
       if (role.is_system_role) {
-        Toast.warning('系统角色不能禁用')
+        Toast.warning(t('roles.messages.cannotDisableSystem'))
         return
       }
       Modal.confirm({
-        title: '确认禁用',
-        content: `确定要禁用角色 "${role.name}" 吗？禁用后拥有该角色的用户将失去相关权限。`,
-        okText: '确认禁用',
-        cancelText: '取消',
+        title: t('roles.confirm.disableTitle'),
+        content: t('roles.confirm.disableContent', { name: role.name }),
+        okText: t('roles.confirm.disableOk'),
+        cancelText: t('common.cancel'),
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
             const response = await api.disableRole(role.id)
             if (response.success) {
-              Toast.success(`角色 "${role.name}" 已禁用`)
+              Toast.success(t('roles.messages.disableSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.error?.message || '禁用角色失败')
+              Toast.error(response.error?.message || t('roles.messages.disableError'))
             }
           } catch {
-            Toast.error('禁用角色失败')
+            Toast.error(t('roles.messages.disableError'))
           }
         },
       })
     },
-    [api, fetchRoles]
+    [api, fetchRoles, t]
   )
 
   // Handle delete role
   const handleDelete = useCallback(
     async (role: RoleRow) => {
       if (role.is_system_role) {
-        Toast.warning('系统角色不能删除')
+        Toast.warning(t('roles.messages.cannotDeleteSystem'))
         return
       }
       if (role.user_count && role.user_count > 0) {
-        Toast.warning(`该角色还有 ${role.user_count} 个用户使用，请先移除用户的该角色`)
+        Toast.warning(t('roles.messages.cannotDeleteWithUsers', { count: role.user_count }))
         return
       }
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除角色 "${role.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('roles.confirm.deleteTitle'),
+        content: t('roles.confirm.deleteContent', { name: role.name }),
+        okText: t('roles.confirm.deleteOk'),
+        cancelText: t('common.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             const response = await api.deleteRole(role.id)
             if (response.success) {
-              Toast.success(`角色 "${role.name}" 已删除`)
+              Toast.success(t('roles.messages.deleteSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.error?.message || '删除角色失败')
+              Toast.error(response.error?.message || t('roles.messages.deleteError'))
             }
           } catch {
-            Toast.error('删除角色失败')
+            Toast.error(t('roles.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchRoles]
+    [api, fetchRoles, t]
   )
 
   // Handle configure permissions
@@ -495,18 +462,18 @@ export default function RolesPage() {
         permissions: selectedPermissions,
       })
       if (response.success) {
-        Toast.success('权限配置已保存')
+        Toast.success(t('roles.messages.savePermissionsSuccess'))
         setPermissionModalVisible(false)
         fetchRoles()
       } else {
-        Toast.error(response.error?.message || '保存权限失败')
+        Toast.error(response.error?.message || t('roles.messages.savePermissionsError'))
       }
     } catch {
-      Toast.error('保存权限失败')
+      Toast.error(t('roles.messages.savePermissionsError'))
     } finally {
       setPermissionSaving(false)
     }
-  }, [api, permissionRole, selectedPermissions, fetchRoles])
+  }, [api, permissionRole, selectedPermissions, fetchRoles, t])
 
   // Handle permission tree selection
   const handlePermissionChange = useCallback(
@@ -546,13 +513,13 @@ export default function RolesPage() {
   const tableColumns: DataTableColumn<RoleRow>[] = useMemo(
     () => [
       {
-        title: '角色编码',
+        title: t('roles.columns.code'),
         dataIndex: 'code',
         width: 140,
         render: (code: unknown) => <span className="role-code">{(code as string) || '-'}</span>,
       },
       {
-        title: '角色名称',
+        title: t('roles.columns.name'),
         dataIndex: 'name',
         sortable: true,
         ellipsis: true,
@@ -561,49 +528,55 @@ export default function RolesPage() {
             <span className="role-name">{name as string}</span>
             {record.is_system_role && (
               <Tag size="small" color="blue" className="role-system-tag">
-                系统
+                {t('roles.systemTag')}
               </Tag>
             )}
           </div>
         ),
       },
       {
-        title: '描述',
+        title: t('roles.columns.description'),
         dataIndex: 'description',
         width: 200,
         ellipsis: true,
         render: (desc: unknown) => <Text type="tertiary">{(desc as string) || '-'}</Text>,
       },
       {
-        title: '权限数',
+        title: t('roles.columns.permissionCount'),
         dataIndex: 'permissions',
         width: 100,
         align: 'center',
         render: (permissions: unknown) => {
           const perms = permissions as string[] | undefined
           const count = perms?.length || 0
-          return <Tag color={count > 0 ? 'cyan' : 'grey'}>{count} 项</Tag>
+          return (
+            <Tag color={count > 0 ? 'cyan' : 'grey'}>{t('roles.permissionCount', { count })}</Tag>
+          )
         },
       },
       {
-        title: '用户数',
+        title: t('roles.columns.userCount'),
         dataIndex: 'user_count',
         width: 90,
         align: 'center',
         render: (count: unknown) => <Text type="secondary">{(count as number) || 0}</Text>,
       },
       {
-        title: '状态',
+        title: t('roles.columns.status'),
         dataIndex: 'is_enabled',
         width: 90,
         align: 'center',
         render: (isEnabled: unknown) => {
           const enabled = isEnabled as boolean
-          return <Tag color={enabled ? 'green' : 'grey'}>{enabled ? '已启用' : '已禁用'}</Tag>
+          return (
+            <Tag color={enabled ? 'green' : 'grey'}>
+              {enabled ? t('roles.enabled') : t('roles.disabled')}
+            </Tag>
+          )
         },
       },
       {
-        title: '排序',
+        title: t('roles.columns.sortOrder'),
         dataIndex: 'sort_order',
         width: 80,
         align: 'center',
@@ -611,14 +584,14 @@ export default function RolesPage() {
         render: (order: unknown) => (order as number) || 0,
       },
       {
-        title: '更新时间',
+        title: t('roles.columns.updatedAt'),
         dataIndex: 'updated_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
       },
     ],
-    []
+    [t, i18n.language]
   )
 
   // Table row actions
@@ -626,31 +599,31 @@ export default function RolesPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('roles.actions.view'),
         onClick: handleViewDetail,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('roles.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.is_system_role,
       },
       {
         key: 'permissions',
-        label: '配置权限',
+        label: t('roles.actions.configurePermissions'),
         icon: <IconSetting size="small" />,
         onClick: handleConfigurePermissions,
       },
       {
         key: 'enable',
-        label: '启用',
+        label: t('roles.actions.enable'),
         type: 'primary',
         onClick: handleEnable,
         hidden: (record) => record.is_enabled,
       },
       {
         key: 'disable',
-        label: '禁用',
+        label: t('roles.actions.disable'),
         type: 'warning',
         icon: <IconLock size="small" />,
         onClick: handleDisable,
@@ -658,13 +631,14 @@ export default function RolesPage() {
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('roles.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
         hidden: (record) => record.is_system_role,
       },
     ],
     [
+      t,
       handleViewDetail,
       handleEdit,
       handleConfigurePermissions,
@@ -679,23 +653,23 @@ export default function RolesPage() {
       <Card className="roles-card">
         <div className="roles-header">
           <Title heading={4} style={{ margin: 0 }}>
-            角色管理
+            {t('roles.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索角色编码、名称..."
+          searchPlaceholder={t('roles.searchPlaceholder')}
           primaryAction={{
-            label: '新增角色',
+            label: t('roles.addRole'),
             icon: <IconPlus />,
             onClick: handleCreate,
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -703,14 +677,14 @@ export default function RolesPage() {
           filters={
             <Space className="roles-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('roles.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="类型筛选"
+                placeholder={t('roles.typeFilter')}
                 value={typeFilter}
                 onChange={handleTypeChange}
                 optionList={TYPE_OPTIONS}
@@ -742,14 +716,14 @@ export default function RolesPage() {
 
       {/* Create/Edit Role Modal */}
       <Modal
-        title={modalMode === 'create' ? '新增角色' : '编辑角色'}
+        title={modalMode === 'create' ? t('roles.addRole') : t('roles.editRole')}
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleModalSubmit}
         confirmLoading={modalLoading}
         width={500}
-        okText={modalMode === 'create' ? '创建' : '保存'}
-        cancelText="取消"
+        okText={modalMode === 'create' ? t('common.create') : t('common.save')}
+        cancelText={t('common.cancel')}
       >
         <Form
           getFormApi={(api) => {
@@ -770,40 +744,40 @@ export default function RolesPage() {
         >
           <Form.Input
             field="code"
-            label="角色编码"
-            placeholder="请输入角色编码，如 admin、operator"
+            label={t('roles.form.code')}
+            placeholder={t('roles.form.codePlaceholder')}
             rules={[
-              { required: true, message: '请输入角色编码' },
-              { min: 2, message: '角色编码至少2个字符' },
-              { max: 50, message: '角色编码最多50个字符' },
+              { required: true, message: t('roles.form.code') },
+              { min: 2, message: t('roles.form.codeMinError') },
+              { max: 50, message: t('roles.form.codeMaxError') },
               {
                 pattern: /^[a-z][a-z0-9_]*$/,
-                message: '角色编码必须以小写字母开头，只能包含小写字母、数字和下划线',
+                message: t('roles.form.codeRegexError'),
               },
             ]}
             disabled={modalMode === 'edit'}
           />
           <Form.Input
             field="name"
-            label="角色名称"
-            placeholder="请输入角色名称"
+            label={t('roles.form.name')}
+            placeholder={t('roles.form.namePlaceholder')}
             rules={[
-              { required: true, message: '请输入角色名称' },
-              { min: 2, message: '角色名称至少2个字符' },
-              { max: 100, message: '角色名称最多100个字符' },
+              { required: true, message: t('roles.form.name') },
+              { min: 2, message: t('roles.form.nameMinError') },
+              { max: 100, message: t('roles.form.nameMaxError') },
             ]}
           />
           <Form.TextArea
             field="description"
-            label="描述"
-            placeholder="请输入角色描述"
+            label={t('roles.form.description')}
+            placeholder={t('roles.form.descriptionPlaceholder')}
             rows={3}
             maxLength={500}
           />
           <Form.InputNumber
             field="sort_order"
-            label="排序值"
-            placeholder="数值越小越靠前"
+            label={t('roles.form.sortOrder')}
+            placeholder={t('roles.form.sortOrderPlaceholder')}
             min={0}
             max={9999}
             style={{ width: '100%' }}
@@ -813,34 +787,34 @@ export default function RolesPage() {
 
       {/* Permission Configuration Modal */}
       <Modal
-        title={`配置权限 - ${permissionRole?.name || ''}`}
+        title={t('roles.permissionConfig.title', { name: permissionRole?.name || '' })}
         visible={permissionModalVisible}
         onCancel={() => setPermissionModalVisible(false)}
         onOk={handleSavePermissions}
         confirmLoading={permissionSaving}
         width={700}
-        okText="保存"
-        cancelText="取消"
+        okText={t('common.save')}
+        cancelText={t('common.cancel')}
         bodyStyle={{ maxHeight: '60vh', overflow: 'auto' }}
       >
         {permissionRole?.is_system_role && (
           <Banner
             type="warning"
-            description="系统角色的权限修改可能影响系统核心功能，请谨慎操作。"
+            description={t('roles.permissionConfig.systemWarning')}
             style={{ marginBottom: 16 }}
           />
         )}
 
         <div className="permission-config-header">
           <Text>
-            已选择 <Text strong>{selectedPermissions.length}</Text> 项权限
+            {t('roles.permissionConfig.selectedCount', { count: selectedPermissions.length })}
           </Text>
           <Space>
             <Button size="small" onClick={() => setSelectedPermissions(allPermissions)}>
-              全选
+              {t('roles.permissionConfig.selectAll')}
             </Button>
             <Button size="small" onClick={() => setSelectedPermissions([])}>
-              清空
+              {t('roles.permissionConfig.clearAll')}
             </Button>
           </Space>
         </div>
@@ -860,36 +834,52 @@ export default function RolesPage() {
             className="permission-tree"
           />
         ) : (
-          <Empty description="暂无可用权限" />
+          <Empty description={t('roles.permissionConfig.noPermissions')} />
         )}
       </Modal>
 
       {/* Role Detail Modal */}
       <Modal
-        title="角色详情"
+        title={t('roles.detail.title')}
         visible={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
-        footer={<Button onClick={() => setDetailModalVisible(false)}>关闭</Button>}
+        footer={
+          <Button onClick={() => setDetailModalVisible(false)}>{t('roles.detail.close')}</Button>
+        }
         width={600}
       >
         {detailRole && (
           <div className="role-detail">
             <Descriptions
               data={[
-                { key: '角色编码', value: detailRole.code },
-                { key: '角色名称', value: detailRole.name },
-                { key: '描述', value: detailRole.description || '-' },
-                { key: '状态', value: detailRole.is_enabled ? '已启用' : '已禁用' },
-                { key: '类型', value: detailRole.is_system_role ? '系统角色' : '自定义角色' },
-                { key: '排序值', value: String(detailRole.sort_order || 0) },
-                { key: '用户数', value: String(detailRole.user_count || 0) },
-                { key: '创建时间', value: formatDate(detailRole.created_at) },
-                { key: '更新时间', value: formatDate(detailRole.updated_at) },
+                { key: t('roles.detail.code'), value: detailRole.code },
+                { key: t('roles.detail.name'), value: detailRole.name },
+                { key: t('roles.detail.description'), value: detailRole.description || '-' },
+                {
+                  key: t('roles.detail.status'),
+                  value: detailRole.is_enabled ? t('roles.enabled') : t('roles.disabled'),
+                },
+                {
+                  key: t('roles.detail.type'),
+                  value: detailRole.is_system_role ? t('roles.systemRole') : t('roles.customRole'),
+                },
+                { key: t('roles.detail.sortOrder'), value: String(detailRole.sort_order || 0) },
+                { key: t('roles.detail.userCount'), value: String(detailRole.user_count || 0) },
+                {
+                  key: t('roles.detail.createdAt'),
+                  value: formatDate(detailRole.created_at, i18n.language),
+                },
+                {
+                  key: t('roles.detail.updatedAt'),
+                  value: formatDate(detailRole.updated_at, i18n.language),
+                },
               ]}
             />
 
             <div className="role-permissions-section">
-              <Title heading={6}>权限列表 ({detailRole.permissions?.length || 0})</Title>
+              <Title heading={6}>
+                {t('roles.detail.permissions')} ({detailRole.permissions?.length || 0})
+              </Title>
               {detailRole.permissions && detailRole.permissions.length > 0 ? (
                 <div className="role-permissions-list">
                   {detailRole.permissions.map((perm) => (
@@ -899,7 +889,7 @@ export default function RolesPage() {
                   ))}
                 </div>
               ) : (
-                <Text type="tertiary">该角色暂无权限</Text>
+                <Text type="tertiary">{t('roles.detail.noPermissions')}</Text>
               )}
             </div>
           </div>
