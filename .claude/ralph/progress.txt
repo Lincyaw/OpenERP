@@ -15865,3 +15865,73 @@ Implemented the Tenant Switcher component that allows users to switch between te
 - Tenants are fetched lazily when dropdown opens (not on component mount)
 - Only active tenants are shown in the list
 - The X-Tenant-ID header is already handled by the axios instance based on user.tenantId
+
+## 2026-01-25: P7-BE-001 PaymentGateway Port Definition Complete
+
+### Task ID: P7-BE-001
+### Task: PaymentGateway Port 定义 (Payment Gateway Port Definition)
+
+### Summary
+Implemented the PaymentGateway port interface following the Ports & Adapters (Hexagonal Architecture) pattern. This defines the contract that external payment gateway adapters (WeChat Pay, Alipay) will implement.
+
+### Requirements Completed
+1. **Payment Gateway Interface**: Defined `PaymentGateway` interface with methods for payment lifecycle
+2. **Unified Request/Response DTOs**: Created comprehensive DTOs for create, query, refund, and close operations
+3. **Callback Interfaces**: Defined `PaymentCallback`, `RefundCallback`, and `PaymentCallbackHandler` interfaces
+
+### Changes Made
+
+1. **Payment Gateway Types** (`backend/internal/domain/finance/payment_gateway.go`)
+   - `PaymentGatewayType`: WECHAT, ALIPAY
+   - `PaymentChannel`: 8 channels (WECHAT_NATIVE, WECHAT_JSAPI, WECHAT_APP, ALIPAY_PAGE, ALIPAY_WAP, ALIPAY_APP, ALIPAY_QRCODE, ALIPAY_F2F)
+   - `GatewayPaymentStatus`: PENDING, PAID, FAILED, CANCELLED, REFUNDED, PARTIAL_REFUNDED, CLOSED
+   - `RefundStatus`: PENDING, SUCCESS, FAILED, CLOSED
+
+2. **Request/Response DTOs**
+   - `CreatePaymentRequest`: tenant, order, amount, channel, subject, URLs, expiry, metadata
+   - `CreatePaymentResponse`: gateway order ID, QR code URL/data, payment URL, prepay ID, SDK params
+   - `QueryPaymentRequest`/`QueryPaymentResponse`: query by gateway order ID, our order ID, or order number
+   - `RefundRequest`/`RefundResponse`: partial/full refund support
+   - `ClosePaymentRequest`/`ClosePaymentResponse`: cancel pending payments
+
+3. **Callback Types**
+   - `PaymentCallback`: payment notification from gateway
+   - `RefundCallback`: refund notification from gateway
+   - Both include signature for verification
+
+4. **Port Interfaces**
+   - `PaymentGateway`: main interface for payment operations
+   - `PaymentCallbackHandler`: application service interface for processing callbacks
+   - `PaymentGatewayRegistry`: manage multiple payment gateways
+
+5. **Error Definitions**
+   - Payment errors: invalid tenant, order, amount, channel, subject, notify URL
+   - Refund errors: invalid original payment, refund ID, amounts
+   - Gateway errors: not configured, unavailable, invalid response/callback
+
+6. **Unit Tests** (`backend/internal/domain/finance/payment_gateway_test.go`)
+   - Type validation tests for all enums
+   - Request validation tests for all DTOs
+   - All tests passing (35+ test cases)
+
+### Files Created
+- `backend/internal/domain/finance/payment_gateway.go`
+- `backend/internal/domain/finance/payment_gateway_test.go`
+
+### Files Modified
+- `.claude/ralph/plans/prd.json` (marked P7-BE-001 as passes: true)
+
+### Technical Details
+- Follows existing DDD patterns in the codebase
+- Uses `github.com/google/uuid` for IDs
+- Uses `github.com/shopspring/decimal` for monetary amounts
+- All request DTOs have `Validate()` methods
+- Status types have helper methods: `IsValid()`, `IsFinal()`, `IsSuccess()`
+- Channel type has `GetGatewayType()` to determine parent gateway
+
+### Notes for Next Developer
+- P7-BE-002 (WeChat Pay Adapter) and P7-BE-003 (Alipay Adapter) can now be implemented
+- Adapters should implement the `PaymentGateway` interface
+- Consider using existing Go libraries: `github.com/wechatpay-apiv3/wechatpay-go` for WeChat Pay
+- Alipay SDK: `github.com/smartwalle/alipay/v3`
+- P7-BE-004 (Callback Handler Service) will implement `PaymentCallbackHandler` interface
