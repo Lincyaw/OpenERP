@@ -203,3 +203,102 @@ Add to `frontend/package.json`:
 - **ALWAYS include** all swag annotations for new handlers
 - **CI should verify** OpenAPI spec is up-to-date with code
 - **Review generated SDK** in PR to catch breaking changes
+
+---
+
+## 4. E2E 测试规范
+
+### 4.1 测试环境要求
+
+所有联调（INT）和端到端测试**必须**在 Docker 环境下执行，连接真实数据库：
+
+| 组件 | 端口 | 说明 |
+|------|------|------|
+| Frontend | 3001 | 前端应用 |
+| Backend | 8081 | 后端 API |
+| PostgreSQL | 5433 | 真实数据库 |
+| Redis | 6380 | 缓存服务 |
+
+```bash
+# 启动测试环境
+./docker/quick-test.sh start
+
+# 加载测试数据
+./docker/quick-test.sh seed
+
+# 运行 E2E 测试
+cd frontend && npm run e2e
+
+# 清理环境
+./docker/quick-test.sh clean
+```
+
+### 4.2 E2E 测试标准
+
+1. **禁止 Mock**: 联调测试必须连接真实数据库，不允许 Mock API 响应
+2. **数据隔离**: 每个测试用例应有独立的测试数据，避免相互影响
+3. **完整流程**: 测试必须覆盖从 UI 操作到数据库变更的完整链路
+4. **截图/视频**: 失败用例必须自动截图，关键流程录制视频
+5. **多浏览器**: 至少覆盖 Chrome 和 Firefox
+6. **响应式**: 测试桌面和移动端视口
+
+### 4.3 联调测试验收标准
+
+一个联调（INT）任务完成必须满足：
+- [ ] Docker 环境 (`docker-compose.test.yml`) 启动成功
+- [ ] Seed 数据 (`seed-data.sql`) 加载完成
+- [ ] Playwright E2E 测试通过率 100%
+- [ ] 测试覆盖所有 requirements 中描述的场景
+- [ ] HTML 测试报告生成
+- [ ] 无 Flaky 测试（连续运行 3 次稳定通过）
+
+### 4.4 测试命令
+
+```bash
+# 单次运行所有 E2E 测试
+npm run e2e
+
+# 带浏览器界面运行
+npm run e2e:headed
+
+# 调试模式
+npm run e2e:debug
+
+# 生成并打开 HTML 报告
+npm run e2e:report
+
+# 指定浏览器
+npm run e2e -- --project=chromium
+npm run e2e -- --project=firefox
+
+# CI 环境运行
+npm run e2e:ci
+```
+
+### 4.5 测试凭证
+
+测试环境使用 `seed-data.sql` 预置用户：
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| admin | test123 | 系统管理员 |
+| sales | test123 | 销售经理 |
+| warehouse | test123 | 仓库管理员 |
+| finance | test123 | 财务经理 |
+
+### 4.6 测试目录结构
+
+```
+frontend/tests/e2e/
+├── auth/           # 认证相关测试
+├── products/       # 商品模块测试
+├── partners/       # 伙伴模块测试
+├── inventory/      # 库存模块测试
+├── transactions/   # 交易模块测试
+├── finance/        # 财务模块测试
+├── reports/        # 报表模块测试
+├── settings/       # 设置模块测试
+├── pages/          # Page Object 类
+├── fixtures/       # 测试 fixtures
+└── utils/          # 测试工具函数
+```

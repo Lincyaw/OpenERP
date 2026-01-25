@@ -646,34 +646,47 @@
   },
   {
     "id": "P1-INT-001",
-    "story": "商品模块前后端联调",
+    "story": "商品模块前后端联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证商品列表数据展示",
-      "验证商品 CRUD 流程",
-      "验证错误处理"
+      "Docker 环境: docker-compose.test.yml 启动，seed-data.sql 加载",
+      "E2E: 登录后访问商品列表，验证 seed 商品数据正确显示",
+      "E2E: 创建新商品，填写完整表单，验证数据库记录生成",
+      "E2E: 编辑商品信息，验证更新后列表和详情页显示一致",
+      "E2E: 启用/禁用商品状态，验证状态变更和列表筛选",
+      "E2E: 删除商品，验证软删除逻辑和列表刷新",
+      "E2E: 分页和搜索功能验证",
+      "截图断言: 商品列表、表单、详情页"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P1-INT-002",
-    "story": "伙伴模块前后端联调",
+    "story": "伙伴模块前后端联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证客户/供应商/仓库列表",
-      "验证 CRUD 流程",
-      "验证错误处理"
+      "Docker 环境: 使用 seed 客户/供应商/仓库数据",
+      "E2E 客户: 列表展示、新建、编辑、状态变更",
+      "E2E 供应商: 列表展示、新建、编辑、状态变更",
+      "E2E 仓库: 列表展示、新建、启用/禁用",
+      "E2E: 验证客户/供应商在订单选择器中正确显示",
+      "E2E: 仓库在库存操作中正确可选",
+      "截图断言: 各模块列表和表单页面"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P1-INT-003",
-    "story": "客户余额功能联调",
+    "story": "客户余额功能联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证余额查询",
-      "验证充值流程",
-      "验证流水记录"
+      "Docker 环境: 使用 seed 客户和余额流水数据",
+      "E2E: 客户详情页显示当前余额",
+      "E2E: 执行充值操作，验证余额实时更新",
+      "E2E: 查看余额流水列表，验证充值记录",
+      "E2E: 销售订单使用余额支付，验证余额扣减",
+      "E2E: 余额不足时显示提示，阻止超额支付",
+      "截图断言: 充值前后余额变化"
     ],
     "passes": false
   },
@@ -932,23 +945,32 @@
   },
   {
     "id": "P2-INT-001",
-    "story": "库存模块前后端联调",
+    "story": "库存模块前后端联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证库存列表展示",
-      "验证库存调整流程",
-      "验证并发锁定"
+      "Docker 环境: 使用 seed 库存数据（10 inventory items, 4 batches）",
+      "E2E: 库存列表展示，验证可用/锁定数量计算正确",
+      "E2E: 按仓库/商品筛选库存",
+      "E2E: 库存调整操作，验证调整后数量变化",
+      "E2E: 查看库存流水记录",
+      "E2E 并发测试: 同时调整同一库存，验证乐观锁生效",
+      "视频录制: 库存调整完整流程"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P2-INT-002",
-    "story": "盘点功能联调",
+    "story": "盘点功能联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证盘点创建流程",
-      "验证盘点执行流程",
-      "验证库存调整生效"
+      "Docker 环境: 使用 seed 库存数据",
+      "E2E: 创建盘点单，选择仓库和商品范围",
+      "E2E: 系统自动导入当前库存作为账面数",
+      "E2E: 录入实际盘点数量",
+      "E2E: 验证盘点差异自动计算（盘盈/盘亏）",
+      "E2E: 提交盘点单审批",
+      "E2E: 审批通过后库存自动调整",
+      "视频录制: 完整盘点流程"
     ],
     "passes": false
   },
@@ -1339,56 +1361,80 @@
   },
   {
     "id": "P3-QA-006",
-    "story": "退货流程端到端测试",
+    "story": "退货流程端到端测试 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "测试销售退货全流程",
-      "测试采购退货全流程",
-      "验证库存恢复"
+      "Docker 环境: 先创建完整销售/采购订单作为前置数据",
+      "E2E 销售退货完整流程: 创建→审批→入库→验证库存恢复",
+      "E2E 采购退货完整流程: 创建→发货→完成→验证库存扣减",
+      "E2E 边界测试: 超量退货被阻止",
+      "E2E 边界测试: 重复退货被阻止",
+      "E2E 财务联动: 退货后红冲单自动生成",
+      "多浏览器: Chrome/Firefox 兼容性",
+      "Trace: 完整退货链路"
     ],
     "passes": false
   },
   {
     "id": "P3-INT-001",
-    "story": "销售订单前后端联调",
+    "story": "销售订单前后端联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证订单创建流程",
-      "验证订单状态变更",
-      "验证库存联动"
+      "Docker 环境: 使用 seed 商品/客户/库存数据",
+      "E2E: 创建销售订单，选择客户、添加多个商品行",
+      "E2E: 验证订单金额自动计算（单价×数量-折扣）",
+      "E2E: 订单确认，验证库存锁定数量增加",
+      "E2E: 订单发货，选择仓库，验证库存扣减",
+      "E2E: 查看订单详情和状态变更历史",
+      "E2E: 订单取消，验证库存释放",
+      "Trace: 订单状态流转完整链路"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P3-INT-002",
-    "story": "采购订单前后端联调",
+    "story": "采购订单前后端联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证采购订单创建",
-      "验证收货流程",
-      "验证库存入库"
+      "Docker 环境: 使用 seed 商品/供应商/仓库数据",
+      "E2E: 创建采购订单，选择供应商、添加商品行",
+      "E2E: 订单确认，验证状态变更",
+      "E2E: 执行收货操作（全部收货）",
+      "E2E: 执行部分收货，验证收货进度显示",
+      "E2E: 收货完成后验证库存入库",
+      "E2E: 验证应付账款自动生成",
+      "截图断言: 收货前后的库存变化"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P3-INT-003",
-    "story": "销售退货全流程联调",
+    "story": "销售退货全流程联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证退货创建",
-      "验证审批流程",
-      "验证库存恢复"
+      "Docker 环境: 先执行销售订单发货作为前置",
+      "E2E: 从订单详情创建退货单",
+      "E2E: 选择退货商品和数量，填写退货原因",
+      "E2E: 提交退货申请，状态变为待审批",
+      "E2E: 切换审批人账号执行审批",
+      "E2E: 审批通过后验证库存恢复",
+      "E2E: 验证应收账款红冲记录生成",
+      "截图断言: 每个状态节点页面"
     ],
     "passes": false
   },
   {
     "id": "P3-INT-004",
-    "story": "采购退货全流程联调",
+    "story": "采购退货全流程联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证采购退货创建",
-      "验证发货流程",
-      "验证库存扣减"
+      "Docker 环境: 先执行采购订单收货作为前置",
+      "E2E: 从采购订单创建退货单",
+      "E2E: 选择退货商品、数量和仓库",
+      "E2E: 执行退货发货，验证库存扣减",
+      "E2E: 标记退货完成，状态流转正确",
+      "E2E: 验证应付账款红冲记录生成",
+      "截图断言: 发货前后库存变化"
     ],
     "passes": false
   },
@@ -1691,23 +1737,33 @@
   },
   {
     "id": "P4-INT-001",
-    "story": "财务核心功能联调",
+    "story": "财务核心功能联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证应收应付生成",
-      "验证收付款流程",
-      "验证核销流程"
+      "Docker 环境: 使用 seed 应收/应付/收付款数据",
+      "E2E: 应收账款列表展示，验证 seed 数据正确",
+      "E2E: 创建收款单，选择客户和收款方式",
+      "E2E: 执行收款核销，验证 FIFO 自动匹配",
+      "E2E: 应付账款列表展示",
+      "E2E: 创建付款单，执行付款核销",
+      "E2E: 验证核销后应收/应付余额更新",
+      "视频录制: 完整收款核销流程"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P4-INT-002",
-    "story": "日常收支功能联调",
+    "story": "日常收支功能联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证费用录入",
-      "验证收入录入",
-      "验证流水查询"
+      "Docker 环境: 使用 seed 费用/收入数据",
+      "E2E: 进入费用录入页面，填写分类、金额、备注",
+      "E2E: 上传费用附件，验证预览功能",
+      "E2E: 提交费用记录，列表显示新记录",
+      "E2E: 录入其他收入记录",
+      "E2E: 收支流水页面按日期筛选",
+      "E2E: 导出收支报表下载",
+      "截图断言: 各表单和列表页面"
     ],
     "passes": false
   },
@@ -1845,12 +1901,16 @@
   },
   {
     "id": "P5-INT-001",
-    "story": "报表模块联调",
+    "story": "报表模块联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证报表数据准确性",
-      "验证图表渲染",
-      "验证导出功能"
+      "Docker 环境: 需要完整业务数据支撑报表",
+      "E2E: 销售报表页面，ECharts 图表正确渲染",
+      "E2E: 切换时间范围，图表数据刷新",
+      "E2E: 损益报表数据与交易记录一致",
+      "E2E: 图表交互（hover 显示、点击钻取）",
+      "E2E: 导出报表为 Excel/PDF",
+      "视觉回归: 图表样式截图对比"
     ],
     "passes": false
   },
@@ -2098,34 +2158,47 @@
   },
   {
     "id": "P6-INT-001",
-    "story": "多租户隔离联调",
+    "story": "多租户隔离联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证租户数据隔离",
-      "验证租户切换",
-      "验证租户停用"
+      "Docker 环境: seed 数据包含 3 个租户",
+      "E2E: 不同租户用户登录，验证只能看到本租户数据",
+      "E2E: 租户 A 创建商品，租户 B 看不到",
+      "E2E: 验证 API 层租户隔离（X-Tenant-ID header）",
+      "E2E: 租户切换后页面数据刷新",
+      "E2E 安全测试: 尝试访问其他租户 ID 的资源，验证 403",
+      "Trace: 租户隔离 SQL 查询日志"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P6-INT-002",
-    "story": "认证授权联调",
+    "story": "认证授权联调 (E2E Docker)",
     "priority": "high",
     "requirements": [
-      "验证登录流程",
-      "验证权限控制",
-      "验证 Token 刷新"
+      "Docker 环境: 使用 seed 用户（admin/sales/warehouse/finance）",
+      "E2E: 登录页面，正确凭证登录成功跳转",
+      "E2E: 错误密码登录失败，显示错误提示",
+      "E2E: Token 过期后自动刷新",
+      "E2E: 登出后清除 Token，重定向到登录页",
+      "E2E: 无权限访问返回 403 或跳转",
+      "E2E: 不同角色用户看到不同菜单",
+      "截图断言: 登录页、各角色首页"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P6-INT-003",
-    "story": "用户角色管理联调",
+    "story": "用户角色管理联调 (E2E Docker)",
     "priority": "medium",
     "requirements": [
-      "验证用户 CRUD",
-      "验证角色 CRUD",
-      "验证权限分配"
+      "Docker 环境: 使用 seed 用户和角色数据",
+      "E2E: 管理员创建新用户并分配角色",
+      "E2E: 新用户登录，菜单按权限显示",
+      "E2E: 访问无权限页面返回 403",
+      "E2E: 修改用户角色后重新登录验证",
+      "E2E: 创建自定义角色，配置细粒度权限",
+      "E2E: 测试 DataScope 数据权限过滤"
     ],
     "passes": false
   },
@@ -2274,23 +2347,31 @@
   },
   {
     "id": "P7-INT-001",
-    "story": "支付功能联调",
+    "story": "支付功能联调 (E2E Docker + Mock Gateway)",
     "priority": "low",
     "requirements": [
-      "验证支付流程",
-      "验证回调处理",
-      "验证状态更新"
+      "Docker 环境 + Mock 支付网关服务",
+      "E2E: 收款页面选择微信/支付宝",
+      "E2E Mock: 模拟扫码支付返回二维码",
+      "E2E Mock: 模拟支付回调更新订单状态",
+      "E2E: 支付成功后应收自动核销",
+      "E2E 异常: 支付超时、支付失败场景",
+      "Trace: 支付流程 API 调用链"
     ],
     "passes": false
   },
   {
     "id": "P7-INT-002",
-    "story": "电商订单同步联调",
+    "story": "电商订单同步联调 (E2E Docker + Mock Platform)",
     "priority": "low",
     "requirements": [
-      "验证订单拉取",
-      "验证订单转换",
-      "验证库存同步"
+      "Docker 环境 + Mock 电商平台 API",
+      "E2E: 配置电商平台授权",
+      "E2E Mock: 模拟平台订单拉取 API",
+      "E2E: 外部订单转换为系统销售订单",
+      "E2E: 商品映射自动匹配 SKU",
+      "E2E: 同步状态页面查看历史",
+      "E2E 异常: 同步失败重试机制"
     ],
     "passes": false
   },
@@ -2329,23 +2410,33 @@
   },
   {
     "id": "P8-004",
-    "story": "UAT 用户验收测试",
+    "story": "UAT 用户验收测试 (E2E Docker Full Suite)",
     "priority": "high",
     "requirements": [
-      "执行用户验收测试",
-      "收集用户反馈",
-      "确认功能符合需求"
+      "Docker 环境: 完整测试环境 + 全量 seed 数据",
+      "E2E 核心流程: 销售全流程（开单→发货→收款→核销）",
+      "E2E 核心流程: 采购全流程（开单→收货→付款→核销）",
+      "E2E 核心流程: 库存管理（入库→出库→调整→盘点）",
+      "E2E 核心流程: 客户管理（创建→充值→消费→查询）",
+      "E2E 多租户: 切换租户验证数据隔离",
+      "E2E 权限: 各角色用户操作限制",
+      "性能基线: 页面加载<3s，API响应<500ms",
+      "用户操作视频: 录制关键流程"
     ],
     "passes": false
   },
   {
     "id": "P8-005",
-    "story": "问题修复与回归",
+    "story": "问题修复与回归测试 (E2E Docker CI)",
     "priority": "high",
     "requirements": [
-      "修复发现的问题",
-      "执行回归测试",
-      "确认问题已解决"
+      "Docker 环境: CI/CD 集成 E2E 测试",
+      "每个 Bug 创建对应 E2E 测试用例",
+      "完整 E2E 套件通过率 > 95%",
+      "Flaky 测试隔离和修复",
+      "HTML 测试报告（截图+视频）",
+      "PR 合并前必须通过 E2E 测试",
+      "核心业务流程 100% 覆盖"
     ],
     "passes": false
   },
@@ -2426,5 +2517,22 @@
       "添加类型检查失败阻止合并"
     ],
     "passes": true
+  },
+  {
+    "id": "P0-E2E-001",
+    "story": "E2E 测试基础设施配置 (Playwright + Docker)",
+    "priority": "high",
+    "requirements": [
+      "安装 Playwright: npm install -D @playwright/test && npx playwright install --with-deps",
+      "创建 playwright.config.ts: baseURL=http://localhost:3001, 多浏览器(chromium/firefox/webkit), 截图/视频/trace 配置",
+      "创建目录结构: frontend/tests/e2e/{auth,products,partners,inventory,transactions,finance,reports,settings}/",
+      "创建 Page Object 基类: frontend/tests/e2e/pages/BasePage.ts",
+      "创建通用 fixtures: 登录状态保持、测试数据重置、API 客户端",
+      "创建 test-utils: login helper (使用 seed 用户 admin/sales/warehouse/finance)",
+      "配置 package.json scripts: e2e, e2e:headed, e2e:debug, e2e:report, e2e:ci",
+      "创建 GitHub Actions E2E workflow: docker-compose.test.yml + playwright test",
+      "创建示例登录 E2E 测试验证配置正确"
+    ],
+    "passes": false
   }
 ]

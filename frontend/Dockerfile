@@ -13,8 +13,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application (skip TypeScript check in Docker)
-RUN npx vite build
+# Build the application 
+RUN npm run build
 
 # Runtime stage - using Nginx to serve static files
 FROM nginx:1.25-alpine

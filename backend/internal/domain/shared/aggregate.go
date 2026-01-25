@@ -58,7 +58,8 @@ func NewBaseAggregateRoot() BaseAggregateRoot {
 // TenantAggregateRoot extends BaseAggregateRoot with multi-tenant support
 type TenantAggregateRoot struct {
 	BaseAggregateRoot
-	TenantID uuid.UUID `gorm:"type:uuid;not null;index"`
+	TenantID  uuid.UUID  `gorm:"type:uuid;not null;index"`
+	CreatedBy *uuid.UUID `gorm:"type:uuid;index"` // User who created this record (for data scope filtering)
 }
 
 // NewTenantAggregateRoot creates a new tenant-scoped aggregate root
@@ -67,4 +68,23 @@ func NewTenantAggregateRoot(tenantID uuid.UUID) TenantAggregateRoot {
 		BaseAggregateRoot: NewBaseAggregateRoot(),
 		TenantID:          tenantID,
 	}
+}
+
+// NewTenantAggregateRootWithCreator creates a new tenant-scoped aggregate root with creator info
+func NewTenantAggregateRootWithCreator(tenantID, createdBy uuid.UUID) TenantAggregateRoot {
+	return TenantAggregateRoot{
+		BaseAggregateRoot: NewBaseAggregateRoot(),
+		TenantID:          tenantID,
+		CreatedBy:         &createdBy,
+	}
+}
+
+// SetCreatedBy sets the creator user ID
+func (t *TenantAggregateRoot) SetCreatedBy(userID uuid.UUID) {
+	t.CreatedBy = &userID
+}
+
+// GetCreatedBy returns the creator user ID
+func (t *TenantAggregateRoot) GetCreatedBy() *uuid.UUID {
+	return t.CreatedBy
 }
