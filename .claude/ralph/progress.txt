@@ -15935,3 +15935,86 @@ Implemented the PaymentGateway port interface following the Ports & Adapters (He
 - Consider using existing Go libraries: `github.com/wechatpay-apiv3/wechatpay-go` for WeChat Pay
 - Alipay SDK: `github.com/smartwalle/alipay/v3`
 - P7-BE-004 (Callback Handler Service) will implement `PaymentCallbackHandler` interface
+
+## 2026-01-25: P7-BE-002 WeChat Pay Adapter Implementation Complete
+
+### Task ID: P7-BE-002
+### Task: 微信支付 Adapter (WeChat Pay Adapter)
+
+### Summary
+Implemented the WeChat Pay adapter that implements the PaymentGateway port interface defined in P7-BE-001. This adapter integrates with WeChat Pay API v3 for payment processing.
+
+### Requirements Completed
+1. **WeChat Pay Adapter**: Implemented `WechatPayAdapter` implementing `PaymentGateway` interface
+2. **QR Code Payment (Native)**: Supports WeChat Native QR code payment
+3. **JSAPI Payment**: Supports WeChat JSAPI payment for mini-programs
+4. **App Payment**: Supports in-app WeChat payment
+5. **Payment Callback**: Implemented callback verification and parsing
+
+### Files Created
+
+1. **Configuration** (`backend/internal/infrastructure/payment/wechat_config.go`)
+   - `WechatPayConfig`: Configuration struct with all required fields
+   - `WechatPayConfigBuilder`: Builder pattern for config construction
+   - Support for loading private keys from PEM string or file
+   - Support for PKCS1 and PKCS8 private key formats
+   - Comprehensive validation
+
+2. **Adapter Implementation** (`backend/internal/infrastructure/payment/wechat_adapter.go`)
+   - `WechatPayAdapter`: Main adapter implementing `PaymentGateway` interface
+   - `CreatePayment`: Creates payment orders (Native/JSAPI/App)
+   - `QueryPayment`: Queries payment status
+   - `ClosePayment`: Closes pending payment orders
+   - `CreateRefund`: Initiates refund requests
+   - `QueryRefund`: Queries refund status
+   - `VerifyCallback`: Verifies and parses payment callbacks
+   - `VerifyRefundCallback`: Verifies and parses refund callbacks
+   - `GenerateCallbackResponse`: Generates response for callbacks
+   - RSA-SHA256 signature generation
+   - AES-GCM decryption for callback payloads
+
+3. **Type Definitions** (`backend/internal/infrastructure/payment/wechat_types.go`)
+   - Request/Response types for WeChat Pay API v3
+   - Notification types for payment/refund callbacks
+
+4. **Unit Tests** (`backend/internal/infrastructure/payment/wechat_adapter_test.go`)
+   - Config validation tests (7 test cases)
+   - Adapter creation tests
+   - Payment creation validation tests
+   - Mock server integration tests for API calls
+   - Status mapping tests
+   - All 35+ test cases passing
+
+5. **Config Builder Tests** (`backend/internal/infrastructure/payment/wechat_config_test.go`)
+   - Builder pattern tests
+   - Private key loading tests (PEM string, file, PKCS8)
+   - Error propagation tests
+
+### Technical Details
+
+- **API Version**: WeChat Pay API v3
+- **Authentication**: WECHATPAY2-SHA256-RSA2048 signature scheme
+- **Callback Encryption**: AES-256-GCM with associated data
+- **Amount Handling**: Converts between decimal (yuan) and int (cents)
+- **Status Mapping**: Maps WeChat trade states to domain status enums
+
+### WeChat Pay API Endpoints Used
+- `POST /v3/pay/transactions/native` - Native QR code payment
+- `POST /v3/pay/transactions/jsapi` - JSAPI payment
+- `POST /v3/pay/transactions/app` - App payment
+- `GET /v3/pay/transactions/out-trade-no/{out_trade_no}` - Query payment
+- `POST /v3/pay/transactions/out-trade-no/{out_trade_no}/close` - Close payment
+- `POST /v3/refund/domestic/refunds` - Create refund
+- `GET /v3/refund/domestic/refunds/{out_refund_no}` - Query refund
+
+### SDK Parameters Generated
+- **JSAPI**: appId, timeStamp, nonceStr, package, signType, paySign
+- **App**: appid, partnerid, prepayid, package, noncestr, timestamp, sign
+
+### Notes for Next Developer
+- P7-BE-003 (Alipay Adapter) follows the same pattern - implement `PaymentGateway` interface
+- Consider using `github.com/smartwalle/alipay/v3` as a reference for Alipay SDK
+- P7-BE-004 (Payment Callback Service) should use these adapters for callback verification
+- The adapter currently requires WeChat platform certificate for callback verification
+  - In production, implement certificate auto-download from WeChat API
+- For JSAPI payments, ensure the user's OpenID is included in the request
