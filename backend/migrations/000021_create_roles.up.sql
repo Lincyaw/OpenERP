@@ -131,6 +131,14 @@ CROSS JOIN (
 ) a
 ON CONFLICT DO NOTHING;
 
+-- Insert special inventory permissions for ADMIN role (adjust, lock, unlock)
+INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
+VALUES
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:adjust', 'inventory', 'adjust', 'Admin permission for inventory:adjust'),
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:lock', 'inventory', 'lock', 'Admin permission for inventory:lock'),
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:unlock', 'inventory', 'unlock', 'Admin permission for inventory:unlock')
+ON CONFLICT DO NOTHING;
+
 -- Assign admin role to the default admin user
 INSERT INTO user_roles (user_id, role_id, tenant_id)
 VALUES (

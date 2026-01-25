@@ -253,7 +253,9 @@ export class InventoryPage extends BasePage {
     const select = wrapper.locator('.semi-select')
     await select.click()
 
-    const optionToSelect = this.page.locator('.semi-select-option').filter({ hasText: warehouseName })
+    const optionToSelect = this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: warehouseName })
     await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
     await optionToSelect.click()
     await this.page.waitForTimeout(300)
@@ -278,7 +280,10 @@ export class InventoryPage extends BasePage {
     notes?: string
   }): Promise<void> {
     // Fill actual quantity - Semi Design InputNumber uses spinbutton role
-    const quantityWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '实际数量' }).first()
+    const quantityWrapper = this.page
+      .locator('.form-field-wrapper')
+      .filter({ hasText: '实际数量' })
+      .first()
     // Try spinbutton first (Semi Design InputNumber), fallback to regular input
     let quantityInput = quantityWrapper.locator('[role="spinbutton"]')
     if (!(await quantityInput.isVisible().catch(() => false))) {
@@ -288,7 +293,10 @@ export class InventoryPage extends BasePage {
     await quantityInput.fill(data.actualQuantity.toString())
 
     // Select reason - find select in the form-field-wrapper with reason label
-    const reasonWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '调整原因' }).first()
+    const reasonWrapper = this.page
+      .locator('.form-field-wrapper')
+      .filter({ hasText: '调整原因' })
+      .first()
     const reasonSelect = reasonWrapper.locator('.semi-select')
     await reasonSelect.click()
     await this.page.waitForTimeout(200)
@@ -296,7 +304,10 @@ export class InventoryPage extends BasePage {
 
     // Fill notes if provided
     if (data.notes) {
-      const notesWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '备注' }).first()
+      const notesWrapper = this.page
+        .locator('.form-field-wrapper')
+        .filter({ hasText: '备注' })
+        .first()
       const notesTextarea = notesWrapper.locator('textarea')
       await notesTextarea.fill(data.notes)
     }
@@ -453,5 +464,333 @@ export class InventoryPage extends BasePage {
 
   async screenshotTransactions(name: string): Promise<void> {
     await this.screenshot(`inventory/${name}`)
+  }
+
+  async screenshotStockTaking(name: string): Promise<void> {
+    await this.screenshot(`inventory/${name}`)
+  }
+
+  // ==================== Stock Taking Methods ====================
+
+  /**
+   * Navigate to stock taking list page
+   */
+  async navigateToStockTakingListPage(): Promise<void> {
+    await this.goto('/inventory/stock-taking')
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Navigate to stock taking create page
+   */
+  async navigateToStockTakingCreatePage(): Promise<void> {
+    await this.goto('/inventory/stock-taking/new')
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Navigate to stock taking execute page
+   */
+  async navigateToStockTakingExecute(stockTakingId: string): Promise<void> {
+    await this.goto(`/inventory/stock-taking/${stockTakingId}/execute`)
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Click "新建盘点" button on stock taking list page
+   */
+  async clickNewStockTaking(): Promise<void> {
+    const newButton = this.page.locator('button').filter({ hasText: '新建盘点' })
+    await newButton.click()
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Select warehouse in stock taking create form
+   */
+  async selectStockTakingWarehouse(warehouseName: string): Promise<void> {
+    // Find the form-field-wrapper containing the warehouse label
+    const wrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '仓库' }).first()
+    const select = wrapper.locator('.semi-select')
+    await select.click()
+    await this.page.waitForTimeout(300)
+
+    const optionToSelect = this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: warehouseName })
+    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+    await optionToSelect.click()
+    await this.page.waitForTimeout(500) // Wait for inventory to load
+  }
+
+  /**
+   * Click "全部导入" button to import all inventory items
+   */
+  async clickImportAllProducts(): Promise<void> {
+    const importButton = this.page.locator('button').filter({ hasText: '全部导入' })
+    await importButton.click()
+    await this.waitForToast('已导入')
+  }
+
+  /**
+   * Click "选择商品" button to open product selection modal
+   */
+  async clickSelectProducts(): Promise<void> {
+    const selectButton = this.page.locator('button').filter({ hasText: '选择商品' })
+    await selectButton.click()
+    await this.page.waitForTimeout(300)
+  }
+
+  /**
+   * Select products in the product selection modal
+   */
+  async selectProductsInModal(productNames: string[]): Promise<void> {
+    for (const productName of productNames) {
+      const row = this.page
+        .locator('.semi-table-tbody .semi-table-row')
+        .filter({ hasText: productName })
+      const checkbox = row.locator('.semi-checkbox')
+      await checkbox.click()
+    }
+  }
+
+  /**
+   * Confirm product selection in modal
+   */
+  async confirmProductSelection(): Promise<void> {
+    const confirmButton = this.page
+      .locator('.semi-modal-footer button')
+      .filter({ hasText: '确认选择' })
+    await confirmButton.click()
+    await this.page.waitForTimeout(300)
+  }
+
+  /**
+   * Get the count of selected products in the create form
+   */
+  async getSelectedProductCount(): Promise<number> {
+    const countText = await this.page.locator('text=/已选择 \\d+ 个商品/').textContent()
+    const match = countText?.match(/已选择 (\d+) 个商品/)
+    return match ? parseInt(match[1], 10) : 0
+  }
+
+  /**
+   * Submit the stock taking create form
+   */
+  async submitStockTakingCreate(): Promise<void> {
+    const submitButton = this.page
+      .locator('button[type="submit"]')
+      .filter({ hasText: '创建盘点单' })
+    await submitButton.click()
+  }
+
+  /**
+   * Wait for stock taking creation success
+   */
+  async waitForStockTakingCreateSuccess(): Promise<void> {
+    await this.waitForToast('创建成功')
+    await this.page.waitForURL(/\/inventory\/stock-taking$/, { timeout: 10000 })
+  }
+
+  /**
+   * Get the first stock taking row in the list
+   */
+  async getStockTakingRow(index: number): Promise<Locator> {
+    await this.waitForTableLoad()
+    return this.tableRows.nth(index)
+  }
+
+  /**
+   * Get stock taking number from a row
+   */
+  async getStockTakingNumberFromRow(row: Locator): Promise<string> {
+    const numberCell = row.locator('.semi-table-row-cell').first()
+    return (await numberCell.textContent()) || ''
+  }
+
+  /**
+   * Click execute action on a stock taking row
+   */
+  async clickStockTakingExecute(row: Locator): Promise<void> {
+    // First hover to reveal action buttons
+    await row.hover()
+    await this.page.waitForTimeout(200)
+
+    // Look for action dropdown or direct link
+    const actionDropdown = row.locator('.semi-dropdown-trigger, button').filter({ hasText: '操作' })
+    if (await actionDropdown.isVisible()) {
+      await actionDropdown.click()
+      await this.page.waitForTimeout(200)
+      await this.page
+        .locator('.semi-dropdown-menu .semi-dropdown-item')
+        .filter({ hasText: '执行' })
+        .click()
+    } else {
+      // Direct link
+      await row.locator('a, button').filter({ hasText: '执行' }).click()
+    }
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Click "开始盘点" button on execute page
+   */
+  async clickStartCounting(): Promise<void> {
+    const startButton = this.page.locator('button').filter({ hasText: '开始盘点' })
+    await startButton.click()
+    await this.waitForToast('开始')
+  }
+
+  /**
+   * Enter actual quantity for a product in stock taking
+   */
+  async enterActualQuantity(productCode: string, quantity: number): Promise<void> {
+    // Find the row with the product code
+    const row = this.page
+      .locator('.semi-table-tbody .semi-table-row')
+      .filter({ hasText: productCode })
+
+    // Find the InputNumber in that row (actual quantity column)
+    const input = row.locator('.semi-input-number input, [role="spinbutton"]').first()
+    await input.clear()
+    await input.fill(quantity.toString())
+    await this.page.waitForTimeout(200)
+  }
+
+  /**
+   * Save all counts in stock taking
+   */
+  async clickSaveAllCounts(): Promise<void> {
+    const saveButton = this.page.locator('button').filter({ hasText: '保存全部' })
+    await saveButton.click()
+    await this.waitForToast('保存')
+  }
+
+  /**
+   * Submit stock taking for approval
+   */
+  async clickSubmitForApproval(): Promise<void> {
+    const submitButton = this.page.locator('button').filter({ hasText: '提交审批' })
+    await submitButton.click()
+    await this.page.waitForTimeout(300)
+  }
+
+  /**
+   * Confirm submit for approval in modal
+   */
+  async confirmSubmitForApproval(): Promise<void> {
+    // Find the modal and click confirm
+    const modal = this.page.locator('.semi-modal')
+    const confirmButton = modal.locator('button').filter({ hasText: '确认提交' })
+    await confirmButton.click()
+    await this.waitForToast('提交')
+  }
+
+  /**
+   * Get the progress percentage from execute page
+   */
+  async getStockTakingProgress(): Promise<number> {
+    const progressText = await this.page.locator('.semi-progress').textContent()
+    const match = progressText?.match(/(\d+)%/)
+    return match ? parseInt(match[1], 10) : 0
+  }
+
+  /**
+   * Get the total difference amount from execute page
+   */
+  async getTotalDifferenceAmount(): Promise<string> {
+    const diffElement = this.page.locator('.total-difference .total-value, .total-value')
+    return (await diffElement.textContent()) || '0'
+  }
+
+  /**
+   * Verify difference is calculated correctly for a product
+   */
+  async verifyDifferenceForProduct(productCode: string, expectedDiff: number): Promise<boolean> {
+    const row = this.page
+      .locator('.semi-table-tbody .semi-table-row')
+      .filter({ hasText: productCode })
+
+    // The difference quantity column (should be around index 5)
+    const cells = row.locator('.semi-table-row-cell')
+    const diffQtyText = await cells.nth(5).textContent()
+
+    // Parse the difference value
+    const diffMatch = diffQtyText?.match(/([+-]?[\d.]+)/)
+    const actualDiff = diffMatch ? parseFloat(diffMatch[1]) : 0
+
+    return Math.abs(actualDiff - expectedDiff) < 0.01
+  }
+
+  /**
+   * Get stock taking status from the header
+   */
+  async getStockTakingStatus(): Promise<string> {
+    const statusTag = this.page.locator('.stock-taking-execute-header .semi-tag')
+    return (await statusTag.textContent()) || ''
+  }
+
+  /**
+   * Filter stock taking list by status
+   */
+  async filterStockTakingByStatus(status: string): Promise<void> {
+    // Find the status filter select
+    const statusSelect = this.page.locator('.semi-select').filter({ hasText: /状态|盘点状态/ })
+    await statusSelect.click()
+    await this.page.waitForTimeout(200)
+
+    const optionText =
+      status === 'DRAFT'
+        ? '草稿'
+        : status === 'COUNTING'
+          ? '盘点中'
+          : status === 'PENDING_APPROVAL'
+            ? '待审批'
+            : status === 'APPROVED'
+              ? '已通过'
+              : status === 'REJECTED'
+                ? '已拒绝'
+                : status === 'CANCELLED'
+                  ? '已取消'
+                  : '全部状态'
+
+    const option = this.page.locator('.semi-select-option').filter({ hasText: optionText })
+    await option.waitFor({ state: 'visible', timeout: 5000 })
+    await option.click()
+    await this.page.waitForTimeout(300)
+    await this.waitForTableLoad()
+  }
+
+  /**
+   * Assert stock taking list is displayed
+   */
+  async assertStockTakingListDisplayed(): Promise<void> {
+    await expect(this.page.locator('h4').filter({ hasText: '盘点管理' })).toBeVisible()
+  }
+
+  /**
+   * Get the count of stock taking items in the list
+   */
+  async getStockTakingItemCount(): Promise<number> {
+    await this.waitForTableLoad()
+    return this.tableRows.count()
+  }
+
+  /**
+   * Find a stock taking row by its number
+   */
+  async findStockTakingByNumber(takingNumber: string): Promise<Locator | null> {
+    await this.waitForTableLoad()
+    const rows = this.tableRows
+    const count = await rows.count()
+
+    for (let i = 0; i < count; i++) {
+      const row = rows.nth(i)
+      const text = await row.textContent()
+      if (text?.includes(takingNumber)) {
+        return row
+      }
+    }
+    return null
   }
 }

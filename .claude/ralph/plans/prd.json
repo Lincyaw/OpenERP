@@ -995,10 +995,42 @@
       "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
       "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
       "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
-      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
-      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "⏳ 验收标准 4: 测试通过率 68/116 (部分通过, 创建流程完整)",
+      "⏳ 验收标准 5: 稳定性验证进行中",
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
-      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试",
+      "",
+      "⚠️ 部分完成 - 2026-01-25:",
+      "✅ 修复: 添加inventory:adjust/lock/unlock权限到admin角色 (000021_create_roles.up.sql)",
+      "✅ 修复: WarehouseListFilter page参数添加omitempty验证",
+      "✅ 修复: InventoryListFilter page参数添加omitempty验证, page_size增至500",
+      "✅ 修复: StockTakingCreate.tsx使用path-based inventory API而非query参数",
+      "✅ 修复: StockTakingCreate.tsx decimal值解析 (quantity.toFixed error)",
+      "✅ E2E通过: Stock Taking List Display (3 tests)",
+      "✅ E2E通过: Stock Taking Creation (5 tests including import all products)",
+      "✅ E2E通过: Screenshots for Documentation (partial)",
+      "❌ E2E失败: Stock Taking Execution (需要开始盘点按钮等UI元素)",
+      "❌ E2E失败: Stock Taking with Differences (同上)",
+      "❌ E2E失败: Video Recording flow (同上)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-FIX-001",
+    "story": "修复盘点执行页面E2E测试 (P2-INT-002后续)",
+    "priority": "medium",
+    "requirements": [
+      "检查StockTakingExecute.tsx中开始盘点按钮的渲染条件",
+      "确认盘点单创建后状态是否正确设置为DRAFT",
+      "验证执行页面是否正确加载盘点单数据和商品列表",
+      "修复mobile-safari下拉框交互超时问题",
+      "确保开始盘点后状态变为COUNTING",
+      "实现实盘数量输入功能和差异计算",
+      "实现保存盘点和提交审批功能",
+      "",
+      "依赖: StockTakingExecute.tsx页面实现",
+      "E2E验证: ./docker/local-test.sh run-e2e tests/e2e/inventory/stock-taking.spec.ts",
+      "验收标准: 所有116个测试通过"
     ],
     "passes": false
   },
@@ -2337,7 +2369,7 @@
       "支持扫码支付",
       "处理支付回调"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P7-BE-004",

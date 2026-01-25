@@ -52,8 +52,8 @@ type InventoryListFilter struct {
 	HasStock     *bool      `form:"has_stock"`
 	MinQuantity  *float64   `form:"min_quantity"`
 	MaxQuantity  *float64   `form:"max_quantity"`
-	Page         int        `form:"page" binding:"min=1"`
-	PageSize     int        `form:"page_size" binding:"min=1,max=100"`
+	Page         int        `form:"page" binding:"omitempty,min=1"`
+	PageSize     int        `form:"page_size" binding:"omitempty,min=1,max=500"`
 	OrderBy      string     `form:"order_by"`
 	OrderDir     string     `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }

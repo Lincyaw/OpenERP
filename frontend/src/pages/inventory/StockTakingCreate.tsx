@@ -99,10 +99,13 @@ export default function StockTakingCreatePage() {
 
   /**
    * Format quantity for display with 2 decimal places
+   * Note: API returns decimal values as strings to preserve precision
    */
-  const formatQuantity = useCallback((quantity?: number): string => {
+  const formatQuantity = useCallback((quantity?: number | string): string => {
     if (quantity === undefined || quantity === null) return '-'
-    return quantity.toFixed(2)
+    const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+    if (isNaN(num)) return '-'
+    return num.toFixed(2)
   }, [])
 
   // State for warehouses dropdown
@@ -191,8 +194,8 @@ export default function StockTakingCreatePage() {
 
     setLoadingInventory(true)
     try {
-      const response = await inventoryApi.getInventoryItems({
-        warehouse_id: warehouseId,
+      // Use the warehouse-specific endpoint with path parameter
+      const response = await inventoryApi.getInventoryWarehousesWarehouseIdItems(warehouseId, {
         page_size: 500,
         has_stock: true,
       })
@@ -226,8 +229,12 @@ export default function StockTakingCreatePage() {
       product_name: item.product_name || item.product_id || '',
       product_code: item.product_code || '',
       unit: item.unit || '件',
-      system_quantity: item.total_quantity || 0,
-      unit_cost: item.unit_cost || 0,
+      system_quantity:
+        typeof item.total_quantity === 'string'
+          ? parseFloat(item.total_quantity)
+          : item.total_quantity || 0,
+      unit_cost:
+        typeof item.unit_cost === 'string' ? parseFloat(item.unit_cost) : item.unit_cost || 0,
     }))
     setSelectedProducts(products)
     setSelectedRowKeys(products.map((p) => p.product_id))
@@ -249,8 +256,12 @@ export default function StockTakingCreatePage() {
         product_name: item.product_name || item.product_id || '',
         product_code: item.product_code || '',
         unit: item.unit || '件',
-        system_quantity: item.total_quantity || 0,
-        unit_cost: item.unit_cost || 0,
+        system_quantity:
+          typeof item.total_quantity === 'string'
+            ? parseFloat(item.total_quantity)
+            : item.total_quantity || 0,
+        unit_cost:
+          typeof item.unit_cost === 'string' ? parseFloat(item.unit_cost) : item.unit_cost || 0,
       }))
     setSelectedProducts(products)
     setSelectedRowKeys(modalSelectedKeys)
@@ -310,7 +321,9 @@ export default function StockTakingCreatePage() {
     )
 
     if (!addItemsResponse.success) {
-      throw new Error(addItemsResponse.error?.message || t('stockTaking.create.messages.addItemsError'))
+      throw new Error(
+        addItemsResponse.error?.message || t('stockTaking.create.messages.addItemsError')
+      )
     }
   }
 
@@ -435,13 +448,20 @@ export default function StockTakingCreatePage() {
       <Card className="stock-taking-create-card">
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
           {/* Basic Info Section */}
-          <FormSection title={t('stockTaking.create.basicInfo.title')} description={t('stockTaking.create.basicInfo.description')}>
+          <FormSection
+            title={t('stockTaking.create.basicInfo.title')}
+            description={t('stockTaking.create.basicInfo.description')}
+          >
             <FormRow cols={2}>
               <SelectField
                 name="warehouse_id"
                 control={control}
                 label={t('stockTaking.create.basicInfo.warehouse')}
-                placeholder={loadingWarehouses ? t('stockTaking.create.products.loading') : t('stockTaking.create.basicInfo.warehousePlaceholder')}
+                placeholder={
+                  loadingWarehouses
+                    ? t('stockTaking.create.products.loading')
+                    : t('stockTaking.create.basicInfo.warehousePlaceholder')
+                }
                 options={warehouses}
                 required
                 showSearch
@@ -465,24 +485,39 @@ export default function StockTakingCreatePage() {
           </FormSection>
 
           {/* Product Selection Section */}
-          <FormSection title={t('stockTaking.create.products.title')} description={t('stockTaking.create.products.description')}>
+          <FormSection
+            title={t('stockTaking.create.products.title')}
+            description={t('stockTaking.create.products.description')}
+          >
             {!warehouseId ? (
-              <Empty title={t('stockTaking.create.products.selectWarehouseFirst')} description={t('stockTaking.create.products.selectWarehouseFirstDesc')} />
+              <Empty
+                title={t('stockTaking.create.products.selectWarehouseFirst')}
+                description={t('stockTaking.create.products.selectWarehouseFirstDesc')}
+              />
             ) : loadingInventory ? (
               <div className="loading-container">
                 <Spin />
                 <Text type="tertiary">{t('stockTaking.create.products.loadingInventory')}</Text>
               </div>
             ) : inventoryItems.length === 0 ? (
-              <Empty title={t('stockTaking.create.products.noInventory')} description={t('stockTaking.create.products.noInventoryDesc')} />
+              <Empty
+                title={t('stockTaking.create.products.noInventory')}
+                description={t('stockTaking.create.products.noInventoryDesc')}
+              />
             ) : (
               <>
                 {/* Toolbar */}
                 <div className="product-toolbar">
                   <div className="toolbar-left">
-                    <Text strong>{t('stockTaking.create.products.selectedCount', { count: selectedProducts.length })}</Text>
+                    <Text strong>
+                      {t('stockTaking.create.products.selectedCount', {
+                        count: selectedProducts.length,
+                      })}
+                    </Text>
                     <Text type="tertiary" style={{ marginLeft: 'var(--spacing-3)' }}>
-                      {t('stockTaking.create.products.totalCount', { count: inventoryItems.length })}
+                      {t('stockTaking.create.products.totalCount', {
+                        count: inventoryItems.length,
+                      })}
                     </Text>
                   </div>
                   <div className="toolbar-right">
@@ -560,7 +595,8 @@ export default function StockTakingCreatePage() {
                 }
               }}
             >
-              {t('stockTaking.create.modal.selectAll')} ({modalSelectedKeys.length}/{inventoryItems.length})
+              {t('stockTaking.create.modal.selectAll')} ({modalSelectedKeys.length}/
+              {inventoryItems.length})
             </Checkbox>
           </div>
           <Table

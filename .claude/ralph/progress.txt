@@ -16018,3 +16018,175 @@ Implemented the WeChat Pay adapter that implements the PaymentGateway port inter
 - The adapter currently requires WeChat platform certificate for callback verification
   - In production, implement certificate auto-download from WeChat API
 - For JSAPI payments, ensure the user's OpenID is included in the request
+
+## 2026-01-25: P7-BE-003 Alipay Adapter Implementation Complete
+
+### Task ID: P7-BE-003
+### Task: 支付宝 Adapter (Alipay Adapter)
+
+### Summary
+Implemented the Alipay adapter that implements the PaymentGateway port interface defined in P7-BE-001. This adapter integrates with Alipay Open Platform API for payment processing.
+
+### Requirements Completed
+1. **Alipay Adapter**: Implemented `AlipayAdapter` implementing `PaymentGateway` interface
+2. **PC Web Payment (Page)**: Supports PC web payment via redirect
+3. **Mobile Web Payment (WAP)**: Supports mobile web H5 payment
+4. **App Payment**: Supports in-app Alipay payment with signed order string
+5. **QR Code Payment (Precreate)**: Supports merchant-generated QR code payment
+6. **Face-to-Face Payment (F2F)**: Supports F2F payment scenarios
+7. **Payment Callback**: Implemented callback verification and parsing
+
+### Files Created
+
+1. **Configuration** (`backend/internal/infrastructure/payment/alipay_config.go`)
+   - `AlipayConfig`: Configuration struct with all required fields
+   - `AlipayConfigBuilder`: Builder pattern for config construction
+   - Support for loading private keys from PEM string or file
+   - Support for loading Alipay public key from PEM
+   - Comprehensive validation for AppID, keys, and URLs
+
+2. **Type Definitions** (`backend/internal/infrastructure/payment/alipay_types.go`)
+   - Error response types
+   - Trade create/query/close/refund request/response types
+   - Notification types for payment callbacks
+   - API method and product code constants
+   - Trade status and refund status constants
+
+3. **Adapter Implementation** (`backend/internal/infrastructure/payment/alipay_adapter.go`)
+   - `AlipayAdapter`: Main adapter implementing `PaymentGateway` interface
+   - `CreatePayment`: Creates payment orders for all channels (Page/WAP/App/QRCode/F2F)
+   - `QueryPayment`: Queries payment status
+   - `ClosePayment`: Closes pending payment orders
+   - `CreateRefund`: Initiates refund requests
+   - `QueryRefund`: Queries refund status
+   - `VerifyCallback`: Verifies and parses payment callbacks
+   - `VerifyRefundCallback`: Verifies and parses refund callbacks
+   - `GenerateCallbackResponse`: Generates response for callbacks
+   - RSA-SHA256 signature generation (RSA2)
+   - Signature verification for callbacks
+
+4. **Unit Tests** (`backend/internal/infrastructure/payment/alipay_adapter_test.go`)
+   - Config validation tests (7 test cases)
+   - Config builder tests
+   - Adapter creation tests
+   - Payment creation validation tests (7 test cases)
+   - Page/WAP/App/QRCode payment creation tests
+   - Query/Close/Refund validation tests
+   - Callback verification tests
+   - Signature signing and verification tests
+   - Status mapping tests
+   - All 40+ test cases passing
+
+### Technical Details
+
+- **API Gateway**: Alipay Open Platform Gateway
+- **Authentication**: RSA2-SHA256 signature scheme
+- **Callback Verification**: RSA signature verification
+- **Amount Handling**: Uses decimal strings for precise amounts
+- **Status Mapping**: Maps Alipay trade states to domain status enums
+
+### Alipay API Methods Used
+- `alipay.trade.page.pay` - PC web payment
+- `alipay.trade.wap.pay` - Mobile web payment
+- `alipay.trade.app.pay` - App payment
+- `alipay.trade.precreate` - QR code payment
+- `alipay.trade.query` - Query payment
+- `alipay.trade.close` - Close payment
+- `alipay.trade.refund` - Create refund
+- `alipay.trade.fastpay.refund.query` - Query refund
+
+### Payment Channels Supported
+- **ALIPAY_PAGE**: PC web payment (redirect to Alipay page)
+- **ALIPAY_WAP**: Mobile web H5 payment
+- **ALIPAY_APP**: Native app payment (returns signed order string)
+- **ALIPAY_QRCODE**: QR code payment (returns QR code URL)
+- **ALIPAY_F2F**: Face-to-face payment (merchant presents QR)
+
+### SDK Parameters Generated
+- **App Payment**: Complete signed order string for Alipay SDK
+- **Web Payments**: Full gateway URL with all parameters
+
+### Notes for Next Developer
+- P7-BE-004 (Payment Callback Service) should use this adapter for callback verification
+- The adapter uses sandbox URL in test mode for development
+- In production, consider certificate mode for enhanced security
+- For App payments, the SDK params should be passed directly to Alipay SDK
+- Refund in Alipay is synchronous - immediately returns success/failure
+
+## 2026-01-25: P2-INT-002 盘点功能联调 (部分完成)
+
+### 工作内容
+尝试完成 P2-INT-002 (盘点功能E2E联调) 任务，实现了部分功能但未完全通过所有测试。
+
+### 已完成的修复
+
+1. **权限问题修复** (`backend/migrations/000021_create_roles.up.sql`)
+   - 添加 `inventory:adjust`, `inventory:lock`, `inventory:unlock` 权限到 admin 角色
+   - 问题: 盘点页面需要 `inventory:adjust` 权限，但 admin 角色只有 CRUD 权限
+
+2. **API 参数验证修复** (`backend/internal/application/partner/dto.go`)
+   - `WarehouseListFilter.Page` 和 `PageSize` 添加 `omitempty` 验证
+   - 问题: 前端不传 page 参数时验证失败 (min=1)
+
+3. **库存 API 参数修复** (`backend/internal/application/inventory/dto.go`)
+   - `InventoryListFilter.Page` 添加 `omitempty` 验证
+   - `InventoryListFilter.PageSize` max 从 100 增至 500
+   - 问题: 盘点创建页面需要一次性获取所有库存
+
+4. **前端 API 调用修复** (`frontend/src/pages/inventory/StockTakingCreate.tsx`)
+   - 使用 path-based API `getInventoryWarehousesWarehouseIdItems` 替代 query 参数
+   - 问题: UUID 参数在 query 中无法正确解析
+
+5. **前端数值解析修复** (`frontend/src/pages/inventory/StockTakingCreate.tsx`)
+   - `formatQuantity` 函数支持 string 类型的数值
+   - `handleImportAll` 和 `handleConfirmProductSelection` 解析 decimal 字符串
+   - 问题: API 返回的 decimal 是字符串格式，调用 toFixed() 报错
+
+### E2E 测试结果
+- **通过**: 68/116 测试
+- **失败**: 48/116 测试
+
+### 通过的测试
+- Stock Taking List Display (所有测试)
+- Stock Taking Creation (包括"全部导入"功能)
+- Screenshots for Documentation (部分)
+
+### 失败原因分析
+
+**Stock Taking Execution 测试失败**:
+- 所有执行相关测试都在等待"开始盘点"按钮时超时
+- 原因: `StockTakingExecute.tsx` 页面可能缺少该按钮或按钮条件不满足
+- 涉及测试:
+  - `should start counting when clicking "开始盘点"`
+  - `should allow entering actual quantities`
+  - `should calculate difference after entering quantity`
+  - `should save counts and update progress`
+  - `should submit for approval when all items are counted`
+
+**Stock Taking with Differences 测试失败**:
+- 同样依赖"开始盘点"功能
+- 测试需要进入盘点执行状态后才能测试差异计算
+
+**Video Recording 测试失败**:
+- 完整流程测试，在执行阶段失败
+
+**Filtering 测试部分失败**:
+- 部分浏览器(mobile-safari)在仓库筛选下拉框选择时超时
+
+### 需要后续修复的问题
+
+1. 检查 `StockTakingExecute.tsx` 中"开始盘点"按钮的渲染条件
+2. 确认盘点单创建后状态是否正确(DRAFT)
+3. 验证执行页面是否正确加载盘点单数据
+4. 修复 mobile-safari 下拉框交互问题
+
+### 创建的文件
+- `frontend/tests/e2e/inventory/stock-taking.spec.ts` - 完整的盘点功能 E2E 测试
+
+### 修改的文件
+- `backend/migrations/000021_create_roles.up.sql`
+- `backend/internal/application/partner/dto.go`
+- `backend/internal/application/inventory/dto.go`
+- `frontend/src/pages/inventory/StockTakingCreate.tsx`
+- `frontend/tests/e2e/pages/InventoryPage.ts`
+- `.claude/ralph/plans/prd.json`
