@@ -702,7 +702,7 @@
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
       "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P2-BE-001",

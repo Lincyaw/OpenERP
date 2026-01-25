@@ -280,10 +280,13 @@ export default function CustomerBalancePage() {
   }, [fetchBalanceSummary, fetchTransactions])
 
   // Helper function to format currency with fallback
+  // Note: API returns balance values as strings, so we need to parse them
   const formatCurrencyValue = useCallback(
-    (amount?: number): string => {
+    (amount?: number | string): string => {
       if (amount === undefined || amount === null) return formatCurrency(0)
-      return formatCurrency(amount)
+      const numValue = typeof amount === 'string' ? parseFloat(amount) : amount
+      if (isNaN(numValue)) return formatCurrency(0)
+      return formatCurrency(numValue)
     },
     [formatCurrency]
   )
@@ -543,7 +546,7 @@ export default function CustomerBalancePage() {
         visible={rechargeModalVisible}
         customerId={customerId}
         customerName={customerName}
-        currentBalance={balanceSummary?.current_balance || 0}
+        currentBalance={parseFloat(String(balanceSummary?.current_balance || '0')) || 0}
         onClose={() => setRechargeModalVisible(false)}
         onSuccess={handleRechargeSuccess}
       />

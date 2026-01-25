@@ -4,6 +4,7 @@ import {
   LoginPage,
   ProductsPage,
   CustomersPage,
+  CustomerBalancePage,
   SuppliersPage,
   WarehousesPage,
   InventoryPage,
@@ -54,6 +55,7 @@ export const test = base.extend<{
   authenticatedPage: LoginPage
   productsPage: ProductsPage
   customersPage: CustomersPage
+  customerBalancePage: CustomerBalancePage
   suppliersPage: SuppliersPage
   warehousesPage: WarehousesPage
   inventoryPage: InventoryPage
@@ -93,6 +95,14 @@ export const test = base.extend<{
   customersPage: async ({ page }, use) => {
     const customersPage = new CustomersPage(page)
     await use(customersPage)
+  },
+
+  /**
+   * Customer Balance page fixture - provides a CustomerBalancePage instance
+   */
+  customerBalancePage: async ({ page }, use) => {
+    const customerBalancePage = new CustomerBalancePage(page)
+    await use(customerBalancePage)
   },
 
   /**

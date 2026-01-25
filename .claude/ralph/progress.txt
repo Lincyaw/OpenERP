@@ -15623,3 +15623,58 @@ Completed the Product Module E2E integration tests. All 25 tests pass consistent
 - `frontend/src/pages/finance/OtherIncomeForm.tsx`
 - `frontend/src/pages/finance/ReceiptReconcile.tsx`
 - `frontend/src/pages/finance/PaymentReconcile.tsx`
+
+## 2026-01-25: P1-INT-003 Customer Balance E2E Integration Test Complete
+
+### Task ID: P1-INT-003
+### Task: 客户余额功能联调 (E2E Docker)
+
+### Summary
+Implemented comprehensive E2E tests for the Customer Balance module using Playwright. Tests cover balance display, recharge operations, transaction history filtering, navigation, and screenshot capture.
+
+### Changes Made
+
+1. **Created CustomerBalancePage Page Object** (`tests/e2e/pages/CustomerBalancePage.ts`)
+   - Page header elements (back button, title)
+   - Balance summary card locators (current balance, total recharge, consume, refund)
+   - Recharge modal elements with Semi Design-aware selectors
+   - Transaction history table and filter locators
+   - Methods: navigateToBalance, getCurrentBalance, openRechargeModal, fillRechargeForm, submitRecharge, filterByTransactionType, filterBySourceType, verifyLatestTransaction, etc.
+
+2. **Updated Page Object exports** (`tests/e2e/pages/index.ts`)
+   - Added CustomerBalancePage export
+
+3. **Updated test fixtures** (`tests/e2e/fixtures/test-fixtures.ts`)
+   - Added CustomerBalancePage import and fixture
+
+4. **Created E2E Test Suite** (`tests/e2e/partners/customer-balance.spec.ts`)
+   - 18 tests covering:
+     - Balance Page Display (6 tests): page correctness, balance verification for multiple customers, transaction history display
+     - Recharge Operation (5 tests): modal open/close, balance preview, successful recharge, transaction history update, total recharge update
+     - Transaction History Filtering (2 tests): filter by type, filter by source
+     - Navigation (2 tests): navigate from customer list, navigate back
+     - Screenshots (3 tests): balance page, recharge modal, transactions
+
+5. **Fixed seed data** (`docker/seed-data.sql`)
+   - Corrected column names: `type` → `transaction_type`, `reference_type` → `source_type`, `reference_id` → `source_id`, `notes` → `remark`
+   - Corrected values: lowercase types → uppercase (RECHARGE, CONSUME, MANUAL)
+   - Fixed negative amount for CONSUME (table has CHECK constraint for positive amounts)
+
+6. **Fixed frontend data type issues**
+   - `CustomerBalance.tsx`: Fixed formatCurrencyValue to handle string-to-number conversion for API responses
+   - `CustomerBalance.tsx`: Fixed currentBalance prop passed to RechargeModal (parse string to number)
+
+### Test Results
+- All 91 tests pass across 5 browser configurations (chromium, firefox, webkit, mobile-chrome, mobile-safari)
+- Tests verified stable with 2 consecutive runs (100% pass rate)
+- Tests handle parallel execution properly with appropriate assertions
+
+### Files Created
+- `frontend/tests/e2e/pages/CustomerBalancePage.ts`
+- `frontend/tests/e2e/partners/customer-balance.spec.ts`
+
+### Files Modified
+- `frontend/tests/e2e/pages/index.ts`
+- `frontend/tests/e2e/fixtures/test-fixtures.ts`
+- `frontend/src/pages/partner/CustomerBalance.tsx`
+- `docker/seed-data.sql`
