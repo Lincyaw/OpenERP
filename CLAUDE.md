@@ -70,6 +70,9 @@ npm install @douyinfe/semi-ui
 npm install @douyinfe/semi-icons
 ```
 
+Use `semi-ui-skills` to write better frontend code with Semi Design, you can use this skill.
+
+
 ---
 
 ## 3. API Contract & Code Generation
@@ -206,99 +209,96 @@ Add to `frontend/package.json`:
 
 ---
 
-## 4. E2E 测试规范
+## 4. E2E Testing Specification
 
-### 4.1 测试环境要求
+### 4.1 Test Environment Requirements
 
-所有联调（INT）和端到端测试**必须**在 Docker 环境下执行，连接真实数据库：
+All integration (INT) and end-to-end tests **MUST** be executed in Docker environment with connection to real database:
 
-| 组件 | 端口 | 说明 |
+| Component | Port | Description |
 |------|------|------|
-| Frontend | 3001 | 前端应用 |
-| Backend | 8081 | 后端 API |
-| PostgreSQL | 5433 | 真实数据库 |
-| Redis | 6380 | 缓存服务 |
+| Frontend | 3001 | Frontend application |
+| Backend | 8081 | Backend API |
+| PostgreSQL | 5433 | Real database |
+| Redis | 6380 | Cache service |
+
+See [4.4 Test Commands](#44-test-commands) for specific test commands.
+
+### 4.2 E2E Testing Standards
+
+1. **No Mocking**: Integration tests must connect to real database, API responses must NOT be mocked
+2. **Data Isolation**: Each test case should have independent test data to avoid side effects
+3. **Complete Flow**: Tests must cover the full workflow from UI operations to database changes
+4. **Screenshots/Videos**: Failed test cases must automatically capture screenshots, key flows should be recorded
+5. **Multi-Browser**: Must cover at least Chrome and Firefox
+6. **Responsive**: Test both desktop and mobile viewports
+
+### 4.3 Integration Test Acceptance Criteria
+
+A completed integration (INT) task must satisfy:
+- [ ] Docker environment (`docker-compose.test.yml`) starts successfully
+- [ ] Seed data (`seed-data.sql`) loads completely
+- [ ] Playwright E2E tests pass at 100% rate
+- [ ] Tests cover all scenarios described in requirements
+- [ ] HTML test report is generated
+- [ ] No flaky tests (stable pass after 3 consecutive runs)
+
+### 4.4 Test Commands
+
+#### Convenience Scripts
 
 ```bash
-# 启动测试环境
+# Start test environment (includes health checks, migration, seed, API checks)
 ./docker/quick-test.sh start
 
-# 加载测试数据
+# Load seed data only
 ./docker/quick-test.sh seed
 
-# 运行 E2E 测试
-cd frontend && npm run e2e
+# View service status
+./docker/quick-test.sh status
 
-# 清理环境
+# View logs
+./docker/quick-test.sh logs
+
+# API smoke test
+./docker/quick-test.sh api
+
+# Stop test environment
+./docker/quick-test.sh stop
+
+# Stop and clean all data
 ./docker/quick-test.sh clean
 ```
 
-### 4.2 E2E 测试标准
-
-1. **禁止 Mock**: 联调测试必须连接真实数据库，不允许 Mock API 响应
-2. **数据隔离**: 每个测试用例应有独立的测试数据，避免相互影响
-3. **完整流程**: 测试必须覆盖从 UI 操作到数据库变更的完整链路
-4. **截图/视频**: 失败用例必须自动截图，关键流程录制视频
-5. **多浏览器**: 至少覆盖 Chrome 和 Firefox
-6. **响应式**: 测试桌面和移动端视口
-
-### 4.3 联调测试验收标准
-
-一个联调（INT）任务完成必须满足：
-- [ ] Docker 环境 (`docker-compose.test.yml`) 启动成功
-- [ ] Seed 数据 (`seed-data.sql`) 加载完成
-- [ ] Playwright E2E 测试通过率 100%
-- [ ] 测试覆盖所有 requirements 中描述的场景
-- [ ] HTML 测试报告生成
-- [ ] 无 Flaky 测试（连续运行 3 次稳定通过）
-
-### 4.4 测试命令
+#### Running E2E Tests
 
 ```bash
-# 单次运行所有 E2E 测试
-npm run e2e
+# 1. Start test environment
+docker compose -f docker-compose.test.yml up -d
 
-# 带浏览器界面运行
-npm run e2e:headed
+# 2. Load seed data
+./docker/quick-test.sh seed
 
-# 调试模式
-npm run e2e:debug
+# 3. Run tests (execute from project root)
+docker compose -f docker-compose.test.yml run --rm \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -e E2E_BASE_URL=http://frontend:80 \
+    playwright npx playwright test --reporter=list
 
-# 生成并打开 HTML 报告
-npm run e2e:report
+# Run specific test file
+docker compose -f docker-compose.test.yml run --rm \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
+    -e E2E_BASE_URL=http://frontend:80 \
+    playwright npx playwright test tests/e2e/auth/auth.spec.ts --project=chromium --reporter=list
 
-# 指定浏览器
-npm run e2e -- --project=chromium
-npm run e2e -- --project=firefox
-
-# CI 环境运行
-npm run e2e:ci
+# 4. Stop test environment
+docker compose -f docker-compose.test.yml down -v
 ```
 
-### 4.5 测试凭证
+**Notes**:
+- By default uses 16 workers to run in parallel
+- Add `-e CI=true` to switch to CI mode (2 workers, retry 2 times on failure)
 
-测试环境使用 `seed-data.sql` 预置用户：
 
-| 用户名 | 密码 | 角色 |
-|--------|------|------|
-| admin | test123 | 系统管理员 |
-| sales | test123 | 销售经理 |
-| warehouse | test123 | 仓库管理员 |
-| finance | test123 | 财务经理 |
-
-### 4.6 测试目录结构
-
-```
-frontend/tests/e2e/
-├── auth/           # 认证相关测试
-├── products/       # 商品模块测试
-├── partners/       # 伙伴模块测试
-├── inventory/      # 库存模块测试
-├── transactions/   # 交易模块测试
-├── finance/        # 财务模块测试
-├── reports/        # 报表模块测试
-├── settings/       # 设置模块测试
-├── pages/          # Page Object 类
-├── fixtures/       # 测试 fixtures
-└── utils/          # 测试工具函数
-```
