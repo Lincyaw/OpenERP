@@ -3238,11 +3238,16 @@
       "- 注册路由: /finance/expenses, /finance/incomes, /finance/cash-flow",
       "- 重新生成 swagger 文档",
       "",
-      "⏳ 待完成:",
-      "- 前端 API SDK 重新生成 (npx orval)",
-      "- 前端页面集成测试"
+      "✅ 前端已完成 (2026-01-26):",
+      "- 修复后端swagger路由参数命名: /catalog/categories/{id}/products -> {category_id}",
+      "- 重新生成swagger文档 (make -C backend docs)",
+      "- 重新生成前端API SDK (npm run api:generate)",
+      "- 修复CustomerBalance.tsx API命名变更 (customer_id -> id)",
+      "- 修复RechargeModal.tsx API命名变更",
+      "- TypeScript类型检查通过",
+      "- npm run build 成功"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-L",

@@ -16960,3 +16960,36 @@ Updated **main.go** (`backend/cmd/server/`)
 - Test Expenses.tsx, OtherIncomes.tsx, CashFlow.tsx pages
 
 ---
+
+## 2026-01-26: P9-UI-001-M - Frontend API SDK Regeneration Complete
+
+### Changes Made:
+1. **Backend Fix**: Fixed swagger route parameter mismatch
+   - `product.go:622`: Changed `@Router /catalog/categories/{id}/products` to `{category_id}/products`
+
+2. **Regenerated Swagger Docs**: `make -C backend docs`
+
+3. **Regenerated Frontend SDK**: `npm run api:generate`
+   - Generated new TypeScript types and API functions
+   - All expense/income API endpoints now available
+
+4. **Fixed API Naming Changes**: Updated frontend components for renamed API methods
+   - `CustomerBalance.tsx`: Updated imports and API calls
+     - `GetPartnerCustomersCustomerIdBalanceTransactionsParams` -> `GetPartnerCustomersIdBalanceTransactionsParams`
+     - `getPartnerCustomersCustomerIdBalanceSummary` -> `getPartnerCustomersIdBalanceSummary`
+     - `getPartnerCustomersCustomerIdBalanceTransactions` -> `getPartnerCustomersIdBalanceTransactions`
+   - `RechargeModal.tsx`: Updated API call
+     - `postPartnerCustomersCustomerIdBalanceRecharge` -> `postPartnerCustomersIdBalanceRecharge`
+
+### Verification:
+- TypeScript type check passed (tsc --noEmit)
+- npm run build succeeded
+
+### Files Modified:
+- backend/internal/interfaces/http/handler/product.go
+- backend/docs/swagger.yaml (regenerated)
+- frontend/src/api/**/* (regenerated)
+- frontend/src/pages/partner/CustomerBalance.tsx
+- frontend/src/pages/partner/RechargeModal.tsx
+- .claude/ralph/plans/prd.json
+

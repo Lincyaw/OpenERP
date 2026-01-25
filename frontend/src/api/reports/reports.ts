@@ -32,6 +32,11 @@ import type {
   GetReportsSalesProductsRankingParams,
   GetReportsSalesSummary200,
   GetReportsSalesSummaryParams,
+  GetReportsSchedulerStatus200,
+  HandlerRefreshAllReportsRequest,
+  HandlerRefreshReportRequest,
+  PostReportsRefresh200,
+  PostReportsRefreshAll200,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -170,6 +175,42 @@ export const getReports = () => {
     )
   }
   /**
+   * Triggers manual refresh of a specific report type cache
+   * @summary Manually refresh a report cache
+   */
+  const postReportsRefresh = (
+    handlerRefreshReportRequest: HandlerRefreshReportRequest,
+    options?: SecondParameter<typeof customInstance<PostReportsRefresh200>>
+  ) => {
+    return customInstance<PostReportsRefresh200>(
+      {
+        url: `/reports/refresh`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: handlerRefreshReportRequest,
+      },
+      options
+    )
+  }
+  /**
+   * Triggers manual refresh of all report type caches
+   * @summary Refresh all report caches
+   */
+  const postReportsRefreshAll = (
+    handlerRefreshAllReportsRequest: HandlerRefreshAllReportsRequest,
+    options?: SecondParameter<typeof customInstance<PostReportsRefreshAll200>>
+  ) => {
+    return customInstance<PostReportsRefreshAll200>(
+      {
+        url: `/reports/refresh/all`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: handlerRefreshAllReportsRequest,
+      },
+      options
+    )
+  }
+  /**
    * Get top customers by sales for the specified period
    * @summary Get customer sales ranking
    */
@@ -221,6 +262,18 @@ export const getReports = () => {
       options
     )
   }
+  /**
+   * Returns the current status of the report scheduler
+   * @summary Get report scheduler status
+   */
+  const getReportsSchedulerStatus = (
+    options?: SecondParameter<typeof customInstance<GetReportsSchedulerStatus200>>
+  ) => {
+    return customInstance<GetReportsSchedulerStatus200>(
+      { url: `/reports/scheduler/status`, method: 'GET' },
+      options
+    )
+  }
   return {
     getReportsFinanceCashFlow,
     getReportsFinanceCashFlowItems,
@@ -232,10 +285,13 @@ export const getReports = () => {
     getReportsInventoryTurnover,
     getReportsInventoryValueByCategory,
     getReportsInventoryValueByWarehouse,
+    postReportsRefresh,
+    postReportsRefreshAll,
     getReportsSalesCustomersRanking,
     getReportsSalesDailyTrend,
     getReportsSalesProductsRanking,
     getReportsSalesSummary,
+    getReportsSchedulerStatus,
   }
 }
 export type GetReportsFinanceCashFlowResult = NonNullable<
@@ -268,6 +324,12 @@ export type GetReportsInventoryValueByCategoryResult = NonNullable<
 export type GetReportsInventoryValueByWarehouseResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getReports>['getReportsInventoryValueByWarehouse']>>
 >
+export type PostReportsRefreshResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getReports>['postReportsRefresh']>>
+>
+export type PostReportsRefreshAllResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getReports>['postReportsRefreshAll']>>
+>
 export type GetReportsSalesCustomersRankingResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getReports>['getReportsSalesCustomersRanking']>>
 >
@@ -279,4 +341,7 @@ export type GetReportsSalesProductsRankingResult = NonNullable<
 >
 export type GetReportsSalesSummaryResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getReports>['getReportsSalesSummary']>>
+>
+export type GetReportsSchedulerStatusResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getReports>['getReportsSchedulerStatus']>>
 >

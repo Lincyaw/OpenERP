@@ -5,16 +5,16 @@
  */
 import type {
   DtoResponse,
-  GetCatalogProductsProductIdUnits200,
-  GetCatalogProductsProductIdUnitsDefaultPurchase200,
-  GetCatalogProductsProductIdUnitsDefaultSales200,
-  GetCatalogProductsProductIdUnitsId200,
+  GetCatalogProductsIdUnits200,
+  GetCatalogProductsIdUnitsDefaultPurchase200,
+  GetCatalogProductsIdUnitsDefaultSales200,
+  GetCatalogProductsIdUnitsUnitId200,
   HandlerConvertUnitRequest,
   HandlerCreateProductUnitRequest,
   HandlerUpdateProductUnitRequest,
-  PostCatalogProductsProductIdUnits201,
-  PostCatalogProductsProductIdUnitsConvert200,
-  PutCatalogProductsProductIdUnitsId200,
+  PostCatalogProductsIdUnits201,
+  PostCatalogProductsIdUnitsConvert200,
+  PutCatalogProductsIdUnitsUnitId200,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -26,12 +26,12 @@ export const getProductUnits = () => {
    * List all alternate units for a product
    * @summary List product units
    */
-  const getCatalogProductsProductIdUnits = (
-    productId: string,
-    options?: SecondParameter<typeof customInstance<GetCatalogProductsProductIdUnits200>>
+  const getCatalogProductsIdUnits = (
+    id: string,
+    options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnits200>>
   ) => {
-    return customInstance<GetCatalogProductsProductIdUnits200>(
-      { url: `/catalog/products/${productId}/units`, method: 'GET' },
+    return customInstance<GetCatalogProductsIdUnits200>(
+      { url: `/catalog/products/${id}/units`, method: 'GET' },
       options
     )
   }
@@ -39,14 +39,14 @@ export const getProductUnits = () => {
    * Create a new alternate unit for a product
    * @summary Create a product unit
    */
-  const postCatalogProductsProductIdUnits = (
-    productId: string,
+  const postCatalogProductsIdUnits = (
+    id: string,
     handlerCreateProductUnitRequest: HandlerCreateProductUnitRequest,
-    options?: SecondParameter<typeof customInstance<PostCatalogProductsProductIdUnits201>>
+    options?: SecondParameter<typeof customInstance<PostCatalogProductsIdUnits201>>
   ) => {
-    return customInstance<PostCatalogProductsProductIdUnits201>(
+    return customInstance<PostCatalogProductsIdUnits201>(
       {
-        url: `/catalog/products/${productId}/units`,
+        url: `/catalog/products/${id}/units`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         data: handlerCreateProductUnitRequest,
@@ -58,13 +58,13 @@ export const getProductUnits = () => {
    * Delete a product unit
    * @summary Delete product unit
    */
-  const deleteCatalogProductsProductIdUnitsId = (
-    productId: string,
+  const deleteCatalogProductsIdUnitsUnitId = (
     id: string,
+    unitId: string,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
-      { url: `/catalog/products/${productId}/units/${id}`, method: 'DELETE' },
+      { url: `/catalog/products/${id}/units/${unitId}`, method: 'DELETE' },
       options
     )
   }
@@ -72,13 +72,13 @@ export const getProductUnits = () => {
    * Retrieve a product unit by its ID
    * @summary Get product unit by ID
    */
-  const getCatalogProductsProductIdUnitsId = (
-    productId: string,
+  const getCatalogProductsIdUnitsUnitId = (
     id: string,
-    options?: SecondParameter<typeof customInstance<GetCatalogProductsProductIdUnitsId200>>
+    unitId: string,
+    options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsUnitId200>>
   ) => {
-    return customInstance<GetCatalogProductsProductIdUnitsId200>(
-      { url: `/catalog/products/${productId}/units/${id}`, method: 'GET' },
+    return customInstance<GetCatalogProductsIdUnitsUnitId200>(
+      { url: `/catalog/products/${id}/units/${unitId}`, method: 'GET' },
       options
     )
   }
@@ -86,15 +86,15 @@ export const getProductUnits = () => {
    * Update an existing product unit
    * @summary Update product unit
    */
-  const putCatalogProductsProductIdUnitsId = (
-    productId: string,
+  const putCatalogProductsIdUnitsUnitId = (
     id: string,
+    unitId: string,
     handlerUpdateProductUnitRequest: HandlerUpdateProductUnitRequest,
-    options?: SecondParameter<typeof customInstance<PutCatalogProductsProductIdUnitsId200>>
+    options?: SecondParameter<typeof customInstance<PutCatalogProductsIdUnitsUnitId200>>
   ) => {
-    return customInstance<PutCatalogProductsProductIdUnitsId200>(
+    return customInstance<PutCatalogProductsIdUnitsUnitId200>(
       {
-        url: `/catalog/products/${productId}/units/${id}`,
+        url: `/catalog/products/${id}/units/${unitId}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         data: handlerUpdateProductUnitRequest,
@@ -106,14 +106,14 @@ export const getProductUnits = () => {
    * Convert quantity from one unit to another for a product
    * @summary Convert quantity between units
    */
-  const postCatalogProductsProductIdUnitsConvert = (
-    productId: string,
+  const postCatalogProductsIdUnitsConvert = (
+    id: string,
     handlerConvertUnitRequest: HandlerConvertUnitRequest,
-    options?: SecondParameter<typeof customInstance<PostCatalogProductsProductIdUnitsConvert200>>
+    options?: SecondParameter<typeof customInstance<PostCatalogProductsIdUnitsConvert200>>
   ) => {
-    return customInstance<PostCatalogProductsProductIdUnitsConvert200>(
+    return customInstance<PostCatalogProductsIdUnitsConvert200>(
       {
-        url: `/catalog/products/${productId}/units/convert`,
+        url: `/catalog/products/${id}/units/convert`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         data: handlerConvertUnitRequest,
@@ -125,14 +125,12 @@ export const getProductUnits = () => {
    * Get the default purchase unit for a product
    * @summary Get default purchase unit
    */
-  const getCatalogProductsProductIdUnitsDefaultPurchase = (
-    productId: string,
-    options?: SecondParameter<
-      typeof customInstance<GetCatalogProductsProductIdUnitsDefaultPurchase200>
-    >
+  const getCatalogProductsIdUnitsDefaultPurchase = (
+    id: string,
+    options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsDefaultPurchase200>>
   ) => {
-    return customInstance<GetCatalogProductsProductIdUnitsDefaultPurchase200>(
-      { url: `/catalog/products/${productId}/units/default-purchase`, method: 'GET' },
+    return customInstance<GetCatalogProductsIdUnitsDefaultPurchase200>(
+      { url: `/catalog/products/${id}/units/default-purchase`, method: 'GET' },
       options
     )
   }
@@ -140,57 +138,49 @@ export const getProductUnits = () => {
    * Get the default sales unit for a product
    * @summary Get default sales unit
    */
-  const getCatalogProductsProductIdUnitsDefaultSales = (
-    productId: string,
-    options?: SecondParameter<
-      typeof customInstance<GetCatalogProductsProductIdUnitsDefaultSales200>
-    >
+  const getCatalogProductsIdUnitsDefaultSales = (
+    id: string,
+    options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsDefaultSales200>>
   ) => {
-    return customInstance<GetCatalogProductsProductIdUnitsDefaultSales200>(
-      { url: `/catalog/products/${productId}/units/default-sales`, method: 'GET' },
+    return customInstance<GetCatalogProductsIdUnitsDefaultSales200>(
+      { url: `/catalog/products/${id}/units/default-sales`, method: 'GET' },
       options
     )
   }
   return {
-    getCatalogProductsProductIdUnits,
-    postCatalogProductsProductIdUnits,
-    deleteCatalogProductsProductIdUnitsId,
-    getCatalogProductsProductIdUnitsId,
-    putCatalogProductsProductIdUnitsId,
-    postCatalogProductsProductIdUnitsConvert,
-    getCatalogProductsProductIdUnitsDefaultPurchase,
-    getCatalogProductsProductIdUnitsDefaultSales,
+    getCatalogProductsIdUnits,
+    postCatalogProductsIdUnits,
+    deleteCatalogProductsIdUnitsUnitId,
+    getCatalogProductsIdUnitsUnitId,
+    putCatalogProductsIdUnitsUnitId,
+    postCatalogProductsIdUnitsConvert,
+    getCatalogProductsIdUnitsDefaultPurchase,
+    getCatalogProductsIdUnitsDefaultSales,
   }
 }
-export type GetCatalogProductsProductIdUnitsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsProductIdUnits']>>
+export type GetCatalogProductsIdUnitsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsIdUnits']>>
 >
-export type PostCatalogProductsProductIdUnitsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getProductUnits>['postCatalogProductsProductIdUnits']>>
+export type PostCatalogProductsIdUnitsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['postCatalogProductsIdUnits']>>
 >
-export type DeleteCatalogProductsProductIdUnitsIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getProductUnits>['deleteCatalogProductsProductIdUnitsId']>>
+export type DeleteCatalogProductsIdUnitsUnitIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['deleteCatalogProductsIdUnitsUnitId']>>
 >
-export type GetCatalogProductsProductIdUnitsIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsProductIdUnitsId']>>
+export type GetCatalogProductsIdUnitsUnitIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsIdUnitsUnitId']>>
 >
-export type PutCatalogProductsProductIdUnitsIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getProductUnits>['putCatalogProductsProductIdUnitsId']>>
+export type PutCatalogProductsIdUnitsUnitIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['putCatalogProductsIdUnitsUnitId']>>
 >
-export type PostCatalogProductsProductIdUnitsConvertResult = NonNullable<
+export type PostCatalogProductsIdUnitsConvertResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['postCatalogProductsIdUnitsConvert']>>
+>
+export type GetCatalogProductsIdUnitsDefaultPurchaseResult = NonNullable<
   Awaited<
-    ReturnType<ReturnType<typeof getProductUnits>['postCatalogProductsProductIdUnitsConvert']>
+    ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsIdUnitsDefaultPurchase']>
   >
 >
-export type GetCatalogProductsProductIdUnitsDefaultPurchaseResult = NonNullable<
-  Awaited<
-    ReturnType<
-      ReturnType<typeof getProductUnits>['getCatalogProductsProductIdUnitsDefaultPurchase']
-    >
-  >
->
-export type GetCatalogProductsProductIdUnitsDefaultSalesResult = NonNullable<
-  Awaited<
-    ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsProductIdUnitsDefaultSales']>
-  >
+export type GetCatalogProductsIdUnitsDefaultSalesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getProductUnits>['getCatalogProductsIdUnitsDefaultSales']>>
 >

@@ -5,14 +5,14 @@
  */
 import type {
   GetPartnerBalanceTransactionsId200,
-  GetPartnerCustomersCustomerIdBalance200,
-  GetPartnerCustomersCustomerIdBalanceSummary200,
-  GetPartnerCustomersCustomerIdBalanceTransactions200,
-  GetPartnerCustomersCustomerIdBalanceTransactionsParams,
+  GetPartnerCustomersIdBalance200,
+  GetPartnerCustomersIdBalanceSummary200,
+  GetPartnerCustomersIdBalanceTransactions200,
+  GetPartnerCustomersIdBalanceTransactionsParams,
   HandlerAdjustRequest,
   HandlerRechargeRequest,
-  PostPartnerCustomersCustomerIdBalanceAdjust201,
-  PostPartnerCustomersCustomerIdBalanceRecharge201,
+  PostPartnerCustomersIdBalanceAdjust201,
+  PostPartnerCustomersIdBalanceRecharge201,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -37,12 +37,12 @@ export const getBalance = () => {
    * Get the current balance for a customer
    * @summary Get customer balance
    */
-  const getPartnerCustomersCustomerIdBalance = (
-    customerId: string,
-    options?: SecondParameter<typeof customInstance<GetPartnerCustomersCustomerIdBalance200>>
+  const getPartnerCustomersIdBalance = (
+    id: string,
+    options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalance200>>
   ) => {
-    return customInstance<GetPartnerCustomersCustomerIdBalance200>(
-      { url: `/partner/customers/${customerId}/balance`, method: 'GET' },
+    return customInstance<GetPartnerCustomersIdBalance200>(
+      { url: `/partner/customers/${id}/balance`, method: 'GET' },
       options
     )
   }
@@ -50,14 +50,14 @@ export const getBalance = () => {
    * Manually adjust a customer's balance (increase or decrease)
    * @summary Adjust customer balance
    */
-  const postPartnerCustomersCustomerIdBalanceAdjust = (
-    customerId: string,
+  const postPartnerCustomersIdBalanceAdjust = (
+    id: string,
     handlerAdjustRequest: HandlerAdjustRequest,
-    options?: SecondParameter<typeof customInstance<PostPartnerCustomersCustomerIdBalanceAdjust201>>
+    options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceAdjust201>>
   ) => {
-    return customInstance<PostPartnerCustomersCustomerIdBalanceAdjust201>(
+    return customInstance<PostPartnerCustomersIdBalanceAdjust201>(
       {
-        url: `/partner/customers/${customerId}/balance/adjust`,
+        url: `/partner/customers/${id}/balance/adjust`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         data: handlerAdjustRequest,
@@ -69,16 +69,14 @@ export const getBalance = () => {
    * Add funds to a customer's prepaid balance
    * @summary Recharge customer balance
    */
-  const postPartnerCustomersCustomerIdBalanceRecharge = (
-    customerId: string,
+  const postPartnerCustomersIdBalanceRecharge = (
+    id: string,
     handlerRechargeRequest: HandlerRechargeRequest,
-    options?: SecondParameter<
-      typeof customInstance<PostPartnerCustomersCustomerIdBalanceRecharge201>
-    >
+    options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceRecharge201>>
   ) => {
-    return customInstance<PostPartnerCustomersCustomerIdBalanceRecharge201>(
+    return customInstance<PostPartnerCustomersIdBalanceRecharge201>(
       {
-        url: `/partner/customers/${customerId}/balance/recharge`,
+        url: `/partner/customers/${id}/balance/recharge`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         data: handlerRechargeRequest,
@@ -90,12 +88,12 @@ export const getBalance = () => {
    * Get balance summary including total recharge, consume, and refund
    * @summary Get customer balance summary
    */
-  const getPartnerCustomersCustomerIdBalanceSummary = (
-    customerId: string,
-    options?: SecondParameter<typeof customInstance<GetPartnerCustomersCustomerIdBalanceSummary200>>
+  const getPartnerCustomersIdBalanceSummary = (
+    id: string,
+    options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalanceSummary200>>
   ) => {
-    return customInstance<GetPartnerCustomersCustomerIdBalanceSummary200>(
-      { url: `/partner/customers/${customerId}/balance/summary`, method: 'GET' },
+    return customInstance<GetPartnerCustomersIdBalanceSummary200>(
+      { url: `/partner/customers/${id}/balance/summary`, method: 'GET' },
       options
     )
   }
@@ -103,46 +101,40 @@ export const getBalance = () => {
    * List balance transactions for a customer with optional filtering
    * @summary List balance transactions
    */
-  const getPartnerCustomersCustomerIdBalanceTransactions = (
-    customerId: string,
-    params?: GetPartnerCustomersCustomerIdBalanceTransactionsParams,
-    options?: SecondParameter<
-      typeof customInstance<GetPartnerCustomersCustomerIdBalanceTransactions200>
-    >
+  const getPartnerCustomersIdBalanceTransactions = (
+    id: string,
+    params?: GetPartnerCustomersIdBalanceTransactionsParams,
+    options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalanceTransactions200>>
   ) => {
-    return customInstance<GetPartnerCustomersCustomerIdBalanceTransactions200>(
-      { url: `/partner/customers/${customerId}/balance/transactions`, method: 'GET', params },
+    return customInstance<GetPartnerCustomersIdBalanceTransactions200>(
+      { url: `/partner/customers/${id}/balance/transactions`, method: 'GET', params },
       options
     )
   }
   return {
     getPartnerBalanceTransactionsId,
-    getPartnerCustomersCustomerIdBalance,
-    postPartnerCustomersCustomerIdBalanceAdjust,
-    postPartnerCustomersCustomerIdBalanceRecharge,
-    getPartnerCustomersCustomerIdBalanceSummary,
-    getPartnerCustomersCustomerIdBalanceTransactions,
+    getPartnerCustomersIdBalance,
+    postPartnerCustomersIdBalanceAdjust,
+    postPartnerCustomersIdBalanceRecharge,
+    getPartnerCustomersIdBalanceSummary,
+    getPartnerCustomersIdBalanceTransactions,
   }
 }
 export type GetPartnerBalanceTransactionsIdResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerBalanceTransactionsId']>>
 >
-export type GetPartnerCustomersCustomerIdBalanceResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersCustomerIdBalance']>>
+export type GetPartnerCustomersIdBalanceResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersIdBalance']>>
 >
-export type PostPartnerCustomersCustomerIdBalanceAdjustResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getBalance>['postPartnerCustomersCustomerIdBalanceAdjust']>>
+export type PostPartnerCustomersIdBalanceAdjustResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getBalance>['postPartnerCustomersIdBalanceAdjust']>>
 >
-export type PostPartnerCustomersCustomerIdBalanceRechargeResult = NonNullable<
-  Awaited<
-    ReturnType<ReturnType<typeof getBalance>['postPartnerCustomersCustomerIdBalanceRecharge']>
-  >
+export type PostPartnerCustomersIdBalanceRechargeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getBalance>['postPartnerCustomersIdBalanceRecharge']>>
 >
-export type GetPartnerCustomersCustomerIdBalanceSummaryResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersCustomerIdBalanceSummary']>>
+export type GetPartnerCustomersIdBalanceSummaryResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersIdBalanceSummary']>>
 >
-export type GetPartnerCustomersCustomerIdBalanceTransactionsResult = NonNullable<
-  Awaited<
-    ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersCustomerIdBalanceTransactions']>
-  >
+export type GetPartnerCustomersIdBalanceTransactionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getBalance>['getPartnerCustomersIdBalanceTransactions']>>
 >

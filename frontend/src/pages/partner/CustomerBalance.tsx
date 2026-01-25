@@ -22,9 +22,9 @@ import { useFormatters } from '@/hooks/useFormatters'
 import type {
   HandlerBalanceTransactionResponse,
   HandlerBalanceSummaryResponse,
-  GetPartnerCustomersCustomerIdBalanceTransactionsParams,
-  GetPartnerCustomersCustomerIdBalanceTransactionsTransactionType,
-  GetPartnerCustomersCustomerIdBalanceTransactionsSourceType,
+  GetPartnerCustomersIdBalanceTransactionsParams,
+  GetPartnerCustomersIdBalanceTransactionsTransactionType,
+  GetPartnerCustomersIdBalanceTransactionsSourceType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import RechargeModal from './RechargeModal'
@@ -157,7 +157,7 @@ export default function CustomerBalancePage() {
     if (!customerId) return
     setSummaryLoading(true)
     try {
-      const response = await balanceApi.getPartnerCustomersCustomerIdBalanceSummary(customerId)
+      const response = await balanceApi.getPartnerCustomersIdBalanceSummary(customerId)
       if (response.success && response.data) {
         setBalanceSummary(response.data)
       }
@@ -173,20 +173,20 @@ export default function CustomerBalancePage() {
     if (!customerId) return
     setTransactionsLoading(true)
     try {
-      const params: GetPartnerCustomersCustomerIdBalanceTransactionsParams = {
+      const params: GetPartnerCustomersIdBalanceTransactionsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         transaction_type: (transactionTypeFilter || undefined) as
-          | GetPartnerCustomersCustomerIdBalanceTransactionsTransactionType
+          | GetPartnerCustomersIdBalanceTransactionsTransactionType
           | undefined,
         source_type: (sourceTypeFilter || undefined) as
-          | GetPartnerCustomersCustomerIdBalanceTransactionsSourceType
+          | GetPartnerCustomersIdBalanceTransactionsSourceType
           | undefined,
         date_from: dateRange?.[0]?.toISOString().split('T')[0],
         date_to: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await balanceApi.getPartnerCustomersCustomerIdBalanceTransactions(
+      const response = await balanceApi.getPartnerCustomersIdBalanceTransactions(
         customerId,
         params
       )

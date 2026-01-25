@@ -5917,6 +5917,115 @@ paths:
       summary: Create a new category
       tags:
       - categories
+  /catalog/categories/{category_id}/products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve products belonging to a specific category
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Category ID
+        format: uuid
+        in: path
+        name: category_id
+        required: true
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Product status
+        enum:
+        - active
+        - inactive
+        - discontinued
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: sort_order
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: asc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.ProductListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get products by category
+      tags:
+      - products
   /catalog/categories/{id}:
     delete:
       consumes:
@@ -6415,115 +6524,6 @@ paths:
       summary: Move a category
       tags:
       - categories
-  /catalog/categories/{id}/products:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve products belonging to a specific category
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Category ID
-        format: uuid
-        in: path
-        name: category_id
-        required: true
-        type: string
-      - description: Search term
-        in: query
-        name: search
-        type: string
-      - description: Product status
-        enum:
-        - active
-        - inactive
-        - discontinued
-        in: query
-        name: status
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        in: query
-        maximum: 100
-        name: page_size
-        type: integer
-      - default: sort_order
-        description: Order by field
-        in: query
-        name: order_by
-        type: string
-      - default: asc
-        description: Order direction
-        enum:
-        - asc
-        - desc
-        in: query
-        name: order_dir
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/handler.ProductListResponse'
-                  type: array
-                meta:
-                  $ref: '#/definitions/dto.Meta'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get products by category
-      tags:
-      - products
   /catalog/categories/roots:
     get:
       consumes:
