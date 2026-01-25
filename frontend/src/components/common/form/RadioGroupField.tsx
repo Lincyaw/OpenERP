@@ -55,6 +55,8 @@ export function RadioGroupField<
           className={className}
         >
           <RadioGroup
+            id={name}
+            name={name}
             disabled={disabled}
             direction={direction}
             type={type}

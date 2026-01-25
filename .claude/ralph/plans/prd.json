@@ -656,9 +656,12 @@
       "E2E: 启用/禁用商品状态，验证状态变更和列表筛选",
       "E2E: 删除商品，验证软删除逻辑和列表刷新",
       "E2E: 分页和搜索功能验证",
-      "截图断言: 商品列表、表单、详情页"
+      "截图断言: 商品列表、表单、详情页",
+      "",
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/products/product.spec.ts",
+      "⚠️ 必须连续 3 次运行全部通过才能标记为 passes"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P1-INT-002",
@@ -671,9 +674,12 @@
       "E2E 仓库: 列表展示、新建、启用/禁用",
       "E2E: 验证客户/供应商在订单选择器中正确显示",
       "E2E: 仓库在库存操作中正确可选",
-      "截图断言: 各模块列表和表单页面"
+      "截图断言: 各模块列表和表单页面",
+      "",
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/partners/*.spec.ts",
+      "⚠️ 当前状态: customer.spec.ts 有 5 个 test.skip 需要修复"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P1-INT-003",
@@ -962,9 +968,12 @@
       "E2E: 库存调整操作，验证调整后数量变化",
       "E2E: 查看库存流水记录",
       "E2E 并发测试: 同时调整同一库存，验证乐观锁生效",
-      "视频录制: 库存调整完整流程"
+      "视频录制: 库存调整完整流程",
+      "",
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/inventory/inventory.spec.ts",
+      "⚠️ 当前状态: inventory.spec.ts 有 test.skip() 需要修复"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P2-INT-002",
@@ -1411,9 +1420,11 @@
       "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
       "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
-      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试",
+      "",
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/sales-order.spec.ts"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P3-INT-002",
@@ -1435,9 +1446,11 @@
       "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
       "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
-      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试",
+      "",
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/purchase-order.spec.ts"
     ],
-    "passes": true
+    "passes": false
   },
   {
     "id": "P3-INT-003",

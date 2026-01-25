@@ -111,9 +111,17 @@ wait_for_database() {
     log_info "Waiting for database connection..."
 
     while [ $attempt -le $max_attempts ]; do
-        if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1" &>/dev/null; then
-            log_success "Database is ready"
-            return 0
+        # Try local psql first, then fallback to docker exec
+        if command -v psql &> /dev/null; then
+            if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1" &>/dev/null; then
+                log_success "Database is ready"
+                return 0
+            fi
+        else
+            if docker exec erp-local-postgres psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1" &>/dev/null; then
+                log_success "Database is ready"
+                return 0
+            fi
         fi
         echo -n "."
         sleep 2
@@ -244,12 +252,15 @@ cmd_start_backend() {
     log_info "Starting backend server (logs: $BACKEND_LOG)..."
 
     cd backend
-    # Build and run backend in background
-    go build -o ../bin/erp-server ./cmd/server && \
-    nohup ../bin/erp-server > "../$BACKEND_LOG" 2>&1 &
-    local pid=$!
-    echo $pid > "../$BACKEND_PID_FILE"
+    # Build backend
+    go build -o ../bin/erp-server ./cmd/server || { cd ..; return 1; }
     cd ..
+
+    # Export environment variables from .env file and run backend in background
+    # Use env to set variables for the command
+    env $(grep -v '^#' backend/.env | xargs) nohup ./bin/erp-server > "$BACKEND_LOG" 2>&1 &
+    local pid=$!
+    echo $pid > "$BACKEND_PID_FILE"
 
     # Wait for backend to be ready
     local max_attempts=30
@@ -502,16 +513,25 @@ cmd_run_e2e() {
     fi
 
     log_success "Backend and Frontend are running"
-    log_info "Running Playwright E2E tests..."
+    log_info "Running Playwright E2E tests in Docker..."
 
-    cd frontend
+    # Get absolute path to project root (current directory after cd in script)
+    local project_root
+    project_root="$(pwd)"
 
-    # Run tests with local base URL
-    E2E_BASE_URL="http://localhost:$FRONTEND_PORT" npx playwright test "$@"
+    # Run Playwright tests in Docker with current user to avoid permission issues
+    # Note: node_modules is mounted from host, so dependencies are available
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        --network host \
+        -v "$project_root/frontend:/work" \
+        -w /work \
+        -e HOME=/tmp \
+        -e E2E_BASE_URL="http://localhost:$FRONTEND_PORT" \
+        mcr.microsoft.com/playwright:v1.58.0-noble \
+        node node_modules/@playwright/test/cli.js test --config=playwright.config.ts "$@"
 
     local exit_code=$?
-
-    cd ..
 
     if [ $exit_code -eq 0 ]; then
         log_success "E2E tests passed!"
@@ -536,6 +556,7 @@ cmd_run_e2e_ui() {
         exit 1
     fi
 
+    # UI mode requires local playwright (not Docker) for interactive UI
     cd frontend
     E2E_BASE_URL="http://localhost:$FRONTEND_PORT" npx playwright test --ui
     cd ..
@@ -555,6 +576,7 @@ cmd_run_e2e_debug() {
         exit 1
     fi
 
+    # Debug mode requires local playwright (not Docker) for interactive debugging
     cd frontend
     E2E_BASE_URL="http://localhost:$FRONTEND_PORT" npx playwright test --debug "$@"
     cd ..

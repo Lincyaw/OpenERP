@@ -54,6 +54,8 @@ export function NumberField<
         >
           <InputNumber
             {...inputProps}
+            id={name}
+            name={name}
             placeholder={placeholder}
             disabled={disabled}
             min={min}

@@ -53,6 +53,8 @@ export function TextAreaField<
         >
           <TextArea
             {...textAreaProps}
+            id={name}
+            name={name}
             placeholder={placeholder}
             disabled={disabled}
             rows={rows}

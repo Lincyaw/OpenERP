@@ -50,6 +50,8 @@ export function TextField<
         >
           <Input
             {...inputProps}
+            id={name}
+            name={name}
             placeholder={placeholder}
             disabled={disabled}
             validateStatus={fieldState.error ? 'error' : undefined}

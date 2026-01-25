@@ -143,6 +143,7 @@ services:
       dockerfile: Dockerfile
     container_name: erp-test-frontend
     restart: unless-stopped
+    user: "1000:1000"
     depends_on:
       - backend
     environment:
@@ -164,6 +165,7 @@ services:
   playwright:
     image: mcr.microsoft.com/playwright:v1.58.0-noble
     container_name: erp-test-playwright
+    user: "1000:1000"
     working_dir: /app
     depends_on:
       - frontend

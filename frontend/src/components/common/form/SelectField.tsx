@@ -60,6 +60,7 @@ export function SelectField<
           htmlFor={name}
         >
           <Select
+            id={name}
             placeholder={placeholder}
             disabled={disabled}
             multiple={multiple}

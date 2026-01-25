@@ -52,6 +52,7 @@ export function SwitchField<
           className={className}
         >
           <Switch
+            id={name}
             disabled={disabled}
             size={size}
             checkedText={checkedText}

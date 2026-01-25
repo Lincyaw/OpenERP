@@ -157,8 +157,15 @@ export class BasePage {
       .catch(() => {
         /* spinner might not appear */
       })
-    // Wait for table body to have content
-    await this.page.locator('.semi-table-tbody').waitFor()
+    // Wait for table body to have content OR empty state to appear
+    const hasData = this.page.locator('.semi-table-tbody .semi-table-row')
+    const isEmpty = this.page.locator('.semi-table-empty')
+    await Promise.race([
+      hasData.first().waitFor({ timeout: 10000 }),
+      isEmpty.waitFor({ timeout: 10000 }),
+    ]).catch(() => {
+      /* either condition is fine */
+    })
   }
 
   /**
