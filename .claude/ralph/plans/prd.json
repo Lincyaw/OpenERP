@@ -1471,7 +1471,20 @@
       "❌ 剩余Bug: 订单创建失败 - customer_name为空",
       "  - 错误: Key: 'CreateSalesOrderRequest.CustomerName' Error:Field validation for 'CustomerName' failed on the 'required' tag",
       "  - 原因: SalesOrderForm.tsx handleCustomerChange使用customers.find()查找客户名,但状态可能未更新",
-      "  - 需要修复: 前端表单state管理或从API响应中获取customer_name"
+      "  - 需要修复: 前端表单state管理或从API响应中获取customer_name",
+      "",
+      "⚠️ 继续进展 - 2026-01-25:",
+      "✅ 修复: 后端base_unit/conversion_rate缺失 - HTTP handler未传递字段到application层",
+      "  - 问题: 创建销售订单时返回INVALID_BASE_UNIT错误",
+      "  - 修复: 在sales_order.go的Create和AddItem中设置默认值BaseUnit=Unit, ConversionRate=1",
+      "✅ 修复: E2E测试SalesOrderPage.selectProductInRow使用错误的输入定位器",
+      "  - 问题: getByRole('textbox').first()选中了错误的输入框(备注字段)",
+      "  - 修复: 改用dropdown内的搜索输入或keyboard.type",
+      "✅ 修复: E2E测试locator严格模式冲突",
+      "  - 修复: 更新.total-amount和.summary-section选择器",
+      "  - 修复: 更新.discount-field选择器",
+      "✅ E2E测试通过: 51/56 (91%通过率)",
+      "❌ 剩余5个失败: InventoryPage.filterByWarehouse无法找到仓库选项 (非销售订单核心功能)"
     ],
     "passes": false
   },

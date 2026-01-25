@@ -324,13 +324,21 @@ export class SalesOrderPage extends BasePage {
     await productSelect.click()
     await this.page.waitForTimeout(200)
 
-    // Type to search - Semi Design's combobox uses a textbox role
-    const searchInput = this.page.getByRole('textbox').first()
-    await searchInput.fill(productName)
+    // Type to search - Semi Design's select puts the search input inside the dropdown portal
+    // The active dropdown has class .semi-select-option-list-wrapper with an input inside
+    const searchInput = this.page.locator('.semi-select-option-list input[type="text"]')
+    if (await searchInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await searchInput.fill(productName)
+    } else {
+      // Fallback: try the focused element which should be the search input after clicking select
+      await this.page.keyboard.type(productName)
+    }
     await this.page.waitForTimeout(500)
 
-    // Select the option
-    await this.page.locator('.semi-select-option').filter({ hasText: productName }).first().click()
+    // Select the option - wait for it to appear first
+    const option = this.page.locator('.semi-select-option').filter({ hasText: productName }).first()
+    await option.waitFor({ state: 'visible', timeout: 5000 })
+    await option.click()
     await this.page.waitForTimeout(200)
   }
 
@@ -370,10 +378,8 @@ export class SalesOrderPage extends BasePage {
   }
 
   async setDiscount(discountPercent: number): Promise<void> {
-    const discountInput = this.page
-      .locator('.semi-input-number')
-      .filter({ has: this.page.locator('[suffix="%"]') })
-      .locator('input')
+    // Find the discount input by its parent container with class discount-field
+    const discountInput = this.page.locator('.discount-field .semi-input-number input')
     await discountInput.clear()
     await discountInput.fill(discountPercent.toString())
     await this.page.waitForTimeout(100)

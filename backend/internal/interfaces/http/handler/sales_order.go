@@ -230,14 +230,20 @@ func (h *SalesOrderHandler) Create(c *gin.Context) {
 			h.BadRequest(c, "Invalid product ID format")
 			return
 		}
+		// Default base_unit to unit and conversion_rate to 1 when not provided
+		// This handles the simple case where unit and base_unit are the same
+		baseUnit := item.Unit
+		conversionRate := decimal.NewFromInt(1)
 		appReq.Items = append(appReq.Items, tradeapp.CreateSalesOrderItemInput{
-			ProductID:   productID,
-			ProductName: item.ProductName,
-			ProductCode: item.ProductCode,
-			Unit:        item.Unit,
-			Quantity:    decimal.NewFromFloat(item.Quantity),
-			UnitPrice:   decimal.NewFromFloat(item.UnitPrice),
-			Remark:      item.Remark,
+			ProductID:      productID,
+			ProductName:    item.ProductName,
+			ProductCode:    item.ProductCode,
+			Unit:           item.Unit,
+			BaseUnit:       baseUnit,
+			Quantity:       decimal.NewFromFloat(item.Quantity),
+			ConversionRate: conversionRate,
+			UnitPrice:      decimal.NewFromFloat(item.UnitPrice),
+			Remark:         item.Remark,
 		})
 	}
 
@@ -539,13 +545,15 @@ func (h *SalesOrderHandler) AddItem(c *gin.Context) {
 	}
 
 	appReq := tradeapp.AddOrderItemRequest{
-		ProductID:   productID,
-		ProductName: req.ProductName,
-		ProductCode: req.ProductCode,
-		Unit:        req.Unit,
-		Quantity:    decimal.NewFromFloat(req.Quantity),
-		UnitPrice:   decimal.NewFromFloat(req.UnitPrice),
-		Remark:      req.Remark,
+		ProductID:      productID,
+		ProductName:    req.ProductName,
+		ProductCode:    req.ProductCode,
+		Unit:           req.Unit,
+		BaseUnit:       req.Unit, // Default base_unit to unit
+		Quantity:       decimal.NewFromFloat(req.Quantity),
+		ConversionRate: decimal.NewFromInt(1), // Default conversion_rate to 1
+		UnitPrice:      decimal.NewFromFloat(req.UnitPrice),
+		Remark:         req.Remark,
 	}
 
 	order, err := h.orderService.AddItem(c.Request.Context(), tenantID, orderID, appReq)

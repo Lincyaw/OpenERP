@@ -16262,3 +16262,58 @@ Worked on P3-INT-001 (销售订单前后端联调) - Sales Order E2E tests. Made
 - P3-INT-001: Still `passes: false` due to remaining order creation bug
 - Added bug to investigate: Customer name not populated in form data during selection
 
+
+---
+
+## P3-INT-001 Progress Update - 2026-01-25 (Session 2)
+
+### Issue Investigated
+Sales order creation was failing with `INVALID_BASE_UNIT` error (not the `customer_name` issue mentioned earlier).
+
+### Root Cause Analysis
+1. **Backend**: HTTP handler `CreateSalesOrderItemInput` struct was missing `base_unit` and `conversion_rate` fields
+2. **Backend**: Application layer `CreateSalesOrderItemInput` requires `BaseUnit` (non-empty) and `ConversionRate`  
+3. **Backend**: When converting HTTP DTO to application DTO, these fields were not set
+4. **Domain validation** in `SalesOrder.AddItem()` rejects empty `base_unit`
+
+### Fixes Applied
+
+**1. Backend: HTTP Handler base_unit/conversion_rate Fix**
+- **File**: `backend/internal/interfaces/http/handler/sales_order.go`
+- **Change**: In `Create()` method, set default values:
+  ```go
+  BaseUnit:       item.Unit,  // Default to same as unit
+  ConversionRate: decimal.NewFromInt(1),  // Default to 1:1 conversion
+  ```
+- **Change**: Same fix applied to `AddItem()` method
+
+**2. E2E Test: selectProductInRow Input Selector**
+- **File**: `frontend/tests/e2e/pages/SalesOrderPage.ts`
+- **Problem**: `getByRole('textbox').first()` was selecting wrong input (remark field instead of dropdown search)
+- **Fix**: Changed to use dropdown portal search input `.semi-select-option-list input[type="text"]` with keyboard fallback
+
+**3. E2E Test: Strict Mode Locator Violations**
+- **File**: `frontend/tests/e2e/transactions/sales-order.spec.ts`
+- **Fix**: Changed `.total-amount, .summary-item.total` to `.summary-item.total .total-amount`
+- **Fix**: Changed `.summary-section, .summary-totals` to `.summary-totals`
+- **File**: `frontend/tests/e2e/pages/SalesOrderPage.ts`  
+- **Fix**: Changed discount input selector from `[suffix="%"]` to `.discount-field .semi-input-number input`
+
+### Test Results
+- **Before fixes**: 31 passed, many failures on order creation
+- **After fixes**: 51 passed, 5 failed (91% pass rate)
+- **Remaining 5 failures**: All in `InventoryPage.filterByWarehouse` - unrelated to sales order creation
+
+### Remaining Issues
+The 5 failing tests are for "should create and confirm order, verifying inventory lock" which fails on:
+- `InventoryPage.filterByWarehouse()` cannot find warehouse option "Main Warehouse Beijing"
+- This is likely a test data or selector issue in InventoryPage, not sales order functionality
+
+### Files Modified
+- `backend/internal/interfaces/http/handler/sales_order.go` - base_unit/conversion_rate defaults
+- `frontend/tests/e2e/pages/SalesOrderPage.ts` - selectProductInRow and setDiscount fixes
+- `frontend/tests/e2e/transactions/sales-order.spec.ts` - locator strict mode fixes
+
+### PRD Status
+- P3-INT-001: Still `passes: false` (91% tests pass, 5 inventory-related failures remain)
+- Core sales order CRUD operations now work

@@ -18,7 +18,7 @@ import { SalesOrderPage, InventoryPage } from '../pages'
  * - Seed data loaded (seed-data.sql)
  * - Products: iPhone 15 Pro, Samsung Galaxy S24, Xiaomi 14 Pro, MacBook Pro 14
  * - Customers: Beijing Tech Solutions Ltd, Shanghai Digital Corp, Chen Xiaoming
- * - Warehouses: Main Warehouse Beijing (default), Shanghai Distribution Center
+ * - Warehouses: 北京主仓 (default), 上海配送中心
  * - Inventory: Available stock for the above products
  */
 
@@ -71,12 +71,12 @@ const TEST_DATA = {
     beijing: {
       id: '52000000-0000-0000-0000-000000000001',
       code: 'WH001',
-      name: 'Main Warehouse Beijing',
+      name: '北京主仓',
     },
     shanghai: {
       id: '52000000-0000-0000-0000-000000000002',
       code: 'WH002',
-      name: 'Shanghai Distribution Center',
+      name: '上海配送中心',
     },
   },
   // Initial inventory from seed data
@@ -223,7 +223,7 @@ test.describe('Sales Order Module E2E Tests', () => {
       await page.waitForTimeout(200)
 
       // Verify total calculation: (7999 * 3) + (4999 * 5) = 23997 + 24995 = 48992
-      const totalDisplay = page.locator('.total-amount, .summary-item.total')
+      const totalDisplay = page.locator('.summary-item.total .total-amount')
       await expect(totalDisplay).toContainText('48992')
 
       // Submit the order
@@ -271,7 +271,7 @@ test.describe('Sales Order Module E2E Tests', () => {
       await page.waitForTimeout(200)
 
       // Verify discount is applied (should show subtotal and discounted total)
-      const summarySection = page.locator('.summary-section, .summary-totals')
+      const summarySection = page.locator('.summary-totals')
       await expect(summarySection).toContainText('8999') // Subtotal
       await expect(summarySection).toContainText('10%') // Discount percentage
     })
@@ -305,7 +305,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // First, check initial inventory for iPhone 15 Pro
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const initialRow = await inventoryPage.getInventoryRowByProductName('iPhone 15 Pro')
@@ -357,7 +357,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Check inventory - locked quantity should increase
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const afterConfirmRow = await inventoryPage.getInventoryRowByProductName('iPhone 15 Pro')
@@ -391,7 +391,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Get initial inventory before ship
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const initialRow = await inventoryPage.getInventoryRowByProductName('Samsung Galaxy S24')
@@ -443,7 +443,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Verify inventory deduction
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const afterShipRow = await inventoryPage.getInventoryRowByProductName('Samsung Galaxy S24')
@@ -577,7 +577,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Get initial inventory (used for verification later)
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const initialRow = await inventoryPage.getInventoryRowByProductName('iPhone 15 Pro')
@@ -614,7 +614,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Check inventory after confirm - locked should increase
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const afterConfirmRow = await inventoryPage.getInventoryRowByProductName('iPhone 15 Pro')
@@ -641,7 +641,7 @@ test.describe('Sales Order Module E2E Tests', () => {
 
       // Check inventory after cancel - locked should decrease, available should increase
       await inventoryPage.navigateToStockList()
-      await inventoryPage.filterByWarehouse('Main Warehouse Beijing')
+      await inventoryPage.filterByWarehouse(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       const afterCancelRow = await inventoryPage.getInventoryRowByProductName('iPhone 15 Pro')
