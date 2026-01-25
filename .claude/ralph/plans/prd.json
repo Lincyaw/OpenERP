@@ -2873,7 +2873,7 @@
     "passes": false
   },
   {
-    "id": "P3-INT-001",
+    "id": "P9-FIX-001",
     "story": "库存模块 E2E 测试遗留问题修复",
     "priority": "low",
     "requirements": [
