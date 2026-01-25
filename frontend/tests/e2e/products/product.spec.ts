@@ -14,8 +14,10 @@ import { ProductsPage } from '../pages'
  * 4. Enable/disable product status
  * 5. Delete product (soft delete)
  * 6. Pagination and search functionality
+ *
+ * Note: Tests run serially to avoid data interference from parallel execution
  */
-test.describe('Product Module E2E Tests (P1-INT-001)', () => {
+test.describe.serial('Product Module E2E Tests (P1-INT-001)', () => {
   let productsPage: ProductsPage
 
   test.beforeEach(async ({ page }) => {
@@ -72,18 +74,20 @@ test.describe('Product Module E2E Tests (P1-INT-001)', () => {
       await productsPage.screenshotForm('product-create-form-empty')
     })
 
-    test('should create a new product successfully', async ({ page }) => {
+    test('should create a new product successfully', async () => {
       await productsPage.navigateToCreate()
 
-      // Generate unique code to avoid conflicts
-      const uniqueCode = `TEST_${Date.now()}`
+      // Generate unique code and barcode to avoid conflicts
+      const timestamp = Date.now()
+      const uniqueCode = `TEST_${timestamp}`
+      const uniqueBarcode = `${timestamp}` // Barcodes are typically numeric strings
 
       // Fill the form
       await productsPage.fillProductForm({
         code: uniqueCode,
         name: 'E2E Test Product',
         unit: 'pcs',
-        barcode: '1234567890123',
+        barcode: uniqueBarcode,
         description: 'Product created during E2E testing',
         purchasePrice: 100.5,
         sellingPrice: 150.99,
@@ -195,7 +199,7 @@ test.describe('Product Module E2E Tests (P1-INT-001)', () => {
   })
 
   test.describe('Product Status Management', () => {
-    test('should deactivate an active product', async ({ page }) => {
+    test('should deactivate an active product', async () => {
       await productsPage.navigateToList()
 
       // Filter to show only active products
@@ -224,7 +228,7 @@ test.describe('Product Module E2E Tests (P1-INT-001)', () => {
       }
     })
 
-    test('should activate a disabled product', async ({ page }) => {
+    test('should activate a disabled product', async () => {
       await productsPage.navigateToList()
 
       // First, we need to find or create a disabled product

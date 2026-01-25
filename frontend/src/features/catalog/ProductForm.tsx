@@ -40,7 +40,10 @@ function createProductFormSchema(codeRegexError: string) {
       .min(1, validationMessages.required)
       .max(50, validationMessages.maxLength(50))
       .regex(/^[A-Za-z0-9_-]+$/, codeRegexError),
-    name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
+    name: z
+      .string()
+      .min(1, validationMessages.required)
+      .max(200, validationMessages.maxLength(200)),
     unit: z.string().min(1, validationMessages.required).max(20, validationMessages.maxLength(20)),
     barcode: z
       .string()
@@ -52,26 +55,27 @@ function createProductFormSchema(codeRegexError: string) {
       .max(2000, validationMessages.maxLength(2000))
       .optional()
       .transform((val) => val || undefined),
-    purchase_price: z
+    // Use coerce to handle string values from API/form inputs
+    purchase_price: z.coerce
       .number()
       .nonnegative(validationMessages.nonNegative)
       .optional()
       .nullable()
       .transform((val) => val ?? undefined),
-    selling_price: z
+    selling_price: z.coerce
       .number()
       .nonnegative(validationMessages.nonNegative)
       .optional()
       .nullable()
       .transform((val) => val ?? undefined),
-    min_stock: z
+    min_stock: z.coerce
       .number()
       .int(validationMessages.integer)
       .nonnegative(validationMessages.nonNegative)
       .optional()
       .nullable()
       .transform((val) => val ?? undefined),
-    sort_order: z
+    sort_order: z.coerce
       .number()
       .int(validationMessages.integer)
       .nonnegative(validationMessages.nonNegative)
@@ -117,16 +121,22 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         sort_order: undefined,
       }
     }
+    // Convert string values to numbers if needed (API may return strings)
+    const toNumber = (val: unknown): number | undefined => {
+      if (val === undefined || val === null || val === '') return undefined
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return typeof num === 'number' && !isNaN(num) ? num : undefined
+    }
     return {
       code: initialData.code || '',
       name: initialData.name || '',
       unit: initialData.unit || '',
       barcode: initialData.barcode || '',
       description: initialData.description || '',
-      purchase_price: initialData.purchase_price ?? undefined,
-      selling_price: initialData.selling_price ?? undefined,
-      min_stock: initialData.min_stock ?? undefined,
-      sort_order: initialData.sort_order ?? undefined,
+      purchase_price: toNumber(initialData.purchase_price),
+      selling_price: toNumber(initialData.selling_price),
+      min_stock: toNumber(initialData.min_stock),
+      sort_order: toNumber(initialData.sort_order),
     }
   }, [initialData])
 
@@ -199,7 +209,10 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title={t('products.form.basicInfo')} description={t('products.form.basicInfoDesc')}>
+          <FormSection
+            title={t('products.form.basicInfo')}
+            description={t('products.form.basicInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="code"
@@ -208,7 +221,11 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 placeholder={t('products.form.codePlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? t('products.form.codeHelperEdit') : t('products.form.codeHelperCreate')}
+                helperText={
+                  isEditMode
+                    ? t('products.form.codeHelperEdit')
+                    : t('products.form.codeHelperCreate')
+                }
               />
               <TextField
                 name="name"
@@ -226,7 +243,11 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 placeholder={t('products.form.unitPlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? t('products.form.unitHelperEdit') : t('products.form.unitHelperCreate')}
+                helperText={
+                  isEditMode
+                    ? t('products.form.unitHelperEdit')
+                    : t('products.form.unitHelperCreate')
+                }
               />
               <TextField
                 name="barcode"
@@ -245,7 +266,10 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             />
           </FormSection>
 
-          <FormSection title={t('products.form.priceInfo')} description={t('products.form.priceInfoDesc')}>
+          <FormSection
+            title={t('products.form.priceInfo')}
+            description={t('products.form.priceInfoDesc')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="purchase_price"
@@ -268,7 +292,10 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             </FormRow>
           </FormSection>
 
-          <FormSection title={t('products.form.stockSettings')} description={t('products.form.stockSettingsDesc')}>
+          <FormSection
+            title={t('products.form.stockSettings')}
+            description={t('products.form.stockSettingsDesc')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="min_stock"

@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState } from 'react'
-import { Button, Dropdown, Popconfirm, Space, Tooltip, Modal } from '@douyinfe/semi-ui'
+import { Button, Dropdown, Popconfirm, Space, Modal } from '@douyinfe/semi-ui'
 import { IconMore } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { TableAction } from './types'
@@ -190,10 +190,19 @@ export function TableActions<T>({
       <Space className="table-actions" spacing={4}>
         {directActions.map(renderActionButton)}
         {dropdownActions.length > 0 && (
-          <Dropdown trigger="click" position="bottomRight" menu={dropdownMenu}>
-            <Tooltip content={t('actions.moreActions')}>
-              <Button size={size} theme="borderless" icon={<IconMore />} />
-            </Tooltip>
+          <Dropdown
+            trigger="click"
+            position="bottomRight"
+            menu={dropdownMenu}
+            className="table-actions-dropdown"
+          >
+            <Button
+              size={size}
+              theme="borderless"
+              icon={<IconMore />}
+              data-testid="table-row-more-actions"
+              aria-label={t('actions.moreActions')}
+            />
           </Dropdown>
         )}
       </Space>

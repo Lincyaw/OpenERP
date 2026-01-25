@@ -58,6 +58,7 @@ export class ProductsPage extends BasePage {
     this.sellingPriceInput = page.locator('input[name="selling_price"]')
     this.minStockInput = page.locator('input[name="min_stock"]')
     this.sortOrderInput = page.locator('input[name="sort_order"]')
+    // Semi UI Button with htmlType="submit" renders with type="submit"
     this.submitButton = page.locator('button[type="submit"]')
     this.cancelButton = page.locator('button').filter({ hasText: '取消' })
   }
@@ -117,14 +118,32 @@ export class ProductsPage extends BasePage {
    * Filter by status
    */
   async filterByStatus(status: 'active' | 'inactive' | 'discontinued' | ''): Promise<void> {
-    await this.page.locator('.semi-select').filter({ hasText: /状态/ }).click()
+    // Click the status filter Select
+    const statusSelect = this.page.locator('.semi-select').first()
+    await statusSelect.click()
+
+    // Wait for dropdown to appear
+    await this.page.waitForTimeout(300)
+
     const statusLabels: Record<string, string> = {
       '': '全部状态',
       active: '启用',
       inactive: '禁用',
       discontinued: '停售',
     }
-    await this.page.locator('.semi-select-option').filter({ hasText: statusLabels[status] }).click()
+
+    // Semi Select options appear in a portal/overlay with class semi-select-option-list
+    const optionList = this.page.locator('.semi-select-option-list')
+    await optionList.waitFor({ state: 'visible', timeout: 5000 })
+
+    // Click the option
+    await optionList
+      .locator('.semi-select-option')
+      .filter({ hasText: statusLabels[status] })
+      .click()
+
+    // Wait for the dropdown to close and table to reload
+    await this.page.waitForTimeout(300)
     await this.waitForTableLoad()
   }
 
@@ -203,16 +222,22 @@ export class ProductsPage extends BasePage {
       delete: '删除',
     }
 
-    // Click the dropdown trigger in the actions column
-    const actionsCell = row.locator('.semi-table-row-cell').last()
-    const dropdownTrigger = actionsCell.locator('.semi-dropdown-trigger, button').first()
-    await dropdownTrigger.click()
+    // For 'view' and 'edit', they are direct buttons, not in dropdown
+    if (action === 'view' || action === 'edit') {
+      const actionButton = row.locator('button').filter({ hasText: actionLabels[action] })
+      await actionButton.click()
+      return
+    }
+
+    // For other actions, click the "more" dropdown trigger button
+    const moreButton = row.locator('[data-testid="table-row-more-actions"]')
+    await moreButton.click()
+
+    // Wait for dropdown menu to appear
+    await this.page.waitForTimeout(300)
 
     // Click the action in dropdown menu
-    await this.page
-      .locator('.semi-dropdown-menu .semi-dropdown-item')
-      .filter({ hasText: actionLabels[action] })
-      .click()
+    await this.page.locator('.semi-dropdown-item').filter({ hasText: actionLabels[action] }).click()
   }
 
   /**
@@ -262,7 +287,10 @@ export class ProductsPage extends BasePage {
    * Submit product form
    */
   async submitForm(): Promise<void> {
-    await this.submitButton.click()
+    // Use getByRole for more reliable button selection
+    // The submit button in create mode shows "新建", in edit mode shows "保存"
+    const submitBtn = this.page.getByRole('button', { name: /新建|保存|Create|Save/i })
+    await submitBtn.click()
   }
 
   /**
@@ -386,13 +414,18 @@ export class ProductsPage extends BasePage {
    * Wait for pagination and check current page
    */
   async getPaginationInfo(): Promise<{ current: number; total: number }> {
-    const paginationText = await this.page.locator('.semi-page').textContent()
-    // Semi Design pagination format: "共 X 条"
-    const totalMatch = paginationText?.match(/共\s*(\d+)\s*条/)
+    // Get total from pagination info text - look for the specific class
+    const paginationInfo = this.page.locator('.data-table-pagination-info')
+    const infoText = await paginationInfo.textContent()
+    // Matches patterns like "共 10 条记录" or "共 10 条" or "Total: 10 records"
+    const totalMatch = infoText?.match(/(\d+)/)
     const total = totalMatch ? parseInt(totalMatch[1], 10) : 0
 
     // Current page is shown in the active pagination item
-    const currentPage = await this.page.locator('.semi-page-item-active').textContent()
+    // Semi Pagination uses .semi-page-item-active
+    const currentPageElement = this.page.locator('.semi-page-item-active')
+    const isVisible = await currentPageElement.isVisible().catch(() => false)
+    const currentPage = isVisible ? await currentPageElement.textContent() : '1'
     const current = currentPage ? parseInt(currentPage, 10) : 1
 
     return { current, total }

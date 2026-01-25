@@ -15512,3 +15512,53 @@ inventory:
 ### Build Verification
 - `npm run build` passes TypeScript type checking
 - All inventory pages support zh-CN and en-US languages
+
+---
+
+## 2026-01-25 - P1-INT-001: 商品模块前后端联调 (E2E Docker)
+
+### Summary
+Completed the Product Module E2E integration tests. All 25 tests pass consistently across 3 consecutive runs.
+
+### Issues Found and Fixed
+
+1. **Semi UI Dropdown/Tooltip Interference (TableActions.tsx)**
+   - Issue: Clicking the "more actions" button showed tooltip but didn't open dropdown menu
+   - Root Cause: Tooltip component was wrapping the Dropdown trigger button and capturing click events
+   - Fix: Removed Tooltip wrapper, added `data-testid="table-row-more-actions"` and `aria-label` for accessibility
+
+2. **Form Number Field Validation (ProductForm.tsx)**
+   - Issue: Edit form showed validation errors "Invalid input: expected number, received string" for price fields
+   - Root Cause: API returns numbers but Zod schema with `z.number()` doesn't coerce string values
+   - Fix: Changed to `z.coerce.number()` to handle string-to-number coercion from API responses
+
+3. **Duplicate Barcode Conflict (product.spec.ts)**
+   - Issue: Product creation test failed with 409 conflict due to hardcoded barcode
+   - Root Cause: Test used static barcode `1234567890123` which persisted from previous runs
+   - Fix: Generate unique barcode using `Date.now()` timestamp
+
+4. **Test Data Interference (product.spec.ts)**
+   - Issue: Parallel test execution caused data interference (e.g., iPhone product not found)
+   - Root Cause: Tests running in parallel modified shared seed data
+   - Fix: Changed from `test.describe()` to `test.describe.serial()` to run tests sequentially
+
+5. **Semi UI Select Options (ProductsPage.ts)**
+   - Issue: Status filter options not found
+   - Fix: Wait for `.semi-select-option-list` to be visible before selecting options
+
+### Files Modified
+- `frontend/src/components/common/table/TableActions.tsx` - Removed Tooltip wrapper, added test ID
+- `frontend/src/features/catalog/ProductForm.tsx` - Used z.coerce.number() for numeric validation, added toNumber helper
+- `frontend/tests/e2e/products/product.spec.ts` - Serial test execution, unique barcodes
+- `frontend/tests/e2e/pages/ProductsPage.ts` - Improved submit button and dropdown selectors
+
+### Test Results
+- 25 tests in chromium project
+- All tests pass in 3 consecutive runs (~53s per run)
+- Tests cover: list display, creation, editing, status management, deletion, search/pagination, screenshots
+
+### Notes for Future Development
+- Always use `z.coerce.number()` instead of `z.number()` when API may return numbers as strings
+- Semi UI Dropdown and Tooltip components should not be nested (Tooltip blocks click events)
+- Use `test.describe.serial()` when tests modify shared data
+- Reseed database before running integration tests to ensure clean state

@@ -661,7 +661,7 @@
       "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/products/product.spec.ts",
       "⚠️ 必须连续 3 次运行全部通过才能标记为 passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-INT-002",
