@@ -32,28 +32,28 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           ERP Backend API
-// @version         1.0
-// @description     进销存系统后端 API - 基于 DDD 设计的库存管理系统
-// @termsOfService  http://swagger.io/terms/
+//	@title			ERP Backend API
+//	@version		1.0
+//	@description	进销存系统后端 API - 基于 DDD 设计的库存管理系统
+//	@termsOfService	http://swagger.io/terms/
 
-// @contact.name   API Support
-// @contact.url    https://github.com/erp/backend
-// @contact.email  support@erp.example.com
+//	@contact.name	API Support
+//	@contact.url	https://github.com/erp/backend
+//	@contact.email	support@erp.example.com
 
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host      localhost:8080
-// @BasePath  /api/v1
+//	@host		localhost:8080
+//	@BasePath	/api/v1
 
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Bearer token authentication. Format: "Bearer {token}"
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Bearer token authentication. Format: "Bearer {token}"
 
-// @externalDocs.description  OpenAPI
-// @externalDocs.url          https://swagger.io/resources/open-api/
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			https://swagger.io/resources/open-api/
 
 func main() {
 	// Load configuration
@@ -124,6 +124,8 @@ func main() {
 	reportCacheRepo := reportapp.NewGormReportCacheRepository(db.DB)
 	receiptVoucherRepo := persistence.NewGormReceiptVoucherRepository(db.DB)
 	accountReceivableRepo := persistence.NewGormAccountReceivableRepository(db.DB)
+	expenseRecordRepo := persistence.NewGormExpenseRecordRepository(db.DB)
+	otherIncomeRecordRepo := persistence.NewGormOtherIncomeRecordRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -162,6 +164,9 @@ func main() {
 		EventPublisher:     nil, // Will be set after event bus init
 		Logger:             log,
 	})
+
+	// Expense and income service
+	expenseIncomeService := financeapp.NewExpenseIncomeService(expenseRecordRepo, otherIncomeRecordRepo)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -261,6 +266,7 @@ func main() {
 	reportHandler := handler.NewReportHandler(reportService)
 	reportHandler.SetAggregationService(reportAggregationService)
 	paymentCallbackHandler := handler.NewPaymentCallbackHandler(paymentCallbackService)
+	expenseIncomeHandler := handler.NewExpenseIncomeHandler(expenseIncomeService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -589,6 +595,33 @@ func main() {
 	financeRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "finance service ready"})
 	})
+
+	// Expense routes
+	financeRoutes.GET("/expenses", expenseIncomeHandler.ListExpenses)
+	financeRoutes.GET("/expenses/summary", expenseIncomeHandler.GetExpensesSummary)
+	financeRoutes.GET("/expenses/:id", expenseIncomeHandler.GetExpense)
+	financeRoutes.POST("/expenses", expenseIncomeHandler.CreateExpense)
+	financeRoutes.PUT("/expenses/:id", expenseIncomeHandler.UpdateExpense)
+	financeRoutes.DELETE("/expenses/:id", expenseIncomeHandler.DeleteExpense)
+	financeRoutes.POST("/expenses/:id/submit", expenseIncomeHandler.SubmitExpense)
+	financeRoutes.POST("/expenses/:id/approve", expenseIncomeHandler.ApproveExpense)
+	financeRoutes.POST("/expenses/:id/reject", expenseIncomeHandler.RejectExpense)
+	financeRoutes.POST("/expenses/:id/cancel", expenseIncomeHandler.CancelExpense)
+	financeRoutes.POST("/expenses/:id/pay", expenseIncomeHandler.MarkExpensePaid)
+
+	// Other income routes
+	financeRoutes.GET("/incomes", expenseIncomeHandler.ListIncomes)
+	financeRoutes.GET("/incomes/summary", expenseIncomeHandler.GetIncomesSummary)
+	financeRoutes.GET("/incomes/:id", expenseIncomeHandler.GetIncome)
+	financeRoutes.POST("/incomes", expenseIncomeHandler.CreateIncome)
+	financeRoutes.PUT("/incomes/:id", expenseIncomeHandler.UpdateIncome)
+	financeRoutes.DELETE("/incomes/:id", expenseIncomeHandler.DeleteIncome)
+	financeRoutes.POST("/incomes/:id/confirm", expenseIncomeHandler.ConfirmIncome)
+	financeRoutes.POST("/incomes/:id/cancel", expenseIncomeHandler.CancelIncome)
+	financeRoutes.POST("/incomes/:id/receive", expenseIncomeHandler.MarkIncomeReceived)
+
+	// Cash flow route
+	financeRoutes.GET("/cash-flow", expenseIncomeHandler.GetCashFlow)
 
 	// Report domain
 	reportRoutes := router.NewDomainGroup("report", "/reports")

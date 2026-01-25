@@ -16883,3 +16883,80 @@ Trade module dropdowns (supplier, warehouse) were empty due to:
 - Empty catch blocks should log errors for debugging
 
 ---
+
+## 2026-01-26 - P9-UI-001-M: Backend Implementation for Finance Expenses/Incomes API
+
+### Task: Fix Finance and Report module data loading (Backend Part)
+
+### Problem
+Frontend pages (Expenses.tsx, OtherIncomes.tsx, CashFlow.tsx) were calling API endpoints that didn't exist:
+- `/finance/expenses` - No HTTP handler
+- `/finance/incomes` - No HTTP handler  
+- `/finance/cash-flow` - No HTTP handler
+
+### Root Cause
+The domain models (ExpenseRecord, OtherIncomeRecord) and service layer existed, but:
+1. Repository implementations were missing
+2. HTTP handlers were missing
+3. Routes were not registered
+
+### Solution Implemented
+
+#### 1. Repository Implementations
+Created GORM repository implementations:
+
+**expense_record_repository.go** (`backend/internal/infrastructure/persistence/`)
+- FindByID, FindByIDForTenant, FindByExpenseNumber
+- FindAllForTenant, FindByCategory, FindByStatus, FindPendingApproval
+- Save, SaveWithLock, Delete, DeleteForTenant
+- CountForTenant, CountByStatus, CountByCategory
+- SumByCategory, SumForTenant, SumApprovedForTenant
+- GenerateExpenseNumber, ExistsByExpenseNumber
+
+**other_income_record_repository.go** (`backend/internal/infrastructure/persistence/`)
+- FindByID, FindByIDForTenant, FindByIncomeNumber
+- FindAllForTenant, FindByCategory, FindByStatus, FindDraft
+- Save, SaveWithLock, Delete, DeleteForTenant
+- CountForTenant, CountByStatus, CountByCategory
+- SumByCategory, SumForTenant, SumConfirmedForTenant
+- GenerateIncomeNumber, ExistsByIncomeNumber
+
+#### 2. HTTP Handler
+Created **expense_income.go** (`backend/internal/interfaces/http/handler/`)
+- Full Swagger annotations for API documentation
+- Complete CRUD operations for expenses and incomes
+- Summary endpoints for dashboard
+- Cash flow aggregation endpoint
+- Action endpoints: submit, approve, reject, cancel, pay, confirm, receive
+
+#### 3. Route Registration
+Updated **main.go** (`backend/cmd/server/`)
+- Initialized repositories and service in DI
+- Registered routes under `/finance/` domain group:
+  - GET/POST /expenses, GET/PUT/DELETE /expenses/:id
+  - POST /expenses/:id/submit|approve|reject|cancel|pay
+  - GET /expenses/summary
+  - GET/POST /incomes, GET/PUT/DELETE /incomes/:id
+  - POST /incomes/:id/confirm|cancel|receive
+  - GET /incomes/summary
+  - GET /cash-flow
+
+### Files Changed
+1. `backend/internal/infrastructure/persistence/expense_record_repository.go` (new)
+2. `backend/internal/infrastructure/persistence/other_income_record_repository.go` (new)
+3. `backend/internal/interfaces/http/handler/expense_income.go` (new/rewritten)
+4. `backend/cmd/server/main.go` (modified)
+5. `backend/docs/swagger.yaml` (regenerated)
+6. `backend/docs/swagger.json` (regenerated)
+7. `backend/docs/docs.go` (regenerated)
+
+### Verification
+- `go build ./...` - Backend builds successfully
+- `swag init` - Swagger docs regenerated
+- Server starts without errors
+
+### Remaining Work (Frontend)
+- Regenerate frontend SDK: `cd frontend && npx orval`
+- Test Expenses.tsx, OtherIncomes.tsx, CashFlow.tsx pages
+
+---

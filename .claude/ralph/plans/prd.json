@@ -3229,7 +3229,18 @@
       "1. 检查 backend/docs/swagger.yaml 中是否有对应 endpoint",
       "2. 检查 frontend/src/api/finance/finance.ts 实现是否正确",
       "3. 检查是否有权限问题(403)",
-      "验证: 各页面显示数据或明确错误信息"
+      "验证: 各页面显示数据或明确错误信息",
+      "",
+      "✅ 后端已完成:",
+      "- 创建 ExpenseRecordRepository 和 OtherIncomeRecordRepository",
+      "- 创建 ExpenseIncomeService 应用层服务",
+      "- 创建 ExpenseIncomeHandler HTTP处理器",
+      "- 注册路由: /finance/expenses, /finance/incomes, /finance/cash-flow",
+      "- 重新生成 swagger 文档",
+      "",
+      "⏳ 待完成:",
+      "- 前端 API SDK 重新生成 (npx orval)",
+      "- 前端页面集成测试"
     ],
     "passes": false
   },

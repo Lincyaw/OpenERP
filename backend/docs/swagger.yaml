@@ -630,6 +630,33 @@ definitions:
         example: "2026-01-01T00:00:00Z"
         type: string
     type: object
+  handler.CashFlowSummaryResponse:
+    description: Cash flow summary response
+    properties:
+      expense_items:
+        items:
+          $ref: '#/definitions/handler.ExpenseIncomeCashFlowItem'
+        type: array
+      income_items:
+        items:
+          $ref: '#/definitions/handler.ExpenseIncomeCashFlowItem'
+        type: array
+      net_cash_flow:
+        example: 20000
+        type: number
+      period_end:
+        example: "2026-01-31"
+        type: string
+      period_start:
+        example: "2026-01-01"
+        type: string
+      total_inflow:
+        example: 50000
+        type: number
+      total_outflow:
+        example: 30000
+        type: number
+    type: object
   handler.CategoryListResponse:
     description: Category list item
     properties:
@@ -948,6 +975,56 @@ definitions:
     - code
     - name
     - type
+    type: object
+  handler.CreateExpenseRecordRequest:
+    description: Create expense record request
+    properties:
+      amount:
+        example: 5000
+        type: number
+      attachment_urls:
+        type: string
+      category:
+        example: RENT
+        type: string
+      description:
+        example: 2026年1月办公室租金
+        type: string
+      incurred_at:
+        type: string
+      remark:
+        example: 备注
+        type: string
+    required:
+    - amount
+    - category
+    - description
+    - incurred_at
+    type: object
+  handler.CreateOtherIncomeRecordRequest:
+    description: Create other income record request
+    properties:
+      amount:
+        example: 10000
+        type: number
+      attachment_urls:
+        type: string
+      category:
+        example: INVESTMENT
+        type: string
+      description:
+        example: 理财产品收益
+        type: string
+      received_at:
+        type: string
+      remark:
+        example: 备注
+        type: string
+    required:
+    - amount
+    - category
+    - description
+    - received_at
     type: object
   handler.CreatePaymentVoucherRequest:
     description: Request body for creating a payment voucher
@@ -1860,6 +1937,137 @@ definitions:
     - source_id
     - source_type
     type: object
+  handler.ExpenseActionRequest:
+    description: Expense action request
+    properties:
+      remark:
+        example: 审批意见
+        type: string
+    type: object
+  handler.ExpenseIncomeCashFlowItem:
+    description: Cash flow item response
+    properties:
+      amount:
+        example: 5000
+        type: number
+      category:
+        example: RENT
+        type: string
+      date:
+        type: string
+      description:
+        example: 2026年1月办公室租金
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      type:
+        example: EXPENSE
+        type: string
+    type: object
+  handler.ExpenseRecordResponse:
+    description: Expense record response
+    properties:
+      amount:
+        example: 5000
+        type: number
+      approval_remark:
+        type: string
+      approved_at:
+        type: string
+      approved_by:
+        type: string
+      attachment_urls:
+        type: string
+      category:
+        example: RENT
+        type: string
+      category_name:
+        example: 房租
+        type: string
+      created_at:
+        type: string
+      description:
+        example: 2026年1月办公室租金
+        type: string
+      expense_number:
+        example: EXP-2026-00001
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      incurred_at:
+        type: string
+      paid_at:
+        type: string
+      payment_method:
+        example: BANK_TRANSFER
+        type: string
+      payment_status:
+        example: UNPAID
+        type: string
+      rejected_at:
+        type: string
+      rejected_by:
+        type: string
+      rejection_reason:
+        type: string
+      remark:
+        example: 备注
+        type: string
+      status:
+        example: DRAFT
+        type: string
+      submitted_at:
+        type: string
+      submitted_by:
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  handler.ExpenseSummaryResponse:
+    description: Expense summary response
+    properties:
+      by_category:
+        additionalProperties:
+          format: float64
+          type: number
+        type: object
+      total_approved:
+        example: 100000
+        type: number
+      total_pending:
+        example: 5
+        type: integer
+    type: object
+  handler.IncomeActionRequest:
+    description: Income action request
+    properties:
+      remark:
+        example: 取消原因
+        type: string
+    type: object
+  handler.IncomeSummaryResponse:
+    description: Income summary response
+    properties:
+      by_category:
+        additionalProperties:
+          format: float64
+          type: number
+        type: object
+      total_confirmed:
+        example: 50000
+        type: number
+      total_draft:
+        example: 5
+        type: integer
+    type: object
   handler.IncreaseStockRequest:
     description: Request body for increasing stock
     properties:
@@ -2161,6 +2369,24 @@ definitions:
     - amount
     - target_id
     type: object
+  handler.MarkExpensePaidRequest:
+    description: Mark expense paid request
+    properties:
+      payment_method:
+        example: BANK_TRANSFER
+        type: string
+    required:
+    - payment_method
+    type: object
+  handler.MarkIncomeReceivedRequest:
+    description: Mark income received request
+    properties:
+      payment_method:
+        example: BANK_TRANSFER
+        type: string
+    required:
+    - payment_method
+    type: object
   handler.MonthlyProfitTrendResponse:
     description: Monthly profit trend data point
     properties:
@@ -2213,6 +2439,60 @@ definitions:
         type: integer
       total:
         example: 126
+        type: integer
+    type: object
+  handler.OtherIncomeRecordResponse:
+    description: Other income record response
+    properties:
+      actual_received:
+        type: string
+      amount:
+        example: 10000
+        type: number
+      attachment_urls:
+        type: string
+      category:
+        example: INVESTMENT
+        type: string
+      category_name:
+        example: 投资收益
+        type: string
+      confirmed_at:
+        type: string
+      confirmed_by:
+        type: string
+      created_at:
+        type: string
+      description:
+        example: 理财产品收益
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      income_number:
+        example: INC-2026-00001
+        type: string
+      payment_method:
+        example: BANK_TRANSFER
+        type: string
+      receipt_status:
+        example: PENDING
+        type: string
+      received_at:
+        type: string
+      remark:
+        example: 备注
+        type: string
+      status:
+        example: DRAFT
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        type: string
+      version:
+        example: 1
         type: integer
     type: object
   handler.PayableAllocationResponse:
@@ -3270,6 +3550,46 @@ definitions:
         type: array
     required:
     - counts
+    type: object
+  handler.RefreshAllReportsRequest:
+    description: Request for refreshing all report caches
+    properties:
+      end_date:
+        example: "2026-01-31"
+        type: string
+      start_date:
+        example: "2026-01-01"
+        type: string
+    required:
+    - end_date
+    - start_date
+    type: object
+  handler.RefreshReportRequest:
+    description: Request for manual report cache refresh
+    properties:
+      end_date:
+        example: "2026-01-31"
+        type: string
+      report_type:
+        example: SALES_SUMMARY
+        type: string
+      start_date:
+        example: "2026-01-01"
+        type: string
+    required:
+    - end_date
+    - report_type
+    - start_date
+    type: object
+  handler.RefreshReportResponse:
+    description: Response for report refresh operation
+    properties:
+      message:
+        example: Report refresh scheduled
+        type: string
+      report_type:
+        example: SALES_SUMMARY
+        type: string
     type: object
   handler.RefreshTokenRequest:
     properties:
@@ -4511,6 +4831,31 @@ definitions:
         maxLength: 50
         type: string
     type: object
+  handler.UpdateExpenseRecordRequest:
+    description: Update expense record request
+    properties:
+      amount:
+        example: 5000
+        type: number
+      attachment_urls:
+        type: string
+      category:
+        example: RENT
+        type: string
+      description:
+        example: 2026年1月办公室租金
+        type: string
+      incurred_at:
+        type: string
+      remark:
+        example: 备注
+        type: string
+    required:
+    - amount
+    - category
+    - description
+    - incurred_at
+    type: object
   handler.UpdateOrderItemRequest:
     description: Request body for updating an order item
     properties:
@@ -4523,6 +4868,31 @@ definitions:
       unit_price:
         example: 89.99
         type: number
+    type: object
+  handler.UpdateOtherIncomeRecordRequest:
+    description: Update other income record request
+    properties:
+      amount:
+        example: 10000
+        type: number
+      attachment_urls:
+        type: string
+      category:
+        example: INVESTMENT
+        type: string
+      description:
+        example: 理财产品收益
+        type: string
+      received_at:
+        type: string
+      remark:
+        example: 备注
+        type: string
+    required:
+    - amount
+    - category
+    - description
+    - received_at
     type: object
   handler.UpdateProductCodeRequest:
     description: Request body for updating a product's code
@@ -5547,115 +5917,6 @@ paths:
       summary: Create a new category
       tags:
       - categories
-  /catalog/categories/{category_id}/products:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve products belonging to a specific category
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Category ID
-        format: uuid
-        in: path
-        name: category_id
-        required: true
-        type: string
-      - description: Search term
-        in: query
-        name: search
-        type: string
-      - description: Product status
-        enum:
-        - active
-        - inactive
-        - discontinued
-        in: query
-        name: status
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        in: query
-        maximum: 100
-        name: page_size
-        type: integer
-      - default: sort_order
-        description: Order by field
-        in: query
-        name: order_by
-        type: string
-      - default: asc
-        description: Order direction
-        enum:
-        - asc
-        - desc
-        in: query
-        name: order_dir
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/handler.ProductListResponse'
-                  type: array
-                meta:
-                  $ref: '#/definitions/dto.Meta'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get products by category
-      tags:
-      - products
   /catalog/categories/{id}:
     delete:
       consumes:
@@ -6154,6 +6415,115 @@ paths:
       summary: Move a category
       tags:
       - categories
+  /catalog/categories/{id}/products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve products belonging to a specific category
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Category ID
+        format: uuid
+        in: path
+        name: category_id
+        required: true
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Product status
+        enum:
+        - active
+        - inactive
+        - discontinued
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - default: sort_order
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: asc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.ProductListResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get products by category
+      tags:
+      - products
   /catalog/categories/roots:
     get:
       consumes:
@@ -6980,7 +7350,7 @@ paths:
       summary: Discontinue a product
       tags:
       - products
-  /catalog/products/{product_id}/units:
+  /catalog/products/{id}/units:
     get:
       consumes:
       - application/json
@@ -6993,7 +7363,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       produces:
@@ -7054,7 +7424,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       - description: Product unit creation request
@@ -7116,7 +7486,7 @@ paths:
       summary: Create a product unit
       tags:
       - product-units
-  /catalog/products/{product_id}/units/{id}:
+  /catalog/products/{id}/units/{unit_id}:
     delete:
       consumes:
       - application/json
@@ -7129,13 +7499,13 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       - description: Unit ID
         format: uuid
         in: path
-        name: id
+        name: unit_id
         required: true
         type: string
       produces:
@@ -7189,13 +7559,13 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       - description: Unit ID
         format: uuid
         in: path
-        name: id
+        name: unit_id
         required: true
         type: string
       produces:
@@ -7254,13 +7624,13 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       - description: Unit ID
         format: uuid
         in: path
-        name: id
+        name: unit_id
         required: true
         type: string
       - description: Product unit update request
@@ -7313,7 +7683,7 @@ paths:
       summary: Update product unit
       tags:
       - product-units
-  /catalog/products/{product_id}/units/convert:
+  /catalog/products/{id}/units/convert:
     post:
       consumes:
       - application/json
@@ -7326,7 +7696,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       - description: Unit conversion request
@@ -7379,7 +7749,7 @@ paths:
       summary: Convert quantity between units
       tags:
       - product-units
-  /catalog/products/{product_id}/units/default-purchase:
+  /catalog/products/{id}/units/default-purchase:
     get:
       consumes:
       - application/json
@@ -7392,7 +7762,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       produces:
@@ -7439,7 +7809,7 @@ paths:
       summary: Get default purchase unit
       tags:
       - product-units
-  /catalog/products/{product_id}/units/default-sales:
+  /catalog/products/{id}/units/default-sales:
     get:
       consumes:
       - application/json
@@ -7452,7 +7822,7 @@ paths:
       - description: Product ID
         format: uuid
         in: path
-        name: product_id
+        name: id
         required: true
         type: string
       produces:
@@ -7621,6 +7991,1432 @@ paths:
       summary: Get product counts by status
       tags:
       - products
+  /finance/cash-flow:
+    get:
+      consumes:
+      - application/json
+      description: Get combined expense and income cash flow summary
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: To date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      - description: Include individual items
+        in: query
+        name: include_items
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CashFlowSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get cash flow summary
+      tags:
+      - expenses
+  /finance/expenses:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of expense records
+      parameters:
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      - description: Filter by category
+        enum:
+        - RENT
+        - UTILITIES
+        - SALARY
+        - OFFICE
+        - TRAVEL
+        - MARKETING
+        - EQUIPMENT
+        - MAINTENANCE
+        - INSURANCE
+        - TAX
+        - OTHER
+        in: query
+        name: category
+        type: string
+      - description: Filter by status
+        enum:
+        - DRAFT
+        - PENDING
+        - APPROVED
+        - REJECTED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - description: Filter by payment status
+        enum:
+        - UNPAID
+        - PAID
+        in: query
+        name: payment_status
+        type: string
+      - description: Filter from date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: Filter to date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.ExpenseRecordResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List expense records
+      tags:
+      - expenses
+    post:
+      consumes:
+      - application/json
+      description: Create a new expense record
+      parameters:
+      - description: Expense creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateExpenseRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create expense record
+      tags:
+      - expenses
+  /finance/expenses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an expense record (soft delete, only draft status)
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete expense record
+      tags:
+      - expenses
+    get:
+      consumes:
+      - application/json
+      description: Get a single expense record by its ID
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get expense record by ID
+      tags:
+      - expenses
+    put:
+      consumes:
+      - application/json
+      description: Update an existing expense record (only draft status)
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Expense update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateExpenseRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update expense record
+      tags:
+      - expenses
+  /finance/expenses/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve an expense record
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval remark
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.ExpenseActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Approve expense
+      tags:
+      - expenses
+  /finance/expenses/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel an expense record
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ExpenseActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel expense
+      tags:
+      - expenses
+  /finance/expenses/{id}/pay:
+    post:
+      consumes:
+      - application/json
+      description: Mark an approved expense as paid
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment method
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MarkExpensePaidRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Mark expense as paid
+      tags:
+      - expenses
+  /finance/expenses/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject an expense record
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Rejection reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ExpenseActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Reject expense
+      tags:
+      - expenses
+  /finance/expenses/{id}/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit an expense record for approval
+      parameters:
+      - description: Expense ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Submit expense for approval
+      tags:
+      - expenses
+  /finance/expenses/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get expense statistics summary
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: To date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ExpenseSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get expenses summary
+      tags:
+      - expenses
+  /finance/incomes:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of other income records
+      parameters:
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      - description: Filter by category
+        enum:
+        - INVESTMENT
+        - SUBSIDY
+        - INTEREST
+        - RENTAL
+        - REFUND
+        - COMPENSATION
+        - ASSET_DISPOSAL
+        - OTHER
+        in: query
+        name: category
+        type: string
+      - description: Filter by status
+        enum:
+        - DRAFT
+        - CONFIRMED
+        - CANCELLED
+        in: query
+        name: status
+        type: string
+      - description: Filter by receipt status
+        enum:
+        - PENDING
+        - RECEIVED
+        in: query
+        name: receipt_status
+        type: string
+      - description: Filter from date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: Filter to date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List other income records
+      tags:
+      - incomes
+    post:
+      consumes:
+      - application/json
+      description: Create a new other income record
+      parameters:
+      - description: Income creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateOtherIncomeRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create other income record
+      tags:
+      - incomes
+  /finance/incomes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an income record (soft delete, only draft status)
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete other income record
+      tags:
+      - incomes
+    get:
+      consumes:
+      - application/json
+      description: Get a single income record by its ID
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get other income record by ID
+      tags:
+      - incomes
+    put:
+      consumes:
+      - application/json
+      description: Update an existing income record (only draft status)
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Income update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateOtherIncomeRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update other income record
+      tags:
+      - incomes
+  /finance/incomes/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel an income record
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cancel reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.IncomeActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel income record
+      tags:
+      - incomes
+  /finance/incomes/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm an income record
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Confirm income record
+      tags:
+      - incomes
+  /finance/incomes/{id}/receive:
+    post:
+      consumes:
+      - application/json
+      description: Mark a confirmed income as received
+      parameters:
+      - description: Income ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment method
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.MarkIncomeReceivedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OtherIncomeRecordResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Mark income as received
+      tags:
+      - incomes
+  /finance/incomes/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get income statistics summary
+      parameters:
+      - description: From date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: To date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.IncomeSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get incomes summary
+      tags:
+      - incomes
   /finance/payables:
     get:
       consumes:
@@ -14671,427 +16467,6 @@ paths:
       summary: Create a new customer
       tags:
       - customers
-  /partner/customers/{customer_id}/balance:
-    get:
-      consumes:
-      - application/json
-      description: Get the current balance for a customer
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Customer ID
-        format: uuid
-        in: path
-        name: customer_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  properties:
-                    balance:
-                      type: number
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get customer balance
-      tags:
-      - balance
-  /partner/customers/{customer_id}/balance/adjust:
-    post:
-      consumes:
-      - application/json
-      description: Manually adjust a customer's balance (increase or decrease)
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Customer ID
-        format: uuid
-        in: path
-        name: customer_id
-        required: true
-        type: string
-      - description: Adjust request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handler.AdjustRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/handler.BalanceTransactionResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Adjust customer balance
-      tags:
-      - balance
-  /partner/customers/{customer_id}/balance/recharge:
-    post:
-      consumes:
-      - application/json
-      description: Add funds to a customer's prepaid balance
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Customer ID
-        format: uuid
-        in: path
-        name: customer_id
-        required: true
-        type: string
-      - description: Recharge request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handler.RechargeRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/handler.BalanceTransactionResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Recharge customer balance
-      tags:
-      - balance
-  /partner/customers/{customer_id}/balance/summary:
-    get:
-      consumes:
-      - application/json
-      description: Get balance summary including total recharge, consume, and refund
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Customer ID
-        format: uuid
-        in: path
-        name: customer_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/handler.BalanceSummaryResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: Get customer balance summary
-      tags:
-      - balance
-  /partner/customers/{customer_id}/balance/transactions:
-    get:
-      consumes:
-      - application/json
-      description: List balance transactions for a customer with optional filtering
-      parameters:
-      - description: Tenant ID (optional for dev)
-        in: header
-        name: X-Tenant-ID
-        type: string
-      - description: Customer ID
-        format: uuid
-        in: path
-        name: customer_id
-        required: true
-        type: string
-      - description: Transaction type
-        enum:
-        - RECHARGE
-        - CONSUME
-        - REFUND
-        - ADJUSTMENT
-        - EXPIRE
-        in: query
-        name: transaction_type
-        type: string
-      - description: Source type
-        enum:
-        - MANUAL
-        - SALES_ORDER
-        - SALES_RETURN
-        - RECEIPT_VOUCHER
-        - SYSTEM
-        in: query
-        name: source_type
-        type: string
-      - description: Start date (YYYY-MM-DD)
-        in: query
-        name: date_from
-        type: string
-      - description: End date (YYYY-MM-DD)
-        in: query
-        name: date_to
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        in: query
-        maximum: 100
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/handler.BalanceTransactionResponse'
-                  type: array
-                meta:
-                  $ref: '#/definitions/dto.Meta'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.Response'
-            - properties:
-                error:
-                  $ref: '#/definitions/dto.ErrorInfo'
-              type: object
-      security:
-      - BearerAuth: []
-      summary: List balance transactions
-      tags:
-      - balance
   /partner/customers/{id}:
     delete:
       consumes:
@@ -15392,6 +16767,78 @@ paths:
       summary: Activate a customer
       tags:
       - customers
+  /partner/customers/{id}/balance:
+    get:
+      consumes:
+      - application/json
+      description: Get the current balance for a customer
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  properties:
+                    balance:
+                      type: number
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer balance
+      tags:
+      - balance
   /partner/customers/{id}/balance/add:
     post:
       consumes:
@@ -15476,6 +16923,90 @@ paths:
       summary: Add balance to customer
       tags:
       - customers
+  /partner/customers/{id}/balance/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Manually adjust a customer's balance (increase or decrease)
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Adjust request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AdjustRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceTransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Adjust customer balance
+      tags:
+      - balance
   /partner/customers/{id}/balance/deduct:
     post:
       consumes:
@@ -15560,6 +17091,271 @@ paths:
       summary: Deduct balance from customer
       tags:
       - customers
+  /partner/customers/{id}/balance/recharge:
+    post:
+      consumes:
+      - application/json
+      description: Add funds to a customer's prepaid balance
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Recharge request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RechargeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceTransactionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Recharge customer balance
+      tags:
+      - balance
+  /partner/customers/{id}/balance/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get balance summary including total recharge, consume, and refund
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer balance summary
+      tags:
+      - balance
+  /partner/customers/{id}/balance/transactions:
+    get:
+      consumes:
+      - application/json
+      description: List balance transactions for a customer with optional filtering
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Transaction type
+        enum:
+        - RECHARGE
+        - CONSUME
+        - REFUND
+        - ADJUSTMENT
+        - EXPIRE
+        in: query
+        name: transaction_type
+        type: string
+      - description: Source type
+        enum:
+        - MANUAL
+        - SALES_ORDER
+        - SALES_RETURN
+        - RECEIPT_VOUCHER
+        - SYSTEM
+        in: query
+        name: source_type
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.BalanceTransactionResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List balance transactions
+      tags:
+      - balance
   /partner/customers/{id}/code:
     put:
       consumes:
@@ -17930,6 +19726,132 @@ paths:
       summary: Get warehouse counts by status
       tags:
       - warehouses
+  /payment/callback/alipay:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Receive and process payment notification from Alipay
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "500":
+          description: fail
+          schema:
+            type: string
+      summary: Handle Alipay payment callback
+      tags:
+      - payment-callbacks
+  /payment/callback/alipay/refund:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Receive and process refund notification from Alipay
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "500":
+          description: fail
+          schema:
+            type: string
+      summary: Handle Alipay refund callback
+      tags:
+      - payment-callbacks
+  /payment/callback/wechat:
+    post:
+      consumes:
+      - application/json
+      description: Receive and process payment notification from WeChat Pay
+      parameters:
+      - description: WeChat Pay signature
+        in: header
+        name: Wechatpay-Signature
+        required: true
+        type: string
+      - description: Timestamp
+        in: header
+        name: Wechatpay-Timestamp
+        required: true
+        type: string
+      - description: Nonce
+        in: header
+        name: Wechatpay-Nonce
+        required: true
+        type: string
+      - description: Certificate serial number
+        in: header
+        name: Wechatpay-Serial
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: code=SUCCESS
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: code=FAIL
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle WeChat Pay payment callback
+      tags:
+      - payment-callbacks
+  /payment/callback/wechat/refund:
+    post:
+      consumes:
+      - application/json
+      description: Receive and process refund notification from WeChat Pay
+      parameters:
+      - description: WeChat Pay signature
+        in: header
+        name: Wechatpay-Signature
+        required: true
+        type: string
+      - description: Timestamp
+        in: header
+        name: Wechatpay-Timestamp
+        required: true
+        type: string
+      - description: Nonce
+        in: header
+        name: Wechatpay-Nonce
+        required: true
+        type: string
+      - description: Certificate serial number
+        in: header
+        name: Wechatpay-Serial
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: code=SUCCESS
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: code=FAIL
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle WeChat Pay refund callback
+      tags:
+      - payment-callbacks
   /reports/finance/cash-flow:
     get:
       consumes:
@@ -18470,6 +20392,100 @@ paths:
       summary: Get inventory value by warehouse
       tags:
       - reports
+  /reports/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Triggers manual refresh of a specific report type cache
+      parameters:
+      - description: Report refresh request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RefreshReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.RefreshReportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Manually refresh a report cache
+      tags:
+      - reports
+  /reports/refresh/all:
+    post:
+      consumes:
+      - application/json
+      description: Triggers manual refresh of all report type caches
+      parameters:
+      - description: Report refresh request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RefreshAllReportsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.RefreshReportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Refresh all report caches
+      tags:
+      - reports
   /reports/sales/customers/ranking:
     get:
       consumes:
@@ -18694,6 +20710,38 @@ paths:
                   $ref: '#/definitions/dto.ErrorInfo'
               type: object
       summary: Get sales summary
+      tags:
+      - reports
+  /reports/scheduler/status:
+    get:
+      consumes:
+      - application/json
+      description: Returns the current status of the report scheduler
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get report scheduler status
       tags:
       - reports
   /system/info:
