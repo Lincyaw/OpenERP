@@ -259,6 +259,11 @@ export default function StockAdjustPage() {
     })
 
     if (!response.success) {
+      // Check for specific error codes and provide user-friendly messages
+      const errorCode = response.error?.code
+      if (errorCode === 'HAS_LOCKED_STOCK') {
+        throw new Error(t('adjust.messages.hasLockedStock'))
+      }
       throw new Error(response.error?.message || t('adjust.messages.error'))
     }
   }

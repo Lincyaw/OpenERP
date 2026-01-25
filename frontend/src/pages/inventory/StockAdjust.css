@@ -2,6 +2,7 @@
 
 .stock-adjust-page {
   padding: var(--spacing-6);
+  overflow-x: hidden;
 }
 
 .stock-adjust-header {
@@ -9,6 +10,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
 }
 
 .stock-adjust-header .header-left {
@@ -20,6 +23,7 @@
 .stock-adjust-card {
   max-width: 800px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* Loading container */
@@ -44,6 +48,7 @@
   padding: var(--spacing-4);
   background: var(--semi-color-fill-0);
   border-radius: var(--border-radius-md);
+  overflow: hidden;
 }
 
 .preview-row {
@@ -52,6 +57,7 @@
   justify-content: center;
   gap: var(--spacing-6);
   margin-bottom: var(--spacing-4);
+  flex-wrap: wrap;
 }
 
 .preview-item {

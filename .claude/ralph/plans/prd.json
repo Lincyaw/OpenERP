@@ -3282,10 +3282,16 @@
       "- 文件: frontend/src/pages/inventory/StockAdjust.tsx:252-254",
       "- 后端错误码: HAS_LOCKED_STOCK",
       "- 修复: 识别错误码并显示友好提示",
-      "- 添加翻译: adjust.errors.hasLockedStock",
-      "- 验证: 调整有锁定的库存时显示友好错误"
+      "- 添加翻译: adjust.messages.hasLockedStock",
+      "- 验证: 调整有锁定的库存时显示友好错误",
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ L1修复: StockAdjust.css添加overflow-x:hidden, flex-wrap:wrap, overflow:hidden",
+      "✅ L2修复: StockAdjust.tsx添加HAS_LOCKED_STOCK错误码检测",
+      "✅ L2翻译: 添加zh-CN/en-US inventory.json adjust.messages.hasLockedStock",
+      "✅ TypeScript类型检查通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-GLOBAL",

@@ -17090,3 +17090,43 @@ Added `omitempty` to all Page/PageSize binding tags in backend DTOs:
 - Full E2E validation should be performed in CI/CD Docker environment
 - PRD updated with bug fix details in P3-INT-002 and new item P9-API-001
 
+
+
+---
+
+## 2026-01-26: P9-UI-001-L - Fix Low Priority UX Issues
+
+### Issue L1: StockAdjust Layout Overflow
+**File**: `frontend/src/pages/inventory/StockAdjust.css`
+
+**Root Cause**: Flex layouts without overflow constraints could cause horizontal scrolling on narrow screens.
+
+**Fix Applied**:
+- Added `overflow-x: hidden` to `.stock-adjust-page`
+- Added `flex-wrap: wrap` and `gap` to `.stock-adjust-header`
+- Added `overflow: hidden` to `.stock-adjust-card`
+- Added `flex-wrap: wrap` to `.preview-row`
+
+### Issue L2: HAS_LOCKED_STOCK Error Not User-Friendly
+**File**: `frontend/src/pages/inventory/StockAdjust.tsx`
+
+**Root Cause**: When users try to adjust stock that has locked quantities (due to pending orders), the backend returns `HAS_LOCKED_STOCK` error code, but the frontend displayed a generic error message.
+
+**Fix Applied**:
+1. Added translation keys in `zh-CN/inventory.json` and `en-US/inventory.json`:
+   - `adjust.messages.hasLockedStock`
+   - Chinese: "无法调整库存：当前有锁定的库存数量。请等待关联的订单处理完成后再进行调整。"
+   - English: "Cannot adjust stock: There are locked quantities. Please wait for associated orders to be processed before adjusting."
+
+2. Updated `StockAdjust.tsx` error handling to check for `HAS_LOCKED_STOCK` error code and display the user-friendly message.
+
+### Verification
+- TypeScript type check passed: `npx tsc --noEmit` - Success
+- No regressions in frontend build
+
+### Files Changed
+1. `frontend/src/pages/inventory/StockAdjust.css` - Layout overflow fixes
+2. `frontend/src/pages/inventory/StockAdjust.tsx` - HAS_LOCKED_STOCK error handling
+3. `frontend/src/locales/zh-CN/inventory.json` - Chinese translation
+4. `frontend/src/locales/en-US/inventory.json` - English translation
+5. `.claude/ralph/plans/prd.json` - Updated P9-UI-001-L to passes: true

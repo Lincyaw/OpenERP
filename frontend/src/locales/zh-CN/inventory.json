@@ -164,7 +164,8 @@
       "success": "库存调整成功",
       "error": "调整失败",
       "fetchWarehouseError": "获取仓库列表失败",
-      "fetchProductError": "获取商品列表失败"
+      "fetchProductError": "获取商品列表失败",
+      "hasLockedStock": "无法调整库存：当前有锁定的库存数量。请等待关联的订单处理完成后再进行调整。"
     }
   },
   "stockTaking": {
