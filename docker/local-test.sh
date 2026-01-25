@@ -25,7 +25,7 @@
 #   seed        - Load seed data into database
 #   migrate     - Run database migrations
 #   clean       - Stop and remove all data
-#   run-e2e     - Run E2E tests
+#   run-e2e     - Run E2E tests with fresh environment (idempotent)
 #   help        - Show this help message
 #
 # Exit codes:
@@ -495,32 +495,45 @@ cmd_clean() {
 }
 
 cmd_run_e2e() {
+    log_step "Running E2E Tests with Fresh Environment"
+
+    # Step 1: Stop all existing services
+    log_info "Stopping existing services..."
+    cmd_stop_all 2>/dev/null || true
+
+    # Step 2: Clean and restart database with fresh data
+    log_info "Cleaning database..."
+    docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down -v 2>/dev/null || true
+    docker volume rm erp-local-postgres-data erp-local-redis-data 2>/dev/null || true
+
+    # Step 3: Start fresh database
+    log_info "Starting fresh database..."
+    docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d
+    sleep 5
+    wait_for_database 30 || exit 1
+
+    # Step 4: Run migrations
+    cmd_migrate
+
+    # Step 5: Seed fresh data
+    cmd_seed
+
+    # Step 6: Rebuild and start backend
+    log_info "Rebuilding backend..."
+    rm -f bin/erp-server
+    cmd_start_backend || exit 1
+
+    # Step 7: Start frontend
+    cmd_start_frontend || exit 1
+
+    log_success "Fresh environment ready"
+
+    # Step 8: Run E2E tests
     log_step "Running E2E Tests"
 
-    # Check prerequisites
-    if ! check_backend; then
-        log_error "Backend is not running on localhost:$BACKEND_PORT"
-        echo ""
-        echo "Start the environment first: ./docker/local-test.sh start"
-        exit 1
-    fi
-
-    if ! check_frontend; then
-        log_error "Frontend is not running on localhost:$FRONTEND_PORT"
-        echo ""
-        echo "Start the environment first: ./docker/local-test.sh start"
-        exit 1
-    fi
-
-    log_success "Backend and Frontend are running"
-    log_info "Running Playwright E2E tests in Docker..."
-
-    # Get absolute path to project root (current directory after cd in script)
     local project_root
     project_root="$(pwd)"
 
-    # Run Playwright tests in Docker with current user to avoid permission issues
-    # Note: node_modules is mounted from host, so dependencies are available
     docker run --rm \
         --user "$(id -u):$(id -g)" \
         --network host \
@@ -668,7 +681,7 @@ cmd_help() {
     echo "  migrate       - Run database migrations"
     echo "  clean         - Stop everything and remove all data"
     echo ""
-    echo "  run-e2e       - Run E2E tests (pass additional args to playwright)"
+    echo "  run-e2e       - Run E2E tests with fresh environment (clean + rebuild)"
     echo "  run-e2e-ui    - Run E2E tests with Playwright UI"
     echo "  run-e2e-debug - Run E2E tests in debug mode"
     echo "  api-check     - Run quick API smoke tests"

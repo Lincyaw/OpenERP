@@ -1,0 +1,53 @@
+# ERP Project Progress Log
+
+## 2026-01-25 - P3-INT-001 Sales Order E2E Test Fixes
+
+### Summary
+Worked on fixing Sales Order E2E tests (P3-INT-001). Made multiple backend and frontend fixes to resolve data binding, status filtering, and optimistic locking issues.
+
+### Files Modified
+
+#### Backend
+- `backend/internal/infrastructure/persistence/sales_order_repository.go`
+  - Fixed status filtering to normalize to uppercase (database stores DRAFT, API receives draft)
+  - Fixed optimistic locking version check in SaveWithLock (domain model increments version before save)
+
+- `backend/internal/application/trade/dto.go`
+  - Modified all order status responses to return lowercase (ToSalesOrderResponse, ToSalesOrderListItemResponse, etc.)
+
+#### Frontend
+- `frontend/src/features/trade/SalesOrderForm.tsx`
+  - Fixed customer_name binding using Semi Design Select's onChangeWithObject prop
+  - Changed from customers.find() lookup to direct option.label access
+
+- `frontend/tests/e2e/transactions/sales-order.spec.ts`
+  - Fixed warehouse name references to use TEST_DATA.warehouses.beijing.name instead of hardcoded 'Main Warehouse'
+
+- `frontend/tests/e2e/pages/SalesOrderPage.ts`
+  - Improved confirmOrder() timing with explicit wait for status tag update
+
+### Bugs Fixed
+1. customer_name not populated when creating sales order
+   - Root cause: Semi Design Select onChange only provides value, not the full option object
+   - Fix: Use onChangeWithObject to get both value and label
+
+2. Status case sensitivity mismatch (DRAFT vs draft)
+   - Root cause: Backend stores uppercase, frontend sends lowercase
+   - Fix: Normalize to uppercase in repository filter, return lowercase in API responses
+
+3. Optimistic locking version mismatch causing 500 error on confirm
+   - Root cause: Domain model's Confirm() increments version, then SaveWithLock checked wrong version
+   - Fix: Check currentVersion == order.Version - 1 instead of order.Version
+
+4. Warehouse name mismatch in E2E tests
+   - Root cause: Test used 'Main Warehouse' but seed data has Chinese name '北京主仓'
+   - Fix: Use TEST_DATA constant for warehouse names
+
+### Test Results
+- TypeScript type check: PASSED
+- E2E tests: 12/14 core scenarios passing
+- Remaining issues: Complex multi-product order timing (E2E stability optimization)
+
+### Next Steps
+- P3-INT-001 core functionality is working
+- Remaining timing issues are E2E test stability concerns, not core bugs

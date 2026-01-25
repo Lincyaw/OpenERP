@@ -287,15 +287,17 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     }
   }, [initialData])
 
-  // Handle customer selection
+  // Handle customer selection - receives full option object via onChangeWithObject
   const handleCustomerChange = useCallback(
-    (value: string | number | (string | number)[] | Record<string, unknown> | undefined) => {
-      const customerId = typeof value === 'string' ? value : ''
-      const customer = customers.find((c) => c.id === customerId)
+    (selectedOption: string | number | unknown[] | Record<string, unknown> | undefined) => {
+      // With onChangeWithObject, we receive the full option object
+      const option = selectedOption as { value?: string; label?: string } | undefined
+      const customerId = option?.value || ''
+      const customerName = option?.label || ''
       setFormData((prev) => ({
         ...prev,
         customer_id: customerId,
-        customer_name: customer?.name || '',
+        customer_name: customerName,
       }))
       setErrors((prev) => {
         const newErrors = { ...prev }
@@ -303,7 +305,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         return newErrors
       })
     },
-    [customers]
+    []
   )
 
   // Handle warehouse selection
@@ -671,6 +673,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
                 value={formData.customer_id || undefined}
                 placeholder={t('orderForm.basicInfo.customerPlaceholder')}
                 onChange={handleCustomerChange}
+                onChangeWithObject
                 optionList={customerOptions}
                 filter
                 remote

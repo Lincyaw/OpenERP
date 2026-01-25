@@ -171,6 +171,7 @@ func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesO
 }
 
 // SaveWithLock saves with optimistic locking (version check)
+// Note: Domain model methods increment the version, so we check against (order.Version - 1)
 func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trade.SalesOrder) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version from database
@@ -185,18 +186,18 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 			return err
 		}
 
-		// Check version matches
-		if currentVersion != order.Version {
+		// Check version matches - domain model has already incremented version
+		// so database version should be (order.Version - 1)
+		expectedDBVersion := order.Version - 1
+		if currentVersion != expectedDBVersion {
 			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The order has been modified by another user")
 		}
 
-		// Increment version
-		order.Version++
 		order.UpdatedAt = time.Now()
 
 		// Update order with version check
 		result := tx.Model(&trade.SalesOrder{}).
-			Where("id = ? AND version = ?", order.ID, currentVersion).
+			Where("id = ? AND version = ?", order.ID, expectedDBVersion).
 			Updates(map[string]interface{}{
 				"customer_id":     order.CustomerID,
 				"customer_name":   order.CustomerName,
@@ -450,10 +451,20 @@ func (r *GormSalesOrderRepository) applyFilterWithoutPagination(query *gorm.DB, 
 		case "warehouse_id":
 			query = query.Where("warehouse_id = ?", value)
 		case "status":
-			query = query.Where("status = ?", value)
+			// Normalize status to uppercase to match domain model constants
+			if statusStr, ok := value.(string); ok {
+				query = query.Where("status = ?", strings.ToUpper(statusStr))
+			} else {
+				query = query.Where("status = ?", value)
+			}
 		case "statuses":
 			if statuses, ok := value.([]string); ok && len(statuses) > 0 {
-				query = query.Where("status IN ?", statuses)
+				// Normalize all statuses to uppercase
+				normalizedStatuses := make([]string, len(statuses))
+				for i, s := range statuses {
+					normalizedStatuses[i] = strings.ToUpper(s)
+				}
+				query = query.Where("status IN ?", normalizedStatuses)
 			}
 		case "start_date":
 			if t, ok := value.(time.Time); ok {

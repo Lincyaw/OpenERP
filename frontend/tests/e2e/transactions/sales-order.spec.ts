@@ -435,7 +435,7 @@ test.describe('Sales Order Module E2E Tests', () => {
       const warehouseSelect = shipModal.locator('.semi-select')
       await warehouseSelect.click()
       await page.waitForTimeout(200)
-      await page.locator('.semi-select-option').filter({ hasText: 'Main Warehouse' }).click()
+      await page.locator('.semi-select-option').filter({ hasText: TEST_DATA.warehouses.beijing.name }).click()
       await page.waitForTimeout(200)
       await shipModal.locator('.semi-button-primary').click()
 
@@ -485,8 +485,8 @@ test.describe('Sales Order Module E2E Tests', () => {
       // Verify detail page elements
       await salesOrderPage.assertOrderDetailDisplayed()
 
-      // Verify basic info card
-      await expect(page.locator('.info-card, .order-basic-info')).toBeVisible()
+      // Verify basic info card (use first() since there may be multiple info cards)
+      await expect(page.locator('.info-card, .order-basic-info').first()).toBeVisible()
       await expect(page.locator('text=订单编号')).toBeVisible()
       await expect(page.locator('text=客户名称')).toBeVisible()
       await expect(page.locator('text=订单状态')).toBeVisible()
@@ -694,7 +694,7 @@ test.describe('Sales Order Module E2E Tests', () => {
       await salesOrderPage.assertOrderStatus('confirmed')
 
       // Ship order
-      await salesOrderPage.shipOrder('Main Warehouse')
+      await salesOrderPage.shipOrder(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
       await salesOrderPage.assertOrderStatus('shipped')
 
@@ -762,7 +762,7 @@ test.describe('Sales Order Module E2E Tests', () => {
       await page.waitForTimeout(500)
 
       // Ship
-      await salesOrderPage.shipOrder('Main Warehouse')
+      await salesOrderPage.shipOrder(TEST_DATA.warehouses.beijing.name)
       await page.waitForTimeout(500)
 
       // Complete

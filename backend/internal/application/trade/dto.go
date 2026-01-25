@@ -1,6 +1,7 @@
 package trade
 
 import (
+	"strings"
 	"time"
 
 	"github.com/erp/backend/internal/domain/trade"
@@ -218,7 +219,7 @@ func ToPurchaseOrderResponse(order *trade.PurchaseOrder) PurchaseOrderResponse {
 		TotalAmount:      order.TotalAmount,
 		DiscountAmount:   order.DiscountAmount,
 		PayableAmount:    order.PayableAmount,
-		Status:           string(order.Status),
+		Status:           strings.ToLower(string(order.Status)),
 		ReceiveProgress:  order.ReceiveProgress(),
 		Remark:           order.Remark,
 		ConfirmedAt:      order.ConfirmedAt,
@@ -242,7 +243,7 @@ func ToPurchaseOrderListItemResponse(order *trade.PurchaseOrder) PurchaseOrderLi
 		ItemCount:       order.ItemCount(),
 		TotalAmount:     order.TotalAmount,
 		PayableAmount:   order.PayableAmount,
-		Status:          string(order.Status),
+		Status:          strings.ToLower(string(order.Status)),
 		ReceiveProgress: order.ReceiveProgress(),
 		ConfirmedAt:     order.ConfirmedAt,
 		CompletedAt:     order.CompletedAt,
@@ -477,7 +478,7 @@ func ToSalesOrderResponse(order *trade.SalesOrder) SalesOrderResponse {
 		TotalAmount:    order.TotalAmount,
 		DiscountAmount: order.DiscountAmount,
 		PayableAmount:  order.PayableAmount,
-		Status:         string(order.Status),
+		Status:         strings.ToLower(string(order.Status)),
 		Remark:         order.Remark,
 		ConfirmedAt:    order.ConfirmedAt,
 		ShippedAt:      order.ShippedAt,
@@ -501,7 +502,7 @@ func ToSalesOrderListItemResponse(order *trade.SalesOrder) SalesOrderListItemRes
 		ItemCount:     order.ItemCount(),
 		TotalAmount:   order.TotalAmount,
 		PayableAmount: order.PayableAmount,
-		Status:        string(order.Status),
+		Status:        strings.ToLower(string(order.Status)),
 		ConfirmedAt:   order.ConfirmedAt,
 		ShippedAt:     order.ShippedAt,
 		CreatedAt:     order.CreatedAt,
@@ -717,7 +718,7 @@ func ToSalesReturnResponse(sr *trade.SalesReturn) SalesReturnResponse {
 		ItemCount:        sr.ItemCount(),
 		TotalQuantity:    sr.TotalReturnQuantity(),
 		TotalRefund:      sr.TotalRefund,
-		Status:           string(sr.Status),
+		Status:           strings.ToLower(string(sr.Status)),
 		Reason:           sr.Reason,
 		Remark:           sr.Remark,
 		SubmittedAt:      sr.SubmittedAt,
@@ -748,7 +749,7 @@ func ToSalesReturnListItemResponse(sr *trade.SalesReturn) SalesReturnListItemRes
 		WarehouseID:      sr.WarehouseID,
 		ItemCount:        sr.ItemCount(),
 		TotalRefund:      sr.TotalRefund,
-		Status:           string(sr.Status),
+		Status:           strings.ToLower(string(sr.Status)),
 		SubmittedAt:      sr.SubmittedAt,
 		ApprovedAt:       sr.ApprovedAt,
 		CompletedAt:      sr.CompletedAt,
@@ -989,7 +990,7 @@ func ToPurchaseReturnResponse(pr *trade.PurchaseReturn) PurchaseReturnResponse {
 		ItemCount:           pr.ItemCount(),
 		TotalQuantity:       pr.TotalReturnQuantity(),
 		TotalRefund:         pr.TotalRefund,
-		Status:              string(pr.Status),
+		Status:              strings.ToLower(string(pr.Status)),
 		Reason:              pr.Reason,
 		Remark:              pr.Remark,
 		SubmittedAt:         pr.SubmittedAt,
@@ -1024,7 +1025,7 @@ func ToPurchaseReturnListItemResponse(pr *trade.PurchaseReturn) PurchaseReturnLi
 		WarehouseID:         pr.WarehouseID,
 		ItemCount:           pr.ItemCount(),
 		TotalRefund:         pr.TotalRefund,
-		Status:              string(pr.Status),
+		Status:              strings.ToLower(string(pr.Status)),
 		SubmittedAt:         pr.SubmittedAt,
 		ApprovedAt:          pr.ApprovedAt,
 		ShippedAt:           pr.ShippedAt,

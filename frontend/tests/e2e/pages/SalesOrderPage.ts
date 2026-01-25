@@ -90,7 +90,7 @@ export class SalesOrderPage extends BasePage {
       .locator('input')
       .filter({ has: page.locator('[suffix="%"]') })
       .first()
-    this.remarkInput = page.locator('input[placeholder*="备注"]')
+    this.remarkInput = page.locator('input[placeholder="请输入备注信息"]')
     this.addProductButton = page.locator('button').filter({ hasText: '添加商品' })
     this.itemsTable = page.locator('.items-table, .semi-table').first()
     this.submitButton = page.locator('button').filter({ hasText: /创建订单|保存/ })
@@ -448,7 +448,18 @@ export class SalesOrderPage extends BasePage {
     await this.page.locator('.semi-modal-footer .semi-button-primary').click()
 
     await this.waitForToast('确认')
-    await this.page.waitForTimeout(500)
+
+    // Wait for the page to refresh and status to change to confirmed
+    await this.page.waitForTimeout(1000)
+
+    // Wait for the status tag to show "已确认" (confirmed)
+    try {
+      await this.page.locator('.semi-tag').filter({ hasText: '已确认' }).waitFor({ timeout: 5000 })
+    } catch {
+      // If status tag doesn't change, refresh and retry
+      await this.page.reload()
+      await this.page.waitForLoadState('networkidle')
+    }
   }
 
   async shipOrder(warehouseName?: string): Promise<void> {

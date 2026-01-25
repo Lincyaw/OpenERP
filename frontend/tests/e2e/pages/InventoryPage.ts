@@ -136,17 +136,45 @@ export class InventoryPage extends BasePage {
   }
 
   async filterByWarehouse(warehouseName: string): Promise<void> {
-    // Find the warehouse filter select
-    const warehouseSelect = this.page.locator('.semi-select').first()
+    // Find the warehouse filter select within the toolbar filters section
+    // First try to locate within the filters wrapper, fall back to first select
+    const filtersWrapper = this.page.locator('.table-toolbar-filters')
+    let warehouseSelect = filtersWrapper.locator('.semi-select').first()
+
+    // If no filters wrapper, fall back to first select on page
+    if (!(await filtersWrapper.count())) {
+      warehouseSelect = this.page.locator('.semi-select').first()
+    }
+
+    // Ensure the select is visible before clicking
+    await warehouseSelect.waitFor({ state: 'visible', timeout: 5000 })
     await warehouseSelect.click()
 
-    // Wait for options to load (not "暂无数据")
+    // Wait for the dropdown portal to appear
+    await this.page.waitForTimeout(300)
+
+    // Wait for options to load (Semi uses portal for dropdown, so look globally)
     const optionToSelect = warehouseName
       ? this.page.locator('.semi-select-option').filter({ hasText: warehouseName })
       : this.page.locator('.semi-select-option').filter({ hasText: '全部仓库' })
 
-    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
-    await optionToSelect.click()
+    // Wait for options to appear and not be "暂无数据"
+    try {
+      await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+      await optionToSelect.click()
+    } catch {
+      // If option not found, check if dropdown is actually open
+      const dropdownOptions = this.page.locator('.semi-select-option')
+      const optionCount = await dropdownOptions.count()
+      console.log(`Warehouse filter: ${optionCount} options found. Looking for: ${warehouseName}`)
+
+      // Try clicking again with scroll
+      if (optionCount > 0) {
+        const optionTexts = await dropdownOptions.allTextContents()
+        console.log(`Available options: ${optionTexts.join(', ')}`)
+      }
+      throw new Error(`Warehouse option "${warehouseName}" not found in dropdown`)
+    }
 
     await this.page.waitForTimeout(300)
     await this.waitForTableLoad()
