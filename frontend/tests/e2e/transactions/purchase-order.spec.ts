@@ -29,8 +29,8 @@ const TEST_DATA = {
     macbook: 'MacBook Pro 14',
   },
   warehouses: {
-    beijing: 'Main Warehouse Beijing',
-    shanghai: 'Shanghai Distribution Center',
+    beijing: '北京主仓',
+    shanghai: '上海配送中心',
   },
 }
 

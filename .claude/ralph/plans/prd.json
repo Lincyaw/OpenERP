@@ -1555,7 +1555,14 @@
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
       "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试",
       "",
-      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/purchase-order.spec.ts"
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/purchase-order.spec.ts",
+      "",
+      "🐛 Bug Fix (2026-01-26):",
+      "- Fixed warehouse name mismatch in E2E test data:",
+      "  - TEST_DATA.warehouses.beijing: 'Main Warehouse Beijing' → '北京主仓'",
+      "  - TEST_DATA.warehouses.shanghai: 'Shanghai Distribution Center' → '上海配送中心'",
+      "- Root cause: E2E test used English warehouse names but seed-data.sql uses Chinese names",
+      "- File changed: frontend/tests/e2e/transactions/purchase-order.spec.ts"
     ],
     "passes": false
   },

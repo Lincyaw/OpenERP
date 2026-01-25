@@ -16993,3 +16993,48 @@ Updated **main.go** (`backend/cmd/server/`)
 - frontend/src/pages/partner/RechargeModal.tsx
 - .claude/ralph/plans/prd.json
 
+
+---
+
+## 2026-01-26: P3-INT-002 - Purchase Order E2E Test Data Fix
+
+### Issue Identified
+E2E tests for purchase order module were failing due to warehouse name mismatch between test data and seed data.
+
+### Root Cause Analysis
+The E2E test file `frontend/tests/e2e/transactions/purchase-order.spec.ts` used English warehouse names:
+- `TEST_DATA.warehouses.beijing: 'Main Warehouse Beijing'`
+- `TEST_DATA.warehouses.shanghai: 'Shanghai Distribution Center'`
+
+But the actual seed data in `docker/seed-data.sql` uses Chinese warehouse names:
+- `'北京主仓'` (WH001)
+- `'上海配送中心'` (WH002)
+
+This mismatch caused E2E tests to fail when selecting warehouses during order creation and receiving operations.
+
+### Fix Applied
+Updated the TEST_DATA constants in `purchase-order.spec.ts` to use the correct Chinese warehouse names that match the seed data:
+```typescript
+warehouses: {
+  beijing: '北京主仓',
+  shanghai: '上海配送中心',
+}
+```
+
+### Files Changed
+1. `frontend/tests/e2e/transactions/purchase-order.spec.ts` - Fixed warehouse name constants
+
+### Verification
+- TypeScript type check passed (tsc --noEmit)
+- Frontend build succeeded
+- Backend Go build succeeded
+
+### Notes
+- E2E tests cannot be run locally due to missing browser dependencies (libXdamage.so.1, libgtk-3.so.0, etc.)
+- Full E2E validation should be performed in Docker environment using: `./docker/local-test.sh run-e2e tests/e2e/transactions/purchase-order.spec.ts`
+- PRD updated with bug fix details
+
+### Remaining Work
+- Run E2E tests in Docker environment to verify the fix
+- Mark P3-INT-002 as passed once all E2E tests pass
+
