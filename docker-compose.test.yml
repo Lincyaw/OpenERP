@@ -146,7 +146,7 @@ services:
     depends_on:
       - backend
     environment:
-      VITE_API_BASE_URL: http://localhost:8081/api/v1
+      VITE_API_BASE_URL: /api/v1
       VITE_APP_NAME: ERP Test
       VITE_APP_VERSION: test
     ports:
@@ -159,6 +159,26 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+
+  # Playwright E2E Test Runner
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.58.0-noble
+    container_name: erp-test-playwright
+    working_dir: /app
+    depends_on:
+      - frontend
+      - backend
+    environment:
+      E2E_BASE_URL: http://frontend:80
+      CI: "true"
+      HOME: /tmp
+    volumes:
+      - ./frontend:/app
+    networks:
+      - erp-test-network
+    command: ["npx", "playwright", "test", "--reporter=list"]
+    profiles:
+      - e2e
 
 networks:
   erp-test-network:

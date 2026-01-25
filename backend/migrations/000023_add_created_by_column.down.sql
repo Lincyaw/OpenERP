@@ -57,11 +57,7 @@ ALTER TABLE expense_records DROP COLUMN IF EXISTS created_by;
 DROP INDEX IF EXISTS idx_other_income_records_created_by;
 ALTER TABLE other_income_records DROP COLUMN IF EXISTS created_by;
 
-DROP INDEX IF EXISTS idx_debit_memos_created_by;
-ALTER TABLE debit_memos DROP COLUMN IF EXISTS created_by;
-
-DROP INDEX IF EXISTS idx_credit_memos_created_by;
-ALTER TABLE credit_memos DROP COLUMN IF EXISTS created_by;
+-- Note: debit_memos and credit_memos tables are not yet created, skipping these for now
 
 -- Identity module
 DROP INDEX IF EXISTS idx_users_created_by;

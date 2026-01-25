@@ -75,13 +75,8 @@ ALTER TABLE other_income_records ADD COLUMN IF NOT EXISTS created_by UUID;
 CREATE INDEX IF NOT EXISTS idx_other_income_records_created_by ON other_income_records(created_by);
 COMMENT ON COLUMN other_income_records.created_by IS 'User who created this record (for data scope filtering)';
 
-ALTER TABLE debit_memos ADD COLUMN IF NOT EXISTS created_by UUID;
-CREATE INDEX IF NOT EXISTS idx_debit_memos_created_by ON debit_memos(created_by);
-COMMENT ON COLUMN debit_memos.created_by IS 'User who created this record (for data scope filtering)';
-
-ALTER TABLE credit_memos ADD COLUMN IF NOT EXISTS created_by UUID;
-CREATE INDEX IF NOT EXISTS idx_credit_memos_created_by ON credit_memos(created_by);
-COMMENT ON COLUMN credit_memos.created_by IS 'User who created this record (for data scope filtering)';
+-- Note: debit_memos and credit_memos tables are not yet created, skipping these for now
+-- When these tables are created in a future migration, add created_by column there
 
 -- Identity module
 ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by UUID;

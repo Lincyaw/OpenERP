@@ -17,13 +17,39 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   // Submit
   await page.click('button[type="submit"], .login-button, button:has-text("登录")')
 
-  // Wait for navigation
+  // Wait for navigation away from login page
   await Promise.race([
     page.waitForURL('**/dashboard**', { timeout: 15000 }),
     page.waitForURL('**/', { timeout: 15000 }),
   ]).catch(() => {
     // Navigation might be to root
   })
+
+  // CRITICAL: Wait for auth tokens to be stored in localStorage
+  // The Zustand store persists asynchronously after login
+  await page.waitForFunction(
+    () => {
+      const accessToken = window.localStorage.getItem('access_token')
+      const user = window.localStorage.getItem('user')
+      return accessToken !== null && user !== null
+    },
+    { timeout: 10000 }
+  )
+
+  // Also wait for erp-auth Zustand state to be persisted
+  await page.waitForFunction(
+    () => {
+      const erpAuth = window.localStorage.getItem('erp-auth')
+      if (!erpAuth) return false
+      try {
+        const parsed = JSON.parse(erpAuth)
+        return parsed?.state?.isAuthenticated === true
+      } catch {
+        return false
+      }
+    },
+    { timeout: 10000 }
+  )
 }
 
 /**
@@ -73,7 +99,7 @@ export async function waitForApi(
  * Get authentication token from storage
  */
 export async function getAuthToken(page: Page): Promise<string | null> {
-  const localStorage = await page.evaluate(() => window.localStorage.getItem('token'))
+  const localStorage = await page.evaluate(() => window.localStorage.getItem('access_token'))
   return localStorage
 }
 

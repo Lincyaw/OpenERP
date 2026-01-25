@@ -86,7 +86,7 @@ VALUES (
     '00000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000001',
     'admin',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', -- admin123
+    '$2a$12$awSyzmWliDnUBvJ6tqjs1OnEbpUoOyujmnS67BotFyFIzCCSyFwVW', -- admin123
     'System Administrator',
     'active'
 ) ON CONFLICT (tenant_id, username) DO NOTHING;

@@ -245,7 +245,7 @@ A completed integration (INT) task must satisfy:
 
 ### 4.4 Test Commands
 
-#### Convenience Scripts
+#### Docker Test Environment (CI/Full Integration)
 
 ```bash
 # Start test environment (includes health checks, migration, seed, API checks)
@@ -270,7 +270,58 @@ A completed integration (INT) task must satisfy:
 ./docker/quick-test.sh clean
 ```
 
-#### Running E2E Tests
+#### Local Test Environment (For Agent/Debugging)
+
+The local test environment runs PostgreSQL and Redis in Docker, but backend and frontend run locally. This allows for easier debugging and is suitable for agent-based E2E testing.
+
+```bash
+# Start complete local test environment (one command does everything)
+./docker/local-test.sh start
+
+# Check status of all services
+./docker/local-test.sh status
+
+# Run E2E tests
+./docker/local-test.sh run-e2e
+
+# Run E2E tests in debug mode
+./docker/local-test.sh run-e2e-debug
+
+# Run E2E tests with Playwright UI
+./docker/local-test.sh run-e2e-ui
+
+# Run specific test file
+./docker/local-test.sh run-e2e tests/e2e/auth/auth.spec.ts
+
+# View backend logs (real-time)
+./docker/local-test.sh logs-backend
+
+# View frontend logs (real-time)
+./docker/local-test.sh logs-frontend
+
+# Stop everything
+./docker/local-test.sh stop
+
+# Clean up everything (including data)
+./docker/local-test.sh clean
+```
+
+**Log Files Location:**
+- Backend: `logs/backend.log`
+- Frontend: `logs/frontend.log`
+
+**Makefile shortcuts:**
+```bash
+make local-test-start      # Start local test environment
+make local-test-stop       # Stop local test environment
+make local-test-status     # Check status
+make local-test-e2e        # Run E2E tests
+make local-test-e2e-ui     # Run E2E with Playwright UI
+make local-test-e2e-debug  # Run E2E in debug mode
+make local-test-clean      # Clean everything
+```
+
+#### Running E2E Tests in Docker (CI mode)
 
 ```bash
 # 1. Start test environment

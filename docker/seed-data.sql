@@ -26,9 +26,9 @@ ON CONFLICT (code) DO NOTHING;
 -- Test users for E2E testing (password: admin123 - bcrypt hash)
 -- Note: admin user is created in migration 000017_create_users.up.sql
 INSERT INTO users (id, tenant_id, username, password_hash, display_name, status) VALUES
-('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'sales', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Sales Manager', 'active'),
-('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'warehouse', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Warehouse Manager', 'active'),
-('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'finance', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beHPNIIHT1.AkEe', 'Finance Manager', 'active')
+('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'sales', '$2a$12$awSyzmWliDnUBvJ6tqjs1OnEbpUoOyujmnS67BotFyFIzCCSyFwVW', 'Sales Manager', 'active'),
+('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'warehouse', '$2a$12$awSyzmWliDnUBvJ6tqjs1OnEbpUoOyujmnS67BotFyFIzCCSyFwVW', 'Warehouse Manager', 'active'),
+('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'finance', '$2a$12$awSyzmWliDnUBvJ6tqjs1OnEbpUoOyujmnS67BotFyFIzCCSyFwVW', 'Finance Manager', 'active')
 ON CONFLICT (tenant_id, username) DO NOTHING;
 
 -- Assign roles to test users

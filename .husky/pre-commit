@@ -1,0 +1,138 @@
+#!/bin/sh
+
+# Pre-commit hook: Run code checks before committing
+
+echo "🔍 Running pre-commit checks..."
+
+# Get the list of staged files
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
+STAGED_FRONTEND_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^frontend/' || true)
+
+# Track if we need to run E2E tests
+RUN_E2E=false
+
+# ============================================
+# Backend checks (Go)
+# ============================================
+if [ -n "$STAGED_GO_FILES" ]; then
+    echo ""
+    echo "📦 Checking Go files..."
+    RUN_E2E=true
+    
+    # Check formatting
+    echo "  → Checking Go formatting..."
+    UNFORMATTED=$(gofmt -l $STAGED_GO_FILES 2>/dev/null || true)
+    if [ -n "$UNFORMATTED" ]; then
+        echo "❌ Go files are not formatted. Please run 'gofmt -w' on:"
+        echo "$UNFORMATTED"
+        exit 1
+    fi
+    
+    # Run go vet
+    echo "  → Running go vet..."
+    cd backend
+    if ! go vet ./... 2>&1; then
+        echo "❌ go vet found issues"
+        exit 1
+    fi
+    cd ..
+    
+    # Note: go build check is skipped here as it will be done during docker build
+    
+    echo "✅ Go checks passed"
+fi
+
+# ============================================
+# Frontend checks (TypeScript/React)
+# ============================================
+if [ -n "$STAGED_FRONTEND_FILES" ]; then
+    echo ""
+    echo "📦 Checking frontend files..."
+    RUN_E2E=true
+    
+    cd frontend
+    
+    # Run lint-staged for frontend
+    echo "  → Running ESLint and Prettier..."
+    if ! npx lint-staged; then
+        echo "❌ Frontend lint checks failed"
+        exit 1
+    fi
+    
+    cd ..
+    
+    # Note: TypeScript build check is skipped here as it will be done during docker build
+    
+    echo "✅ Frontend checks passed"
+fi
+
+# ============================================
+# E2E Tests (only if backend or frontend changed)
+# ============================================
+if [ "$RUN_E2E" = true ]; then
+    echo ""
+    echo "🧪 Running E2E tests..."
+
+    # Clean up old test results to avoid permission issues
+    echo "  → Cleaning up old test results..."
+    rm -rf frontend/test-results frontend/playwright-report frontend/tests/e2e/.auth/user.json 2>/dev/null || true
+
+    # Start test environment
+    echo "  → Starting test environment..."
+    docker compose -f docker-compose.test.yml down -v 2>/dev/null || true
+    docker compose -f docker-compose.test.yml up -d --build
+    
+    # Wait for services to be healthy
+    echo "  → Waiting for services to be ready..."
+    MAX_WAIT=120
+    WAITED=0
+    while [ $WAITED -lt $MAX_WAIT ]; do
+        if curl -sf http://localhost:8081/health > /dev/null 2>&1; then
+            echo "  → Backend is ready"
+            break
+        fi
+        sleep 2
+        WAITED=$((WAITED + 2))
+        echo "  → Waiting for backend... (${WAITED}s)"
+    done
+
+    if [ $WAITED -ge $MAX_WAIT ]; then
+        echo "❌ Timeout waiting for backend to start"
+        docker compose -f docker-compose.test.yml down -v
+        exit 1
+    fi
+
+    # Give frontend a moment to be ready
+    sleep 3
+
+    # Load seed data
+    echo "  → Loading seed data..."
+    ./docker/quick-test.sh seed || {
+        echo "❌ Failed to load seed data"
+        docker compose -f docker-compose.test.yml down -v
+        exit 1
+    }
+    
+    # Run E2E tests in Docker container (as current user to avoid permission issues)
+    echo "  → Running Playwright E2E tests in Docker..."
+    E2E_RESULT=0
+    docker compose -f docker-compose.test.yml run --rm \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        -e E2E_BASE_URL=http://frontend:80 \
+        playwright npx playwright test --reporter=list || E2E_RESULT=$?
+    
+    # Stop test environment
+    echo "  → Stopping test environment..."
+    docker compose -f docker-compose.test.yml down -v
+    
+    if [ $E2E_RESULT -ne 0 ]; then
+        echo "❌ E2E tests failed"
+        exit 1
+    fi
+    
+    echo "✅ E2E tests passed"
+fi
+
+echo ""
+echo "✅ All pre-commit checks passed!"

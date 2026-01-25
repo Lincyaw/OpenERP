@@ -1,4 +1,4 @@
-.PHONY: help docker-build docker-up docker-down docker-restart docker-logs docker-ps docker-clean
+.PHONY: help docker-build docker-up docker-down docker-restart docker-logs docker-ps docker-clean setup
 
 # Default environment file
 ENV_FILE ?= .env.dev
@@ -10,133 +10,23 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # ==============================================================================
-# Docker Commands
+# Project Setup
 # ==============================================================================
 
-docker-build: ## Build all Docker images
-	@echo "Building Docker images..."
-	docker compose build
-
-docker-up: ## Start all services
-	@echo "Starting services..."
-	docker compose --env-file $(ENV_FILE) up -d
-	@echo "Services started. Check status with: make docker-ps"
-
-docker-up-build: ## Build and start all services
-	@echo "Building and starting services..."
-	docker compose --env-file $(ENV_FILE) up -d --build
-
-docker-down: ## Stop all services
-	@echo "Stopping services..."
-	docker compose down
-
-docker-down-volumes: ## Stop all services and remove volumes (WARNING: deletes data)
-	@echo "WARNING: This will delete all data!"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker compose down -v; \
-	fi
-
-docker-restart: ## Restart all services
-	@echo "Restarting services..."
-	docker compose restart
-
-docker-restart-backend: ## Restart backend service
-	@echo "Restarting backend..."
-	docker compose restart backend
-
-docker-restart-frontend: ## Restart frontend service
-	@echo "Restarting frontend..."
-	docker compose restart frontend
-
-docker-logs: ## Show logs from all services
-	docker compose logs -f
-
-docker-logs-backend: ## Show backend logs
-	docker compose logs -f backend
-
-docker-logs-frontend: ## Show frontend logs
-	docker compose logs -f frontend
-
-docker-logs-postgres: ## Show PostgreSQL logs
-	docker compose logs -f postgres
-
-docker-logs-redis: ## Show Redis logs
-	docker compose logs -f redis
-
-docker-ps: ## Show running services
-	docker compose ps
-
-docker-clean: ## Remove stopped containers and unused images
-	@echo "Cleaning up Docker resources..."
-	docker compose down
-	docker system prune -f
-	@echo "Cleanup complete"
-
-# ==============================================================================
-# Database Commands
-# ==============================================================================
-
-db-shell: ## Access PostgreSQL shell
-	docker compose exec postgres psql -U postgres -d erp
-
-db-migrate-up: ## Run database migrations
-	docker compose run --rm migrate \
-		-path=/migrations \
-		-database "postgres://postgres:postgres123@postgres:5432/erp?sslmode=disable" \
-		up
-
-db-migrate-down: ## Rollback last migration
-	docker compose run --rm migrate \
-		-path=/migrations \
-		-database "postgres://postgres:postgres123@postgres:5432/erp?sslmode=disable" \
-		down 1
-
-db-migrate-version: ## Show current migration version
-	docker compose run --rm migrate \
-		-path=/migrations \
-		-database "postgres://postgres:postgres123@postgres:5432/erp?sslmode=disable" \
-		version
-
-db-backup: ## Backup database to file
-	@echo "Creating database backup..."
-	@mkdir -p backups
-	docker compose exec -T postgres pg_dump -U postgres erp > backups/backup-$$(date +%Y%m%d-%H%M%S).sql
-	@echo "Backup created in backups/ directory"
-
-db-restore: ## Restore database from latest backup
-	@echo "Restoring database from latest backup..."
-	@LATEST=$$(ls -t backups/*.sql | head -1); \
-	if [ -z "$$LATEST" ]; then \
-		echo "No backup files found"; \
-		exit 1; \
-	fi; \
-	echo "Restoring from: $$LATEST"; \
-	docker compose exec -T postgres psql -U postgres erp < $$LATEST; \
-	echo "Database restored"
-
-# ==============================================================================
-# Redis Commands
-# ==============================================================================
-
-redis-shell: ## Access Redis CLI
-	docker compose exec redis redis-cli
-
-redis-monitor: ## Monitor Redis commands
-	docker compose exec redis redis-cli monitor
-
-redis-info: ## Show Redis info
-	docker compose exec redis redis-cli info
-
-redis-flush: ## Flush all Redis keys (WARNING: deletes all cache)
-	@echo "WARNING: This will delete all cached data!"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		docker compose exec redis redis-cli FLUSHALL; \
-		echo "Redis flushed"; \
-	fi
+setup: ## Initialize project for development (run after cloning)
+	@echo "🚀 Setting up project for development..."
+	@echo "  → Configuring git hooks..."
+	@git config core.hooksPath .husky
+	@echo "  → Installing frontend dependencies..."
+	@cd frontend && npm install
+	@echo "  → Installing backend development dependencies..."
+	@cd backend && go mod download
+	@echo ""
+	@echo "✅ Project setup complete!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Copy .env.dev to .env and configure if needed"
+	@echo "  2. Run 'make dev' to start the development environment"
 
 # ==============================================================================
 # Development Commands
@@ -197,75 +87,35 @@ inspect-network: ## Inspect Docker network
 	docker network inspect erp-network
 
 # ==============================================================================
-# Testing Environment
+# Local Test Environment (for E2E debugging)
 # ==============================================================================
 
-test-env-up: ## Start fresh test environment with clean database
-	@echo "Starting fresh test environment..."
-	@docker compose -f docker-compose.test.yml down -v 2>/dev/null || true
-	@docker compose -f docker-compose.test.yml up -d --build
-	@echo "Waiting for services to be ready..."
-	@sleep 10
-	@echo "Test environment is ready on ports: Frontend=3001, Backend=8081"
+local-test-start: ## Start local test environment (DB in Docker, backend/frontend locally)
+	@./docker/local-test.sh start
 
-test-env-down: ## Stop and cleanup test environment
-	@echo "Stopping test environment..."
-	@docker compose -f docker-compose.test.yml down -v
-	@echo "Test environment stopped and cleaned"
+local-test-stop: ## Stop local test environment
+	@./docker/local-test.sh stop
 
-test-seed: ## Load test data into test database
-	@echo "Loading test data..."
-	@docker compose -f docker-compose.test.yml exec -T postgres psql -U postgres -d erp_test < docker/seed-data.sql
-	@echo "Test data loaded successfully"
+local-test-status: ## Show local test environment status
+	@./docker/local-test.sh status
 
-test-seed-api: ## Load test data via API calls
-	@echo "Loading test data via API..."
-	@bash docker/seed-api.sh http://localhost:8081/api/v1
-	@echo "API test data loaded successfully"
+local-test-logs-backend: ## Tail backend logs
+	@./docker/local-test.sh logs-backend
 
-test-load: ## Run load tests against test environment
-	@echo "Running load tests..."
-	@bash docker/load-test.sh http://localhost:8081/api/v1
-	@echo "Load tests completed"
+local-test-logs-frontend: ## Tail frontend logs
+	@./docker/local-test.sh logs-frontend
 
-test-quick: ## Quick API smoke test
-	@echo "Running quick API tests..."
-	@bash docker/quick-test.sh http://localhost:8081/api/v1
+local-test-e2e: ## Run E2E tests against local environment
+	@./docker/local-test.sh run-e2e
 
-test-full: ## Full test cycle: start env, seed data, load test, stop
-	@echo "Starting full test cycle..."
-	$(MAKE) test-env-up
-	@sleep 5
-	$(MAKE) test-seed-api
-	@sleep 2
-	$(MAKE) test-quick
-	@echo ""
-	@echo "Test environment is ready for load testing"
-	@echo "Run 'make test-load' to perform load tests"
-	@echo "Run 'make test-env-down' to cleanup when done"
+local-test-e2e-ui: ## Run E2E tests with Playwright UI
+	@./docker/local-test.sh run-e2e-ui
 
-test-reset: ## Reset test database and reload seed data
-	@echo "Resetting test database..."
-	@docker compose -f docker-compose.test.yml exec postgres psql -U postgres -c "DROP DATABASE IF EXISTS erp_test;"
-	@docker compose -f docker-compose.test.yml exec postgres psql -U postgres -c "CREATE DATABASE erp_test;"
-	@sleep 2
-	@docker compose -f docker-compose.test.yml restart backend
-	@sleep 5
-	$(MAKE) test-seed-api
-	@echo "Test database reset complete"
+local-test-e2e-debug: ## Run E2E tests in debug mode
+	@./docker/local-test.sh run-e2e-debug
 
-test-logs: ## Show test environment logs
-	@docker compose -f docker-compose.test.yml logs -f
-
-test-shell: ## Access test database shell
-	@docker compose -f docker-compose.test.yml exec postgres psql -U postgres -d erp_test
-
-# Legacy test command (kept for backwards compatibility)
-test-api: ## Test API endpoints
-	@echo "Testing API health..."
-	curl -v http://localhost:8080/health
-	@echo "\n\nTesting API ping..."
-	curl -v http://localhost:8080/api/v1/ping
+local-test-clean: ## Clean local test environment
+	@./docker/local-test.sh clean
 
 # ==============================================================================
 # Utility Commands
