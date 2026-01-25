@@ -16190,3 +16190,75 @@ Implemented the Alipay adapter that implements the PaymentGateway port interface
 - `frontend/src/pages/inventory/StockTakingCreate.tsx`
 - `frontend/tests/e2e/pages/InventoryPage.ts`
 - `.claude/ralph/plans/prd.json`
+
+## 2026-01-25: P3-INT-001 Sales Order E2E Fixes (Partial)
+
+### Summary
+Worked on P3-INT-001 (销售订单前后端联调) - Sales Order E2E tests. Made significant progress fixing multiple issues but test still fails on order creation due to a frontend form data binding issue.
+
+### Issues Fixed
+
+**1. Authentication Issue in Test File**
+- **Problem**: `sales-order.spec.ts` had redundant manual login in `beforeEach` using hardcoded selectors that didn't match i18n'd login page
+- **Fix**: Removed manual login, rely on Playwright storage state authentication (same pattern as other working tests)
+- **File**: `frontend/tests/e2e/transactions/sales-order.spec.ts`
+
+**2. Backend Build Errors**
+- **Problem 1**: Missing `ReceiptVoucherRepository` implementation causing build failure
+- **Fix**: Created full GORM implementation at `backend/internal/infrastructure/persistence/receipt_voucher_repository.go`
+
+- **Problem 2**: Wrong constant name `finance.ReconciliationStrategyFIFO` (should be `finance.ReconciliationStrategyTypeFIFO`)
+- **Fix**: Updated `backend/internal/application/finance/payment_callback_service.go`
+
+**3. Page Title Assertion Mismatch**
+- **Problem**: Test expected "新建销售订单" but actual page shows "创建销售订单"
+- **Fix**: Updated regex in `SalesOrderPage.ts` line 541: `hasText: /创建销售订单|编辑销售订单/`
+- **File**: `frontend/tests/e2e/pages/SalesOrderPage.ts`
+
+**4. Customer/Product Selection Input Selector**
+- **Problem**: Test used `.semi-select-input-wrapper input` but Semi Design combobox structure is different
+- **Fix**: Changed to `this.page.getByRole('textbox').first()` for the search input
+- **File**: `frontend/tests/e2e/pages/SalesOrderPage.ts` (selectCustomer & selectProductInRow methods)
+
+**5. API Validation Error (400 Bad Request)**
+- **Problem**: CustomerListFilter and ProductListFilter had `binding:"min=1"` on Page/PageSize fields, but frontend doesn't always send these
+- **Fix**: Changed to `binding:"omitempty,min=1"` to make validation optional
+- **Files**: 
+  - `backend/internal/application/partner/dto.go` (CustomerListFilter)
+  - `backend/internal/application/catalog/dto.go` (ProductListFilter)
+
+**6. Amount Cell Selector in Test**
+- **Problem**: Test used `.last()` to get amount cell but that returns the operations column (delete button)
+- **Fix**: Changed to `.nth(4)` to get the 5th column (金额/amount)
+- **File**: `frontend/tests/e2e/transactions/sales-order.spec.ts` line 189
+
+### Remaining Issue (Bug)
+
+**Order Creation Fails with 500 Error**
+- **Symptom**: After selecting customer and product, submitting order returns 500 error
+- **API Error**: `"customer_name" failed on the 'required' tag` - customer_name is empty
+- **Root Cause Analysis**: 
+  - Frontend form uses `handleCustomerChange` to set `customer_name` from `customers.find(c => c.id === customerId)?.name`
+  - If `customers` state is empty or doesn't contain the selected customer, `customer_name` will be empty string
+  - This is a timing/state management issue in `SalesOrderForm.tsx`
+- **Investigation Notes**: Page snapshot confirms customer IS visually selected, but React state may not have propagated correctly
+
+### Test Results After Fixes
+- **Before**: Test failed immediately on login timeout
+- **After**: 6 tests pass (list display, navigation), fails on order creation submission
+
+### Files Created
+- `backend/internal/infrastructure/persistence/receipt_voucher_repository.go` - Full GORM implementation
+
+### Files Modified
+- `frontend/tests/e2e/transactions/sales-order.spec.ts` - Auth fix, selector fix
+- `frontend/tests/e2e/pages/SalesOrderPage.ts` - Multiple selector fixes
+- `backend/internal/application/partner/dto.go` - Validation fix
+- `backend/internal/application/catalog/dto.go` - Validation fix
+- `backend/internal/application/finance/payment_callback_service.go` - Constant name fix
+- `backend/cmd/server/main.go` - Uses new receipt voucher repo
+
+### PRD Status
+- P3-INT-001: Still `passes: false` due to remaining order creation bug
+- Added bug to investigate: Customer name not populated in form data during selection
+

@@ -279,14 +279,23 @@ export class SalesOrderPage extends BasePage {
     await customerSelect.click()
     await this.page.waitForTimeout(200)
 
-    // Type to search
-    const searchInput = this.page.locator('.semi-select-input-wrapper input').first()
+    // Type to search - Semi Design's combobox uses a textbox role
+    const searchInput = this.page.getByRole('textbox').first()
     await searchInput.fill(customerName)
     await this.page.waitForTimeout(500) // Wait for search
 
+    // Wait for option to appear
+    await this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: customerName })
+      .first()
+      .waitFor({ state: 'visible' })
+
     // Select the option
     await this.page.locator('.semi-select-option').filter({ hasText: customerName }).first().click()
-    await this.page.waitForTimeout(200)
+
+    // Wait for selection to be applied - verify the customer name appears in the selected item
+    await this.page.waitForTimeout(300)
   }
 
   async selectWarehouse(warehouseName: string): Promise<void> {
@@ -315,8 +324,8 @@ export class SalesOrderPage extends BasePage {
     await productSelect.click()
     await this.page.waitForTimeout(200)
 
-    // Type to search
-    const searchInput = this.page.locator('.semi-select-input-wrapper input').first()
+    // Type to search - Semi Design's combobox uses a textbox role
+    const searchInput = this.page.getByRole('textbox').first()
     await searchInput.fill(productName)
     await this.page.waitForTimeout(500)
 
@@ -537,8 +546,9 @@ export class SalesOrderPage extends BasePage {
   }
 
   async assertOrderFormDisplayed(): Promise<void> {
+    // The form title is "创建销售订单" for create mode or "编辑销售订单" for edit mode
     await expect(
-      this.page.locator('h4').filter({ hasText: /新建销售订单|编辑销售订单/ })
+      this.page.locator('h4').filter({ hasText: /创建销售订单|编辑销售订单/ })
     ).toBeVisible()
   }
 

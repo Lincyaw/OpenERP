@@ -1457,7 +1457,21 @@
       "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
       "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试",
       "",
-      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/sales-order.spec.ts"
+      "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/transactions/sales-order.spec.ts",
+      "",
+      "⚠️ 部分完成 - 2026-01-25:",
+      "✅ 修复: 后端build错误 - 创建receipt_voucher_repository.go实现",
+      "✅ 修复: ReconciliationStrategyTypeFIFO常量名",
+      "✅ 修复: E2E测试移除冗余手动登录(使用Playwright storage state)",
+      "✅ 修复: 页面标题断言(创建销售订单 vs 新建销售订单)",
+      "✅ 修复: Semi Design combobox选择器(getByRole textbox)",
+      "✅ 修复: API验证page/page_size参数omitempty",
+      "✅ 修复: 金额单元格选择器(.nth(4) vs .last())",
+      "✅ E2E通过: 6个初始场景(导航、表单显示、客户选择、商品选择、数量调整、金额计算)",
+      "❌ 剩余Bug: 订单创建失败 - customer_name为空",
+      "  - 错误: Key: 'CreateSalesOrderRequest.CustomerName' Error:Field validation for 'CustomerName' failed on the 'required' tag",
+      "  - 原因: SalesOrderForm.tsx handleCustomerChange使用customers.find()查找客户名,但状态可能未更新",
+      "  - 需要修复: 前端表单state管理或从API响应中获取customer_name"
     ],
     "passes": false
   },

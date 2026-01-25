@@ -1,4 +1,4 @@
-import { test, expect, TEST_USERS } from '../fixtures/test-fixtures'
+import { test, expect } from '../fixtures'
 import { SalesOrderPage, InventoryPage } from '../pages'
 
 /**
@@ -106,14 +106,8 @@ test.describe('Sales Order Module E2E Tests', () => {
   let _createdOrderNumber: string | null = null
   let _createdOrderId: string | null = null
 
-  test.beforeEach(async ({ page }) => {
-    // Login as admin user
-    await page.goto('/login')
-    await page.fill('input[placeholder*="用户名"]', TEST_USERS.admin.username)
-    await page.fill('input[placeholder*="密码"]', TEST_USERS.admin.password)
-    await page.click('button[type="submit"]')
-    await page.waitForURL('**/dashboard**', { timeout: 10000 })
-  })
+  // Authentication is handled by Playwright setup (storageState)
+  // No need for manual login in beforeEach
 
   test.describe('Sales Order List Display', () => {
     test('should display sales order list page with correct title', async ({ page }) => {
@@ -191,8 +185,9 @@ test.describe('Sales Order Module E2E Tests', () => {
       await page.waitForTimeout(200)
 
       // Verify amount calculation: 8999 * 2 = 17998
+      // The amount is in the 5th column (index 4), displayed with ¥ prefix
       const row = page.locator('.semi-table-tbody .semi-table-row').first()
-      const amountCell = row.locator('.item-amount, .semi-table-row-cell').last()
+      const amountCell = row.locator('.semi-table-row-cell').nth(4)
       await expect(amountCell).toContainText('17998')
 
       // Submit the order
