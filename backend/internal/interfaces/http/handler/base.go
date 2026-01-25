@@ -6,7 +6,9 @@ import (
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/interfaces/http/dto"
+	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // RequestIDKey is the context key for request ID
@@ -24,6 +26,33 @@ func getRequestID(c *gin.Context) string {
 		return id
 	}
 	return ""
+}
+
+// getUserID extracts user ID from JWT claims or returns error
+func getUserID(c *gin.Context) (uuid.UUID, error) {
+	userIDStr := middleware.GetJWTUserID(c)
+	if userIDStr == "" {
+		// Fallback to header for development (will be removed in production)
+		userIDStr = c.GetHeader("X-User-ID")
+	}
+	if userIDStr == "" {
+		return uuid.Nil, errors.New("user ID not found in context")
+	}
+	return uuid.Parse(userIDStr)
+}
+
+// getTenantID extracts tenant ID from JWT claims or returns error
+func getTenantID(c *gin.Context) (uuid.UUID, error) {
+	tenantIDStr := middleware.GetJWTTenantID(c)
+	if tenantIDStr == "" {
+		// Fallback to header for development
+		tenantIDStr = c.GetHeader("X-Tenant-ID")
+	}
+	if tenantIDStr == "" {
+		// Default development tenant for backwards compatibility
+		return uuid.MustParse("00000000-0000-0000-0000-000000000001"), nil
+	}
+	return uuid.Parse(tenantIDStr)
 }
 
 // Success sends a success response

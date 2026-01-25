@@ -67,6 +67,11 @@ func (s *ProductService) Create(ctx context.Context, tenantID uuid.UUID, req Cre
 		return nil, err
 	}
 
+	// Set created_by if provided in request (from JWT context)
+	if req.CreatedBy != nil {
+		product.SetCreatedBy(*req.CreatedBy)
+	}
+
 	// Set optional fields
 	if req.Description != "" {
 		if err := product.Update(req.Name, req.Description); err != nil {

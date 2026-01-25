@@ -20,19 +20,6 @@ func NewProductHandler(productService *catalogapp.ProductService) *ProductHandle
 	}
 }
 
-// getTenantID extracts tenant ID from context (placeholder for future auth middleware)
-// TODO: Replace with actual tenant ID from JWT/auth context in P6
-func getTenantID(c *gin.Context) (uuid.UUID, error) {
-	// For now, use a default tenant ID for development
-	// This will be replaced with proper tenant extraction from auth middleware
-	tenantIDStr := c.GetHeader("X-Tenant-ID")
-	if tenantIDStr == "" {
-		// Default development tenant
-		return uuid.MustParse("00000000-0000-0000-0000-000000000001"), nil
-	}
-	return uuid.Parse(tenantIDStr)
-}
-
 // CreateProductRequest represents a request to create a new product
 // @Description Request body for creating a new product
 type CreateProductRequest struct {
@@ -97,6 +84,9 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Get user ID from JWT context (optional, for data scope)
+	userID, _ := getUserID(c)
+
 	// Convert to application DTO
 	appReq := catalogapp.CreateProductRequest{
 		Code:        req.Code,
@@ -105,6 +95,11 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		Barcode:     req.Barcode,
 		Unit:        req.Unit,
 		Attributes:  req.Attributes,
+	}
+
+	// Set CreatedBy for data scope filtering
+	if userID != uuid.Nil {
+		appReq.CreatedBy = &userID
 	}
 
 	// Convert category ID
