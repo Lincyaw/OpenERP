@@ -571,8 +571,7 @@ export class InventoryPage extends BasePage {
     // Wait for the warehouses API call to complete
     await Promise.race([
       this.page.waitForResponse(
-        (response) =>
-          response.url().includes('/partner/warehouses') && response.status() === 200,
+        (response) => response.url().includes('/partner/warehouses') && response.status() === 200,
         { timeout: 15000 }
       ),
       this.page.waitForTimeout(2000), // fallback if response already completed
@@ -738,6 +737,11 @@ export class InventoryPage extends BasePage {
       await row.locator('a, button').filter({ hasText: '执行' }).click()
     }
     await this.waitForPageLoad()
+
+    // Wait for the execute page to be fully loaded (header visible)
+    await this.page
+      .locator('.stock-taking-execute-header')
+      .waitFor({ state: 'visible', timeout: 15000 })
   }
 
   /**
@@ -745,20 +749,45 @@ export class InventoryPage extends BasePage {
    * If the button is not visible (already counting), skip and verify status
    */
   async clickStartCounting(): Promise<void> {
+    // First, wait for the page to be fully loaded (loading spinner gone)
+    await this.page
+      .locator('.semi-spin-spinning')
+      .waitFor({ state: 'hidden', timeout: 15000 })
+      .catch(() => {
+        /* spinner might not appear */
+      })
+
+    // Wait for the stock taking header to be visible (indicates data is loaded)
+    await this.page
+      .locator('.stock-taking-execute-header')
+      .waitFor({ state: 'visible', timeout: 10000 })
+
+    // Get the current status
+    const statusTag = this.page.locator('.stock-taking-execute-header .semi-tag').first()
+    await statusTag.waitFor({ state: 'visible', timeout: 5000 })
+    const currentStatus = await statusTag.textContent()
+
+    // If already in COUNTING status, return early
+    if (currentStatus?.includes('盘点中') || currentStatus?.includes('COUNTING')) {
+      return
+    }
+
+    // Look for the start button (only visible in DRAFT status)
     const startButton = this.page.locator('button').filter({ hasText: '开始盘点' })
-    // Try to wait for the button to appear (it should be visible in DRAFT status)
+
     try {
-      await startButton.waitFor({ state: 'visible', timeout: 3000 })
+      await startButton.waitFor({ state: 'visible', timeout: 5000 })
       await startButton.click()
       await this.waitForToast('开始')
       // Wait for the status to update after clicking
       await this.page.waitForTimeout(1000)
     } catch {
-      // Button not found or timed out - might already be in COUNTING status
+      // Button not found or timed out - might already be in COUNTING status or transitioning
     }
+
     // Wait for status to be COUNTING (with retry)
     let attempts = 0
-    while (attempts < 5) {
+    while (attempts < 10) {
       const status = await this.getStockTakingStatus()
       if (status.includes('盘点中') || status.includes('COUNTING')) {
         return

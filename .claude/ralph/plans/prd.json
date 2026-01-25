@@ -1038,7 +1038,17 @@
       "",
       "依赖: StockTakingExecute.tsx页面实现",
       "E2E验证: ./docker/local-test.sh run-e2e tests/e2e/inventory/stock-taking.spec.ts",
-      "验收标准: 所有116个测试通过"
+      "验收标准: 所有116个测试通过",
+      "",
+      "=== 2026-01-26 修复 ===",
+      "修复了 InventoryPage.ts 中的时序问题:",
+      "1. clickStockTakingExecute() - 添加等待执行页面header出现",
+      "2. clickStartCounting() - 改进为多阶段等待策略",
+      "   - 等待loading spinner消失",
+      "   - 等待页面header可见",
+      "   - 检查当前状态后再决定是否点击按钮",
+      "   - 增加重试次数从5次到10次",
+      "待验证: 需要在Docker环境运行E2E测试确认修复"
     ],
     "passes": false
   },

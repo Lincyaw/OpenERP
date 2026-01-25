@@ -17492,3 +17492,49 @@ Fixed category enum values to use uppercase as required by backend:
 ### Next Steps
 - Run E2E tests in Docker to verify: `make e2e ARGS="tests/e2e/finance/expenses-income.spec.ts"`
 - P5-INT-001 (报表模块联调) or P3-INT-003 (销售退货全流程联调) are next candidates
+
+---
+
+## 2026-01-26 - P9-FIX-001: Stock Taking E2E Test Fix
+
+### Completed
+- **P9-FIX-001**: 修复盘点执行页面E2E测试 (P2-INT-002后续)
+
+### What was done
+Fixed timing issues in stock-taking E2E tests that caused tests to fail when looking for the "开始盘点" (Start Counting) button.
+
+#### Root Cause Analysis
+The E2E tests were failing because:
+1. The `clickStartCounting()` method in InventoryPage.ts had a short timeout (3000ms) for finding the button
+2. The method silently caught errors, making it difficult to diagnose issues
+3. The page might not be fully loaded (React state not yet updated) when looking for the button
+4. No wait for the loading spinner to disappear before looking for UI elements
+
+#### Fix Applied
+Updated `frontend/tests/e2e/pages/InventoryPage.ts`:
+
+1. **clickStockTakingExecute()** - Added wait for execute page header after navigation
+   - After `waitForPageLoad()`, now waits for `.stock-taking-execute-header` to be visible (15s timeout)
+   - This ensures the page is fully loaded before proceeding
+
+2. **clickStartCounting()** - Improved reliability with multi-stage waits
+   - Wait for loading spinner (`.semi-spin-spinning`) to disappear (15s timeout)
+   - Wait for page header (`.stock-taking-execute-header`) to be visible (10s timeout)
+   - Get and check current status from `.semi-tag` element
+   - If already in COUNTING status, return early (no need to click button)
+   - Increased retry attempts from 5 to 10 for status verification
+   - Increased button wait timeout from 3s to 5s
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/tests/e2e/pages/InventoryPage.ts` | Fixed `clickStartCounting()` and `clickStockTakingExecute()` methods |
+
+### Technical Notes
+- The StockTakingExecute.tsx component shows a loading spinner while fetching data
+- The "开始盘点" button is only rendered when `stockTaking.status === 'DRAFT'`
+- Backend correctly sets status to DRAFT when creating stock taking
+- The fix ensures E2E tests wait for proper page state before interacting with elements
+
+### Verification
+- TypeScript check: PASS
