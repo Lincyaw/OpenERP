@@ -686,7 +686,15 @@
       "E2E: 查看余额流水列表，验证充值记录",
       "E2E: 销售订单使用余额支付，验证余额扣减",
       "E2E: 余额不足时显示提示，阻止超额支付",
-      "截图断言: 充值前后余额变化"
+      "截图断言: 充值前后余额变化",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -970,7 +978,15 @@
       "E2E: 验证盘点差异自动计算（盘盈/盘亏）",
       "E2E: 提交盘点单审批",
       "E2E: 审批通过后库存自动调整",
-      "视频录制: 完整盘点流程"
+      "视频录制: 完整盘点流程",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1387,9 +1403,17 @@
       "E2E: 订单发货，选择仓库，验证库存扣减",
       "E2E: 查看订单详情和状态变更历史",
       "E2E: 订单取消，验证库存释放",
-      "Trace: 订单状态流转完整链路"
+      "Trace: 订单状态流转完整链路",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P3-INT-002",
@@ -1403,7 +1427,15 @@
       "E2E: 执行部分收货，验证收货进度显示",
       "E2E: 收货完成后验证库存入库",
       "E2E: 验证应付账款自动生成",
-      "截图断言: 收货前后的库存变化"
+      "截图断言: 收货前后的库存变化",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1419,7 +1451,15 @@
       "E2E: 切换审批人账号执行审批",
       "E2E: 审批通过后验证库存恢复",
       "E2E: 验证应收账款红冲记录生成",
-      "截图断言: 每个状态节点页面"
+      "截图断言: 每个状态节点页面",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1434,7 +1474,15 @@
       "E2E: 执行退货发货，验证库存扣减",
       "E2E: 标记退货完成，状态流转正确",
       "E2E: 验证应付账款红冲记录生成",
-      "截图断言: 发货前后库存变化"
+      "截图断言: 发货前后库存变化",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1747,7 +1795,15 @@
       "E2E: 应付账款列表展示",
       "E2E: 创建付款单，执行付款核销",
       "E2E: 验证核销后应收/应付余额更新",
-      "视频录制: 完整收款核销流程"
+      "视频录制: 完整收款核销流程",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1763,7 +1819,15 @@
       "E2E: 录入其他收入记录",
       "E2E: 收支流水页面按日期筛选",
       "E2E: 导出收支报表下载",
-      "截图断言: 各表单和列表页面"
+      "截图断言: 各表单和列表页面",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -1910,7 +1974,15 @@
       "E2E: 损益报表数据与交易记录一致",
       "E2E: 图表交互（hover 显示、点击钻取）",
       "E2E: 导出报表为 Excel/PDF",
-      "视觉回归: 图表样式截图对比"
+      "视觉回归: 图表样式截图对比",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2167,7 +2239,15 @@
       "E2E: 验证 API 层租户隔离（X-Tenant-ID header）",
       "E2E: 租户切换后页面数据刷新",
       "E2E 安全测试: 尝试访问其他租户 ID 的资源，验证 403",
-      "Trace: 租户隔离 SQL 查询日志"
+      "Trace: 租户隔离 SQL 查询日志",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2198,7 +2278,15 @@
       "E2E: 访问无权限页面返回 403",
       "E2E: 修改用户角色后重新登录验证",
       "E2E: 创建自定义角色，配置细粒度权限",
-      "E2E: 测试 DataScope 数据权限过滤"
+      "E2E: 测试 DataScope 数据权限过滤",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2356,7 +2444,15 @@
       "E2E Mock: 模拟支付回调更新订单状态",
       "E2E: 支付成功后应收自动核销",
       "E2E 异常: 支付超时、支付失败场景",
-      "Trace: 支付流程 API 调用链"
+      "Trace: 支付流程 API 调用链",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2371,7 +2467,15 @@
       "E2E: 外部订单转换为系统销售订单",
       "E2E: 商品映射自动匹配 SKU",
       "E2E: 同步状态页面查看历史",
-      "E2E 异常: 同步失败重试机制"
+      "E2E 异常: 同步失败重试机制",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2421,7 +2525,15 @@
       "E2E 多租户: 切换租户验证数据隔离",
       "E2E 权限: 各角色用户操作限制",
       "性能基线: 页面加载<3s，API响应<500ms",
-      "用户操作视频: 录制关键流程"
+      "用户操作视频: 录制关键流程",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },
@@ -2436,7 +2548,15 @@
       "Flaky 测试隔离和修复",
       "HTML 测试报告（截图+视频）",
       "PR 合并前必须通过 E2E 测试",
-      "核心业务流程 100% 覆盖"
+      "核心业务流程 100% 覆盖",
+      "",
+      "✅ 验收标准 1: Docker 环境启动成功 (./docker/quick-test.sh start 无错误)",
+      "✅ 验收标准 2: Seed 数据加载成功 (./docker/quick-test.sh seed 无错误)",
+      "✅ 验收标准 3: E2E 测试执行通过 (cd frontend && npm run e2e -- --grep '对应模块')",
+      "✅ 验收标准 4: 测试通过率 100% (0 failed tests)",
+      "✅ 验收标准 5: 稳定性验证通过 (连续运行 3 次测试全部通过，无 Flaky 测试)",
+      "✅ 验收标准 6: 生成并检查测试报告 (npm run e2e:report 可查看截图/视频)",
+      "❌ 未通过验收标准则必须修复对应 Bug 后重新运行测试"
     ],
     "passes": false
   },

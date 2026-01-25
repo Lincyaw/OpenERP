@@ -61,7 +61,10 @@ export class WarehousesPage extends BasePage {
     this.codeInput = page.locator('input[name="code"]')
     this.nameInput = page.locator('input[name="name"]')
     this.shortNameInput = page.locator('input[name="short_name"]')
-    this.typeSelect = page.locator('.semi-form-field').filter({ has: page.locator('label:has-text("仓库类型")') }).locator('.semi-select')
+    this.typeSelect = page
+      .locator('.semi-form-field')
+      .filter({ has: page.locator('label:has-text("仓库类型")') })
+      .locator('.semi-select')
     this.contactNameInput = page.locator('input[name="contact_name"]')
     this.phoneInput = page.locator('input[name="phone"]')
     this.emailInput = page.locator('input[name="email"]')
@@ -180,7 +183,7 @@ export class WarehousesPage extends BasePage {
     const cells = row.locator('.semi-table-row-cell')
 
     // Check if default tag is present
-    const hasDefaultTag = await cells.nth(2).locator('.default-tag').count() > 0
+    const hasDefaultTag = (await cells.nth(2).locator('.default-tag').count()) > 0
 
     return {
       code: (await cells.nth(1).textContent()) || '',
@@ -276,13 +279,20 @@ export class WarehousesPage extends BasePage {
       await this.shortNameInput.fill(data.shortName)
     }
     if (data.type !== undefined) {
-      await this.page.locator('.semi-form-field').filter({ has: this.page.locator('label:has-text("仓库类型")') }).locator('.semi-select').click()
+      await this.page
+        .locator('.semi-form-field')
+        .filter({ has: this.page.locator('label:has-text("仓库类型")') })
+        .locator('.semi-select')
+        .click()
       const typeLabels: Record<string, string> = {
         normal: '普通仓库',
         virtual: '虚拟仓库',
         transit: '中转仓库',
       }
-      await this.page.locator('.semi-select-option').filter({ hasText: typeLabels[data.type] }).click()
+      await this.page
+        .locator('.semi-select-option')
+        .filter({ hasText: typeLabels[data.type] })
+        .click()
     }
     if (data.contactName !== undefined) {
       await this.contactNameInput.fill(data.contactName)

@@ -65,7 +65,10 @@ export class SuppliersPage extends BasePage {
     this.codeInput = page.locator('input[name="code"]')
     this.nameInput = page.locator('input[name="name"]')
     this.shortNameInput = page.locator('input[name="short_name"]')
-    this.typeSelect = page.locator('.semi-form-field').filter({ has: page.locator('label:has-text("供应商类型")') }).locator('.semi-select')
+    this.typeSelect = page
+      .locator('.semi-form-field')
+      .filter({ has: page.locator('label:has-text("供应商类型")') })
+      .locator('.semi-select')
     this.contactNameInput = page.locator('input[name="contact_name"]')
     this.phoneInput = page.locator('input[name="phone"]')
     this.emailInput = page.locator('input[name="email"]')
@@ -154,7 +157,9 @@ export class SuppliersPage extends BasePage {
   /**
    * Filter by type
    */
-  async filterByType(type: 'manufacturer' | 'distributor' | 'retailer' | 'service' | ''): Promise<void> {
+  async filterByType(
+    type: 'manufacturer' | 'distributor' | 'retailer' | 'service' | ''
+  ): Promise<void> {
     await this.typeFilter.click()
     const typeLabels: Record<string, string> = {
       '': '全部类型',
@@ -289,14 +294,21 @@ export class SuppliersPage extends BasePage {
       await this.shortNameInput.fill(data.shortName)
     }
     if (data.type !== undefined) {
-      await this.page.locator('.semi-form-field').filter({ has: this.page.locator('label:has-text("供应商类型")') }).locator('.semi-select').click()
+      await this.page
+        .locator('.semi-form-field')
+        .filter({ has: this.page.locator('label:has-text("供应商类型")') })
+        .locator('.semi-select')
+        .click()
       const typeLabels: Record<string, string> = {
         manufacturer: '生产商',
         distributor: '经销商',
         retailer: '零售商',
         service: '服务商',
       }
-      await this.page.locator('.semi-select-option').filter({ hasText: typeLabels[data.type] }).click()
+      await this.page
+        .locator('.semi-select-option')
+        .filter({ hasText: typeLabels[data.type] })
+        .click()
     }
     if (data.contactName !== undefined) {
       await this.contactNameInput.fill(data.contactName)
@@ -417,7 +429,10 @@ export class SuppliersPage extends BasePage {
   /**
    * Assert supplier status
    */
-  async assertSupplierStatus(code: string, expectedStatus: '启用' | '停用' | '拉黑'): Promise<void> {
+  async assertSupplierStatus(
+    code: string,
+    expectedStatus: '启用' | '停用' | '拉黑'
+  ): Promise<void> {
     const row = await this.findSupplierRowByCode(code)
     expect(row).not.toBeNull()
     if (row) {

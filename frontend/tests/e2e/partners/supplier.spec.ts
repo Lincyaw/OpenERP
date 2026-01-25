@@ -154,7 +154,9 @@ test.describe('Supplier Module', () => {
         await suppliersPage.waitForFormSuccess()
 
         // Verify the update
-        const updatedRow = await suppliersPage.findSupplierRowByName('General Supplies Trading Updated')
+        const updatedRow = await suppliersPage.findSupplierRowByName(
+          'General Supplies Trading Updated'
+        )
         expect(updatedRow).not.toBeNull()
       }
     })

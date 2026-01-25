@@ -6,6 +6,7 @@ import {
   SuppliersPage,
   WarehousesPage,
   InventoryPage,
+  SalesOrderPage,
 } from '../pages'
 
 /**
@@ -53,6 +54,7 @@ export const test = base.extend<{
   suppliersPage: SuppliersPage
   warehousesPage: WarehousesPage
   inventoryPage: InventoryPage
+  salesOrderPage: SalesOrderPage
 }>({
   /**
    * Login page fixture - provides a fresh LoginPage instance
@@ -110,6 +112,14 @@ export const test = base.extend<{
   inventoryPage: async ({ page }, use) => {
     const inventoryPage = new InventoryPage(page)
     await use(inventoryPage)
+  },
+
+  /**
+   * Sales order page fixture - provides a SalesOrderPage instance
+   */
+  salesOrderPage: async ({ page }, use) => {
+    const salesOrderPage = new SalesOrderPage(page)
+    await use(salesOrderPage)
   },
 })
 

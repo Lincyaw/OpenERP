@@ -64,8 +64,14 @@ export class CustomersPage extends BasePage {
     this.codeInput = page.locator('input[name="code"]')
     this.nameInput = page.locator('input[name="name"]')
     this.shortNameInput = page.locator('input[name="short_name"]')
-    this.typeSelect = page.locator('[data-field="type"] .semi-select, .semi-form-field').filter({ has: page.locator('label:has-text("客户类型")') }).locator('.semi-select')
-    this.levelSelect = page.locator('[data-field="level"] .semi-select, .semi-form-field').filter({ has: page.locator('label:has-text("客户等级")') }).locator('.semi-select')
+    this.typeSelect = page
+      .locator('[data-field="type"] .semi-select, .semi-form-field')
+      .filter({ has: page.locator('label:has-text("客户类型")') })
+      .locator('.semi-select')
+    this.levelSelect = page
+      .locator('[data-field="level"] .semi-select, .semi-form-field')
+      .filter({ has: page.locator('label:has-text("客户等级")') })
+      .locator('.semi-select')
     this.contactNameInput = page.locator('input[name="contact_name"]')
     this.phoneInput = page.locator('input[name="phone"]')
     this.emailInput = page.locator('input[name="email"]')
@@ -165,7 +171,9 @@ export class CustomersPage extends BasePage {
   /**
    * Filter by level
    */
-  async filterByLevel(level: 'normal' | 'silver' | 'gold' | 'platinum' | 'vip' | ''): Promise<void> {
+  async filterByLevel(
+    level: 'normal' | 'silver' | 'gold' | 'platinum' | 'vip' | ''
+  ): Promise<void> {
     await this.page.locator('.customers-filter-container .semi-select').nth(2).click()
     const levelLabels: Record<string, string> = {
       '': '全部等级',
@@ -296,12 +304,19 @@ export class CustomersPage extends BasePage {
     }
     if (data.type !== undefined) {
       // Click the type select field
-      await this.page.locator('.semi-form-field').filter({ has: this.page.locator('label:has-text("客户类型")') }).locator('.semi-select').click()
+      await this.page
+        .locator('.semi-form-field')
+        .filter({ has: this.page.locator('label:has-text("客户类型")') })
+        .locator('.semi-select')
+        .click()
       const typeLabels: Record<string, string> = {
         individual: '个人',
         organization: '企业/组织',
       }
-      await this.page.locator('.semi-select-option').filter({ hasText: typeLabels[data.type] }).click()
+      await this.page
+        .locator('.semi-select-option')
+        .filter({ hasText: typeLabels[data.type] })
+        .click()
     }
     if (data.contactName !== undefined) {
       await this.contactNameInput.fill(data.contactName)
@@ -410,7 +425,10 @@ export class CustomersPage extends BasePage {
   /**
    * Assert customer status
    */
-  async assertCustomerStatus(code: string, expectedStatus: '启用' | '停用' | '暂停'): Promise<void> {
+  async assertCustomerStatus(
+    code: string,
+    expectedStatus: '启用' | '停用' | '暂停'
+  ): Promise<void> {
     const row = await this.findCustomerRowByCode(code)
     expect(row).not.toBeNull()
     if (row) {

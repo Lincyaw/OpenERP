@@ -154,7 +154,9 @@ test.describe('Customer Module', () => {
         await customersPage.waitForFormSuccess()
 
         // Verify the update
-        const updatedRow = await customersPage.findCustomerRowByName('Shenzhen Hardware Inc Updated')
+        const updatedRow = await customersPage.findCustomerRowByName(
+          'Shenzhen Hardware Inc Updated'
+        )
         expect(updatedRow).not.toBeNull()
       }
     })
