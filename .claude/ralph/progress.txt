@@ -15800,3 +15800,68 @@ Implemented the Stock Alerts page that displays low stock items and allows setti
 - The page uses client-side filtering for search since the API doesn't support server-side search
 - Summary statistics are calculated from the displayed items only
 - Critical items are defined as having stock <= 0 or < 20% of minimum quantity
+
+## 2026-01-25: P6-FE-007 Tenant Switcher Component Implementation Complete
+
+### Task ID: P6-FE-007
+### Task: 租户切换组件 (Tenant Switching Component)
+
+### Summary
+Implemented the Tenant Switcher component that allows users to switch between tenants. The component is integrated into the application header and supports i18n for both Chinese and English.
+
+### Requirements Completed
+1. **Tenant Selector Implementation**: Created `TenantSwitcher.tsx` component using Semi Design Dropdown
+2. **Data Refresh After Switch**: Page reloads after tenant switch to refresh all data with new tenant context
+3. **Remember Last Selection**: Tenant selection is persisted in both auth store and localStorage
+
+### Changes Made
+
+1. **TenantSwitcher Component** (`frontend/src/components/common/TenantSwitcher.tsx`)
+   - Dropdown component that fetches tenants from API on open
+   - Displays active tenants only (filtered by status)
+   - Shows current tenant with active state highlighting
+   - Loading spinner while fetching
+   - Empty state when no tenants available
+   - Toast messages for success/error feedback
+   - Accessible with proper aria-label
+   - Supports showLabel prop for displaying tenant name
+   - Configurable size (small/default/large)
+
+2. **i18n Translations Added**
+   - `frontend/src/locales/zh-CN/system.json`: Added `tenantSwitcher` section
+   - `frontend/src/locales/en-US/system.json`: Added `tenantSwitcher` section
+   - Keys: title, ariaLabel, currentTenant, selectTenant, loading, noTenants, messages
+
+3. **Header Integration** (`frontend/src/components/layout/Header.tsx`)
+   - Imported TenantSwitcher component
+   - Added between LanguageSwitcher and Theme toggle in header
+   - Follows same pattern as LanguageSwitcher
+
+### API Integration
+- `GET /identity/tenants` - Fetch paginated list of tenants
+- Uses existing auto-generated API client from orval
+
+### Technical Details
+- Uses `useI18n({ ns: 'system' })` for translations
+- Stores tenant ID in auth store via `updateUser({ tenantId })`
+- Also stores in localStorage key `erp-current-tenant` for persistence
+- Reloads page after switch to ensure all API calls use new X-Tenant-ID header
+- Component uses Semi Design's Dropdown with render prop pattern
+
+### Files Created
+- `frontend/src/components/common/TenantSwitcher.tsx`
+
+### Files Modified
+- `frontend/src/locales/zh-CN/system.json`
+- `frontend/src/locales/en-US/system.json`
+- `frontend/src/components/layout/Header.tsx`
+
+### Build Verification
+- `npm run build` passes with no TypeScript errors
+- All types properly resolved
+
+### Notes
+- Component shows for all users; permission checking can be added if needed
+- Tenants are fetched lazily when dropdown opens (not on component mount)
+- Only active tenants are shown in the list
+- The X-Tenant-ID header is already handled by the axios instance based on user.tenantId

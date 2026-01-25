@@ -306,5 +306,18 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "close": "Close"
+  },
+  "tenantSwitcher": {
+    "title": "Switch Tenant",
+    "ariaLabel": "Switch tenant",
+    "currentTenant": "Current Tenant",
+    "selectTenant": "Select Tenant",
+    "loading": "Loading...",
+    "noTenants": "No tenants available",
+    "messages": {
+      "fetchError": "Failed to load tenants",
+      "switchSuccess": "Switched to {{name}}",
+      "switchError": "Failed to switch tenant"
+    }
   }
 }

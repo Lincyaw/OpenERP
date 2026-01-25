@@ -24,6 +24,7 @@ import { useAppStore, useAuthStore, useUser } from '@/store'
 import { getBreadcrumbs } from '@/router/routes'
 import { useI18n } from '@/hooks'
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
+import { TenantSwitcher } from '@/components/common/TenantSwitcher'
 
 import './Header.css'
 
@@ -134,6 +135,9 @@ export function Header() {
         <Space spacing={8}>
           {/* Language switcher */}
           <LanguageSwitcher />
+
+          {/* Tenant switcher */}
+          <TenantSwitcher />
 
           {/* Theme toggle */}
           <Button
