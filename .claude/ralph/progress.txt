@@ -16635,3 +16635,45 @@ docker run --rm --network=host \
 ```
 
 ---
+
+---
+
+## P9-UI-001-C1 & P9-UI-001-C2: Fix Page Crash Bugs (CRITICAL)
+**Status**: ✅ Completed
+**Date**: 2026-01-26
+
+### Issues Fixed:
+
+**P9-UI-001-C1: StockDetail page crash (CRITICAL)**
+- Problem: `formatQuantity()` and `formatSignedQuantity()` functions called `.toFixed()` on values that could be strings
+- Root cause: API returns decimal values as strings (e.g., `"100.00"`), but functions expected number type
+- Fix: Added type checking to handle both number and string inputs
+
+**P9-UI-001-C2: StockTransactions page crash (CRITICAL)**
+- Problem: Same issue as C1, plus `formatCurrency()` function also affected
+- Fix: Applied same type-safe pattern to all three functions
+
+### Files Modified:
+1. `frontend/src/pages/inventory/StockDetail.tsx`
+   - Lines 62-74: Updated `formatQuantity()` and `formatSignedQuantity()` to accept `number | string`
+   - Added `parseFloat()` conversion and `isNaN()` check
+
+2. `frontend/src/pages/inventory/StockTransactions.tsx`
+   - Lines 90-109: Updated `formatQuantity()`, `formatSignedQuantity()`, and `formatCurrency()`
+   - Applied same safe type conversion pattern
+
+### Solution Pattern:
+```typescript
+function formatQuantity(quantity?: number | string): string {
+  if (quantity === undefined || quantity === null) return '-'
+  const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+  if (typeof num !== 'number' || isNaN(num)) return '-'
+  return num.toFixed(2)
+}
+```
+
+### Verification:
+- TypeScript type check (`npx tsc --noEmit`) passes
+- Exit code: 0
+
+---

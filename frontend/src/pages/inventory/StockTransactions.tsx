@@ -86,27 +86,36 @@ const SOURCE_TYPE_LABELS: Record<string, string> = {
 
 /**
  * Format quantity for display with 2 decimal places
+ * Safely handles both number and string inputs from API
  */
-function formatQuantity(quantity?: number): string {
+function formatQuantity(quantity?: number | string): string {
   if (quantity === undefined || quantity === null) return '-'
-  return quantity.toFixed(2)
+  const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+  if (typeof num !== 'number' || isNaN(num)) return '-'
+  return num.toFixed(2)
 }
 
 /**
  * Format signed quantity (positive/negative indicator)
+ * Safely handles both number and string inputs from API
  */
-function formatSignedQuantity(quantity?: number): string {
+function formatSignedQuantity(quantity?: number | string): string {
   if (quantity === undefined || quantity === null) return '-'
-  const sign = quantity > 0 ? '+' : ''
-  return `${sign}${quantity.toFixed(2)}`
+  const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+  if (typeof num !== 'number' || isNaN(num)) return '-'
+  const sign = num > 0 ? '+' : ''
+  return `${sign}${num.toFixed(2)}`
 }
 
 /**
  * Format currency value
+ * Safely handles both number and string inputs from API
  */
-function formatCurrency(value?: number): string {
+function formatCurrency(value?: number | string): string {
   if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (typeof num !== 'number' || isNaN(num)) return '-'
+  return `¥${num.toFixed(2)}`
 }
 
 /**

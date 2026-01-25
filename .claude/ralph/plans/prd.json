@@ -3064,9 +3064,13 @@
       "  if (typeof num !== 'number' || isNaN(num)) return '-'",
       "  return num.toFixed(2)",
       "}",
-      "验证: 访问 /inventory/stock/:id 页面不再崩溃"
+      "验证: 访问 /inventory/stock/:id 页面不再崩溃",
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ formatQuantity 和 formatSignedQuantity 函数添加类型检查",
+      "✅ TypeScript 类型检查通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-C2",
@@ -3077,9 +3081,13 @@
       "行号: 90-109",
       "问题: formatQuantity/formatSignedQuantity/formatCurrency函数与C1相同问题",
       "修复: 同C1的类型检查方案",
-      "验证: 访问 /inventory/transactions 页面不再崩溃"
+      "验证: 访问 /inventory/transactions 页面不再崩溃",
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ formatQuantity, formatSignedQuantity, formatCurrency 函数添加类型检查",
+      "✅ TypeScript 类型检查通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-H1",
