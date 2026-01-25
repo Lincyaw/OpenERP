@@ -1,0 +1,459 @@
+{
+  "salesOrder": {
+    "title": "Sales Orders",
+    "searchPlaceholder": "Search order number...",
+    "newOrder": "New Order",
+    "refresh": "Refresh",
+    "statusFilter": "Status Filter",
+    "customerFilter": "Customer Filter",
+    "supplierFilter": "Supplier Filter",
+    "allStatus": "All Status",
+    "allCustomers": "All Customers",
+    "allSuppliers": "All Suppliers",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "columns": {
+      "orderNumber": "Order Number",
+      "customer": "Customer",
+      "supplier": "Supplier",
+      "itemCount": "Item Count",
+      "totalAmount": "Total Amount",
+      "payableAmount": "Payable Amount",
+      "status": "Status",
+      "createdAt": "Created At",
+      "confirmedAt": "Confirmed At",
+      "shippedAt": "Shipped At",
+      "receiveProgress": "Receive Progress"
+    },
+    "status": {
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "partialReceived": "Partial Received"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "ship": "Ship",
+      "receive": "Receive",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "modal": {
+      "confirmTitle": "Confirm Order",
+      "confirmContent": "Are you sure you want to confirm order \"{{orderNumber}}\"? Stock will be locked after confirmation.",
+      "cancelTitle": "Cancel Order",
+      "cancelContent": "Are you sure you want to cancel order \"{{orderNumber}}\"?",
+      "deleteTitle": "Delete Order",
+      "deleteContent": "Are you sure you want to delete order \"{{orderNumber}}\"? This action cannot be undone.",
+      "confirmOk": "Confirm",
+      "cancelOk": "Confirm Cancel",
+      "deleteOk": "Confirm Delete",
+      "cancelBtn": "Cancel",
+      "backBtn": "Back"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch sales order list",
+      "confirmSuccess": "Order \"{{orderNumber}}\" confirmed",
+      "confirmError": "Failed to confirm order",
+      "shipSuccess": "Order \"{{orderNumber}}\" shipped",
+      "shipError": "Failed to ship",
+      "completeSuccess": "Order \"{{orderNumber}}\" completed",
+      "completeError": "Failed to complete order",
+      "cancelSuccess": "Order \"{{orderNumber}}\" cancelled",
+      "cancelError": "Failed to cancel order",
+      "deleteSuccess": "Order \"{{orderNumber}}\" deleted",
+      "deleteError": "Failed to delete order",
+      "notExist": "Order does not exist",
+      "fetchDetailError": "Failed to fetch order details"
+    },
+    "unit": "items"
+  },
+  "purchaseOrder": {
+    "title": "Purchase Orders",
+    "searchPlaceholder": "Search order number...",
+    "newOrder": "New Order",
+    "refresh": "Refresh",
+    "columns": {
+      "orderNumber": "Order Number",
+      "supplier": "Supplier",
+      "itemCount": "Item Count",
+      "totalAmount": "Total Amount",
+      "payableAmount": "Payable Amount",
+      "status": "Status",
+      "receiveProgress": "Receive Progress",
+      "createdAt": "Created At",
+      "confirmedAt": "Confirmed At"
+    },
+    "status": {
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "partialReceived": "Partial Received",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "modal": {
+      "confirmTitle": "Confirm Order",
+      "confirmContent": "Are you sure you want to confirm purchase order \"{{orderNumber}}\"?",
+      "cancelTitle": "Cancel Order",
+      "cancelContent": "Are you sure you want to cancel purchase order \"{{orderNumber}}\"?",
+      "deleteTitle": "Delete Order",
+      "deleteContent": "Are you sure you want to delete purchase order \"{{orderNumber}}\"? This action cannot be undone."
+    },
+    "messages": {
+      "fetchError": "Failed to fetch purchase order list",
+      "confirmSuccess": "Purchase order \"{{orderNumber}}\" confirmed",
+      "confirmError": "Failed to confirm order",
+      "cancelSuccess": "Purchase order \"{{orderNumber}}\" cancelled",
+      "cancelError": "Failed to cancel order",
+      "deleteSuccess": "Purchase order \"{{orderNumber}}\" deleted",
+      "deleteError": "Failed to delete order"
+    }
+  },
+  "orderDetail": {
+    "title": "Order Details",
+    "back": "Back to List",
+    "notExist": "Order does not exist",
+    "notExistDesc": "The order you are looking for does not exist or has been deleted",
+    "basicInfo": {
+      "title": "Basic Information",
+      "orderNumber": "Order Number",
+      "customerName": "Customer Name",
+      "supplierName": "Supplier",
+      "orderStatus": "Order Status",
+      "itemCount": "Item Count",
+      "totalQuantity": "Total Quantity",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "remark": "Remark"
+    },
+    "items": {
+      "title": "Order Items",
+      "columns": {
+        "index": "No.",
+        "productCode": "Product Code",
+        "productName": "Product Name",
+        "unit": "Unit",
+        "quantity": "Quantity",
+        "unitPrice": "Unit Price",
+        "amount": "Amount",
+        "remark": "Remark"
+      },
+      "empty": "No items"
+    },
+    "amount": {
+      "productAmount": "Product Amount",
+      "discountAmount": "Discount Amount",
+      "payableAmount": "Payable Amount"
+    },
+    "timeline": {
+      "title": "Status History",
+      "created": "Order Created",
+      "confirmed": "Order Confirmed",
+      "shipped": "Order Shipped",
+      "completed": "Order Completed",
+      "cancelled": "Order Cancelled",
+      "empty": "No status records"
+    },
+    "actions": {
+      "edit": "Edit",
+      "confirmOrder": "Confirm Order",
+      "cancel": "Cancel",
+      "ship": "Ship",
+      "complete": "Complete"
+    },
+    "messages": {
+      "confirmSuccess": "Order confirmed",
+      "confirmError": "Failed to confirm order",
+      "shipSuccess": "Order shipped",
+      "shipError": "Failed to ship",
+      "completeSuccess": "Order completed",
+      "completeError": "Failed to complete order",
+      "cancelSuccess": "Order cancelled",
+      "cancelError": "Failed to cancel order"
+    }
+  },
+  "orderForm": {
+    "createTitle": "Create Sales Order",
+    "editTitle": "Edit Sales Order",
+    "createPurchaseTitle": "Create Purchase Order",
+    "editPurchaseTitle": "Edit Purchase Order",
+    "back": "Back",
+    "basicInfo": {
+      "title": "Basic Information",
+      "customer": "Customer",
+      "customerPlaceholder": "Select customer",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "Select supplier",
+      "warehouse": "Shipping Warehouse",
+      "receiveWarehouse": "Receiving Warehouse",
+      "warehousePlaceholder": "Select warehouse",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter remark"
+    },
+    "items": {
+      "title": "Order Items",
+      "addProduct": "Add Product",
+      "columns": {
+        "product": "Product",
+        "productPlaceholder": "Select product",
+        "unit": "Unit",
+        "unitPrice": "Unit Price",
+        "purchasePrice": "Purchase Price",
+        "quantity": "Quantity",
+        "amount": "Amount",
+        "remark": "Remark",
+        "remarkPlaceholder": "Remark",
+        "operation": "Action"
+      },
+      "remove": "Remove",
+      "empty": "Please add products"
+    },
+    "summary": {
+      "itemCount": "Item Count",
+      "itemCountUnit": "types",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "payableAmount": "Payable Amount"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "create": "Create Order",
+      "save": "Save"
+    },
+    "validation": {
+      "customerRequired": "Please select a customer",
+      "supplierRequired": "Please select a supplier",
+      "warehouseRequired": "Please select a warehouse",
+      "itemsRequired": "Please add at least one product",
+      "quantityRequired": "Quantity must be greater than 0",
+      "priceRequired": "Price must be greater than 0"
+    },
+    "messages": {
+      "createSuccess": "Order created successfully",
+      "createError": "Failed to create order",
+      "updateSuccess": "Order updated successfully",
+      "updateError": "Failed to update order",
+      "fetchCustomersError": "Failed to fetch customer list",
+      "fetchSuppliersError": "Failed to fetch supplier list",
+      "fetchWarehousesError": "Failed to fetch warehouse list",
+      "fetchProductsError": "Failed to fetch product list",
+      "onlyDraftEditable": "Only draft orders can be edited"
+    }
+  },
+  "shipModal": {
+    "title": "Ship Confirmation",
+    "orderNumber": "Order Number",
+    "customerName": "Customer Name",
+    "itemCount": "Item Count",
+    "totalQuantity": "Total Quantity",
+    "payableAmount": "Payable Amount",
+    "warehouse": "Shipping Warehouse",
+    "warehousePlaceholder": "Select shipping warehouse",
+    "warehouseRequired": "Please select a shipping warehouse",
+    "confirm": "Confirm Ship",
+    "cancel": "Cancel",
+    "messages": {
+      "fetchWarehousesError": "Failed to fetch warehouse list"
+    }
+  },
+  "receive": {
+    "title": "Purchase Receive",
+    "refresh": "Refresh",
+    "orderInfo": "Order Information",
+    "orderNumber": "Order Number",
+    "supplier": "Supplier",
+    "status": "Status",
+    "orderAmount": "Order Amount",
+    "payableAmount": "Payable Amount",
+    "confirmedAt": "Confirmed At",
+    "warehouse": "Receiving Warehouse",
+    "warehouseRequired": "Please select a receiving warehouse",
+    "warehousePlaceholder": "Select receiving warehouse",
+    "detail": {
+      "title": "Receive Details",
+      "receiveAll": "Receive All",
+      "clearAll": "Clear Quantities"
+    },
+    "columns": {
+      "productCode": "Product Code",
+      "productName": "Product Name",
+      "unit": "Unit",
+      "orderedQuantity": "Ordered Qty",
+      "receivedQuantity": "Received Qty",
+      "remainingQuantity": "Remaining Qty",
+      "unitCost": "Unit Cost",
+      "receiveQuantity": "Receive Qty",
+      "batchNumber": "Batch Number",
+      "batchPlaceholder": "Optional",
+      "expiryDate": "Expiry Date",
+      "expiryPlaceholder": "Optional"
+    },
+    "summary": "This receive: {{items}} products, total {{quantity}} items, amount {{amount}}",
+    "emptyItems": "No items to receive",
+    "cannotReceive": "Order status is \"{{status}}\", cannot receive",
+    "actions": {
+      "cancel": "Cancel",
+      "confirm": "Confirm Receive"
+    },
+    "validation": {
+      "warehouseRequired": "Please select a receiving warehouse",
+      "itemsRequired": "Please enter receive quantity for at least one product",
+      "exceedRemaining": "{{productName}} receive quantity cannot exceed remaining quantity"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch order data",
+      "fetchDetailError": "Failed to fetch order details",
+      "fetchWarehousesError": "Failed to fetch warehouse list",
+      "receiveFullSuccess": "Receive completed, all items have been stored",
+      "receivePartialSuccess": "Receive successful, some items have been stored",
+      "receiveError": "Failed to receive",
+      "notExist": "Order does not exist"
+    },
+    "loading": "Loading..."
+  },
+  "salesReturn": {
+    "title": "Sales Returns",
+    "searchPlaceholder": "Search return number...",
+    "newReturn": "New Return",
+    "refresh": "Refresh",
+    "columns": {
+      "returnNumber": "Return Number",
+      "orderNumber": "Original Order",
+      "customer": "Customer",
+      "itemCount": "Item Count",
+      "totalAmount": "Return Amount",
+      "status": "Status",
+      "createdAt": "Created At"
+    },
+    "status": {
+      "all": "All Status",
+      "draft": "Draft",
+      "pendingApproval": "Pending Approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "submit": "Submit for Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "modal": {
+      "submitTitle": "Submit for Approval",
+      "submitContent": "Are you sure you want to submit return \"{{returnNumber}}\" for approval?",
+      "approveTitle": "Approve Return",
+      "approveContent": "Are you sure you want to approve return \"{{returnNumber}}\"?",
+      "rejectTitle": "Reject Return",
+      "rejectContent": "Are you sure you want to reject return \"{{returnNumber}}\"?",
+      "completeTitle": "Complete Return",
+      "completeContent": "Are you sure you want to complete return \"{{returnNumber}}\"? Stock will be automatically restored.",
+      "cancelTitle": "Cancel Return",
+      "cancelContent": "Are you sure you want to cancel return \"{{returnNumber}}\"?",
+      "deleteTitle": "Delete Return",
+      "deleteContent": "Are you sure you want to delete return \"{{returnNumber}}\"? This action cannot be undone."
+    },
+    "messages": {
+      "fetchError": "Failed to fetch return list",
+      "submitSuccess": "Return submitted for approval",
+      "submitError": "Failed to submit for approval",
+      "approveSuccess": "Return approved",
+      "approveError": "Failed to approve",
+      "rejectSuccess": "Return rejected",
+      "rejectError": "Failed to reject",
+      "completeSuccess": "Return completed",
+      "completeError": "Failed to complete return",
+      "cancelSuccess": "Return cancelled",
+      "cancelError": "Failed to cancel",
+      "deleteSuccess": "Return deleted",
+      "deleteError": "Failed to delete"
+    }
+  },
+  "purchaseReturn": {
+    "title": "Purchase Returns",
+    "searchPlaceholder": "Search return number...",
+    "newReturn": "New Return",
+    "refresh": "Refresh",
+    "columns": {
+      "returnNumber": "Return Number",
+      "orderNumber": "Original Order",
+      "supplier": "Supplier",
+      "itemCount": "Item Count",
+      "totalAmount": "Return Amount",
+      "status": "Status",
+      "createdAt": "Created At",
+      "submittedAt": "Submitted At",
+      "shippedAt": "Shipped At",
+      "completedAt": "Completed At"
+    },
+    "status": {
+      "all": "All Status",
+      "draft": "Draft",
+      "pendingApproval": "Pending Approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "shipped": "Shipped",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "submit": "Submit for Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "ship": "Ship",
+      "complete": "Complete",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "modal": {
+      "submitTitle": "Submit for Approval",
+      "submitContent": "Are you sure you want to submit return \"{{returnNumber}}\" for approval?",
+      "approveTitle": "Approve Return",
+      "approveContent": "Are you sure you want to approve return \"{{returnNumber}}\"?",
+      "rejectTitle": "Reject Return",
+      "rejectContent": "Are you sure you want to reject return \"{{returnNumber}}\"?",
+      "shipTitle": "Ship Confirmation",
+      "shipContent": "Are you sure you want to ship return \"{{returnNumber}}\"?",
+      "completeTitle": "Complete Return",
+      "completeContent": "Are you sure you want to complete return \"{{returnNumber}}\"?",
+      "cancelTitle": "Cancel Return",
+      "cancelContent": "Are you sure you want to cancel return \"{{returnNumber}}\"?",
+      "deleteTitle": "Delete Return",
+      "deleteContent": "Are you sure you want to delete return \"{{returnNumber}}\"? This action cannot be undone."
+    },
+    "messages": {
+      "fetchError": "Failed to fetch return list",
+      "submitSuccess": "Return submitted for approval",
+      "submitError": "Failed to submit for approval",
+      "approveSuccess": "Return approved",
+      "approveError": "Failed to approve",
+      "rejectSuccess": "Return rejected",
+      "rejectError": "Failed to reject",
+      "shipSuccess": "Return shipped",
+      "shipError": "Failed to ship",
+      "completeSuccess": "Return completed",
+      "completeError": "Failed to complete return",
+      "cancelSuccess": "Return cancelled",
+      "cancelError": "Failed to cancel",
+      "deleteSuccess": "Return deleted",
+      "deleteError": "Failed to delete"
+    }
+  },
+  "common": {
+    "unit": "items",
+    "userCancel": "User cancelled",
+    "defaultWarehouse": "Default"
+  }
+}

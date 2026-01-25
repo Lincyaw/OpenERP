@@ -27,6 +27,7 @@ import type {
   HandlerPurchaseOrderResponse,
   HandlerCreatePurchaseOrderItemInput,
 } from '@/api/models'
+import { useI18n } from '@/hooks/useI18n'
 import './PurchaseOrderForm.css'
 
 const { Title, Text } = Typography
@@ -67,27 +68,6 @@ const createEmptyItem = (): OrderItemFormData => ({
   remark: '',
 })
 
-// Form validation schema
-const orderFormSchema = z.object({
-  supplier_id: z.string().min(1, '请选择供应商'),
-  supplier_name: z.string().min(1, '请选择供应商'),
-  warehouse_id: z.string().optional(),
-  discount: z.number().min(0, '折扣不能为负数').max(100, '折扣不能超过100'),
-  remark: z.string().max(500, '备注不能超过500字').optional(),
-  items: z
-    .array(
-      z.object({
-        product_id: z.string().min(1, '请选择商品'),
-        product_code: z.string().min(1),
-        product_name: z.string().min(1),
-        unit: z.string().min(1),
-        unit_cost: z.number().positive('单价必须大于0'),
-        quantity: z.number().positive('数量必须大于0'),
-      })
-    )
-    .min(1, '请至少添加一个商品'),
-})
-
 interface PurchaseOrderFormProps {
   /** Order ID for edit mode, undefined for create mode */
   orderId?: string
@@ -108,11 +88,37 @@ interface PurchaseOrderFormProps {
  */
 export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormProps) {
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
   const supplierApi = useMemo(() => getSuppliers(), [])
   const productApi = useMemo(() => getProducts(), [])
   const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
+
+  // Form validation schema with i18n
+  const orderFormSchema = useMemo(
+    () =>
+      z.object({
+        supplier_id: z.string().min(1, t('orderForm.validation.supplierRequired')),
+        supplier_name: z.string().min(1, t('orderForm.validation.supplierRequired')),
+        warehouse_id: z.string().optional(),
+        discount: z.number().min(0).max(100),
+        remark: z.string().max(500).optional(),
+        items: z
+          .array(
+            z.object({
+              product_id: z.string().min(1),
+              product_code: z.string().min(1),
+              product_name: z.string().min(1),
+              unit: z.string().min(1),
+              unit_cost: z.number().positive(t('orderForm.validation.priceRequired')),
+              quantity: z.number().positive(t('orderForm.validation.quantityRequired')),
+            })
+          )
+          .min(1, t('orderForm.validation.itemsRequired')),
+      }),
+    [t]
+  )
 
   // Form state
   const [formData, setFormData] = useState<OrderFormData>({
@@ -435,12 +441,12 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
 
     setErrors({})
     return true
-  }, [formData])
+  }, [formData, orderFormSchema])
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
-      Toast.error('请检查表单填写是否正确')
+      Toast.error(t('orderForm.validation.itemsRequired'))
       return
     }
 
@@ -466,9 +472,9 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
           remark: formData.remark || undefined,
         })
         if (!response.success) {
-          throw new Error(response.error?.message || '更新失败')
+          throw new Error(response.error?.message || t('orderForm.messages.updateError'))
         }
-        Toast.success('订单更新成功')
+        Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
         // Create new order
         const response = await purchaseOrderApi.postTradePurchaseOrders({
@@ -480,17 +486,17 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
           items: itemsPayload,
         })
         if (!response.success) {
-          throw new Error(response.error?.message || '创建失败')
+          throw new Error(response.error?.message || t('orderForm.messages.createError'))
         }
-        Toast.success('订单创建成功')
+        Toast.success(t('orderForm.messages.createSuccess'))
       }
       navigate('/trade/purchase')
     } catch (error) {
-      Toast.error(error instanceof Error ? error.message : '操作失败')
+      Toast.error(error instanceof Error ? error.message : t('orderForm.messages.createError'))
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, orderId, purchaseOrderApi, navigate, validateForm])
+  }, [formData, isEditMode, orderId, purchaseOrderApi, navigate, validateForm, t])
 
   // Handle cancel
   const handleCancel = useCallback(() => {
@@ -514,9 +520,9 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       warehouses.map((w) => ({
         value: w.id || '',
         label: w.name || w.code || '',
-        extra: w.is_default ? '(默认)' : undefined,
+        extra: w.is_default ? `(${t('common.defaultWarehouse')})` : undefined,
       })),
-    [warehouses]
+    [warehouses, t]
   )
 
   // Product options for select
@@ -534,126 +540,138 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   )
 
   // Table columns for order items
-  const itemColumns = [
-    {
-      title: '商品',
-      dataIndex: 'product_id',
-      width: 280,
-      render: (_: unknown, record: OrderItemFormData) => (
-        <Select
-          value={record.product_id || undefined}
-          placeholder="搜索并选择商品"
-          onChange={(value) => handleProductSelect(record.key, value as string)}
-          optionList={productOptions}
-          filter
-          remote
-          onSearch={setProductSearch}
-          loading={productsLoading}
-          style={{ width: '100%' }}
-          prefix={<IconSearch />}
-          renderSelectedItem={(option: { label?: string }) => (
-            <span className="selected-product">{option.label}</span>
-          )}
-        />
-      ),
-    },
-    {
-      title: '单位',
-      dataIndex: 'unit',
-      width: 80,
-      render: (unit: string) => <Text>{unit || '-'}</Text>,
-    },
-    {
-      title: '采购单价',
-      dataIndex: 'unit_cost',
-      width: 120,
-      render: (cost: number, record: OrderItemFormData) => (
-        <InputNumber
-          value={cost}
-          onChange={(value) => handleUnitCostChange(record.key, value as number)}
-          min={0}
-          precision={2}
-          prefix="¥"
-          style={{ width: '100%' }}
-          disabled={!record.product_id}
-        />
-      ),
-    },
-    {
-      title: '数量',
-      dataIndex: 'quantity',
-      width: 100,
-      render: (qty: number, record: OrderItemFormData) => (
-        <InputNumber
-          value={qty}
-          onChange={(value) => handleQuantityChange(record.key, value as number)}
-          min={0.01}
-          precision={2}
-          style={{ width: '100%' }}
-          disabled={!record.product_id}
-        />
-      ),
-    },
-    {
-      title: '金额',
-      dataIndex: 'amount',
-      width: 120,
-      align: 'right' as const,
-      render: (amount: number) => (
-        <Text strong className="item-amount">
-          ¥{amount.toFixed(2)}
-        </Text>
-      ),
-    },
-    {
-      title: '备注',
-      dataIndex: 'remark',
-      width: 150,
-      render: (remark: string, record: OrderItemFormData) => (
-        <Input
-          value={remark}
-          onChange={(value) => handleItemRemarkChange(record.key, value)}
-          placeholder="备注"
-          disabled={!record.product_id}
-        />
-      ),
-    },
-    {
-      title: '操作',
-      dataIndex: 'actions',
-      width: 60,
-      render: (_: unknown, record: OrderItemFormData) => (
-        <Popconfirm
-          title="确定删除该行吗？"
-          onConfirm={() => handleRemoveItem(record.key)}
-          position="left"
-        >
-          <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
-        </Popconfirm>
-      ),
-    },
-  ]
+  const itemColumns = useMemo(
+    () => [
+      {
+        title: t('orderForm.items.columns.product'),
+        dataIndex: 'product_id',
+        width: 280,
+        render: (_: unknown, record: OrderItemFormData) => (
+          <Select
+            value={record.product_id || undefined}
+            placeholder={t('orderForm.items.columns.productPlaceholder')}
+            onChange={(value) => handleProductSelect(record.key, value as string)}
+            optionList={productOptions}
+            filter
+            remote
+            onSearch={setProductSearch}
+            loading={productsLoading}
+            style={{ width: '100%' }}
+            prefix={<IconSearch />}
+            renderSelectedItem={(option: { label?: string }) => (
+              <span className="selected-product">{option.label}</span>
+            )}
+          />
+        ),
+      },
+      {
+        title: t('orderForm.items.columns.unit'),
+        dataIndex: 'unit',
+        width: 80,
+        render: (unit: string) => <Text>{unit || '-'}</Text>,
+      },
+      {
+        title: t('orderForm.items.columns.purchasePrice'),
+        dataIndex: 'unit_cost',
+        width: 120,
+        render: (cost: number, record: OrderItemFormData) => (
+          <InputNumber
+            value={cost}
+            onChange={(value) => handleUnitCostChange(record.key, value as number)}
+            min={0}
+            precision={2}
+            prefix="¥"
+            style={{ width: '100%' }}
+            disabled={!record.product_id}
+          />
+        ),
+      },
+      {
+        title: t('orderForm.items.columns.quantity'),
+        dataIndex: 'quantity',
+        width: 100,
+        render: (qty: number, record: OrderItemFormData) => (
+          <InputNumber
+            value={qty}
+            onChange={(value) => handleQuantityChange(record.key, value as number)}
+            min={0.01}
+            precision={2}
+            style={{ width: '100%' }}
+            disabled={!record.product_id}
+          />
+        ),
+      },
+      {
+        title: t('orderForm.items.columns.amount'),
+        dataIndex: 'amount',
+        width: 120,
+        align: 'right' as const,
+        render: (amount: number) => (
+          <Text strong className="item-amount">
+            ¥{amount.toFixed(2)}
+          </Text>
+        ),
+      },
+      {
+        title: t('orderForm.items.columns.remark'),
+        dataIndex: 'remark',
+        width: 150,
+        render: (remark: string, record: OrderItemFormData) => (
+          <Input
+            value={remark}
+            onChange={(value) => handleItemRemarkChange(record.key, value)}
+            placeholder={t('orderForm.items.columns.remarkPlaceholder')}
+            disabled={!record.product_id}
+          />
+        ),
+      },
+      {
+        title: t('orderForm.items.columns.operation'),
+        dataIndex: 'actions',
+        width: 60,
+        render: (_: unknown, record: OrderItemFormData) => (
+          <Popconfirm
+            title={t('orderForm.items.remove')}
+            onConfirm={() => handleRemoveItem(record.key)}
+            position="left"
+          >
+            <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
+          </Popconfirm>
+        ),
+      },
+    ],
+    [
+      t,
+      productOptions,
+      productsLoading,
+      handleProductSelect,
+      handleUnitCostChange,
+      handleQuantityChange,
+      handleItemRemarkChange,
+      handleRemoveItem,
+    ]
+  )
 
   return (
     <Container size="lg" className="purchase-order-form-page">
       <Card className="purchase-order-form-card">
         <div className="purchase-order-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑采购订单' : '新建采购订单'}
+            {isEditMode ? t('orderForm.editPurchaseTitle') : t('orderForm.createPurchaseTitle')}
           </Title>
         </div>
 
         {/* Basic Information Section */}
         <div className="form-section">
           <Title heading={5} className="section-title">
-            基本信息
+            {t('orderForm.basicInfo.title')}
           </Title>
           <div className="form-row">
             <div className="form-field">
-              <label className="form-label required">供应商</label>
+              <label className="form-label required">{t('orderForm.basicInfo.supplier')}</label>
               <Select
                 value={formData.supplier_id || undefined}
-                placeholder="搜索并选择供应商"
+                placeholder={t('orderForm.basicInfo.supplierPlaceholder')}
                 onChange={handleSupplierChange}
                 optionList={supplierOptions}
                 filter
@@ -678,10 +696,10 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
               )}
             </div>
             <div className="form-field">
-              <label className="form-label">收货仓库</label>
+              <label className="form-label">{t('orderForm.basicInfo.receiveWarehouse')}</label>
               <Select
                 value={formData.warehouse_id || undefined}
-                placeholder="选择收货仓库"
+                placeholder={t('orderForm.basicInfo.warehousePlaceholder')}
                 onChange={handleWarehouseChange}
                 optionList={warehouseOptions}
                 loading={warehousesLoading}
@@ -702,10 +720,10 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         <div className="form-section">
           <div className="section-header">
             <Title heading={5} className="section-title">
-              商品明细
+              {t('orderForm.items.title')}
             </Title>
             <Button icon={<IconPlus />} theme="light" onClick={handleAddItem}>
-              添加商品
+              {t('orderForm.items.addProduct')}
             </Button>
           </div>
           {errors.items && (
@@ -720,7 +738,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             pagination={false}
             size="small"
             className="items-table"
-            empty={<Empty description="暂无商品，点击上方按钮添加" />}
+            empty={<Empty description={t('orderForm.items.empty')} />}
           />
         </div>
 
@@ -728,7 +746,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         <div className="form-section summary-section">
           <div className="summary-row">
             <div className="form-field discount-field">
-              <label className="form-label">折扣 (%)</label>
+              <label className="form-label">{t('orderForm.summary.discount')} (%)</label>
               <InputNumber
                 value={formData.discount}
                 onChange={(value) => handleDiscountChange(value as number)}
@@ -741,21 +759,25 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             </div>
             <div className="summary-totals">
               <div className="summary-item">
-                <Text type="tertiary">商品数量：</Text>
-                <Text>{calculations.itemCount} 种</Text>
+                <Text type="tertiary">{t('orderForm.summary.itemCount')}:</Text>
+                <Text>
+                  {calculations.itemCount} {t('orderForm.summary.itemCountUnit')}
+                </Text>
               </div>
               <div className="summary-item">
-                <Text type="tertiary">小计：</Text>
+                <Text type="tertiary">{t('orderForm.summary.subtotal')}:</Text>
                 <Text>¥{calculations.subtotal.toFixed(2)}</Text>
               </div>
               {formData.discount > 0 && (
                 <div className="summary-item">
-                  <Text type="tertiary">折扣 ({formData.discount}%)：</Text>
+                  <Text type="tertiary">
+                    {t('orderForm.summary.discount')} ({formData.discount}%):
+                  </Text>
                   <Text type="danger">-¥{calculations.discountAmount.toFixed(2)}</Text>
                 </div>
               )}
               <div className="summary-item total">
-                <Text strong>应付金额：</Text>
+                <Text strong>{t('orderForm.summary.payableAmount')}:</Text>
                 <Text strong className="total-amount">
                   ¥{calculations.total.toFixed(2)}
                 </Text>
@@ -767,11 +789,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         {/* Remark Section */}
         <div className="form-section">
           <div className="form-field">
-            <label className="form-label">备注</label>
+            <label className="form-label">{t('orderForm.basicInfo.remark')}</label>
             <Input
               value={formData.remark}
               onChange={handleRemarkChange}
-              placeholder="订单备注（可选）"
+              placeholder={t('orderForm.basicInfo.remarkPlaceholder')}
               maxLength={500}
               showClear
             />
@@ -782,7 +804,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         <div className="form-actions">
           <Space>
             <Button onClick={handleCancel} disabled={isSubmitting}>
-              取消
+              {t('orderForm.actions.cancel')}
             </Button>
             <Button
               type="primary"
@@ -790,7 +812,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
               loading={isSubmitting}
               disabled={isSubmitting}
             >
-              {isEditMode ? '保存' : '创建订单'}
+              {isEditMode ? t('orderForm.actions.save') : t('orderForm.actions.create')}
             </Button>
           </Space>
         </div>

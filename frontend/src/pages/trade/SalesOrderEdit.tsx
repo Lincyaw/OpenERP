@@ -4,6 +4,7 @@ import { Spin, Toast } from '@douyinfe/semi-ui'
 import { SalesOrderForm } from '@/features/trade/SalesOrderForm'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse } from '@/api/models'
+import { useI18n } from '@/hooks/useI18n'
 
 /**
  * Sales order edit page
@@ -13,6 +14,7 @@ import type { HandlerSalesOrderResponse } from '@/api/models'
 export default function SalesOrderEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
   const api = useMemo(() => getSalesOrders(), [])
   const [orderData, setOrderData] = useState<HandlerSalesOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -30,17 +32,17 @@ export default function SalesOrderEditPage() {
         if (response.success && response.data) {
           // Check if order is in draft status (only draft orders can be edited)
           if (response.data.status !== 'draft') {
-            Toast.error('只有草稿状态的订单可以编辑')
+            Toast.error(t('orderForm.messages.onlyDraftEditable'))
             navigate('/trade/sales')
             return
           }
           setOrderData(response.data)
         } else {
-          Toast.error('订单不存在')
+          Toast.error(t('salesOrder.messages.notExist'))
           navigate('/trade/sales')
         }
       } catch {
-        Toast.error('获取订单数据失败')
+        Toast.error(t('salesOrder.messages.fetchDetailError'))
         navigate('/trade/sales')
       } finally {
         setLoading(false)
@@ -48,7 +50,7 @@ export default function SalesOrderEditPage() {
     }
 
     fetchOrder()
-  }, [id, api, navigate])
+  }, [id, api, navigate, t])
 
   if (loading) {
     return (
@@ -61,7 +63,7 @@ export default function SalesOrderEditPage() {
           minHeight: 400,
         }}
       >
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large" tip={t('receive.loading')} />
       </div>
     )
   }

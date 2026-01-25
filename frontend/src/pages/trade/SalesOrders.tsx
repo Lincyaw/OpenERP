@@ -30,6 +30,8 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { ShipOrderModal } from './components'
+import { useI18n } from '@/hooks/useI18n'
+import { useFormatters } from '@/hooks/useFormatters'
 import './SalesOrders.css'
 
 const { Title } = Typography
@@ -43,16 +45,6 @@ interface CustomerOption {
   value: string
 }
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'draft' },
-  { label: '已确认', value: 'confirmed' },
-  { label: '已发货', value: 'shipped' },
-  { label: '已完成', value: 'completed' },
-  { label: '已取消', value: 'cancelled' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'grey' | 'red'> = {
   draft: 'blue',
@@ -60,51 +52,6 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'grey' | 're
   shipped: 'green',
   completed: 'grey',
   cancelled: 'red',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  draft: '草稿',
-  confirmed: '已确认',
-  shipped: '已发货',
-  completed: '已完成',
-  cancelled: '已取消',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 /**
@@ -119,6 +66,8 @@ function formatDateTime(dateStr?: string): string {
  */
 export default function SalesOrdersPage() {
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
+  const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
   const customerApi = useMemo(() => getCustomers(), [])
 
@@ -148,6 +97,19 @@ export default function SalesOrdersPage() {
     defaultSortOrder: 'desc',
   })
 
+  // Status options for filter (memoized with translations)
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('salesOrder.allStatus'), value: '' },
+      { label: t('salesOrder.status.draft'), value: 'draft' },
+      { label: t('salesOrder.status.confirmed'), value: 'confirmed' },
+      { label: t('salesOrder.status.shipped'), value: 'shipped' },
+      { label: t('salesOrder.status.completed'), value: 'completed' },
+      { label: t('salesOrder.status.cancelled'), value: 'cancelled' },
+    ],
+    [t]
+  )
+
   // Fetch customers for filter dropdown
   const fetchCustomers = useCallback(async () => {
     setCustomersLoading(true)
@@ -160,7 +122,7 @@ export default function SalesOrdersPage() {
             value: customer.id || '',
           })
         )
-        setCustomerOptions([{ label: '全部客户', value: '' }, ...options])
+        setCustomerOptions([{ label: t('salesOrder.allCustomers'), value: '' }, ...options])
       }
     } catch {
       // Silently fail - customer filter just won't be available
@@ -208,7 +170,7 @@ export default function SalesOrdersPage() {
         }
       }
     } catch {
-      Toast.error('获取销售订单列表失败')
+      Toast.error(t('salesOrder.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -281,22 +243,24 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '确认订单',
-        content: `确定要确认订单 "${order.order_number}" 吗？确认后将锁定库存。`,
-        okText: '确认',
-        cancelText: '取消',
+        title: t('salesOrder.modal.confirmTitle'),
+        content: t('salesOrder.modal.confirmContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.confirmOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
             await salesOrderApi.postTradeSalesOrdersIdConfirm(order.id!, {})
-            Toast.success(`订单 "${order.order_number}" 已确认`)
+            Toast.success(
+              t('salesOrder.messages.confirmSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('确认订单失败')
+            Toast.error(t('salesOrder.messages.confirmError'))
           }
         },
       })
     },
-    [salesOrderApi, fetchOrders]
+    [salesOrderApi, fetchOrders, t]
   )
 
   // Handle ship order - open modal
@@ -315,16 +279,18 @@ export default function SalesOrdersPage() {
         await salesOrderApi.postTradeSalesOrdersIdShip(selectedOrderForShip.id, {
           warehouse_id: warehouseId,
         })
-        Toast.success(`订单 "${selectedOrderForShip.order_number}" 已发货`)
+        Toast.success(
+          t('salesOrder.messages.shipSuccess', { orderNumber: selectedOrderForShip.order_number })
+        )
         setShipModalVisible(false)
         setSelectedOrderForShip(null)
         fetchOrders()
       } catch {
-        Toast.error('发货失败')
-        throw new Error('发货失败') // Re-throw to keep modal open
+        Toast.error(t('salesOrder.messages.shipError'))
+        throw new Error(t('salesOrder.messages.shipError')) // Re-throw to keep modal open
       }
     },
-    [selectedOrderForShip, salesOrderApi, fetchOrders]
+    [selectedOrderForShip, salesOrderApi, fetchOrders, t]
   )
 
   // Handle complete order
@@ -333,13 +299,13 @@ export default function SalesOrdersPage() {
       if (!order.id) return
       try {
         await salesOrderApi.postTradeSalesOrdersIdComplete(order.id)
-        Toast.success(`订单 "${order.order_number}" 已完成`)
+        Toast.success(t('salesOrder.messages.completeSuccess', { orderNumber: order.order_number }))
         fetchOrders()
       } catch {
-        Toast.error('完成订单失败')
+        Toast.error(t('salesOrder.messages.completeError'))
       }
     },
-    [salesOrderApi, fetchOrders]
+    [salesOrderApi, fetchOrders, t]
   )
 
   // Handle cancel order
@@ -347,23 +313,27 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '取消订单',
-        content: `确定要取消订单 "${order.order_number}" 吗？`,
-        okText: '确认取消',
-        cancelText: '返回',
+        title: t('salesOrder.modal.cancelTitle'),
+        content: t('salesOrder.modal.cancelContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.cancelOk'),
+        cancelText: t('salesOrder.modal.backBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, { reason: '用户取消' })
-            Toast.success(`订单 "${order.order_number}" 已取消`)
+            await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, {
+              reason: t('common.userCancel'),
+            })
+            Toast.success(
+              t('salesOrder.messages.cancelSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('取消订单失败')
+            Toast.error(t('salesOrder.messages.cancelError'))
           }
         },
       })
     },
-    [salesOrderApi, fetchOrders]
+    [salesOrderApi, fetchOrders, t]
   )
 
   // Handle delete order
@@ -371,23 +341,25 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '删除订单',
-        content: `确定要删除订单 "${order.order_number}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('salesOrder.modal.deleteTitle'),
+        content: t('salesOrder.modal.deleteContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.deleteOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await salesOrderApi.deleteTradeSalesOrdersId(order.id!)
-            Toast.success(`订单 "${order.order_number}" 已删除`)
+            Toast.success(
+              t('salesOrder.messages.deleteSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('删除订单失败')
+            Toast.error(t('salesOrder.messages.deleteError'))
           }
         },
       })
     },
-    [salesOrderApi, fetchOrders]
+    [salesOrderApi, fetchOrders, t]
   )
 
   // Handle view order
@@ -419,7 +391,7 @@ export default function SalesOrdersPage() {
   const tableColumns: DataTableColumn<SalesOrder>[] = useMemo(
     () => [
       {
-        title: '订单编号',
+        title: t('salesOrder.columns.orderNumber'),
         dataIndex: 'order_number',
         width: 160,
         sortable: true,
@@ -428,69 +400,90 @@ export default function SalesOrdersPage() {
         ),
       },
       {
-        title: '客户',
+        title: t('salesOrder.columns.customer'),
         dataIndex: 'customer_name',
         width: 150,
         ellipsis: true,
         render: (name: unknown) => (name as string) || '-',
       },
       {
-        title: '商品数量',
+        title: t('salesOrder.columns.itemCount'),
         dataIndex: 'item_count',
         width: 100,
         align: 'center',
-        render: (count: unknown) => `${(count as number) || 0} 件`,
+        render: (count: unknown) => `${(count as number) || 0} ${t('salesOrder.unit')}`,
       },
       {
-        title: '订单金额',
+        title: t('salesOrder.columns.totalAmount'),
         dataIndex: 'total_amount',
         width: 120,
         align: 'right',
         sortable: true,
-        render: (amount: unknown) => formatPrice(amount as number | undefined),
+        render: (amount: unknown) => {
+          const value = amount as number | undefined
+          return value !== undefined && value !== null ? formatCurrency(value) : '-'
+        },
       },
       {
-        title: '应付金额',
+        title: t('salesOrder.columns.payableAmount'),
         dataIndex: 'payable_amount',
         width: 120,
         align: 'right',
         sortable: true,
-        render: (amount: unknown) => (
-          <span className="payable-amount">{formatPrice(amount as number | undefined)}</span>
-        ),
+        render: (amount: unknown) => {
+          const value = amount as number | undefined
+          return (
+            <span className="payable-amount">
+              {value !== undefined && value !== null ? formatCurrency(value) : '-'}
+            </span>
+          )
+        },
       },
       {
-        title: '状态',
+        title: t('salesOrder.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as string | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`salesOrder.status.${statusValue}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('salesOrder.columns.createdAt'),
         dataIndex: 'created_at',
         width: 150,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDate(value) : '-'
+        },
       },
       {
-        title: '确认时间',
+        title: t('salesOrder.columns.confirmedAt'),
         dataIndex: 'confirmed_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
       {
-        title: '发货时间',
+        title: t('salesOrder.columns.shippedAt'),
         dataIndex: 'shipped_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
     ],
-    []
+    [t, formatCurrency, formatDate, formatDateTime]
   )
 
   // Table row actions
@@ -498,52 +491,61 @@ export default function SalesOrdersPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('salesOrder.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('salesOrder.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.status !== 'draft',
       },
       {
         key: 'confirm',
-        label: '确认',
+        label: t('salesOrder.actions.confirm'),
         type: 'primary',
         onClick: handleConfirm,
         hidden: (record) => record.status !== 'draft',
       },
       {
         key: 'ship',
-        label: '发货',
+        label: t('salesOrder.actions.ship'),
         type: 'primary',
         onClick: handleShip,
         hidden: (record) => record.status !== 'confirmed',
       },
       {
         key: 'complete',
-        label: '完成',
+        label: t('salesOrder.actions.complete'),
         type: 'primary',
         onClick: handleComplete,
         hidden: (record) => record.status !== 'shipped',
       },
       {
         key: 'cancel',
-        label: '取消',
+        label: t('salesOrder.actions.cancel'),
         type: 'warning',
         onClick: handleCancel,
         hidden: (record) => record.status !== 'draft' && record.status !== 'confirmed',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('salesOrder.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
         hidden: (record) => record.status !== 'draft',
       },
     ],
-    [handleView, handleEdit, handleConfirm, handleShip, handleComplete, handleCancel, handleDelete]
+    [
+      handleView,
+      handleEdit,
+      handleConfirm,
+      handleShip,
+      handleComplete,
+      handleCancel,
+      handleDelete,
+      t,
+    ]
   )
 
   return (
@@ -551,23 +553,23 @@ export default function SalesOrdersPage() {
       <Card className="sales-orders-card">
         <div className="sales-orders-header">
           <Title heading={4} style={{ margin: 0 }}>
-            销售订单
+            {t('salesOrder.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索订单编号..."
+          searchPlaceholder={t('salesOrder.searchPlaceholder')}
           primaryAction={{
-            label: '新建订单',
+            label: t('salesOrder.newOrder'),
             icon: <IconPlus />,
             onClick: () => navigate('/trade/sales/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('salesOrder.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -575,14 +577,14 @@ export default function SalesOrdersPage() {
           filters={
             <Space>
               <Select
-                placeholder="状态筛选"
+                placeholder={t('salesOrder.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="客户筛选"
+                placeholder={t('salesOrder.customerFilter')}
                 value={customerFilter}
                 onChange={handleCustomerChange}
                 optionList={customerOptions}
@@ -592,7 +594,7 @@ export default function SalesOrdersPage() {
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('salesOrder.startDate'), t('salesOrder.endDate')]}
                 value={dateRange || undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 260 }}

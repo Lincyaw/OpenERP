@@ -35,6 +35,8 @@ import zhCNPartner from '../locales/zh-CN/partner.json'
 import enUSPartner from '../locales/en-US/partner.json'
 import zhCNInventory from '../locales/zh-CN/inventory.json'
 import enUSInventory from '../locales/en-US/inventory.json'
+import zhCNTrade from '../locales/zh-CN/trade.json'
+import enUSTrade from '../locales/en-US/trade.json'
 
 /**
  * Translation resources
@@ -50,6 +52,7 @@ const resources = {
     catalog: zhCNCatalog,
     partner: zhCNPartner,
     inventory: zhCNInventory,
+    trade: zhCNTrade,
   },
   'en-US': {
     common: enUSCommon,
@@ -58,6 +61,7 @@ const resources = {
     catalog: enUSCatalog,
     partner: enUSPartner,
     inventory: enUSInventory,
+    trade: enUSTrade,
   },
 }
 

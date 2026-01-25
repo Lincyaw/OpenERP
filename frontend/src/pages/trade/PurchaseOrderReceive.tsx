@@ -26,6 +26,8 @@ import type {
   HandlerWarehouseResponse,
   HandlerReceiveItemInput,
 } from '@/api/models'
+import { useI18n } from '@/hooks/useI18n'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PurchaseOrderReceive.css'
 
 const { Title, Text } = Typography
@@ -37,36 +39,6 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'orange' | '
   partial_received: 'orange',
   completed: 'green',
   cancelled: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  draft: '草稿',
-  confirmed: '已确认',
-  partial_received: '部分收货',
-  completed: '已完成',
-  cancelled: '已取消',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 // Receivable item with receive form fields
@@ -100,6 +72,8 @@ interface ReceivableItem {
 export default function PurchaseOrderReceivePage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { t } = useI18n({ ns: 'trade' })
+  const { formatCurrency, formatDate } = useFormatters()
 
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
   const warehouseApi = useMemo(() => getWarehouses(), [])
@@ -129,7 +103,7 @@ export default function PurchaseOrderReceivePage() {
           setSelectedWarehouseId(orderResponse.data.warehouse_id)
         }
       } else {
-        Toast.error('获取订单详情失败')
+        Toast.error(t('receive.messages.fetchDetailError'))
         return
       }
 
@@ -156,7 +130,7 @@ export default function PurchaseOrderReceivePage() {
         setReceivableItems(items)
       }
     } catch {
-      Toast.error('获取订单数据失败')
+      Toast.error(t('receive.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -183,9 +157,9 @@ export default function PurchaseOrderReceivePage() {
         }
       }
     } catch {
-      Toast.error('获取仓库列表失败')
+      Toast.error(t('receive.messages.fetchWarehousesError'))
     }
-  }, [warehouseApi, selectedWarehouseId])
+  }, [warehouseApi, selectedWarehouseId, t])
 
   // Load data on mount
   useEffect(() => {
@@ -240,7 +214,7 @@ export default function PurchaseOrderReceivePage() {
 
     // Validate warehouse selection
     if (!selectedWarehouseId) {
-      Toast.warning('请选择收货仓库')
+      Toast.warning(t('receive.validation.warehouseRequired'))
       return
     }
 
@@ -248,14 +222,14 @@ export default function PurchaseOrderReceivePage() {
     const itemsToReceive = receivableItems.filter((item) => item.receive_quantity > 0)
 
     if (itemsToReceive.length === 0) {
-      Toast.warning('请至少输入一个商品的收货数量')
+      Toast.warning(t('receive.validation.itemsRequired'))
       return
     }
 
     // Validate quantities don't exceed remaining
     for (const item of itemsToReceive) {
       if (item.receive_quantity > item.remaining_quantity) {
-        Toast.error(`${item.product_name} 收货数量不能超过待收数量`)
+        Toast.error(t('receive.validation.exceedRemaining', { productName: item.product_name }))
         return
       }
     }
@@ -277,49 +251,59 @@ export default function PurchaseOrderReceivePage() {
       if (response.success) {
         const isFullyReceived = response.data?.is_fully_received
         if (isFullyReceived) {
-          Toast.success('收货完成，订单已全部入库')
+          Toast.success(t('receive.messages.receiveFullSuccess'))
         } else {
-          Toast.success('收货成功，部分商品已入库')
+          Toast.success(t('receive.messages.receivePartialSuccess'))
         }
         navigate('/trade/purchase')
       } else {
-        Toast.error('收货失败')
+        Toast.error(t('receive.messages.receiveError'))
       }
     } catch {
-      Toast.error('收货失败')
+      Toast.error(t('receive.messages.receiveError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, selectedWarehouseId, receivableItems, purchaseOrderApi, navigate])
+  }, [id, selectedWarehouseId, receivableItems, purchaseOrderApi, navigate, t])
 
   // Order summary data for descriptions
   const orderSummary = useMemo(() => {
     if (!order) return []
+    const statusKey = order.status === 'partial_received' ? 'partialReceived' : order.status
     return [
-      { key: '订单编号', value: order.order_number || '-' },
-      { key: '供应商', value: order.supplier_name || '-' },
+      { key: t('receive.orderNumber'), value: order.order_number || '-' },
+      { key: t('receive.supplier'), value: order.supplier_name || '-' },
       {
-        key: '状态',
+        key: t('receive.status'),
         value: (
           <Tag color={STATUS_TAG_COLORS[order.status || '']}>
-            {STATUS_LABELS[order.status || ''] || order.status}
+            {t(`purchaseOrder.status.${statusKey || 'draft'}`)}
           </Tag>
         ),
       },
-      { key: '订单金额', value: formatPrice(order.total_amount) },
-      { key: '应付金额', value: formatPrice(order.payable_amount) },
-      { key: '确认时间', value: formatDate(order.confirmed_at) },
+      {
+        key: t('receive.orderAmount'),
+        value: order.total_amount !== undefined ? formatCurrency(order.total_amount) : '-',
+      },
+      {
+        key: t('receive.payableAmount'),
+        value: order.payable_amount !== undefined ? formatCurrency(order.payable_amount) : '-',
+      },
+      {
+        key: t('receive.confirmedAt'),
+        value: order.confirmed_at ? formatDate(order.confirmed_at) : '-',
+      },
     ]
-  }, [order])
+  }, [order, t, formatCurrency, formatDate])
 
   // Warehouse options
   const warehouseOptions = useMemo(
     () =>
       warehouses.map((w) => ({
         value: w.id,
-        label: w.is_default ? `${w.name} (默认)` : w.name,
+        label: w.is_default ? `${w.name} (${t('common.defaultWarehouse')})` : w.name,
       })),
-    [warehouses]
+    [warehouses, t]
   )
 
   // Calculate total receiving stats
@@ -337,38 +321,38 @@ export default function PurchaseOrderReceivePage() {
   const columns = useMemo(
     () => [
       {
-        title: '商品编码',
+        title: t('receive.columns.productCode'),
         dataIndex: 'product_code',
         width: 120,
       },
       {
-        title: '商品名称',
+        title: t('receive.columns.productName'),
         dataIndex: 'product_name',
         width: 180,
         ellipsis: true,
       },
       {
-        title: '单位',
+        title: t('receive.columns.unit'),
         dataIndex: 'unit',
         width: 60,
         align: 'center' as const,
       },
       {
-        title: '订购数量',
+        title: t('receive.columns.orderedQuantity'),
         dataIndex: 'ordered_quantity',
         width: 100,
         align: 'right' as const,
         render: (value: number) => value.toFixed(2),
       },
       {
-        title: '已收数量',
+        title: t('receive.columns.receivedQuantity'),
         dataIndex: 'received_quantity',
         width: 100,
         align: 'right' as const,
         render: (value: number) => value.toFixed(2),
       },
       {
-        title: '待收数量',
+        title: t('receive.columns.remainingQuantity'),
         dataIndex: 'remaining_quantity',
         width: 100,
         align: 'right' as const,
@@ -379,14 +363,14 @@ export default function PurchaseOrderReceivePage() {
         ),
       },
       {
-        title: '单价',
+        title: t('receive.columns.unitCost'),
         dataIndex: 'unit_cost',
         width: 100,
         align: 'right' as const,
-        render: (value: number) => formatPrice(value),
+        render: (value: number) => formatCurrency(value),
       },
       {
-        title: '本次收货数量',
+        title: t('receive.columns.receiveQuantity'),
         dataIndex: 'receive_quantity',
         width: 130,
         render: (_: unknown, record: ReceivableItem) => (
@@ -402,25 +386,25 @@ export default function PurchaseOrderReceivePage() {
         ),
       },
       {
-        title: '批次号',
+        title: t('receive.columns.batchNumber'),
         dataIndex: 'batch_number',
         width: 140,
         render: (_: unknown, record: ReceivableItem) => (
           <Input
             value={record.batch_number}
-            placeholder="可选"
+            placeholder={t('receive.columns.batchPlaceholder')}
             onChange={(value) => updateBatchNumber(record.id, value)}
           />
         ),
       },
       {
-        title: '有效期',
+        title: t('receive.columns.expiryDate'),
         dataIndex: 'expiry_date',
         width: 160,
         render: (_: unknown, record: ReceivableItem) => (
           <DatePicker
             value={record.expiry_date || undefined}
-            placeholder="可选"
+            placeholder={t('receive.columns.expiryPlaceholder')}
             style={{ width: '100%' }}
             onChange={(date) => {
               let dateStr: string | null = null
@@ -440,7 +424,7 @@ export default function PurchaseOrderReceivePage() {
         ),
       },
     ],
-    [updateReceiveQuantity, updateBatchNumber, updateExpiryDate]
+    [updateReceiveQuantity, updateBatchNumber, updateExpiryDate, t, formatCurrency]
   )
 
   // Check if order is receivable
@@ -450,7 +434,7 @@ export default function PurchaseOrderReceivePage() {
     return (
       <Container size="full" className="purchase-order-receive-page">
         <Card className="loading-card">
-          <Spin size="large" tip="加载中..." />
+          <Spin size="large" tip={t('receive.loading')} />
         </Card>
       </Container>
     )
@@ -460,9 +444,9 @@ export default function PurchaseOrderReceivePage() {
     return (
       <Container size="full" className="purchase-order-receive-page">
         <Card className="empty-card">
-          <Empty description="订单不存在" />
+          <Empty description={t('receive.messages.notExist')} />
           <Button onClick={() => navigate('/trade/purchase')} style={{ marginTop: 16 }}>
-            返回列表
+            {t('orderDetail.back')}
           </Button>
         </Card>
       </Container>
@@ -470,14 +454,17 @@ export default function PurchaseOrderReceivePage() {
   }
 
   if (!canReceive) {
+    const statusKey = order.status === 'partial_received' ? 'partialReceived' : order.status
     return (
       <Container size="full" className="purchase-order-receive-page">
         <Card className="empty-card">
           <Empty
-            description={`订单状态为"${STATUS_LABELS[order.status || ''] || order.status}"，无法收货`}
+            description={t('receive.cannotReceive', {
+              status: t(`purchaseOrder.status.${statusKey || 'draft'}`),
+            })}
           />
           <Button onClick={() => navigate('/trade/purchase')} style={{ marginTop: 16 }}>
-            返回列表
+            {t('orderDetail.back')}
           </Button>
         </Card>
       </Container>
@@ -495,12 +482,12 @@ export default function PurchaseOrderReceivePage() {
             onClick={() => navigate('/trade/purchase')}
           />
           <Title heading={4} style={{ margin: 0 }}>
-            采购收货
+            {t('receive.title')}
           </Title>
         </div>
         <div className="header-right">
           <Button icon={<IconRefresh />} onClick={fetchOrderData}>
-            刷新
+            {t('receive.refresh')}
           </Button>
         </div>
       </div>
@@ -508,7 +495,7 @@ export default function PurchaseOrderReceivePage() {
       {/* Order Summary */}
       <Card className="order-summary-card">
         <Title heading={5} className="card-title">
-          订单信息
+          {t('receive.orderInfo')}
         </Title>
         <Descriptions data={orderSummary} row />
       </Card>
@@ -517,13 +504,13 @@ export default function PurchaseOrderReceivePage() {
       <Card className="warehouse-selection-card">
         <div className="warehouse-selection">
           <Text strong>
-            收货仓库 <Text type="danger">*</Text>
+            {t('receive.warehouse')} <Text type="danger">*</Text>
           </Text>
           <Select
             value={selectedWarehouseId}
             onChange={(value) => setSelectedWarehouseId(value as string)}
             optionList={warehouseOptions}
-            placeholder="请选择收货仓库"
+            placeholder={t('receive.warehousePlaceholder')}
             style={{ width: 240 }}
             filter
             showClear={false}
@@ -535,14 +522,14 @@ export default function PurchaseOrderReceivePage() {
       <Card className="items-card">
         <div className="items-header">
           <Title heading={5} className="card-title" style={{ margin: 0 }}>
-            收货明细
+            {t('receive.detail.title')}
           </Title>
           <Space>
             <Button size="small" onClick={receiveAll}>
-              全部收货
+              {t('receive.detail.receiveAll')}
             </Button>
             <Button size="small" onClick={clearAll}>
-              清空数量
+              {t('receive.detail.clearAll')}
             </Button>
           </Space>
         </div>
@@ -553,16 +540,18 @@ export default function PurchaseOrderReceivePage() {
           rowKey="id"
           pagination={false}
           scroll={{ x: 1400 }}
-          empty={<Empty description="暂无待收货商品" />}
+          empty={<Empty description={t('receive.emptyItems')} />}
         />
 
         {/* Receiving Summary */}
         {receivingStats.totalItems > 0 && (
           <div className="receiving-summary">
             <Text type="secondary">
-              本次收货: {receivingStats.totalItems} 种商品, 共{' '}
-              {receivingStats.totalQuantity.toFixed(2)} 件, 金额{' '}
-              {formatPrice(receivingStats.totalAmount)}
+              {t('receive.summary', {
+                items: receivingStats.totalItems,
+                quantity: receivingStats.totalQuantity.toFixed(2),
+                amount: formatCurrency(receivingStats.totalAmount),
+              })}
             </Text>
           </div>
         )}
@@ -571,7 +560,7 @@ export default function PurchaseOrderReceivePage() {
       {/* Actions */}
       <Card className="actions-card">
         <div className="actions-bar">
-          <Button onClick={() => navigate('/trade/purchase')}>取消</Button>
+          <Button onClick={() => navigate('/trade/purchase')}>{t('receive.actions.cancel')}</Button>
           <Button
             type="primary"
             theme="solid"
@@ -580,7 +569,7 @@ export default function PurchaseOrderReceivePage() {
             disabled={receivingStats.totalItems === 0}
             onClick={handleSubmit}
           >
-            确认收货
+            {t('receive.actions.confirm')}
           </Button>
         </div>
       </Card>

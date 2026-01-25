@@ -30,6 +30,8 @@ import type {
   HandlerSupplierListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { useI18n } from '@/hooks/useI18n'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PurchaseOrders.css'
 
 const { Title } = Typography
@@ -43,16 +45,6 @@ interface SupplierOption {
   value: string
 }
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'draft' },
-  { label: '已确认', value: 'confirmed' },
-  { label: '部分收货', value: 'partial_received' },
-  { label: '已完成', value: 'completed' },
-  { label: '已取消', value: 'cancelled' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'orange' | 'grey' | 'red'> = {
   draft: 'blue',
@@ -60,51 +52,6 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'orange' | '
   partial_received: 'orange',
   completed: 'green',
   cancelled: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  draft: '草稿',
-  confirmed: '已确认',
-  partial_received: '部分收货',
-  completed: '已完成',
-  cancelled: '已取消',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 /**
@@ -119,6 +66,8 @@ function formatDateTime(dateStr?: string): string {
  */
 export default function PurchaseOrdersPage() {
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
+  const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
   const supplierApi = useMemo(() => getSuppliers(), [])
 
@@ -144,6 +93,19 @@ export default function PurchaseOrdersPage() {
     defaultSortOrder: 'desc',
   })
 
+  // Status options for filter (memoized with translations)
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('salesOrder.allStatus'), value: '' },
+      { label: t('purchaseOrder.status.draft'), value: 'draft' },
+      { label: t('purchaseOrder.status.confirmed'), value: 'confirmed' },
+      { label: t('purchaseOrder.status.partialReceived'), value: 'partial_received' },
+      { label: t('purchaseOrder.status.completed'), value: 'completed' },
+      { label: t('purchaseOrder.status.cancelled'), value: 'cancelled' },
+    ],
+    [t]
+  )
+
   // Fetch suppliers for filter dropdown
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
@@ -156,7 +118,7 @@ export default function PurchaseOrdersPage() {
             value: supplier.id || '',
           })
         )
-        setSupplierOptions([{ label: '全部供应商', value: '' }, ...options])
+        setSupplierOptions([{ label: t('salesOrder.allSuppliers'), value: '' }, ...options])
       }
     } catch {
       // Silently fail - supplier filter just won't be available
@@ -204,7 +166,7 @@ export default function PurchaseOrdersPage() {
         }
       }
     } catch {
-      Toast.error('获取采购订单列表失败')
+      Toast.error(t('purchaseOrder.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -277,22 +239,24 @@ export default function PurchaseOrdersPage() {
     async (order: PurchaseOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '确认订单',
-        content: `确定要确认采购订单 "${order.order_number}" 吗？`,
-        okText: '确认',
-        cancelText: '取消',
+        title: t('purchaseOrder.modal.confirmTitle'),
+        content: t('purchaseOrder.modal.confirmContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.confirmOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
             await purchaseOrderApi.postTradePurchaseOrdersIdConfirm(order.id!, {})
-            Toast.success(`采购订单 "${order.order_number}" 已确认`)
+            Toast.success(
+              t('purchaseOrder.messages.confirmSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('确认订单失败')
+            Toast.error(t('purchaseOrder.messages.confirmError'))
           }
         },
       })
     },
-    [purchaseOrderApi, fetchOrders]
+    [purchaseOrderApi, fetchOrders, t]
   )
 
   // Handle receive order - navigate to receive page
@@ -310,25 +274,27 @@ export default function PurchaseOrdersPage() {
     async (order: PurchaseOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '取消订单',
-        content: `确定要取消采购订单 "${order.order_number}" 吗？`,
-        okText: '确认取消',
-        cancelText: '返回',
+        title: t('purchaseOrder.modal.cancelTitle'),
+        content: t('purchaseOrder.modal.cancelContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.cancelOk'),
+        cancelText: t('salesOrder.modal.backBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await purchaseOrderApi.postTradePurchaseOrdersIdCancel(order.id!, {
-              reason: '用户取消',
+              reason: t('common.userCancel'),
             })
-            Toast.success(`采购订单 "${order.order_number}" 已取消`)
+            Toast.success(
+              t('purchaseOrder.messages.cancelSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('取消订单失败')
+            Toast.error(t('purchaseOrder.messages.cancelError'))
           }
         },
       })
     },
-    [purchaseOrderApi, fetchOrders]
+    [purchaseOrderApi, fetchOrders, t]
   )
 
   // Handle delete order
@@ -336,23 +302,25 @@ export default function PurchaseOrdersPage() {
     async (order: PurchaseOrder) => {
       if (!order.id) return
       Modal.confirm({
-        title: '删除订单',
-        content: `确定要删除采购订单 "${order.order_number}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('purchaseOrder.modal.deleteTitle'),
+        content: t('purchaseOrder.modal.deleteContent', { orderNumber: order.order_number }),
+        okText: t('salesOrder.modal.deleteOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await purchaseOrderApi.deleteTradePurchaseOrdersId(order.id!)
-            Toast.success(`采购订单 "${order.order_number}" 已删除`)
+            Toast.success(
+              t('purchaseOrder.messages.deleteSuccess', { orderNumber: order.order_number })
+            )
             fetchOrders()
           } catch {
-            Toast.error('删除订单失败')
+            Toast.error(t('purchaseOrder.messages.deleteError'))
           }
         },
       })
     },
-    [purchaseOrderApi, fetchOrders]
+    [purchaseOrderApi, fetchOrders, t]
   )
 
   // Handle view order
@@ -384,7 +352,7 @@ export default function PurchaseOrdersPage() {
   const tableColumns: DataTableColumn<PurchaseOrder>[] = useMemo(
     () => [
       {
-        title: '订单编号',
+        title: t('purchaseOrder.columns.orderNumber'),
         dataIndex: 'order_number',
         width: 160,
         sortable: true,
@@ -393,50 +361,63 @@ export default function PurchaseOrdersPage() {
         ),
       },
       {
-        title: '供应商',
+        title: t('purchaseOrder.columns.supplier'),
         dataIndex: 'supplier_name',
         width: 150,
         ellipsis: true,
         render: (name: unknown) => (name as string) || '-',
       },
       {
-        title: '商品数量',
+        title: t('purchaseOrder.columns.itemCount'),
         dataIndex: 'item_count',
         width: 100,
         align: 'center',
-        render: (count: unknown) => `${(count as number) || 0} 件`,
+        render: (count: unknown) => `${(count as number) || 0} ${t('salesOrder.unit')}`,
       },
       {
-        title: '订单金额',
+        title: t('purchaseOrder.columns.totalAmount'),
         dataIndex: 'total_amount',
         width: 120,
         align: 'right',
         sortable: true,
-        render: (amount: unknown) => formatPrice(amount as number | undefined),
+        render: (amount: unknown) => {
+          const value = amount as number | undefined
+          return value !== undefined && value !== null ? formatCurrency(value) : '-'
+        },
       },
       {
-        title: '应付金额',
+        title: t('purchaseOrder.columns.payableAmount'),
         dataIndex: 'payable_amount',
         width: 120,
         align: 'right',
         sortable: true,
-        render: (amount: unknown) => (
-          <span className="payable-amount">{formatPrice(amount as number | undefined)}</span>
-        ),
+        render: (amount: unknown) => {
+          const value = amount as number | undefined
+          return (
+            <span className="payable-amount">
+              {value !== undefined && value !== null ? formatCurrency(value) : '-'}
+            </span>
+          )
+        },
       },
       {
-        title: '状态',
+        title: t('purchaseOrder.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as string | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          const statusKey = statusValue === 'partial_received' ? 'partialReceived' : statusValue
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`purchaseOrder.status.${statusKey}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '收货进度',
+        title: t('purchaseOrder.columns.receiveProgress'),
         dataIndex: 'receive_progress',
         width: 120,
         align: 'center',
@@ -462,20 +443,26 @@ export default function PurchaseOrdersPage() {
         },
       },
       {
-        title: '创建时间',
+        title: t('purchaseOrder.columns.createdAt'),
         dataIndex: 'created_at',
         width: 150,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDate(value) : '-'
+        },
       },
       {
-        title: '确认时间',
+        title: t('purchaseOrder.columns.confirmedAt'),
         dataIndex: 'confirmed_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
     ],
-    []
+    [t, formatCurrency, formatDate, formatDateTime]
   )
 
   // Table row actions
@@ -483,45 +470,45 @@ export default function PurchaseOrdersPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('salesOrder.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('salesOrder.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.status !== 'draft',
       },
       {
         key: 'confirm',
-        label: '确认',
+        label: t('salesOrder.actions.confirm'),
         type: 'primary',
         onClick: handleConfirm,
         hidden: (record) => record.status !== 'draft',
       },
       {
         key: 'receive',
-        label: '收货',
+        label: t('salesOrder.actions.receive'),
         type: 'primary',
         onClick: handleReceive,
         hidden: (record) => record.status !== 'confirmed' && record.status !== 'partial_received',
       },
       {
         key: 'cancel',
-        label: '取消',
+        label: t('salesOrder.actions.cancel'),
         type: 'warning',
         onClick: handleCancel,
         hidden: (record) => record.status !== 'draft' && record.status !== 'confirmed',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('salesOrder.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
         hidden: (record) => record.status !== 'draft',
       },
     ],
-    [handleView, handleEdit, handleConfirm, handleReceive, handleCancel, handleDelete]
+    [handleView, handleEdit, handleConfirm, handleReceive, handleCancel, handleDelete, t]
   )
 
   return (
@@ -529,23 +516,23 @@ export default function PurchaseOrdersPage() {
       <Card className="purchase-orders-card">
         <div className="purchase-orders-header">
           <Title heading={4} style={{ margin: 0 }}>
-            采购订单
+            {t('purchaseOrder.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索订单编号..."
+          searchPlaceholder={t('purchaseOrder.searchPlaceholder')}
           primaryAction={{
-            label: '新建订单',
+            label: t('purchaseOrder.newOrder'),
             icon: <IconPlus />,
             onClick: () => navigate('/trade/purchase/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('purchaseOrder.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -553,14 +540,14 @@ export default function PurchaseOrdersPage() {
           filters={
             <Space>
               <Select
-                placeholder="状态筛选"
+                placeholder={t('salesOrder.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="供应商筛选"
+                placeholder={t('salesOrder.supplierFilter')}
                 value={supplierFilter}
                 onChange={handleSupplierChange}
                 optionList={supplierOptions}
@@ -570,7 +557,7 @@ export default function PurchaseOrdersPage() {
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('salesOrder.startDate'), t('salesOrder.endDate')]}
                 value={dateRange || undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 260 }}

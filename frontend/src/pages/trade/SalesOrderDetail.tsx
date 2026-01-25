@@ -19,6 +19,8 @@ import { Container } from '@/components/common/layout'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse, HandlerSalesOrderItemResponse } from '@/api/models'
 import { ShipOrderModal } from './components'
+import { useI18n } from '@/hooks/useI18n'
+import { useFormatters } from '@/hooks/useFormatters'
 import './SalesOrderDetail.css'
 
 const { Title, Text } = Typography
@@ -30,39 +32,6 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'grey' | 're
   shipped: 'green',
   completed: 'grey',
   cancelled: 'red',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  draft: '草稿',
-  confirmed: '已确认',
-  shipped: '已发货',
-  completed: '已完成',
-  cancelled: '已取消',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
 }
 
 /**
@@ -77,6 +46,8 @@ function formatDateTime(dateStr?: string): string {
 export default function SalesOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
+  const { formatCurrency, formatDateTime } = useFormatters()
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
 
   const [order, setOrder] = useState<HandlerSalesOrderResponse | null>(null)
@@ -94,16 +65,16 @@ export default function SalesOrderDetailPage() {
       if (response.success && response.data) {
         setOrder(response.data)
       } else {
-        Toast.error('订单不存在')
+        Toast.error(t('salesOrder.messages.notExist'))
         navigate('/trade/sales')
       }
     } catch {
-      Toast.error('获取订单详情失败')
+      Toast.error(t('salesOrder.messages.fetchDetailError'))
       navigate('/trade/sales')
     } finally {
       setLoading(false)
     }
-  }, [id, salesOrderApi, navigate])
+  }, [id, salesOrderApi, navigate, t])
 
   useEffect(() => {
     fetchOrder()
@@ -113,24 +84,24 @@ export default function SalesOrderDetailPage() {
   const handleConfirm = useCallback(async () => {
     if (!order?.id) return
     Modal.confirm({
-      title: '确认订单',
-      content: `确定要确认订单 "${order.order_number}" 吗？确认后将锁定库存。`,
-      okText: '确认',
-      cancelText: '取消',
+      title: t('salesOrder.modal.confirmTitle'),
+      content: t('salesOrder.modal.confirmContent', { orderNumber: order.order_number }),
+      okText: t('salesOrder.modal.confirmOk'),
+      cancelText: t('salesOrder.modal.cancelBtn'),
       onOk: async () => {
         setActionLoading(true)
         try {
           await salesOrderApi.postTradeSalesOrdersIdConfirm(order.id!, {})
-          Toast.success('订单已确认')
+          Toast.success(t('orderDetail.messages.confirmSuccess'))
           fetchOrder()
         } catch {
-          Toast.error('确认订单失败')
+          Toast.error(t('orderDetail.messages.confirmError'))
         } finally {
           setActionLoading(false)
         }
       },
     })
-  }, [order, salesOrderApi, fetchOrder])
+  }, [order, salesOrderApi, fetchOrder, t])
 
   // Handle ship order - open modal
   const handleShip = useCallback(() => {
@@ -146,15 +117,15 @@ export default function SalesOrderDetailPage() {
         await salesOrderApi.postTradeSalesOrdersIdShip(order.id, {
           warehouse_id: warehouseId,
         })
-        Toast.success('订单已发货')
+        Toast.success(t('orderDetail.messages.shipSuccess'))
         setShipModalVisible(false)
         fetchOrder()
       } catch {
-        Toast.error('发货失败')
-        throw new Error('发货失败') // Re-throw to keep modal open
+        Toast.error(t('orderDetail.messages.shipError'))
+        throw new Error(t('orderDetail.messages.shipError')) // Re-throw to keep modal open
       }
     },
-    [order, salesOrderApi, fetchOrder]
+    [order, salesOrderApi, fetchOrder, t]
   )
 
   // Handle complete order
@@ -163,38 +134,40 @@ export default function SalesOrderDetailPage() {
     setActionLoading(true)
     try {
       await salesOrderApi.postTradeSalesOrdersIdComplete(order.id)
-      Toast.success('订单已完成')
+      Toast.success(t('orderDetail.messages.completeSuccess'))
       fetchOrder()
     } catch {
-      Toast.error('完成订单失败')
+      Toast.error(t('orderDetail.messages.completeError'))
     } finally {
       setActionLoading(false)
     }
-  }, [order, salesOrderApi, fetchOrder])
+  }, [order, salesOrderApi, fetchOrder, t])
 
   // Handle cancel order
   const handleCancel = useCallback(async () => {
     if (!order?.id) return
     Modal.confirm({
-      title: '取消订单',
-      content: `确定要取消订单 "${order.order_number}" 吗？`,
-      okText: '确认取消',
-      cancelText: '返回',
+      title: t('salesOrder.modal.cancelTitle'),
+      content: t('salesOrder.modal.cancelContent', { orderNumber: order.order_number }),
+      okText: t('salesOrder.modal.cancelOk'),
+      cancelText: t('salesOrder.modal.backBtn'),
       okButtonProps: { type: 'danger' },
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, { reason: '用户取消' })
-          Toast.success('订单已取消')
+          await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, {
+            reason: t('common.userCancel'),
+          })
+          Toast.success(t('orderDetail.messages.cancelSuccess'))
           fetchOrder()
         } catch {
-          Toast.error('取消订单失败')
+          Toast.error(t('orderDetail.messages.cancelError'))
         } finally {
           setActionLoading(false)
         }
       },
     })
-  }, [order, salesOrderApi, fetchOrder])
+  }, [order, salesOrderApi, fetchOrder, t])
 
   // Handle edit order
   const handleEdit = useCallback(() => {
@@ -207,59 +180,59 @@ export default function SalesOrderDetailPage() {
   const itemColumns = useMemo(
     () => [
       {
-        title: '序号',
+        title: t('orderDetail.items.columns.index'),
         dataIndex: 'index',
         width: 60,
         render: (_: unknown, __: unknown, index: number) => index + 1,
       },
       {
-        title: '商品编码',
+        title: t('orderDetail.items.columns.productCode'),
         dataIndex: 'product_code',
         width: 120,
         render: (code: string) => <Text className="product-code">{code || '-'}</Text>,
       },
       {
-        title: '商品名称',
+        title: t('orderDetail.items.columns.productName'),
         dataIndex: 'product_name',
         width: 200,
         ellipsis: true,
       },
       {
-        title: '单位',
+        title: t('orderDetail.items.columns.unit'),
         dataIndex: 'unit',
         width: 80,
         align: 'center' as const,
         render: (unit: string) => unit || '-',
       },
       {
-        title: '数量',
+        title: t('orderDetail.items.columns.quantity'),
         dataIndex: 'quantity',
         width: 100,
         align: 'right' as const,
         render: (qty: number) => qty?.toFixed(2) || '-',
       },
       {
-        title: '单价',
+        title: t('orderDetail.items.columns.unitPrice'),
         dataIndex: 'unit_price',
         width: 120,
         align: 'right' as const,
-        render: (price: number) => formatPrice(price),
+        render: (price: number) => formatCurrency(price),
       },
       {
-        title: '金额',
+        title: t('orderDetail.items.columns.amount'),
         dataIndex: 'amount',
         width: 120,
         align: 'right' as const,
-        render: (amount: number) => <Text className="item-amount">{formatPrice(amount)}</Text>,
+        render: (amount: number) => <Text className="item-amount">{formatCurrency(amount)}</Text>,
       },
       {
-        title: '备注',
+        title: t('orderDetail.items.columns.remark'),
         dataIndex: 'remark',
         ellipsis: true,
         render: (remark: string) => remark || '-',
       },
     ],
-    []
+    [t, formatCurrency]
   )
 
   // Build timeline items based on order status
@@ -272,7 +245,7 @@ export default function SalesOrderDetailPage() {
     if (order.created_at) {
       items.push({
         time: formatDateTime(order.created_at),
-        content: '订单创建',
+        content: t('orderDetail.timeline.created'),
         type: 'default' as const,
       })
     }
@@ -281,7 +254,7 @@ export default function SalesOrderDetailPage() {
     if (order.confirmed_at) {
       items.push({
         time: formatDateTime(order.confirmed_at),
-        content: '订单确认',
+        content: t('orderDetail.timeline.confirmed'),
         type: 'success' as const,
       })
     }
@@ -290,7 +263,7 @@ export default function SalesOrderDetailPage() {
     if (order.shipped_at) {
       items.push({
         time: formatDateTime(order.shipped_at),
-        content: '订单发货',
+        content: t('orderDetail.timeline.shipped'),
         type: 'success' as const,
       })
     }
@@ -299,7 +272,7 @@ export default function SalesOrderDetailPage() {
     if (order.completed_at) {
       items.push({
         time: formatDateTime(order.completed_at),
-        content: '订单完成',
+        content: t('orderDetail.timeline.completed'),
         type: 'success' as const,
       })
     }
@@ -308,34 +281,46 @@ export default function SalesOrderDetailPage() {
     if (order.cancelled_at) {
       items.push({
         time: formatDateTime(order.cancelled_at),
-        content: `订单取消${order.cancel_reason ? `: ${order.cancel_reason}` : ''}`,
+        content: `${t('orderDetail.timeline.cancelled')}${order.cancel_reason ? `: ${order.cancel_reason}` : ''}`,
         type: 'error' as const,
       })
     }
 
     return items
-  }, [order])
+  }, [order, t, formatDateTime])
 
   // Render order basic info
   const renderBasicInfo = () => {
     if (!order) return null
 
     const data = [
-      { key: '订单编号', value: order.order_number },
-      { key: '客户名称', value: order.customer_name || '-' },
+      { key: t('orderDetail.basicInfo.orderNumber'), value: order.order_number },
+      { key: t('orderDetail.basicInfo.customerName'), value: order.customer_name || '-' },
       {
-        key: '订单状态',
+        key: t('orderDetail.basicInfo.orderStatus'),
         value: (
           <Tag color={STATUS_TAG_COLORS[order.status || 'draft']}>
-            {STATUS_LABELS[order.status || 'draft']}
+            {t(`salesOrder.status.${order.status || 'draft'}`)}
           </Tag>
         ),
       },
-      { key: '商品数量', value: `${order.item_count || 0} 件` },
-      { key: '总数量', value: order.total_quantity?.toFixed(2) || '0.00' },
-      { key: '创建时间', value: formatDateTime(order.created_at) },
-      { key: '更新时间', value: formatDateTime(order.updated_at) },
-      { key: '备注', value: order.remark || '-' },
+      {
+        key: t('orderDetail.basicInfo.itemCount'),
+        value: `${order.item_count || 0} ${t('salesOrder.unit')}`,
+      },
+      {
+        key: t('orderDetail.basicInfo.totalQuantity'),
+        value: order.total_quantity?.toFixed(2) || '0.00',
+      },
+      {
+        key: t('orderDetail.basicInfo.createdAt'),
+        value: order.created_at ? formatDateTime(order.created_at) : '-',
+      },
+      {
+        key: t('orderDetail.basicInfo.updatedAt'),
+        value: order.updated_at ? formatDateTime(order.updated_at) : '-',
+      },
+      { key: t('orderDetail.basicInfo.remark'), value: order.remark || '-' },
     ]
 
     return <Descriptions data={data} row className="order-basic-info" />
@@ -353,17 +338,19 @@ export default function SalesOrderDetailPage() {
     return (
       <div className="amount-summary">
         <div className="amount-row">
-          <Text type="secondary">商品金额</Text>
-          <Text>{formatPrice((order.total_amount || 0) + (order.discount_amount || 0))}</Text>
+          <Text type="secondary">{t('orderDetail.amount.productAmount')}</Text>
+          <Text>{formatCurrency((order.total_amount || 0) + (order.discount_amount || 0))}</Text>
         </div>
         <div className="amount-row">
-          <Text type="secondary">优惠金额 ({discountPercent}%)</Text>
-          <Text className="discount-amount">-{formatPrice(order.discount_amount)}</Text>
+          <Text type="secondary">
+            {t('orderDetail.amount.discountAmount')} ({discountPercent}%)
+          </Text>
+          <Text className="discount-amount">-{formatCurrency(order.discount_amount || 0)}</Text>
         </div>
         <div className="amount-row total-row">
-          <Text strong>应付金额</Text>
+          <Text strong>{t('orderDetail.amount.payableAmount')}</Text>
           <Text className="payable-amount" strong>
-            {formatPrice(order.payable_amount)}
+            {formatCurrency(order.payable_amount || 0)}
           </Text>
         </div>
       </div>
@@ -381,7 +368,7 @@ export default function SalesOrderDetailPage() {
         {status === 'draft' && (
           <>
             <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-              编辑
+              {t('orderDetail.actions.edit')}
             </Button>
             <Button
               type="primary"
@@ -389,7 +376,7 @@ export default function SalesOrderDetailPage() {
               onClick={handleConfirm}
               loading={actionLoading}
             >
-              确认订单
+              {t('orderDetail.actions.confirmOrder')}
             </Button>
             <Button
               type="danger"
@@ -397,14 +384,14 @@ export default function SalesOrderDetailPage() {
               onClick={handleCancel}
               loading={actionLoading}
             >
-              取消
+              {t('orderDetail.actions.cancel')}
             </Button>
           </>
         )}
         {status === 'confirmed' && (
           <>
             <Button type="primary" icon={<IconSend />} onClick={handleShip} loading={actionLoading}>
-              发货
+              {t('orderDetail.actions.ship')}
             </Button>
             <Button
               type="warning"
@@ -412,7 +399,7 @@ export default function SalesOrderDetailPage() {
               onClick={handleCancel}
               loading={actionLoading}
             >
-              取消
+              {t('orderDetail.actions.cancel')}
             </Button>
           </>
         )}
@@ -423,7 +410,7 @@ export default function SalesOrderDetailPage() {
             onClick={handleComplete}
             loading={actionLoading}
           >
-            完成
+            {t('orderDetail.actions.complete')}
           </Button>
         )}
       </Space>
@@ -443,7 +430,7 @@ export default function SalesOrderDetailPage() {
   if (!order) {
     return (
       <Container size="lg" className="sales-order-detail-page">
-        <Empty title="订单不存在" description="您访问的订单不存在或已被删除" />
+        <Empty title={t('orderDetail.notExist')} description={t('orderDetail.notExistDesc')} />
       </Container>
     )
   }
@@ -458,25 +445,25 @@ export default function SalesOrderDetailPage() {
             theme="borderless"
             onClick={() => navigate('/trade/sales')}
           >
-            返回列表
+            {t('orderDetail.back')}
           </Button>
           <Title heading={4} className="page-title">
-            订单详情
+            {t('orderDetail.title')}
           </Title>
           <Tag color={STATUS_TAG_COLORS[order.status || 'draft']} size="large">
-            {STATUS_LABELS[order.status || 'draft']}
+            {t(`salesOrder.status.${order.status || 'draft'}`)}
           </Tag>
         </div>
         <div className="header-right">{renderActions()}</div>
       </div>
 
       {/* Order Info Card */}
-      <Card className="info-card" title="基本信息">
+      <Card className="info-card" title={t('orderDetail.basicInfo.title')}>
         {renderBasicInfo()}
       </Card>
 
       {/* Order Items Card */}
-      <Card className="items-card" title="商品明细">
+      <Card className="items-card" title={t('orderDetail.items.title')}>
         <Table
           columns={itemColumns}
           dataSource={
@@ -485,13 +472,13 @@ export default function SalesOrderDetailPage() {
           rowKey="id"
           pagination={false}
           size="small"
-          empty={<Empty description="暂无商品" />}
+          empty={<Empty description={t('orderDetail.items.empty')} />}
         />
         {renderAmountSummary()}
       </Card>
 
       {/* Timeline Card */}
-      <Card className="timeline-card" title="状态变更">
+      <Card className="timeline-card" title={t('orderDetail.timeline.title')}>
         {timelineItems.length > 0 ? (
           <Timeline mode="left" className="status-timeline">
             {timelineItems.map((item, index) => (
@@ -505,7 +492,7 @@ export default function SalesOrderDetailPage() {
             ))}
           </Timeline>
         ) : (
-          <Empty description="暂无状态记录" />
+          <Empty description={t('orderDetail.timeline.empty')} />
         )}
       </Card>
 

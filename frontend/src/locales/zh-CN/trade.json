@@ -1,0 +1,459 @@
+{
+  "salesOrder": {
+    "title": "销售订单",
+    "searchPlaceholder": "搜索订单编号...",
+    "newOrder": "新建订单",
+    "refresh": "刷新",
+    "statusFilter": "状态筛选",
+    "customerFilter": "客户筛选",
+    "supplierFilter": "供应商筛选",
+    "allStatus": "全部状态",
+    "allCustomers": "全部客户",
+    "allSuppliers": "全部供应商",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "columns": {
+      "orderNumber": "订单编号",
+      "customer": "客户",
+      "supplier": "供应商",
+      "itemCount": "商品数量",
+      "totalAmount": "订单金额",
+      "payableAmount": "应付金额",
+      "status": "状态",
+      "createdAt": "创建时间",
+      "confirmedAt": "确认时间",
+      "shippedAt": "发货时间",
+      "receiveProgress": "收货进度"
+    },
+    "status": {
+      "draft": "草稿",
+      "confirmed": "已确认",
+      "shipped": "已发货",
+      "completed": "已完成",
+      "cancelled": "已取消",
+      "partialReceived": "部分收货"
+    },
+    "actions": {
+      "view": "查看",
+      "edit": "编辑",
+      "confirm": "确认",
+      "ship": "发货",
+      "receive": "收货",
+      "complete": "完成",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "modal": {
+      "confirmTitle": "确认订单",
+      "confirmContent": "确定要确认订单 \"{{orderNumber}}\" 吗？确认后将锁定库存。",
+      "cancelTitle": "取消订单",
+      "cancelContent": "确定要取消订单 \"{{orderNumber}}\" 吗？",
+      "deleteTitle": "删除订单",
+      "deleteContent": "确定要删除订单 \"{{orderNumber}}\" 吗？删除后无法恢复。",
+      "confirmOk": "确认",
+      "cancelOk": "确认取消",
+      "deleteOk": "确认删除",
+      "cancelBtn": "取消",
+      "backBtn": "返回"
+    },
+    "messages": {
+      "fetchError": "获取销售订单列表失败",
+      "confirmSuccess": "订单 \"{{orderNumber}}\" 已确认",
+      "confirmError": "确认订单失败",
+      "shipSuccess": "订单 \"{{orderNumber}}\" 已发货",
+      "shipError": "发货失败",
+      "completeSuccess": "订单 \"{{orderNumber}}\" 已完成",
+      "completeError": "完成订单失败",
+      "cancelSuccess": "订单 \"{{orderNumber}}\" 已取消",
+      "cancelError": "取消订单失败",
+      "deleteSuccess": "订单 \"{{orderNumber}}\" 已删除",
+      "deleteError": "删除订单失败",
+      "notExist": "订单不存在",
+      "fetchDetailError": "获取订单详情失败"
+    },
+    "unit": "件"
+  },
+  "purchaseOrder": {
+    "title": "采购订单",
+    "searchPlaceholder": "搜索订单编号...",
+    "newOrder": "新建订单",
+    "refresh": "刷新",
+    "columns": {
+      "orderNumber": "订单编号",
+      "supplier": "供应商",
+      "itemCount": "商品数量",
+      "totalAmount": "订单金额",
+      "payableAmount": "应付金额",
+      "status": "状态",
+      "receiveProgress": "收货进度",
+      "createdAt": "创建时间",
+      "confirmedAt": "确认时间"
+    },
+    "status": {
+      "draft": "草稿",
+      "confirmed": "已确认",
+      "partialReceived": "部分收货",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "modal": {
+      "confirmTitle": "确认订单",
+      "confirmContent": "确定要确认采购订单 \"{{orderNumber}}\" 吗？",
+      "cancelTitle": "取消订单",
+      "cancelContent": "确定要取消采购订单 \"{{orderNumber}}\" 吗？",
+      "deleteTitle": "删除订单",
+      "deleteContent": "确定要删除采购订单 \"{{orderNumber}}\" 吗？删除后无法恢复。"
+    },
+    "messages": {
+      "fetchError": "获取采购订单列表失败",
+      "confirmSuccess": "采购订单 \"{{orderNumber}}\" 已确认",
+      "confirmError": "确认订单失败",
+      "cancelSuccess": "采购订单 \"{{orderNumber}}\" 已取消",
+      "cancelError": "取消订单失败",
+      "deleteSuccess": "采购订单 \"{{orderNumber}}\" 已删除",
+      "deleteError": "删除订单失败"
+    }
+  },
+  "orderDetail": {
+    "title": "订单详情",
+    "back": "返回列表",
+    "notExist": "订单不存在",
+    "notExistDesc": "您访问的订单不存在或已被删除",
+    "basicInfo": {
+      "title": "基本信息",
+      "orderNumber": "订单编号",
+      "customerName": "客户名称",
+      "supplierName": "供应商",
+      "orderStatus": "订单状态",
+      "itemCount": "商品数量",
+      "totalQuantity": "总数量",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间",
+      "remark": "备注"
+    },
+    "items": {
+      "title": "商品明细",
+      "columns": {
+        "index": "序号",
+        "productCode": "商品编码",
+        "productName": "商品名称",
+        "unit": "单位",
+        "quantity": "数量",
+        "unitPrice": "单价",
+        "amount": "金额",
+        "remark": "备注"
+      },
+      "empty": "暂无商品"
+    },
+    "amount": {
+      "productAmount": "商品金额",
+      "discountAmount": "优惠金额",
+      "payableAmount": "应付金额"
+    },
+    "timeline": {
+      "title": "状态变更",
+      "created": "订单创建",
+      "confirmed": "订单确认",
+      "shipped": "订单发货",
+      "completed": "订单完成",
+      "cancelled": "订单取消",
+      "empty": "暂无状态记录"
+    },
+    "actions": {
+      "edit": "编辑",
+      "confirmOrder": "确认订单",
+      "cancel": "取消",
+      "ship": "发货",
+      "complete": "完成"
+    },
+    "messages": {
+      "confirmSuccess": "订单已确认",
+      "confirmError": "确认订单失败",
+      "shipSuccess": "订单已发货",
+      "shipError": "发货失败",
+      "completeSuccess": "订单已完成",
+      "completeError": "完成订单失败",
+      "cancelSuccess": "订单已取消",
+      "cancelError": "取消订单失败"
+    }
+  },
+  "orderForm": {
+    "createTitle": "创建销售订单",
+    "editTitle": "编辑销售订单",
+    "createPurchaseTitle": "创建采购订单",
+    "editPurchaseTitle": "编辑采购订单",
+    "back": "返回",
+    "basicInfo": {
+      "title": "基本信息",
+      "customer": "客户",
+      "customerPlaceholder": "请选择客户",
+      "supplier": "供应商",
+      "supplierPlaceholder": "请选择供应商",
+      "warehouse": "发货仓库",
+      "receiveWarehouse": "收货仓库",
+      "warehousePlaceholder": "请选择仓库",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入备注信息"
+    },
+    "items": {
+      "title": "商品明细",
+      "addProduct": "添加商品",
+      "columns": {
+        "product": "商品",
+        "productPlaceholder": "请选择商品",
+        "unit": "单位",
+        "unitPrice": "单价",
+        "purchasePrice": "采购单价",
+        "quantity": "数量",
+        "amount": "金额",
+        "remark": "备注",
+        "remarkPlaceholder": "备注",
+        "operation": "操作"
+      },
+      "remove": "移除",
+      "empty": "请添加商品"
+    },
+    "summary": {
+      "itemCount": "商品数量",
+      "itemCountUnit": "种",
+      "subtotal": "小计",
+      "discount": "折扣",
+      "payableAmount": "应付金额"
+    },
+    "actions": {
+      "cancel": "取消",
+      "create": "创建订单",
+      "save": "保存"
+    },
+    "validation": {
+      "customerRequired": "请选择客户",
+      "supplierRequired": "请选择供应商",
+      "warehouseRequired": "请选择仓库",
+      "itemsRequired": "请至少添加一个商品",
+      "quantityRequired": "数量必须大于0",
+      "priceRequired": "单价必须大于0"
+    },
+    "messages": {
+      "createSuccess": "订单创建成功",
+      "createError": "创建订单失败",
+      "updateSuccess": "订单更新成功",
+      "updateError": "更新订单失败",
+      "fetchCustomersError": "获取客户列表失败",
+      "fetchSuppliersError": "获取供应商列表失败",
+      "fetchWarehousesError": "获取仓库列表失败",
+      "fetchProductsError": "获取商品列表失败",
+      "onlyDraftEditable": "只有草稿状态的订单可以编辑"
+    }
+  },
+  "shipModal": {
+    "title": "发货确认",
+    "orderNumber": "订单编号",
+    "customerName": "客户名称",
+    "itemCount": "商品数量",
+    "totalQuantity": "总数量",
+    "payableAmount": "应付金额",
+    "warehouse": "发货仓库",
+    "warehousePlaceholder": "请选择发货仓库",
+    "warehouseRequired": "请选择发货仓库",
+    "confirm": "确认发货",
+    "cancel": "取消",
+    "messages": {
+      "fetchWarehousesError": "获取仓库列表失败"
+    }
+  },
+  "receive": {
+    "title": "采购收货",
+    "refresh": "刷新",
+    "orderInfo": "订单信息",
+    "orderNumber": "订单编号",
+    "supplier": "供应商",
+    "status": "状态",
+    "orderAmount": "订单金额",
+    "payableAmount": "应付金额",
+    "confirmedAt": "确认时间",
+    "warehouse": "收货仓库",
+    "warehouseRequired": "请选择收货仓库",
+    "warehousePlaceholder": "请选择收货仓库",
+    "detail": {
+      "title": "收货明细",
+      "receiveAll": "全部收货",
+      "clearAll": "清空数量"
+    },
+    "columns": {
+      "productCode": "商品编码",
+      "productName": "商品名称",
+      "unit": "单位",
+      "orderedQuantity": "订购数量",
+      "receivedQuantity": "已收数量",
+      "remainingQuantity": "待收数量",
+      "unitCost": "单价",
+      "receiveQuantity": "本次收货数量",
+      "batchNumber": "批次号",
+      "batchPlaceholder": "可选",
+      "expiryDate": "有效期",
+      "expiryPlaceholder": "可选"
+    },
+    "summary": "本次收货: {{items}} 种商品, 共 {{quantity}} 件, 金额 {{amount}}",
+    "emptyItems": "暂无待收货商品",
+    "cannotReceive": "订单状态为\"{{status}}\"，无法收货",
+    "actions": {
+      "cancel": "取消",
+      "confirm": "确认收货"
+    },
+    "validation": {
+      "warehouseRequired": "请选择收货仓库",
+      "itemsRequired": "请至少输入一个商品的收货数量",
+      "exceedRemaining": "{{productName}} 收货数量不能超过待收数量"
+    },
+    "messages": {
+      "fetchError": "获取订单数据失败",
+      "fetchDetailError": "获取订单详情失败",
+      "fetchWarehousesError": "获取仓库列表失败",
+      "receiveFullSuccess": "收货完成，订单已全部入库",
+      "receivePartialSuccess": "收货成功，部分商品已入库",
+      "receiveError": "收货失败",
+      "notExist": "订单不存在"
+    },
+    "loading": "加载中..."
+  },
+  "salesReturn": {
+    "title": "销售退货",
+    "searchPlaceholder": "搜索退货单号...",
+    "newReturn": "新建退货",
+    "refresh": "刷新",
+    "columns": {
+      "returnNumber": "退货单号",
+      "orderNumber": "原订单号",
+      "customer": "客户",
+      "itemCount": "商品数量",
+      "totalAmount": "退货金额",
+      "status": "状态",
+      "createdAt": "创建时间"
+    },
+    "status": {
+      "all": "全部状态",
+      "draft": "草稿",
+      "pendingApproval": "待审批",
+      "approved": "已审批",
+      "rejected": "已拒绝",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "actions": {
+      "view": "查看",
+      "edit": "编辑",
+      "submit": "提交审批",
+      "approve": "审批通过",
+      "reject": "拒绝",
+      "complete": "完成",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "modal": {
+      "submitTitle": "提交审批",
+      "submitContent": "确定要提交退货单 \"{{returnNumber}}\" 进行审批吗？",
+      "approveTitle": "审批通过",
+      "approveContent": "确定要通过退货单 \"{{returnNumber}}\" 的审批吗？",
+      "rejectTitle": "拒绝退货",
+      "rejectContent": "确定要拒绝退货单 \"{{returnNumber}}\" 吗？",
+      "completeTitle": "完成退货",
+      "completeContent": "确定要完成退货单 \"{{returnNumber}}\" 吗？完成后库存将自动入库。",
+      "cancelTitle": "取消退货",
+      "cancelContent": "确定要取消退货单 \"{{returnNumber}}\" 吗？",
+      "deleteTitle": "删除退货单",
+      "deleteContent": "确定要删除退货单 \"{{returnNumber}}\" 吗？删除后无法恢复。"
+    },
+    "messages": {
+      "fetchError": "获取退货单列表失败",
+      "submitSuccess": "退货单已提交审批",
+      "submitError": "提交审批失败",
+      "approveSuccess": "退货单已审批通过",
+      "approveError": "审批失败",
+      "rejectSuccess": "退货单已拒绝",
+      "rejectError": "拒绝失败",
+      "completeSuccess": "退货单已完成",
+      "completeError": "完成退货失败",
+      "cancelSuccess": "退货单已取消",
+      "cancelError": "取消失败",
+      "deleteSuccess": "退货单已删除",
+      "deleteError": "删除失败"
+    }
+  },
+  "purchaseReturn": {
+    "title": "采购退货",
+    "searchPlaceholder": "搜索退货单号...",
+    "newReturn": "新建退货",
+    "refresh": "刷新",
+    "columns": {
+      "returnNumber": "退货单号",
+      "orderNumber": "原订单号",
+      "supplier": "供应商",
+      "itemCount": "商品数量",
+      "totalAmount": "退货金额",
+      "status": "状态",
+      "createdAt": "创建时间",
+      "submittedAt": "提交时间",
+      "shippedAt": "发货时间",
+      "completedAt": "完成时间"
+    },
+    "status": {
+      "all": "全部状态",
+      "draft": "草稿",
+      "pendingApproval": "待审批",
+      "approved": "已审批",
+      "rejected": "已拒绝",
+      "shipped": "已发货",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "actions": {
+      "view": "查看",
+      "edit": "编辑",
+      "submit": "提交审批",
+      "approve": "审批通过",
+      "reject": "拒绝",
+      "ship": "发货",
+      "complete": "完成",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "modal": {
+      "submitTitle": "提交审批",
+      "submitContent": "确定要提交退货单 \"{{returnNumber}}\" 进行审批吗？",
+      "approveTitle": "审批通过",
+      "approveContent": "确定要通过退货单 \"{{returnNumber}}\" 的审批吗？",
+      "rejectTitle": "拒绝退货",
+      "rejectContent": "确定要拒绝退货单 \"{{returnNumber}}\" 吗？",
+      "shipTitle": "发货确认",
+      "shipContent": "确定要发货退货单 \"{{returnNumber}}\" 吗？",
+      "completeTitle": "完成退货",
+      "completeContent": "确定要完成退货单 \"{{returnNumber}}\" 吗？",
+      "cancelTitle": "取消退货",
+      "cancelContent": "确定要取消退货单 \"{{returnNumber}}\" 吗？",
+      "deleteTitle": "删除退货单",
+      "deleteContent": "确定要删除退货单 \"{{returnNumber}}\" 吗？删除后无法恢复。"
+    },
+    "messages": {
+      "fetchError": "获取退货单列表失败",
+      "submitSuccess": "退货单已提交审批",
+      "submitError": "提交审批失败",
+      "approveSuccess": "退货单已审批通过",
+      "approveError": "审批失败",
+      "rejectSuccess": "退货单已拒绝",
+      "rejectError": "拒绝失败",
+      "shipSuccess": "退货单已发货",
+      "shipError": "发货失败",
+      "completeSuccess": "退货单已完成",
+      "completeError": "完成退货失败",
+      "cancelSuccess": "退货单已取消",
+      "cancelError": "取消失败",
+      "deleteSuccess": "退货单已删除",
+      "deleteError": "删除失败"
+    }
+  },
+  "common": {
+    "unit": "件",
+    "userCancel": "用户取消",
+    "defaultWarehouse": "默认"
+  }
+}

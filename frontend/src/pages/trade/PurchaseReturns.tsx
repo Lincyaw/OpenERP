@@ -29,6 +29,8 @@ import type {
   HandlerSupplierListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { useI18n } from '@/hooks/useI18n'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PurchaseReturns.css'
 
 const { Title } = Typography
@@ -41,18 +43,6 @@ interface SupplierOption {
   label: string
   value: string
 }
-
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'DRAFT' },
-  { label: '待审批', value: 'PENDING' },
-  { label: '已审批', value: 'APPROVED' },
-  { label: '已拒绝', value: 'REJECTED' },
-  { label: '已发货', value: 'SHIPPED' },
-  { label: '已完成', value: 'COMPLETED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
 
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
@@ -68,51 +58,15 @@ const STATUS_TAG_COLORS: Record<
   CANCELLED: 'grey',
 }
 
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: '草稿',
-  PENDING: '待审批',
-  APPROVED: '已审批',
-  REJECTED: '已拒绝',
-  SHIPPED: '已发货',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
-}
-
-/**
- * Format price for display
- */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+// Status key mapping for i18n
+const STATUS_KEYS: Record<string, string> = {
+  DRAFT: 'draft',
+  PENDING: 'pendingApproval',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  SHIPPED: 'shipped',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
 }
 
 /**
@@ -127,6 +81,8 @@ function formatDateTime(dateStr?: string): string {
  */
 export default function PurchaseReturnsPage() {
   const navigate = useNavigate()
+  const { t } = useI18n({ ns: 'trade' })
+  const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
   const supplierApi = useMemo(() => getSuppliers(), [])
 
@@ -152,6 +108,21 @@ export default function PurchaseReturnsPage() {
     defaultSortOrder: 'desc',
   })
 
+  // Status options for filter (memoized with translations)
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('purchaseReturn.status.all'), value: '' },
+      { label: t('purchaseReturn.status.draft'), value: 'DRAFT' },
+      { label: t('purchaseReturn.status.pendingApproval'), value: 'PENDING' },
+      { label: t('purchaseReturn.status.approved'), value: 'APPROVED' },
+      { label: t('purchaseReturn.status.rejected'), value: 'REJECTED' },
+      { label: t('purchaseReturn.status.shipped'), value: 'SHIPPED' },
+      { label: t('purchaseReturn.status.completed'), value: 'COMPLETED' },
+      { label: t('purchaseReturn.status.cancelled'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
+
   // Fetch suppliers for filter dropdown
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
@@ -164,14 +135,14 @@ export default function PurchaseReturnsPage() {
             value: supplier.id || '',
           })
         )
-        setSupplierOptions([{ label: '全部供应商', value: '' }, ...options])
+        setSupplierOptions([{ label: t('salesOrder.allSuppliers'), value: '' }, ...options])
       }
     } catch {
       // Silently fail - supplier filter just won't be available
     } finally {
       setSuppliersLoading(false)
     }
-  }, [supplierApi])
+  }, [supplierApi, t])
 
   // Fetch suppliers on mount
   useEffect(() => {
@@ -212,7 +183,7 @@ export default function PurchaseReturnsPage() {
         }
       }
     } catch {
-      Toast.error('获取采购退货列表失败')
+      Toast.error(t('purchaseReturn.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -225,6 +196,7 @@ export default function PurchaseReturnsPage() {
     statusFilter,
     supplierFilter,
     dateRange,
+    t,
   ])
 
   // Fetch on mount and when state changes
@@ -285,22 +257,24 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '提交审批',
-        content: `确定要提交退货单 "${returnItem.return_number}" 进行审批吗？`,
-        okText: '确认',
-        cancelText: '取消',
+        title: t('purchaseReturn.modal.submitTitle'),
+        content: t('purchaseReturn.modal.submitContent', {
+          returnNumber: returnItem.return_number,
+        }),
+        okText: t('salesOrder.modal.confirmOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdSubmit(returnItem.id!)
-            Toast.success(`退货单 "${returnItem.return_number}" 已提交审批`)
+            Toast.success(t('purchaseReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('提交审批失败')
+            Toast.error(t('purchaseReturn.messages.submitError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle approve return
@@ -308,22 +282,24 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '审批通过',
-        content: `确定要通过退货单 "${returnItem.return_number}" 的审批吗？`,
-        okText: '通过',
-        cancelText: '取消',
+        title: t('purchaseReturn.modal.approveTitle'),
+        content: t('purchaseReturn.modal.approveContent', {
+          returnNumber: returnItem.return_number,
+        }),
+        okText: t('purchaseReturn.actions.approve'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdApprove(returnItem.id!, { note: '' })
-            Toast.success(`退货单 "${returnItem.return_number}" 已审批通过`)
+            Toast.success(t('purchaseReturn.messages.approveSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('审批失败')
+            Toast.error(t('purchaseReturn.messages.approveError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle reject return
@@ -331,25 +307,27 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '拒绝退货',
-        content: `确定要拒绝退货单 "${returnItem.return_number}" 吗？`,
-        okText: '拒绝',
-        cancelText: '取消',
+        title: t('purchaseReturn.modal.rejectTitle'),
+        content: t('purchaseReturn.modal.rejectContent', {
+          returnNumber: returnItem.return_number,
+        }),
+        okText: t('purchaseReturn.actions.reject'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdReject(returnItem.id!, {
-              reason: '审批拒绝',
+              reason: t('purchaseReturn.actions.reject'),
             })
-            Toast.success(`退货单 "${returnItem.return_number}" 已拒绝`)
+            Toast.success(t('purchaseReturn.messages.rejectSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('拒绝失败')
+            Toast.error(t('purchaseReturn.messages.rejectError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle ship return (send goods back to supplier)
@@ -357,24 +335,24 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '确认发货',
-        content: `确定要将退货单 "${returnItem.return_number}" 的商品发货给供应商吗？发货后库存将被扣减。`,
-        okText: '确认发货',
-        cancelText: '取消',
+        title: t('purchaseReturn.modal.shipTitle'),
+        content: t('purchaseReturn.modal.shipContent', { returnNumber: returnItem.return_number }),
+        okText: t('purchaseReturn.actions.ship'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdShip(returnItem.id!, {
-              note: `从仓库发货`,
+              note: '',
             })
-            Toast.success(`退货单 "${returnItem.return_number}" 已发货`)
+            Toast.success(t('purchaseReturn.messages.shipSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('发货失败')
+            Toast.error(t('purchaseReturn.messages.shipError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle complete return
@@ -383,13 +361,13 @@ export default function PurchaseReturnsPage() {
       if (!returnItem.id) return
       try {
         await purchaseReturnApi.postTradePurchaseReturnsIdComplete(returnItem.id!)
-        Toast.success(`退货单 "${returnItem.return_number}" 已完成`)
+        Toast.success(t('purchaseReturn.messages.completeSuccess'))
         fetchReturns()
       } catch {
-        Toast.error('完成退货失败')
+        Toast.error(t('purchaseReturn.messages.completeError'))
       }
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle cancel return
@@ -397,25 +375,27 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '取消退货',
-        content: `确定要取消退货单 "${returnItem.return_number}" 吗？`,
-        okText: '确认取消',
-        cancelText: '返回',
+        title: t('purchaseReturn.modal.cancelTitle'),
+        content: t('purchaseReturn.modal.cancelContent', {
+          returnNumber: returnItem.return_number,
+        }),
+        okText: t('salesOrder.modal.cancelOk'),
+        cancelText: t('salesOrder.modal.backBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await purchaseReturnApi.postTradePurchaseReturnsIdCancel(returnItem.id!, {
-              reason: '用户取消',
+              reason: t('common.userCancel'),
             })
-            Toast.success(`退货单 "${returnItem.return_number}" 已取消`)
+            Toast.success(t('purchaseReturn.messages.cancelSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('取消退货失败')
+            Toast.error(t('purchaseReturn.messages.cancelError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle delete return
@@ -423,23 +403,25 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       Modal.confirm({
-        title: '删除退货单',
-        content: `确定要删除退货单 "${returnItem.return_number}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('purchaseReturn.modal.deleteTitle'),
+        content: t('purchaseReturn.modal.deleteContent', {
+          returnNumber: returnItem.return_number,
+        }),
+        okText: t('salesOrder.modal.deleteOk'),
+        cancelText: t('salesOrder.modal.cancelBtn'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await purchaseReturnApi.deleteTradePurchaseReturnsId(returnItem.id!)
-            Toast.success(`退货单 "${returnItem.return_number}" 已删除`)
+            Toast.success(t('purchaseReturn.messages.deleteSuccess'))
             fetchReturns()
           } catch {
-            Toast.error('删除退货单失败')
+            Toast.error(t('purchaseReturn.messages.deleteError'))
           }
         },
       })
     },
-    [purchaseReturnApi, fetchReturns]
+    [purchaseReturnApi, fetchReturns, t]
   )
 
   // Handle view return
@@ -461,7 +443,7 @@ export default function PurchaseReturnsPage() {
   const tableColumns: DataTableColumn<PurchaseReturn>[] = useMemo(
     () => [
       {
-        title: '退货单号',
+        title: t('purchaseReturn.columns.returnNumber'),
         dataIndex: 'return_number',
         width: 150,
         sortable: true,
@@ -470,7 +452,7 @@ export default function PurchaseReturnsPage() {
         ),
       },
       {
-        title: '原订单号',
+        title: t('purchaseReturn.columns.orderNumber'),
         dataIndex: 'purchase_order_number',
         width: 150,
         render: (orderNumber: unknown) => (
@@ -478,67 +460,89 @@ export default function PurchaseReturnsPage() {
         ),
       },
       {
-        title: '供应商',
+        title: t('purchaseReturn.columns.supplier'),
         dataIndex: 'supplier_name',
         width: 150,
         ellipsis: true,
         render: (name: unknown) => (name as string) || '-',
       },
       {
-        title: '商品数量',
+        title: t('purchaseReturn.columns.itemCount'),
         dataIndex: 'item_count',
         width: 100,
         align: 'center',
-        render: (count: unknown) => `${(count as number) || 0} 件`,
+        render: (count: unknown) => `${(count as number) || 0} ${t('common.unit')}`,
       },
       {
-        title: '退款金额',
+        title: t('purchaseReturn.columns.totalAmount'),
         dataIndex: 'total_refund',
         width: 120,
         align: 'right',
         sortable: true,
-        render: (amount: unknown) => (
-          <span className="refund-amount">{formatPrice(amount as number | undefined)}</span>
-        ),
+        render: (amount: unknown) => {
+          const value = amount as number | undefined
+          return (
+            <span className="refund-amount">
+              {value !== undefined && value !== null ? formatCurrency(value) : '-'}
+            </span>
+          )
+        },
       },
       {
-        title: '状态',
+        title: t('purchaseReturn.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as string | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          const statusKey = STATUS_KEYS[statusValue] || 'draft'
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`purchaseReturn.status.${statusKey}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('purchaseReturn.columns.createdAt'),
         dataIndex: 'created_at',
         width: 150,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDate(value) : '-'
+        },
       },
       {
-        title: '提交时间',
+        title: t('purchaseReturn.columns.submittedAt'),
         dataIndex: 'submitted_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
       {
-        title: '发货时间',
+        title: t('purchaseReturn.columns.shippedAt'),
         dataIndex: 'shipped_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
       {
-        title: '完成时间',
+        title: t('purchaseReturn.columns.completedAt'),
         dataIndex: 'completed_at',
         width: 150,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => {
+          const value = date as string | undefined
+          return value ? formatDateTime(value) : '-'
+        },
       },
     ],
-    []
+    [t, formatCurrency, formatDate, formatDateTime]
   )
 
   // Table row actions
@@ -546,47 +550,47 @@ export default function PurchaseReturnsPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('purchaseReturn.actions.view'),
         onClick: handleView,
       },
       {
         key: 'submit',
-        label: '提交审批',
+        label: t('purchaseReturn.actions.submit'),
         type: 'primary',
         onClick: handleSubmit,
         hidden: (record) => record.status !== 'DRAFT',
       },
       {
         key: 'approve',
-        label: '通过',
+        label: t('purchaseReturn.actions.approve'),
         type: 'primary',
         onClick: handleApprove,
         hidden: (record) => record.status !== 'PENDING',
       },
       {
         key: 'reject',
-        label: '拒绝',
+        label: t('purchaseReturn.actions.reject'),
         type: 'warning',
         onClick: handleReject,
         hidden: (record) => record.status !== 'PENDING',
       },
       {
         key: 'ship',
-        label: '发货',
+        label: t('purchaseReturn.actions.ship'),
         type: 'primary',
         onClick: handleShip,
         hidden: (record) => record.status !== 'APPROVED',
       },
       {
         key: 'complete',
-        label: '完成',
+        label: t('purchaseReturn.actions.complete'),
         type: 'primary',
         onClick: handleComplete,
         hidden: (record) => record.status !== 'SHIPPED',
       },
       {
         key: 'cancel',
-        label: '取消',
+        label: t('purchaseReturn.actions.cancel'),
         type: 'warning',
         onClick: handleCancel,
         hidden: (record) =>
@@ -594,7 +598,7 @@ export default function PurchaseReturnsPage() {
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('purchaseReturn.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
         hidden: (record) => record.status !== 'DRAFT',
@@ -609,6 +613,7 @@ export default function PurchaseReturnsPage() {
       handleComplete,
       handleCancel,
       handleDelete,
+      t,
     ]
   )
 
@@ -617,23 +622,23 @@ export default function PurchaseReturnsPage() {
       <Card className="purchase-returns-card">
         <div className="purchase-returns-header">
           <Title heading={4} style={{ margin: 0 }}>
-            采购退货
+            {t('purchaseReturn.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索退货单号..."
+          searchPlaceholder={t('purchaseReturn.searchPlaceholder')}
           primaryAction={{
-            label: '新建退货',
+            label: t('purchaseReturn.newReturn'),
             icon: <IconPlus />,
             onClick: () => navigate('/trade/purchase-returns/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('purchaseReturn.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -641,14 +646,14 @@ export default function PurchaseReturnsPage() {
           filters={
             <Space>
               <Select
-                placeholder="状态筛选"
+                placeholder={t('salesOrder.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="供应商筛选"
+                placeholder={t('salesOrder.supplierFilter')}
                 value={supplierFilter}
                 onChange={handleSupplierChange}
                 optionList={supplierOptions}
@@ -658,7 +663,7 @@ export default function PurchaseReturnsPage() {
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('salesOrder.startDate'), t('salesOrder.endDate')]}
                 value={dateRange || undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 260 }}

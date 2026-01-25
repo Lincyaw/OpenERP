@@ -1,0 +1,35 @@
+# PRD Progress Log
+
+## P0-I18N-008: Trade Module i18n Migration
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Created locale files:
+   - `frontend/src/locales/zh-CN/trade.json` - Chinese translations
+   - `frontend/src/locales/en-US/trade.json` - English translations
+
+2. Updated i18n configuration:
+   - `frontend/src/i18n/index.ts` - Added trade namespace
+
+3. Migrated trade module pages with i18n:
+   - `frontend/src/pages/trade/SalesOrders.tsx`
+   - `frontend/src/pages/trade/SalesOrderDetail.tsx`
+   - `frontend/src/pages/trade/SalesOrderEdit.tsx`
+   - `frontend/src/pages/trade/SalesReturns.tsx`
+   - `frontend/src/pages/trade/PurchaseOrders.tsx`
+   - `frontend/src/pages/trade/PurchaseOrderReceive.tsx`
+   - `frontend/src/pages/trade/PurchaseReturns.tsx`
+
+4. Migrated trade module feature components:
+   - `frontend/src/features/trade/SalesOrderForm.tsx`
+   - `frontend/src/features/trade/PurchaseOrderForm.tsx`
+
+### Implementation Pattern:
+- Used `useI18n({ ns: 'trade' })` hook for translations
+- Used `useFormatters()` hook for locale-aware date/currency formatting
+- Moved Zod validation schemas inside components with useMemo for i18n support
+- Memoized table columns with t() dependency
+
+### Build Verification:
+- `npm run build` passes successfully
