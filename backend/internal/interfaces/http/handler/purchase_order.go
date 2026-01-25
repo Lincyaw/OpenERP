@@ -38,13 +38,15 @@ type CreatePurchaseOrderRequest struct {
 // CreatePurchaseOrderItemInput represents an item in the create order request
 // @Description Purchase order item for creation
 type CreatePurchaseOrderItemInput struct {
-	ProductID   string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductName string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
-	ProductCode string  `json:"product_code" binding:"required,min=1,max=50" example:"SKU-001"`
-	Unit        string  `json:"unit" binding:"required,min=1,max=20" example:"pcs"`
-	Quantity    float64 `json:"quantity" binding:"required,gt=0" example:"10"`
-	UnitCost    float64 `json:"unit_cost" binding:"required,gt=0" example:"50.00"`
-	Remark      string  `json:"remark" example:"商品备注"`
+	ProductID      string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductName    string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
+	ProductCode    string  `json:"product_code" binding:"required,min=1,max=50" example:"SKU-001"`
+	Unit           string  `json:"unit" binding:"required,min=1,max=20" example:"pcs"`
+	BaseUnit       string  `json:"base_unit" example:"pcs"`       // Base unit code - defaults to Unit if empty
+	ConversionRate float64 `json:"conversion_rate" example:"1.0"` // Conversion rate to base unit - defaults to 1 if empty
+	Quantity       float64 `json:"quantity" binding:"required,gt=0" example:"10"`
+	UnitCost       float64 `json:"unit_cost" binding:"required,gt=0" example:"50.00"`
+	Remark         string  `json:"remark" example:"商品备注"`
 }
 
 // UpdatePurchaseOrderRequest represents a request to update a purchase order
@@ -58,13 +60,15 @@ type UpdatePurchaseOrderRequest struct {
 // AddPurchaseOrderItemRequest represents a request to add an item to an order
 // @Description Request body for adding an item to a purchase order
 type AddPurchaseOrderItemRequest struct {
-	ProductID   string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductName string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
-	ProductCode string  `json:"product_code" binding:"required,min=1,max=50" example:"SKU-001"`
-	Unit        string  `json:"unit" binding:"required,min=1,max=20" example:"pcs"`
-	Quantity    float64 `json:"quantity" binding:"required,gt=0" example:"5"`
-	UnitCost    float64 `json:"unit_cost" binding:"required,gt=0" example:"60.00"`
-	Remark      string  `json:"remark" example:"商品备注"`
+	ProductID      string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductName    string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
+	ProductCode    string  `json:"product_code" binding:"required,min=1,max=50" example:"SKU-001"`
+	Unit           string  `json:"unit" binding:"required,min=1,max=20" example:"pcs"`
+	BaseUnit       string  `json:"base_unit" example:"pcs"`       // Base unit code - defaults to Unit if empty
+	ConversionRate float64 `json:"conversion_rate" example:"1.0"` // Conversion rate to base unit - defaults to 1 if empty
+	Quantity       float64 `json:"quantity" binding:"required,gt=0" example:"5"`
+	UnitCost       float64 `json:"unit_cost" binding:"required,gt=0" example:"60.00"`
+	Remark         string  `json:"remark" example:"商品备注"`
 }
 
 // UpdatePurchaseOrderItemRequest represents a request to update an order item
@@ -268,14 +272,27 @@ func (h *PurchaseOrderHandler) Create(c *gin.Context) {
 			h.BadRequest(c, "Invalid product ID format")
 			return
 		}
+
+		// Set defaults for base_unit and conversion_rate if not provided
+		baseUnit := item.BaseUnit
+		if baseUnit == "" {
+			baseUnit = item.Unit // Default to the same unit
+		}
+		conversionRate := item.ConversionRate
+		if conversionRate <= 0 {
+			conversionRate = 1.0 // Default conversion rate
+		}
+
 		appReq.Items = append(appReq.Items, tradeapp.CreatePurchaseOrderItemInput{
-			ProductID:   productID,
-			ProductName: item.ProductName,
-			ProductCode: item.ProductCode,
-			Unit:        item.Unit,
-			Quantity:    decimal.NewFromFloat(item.Quantity),
-			UnitCost:    decimal.NewFromFloat(item.UnitCost),
-			Remark:      item.Remark,
+			ProductID:      productID,
+			ProductName:    item.ProductName,
+			ProductCode:    item.ProductCode,
+			Unit:           item.Unit,
+			BaseUnit:       baseUnit,
+			Quantity:       decimal.NewFromFloat(item.Quantity),
+			ConversionRate: decimal.NewFromFloat(conversionRate),
+			UnitCost:       decimal.NewFromFloat(item.UnitCost),
+			Remark:         item.Remark,
 		})
 	}
 
@@ -624,14 +641,26 @@ func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
 		return
 	}
 
+	// Set defaults for base_unit and conversion_rate if not provided
+	baseUnit := req.BaseUnit
+	if baseUnit == "" {
+		baseUnit = req.Unit // Default to the same unit
+	}
+	conversionRate := req.ConversionRate
+	if conversionRate <= 0 {
+		conversionRate = 1.0 // Default conversion rate
+	}
+
 	appReq := tradeapp.AddPurchaseOrderItemRequest{
-		ProductID:   productID,
-		ProductName: req.ProductName,
-		ProductCode: req.ProductCode,
-		Unit:        req.Unit,
-		Quantity:    decimal.NewFromFloat(req.Quantity),
-		UnitCost:    decimal.NewFromFloat(req.UnitCost),
-		Remark:      req.Remark,
+		ProductID:      productID,
+		ProductName:    req.ProductName,
+		ProductCode:    req.ProductCode,
+		Unit:           req.Unit,
+		BaseUnit:       baseUnit,
+		Quantity:       decimal.NewFromFloat(req.Quantity),
+		ConversionRate: decimal.NewFromFloat(conversionRate),
+		UnitCost:       decimal.NewFromFloat(req.UnitCost),
+		Remark:         req.Remark,
 	}
 
 	order, err := h.orderService.AddItem(c.Request.Context(), tenantID, orderID, appReq)

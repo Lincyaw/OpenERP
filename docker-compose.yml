@@ -152,7 +152,7 @@ services:
   # Playwright E2E Test Runner (E2E mode only)
   # ---------------------------------------------------------------------------
   playwright:
-    image: mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION:-v1.48.0-noble}
+    image: mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION:-v1.58.0-noble}
     container_name: erp-playwright
     user: "${FRONTEND_USER:-1000:1000}"
     working_dir: /app

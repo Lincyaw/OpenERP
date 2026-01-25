@@ -241,6 +241,10 @@ export class PurchaseOrderPage extends BasePage {
     row: Locator,
     action: 'view' | 'edit' | 'confirm' | 'receive' | 'cancel' | 'delete'
   ): Promise<void> {
+    // Scroll row into view first
+    await row.scrollIntoViewIfNeeded()
+    await this.page.waitForTimeout(100)
+
     // Hover over the row to show actions
     await row.hover()
     await this.page.waitForTimeout(200)
@@ -257,21 +261,59 @@ export class PurchaseOrderPage extends BasePage {
     const actionText = actionLabels[action]
 
     // Try to click the action directly in the row
-    const actionButton = row.locator('a, button, .semi-button').filter({ hasText: actionText })
-    if (await actionButton.isVisible()) {
+    const actionButton = row.locator('button.semi-button').filter({ hasText: actionText })
+    const buttonVisible = await actionButton.isVisible().catch(() => false)
+
+    if (buttonVisible) {
       await actionButton.click()
     } else {
-      // Try to find in dropdown menu
-      const moreButton = row
-        .locator('.semi-dropdown-trigger, button')
-        .filter({ hasText: /更多|操作/ })
-      if (await moreButton.isVisible()) {
+      // Try to find in dropdown menu (more actions button is marked with data-testid)
+      const moreButton = row.locator('[data-testid="table-row-more-actions"]')
+      const moreButtonExists = await moreButton.isVisible().catch(() => false)
+
+      if (moreButtonExists) {
+        // Scroll more button into view to ensure dropdown positions correctly
+        await moreButton.scrollIntoViewIfNeeded()
+        await this.page.waitForTimeout(100)
+
         await moreButton.click()
-        await this.page.waitForTimeout(200)
-        await this.page
-          .locator('.semi-dropdown-menu .semi-dropdown-item')
-          .filter({ hasText: actionText })
-          .click()
+        await this.page.waitForTimeout(300)
+
+        // The dropdown menu uses menuitem role - use keyboard navigation
+        // to ensure proper selection and React event handling
+        const menuItem = this.page.getByRole('menuitem', { name: actionText })
+        await menuItem.waitFor({ state: 'visible', timeout: 3000 })
+
+        // Focus and click using keyboard (Enter key) to properly trigger React handlers
+        await menuItem.focus()
+        await this.page.keyboard.press('Enter')
+      } else {
+        throw new Error(
+          `Action button "${actionText}" not found in row, and no more actions dropdown available`
+        )
+      }
+    }
+
+    await this.page.waitForTimeout(300)
+
+    // Handle modal confirmation for actions that trigger modals (confirm, cancel, delete)
+    if (['confirm', 'cancel', 'delete'].includes(action)) {
+      // Wait for modal to appear
+      const modal = this.page.locator('.semi-modal')
+      await modal.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
+        // Modal might not appear if action was directly executed
+      })
+
+      if (await modal.isVisible()) {
+        // Click the confirm button in modal (primary or danger button)
+        const confirmBtn = modal.locator(
+          '.semi-modal-footer .semi-button-primary, .semi-modal-footer .semi-button-danger'
+        )
+        await confirmBtn.click()
+
+        // Wait for modal to close
+        await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {})
+        await this.page.waitForTimeout(500)
       }
     }
   }
@@ -284,12 +326,20 @@ export class PurchaseOrderPage extends BasePage {
       .filter({ hasText: /搜索并选择供应商|供应商/ })
       .first()
     await supplierSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
 
-    // Type to search
-    const searchInput = this.page.locator('.semi-select-input-wrapper input').first()
+    // Type to search - Semi Design's combobox uses a textbox role
+    // When the select opens, it creates an input for searching
+    const searchInput = this.page.getByRole('textbox').first()
     await searchInput.fill(supplierName)
-    await this.page.waitForTimeout(500) // Wait for search
+    await this.page.waitForTimeout(800) // Wait for debounced search API call
+
+    // Wait for option to appear (increase timeout for API response)
+    await this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: supplierName })
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 })
 
     // Select the option
     await this.page.locator('.semi-select-option').filter({ hasText: supplierName }).first().click()
@@ -320,12 +370,20 @@ export class PurchaseOrderPage extends BasePage {
     // Find the product select in this row
     const productSelect = row.locator('.semi-select').first()
     await productSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
 
-    // Type to search
-    const searchInput = this.page.locator('.semi-select-input-wrapper input').first()
+    // Type to search - Semi Design's combobox uses a textbox role
+    // When the select opens, it creates an input for searching
+    const searchInput = this.page.getByRole('textbox').first()
     await searchInput.fill(productName)
-    await this.page.waitForTimeout(500)
+    await this.page.waitForTimeout(800) // Wait for debounced search API call
+
+    // Wait for option to appear (increase timeout for API response)
+    await this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: productName })
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 })
 
     // Select the option
     await this.page.locator('.semi-select-option').filter({ hasText: productName }).first().click()
@@ -382,14 +440,72 @@ export class PurchaseOrderPage extends BasePage {
   }
 
   async submitOrder(): Promise<void> {
-    await this.submitButton.click()
+    // Wait for button to be enabled and visible
+    await this.submitButton.waitFor({ state: 'visible' })
+    await expect(this.submitButton).toBeEnabled()
+
+    // Scroll into view
+    await this.submitButton.scrollIntoViewIfNeeded()
+    await this.page.waitForTimeout(200)
+
+    // Try to click and wait for network request
+    const [response] = await Promise.all([
+      this.page
+        .waitForResponse(
+          (resp) => resp.url().includes('/trade/purchase') && resp.request().method() === 'POST',
+          { timeout: 15000 }
+        )
+        .catch(() => null), // Don't fail if no request is made
+      this.submitButton.click({ force: true }),
+    ])
+
+    // If a response was received, check for errors
+    if (response) {
+      const status = response.status()
+      if (status >= 400) {
+        const body = await response.text().catch(() => 'Unable to read response body')
+        throw new Error(`Order creation API failed with status ${status}: ${body}`)
+      }
+    } else {
+      // Wait a bit to see if there's an error toast
+      await this.page.waitForTimeout(1000)
+    }
   }
 
   async waitForOrderCreateSuccess(): Promise<void> {
-    await Promise.race([
-      this.page.waitForURL('**/trade/purchase', { timeout: 10000 }),
-      this.waitForToast('成功'),
-    ])
+    // Wait for BOTH success indication AND navigation away from /new page
+    // First wait for any toast or navigation indication
+    try {
+      await Promise.race([
+        this.page.waitForURL(/\/trade\/purchase(?!\/new)/, { timeout: 20000 }),
+        this.page.locator('.semi-toast-content').first().waitFor({ timeout: 20000 }),
+      ])
+    } catch {
+      throw new Error('Order creation did not complete - no navigation or toast within 20 seconds')
+    }
+
+    // If still on /new page, wait for navigation to complete
+    const currentUrl = this.page.url()
+    if (currentUrl.endsWith('/new')) {
+      await this.page.waitForURL(/\/trade\/purchase(?!\/new)/, { timeout: 10000 })
+    }
+
+    // Check for error toast
+    const toast = this.page.locator('.semi-toast-content').first()
+    if (await toast.isVisible()) {
+      const toastText = await toast.textContent()
+      if (
+        toastText?.includes('错误') ||
+        toastText?.includes('失败') ||
+        toastText?.includes('Error')
+      ) {
+        throw new Error(`Order creation failed with error: ${toastText}`)
+      }
+    }
+
+    // Wait for page to stabilize
+    await this.page.waitForLoadState('domcontentloaded')
+    await this.page.waitForTimeout(500)
   }
 
   // Detail page methods

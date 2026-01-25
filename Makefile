@@ -17,7 +17,7 @@
 # Configuration
 DOCKER_COMPOSE := docker compose
 MIGRATE_IMAGE := migrate/migrate:v4.17.0
-PLAYWRIGHT_IMAGE := mcr.microsoft.com/playwright:v1.48.0-noble
+PLAYWRIGHT_IMAGE := mcr.microsoft.com/playwright:v1.58.0-noble
 
 # Colors for output
 CYAN := \033[0;36m
