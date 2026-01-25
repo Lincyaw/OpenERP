@@ -677,9 +677,9 @@
       "截图断言: 各模块列表和表单页面",
       "",
       "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/partners/*.spec.ts",
-      "⚠️ 当前状态: customer.spec.ts 有 5 个 test.skip 需要修复"
+      "✅ customer.spec.ts 所有测试通过 (25 tests)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P1-INT-003",

@@ -78,7 +78,7 @@ export class CustomersPage extends BasePage {
     this.creditLimitInput = page.locator('input[name="credit_limit"]')
     this.sortOrderInput = page.locator('input[name="sort_order"]')
     this.notesInput = page.locator('textarea[name="notes"]')
-    this.submitButton = page.locator('button[type="submit"]')
+    this.submitButton = page.locator('button[type="submit"], button:has-text("新建"), button:has-text("保存")')
     this.cancelButton = page.locator('button').filter({ hasText: '取消' })
   }
 
@@ -146,10 +146,15 @@ export class CustomersPage extends BasePage {
     // Click to open dropdown
     const select = this.page.locator('.customers-filter-container .semi-select').first()
     await select.click()
-    // Wait for dropdown to be visible
+    // Wait for option list to be visible with increased timeout
+    const optionList = this.page.locator('.semi-select-option-list')
+    await optionList.waitFor({ state: 'visible', timeout: 10000 })
+    // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
-    // Click option
-    await this.page.locator('.semi-select-option').filter({ hasText: statusLabels[status] }).click()
+    // Click option using first() to get exact match
+    const option = optionList.locator('.semi-select-option').filter({ hasText: statusLabels[status] }).first()
+    await option.waitFor({ state: 'visible', timeout: 5000 })
+    await option.click()
     await this.waitForTableLoad()
   }
 
@@ -165,10 +170,15 @@ export class CustomersPage extends BasePage {
     // Click to open dropdown
     const select = this.page.locator('.customers-filter-container .semi-select').nth(1)
     await select.click()
-    // Wait for dropdown to be visible
+    // Wait for option list to be visible
+    const optionList = this.page.locator('.semi-select-option-list')
+    await optionList.waitFor({ state: 'visible', timeout: 10000 })
+    // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
-    // Click option
-    await this.page.locator('.semi-select-option').filter({ hasText: typeLabels[type] }).click()
+    // Click option using first() to get exact match
+    const option = optionList.locator('.semi-select-option').filter({ hasText: typeLabels[type] }).first()
+    await option.waitFor({ state: 'visible', timeout: 5000 })
+    await option.click()
     await this.waitForTableLoad()
   }
 
@@ -189,10 +199,15 @@ export class CustomersPage extends BasePage {
     // Click to open dropdown
     const select = this.page.locator('.customers-filter-container .semi-select').nth(2)
     await select.click()
-    // Wait for dropdown to be visible
+    // Wait for option list to be visible
+    const optionList = this.page.locator('.semi-select-option-list')
+    await optionList.waitFor({ state: 'visible', timeout: 10000 })
+    // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
-    // Click option
-    await this.page.locator('.semi-select-option').filter({ hasText: levelLabels[level] }).click()
+    // Click option using first() to get exact match
+    const option = optionList.locator('.semi-select-option').filter({ hasText: levelLabels[level] }).first()
+    await option.waitFor({ state: 'visible', timeout: 5000 })
+    await option.click()
     await this.waitForTableLoad()
   }
 
@@ -274,7 +289,7 @@ export class CustomersPage extends BasePage {
       delete: '删除',
     }
 
-    // Get the actions cell
+    // Get the actions cell (last cell in the row)
     const actionsCell = row.locator('.semi-table-row-cell').last()
 
     // First check if the action is a direct button (visible actions with text)
@@ -285,16 +300,13 @@ export class CustomersPage extends BasePage {
     }
 
     // Otherwise, we need to click the more actions dropdown
-    // Find and click the more button (the one wrapped in Tooltip)
-    // Semi UI Tooltip wraps button in a span, and Dropdown also wraps in a span
-    const moreButtonContainer = actionsCell.locator('.table-actions > span').last()
-    const moreButton = moreButtonContainer.locator('button')
-
-    // Use force click to bypass any overlay issues
-    await moreButton.click({ force: true })
+    // Use the data-testid selector which is more reliable
+    const moreButton = actionsCell.locator('[data-testid="table-row-more-actions"]')
+    await moreButton.waitFor({ state: 'visible', timeout: 5000 })
+    await moreButton.click()
 
     // Wait for dropdown menu to appear
-    await this.page.waitForTimeout(500)
+    await this.page.waitForTimeout(300)
     const dropdownMenu = this.page.locator('.semi-dropdown-menu')
     await dropdownMenu.waitFor({ state: 'visible', timeout: 5000 })
 
@@ -374,7 +386,12 @@ export class CustomersPage extends BasePage {
    * Submit customer form
    */
   async submitForm(): Promise<void> {
-    await this.submitButton.click()
+    // Find the submit button by either type or text
+    const submitBtn = this.page.locator('.form-actions button[type="submit"], .form-actions button:has-text("新建"), .form-actions button:has-text("保存")').first()
+    await submitBtn.scrollIntoViewIfNeeded()
+    await submitBtn.click()
+    // Wait a bit for form submission to process
+    await this.page.waitForTimeout(500)
   }
 
   /**
@@ -388,25 +405,33 @@ export class CustomersPage extends BasePage {
    * Wait for form submission success
    */
   async waitForFormSuccess(): Promise<void> {
-    // Wait for either navigation to list page OR an error toast
-    const navigationPromise = this.page.waitForURL('**/partner/customers', { timeout: 30000 })
-    const errorToastPromise = this.page
-      .locator('.semi-toast-error, .semi-toast-warning')
-      .waitFor({ state: 'visible', timeout: 30000 })
-      .catch(() => null)
-
-    await Promise.race([navigationPromise, errorToastPromise])
-
-    // Check if we're on the list page
-    const currentUrl = this.page.url()
-    if (currentUrl.includes('/new') || currentUrl.includes('/edit')) {
-      // Still on form page, check for error
-      const errorToast = this.page.locator('.semi-toast-error, .semi-toast-warning')
-      if ((await errorToast.count()) > 0) {
-        const errorText = await errorToast.textContent()
-        throw new Error(`Form submission failed: ${errorText}`)
+    // Wait for navigation away from form page (no /new or /edit in URL)
+    // or wait for success toast
+    try {
+      await this.page.waitForURL((url) => {
+        const path = url.pathname
+        return path.includes('/partner/customers') &&
+               !path.includes('/new') &&
+               !path.includes('/edit') &&
+               !path.includes('/balance')
+      }, { timeout: 30000 })
+    } catch {
+      // Check if we're still on form page with an error
+      const currentUrl = this.page.url()
+      if (currentUrl.includes('/new') || currentUrl.includes('/edit')) {
+        const errorToast = this.page.locator('.semi-toast-error, .semi-toast-warning')
+        if ((await errorToast.count()) > 0) {
+          const errorText = await errorToast.textContent()
+          throw new Error(`Form submission failed: ${errorText}`)
+        }
+        // Check for validation errors in the form
+        const formErrors = this.page.locator('.semi-form-field-error-message')
+        if ((await formErrors.count()) > 0) {
+          const errorTexts = await formErrors.allTextContents()
+          throw new Error(`Form validation errors: ${errorTexts.join(', ')}`)
+        }
+        throw new Error('Form submission did not navigate to list page')
       }
-      throw new Error('Form submission did not navigate to list page')
     }
 
     await this.waitForTableLoad()

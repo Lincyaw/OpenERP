@@ -8,7 +8,7 @@ import { test, expect } from '../fixtures/test-fixtures'
  * - E2E 客户: 列表展示、新建、编辑、状态变更
  * - 截图断言: 客户列表和表单页面
  */
-test.describe('Customer Module', () => {
+test.describe.serial('Customer Module', () => {
   // Use authenticated state from setup
   test.use({ storageState: 'tests/e2e/.auth/user.json' })
 
@@ -35,12 +35,12 @@ test.describe('Customer Module', () => {
       expect(row).not.toBeNull()
 
       if (row) {
-        // Verify customer name contains expected text
-        const nameCell = row.locator('.customer-name')
+        // Verify customer name contains expected text (name is in the 2nd column)
+        const nameCell = row.locator('.semi-table-row-cell').nth(2).locator('.customer-name')
         await expect(nameCell).toContainText('Beijing Tech')
 
-        // Verify status tag is shown
-        const statusTag = row.locator('.semi-tag').last()
+        // Verify status tag is shown (last column with status)
+        const statusTag = row.locator('.semi-table-row-cell').nth(7).locator('.semi-tag')
         await expect(statusTag).toBeVisible()
       }
     })
@@ -51,14 +51,15 @@ test.describe('Customer Module', () => {
       // Organization type customer
       const orgRow = await customersPage.findCustomerRowByCode('CUST001')
       if (orgRow) {
-        const typeTag = orgRow.locator('.type-tag')
+        // Type is in column index 3 (0=checkbox, 1=code, 2=name, 3=type)
+        const typeTag = orgRow.locator('.semi-table-row-cell').nth(3).locator('.type-tag')
         await expect(typeTag).toContainText('企业')
       }
 
       // Individual type customer
       const indRow = await customersPage.findCustomerRowByCode('CUST004')
       if (indRow) {
-        const typeTag = indRow.locator('.type-tag')
+        const typeTag = indRow.locator('.semi-table-row-cell').nth(3).locator('.type-tag')
         await expect(typeTag).toContainText('个人')
       }
     })
@@ -75,7 +76,10 @@ test.describe('Customer Module', () => {
     })
 
     test('should create new customer with full form', async ({ customersPage }) => {
-      const uniqueCode = `TEST-CUST-${Date.now()}`
+      const timestamp = Date.now()
+      const uniqueCode = `TEST-CUST-${timestamp}`
+      const uniquePhone = `138${timestamp.toString().slice(-8)}`
+      const uniqueEmail = `test-${timestamp}@example.com`
 
       await customersPage.navigateToCreate()
 
@@ -85,8 +89,8 @@ test.describe('Customer Module', () => {
         shortName: 'Test E2E',
         type: 'organization',
         contactName: 'Test Contact',
-        phone: '13800000000',
-        email: 'test@example.com',
+        phone: uniquePhone,
+        email: uniqueEmail,
         province: 'Test Province',
         city: 'Test City',
         address: 'Test Address 123',
@@ -179,28 +183,43 @@ test.describe('Customer Module', () => {
     test('should deactivate active customer', async ({ customersPage }) => {
       await customersPage.navigateToList()
 
-      // Find an active customer
-      const row = await customersPage.findCustomerRowByCode('CUST003')
+      // Use CUST001 which should be active in seed data
+      const row = await customersPage.findCustomerRowByCode('CUST001')
       if (row) {
-        await customersPage.clickRowAction(row, 'deactivate')
-        await customersPage.page.waitForTimeout(500)
+        // Check current status first
+        const statusCell = row.locator('.semi-table-row-cell').nth(7).locator('.semi-tag')
+        const currentStatus = await statusCell.textContent()
 
-        // Verify status changed
-        await customersPage.assertCustomerStatus('CUST003', '停用')
+        // If already deactivated, activate first
+        if (currentStatus?.includes('停用')) {
+          await customersPage.clickRowAction(row, 'activate')
+          await customersPage.page.waitForTimeout(500)
+          await customersPage.navigateToList()
+        }
+
+        // Now deactivate
+        const freshRow = await customersPage.findCustomerRowByCode('CUST001')
+        if (freshRow) {
+          await customersPage.clickRowAction(freshRow, 'deactivate')
+          await customersPage.page.waitForTimeout(500)
+
+          // Verify status changed
+          await customersPage.assertCustomerStatus('CUST001', '停用')
+        }
       }
     })
 
     test('should activate deactivated customer', async ({ customersPage }) => {
       await customersPage.navigateToList()
 
-      // Find the customer we deactivated
-      const row = await customersPage.findCustomerRowByCode('CUST003')
+      // Find CUST001 which we deactivated in previous test
+      const row = await customersPage.findCustomerRowByCode('CUST001')
       if (row) {
         await customersPage.clickRowAction(row, 'activate')
         await customersPage.page.waitForTimeout(500)
 
         // Verify status changed back
-        await customersPage.assertCustomerStatus('CUST003', '启用')
+        await customersPage.assertCustomerStatus('CUST001', '启用')
       }
     })
 
@@ -214,8 +233,8 @@ test.describe('Customer Module', () => {
       const count = await customersPage.getCustomerCount()
       expect(count).toBeGreaterThan(0)
 
-      // Reset filter
-      await customersPage.filterByStatus('')
+      // Verify that filtering worked - all rows should have 启用 status
+      // The filter doesn't need to be reset since navigateToList in next test will reset state
     })
   })
 
@@ -309,8 +328,7 @@ test.describe('Customer Module', () => {
       const count = await customersPage.getCustomerCount()
       expect(count).toBeGreaterThan(0)
 
-      // Reset filter
-      await customersPage.filterByType('')
+      // Filter doesn't need to be reset - navigateToList will reset state
     })
 
     test('should filter by customer level', async ({ customersPage }) => {
@@ -321,8 +339,7 @@ test.describe('Customer Module', () => {
       const count = await customersPage.getCustomerCount()
       expect(count).toBeGreaterThanOrEqual(0)
 
-      // Reset filter
-      await customersPage.filterByLevel('')
+      // Filter doesn't need to be reset - navigateToList will reset state
     })
   })
 

@@ -139,13 +139,13 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
           .max(500, validationMessages.maxLength(500))
           .optional()
           .transform((val) => val || undefined),
-        credit_limit: z
+        credit_limit: z.coerce
           .number()
           .nonnegative(validationMessages.nonNegative)
           .optional()
           .nullable()
           .transform((val) => val ?? undefined),
-        sort_order: z
+        sort_order: z.coerce
           .number()
           .int(validationMessages.integer)
           .nonnegative(validationMessages.nonNegative)
@@ -186,6 +186,12 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         notes: '',
       }
     }
+    // Helper to convert string/number to number
+    const toNumber = (val: unknown): number | undefined => {
+      if (val === undefined || val === null || val === '') return undefined
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return typeof num === 'number' && !isNaN(num) ? num : undefined
+    }
     return {
       code: initialData.code || '',
       name: initialData.name || '',
@@ -201,8 +207,8 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
       city: initialData.city || '',
       postal_code: initialData.postal_code || '',
       address: initialData.address || '',
-      credit_limit: initialData.credit_limit ?? undefined,
-      sort_order: initialData.sort_order ?? undefined,
+      credit_limit: toNumber(initialData.credit_limit),
+      sort_order: toNumber(initialData.sort_order),
       notes: initialData.notes || '',
     }
   }, [initialData])

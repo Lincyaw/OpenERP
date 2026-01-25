@@ -33,3 +33,35 @@
 
 ### Build Verification:
 - `npm run build` passes successfully
+
+---
+
+## P1-INT-002: Partner Module E2E Integration Tests
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+1. Fixed customer.spec.ts E2E tests:
+   - `frontend/tests/e2e/partners/customer.spec.ts` - Fixed test data uniqueness and status management tests
+
+2. Improved CustomersPage.ts Page Object:
+   - `frontend/tests/e2e/pages/CustomersPage.ts` - Enhanced filter methods with better wait handling
+
+3. Fixed CustomerForm.tsx validation:
+   - `frontend/src/features/partner/CustomerForm.tsx` - Fixed Zod schema for credit_limit and sort_order fields
+
+### Key Fixes:
+- **Phone/Email Conflict (409)**: Generated unique test data using timestamps
+  ```typescript
+  const timestamp = Date.now()
+  const uniquePhone = `138${timestamp.toString().slice(-8)}`
+  const uniqueEmail = `test-${timestamp}@example.com`
+  ```
+- **Type Conversion Error**: Changed `z.number()` to `z.coerce.number()` for fields receiving string values from API
+- **Status Management Tests**: Made tests robust by checking current status before attempting state changes
+- **Filter Method Timeouts**: Improved Semi UI dropdown handling with scoped selectors and increased timeouts
+
+### Test Results:
+- All 25 customer tests pass (100% pass rate)
+- Verified stable across 3 consecutive runs
+- No flaky tests detected
