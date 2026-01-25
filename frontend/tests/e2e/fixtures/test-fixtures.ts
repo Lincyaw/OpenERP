@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test'
-import { LoginPage } from '../pages'
+import { LoginPage, ProductsPage } from '../pages'
 
 /**
  * Test Users - Seed data users for testing
@@ -36,6 +36,7 @@ export type TestUserType = keyof typeof TEST_USERS
 export const test = base.extend<{
   loginPage: LoginPage
   authenticatedPage: LoginPage
+  productsPage: ProductsPage
 }>({
   /**
    * Login page fixture - provides a fresh LoginPage instance
@@ -53,6 +54,14 @@ export const test = base.extend<{
     await loginPage.navigate()
     await loginPage.loginAndWait(TEST_USERS.admin.username, TEST_USERS.admin.password)
     await use(loginPage)
+  },
+
+  /**
+   * Products page fixture - provides a ProductsPage instance
+   */
+  productsPage: async ({ page }, use) => {
+    const productsPage = new ProductsPage(page)
+    await use(productsPage)
   },
 })
 

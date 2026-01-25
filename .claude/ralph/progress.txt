@@ -14080,3 +14080,94 @@ npm run e2e -- --project=chromium
 3. **Adding New Tests**: Create test files in appropriate module directories (e.g., `products/`, `inventory/`)
 4. **Page Objects**: Extend `BasePage` for new page objects, use Semi Design-specific methods
 5. **Next E2E Tasks**: P1-INT-001, P1-INT-002, P1-INT-003 (module integration tests)
+
+---
+
+## 2026-01-25: P1-INT-001 商品模块前后端联调 (E2E Docker)
+
+### Summary
+Implemented comprehensive E2E tests for the Product module using Playwright.
+
+### Requirements Completed
+1. ✅ Docker 环境: docker-compose.test.yml 启动，seed-data.sql 加载
+2. ✅ E2E: 登录后访问商品列表，验证 seed 商品数据正确显示
+3. ✅ E2E: 创建新商品，填写完整表单，验证数据库记录生成
+4. ✅ E2E: 编辑商品信息，验证更新后列表和详情页显示一致
+5. ✅ E2E: 启用/禁用商品状态，验证状态变更和列表筛选
+6. ✅ E2E: 删除商品，验证软删除逻辑和列表刷新
+7. ✅ E2E: 分页和搜索功能验证
+8. ✅ 截图断言: 商品列表、表单、详情页
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `frontend/tests/e2e/pages/ProductsPage.ts` | Page Object for Products module |
+| `frontend/tests/e2e/products/product.spec.ts` | 25 E2E test cases |
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `frontend/tests/e2e/pages/index.ts` | Added ProductsPage export |
+| `frontend/tests/e2e/fixtures/test-fixtures.ts` | Added productsPage fixture |
+| `.claude/ralph/plans/prd.json` | P1-INT-001: passes: true |
+
+### Test Coverage
+**Total Tests**: 25 tests × 5 browsers = 125 tests + 1 setup = 126 tests
+
+**Test Categories**:
+1. **Product List Display** (2 tests)
+   - Verify seed data display
+   - Verify product details in table row
+
+2. **Product Creation** (4 tests)
+   - Navigate to create page
+   - Create product with full form
+   - Validation for empty fields
+   - Product code format validation
+
+3. **Product Editing** (2 tests)
+   - Edit existing product
+   - Code field disabled in edit mode
+
+4. **Product Status Management** (3 tests)
+   - Deactivate active product
+   - Activate disabled product
+   - Filter by status
+
+5. **Product Deletion** (2 tests)
+   - Delete with confirmation
+   - Cancel delete dialog
+
+6. **Search and Pagination** (6 tests)
+   - Search by name
+   - Search by code
+   - Search by barcode
+   - Empty state for no results
+   - Clear search
+   - Pagination info
+
+7. **Screenshots** (5 tests)
+   - Product list page
+   - Create form
+   - Edit form
+   - Search results
+   - Filtered list
+
+### How to Run Tests
+```bash
+# Run product module E2E tests only
+cd frontend && npx playwright test tests/e2e/products/ --project=chromium
+
+# Run with headed mode for debugging
+npx playwright test tests/e2e/products/ --project=chromium --headed
+
+# Run all E2E tests
+npm run e2e
+```
+
+### Notes for Next Developer
+1. **Docker Required**: Tests require docker-compose.test.yml environment running
+2. **Seed Data**: Tests depend on seed-data.sql products (IPHONE15, SAMSUNG24, etc.)
+3. **Auth Setup**: Tests use shared authentication state from auth.setup.ts
+4. **Page Objects**: ProductsPage class provides reusable methods for product operations
+5. **Next Tasks**: P1-INT-002 (Partner module E2E), P1-INT-003 (Customer balance E2E)
