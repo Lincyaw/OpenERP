@@ -141,7 +141,7 @@ func createTestOrder() *trade.SalesOrder {
 
 func createTestOrderWithItem() *trade.SalesOrder {
 	order := createTestOrder()
-	order.AddItem(testProductID, testProductName, testProductCode, testUnit, decimal.NewFromInt(10), newMoneyCNY("100"))
+	order.AddItem(testProductID, testProductName, testProductCode, testUnit, testUnit, decimal.NewFromInt(10), decimal.NewFromInt(1), newMoneyCNY("100"))
 	return order
 }
 

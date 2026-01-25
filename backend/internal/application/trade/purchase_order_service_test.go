@@ -155,7 +155,7 @@ func createTestPurchaseOrder() *trade.PurchaseOrder {
 
 func createTestPurchaseOrderWithItem() *trade.PurchaseOrder {
 	order := createTestPurchaseOrder()
-	order.AddItem(testPOProductID, testPOProductName, testPOProductCode, testPOUnit, decimal.NewFromInt(10), newMoneyCNY("100"))
+	order.AddItem(testPOProductID, testPOProductName, testPOProductCode, testPOUnit, testPOUnit, decimal.NewFromInt(10), decimal.NewFromInt(1), newMoneyCNY("100"))
 	return order
 }
 
@@ -621,7 +621,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 
 		// Create order without warehouse
 		order, _ := trade.NewPurchaseOrder(testPOTenantID, testPOOrderNumber, testSupplierID, testSupplierName)
-		order.AddItem(testPOProductID, testPOProductName, testPOProductCode, testPOUnit, decimal.NewFromInt(10), valueobject.NewMoneyCNY(decimal.NewFromInt(100)))
+		order.AddItem(testPOProductID, testPOProductName, testPOProductCode, testPOUnit, testPOUnit, decimal.NewFromInt(10), decimal.NewFromInt(1), valueobject.NewMoneyCNY(decimal.NewFromInt(100)))
 		// Confirm with warehouse then clear it (simulate edge case)
 		order.SetWarehouse(testPOWarehouseID)
 		order.Confirm()

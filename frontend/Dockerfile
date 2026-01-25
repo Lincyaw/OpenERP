@@ -8,12 +8,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
 
-# Build the application 
+# Build the application
 RUN npm run build
 
 # Runtime stage - using Nginx to serve static files

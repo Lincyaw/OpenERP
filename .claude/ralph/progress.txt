@@ -14702,3 +14702,109 @@ npm run e2e:report
 7. **Screenshots**: Screenshots saved to test-results/screenshots/purchase-orders/
 8. **Next Tasks**: P3-INT-003 (Sales return E2E), P3-INT-004 (Purchase return E2E)
 
+
+---
+
+## P4-INT-001: 财务核心功能联调 (E2E Docker) - PARTIAL PROGRESS
+
+**Date**: 2026-01-25
+
+### Work Completed
+
+1. **Docker Environment Fixes**:
+   - Fixed node:25-alpine → node:22-alpine (image doesn't exist)
+   - Fixed postgres:18.1 → postgres:16-alpine (image doesn't exist)
+   - Fixed redis:8.4.0 → redis:7-alpine (image doesn't exist)
+   - Fixed npm ci → npm install --legacy-peer-deps (package-lock sync issues)
+   - Fixed health check endpoint path in quick-test.sh
+
+2. **Backend Route Conflict Fixes**:
+   - Fixed Gin router parameter conflict: `/products/:product_id/units` → `/products/:id/units`
+   - Fixed `/categories/:category_id/products` → `/categories/:id/products`
+   - Fixed `/customers/:customer_id/balance/*` → `/customers/:id/balance/*`
+   - Updated all corresponding handlers and Swagger annotations
+
+3. **TypeScript Build Fixes**:
+   - Added exclude pattern to tsconfig.app.json for test files
+   - Fixed SupplierForm.tsx type error for missing `type` property
+
+4. **E2E Test Infrastructure**:
+   - Created `FinancePage.ts` Page Object with comprehensive methods:
+     - Navigation: `navigateToReceivables()`, `navigateToPayables()`, `navigateToNewReceiptVoucher()`
+     - List operations: `getReceivableCount()`, `filterByStatus()`, `clickCollectButton()`
+     - Voucher operations: `selectCustomer()`, `fillReceiptAmount()`, `selectPaymentMethod()`
+     - Reconciliation: `selectFIFOMode()`, `confirmReconcile()`
+   - Added FinancePage to test fixtures
+   - Created `finance.spec.ts` with 22 test cases covering:
+     - Accounts Receivable List Display (5 tests)
+     - Receipt Voucher Creation (2 tests)
+     - Receipt Reconciliation - FIFO Mode (2 tests)
+     - Accounts Payable List Display (3 tests)
+     - Payment Voucher Creation (2 tests)
+     - Balance Verification (2 tests)
+     - Screenshot Documentation (3 tests)
+     - Video Recording (1 test)
+     - Integration Flow (2 tests)
+
+5. **Seed Data**:
+   - Verified finance seed data exists in seed-data.sql (accounts_receivable, accounts_payable, etc.)
+
+### Blockers
+
+**The E2E tests cannot pass because the backend finance API handlers don't exist.**
+
+Missing backend components:
+- No HTTP handlers in `backend/internal/interfaces/http/handler/` for finance
+- No routes registered in `main.go` for `/finance/receivables`, `/finance/payables`, etc.
+- The finance domain models (P4-BE-001 to P4-BE-010) marked as "passes: true" in PRD are NOT actually implemented
+
+### Files Created/Modified
+
+#### Created:
+- `frontend/tests/e2e/pages/FinancePage.ts` - Finance Page Object
+- `frontend/tests/e2e/finance/finance.spec.ts` - E2E test suite
+
+#### Modified:
+- `frontend/Dockerfile` - Fixed node version and npm install
+- `docker-compose.test.yml` - Fixed postgres and redis versions
+- `docker/quick-test.sh` - Fixed health endpoint path
+- `frontend/tsconfig.app.json` - Added test file excludes
+- `frontend/playwright.config.ts` - Added Firefox browser for setup
+- `frontend/src/features/partner/SupplierForm.tsx` - Fixed type error
+- `backend/cmd/server/main.go` - Fixed route parameter conflicts
+- `backend/internal/interfaces/http/handler/product_unit.go` - Updated param names
+- `backend/internal/interfaces/http/handler/product.go` - Updated param names
+- `backend/internal/interfaces/http/handler/balance_transaction.go` - Updated param names
+
+### How to Run Tests (when backend is ready)
+
+```bash
+# Start test environment
+./docker/quick-test.sh start
+
+# Run finance E2E tests in Docker
+docker run --rm --network erp-test-network \
+  -v $(pwd)/frontend:/app -w /app \
+  -e E2E_BASE_URL=http://erp-test-frontend:80 \
+  mcr.microsoft.com/playwright:v1.58.0-noble \
+  npx playwright test tests/e2e/finance/finance.spec.ts --project=firefox
+
+# Or locally if Playwright dependencies are installed
+cd frontend && npx playwright test tests/e2e/finance/finance.spec.ts --project=firefox
+```
+
+### Next Steps
+
+1. **Backend work required first** - Implement finance HTTP handlers:
+   - `/finance/receivables` - List, get, summary
+   - `/finance/payables` - List, get, summary
+   - `/finance/receipts` - Create, reconcile
+   - `/finance/payments` - Create, reconcile
+
+2. Once backend is ready, re-run E2E tests and verify 100% pass rate
+
+### Notes
+
+- Tests are written for Firefox browser due to missing system libraries for Chromium
+- Playwright Docker image (v1.58.0) is required for running tests
+- The E2E test infrastructure is complete and ready; only backend API is missing

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { test as base } from '@playwright/test'
 import {
   LoginPage,
@@ -8,6 +9,7 @@ import {
   InventoryPage,
   SalesOrderPage,
   PurchaseOrderPage,
+  FinancePage,
 } from '../pages'
 
 /**
@@ -57,6 +59,7 @@ export const test = base.extend<{
   inventoryPage: InventoryPage
   salesOrderPage: SalesOrderPage
   purchaseOrderPage: PurchaseOrderPage
+  financePage: FinancePage
 }>({
   /**
    * Login page fixture - provides a fresh LoginPage instance
@@ -130,6 +133,14 @@ export const test = base.extend<{
   purchaseOrderPage: async ({ page }, use) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
     await use(purchaseOrderPage)
+  },
+
+  /**
+   * Finance page fixture - provides a FinancePage instance
+   */
+  financePage: async ({ page }, use) => {
+    const financePage = new FinancePage(page)
+    await use(financePage)
   },
 })
 

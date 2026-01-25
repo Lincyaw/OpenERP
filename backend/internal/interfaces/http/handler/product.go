@@ -604,7 +604,7 @@ func (h *ProductHandler) CountByStatus(c *gin.Context) {
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Security     BearerAuth
-// @Router       /catalog/categories/{category_id}/products [get]
+// @Router       /catalog/categories/{id}/products [get]
 func (h *ProductHandler) GetByCategory(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -612,7 +612,7 @@ func (h *ProductHandler) GetByCategory(c *gin.Context) {
 		return
 	}
 
-	categoryID, err := uuid.Parse(c.Param("category_id"))
+	categoryID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		h.BadRequest(c, "Invalid category ID format")
 		return

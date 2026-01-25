@@ -86,7 +86,7 @@ check_command() {
 # Wait for a service to be healthy
 wait_for_service() {
     local service="$1"
-    local max_attempts="${2:-30}"
+    local max_attempts="${2:-2}"
     local attempt=1
 
     log_info "Waiting for $service to be healthy..."
@@ -136,7 +136,7 @@ wait_for_api() {
     log_info "Waiting for API to be ready..."
 
     while [ $attempt -le $max_attempts ]; do
-        if curl -s "${API_URL}/../health" &>/dev/null; then
+        if curl -s "http://localhost:8081/health" &>/dev/null; then
             log_success "API is ready"
             return 0
         fi
@@ -190,7 +190,11 @@ cmd_start() {
     fi
 
     # Wait for backend to be healthy
-    wait_for_service "backend" 60 || exit 1
+    if ! wait_for_service "backend" 2; then
+        log_error "Backend failed to start. Showing backend logs:"
+        docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" logs --tail=100 backend
+        exit 1
+    fi
 
     # Seed data
     cmd_seed
@@ -260,7 +264,7 @@ cmd_api_quick() {
     local failed=0
 
     # Health check
-    if curl -s "${API_URL}/../health" | grep -q "ok\|healthy" 2>/dev/null; then
+    if curl -s "http://localhost:8081/health" | grep -q "ok\|healthy" 2>/dev/null; then
         log_success "Health endpoint"
         ((passed++))
     else
