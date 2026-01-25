@@ -123,7 +123,9 @@ func main() {
 	financeReportRepo := persistence.NewGormFinanceReportRepository(db.DB)
 	reportCacheRepo := reportapp.NewGormReportCacheRepository(db.DB)
 	receiptVoucherRepo := persistence.NewGormReceiptVoucherRepository(db.DB)
+	paymentVoucherRepo := persistence.NewGormPaymentVoucherRepository(db.DB)
 	accountReceivableRepo := persistence.NewGormAccountReceivableRepository(db.DB)
+	accountPayableRepo := persistence.NewGormAccountPayableRepository(db.DB)
 	expenseRecordRepo := persistence.NewGormExpenseRecordRepository(db.DB)
 	otherIncomeRecordRepo := persistence.NewGormOtherIncomeRecordRepository(db.DB)
 
@@ -167,6 +169,14 @@ func main() {
 
 	// Expense and income service
 	expenseIncomeService := financeapp.NewExpenseIncomeService(expenseRecordRepo, otherIncomeRecordRepo)
+
+	// Finance core service (receivables, payables, vouchers)
+	financeService := financeapp.NewFinanceService(
+		accountReceivableRepo,
+		accountPayableRepo,
+		receiptVoucherRepo,
+		paymentVoucherRepo,
+	)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -267,6 +277,7 @@ func main() {
 	reportHandler.SetAggregationService(reportAggregationService)
 	paymentCallbackHandler := handler.NewPaymentCallbackHandler(paymentCallbackService)
 	expenseIncomeHandler := handler.NewExpenseIncomeHandler(expenseIncomeService)
+	financeHandler := handler.NewFinanceHandler(financeService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -622,6 +633,32 @@ func main() {
 
 	// Cash flow route
 	financeRoutes.GET("/cash-flow", expenseIncomeHandler.GetCashFlow)
+
+	// Account Receivable routes
+	financeRoutes.GET("/receivables", financeHandler.ListReceivables)
+	financeRoutes.GET("/receivables/summary", financeHandler.GetReceivableSummary)
+	financeRoutes.GET("/receivables/:id", financeHandler.GetReceivableByID)
+
+	// Account Payable routes
+	financeRoutes.GET("/payables", financeHandler.ListPayables)
+	financeRoutes.GET("/payables/summary", financeHandler.GetPayableSummary)
+	financeRoutes.GET("/payables/:id", financeHandler.GetPayableByID)
+
+	// Receipt Voucher routes (收款单)
+	financeRoutes.GET("/receipts", financeHandler.ListReceiptVouchers)
+	financeRoutes.GET("/receipts/:id", financeHandler.GetReceiptVoucherByID)
+	financeRoutes.POST("/receipts", financeHandler.CreateReceiptVoucher)
+	financeRoutes.POST("/receipts/:id/confirm", financeHandler.ConfirmReceiptVoucher)
+	financeRoutes.POST("/receipts/:id/cancel", financeHandler.CancelReceiptVoucher)
+	financeRoutes.POST("/receipts/:id/reconcile", financeHandler.ReconcileReceiptVoucher)
+
+	// Payment Voucher routes (付款单)
+	financeRoutes.GET("/payments", financeHandler.ListPaymentVouchers)
+	financeRoutes.GET("/payments/:id", financeHandler.GetPaymentVoucherByID)
+	financeRoutes.POST("/payments", financeHandler.CreatePaymentVoucher)
+	financeRoutes.POST("/payments/:id/confirm", financeHandler.ConfirmPaymentVoucher)
+	financeRoutes.POST("/payments/:id/cancel", financeHandler.CancelPaymentVoucher)
+	financeRoutes.POST("/payments/:id/reconcile", financeHandler.ReconcilePaymentVoucher)
 
 	// Report domain
 	reportRoutes := router.NewDomainGroup("report", "/reports")

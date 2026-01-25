@@ -101,3 +101,88 @@ Created a dedicated PurchaseOrderDetail page (similar to SalesOrderDetail) that 
 ### Next Steps
 - Update E2E tests to use detail page for confirm/receive/cancel actions
 - Run full E2E test suite to verify fix
+
+---
+
+## 2026-01-26 - P4-INT-001 Finance E2E Test Fixes
+
+### Summary
+Worked on fixing Finance E2E tests (P4-INT-001). Fixed multiple issues:
+1. Permission resource name mismatch causing 403 Forbidden errors
+2. Missing PaymentVoucherRepository implementation
+3. Missing finance routes for receivables/payables API endpoints
+4. Seed data schema mismatch causing data load failures
+
+### Problems Identified
+
+1. **403 Forbidden on finance pages**
+   - Root cause: Permission resource names mismatched between backend seed data (`receivable`, `payable`) and frontend expected names (`account_receivable`, `account_payable`)
+   - The migration 000021_create_roles.up.sql used `receivable`/`payable` but frontend permissions.ts expected `account_receivable`/`account_payable`
+
+2. **API endpoints not found for receivables/payables**
+   - Root cause: FinanceHandler methods existed in finance.go but were not wired to routes in main.go
+   - FinanceService was not instantiated
+   - PaymentVoucherRepository was not implemented
+
+3. **Seed data errors**
+   - Root cause: Seed data used column names from an older schema (original_amount, balance, notes) instead of current migration schema (total_amount, outstanding_amount, remark)
+   - Status/source_type values were lowercase ('pending', 'manual') but migrations require uppercase ('PENDING', 'MANUAL')
+   - Missing required columns (customer_name, supplier_name, source_number)
+
+### Files Created
+
+#### Backend
+- `backend/migrations/000025_fix_finance_permission_resources.up.sql`
+  - Updates role_permissions resource names from `receivable` to `account_receivable` and `payable` to `account_payable`
+  - Adds missing reconcile permissions for account_receivable and account_payable
+
+- `backend/migrations/000025_fix_finance_permission_resources.down.sql`
+  - Rollback migration
+
+- `backend/internal/infrastructure/persistence/payment_voucher_repository.go`
+  - New GormPaymentVoucherRepository implementing PaymentVoucherRepository interface
+  - Methods: FindByID, FindByIDForTenant, FindAllForTenant, FindBySupplier, Save, etc.
+
+### Files Modified
+
+#### Backend
+- `backend/cmd/server/main.go`
+  - Added paymentVoucherRepo and accountPayableRepo initialization
+  - Added financeService initialization with all 4 repositories
+  - Added financeHandler initialization
+  - Added routes for:
+    - GET /finance/receivables (list), GET /finance/receivables/summary, GET /finance/receivables/:id
+    - GET /finance/payables (list), GET /finance/payables/summary, GET /finance/payables/:id
+    - Receipt voucher CRUD: GET/POST /finance/receipts, POST /:id/confirm, /:id/cancel, /:id/reconcile
+    - Payment voucher CRUD: GET/POST /finance/payments, POST /:id/confirm, /:id/cancel, /:id/reconcile
+
+#### Seed Data
+- `docker/seed-data.sql`
+  - Updated account_receivables INSERT to match migration schema:
+    - Added customer_name column
+    - Added source_number column
+    - Renamed original_amount → total_amount
+    - Renamed balance → outstanding_amount
+    - Changed source_type to uppercase ('MANUAL')
+    - Changed status to uppercase ('PENDING', 'PARTIAL', 'PAID')
+    - Added dummy source_id (NOT NULL constraint)
+  - Updated account_payables INSERT with same schema changes (supplier_name instead of customer_name)
+  - Updated receipt_vouchers INSERT:
+    - Added customer_name column
+    - Added allocated_amount, unallocated_amount columns
+    - Changed payment_method to uppercase ('BANK_TRANSFER', 'WECHAT', 'ALIPAY')
+    - Changed status to uppercase ('CONFIRMED')
+    - Renamed notes → remark
+  - Updated payment_vouchers INSERT with same schema changes (supplier_name)
+
+### Test Results
+- TypeScript type check: PASSED
+- Build: PASSED
+- E2E tests: 9/10 passing (core receivables/payables display working)
+- Remaining issue: Receipt voucher creation form UI interaction (Semi Design Select fill not working in headless mode)
+
+### Next Steps
+- P4-INT-001 core finance display functionality is now working
+- Receipt voucher creation test needs UI selector fix (separate from backend/data issues)
+- Consider marking P4-INT-001 as partial pass, or fix UI test issue
+
