@@ -5,6 +5,7 @@ import (
 	"time"
 
 	reportapp "github.com/erp/backend/internal/application/report"
+	"github.com/erp/backend/internal/infrastructure/scheduler"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -12,7 +13,8 @@ import (
 // ReportHandler handles report-related API endpoints
 type ReportHandler struct {
 	BaseHandler
-	reportService *reportapp.ReportService
+	reportService      *reportapp.ReportService
+	aggregationService *reportapp.ReportAggregationService
 }
 
 // NewReportHandler creates a new ReportHandler
@@ -20,6 +22,11 @@ func NewReportHandler(reportService *reportapp.ReportService) *ReportHandler {
 	return &ReportHandler{
 		reportService: reportService,
 	}
+}
+
+// SetAggregationService sets the aggregation service for manual refresh
+func (h *ReportHandler) SetAggregationService(aggService *reportapp.ReportAggregationService) {
+	h.aggregationService = aggService
 }
 
 // ===================== Request DTOs =====================
@@ -1022,4 +1029,173 @@ func (h *ReportHandler) parseFinanceFilter(req FinanceReportFilterRequest) (repo
 	}
 
 	return filter, nil
+}
+
+// ===================== Manual Refresh Endpoints =====================
+
+// RefreshReportRequest defines the request for manual report refresh
+// @Description Request for manual report cache refresh
+type RefreshReportRequest struct {
+	ReportType string `json:"report_type" binding:"required" example:"SALES_SUMMARY"`
+	StartDate  string `json:"start_date" binding:"required" example:"2026-01-01"`
+	EndDate    string `json:"end_date" binding:"required" example:"2026-01-31"`
+}
+
+// RefreshAllReportsRequest defines the request for refreshing all reports
+// @Description Request for refreshing all report caches
+type RefreshAllReportsRequest struct {
+	StartDate string `json:"start_date" binding:"required" example:"2026-01-01"`
+	EndDate   string `json:"end_date" binding:"required" example:"2026-01-31"`
+}
+
+// RefreshReportResponse represents the response for report refresh
+// @Description Response for report refresh operation
+type RefreshReportResponse struct {
+	Message    string `json:"message" example:"Report refresh scheduled"`
+	ReportType string `json:"report_type,omitempty" example:"SALES_SUMMARY"`
+}
+
+// RefreshReport godoc
+// @Summary      Manually refresh a report cache
+// @Description  Triggers manual refresh of a specific report type cache
+// @Tags         reports
+// @Accept       json
+// @Produce      json
+// @Param        request body RefreshReportRequest true "Report refresh request"
+// @Success      200 {object} dto.Response{data=RefreshReportResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /reports/refresh [post]
+func (h *ReportHandler) RefreshReport(c *gin.Context) {
+	if h.aggregationService == nil {
+		h.InternalError(c, "Report aggregation service not configured")
+		return
+	}
+
+	tenantID, err := getTenantID(c)
+	if err != nil {
+		h.BadRequest(c, "Invalid tenant ID")
+		return
+	}
+
+	var req RefreshReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.BadRequest(c, err.Error())
+		return
+	}
+
+	// Parse dates
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		h.BadRequest(c, "start_date: Invalid date format, expected YYYY-MM-DD")
+		return
+	}
+
+	endDate, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		h.BadRequest(c, "end_date: Invalid date format, expected YYYY-MM-DD")
+		return
+	}
+	endDate = endDate.Add(24*time.Hour - time.Second) // End of day
+
+	// Validate report type
+	reportType := scheduler.ReportType(req.ReportType)
+	validTypes := scheduler.AllReportTypes()
+	isValid := false
+	for _, rt := range validTypes {
+		if rt == reportType {
+			isValid = true
+			break
+		}
+	}
+	if !isValid {
+		h.BadRequest(c, "Invalid report_type. Valid types: SALES_SUMMARY, SALES_DAILY_TREND, INVENTORY_SUMMARY, PNL_MONTHLY, PRODUCT_RANKING, CUSTOMER_RANKING")
+		return
+	}
+
+	// Execute refresh
+	if err := h.aggregationService.RefreshReport(c.Request.Context(), tenantID, reportType, startDate, endDate); err != nil {
+		h.HandleError(c, err)
+		return
+	}
+
+	h.Success(c, RefreshReportResponse{
+		Message:    "Report cache refreshed successfully",
+		ReportType: req.ReportType,
+	})
+}
+
+// RefreshAllReports godoc
+// @Summary      Refresh all report caches
+// @Description  Triggers manual refresh of all report type caches
+// @Tags         reports
+// @Accept       json
+// @Produce      json
+// @Param        request body RefreshAllReportsRequest true "Report refresh request"
+// @Success      200 {object} dto.Response{data=RefreshReportResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /reports/refresh/all [post]
+func (h *ReportHandler) RefreshAllReports(c *gin.Context) {
+	if h.aggregationService == nil {
+		h.InternalError(c, "Report aggregation service not configured")
+		return
+	}
+
+	tenantID, err := getTenantID(c)
+	if err != nil {
+		h.BadRequest(c, "Invalid tenant ID")
+		return
+	}
+
+	var req RefreshAllReportsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.BadRequest(c, err.Error())
+		return
+	}
+
+	// Parse dates
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		h.BadRequest(c, "start_date: Invalid date format, expected YYYY-MM-DD")
+		return
+	}
+
+	endDate, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		h.BadRequest(c, "end_date: Invalid date format, expected YYYY-MM-DD")
+		return
+	}
+	endDate = endDate.Add(24*time.Hour - time.Second) // End of day
+
+	// Execute refresh for all report types
+	if err := h.aggregationService.RefreshAllReports(c.Request.Context(), tenantID, startDate, endDate); err != nil {
+		h.HandleError(c, err)
+		return
+	}
+
+	h.Success(c, RefreshReportResponse{
+		Message: "All report caches refreshed successfully",
+	})
+}
+
+// GetSchedulerStatus godoc
+// @Summary      Get report scheduler status
+// @Description  Returns the current status of the report scheduler
+// @Tags         reports
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} dto.Response{data=map[string]interface{}}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /reports/scheduler/status [get]
+func (h *ReportHandler) GetSchedulerStatus(c *gin.Context) {
+	status := map[string]interface{}{
+		"enabled":            h.aggregationService != nil,
+		"available_types":    scheduler.AllReportTypes(),
+		"supported_schedule": "Daily at 2:00 AM",
+	}
+	h.Success(c, status)
 }

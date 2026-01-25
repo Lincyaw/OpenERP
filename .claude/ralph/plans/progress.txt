@@ -102,3 +102,57 @@
 ### Build Verification:
 - `npm run build` passes successfully with no TypeScript errors
 
+---
+
+## P5-BE-006: Report Data Async Aggregation (Scheduled Tasks)
+**Status**: ✅ Completed
+**Date**: 2026-01-25
+
+### Changes Made:
+
+1. Created database migration for report cache tables:
+   - `backend/migrations/000024_create_report_cache.up.sql` - Creates cache tables for pre-computed reports
+   - `backend/migrations/000024_create_report_cache.down.sql` - Drop migration
+
+2. Created scheduler infrastructure:
+   - `backend/internal/infrastructure/scheduler/scheduler.go` - Core scheduler with worker pool pattern
+   - `backend/internal/infrastructure/scheduler/errors.go` - Error definitions
+   - `backend/internal/infrastructure/scheduler/cron_trigger.go` - CronTrigger for time-based scheduling
+
+3. Created ReportAggregationService:
+   - `backend/internal/application/report/aggregation_service.go` - Service for computing and caching reports
+   - Implements `scheduler.JobExecutor` interface
+   - Includes GORM repository implementation for cache storage
+
+4. Added manual refresh API endpoints:
+   - `POST /api/v1/reports/refresh` - Refresh single report type
+   - `POST /api/v1/reports/refresh/all` - Refresh all report types
+   - `GET /api/v1/reports/scheduler/status` - Get scheduler status
+
+5. Updated configuration:
+   - `backend/internal/infrastructure/config/config.go` - Added SchedulerConfig
+
+6. Wired report module into main application:
+   - `backend/cmd/server/main.go` - Added report repositories, services, handlers, and routes
+
+### Database Tables Created:
+- `report_cache_metadata` - Tracks cache metadata and validity
+- `report_sales_summary_cache` - Pre-computed sales summary
+- `report_sales_daily_cache` - Pre-computed daily sales trend
+- `report_inventory_summary_cache` - Pre-computed inventory summary
+- `report_pnl_monthly_cache` - Pre-computed monthly P&L
+- `report_product_ranking_cache` - Pre-computed product rankings
+- `report_customer_ranking_cache` - Pre-computed customer rankings
+- `report_scheduler_jobs` - Scheduled job configuration
+
+### Report Types Supported:
+- SALES_SUMMARY - Overall sales metrics
+- SALES_DAILY_TREND - Daily sales trend data
+- INVENTORY_SUMMARY - Inventory status snapshot
+- PROFIT_LOSS_MONTHLY - Monthly P&L calculations
+- PRODUCT_RANKING - Product sales rankings
+- CUSTOMER_RANKING - Customer sales rankings
+
+### Build Verification:
+- `go build ./...` passes successfully
+

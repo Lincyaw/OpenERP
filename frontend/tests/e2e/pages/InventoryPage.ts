@@ -139,14 +139,14 @@ export class InventoryPage extends BasePage {
     // Find the warehouse filter select
     const warehouseSelect = this.page.locator('.semi-select').first()
     await warehouseSelect.click()
-    await this.page.waitForTimeout(200)
 
-    // Select the option
-    if (warehouseName) {
-      await this.page.locator('.semi-select-option').filter({ hasText: warehouseName }).click()
-    } else {
-      await this.page.locator('.semi-select-option').filter({ hasText: '全部仓库' }).click()
-    }
+    // Wait for options to load (not "暂无数据")
+    const optionToSelect = warehouseName
+      ? this.page.locator('.semi-select-option').filter({ hasText: warehouseName })
+      : this.page.locator('.semi-select-option').filter({ hasText: '全部仓库' })
+
+    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+    await optionToSelect.click()
 
     await this.page.waitForTimeout(300)
     await this.waitForTableLoad()
@@ -156,7 +156,6 @@ export class InventoryPage extends BasePage {
     // Find the status filter select (second select)
     const statusSelect = this.page.locator('.semi-select').nth(1)
     await statusSelect.click()
-    await this.page.waitForTimeout(200)
 
     // Select the option
     const optionText =
@@ -167,7 +166,10 @@ export class InventoryPage extends BasePage {
           : status === 'no_stock'
             ? '无库存'
             : '全部状态'
-    await this.page.locator('.semi-select-option').filter({ hasText: optionText }).click()
+
+    const optionToSelect = this.page.locator('.semi-select-option').filter({ hasText: optionText })
+    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+    await optionToSelect.click()
 
     await this.page.waitForTimeout(300)
     await this.waitForTableLoad()
@@ -245,24 +247,28 @@ export class InventoryPage extends BasePage {
 
   // Stock adjustment methods
   async selectWarehouse(warehouseName: string): Promise<void> {
-    const select = this.page
-      .locator('.semi-select')
-      .filter({ has: this.page.locator('label:has-text("仓库")') })
-      .locator('.semi-select-selection')
+    // Find the form-field-wrapper containing the warehouse label, then find the select inside
+    // The label might be in <label> tag or direct text node with class
+    const wrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '仓库' }).first()
+    const select = wrapper.locator('.semi-select')
     await select.click()
-    await this.page.waitForTimeout(200)
-    await this.page.locator('.semi-select-option').filter({ hasText: warehouseName }).click()
+
+    const optionToSelect = this.page.locator('.semi-select-option').filter({ hasText: warehouseName })
+    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+    await optionToSelect.click()
     await this.page.waitForTimeout(300)
   }
 
   async selectProduct(productName: string): Promise<void> {
-    const select = this.page
-      .locator('.semi-select')
-      .filter({ has: this.page.locator('label:has-text("商品")') })
-      .locator('.semi-select-selection')
+    // Find the form-field-wrapper containing the product label, then find the select inside
+    // The label might be in <label> tag or direct text node with class
+    const wrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '商品' }).first()
+    const select = wrapper.locator('.semi-select')
     await select.click()
-    await this.page.waitForTimeout(200)
-    await this.page.locator('.semi-select-option').filter({ hasText: productName }).click()
+
+    const optionToSelect = this.page.locator('.semi-select-option').filter({ hasText: productName })
+    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
+    await optionToSelect.click()
     await this.page.waitForTimeout(300)
   }
 
@@ -271,26 +277,27 @@ export class InventoryPage extends BasePage {
     reason: string
     notes?: string
   }): Promise<void> {
-    // Fill actual quantity
-    const quantityInput = this.page
-      .locator('input')
-      .filter({ has: this.page.locator('[placeholder*="实际"]') })
-      .first()
-      .or(this.page.locator('input[type="number"]').first())
+    // Fill actual quantity - Semi Design InputNumber uses spinbutton role
+    const quantityWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '实际数量' }).first()
+    // Try spinbutton first (Semi Design InputNumber), fallback to regular input
+    let quantityInput = quantityWrapper.locator('[role="spinbutton"]')
+    if (!(await quantityInput.isVisible().catch(() => false))) {
+      quantityInput = quantityWrapper.locator('.semi-input-number input, input').first()
+    }
+    await quantityInput.clear()
     await quantityInput.fill(data.actualQuantity.toString())
 
-    // Select reason
-    const reasonSelect = this.page
-      .locator('.semi-select')
-      .filter({ has: this.page.locator('label:has-text("调整原因")') })
-      .locator('.semi-select-selection')
+    // Select reason - find select in the form-field-wrapper with reason label
+    const reasonWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '调整原因' }).first()
+    const reasonSelect = reasonWrapper.locator('.semi-select')
     await reasonSelect.click()
     await this.page.waitForTimeout(200)
     await this.page.locator('.semi-select-option').filter({ hasText: data.reason }).click()
 
     // Fill notes if provided
     if (data.notes) {
-      const notesTextarea = this.page.locator('textarea')
+      const notesWrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '备注' }).first()
+      const notesTextarea = notesWrapper.locator('textarea')
       await notesTextarea.fill(data.notes)
     }
   }

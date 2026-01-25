@@ -12,12 +12,14 @@ import (
 	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
+	reportapp "github.com/erp/backend/internal/application/report"
 	tradeapp "github.com/erp/backend/internal/application/trade"
 	"github.com/erp/backend/internal/infrastructure/auth"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
+	"github.com/erp/backend/internal/infrastructure/scheduler"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/erp/backend/internal/interfaces/http/router"
@@ -115,6 +117,10 @@ func main() {
 	userRepo := persistence.NewGormUserRepository(db.DB)
 	roleRepo := persistence.NewGormRoleRepository(db.DB)
 	tenantRepo := persistence.NewGormTenantRepository(db.DB)
+	salesReportRepo := persistence.NewGormSalesReportRepository(db.DB)
+	inventoryReportRepo := persistence.NewGormInventoryReportRepository(db.DB)
+	financeReportRepo := persistence.NewGormFinanceReportRepository(db.DB)
+	reportCacheRepo := reportapp.NewGormReportCacheRepository(db.DB)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -137,6 +143,12 @@ func main() {
 	userService := identityapp.NewUserService(userRepo, roleRepo, log)
 	roleService := identityapp.NewRoleService(roleRepo, userRepo, log)
 	tenantService := identityapp.NewTenantService(tenantRepo, log)
+
+	// Report services
+	reportService := reportapp.NewReportService(salesReportRepo, inventoryReportRepo, financeReportRepo)
+	reportAggregationService := reportapp.NewReportAggregationService(
+		salesReportRepo, inventoryReportRepo, financeReportRepo, reportCacheRepo, log,
+	)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -191,6 +203,30 @@ func main() {
 	salesReturnService.SetEventPublisher(eventBus)
 	purchaseReturnService.SetEventPublisher(eventBus)
 
+	// Initialize report scheduler (if enabled)
+	if cfg.Scheduler.Enabled {
+		schedulerConfig := scheduler.SchedulerConfig{
+			Enabled:           cfg.Scheduler.Enabled,
+			MaxConcurrentJobs: cfg.Scheduler.MaxConcurrentJobs,
+			JobTimeout:        cfg.Scheduler.JobTimeout,
+			RetryAttempts:     cfg.Scheduler.RetryAttempts,
+			RetryDelay:        cfg.Scheduler.RetryDelay,
+		}
+		reportScheduler := scheduler.NewScheduler(schedulerConfig, reportAggregationService, log)
+		if err := reportScheduler.Start(context.Background()); err != nil {
+			log.Fatal("Failed to start report scheduler", zap.Error(err))
+		}
+		defer func() {
+			if err := reportScheduler.Stop(context.Background()); err != nil {
+				log.Error("Error stopping report scheduler", zap.Error(err))
+			}
+		}()
+		log.Info("Report scheduler started",
+			zap.Int("max_concurrent_jobs", cfg.Scheduler.MaxConcurrentJobs),
+			zap.Duration("job_timeout", cfg.Scheduler.JobTimeout),
+		)
+	}
+
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
 	productUnitHandler := handler.NewProductUnitHandler(productUnitService)
@@ -209,6 +245,8 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 	roleHandler := handler.NewRoleHandler(roleService)
 	tenantHandler := handler.NewTenantHandler(tenantService)
+	reportHandler := handler.NewReportHandler(reportService)
+	reportHandler.SetAggregationService(reportAggregationService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -512,6 +550,33 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "finance service ready"})
 	})
 
+	// Report domain
+	reportRoutes := router.NewDomainGroup("report", "/reports")
+	reportRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "report service ready"})
+	})
+	// Sales reports
+	reportRoutes.GET("/sales/summary", reportHandler.GetSalesSummary)
+	reportRoutes.GET("/sales/daily-trend", reportHandler.GetDailySalesTrend)
+	reportRoutes.GET("/sales/product-ranking", reportHandler.GetProductSalesRanking)
+	reportRoutes.GET("/sales/customer-ranking", reportHandler.GetCustomerSalesRanking)
+	// Inventory reports
+	reportRoutes.GET("/inventory/summary", reportHandler.GetInventorySummary)
+	reportRoutes.GET("/inventory/turnover", reportHandler.GetInventoryTurnover)
+	reportRoutes.GET("/inventory/value-by-category", reportHandler.GetInventoryValueByCategory)
+	reportRoutes.GET("/inventory/value-by-warehouse", reportHandler.GetInventoryValueByWarehouse)
+	reportRoutes.GET("/inventory/slow-moving", reportHandler.GetSlowMovingProducts)
+	// Finance reports
+	reportRoutes.GET("/finance/profit-loss", reportHandler.GetProfitLossStatement)
+	reportRoutes.GET("/finance/monthly-profit-trend", reportHandler.GetMonthlyProfitTrend)
+	reportRoutes.GET("/finance/profit-by-product", reportHandler.GetProfitByProduct)
+	reportRoutes.GET("/finance/cash-flow", reportHandler.GetCashFlowStatement)
+	reportRoutes.GET("/finance/cash-flow-items", reportHandler.GetCashFlowItems)
+	// Report aggregation/refresh endpoints
+	reportRoutes.POST("/refresh", reportHandler.RefreshReport)
+	reportRoutes.POST("/refresh/all", reportHandler.RefreshAllReports)
+	reportRoutes.GET("/scheduler/status", reportHandler.GetSchedulerStatus)
+
 	// Identity domain (authentication, users, roles) - public routes
 	authRoutes := router.NewDomainGroup("auth", "/auth")
 	authRoutes.POST("/login", authHandler.Login)
@@ -579,6 +644,7 @@ func main() {
 		Register(inventoryRoutes).
 		Register(tradeRoutes).
 		Register(financeRoutes).
+		Register(reportRoutes).
 		Register(authRoutes).
 		Register(identityRoutes)
 

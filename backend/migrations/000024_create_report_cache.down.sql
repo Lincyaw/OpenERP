@@ -1,0 +1,9 @@
+-- Drop report cache tables
+DROP TABLE IF EXISTS report_scheduler_jobs;
+DROP TABLE IF EXISTS report_customer_ranking_cache;
+DROP TABLE IF EXISTS report_product_ranking_cache;
+DROP TABLE IF EXISTS report_pnl_monthly_cache;
+DROP TABLE IF EXISTS report_inventory_summary_cache;
+DROP TABLE IF EXISTS report_sales_daily_cache;
+DROP TABLE IF EXISTS report_sales_summary_cache;
+DROP TABLE IF EXISTS report_cache_metadata;

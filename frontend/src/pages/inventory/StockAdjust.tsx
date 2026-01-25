@@ -46,10 +46,13 @@ type StockAdjustFormData = z.infer<typeof stockAdjustSchema>
 
 /**
  * Format quantity for display with 2 decimal places
+ * Handles both number and string values from API
  */
-function formatQuantity(quantity?: number): string {
+function formatQuantity(quantity?: number | string): string {
   if (quantity === undefined || quantity === null) return '-'
-  return quantity.toFixed(2)
+  const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity
+  if (isNaN(num)) return '-'
+  return num.toFixed(2)
 }
 
 /**
@@ -145,6 +148,7 @@ export default function StockAdjustPage() {
     setLoadingWarehouses(true)
     try {
       const response = await warehousesApi.getPartnerWarehouses({
+        page: 1,
         page_size: 100,
         status: 'active',
       })
@@ -169,7 +173,8 @@ export default function StockAdjustPage() {
     setLoadingProducts(true)
     try {
       const response = await productsApi.getCatalogProducts({
-        page_size: 500,
+        page: 1,
+        page_size: 100,
         status: 'active',
       })
       if (response.success && response.data) {

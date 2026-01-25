@@ -11,13 +11,14 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	App      AppConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
-	JWT      JWTConfig
-	Log      LogConfig
-	Event    EventConfig
-	HTTP     HTTPConfig
+	App       AppConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
+	JWT       JWTConfig
+	Log       LogConfig
+	Event     EventConfig
+	HTTP      HTTPConfig
+	Scheduler SchedulerConfig
 }
 
 // LogConfig holds logging configuration
@@ -93,6 +94,16 @@ type HTTPConfig struct {
 	TrustedProxies    []string
 }
 
+// SchedulerConfig holds report scheduler configuration
+type SchedulerConfig struct {
+	Enabled           bool
+	DailyCronSchedule string        // Cron expression for daily reports (default: "0 2 * * *" = 2am)
+	MaxConcurrentJobs int           // Maximum concurrent report jobs
+	JobTimeout        time.Duration // Timeout for each job
+	RetryAttempts     int           // Number of retry attempts on failure
+	RetryDelay        time.Duration // Delay between retries
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	cfg := &Config{
@@ -154,6 +165,14 @@ func Load() (*Config, error) {
 			CORSAllowMethods:  getEnvAsStringSlice("HTTP_CORS_METHODS", []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}),
 			CORSAllowHeaders:  getEnvAsStringSlice("HTTP_CORS_HEADERS", []string{"Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"}),
 			TrustedProxies:    getEnvAsStringSlice("HTTP_TRUSTED_PROXIES", nil),
+		},
+		Scheduler: SchedulerConfig{
+			Enabled:           getEnvAsBool("SCHEDULER_ENABLED", true),
+			DailyCronSchedule: getEnv("SCHEDULER_DAILY_CRON", "0 2 * * *"), // Default: 2am daily
+			MaxConcurrentJobs: getEnvAsInt("SCHEDULER_MAX_CONCURRENT_JOBS", 3),
+			JobTimeout:        getEnvAsDuration("SCHEDULER_JOB_TIMEOUT", 30*time.Minute),
+			RetryAttempts:     getEnvAsInt("SCHEDULER_RETRY_ATTEMPTS", 3),
+			RetryDelay:        getEnvAsDuration("SCHEDULER_RETRY_DELAY", 5*time.Minute),
 		},
 	}
 

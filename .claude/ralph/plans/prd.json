@@ -971,9 +971,10 @@
       "视频录制: 库存调整完整流程",
       "",
       "⚠️ E2E 验证必须: ./docker/local-test.sh run-e2e tests/e2e/inventory/inventory.spec.ts",
-      "✅ 完成: 81 tests passed, 50 skipped (跨5个浏览器)",
-      "✅ 修复: seed-data.sql 库存数据架构, StockList.tsx 数量格式化, 仓库名称中文化",
-      "⚠️ 跳过: 库存调整页面表单选择器需要修复 (selectWarehouse/selectProduct)"
+      "✅ 完成: Chromium 22 passed, 5 skipped",
+      "✅ 修复: seed-data.sql 库存数据架构, StockList.tsx/StockAdjust.tsx 数量格式化",
+      "✅ 修复: 仓库名称中文化, API page参数, page_size限制(100)",
+      "✅ 修复: E2E选择器适配Semi Design FormFieldWrapper组件结构"
     ],
     "passes": true
   },
@@ -1910,7 +1911,7 @@
       "配置定时任务",
       "支持手动刷新"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P5-FE-001",
@@ -2868,6 +2869,32 @@
       "添加 ESLint 规则检测硬编码中文字符串",
       "npm run build 类型检查通过",
       "E2E 测试 100% 通过"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P3-INT-001",
+    "story": "库存模块 E2E 测试遗留问题修复",
+    "priority": "low",
+    "requirements": [
+      "问题1: 库存交易流水页面功能未完成",
+      "- 跳过测试: should show transaction item info summary (交易页面缺少 info-summary-card 元素)",
+      "- 跳过测试: should filter transactions by type (交易类型筛选器选择器不匹配)",
+      "- 跳过测试: should display transaction details correctly (交易详情选择器不匹配)",
+      "- 需要: 完善 StockTransactions.tsx 页面，添加缺失的UI元素",
+      "",
+      "问题2: 并发调整测试需要特殊处理",
+      "- 跳过测试: should handle concurrent adjustments with optimistic locking",
+      "- 原因: 需要在两个浏览器上下文中都加载认证状态",
+      "- 需要: 研究 Playwright 多上下文认证方案或使用 API 直接测试并发",
+      "",
+      "问题3: 数据依赖测试不稳定",
+      "- 跳过测试: should verify quantity changes after adjustment",
+      "- 原因: 测试并行执行时数据状态不一致，多个测试修改同一库存项",
+      "- 需要: 考虑使用独立测试数据或串行执行这类测试",
+      "",
+      "当前状态: Chromium 22 passed, 5 skipped",
+      "相关文件: frontend/tests/e2e/inventory/inventory.spec.ts"
     ],
     "passes": false
   }
