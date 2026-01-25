@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { z } from 'zod'
-import { Card, Typography, Toast, Spin, Empty, Button, Descriptions, Tag } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Toast,
+  Spin,
+  Empty,
+  Button,
+  Descriptions,
+  Tag,
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -150,7 +159,7 @@ export default function StockAdjustPage() {
       const response = await warehousesApi.getPartnerWarehouses({
         page: 1,
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         const warehouseList = response.data as HandlerWarehouseListResponse[]
@@ -285,13 +294,20 @@ export default function StockAdjustPage() {
       <Card className="stock-adjust-card">
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
           {/* Selection Section */}
-          <FormSection title={t('adjust.selection.title')} description={t('adjust.selection.description')}>
+          <FormSection
+            title={t('adjust.selection.title')}
+            description={t('adjust.selection.description')}
+          >
             <FormRow cols={2}>
               <SelectField
                 name="warehouse_id"
                 control={control}
                 label={t('adjust.selection.warehouse')}
-                placeholder={loadingWarehouses ? t('adjust.selection.loading') : t('adjust.selection.warehousePlaceholder')}
+                placeholder={
+                  loadingWarehouses
+                    ? t('adjust.selection.loading')
+                    : t('adjust.selection.warehousePlaceholder')
+                }
                 options={warehouses}
                 required
                 showSearch
@@ -301,7 +317,11 @@ export default function StockAdjustPage() {
                 name="product_id"
                 control={control}
                 label={t('adjust.selection.product')}
-                placeholder={loadingProducts ? t('adjust.selection.loading') : t('adjust.selection.productPlaceholder')}
+                placeholder={
+                  loadingProducts
+                    ? t('adjust.selection.loading')
+                    : t('adjust.selection.productPlaceholder')
+                }
                 options={products}
                 required
                 showSearch
@@ -312,7 +332,10 @@ export default function StockAdjustPage() {
 
           {/* Current Stock Info */}
           {warehouseId && productId && (
-            <FormSection title={t('adjust.currentStock.title')} description={t('adjust.currentStock.description')}>
+            <FormSection
+              title={t('adjust.currentStock.title')}
+              description={t('adjust.currentStock.description')}
+            >
               {loadingInventory ? (
                 <div className="loading-container">
                   <Spin />
@@ -333,14 +356,22 @@ export default function StockAdjustPage() {
                         key: t('adjust.currentStock.lockedQuantity'),
                         value: formatQuantity(inventoryItem.locked_quantity),
                       },
-                      { key: t('adjust.currentStock.unitCost'), value: formatCurrency(inventoryItem.unit_cost) },
-                      { key: t('adjust.currentStock.totalValue'), value: formatCurrency(inventoryItem.total_value) },
+                      {
+                        key: t('adjust.currentStock.unitCost'),
+                        value: formatCurrency(inventoryItem.unit_cost),
+                      },
+                      {
+                        key: t('adjust.currentStock.totalValue'),
+                        value: formatCurrency(inventoryItem.total_value),
+                      },
                     ]}
                   />
                   {inventoryItem.locked_quantity && inventoryItem.locked_quantity > 0 && (
                     <div className="stock-warning">
                       <Tag color="orange">
-                        {t('adjust.currentStock.lockedWarning', { quantity: formatQuantity(inventoryItem.locked_quantity) })}
+                        {t('adjust.currentStock.lockedWarning', {
+                          quantity: formatQuantity(inventoryItem.locked_quantity),
+                        })}
                       </Tag>
                     </div>
                   )}
@@ -388,7 +419,10 @@ export default function StockAdjustPage() {
 
           {/* Adjustment Preview */}
           {warehouseId && productId && actualQuantity !== undefined && (
-            <FormSection title={t('adjust.preview.title')} description={t('adjust.preview.description')}>
+            <FormSection
+              title={t('adjust.preview.title')}
+              description={t('adjust.preview.description')}
+            >
               <div className="adjustment-preview">
                 <div className="preview-row">
                   <div className="preview-item">
@@ -416,7 +450,9 @@ export default function StockAdjustPage() {
                       color={adjustmentType === 'increase' ? 'green' : 'red'}
                       className="diff-tag"
                     >
-                      {adjustmentType === 'increase' ? t('adjust.preview.profit') : t('adjust.preview.loss')}
+                      {adjustmentType === 'increase'
+                        ? t('adjust.preview.profit')
+                        : t('adjust.preview.loss')}
                     </Tag>
                   )}
                 </div>

@@ -8,6 +8,6 @@ export type GetPartnerWarehousesStatus =
   (typeof GetPartnerWarehousesStatus)[keyof typeof GetPartnerWarehousesStatus]
 
 export const GetPartnerWarehousesStatus = {
-  active: 'active',
-  inactive: 'inactive',
+  enabled: 'enabled',
+  disabled: 'disabled',
 } as const

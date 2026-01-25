@@ -154,7 +154,7 @@ export default function StockDetailPage() {
     try {
       const response = await warehousesApi.getPartnerWarehouses({
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         const warehouses = response.data as HandlerWarehouseListResponse[]
@@ -305,7 +305,9 @@ export default function StockDetailPage() {
         render: (type: unknown) => {
           const typeStr = type as string | undefined
           const color = TRANSACTION_TYPE_COLORS[typeStr || ''] || 'grey'
-          const label = String(t(`detail.transactions.type.${typeStr}`, { defaultValue: typeStr || '-' }))
+          const label = String(
+            t(`detail.transactions.type.${typeStr}`, { defaultValue: typeStr || '-' })
+          )
           return <Tag color={color}>{label}</Tag>
         },
       },
@@ -351,7 +353,9 @@ export default function StockDetailPage() {
         width: 100,
         render: (type: unknown) => {
           const typeStr = type as string | undefined
-          return String(t(`detail.transactions.sourceType.${typeStr}`, { defaultValue: typeStr || '-' }))
+          return String(
+            t(`detail.transactions.sourceType.${typeStr}`, { defaultValue: typeStr || '-' })
+          )
         },
       },
       {
@@ -424,7 +428,10 @@ export default function StockDetailPage() {
           data={[
             { key: t('detail.basicInfo.warehouse'), value: warehouseName },
             { key: t('detail.basicInfo.product'), value: productName },
-            { key: t('detail.basicInfo.updatedAt'), value: formatDate(inventoryItem.updated_at, 'dateTime') },
+            {
+              key: t('detail.basicInfo.updatedAt'),
+              value: formatDate(inventoryItem.updated_at, 'dateTime'),
+            },
           ]}
         />
       </Card>

@@ -16816,3 +16816,70 @@ Created the missing product detail page (`/catalog/products/:id`) that was causi
 - Includes status-based action buttons (can only edit if not discontinued)
 
 ---
+
+---
+
+## P9-UI-001-H4H5H6: Fix Trade Module Dropdown Data Loading (HIGH)
+**Status**: ✅ Completed
+**Date**: 2026-01-26
+
+### Problem
+Trade module dropdowns (supplier, warehouse) were empty due to:
+1. Silent error handling (empty catch blocks hiding failures)
+2. Warehouse API parameter mismatch - frontend sending `status: 'active'` but backend expecting `enabled/disabled`
+
+### Root Cause Analysis
+- Warehouse API Swagger annotation: `Enums(active, inactive)` (stale)
+- Backend dto.go validation: `oneof=enabled disabled` (correct)
+- Backend rejected `active` with validation error, but empty catch block hid the error
+- Result: empty warehouse dropdown lists across all trade and inventory forms
+
+### Files Modified
+
+#### Backend
+1. `backend/internal/interfaces/http/handler/warehouse.go`:
+   - Updated Swagger annotation `Enums(active, inactive)` → `Enums(enabled, disabled)`
+
+2. `backend/docs/swagger.yaml`:
+   - Updated warehouse status enum to `enabled/disabled`
+
+#### Frontend (14 files)
+1. Feature forms (4 files):
+   - `src/features/trade/PurchaseOrderForm.tsx`
+   - `src/features/trade/SalesOrderForm.tsx`
+   - `src/features/trade/SalesReturnForm.tsx`
+   - `src/features/trade/PurchaseReturnForm.tsx`
+
+2. Inventory pages (7 files):
+   - `src/pages/inventory/StockList.tsx`
+   - `src/pages/inventory/StockDetail.tsx`
+   - `src/pages/inventory/StockAdjust.tsx`
+   - `src/pages/inventory/StockAlerts.tsx`
+   - `src/pages/inventory/StockTakingCreate.tsx`
+   - `src/pages/inventory/StockTakingList.tsx`
+   - `src/pages/inventory/StockTransactions.tsx`
+
+3. Trade pages (2 files):
+   - `src/pages/trade/PurchaseOrderReceive.tsx`
+   - `src/pages/trade/components/ShipOrderModal.tsx`
+
+4. Regenerated SDK:
+   - `src/api/models/getPartnerWarehousesStatus.ts` now has `enabled/disabled`
+
+### Changes Made
+1. Changed `status: 'active'` → `status: 'enabled'` for all warehouse API calls
+2. Added `console.error()` logging for API failures in catch blocks
+3. Added `response.success` check with error logging
+4. Regenerated frontend SDK from updated Swagger spec
+
+### Verification
+- `npx tsc --noEmit` - TypeScript type check passes
+- `npm run build` - Build successful
+- `go build ./...` - Backend build successful
+
+### Notes for Future
+- Warehouse API uses `enabled/disabled` status (not `active/inactive` like other partner APIs)
+- Always regenerate SDK after Swagger annotation changes: `npm run api:generate`
+- Empty catch blocks should log errors for debugging
+
+---

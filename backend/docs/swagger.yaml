@@ -17039,8 +17039,8 @@ paths:
         type: string
       - description: Warehouse status
         enum:
-        - active
-        - inactive
+        - enabled
+        - disabled
         in: query
         name: status
         type: string

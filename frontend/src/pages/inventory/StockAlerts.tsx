@@ -125,7 +125,7 @@ export default function StockAlertsPage() {
       const response = await warehousesApi.getPartnerWarehouses({
         page: 1,
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         const warehouses = response.data as HandlerWarehouseListResponse[]

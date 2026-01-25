@@ -140,7 +140,7 @@ export default function PurchaseOrderReceivePage() {
   const fetchWarehouses = useCallback(async () => {
     try {
       const response = await warehouseApi.getPartnerWarehouses({
-        status: 'active',
+        status: 'enabled',
         page_size: 100,
       })
       if (response.success && response.data) {

@@ -181,9 +181,11 @@ export function PurchaseReturnForm() {
         })
         if (response.success && response.data) {
           setOrders(response.data)
+        } else if (!response.success) {
+          console.error('Failed to fetch orders:', response.error)
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        console.error('Error fetching orders:', error)
       } finally {
         setOrdersLoading(false)
       }
@@ -241,7 +243,7 @@ export function PurchaseReturnForm() {
     try {
       const response = await warehouseApi.getPartnerWarehouses({
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         setWarehouses(response.data)
@@ -252,9 +254,11 @@ export function PurchaseReturnForm() {
             setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
           }
         }
+      } else if (!response.success) {
+        console.error('Failed to fetch warehouses:', response.error)
       }
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error fetching warehouses:', error)
     } finally {
       setWarehousesLoading(false)
     }

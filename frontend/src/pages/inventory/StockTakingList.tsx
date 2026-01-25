@@ -115,7 +115,7 @@ export default function StockTakingListPage() {
     try {
       const response = await warehousesApi.getPartnerWarehouses({
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         const warehouses = response.data as HandlerWarehouseListResponse[]

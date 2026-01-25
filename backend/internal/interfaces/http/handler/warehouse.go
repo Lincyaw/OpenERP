@@ -20,7 +20,8 @@ func NewWarehouseHandler(warehouseService *partnerapp.WarehouseService) *Warehou
 }
 
 // CreateWarehouseRequest represents a request to create a new warehouse
-// @Description Request body for creating a new warehouse
+//
+//	@Description	Request body for creating a new warehouse
 type CreateWarehouseRequest struct {
 	Code        string `json:"code" binding:"required,min=1,max=50" example:"WH-001"`
 	Name        string `json:"name" binding:"required,min=1,max=200" example:"Main Warehouse"`
@@ -42,7 +43,8 @@ type CreateWarehouseRequest struct {
 }
 
 // UpdateWarehouseRequest represents a request to update a warehouse
-// @Description Request body for updating a warehouse
+//
+//	@Description	Request body for updating a warehouse
 type UpdateWarehouseRequest struct {
 	Name        *string `json:"name" binding:"omitempty,min=1,max=200" example:"Main Distribution Center"`
 	ShortName   *string `json:"short_name" binding:"omitempty,max=100" example:"MDC"`
@@ -62,26 +64,28 @@ type UpdateWarehouseRequest struct {
 }
 
 // UpdateWarehouseCodeRequest represents a request to update a warehouse's code
-// @Description Request body for updating a warehouse's code
+//
+//	@Description	Request body for updating a warehouse's code
 type UpdateWarehouseCodeRequest struct {
 	Code string `json:"code" binding:"required,min=1,max=50" example:"WH-002"`
 }
 
 // Create godoc
-// @Summary      Create a new warehouse
-// @Description  Create a new warehouse in the partner module
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateWarehouseRequest true "Warehouse creation request"
-// @Success      201 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses [post]
+//
+//	@Summary		Create a new warehouse
+//	@Description	Create a new warehouse in the partner module
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateWarehouseRequest	true	"Warehouse creation request"
+//	@Success		201			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses [post]
 func (h *WarehouseHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -134,20 +138,21 @@ func (h *WarehouseHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @Summary      Get warehouse by ID
-// @Description  Retrieve a warehouse by its ID
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id} [get]
+//
+//	@Summary		Get warehouse by ID
+//	@Description	Retrieve a warehouse by its ID
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Warehouse ID"	format(uuid)
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id} [get]
 func (h *WarehouseHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -171,20 +176,21 @@ func (h *WarehouseHandler) GetByID(c *gin.Context) {
 }
 
 // GetByCode godoc
-// @Summary      Get warehouse by code
-// @Description  Retrieve a warehouse by its code
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        code path string true "Warehouse Code"
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/code/{code} [get]
+//
+//	@Summary		Get warehouse by code
+//	@Description	Retrieve a warehouse by its code
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			code		path		string	true	"Warehouse Code"
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/code/{code} [get]
 func (h *WarehouseHandler) GetByCode(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -208,19 +214,20 @@ func (h *WarehouseHandler) GetByCode(c *gin.Context) {
 }
 
 // GetDefault godoc
-// @Summary      Get default warehouse
-// @Description  Retrieve the default warehouse for the tenant
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/default [get]
+//
+//	@Summary		Get default warehouse
+//	@Description	Retrieve the default warehouse for the tenant
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/default [get]
 func (h *WarehouseHandler) GetDefault(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -238,28 +245,29 @@ func (h *WarehouseHandler) GetDefault(c *gin.Context) {
 }
 
 // List godoc
-// @Summary      List warehouses
-// @Description  Retrieve a paginated list of warehouses with optional filtering
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (name, code)"
-// @Param        status query string false "Warehouse status" Enums(active, inactive)
-// @Param        type query string false "Warehouse type" Enums(physical, virtual, consign, transit)
-// @Param        city query string false "City"
-// @Param        province query string false "Province"
-// @Param        is_default query boolean false "Filter by default status"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(is_default)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} dto.Response{data=[]WarehouseListResponse,meta=dto.Meta}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses [get]
+//
+//	@Summary		List warehouses
+//	@Description	Retrieve a paginated list of warehouses with optional filtering
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term (name, code)"
+//	@Param			status		query		string	false	"Warehouse status"	Enums(enabled, disabled)
+//	@Param			type		query		string	false	"Warehouse type"	Enums(physical, virtual, consign, transit)
+//	@Param			city		query		string	false	"City"
+//	@Param			province	query		string	false	"Province"
+//	@Param			is_default	query		boolean	false	"Filter by default status"
+//	@Param			page		query		int		false	"Page number"		default(1)
+//	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by	query		string	false	"Order by field"	default(is_default)
+//	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200			{object}	dto.Response{data=[]WarehouseListResponse,meta=dto.Meta}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses [get]
 func (h *WarehouseHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -291,22 +299,23 @@ func (h *WarehouseHandler) List(c *gin.Context) {
 }
 
 // Update godoc
-// @Summary      Update a warehouse
-// @Description  Update an existing warehouse's details
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Param        request body UpdateWarehouseRequest true "Warehouse update request"
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id} [put]
+//
+//	@Summary		Update a warehouse
+//	@Description	Update an existing warehouse's details
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Warehouse ID"	format(uuid)
+//	@Param			request		body		UpdateWarehouseRequest	true	"Warehouse update request"
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id} [put]
 func (h *WarehouseHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -355,22 +364,23 @@ func (h *WarehouseHandler) Update(c *gin.Context) {
 }
 
 // UpdateCode godoc
-// @Summary      Update warehouse code
-// @Description  Update a warehouse's code
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Param        request body UpdateWarehouseCodeRequest true "New warehouse code"
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id}/code [put]
+//
+//	@Summary		Update warehouse code
+//	@Description	Update a warehouse's code
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Warehouse ID"	format(uuid)
+//	@Param			request		body		UpdateWarehouseCodeRequest	true	"New warehouse code"
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id}/code [put]
 func (h *WarehouseHandler) UpdateCode(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -400,21 +410,22 @@ func (h *WarehouseHandler) UpdateCode(c *gin.Context) {
 }
 
 // Delete godoc
-// @Summary      Delete a warehouse
-// @Description  Delete a warehouse by ID (cannot delete default warehouse)
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id} [delete]
+//
+//	@Summary		Delete a warehouse
+//	@Description	Delete a warehouse by ID (cannot delete default warehouse)
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Warehouse ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id} [delete]
 func (h *WarehouseHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -438,21 +449,22 @@ func (h *WarehouseHandler) Delete(c *gin.Context) {
 }
 
 // Enable godoc
-// @Summary      Enable a warehouse
-// @Description  Enable an inactive warehouse
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id}/enable [post]
+//
+//	@Summary		Enable a warehouse
+//	@Description	Enable an inactive warehouse
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Warehouse ID"	format(uuid)
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id}/enable [post]
 func (h *WarehouseHandler) Enable(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -476,21 +488,22 @@ func (h *WarehouseHandler) Enable(c *gin.Context) {
 }
 
 // Disable godoc
-// @Summary      Disable a warehouse
-// @Description  Disable an active warehouse
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id}/disable [post]
+//
+//	@Summary		Disable a warehouse
+//	@Description	Disable an active warehouse
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Warehouse ID"	format(uuid)
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id}/disable [post]
 func (h *WarehouseHandler) Disable(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -514,21 +527,22 @@ func (h *WarehouseHandler) Disable(c *gin.Context) {
 }
 
 // SetDefault godoc
-// @Summary      Set default warehouse
-// @Description  Set a warehouse as the default warehouse
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Warehouse ID" format(uuid)
-// @Success      200 {object} dto.Response{data=WarehouseResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/{id}/set-default [post]
+//
+//	@Summary		Set default warehouse
+//	@Description	Set a warehouse as the default warehouse
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Warehouse ID"	format(uuid)
+//	@Success		200			{object}	dto.Response{data=WarehouseResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/{id}/set-default [post]
 func (h *WarehouseHandler) SetDefault(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -559,18 +573,19 @@ type WarehouseCountByStatusResponse struct {
 }
 
 // CountByStatus godoc
-// @Summary      Get warehouse counts by status
-// @Description  Get the count of warehouses grouped by status
-// @Tags         warehouses
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} dto.Response{data=WarehouseCountByStatusResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /partner/warehouses/stats/count [get]
+//
+//	@Summary		Get warehouse counts by status
+//	@Description	Get the count of warehouses grouped by status
+//	@Tags			warehouses
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	dto.Response{data=WarehouseCountByStatusResponse}
+//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Security		BearerAuth
+//	@Router			/partner/warehouses/stats/count [get]
 func (h *WarehouseHandler) CountByStatus(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

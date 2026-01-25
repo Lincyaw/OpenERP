@@ -171,9 +171,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         })
         if (response.success && response.data) {
           setSuppliers(response.data)
+        } else if (!response.success) {
+          console.error('Failed to fetch suppliers:', response.error)
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        console.error('Error fetching suppliers:', error)
       } finally {
         setSuppliersLoading(false)
       }
@@ -193,9 +195,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         })
         if (response.success && response.data) {
           setProducts(response.data)
+        } else if (!response.success) {
+          console.error('Failed to fetch products:', response.error)
         }
-      } catch {
-        // Silently fail
+      } catch (error) {
+        console.error('Error fetching products:', error)
       } finally {
         setProductsLoading(false)
       }
@@ -209,7 +213,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     try {
       const response = await warehouseApi.getPartnerWarehouses({
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         setWarehouses(response.data)
@@ -220,9 +224,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
           }
         }
+      } else if (!response.success) {
+        console.error('Failed to fetch warehouses:', response.error)
       }
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error fetching warehouses:', error)
     } finally {
       setWarehousesLoading(false)
     }

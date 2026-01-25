@@ -159,7 +159,7 @@ export default function StockTakingCreatePage() {
     try {
       const response = await warehousesApi.getPartnerWarehouses({
         page_size: 100,
-        status: 'active',
+        status: 'enabled',
       })
       if (response.success && response.data) {
         const warehouseList = response.data as HandlerWarehouseListResponse[]
