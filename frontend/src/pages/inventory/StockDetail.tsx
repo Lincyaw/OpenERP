@@ -13,8 +13,10 @@ import {
 } from '@douyinfe/semi-ui'
 import { IconArrowLeft, IconRefresh, IconEdit } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { DataTable, useTableState, type DataTableColumn } from '@/components/common'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getProducts } from '@/api/products/products'
@@ -54,26 +56,6 @@ type TagColor =
 // Transaction type with index signature for DataTable compatibility
 type Transaction = HandlerTransactionResponse & Record<string, unknown>
 
-// Transaction type label map
-const TRANSACTION_TYPE_LABELS: Record<string, { label: string; color: TagColor }> = {
-  INBOUND: { label: '入库', color: 'green' },
-  OUTBOUND: { label: '出库', color: 'red' },
-  LOCK: { label: '锁定', color: 'orange' },
-  UNLOCK: { label: '解锁', color: 'blue' },
-  ADJUSTMENT: { label: '调整', color: 'purple' },
-}
-
-// Source type label map
-const SOURCE_TYPE_LABELS: Record<string, string> = {
-  PURCHASE_ORDER: '采购订单',
-  SALES_ORDER: '销售订单',
-  SALES_RETURN: '销售退货',
-  PURCHASE_RETURN: '采购退货',
-  STOCK_TAKE: '盘点',
-  MANUAL: '手动调整',
-  INITIAL: '期初',
-}
-
 /**
  * Format quantity for display with 2 decimal places
  */
@@ -92,29 +74,6 @@ function formatSignedQuantity(quantity?: number): string {
 }
 
 /**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-/**
  * Inventory Stock Detail Page
  *
  * Features:
@@ -125,9 +84,22 @@ function formatDate(dateStr?: string): string {
 export default function StockDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
   const productsApi = useMemo(() => getProducts(), [])
+
+  // Wrapper functions to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
+  const formatDate = useCallback(
+    (date?: string, style?: 'date' | 'dateTime'): string =>
+      date ? formatDateBase(date, style === 'dateTime' ? 'medium' : 'short') : '-',
+    [formatDateBase]
+  )
 
   // State for inventory item
   const [inventoryItem, setInventoryItem] = useState<HandlerInventoryItemResponse | null>(null)
@@ -163,7 +135,7 @@ export default function StockDetailPage() {
         setInventoryItem(response.data as HandlerInventoryItemResponse)
       }
     } catch {
-      Toast.error('获取库存详情失败')
+      Toast.error(t('detail.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -237,7 +209,7 @@ export default function StockDetailPage() {
         }
       }
     } catch {
-      Toast.error('获取流水记录失败')
+      Toast.error(t('detail.messages.fetchTransactionsError'))
     } finally {
       setTransactionsLoading(false)
     }
@@ -283,49 +255,56 @@ export default function StockDetailPage() {
     }
   }, [inventoryItem, navigate])
 
+  // Transaction type colors
+  const TRANSACTION_TYPE_COLORS: Record<string, TagColor> = {
+    INBOUND: 'green',
+    OUTBOUND: 'red',
+    LOCK: 'orange',
+    UNLOCK: 'blue',
+    ADJUSTMENT: 'purple',
+  }
+
   // Get status tag for inventory item
   const getStatusTag = useCallback(() => {
     if (!inventoryItem) return null
 
     if (inventoryItem.is_below_minimum) {
-      return <Tag color="orange">低库存</Tag>
+      return <Tag color="orange">{t('stock.status.lowStock')}</Tag>
     }
     if (inventoryItem.is_above_maximum) {
-      return <Tag color="blue">超上限</Tag>
+      return <Tag color="blue">{t('stock.status.overMax')}</Tag>
     }
     const totalQty = inventoryItem.total_quantity
     if (totalQty === undefined || totalQty === null || totalQty <= 0) {
-      return <Tag color="red">无库存</Tag>
+      return <Tag color="red">{t('stock.status.noStock')}</Tag>
     }
-    return <Tag color="green">正常</Tag>
-  }, [inventoryItem])
+    return <Tag color="green">{t('stock.status.normal')}</Tag>
+  }, [inventoryItem, t])
 
   // Transactions table columns
   const transactionColumns: DataTableColumn<Transaction>[] = useMemo(
     () => [
       {
-        title: '交易时间',
+        title: t('detail.transactions.columns.transactionDate'),
         dataIndex: 'transaction_date',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDate(date as string | undefined, 'dateTime'),
       },
       {
-        title: '类型',
+        title: t('detail.transactions.columns.type'),
         dataIndex: 'transaction_type',
         width: 80,
         align: 'center',
         render: (type: unknown) => {
           const typeStr = type as string | undefined
-          const typeInfo = TRANSACTION_TYPE_LABELS[typeStr || ''] || {
-            label: typeStr || '-',
-            color: 'grey' as TagColor,
-          }
-          return <Tag color={typeInfo.color}>{typeInfo.label}</Tag>
+          const color = TRANSACTION_TYPE_COLORS[typeStr || ''] || 'grey'
+          const label = String(t(`detail.transactions.type.${typeStr}`, { defaultValue: typeStr || '-' }))
+          return <Tag color={color}>{label}</Tag>
         },
       },
       {
-        title: '变动数量',
+        title: t('detail.transactions.columns.signedQuantity'),
         dataIndex: 'signed_quantity',
         width: 100,
         align: 'right',
@@ -340,51 +319,51 @@ export default function StockDetailPage() {
         },
       },
       {
-        title: '变动前余额',
+        title: t('detail.transactions.columns.balanceBefore'),
         dataIndex: 'balance_before',
         width: 100,
         align: 'right',
         render: (qty: unknown) => formatQuantity(qty as number | undefined),
       },
       {
-        title: '变动后余额',
+        title: t('detail.transactions.columns.balanceAfter'),
         dataIndex: 'balance_after',
         width: 100,
         align: 'right',
         render: (qty: unknown) => formatQuantity(qty as number | undefined),
       },
       {
-        title: '单位成本',
+        title: t('detail.transactions.columns.unitCost'),
         dataIndex: 'unit_cost',
         width: 100,
         align: 'right',
         render: (cost: unknown) => formatCurrency(cost as number | undefined),
       },
       {
-        title: '来源类型',
+        title: t('detail.transactions.columns.sourceType'),
         dataIndex: 'source_type',
         width: 100,
         render: (type: unknown) => {
           const typeStr = type as string | undefined
-          return SOURCE_TYPE_LABELS[typeStr || ''] || typeStr || '-'
+          return String(t(`detail.transactions.sourceType.${typeStr}`, { defaultValue: typeStr || '-' }))
         },
       },
       {
-        title: '来源单号',
+        title: t('detail.transactions.columns.sourceId'),
         dataIndex: 'source_id',
         width: 140,
         ellipsis: true,
         render: (sourceId: unknown) => (sourceId as string) || '-',
       },
       {
-        title: '备注',
+        title: t('detail.transactions.columns.remark'),
         dataIndex: 'reason',
         width: 150,
         ellipsis: true,
         render: (reason: unknown) => (reason as string) || '-',
       },
     ],
-    []
+    [t, formatCurrency, formatDate, TRANSACTION_TYPE_COLORS]
   )
 
   if (loading) {
@@ -401,8 +380,8 @@ export default function StockDetailPage() {
     return (
       <Container size="full" className="stock-detail-page">
         <Card>
-          <Empty title="未找到库存记录" description="请检查库存ID是否正确">
-            <Button onClick={handleBack}>返回列表</Button>
+          <Empty title={t('detail.notFound')} description={t('detail.notFoundDesc')}>
+            <Button onClick={handleBack}>{t('detail.backToList')}</Button>
           </Empty>
         </Card>
       </Container>
@@ -415,41 +394,41 @@ export default function StockDetailPage() {
       <div className="stock-detail-header">
         <div className="header-left">
           <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            返回
+            {t('detail.back')}
           </Button>
           <Title heading={4} style={{ margin: 0 }}>
-            库存详情
+            {t('detail.title')}
           </Title>
           {getStatusTag()}
         </div>
         <div className="header-right">
           <Button icon={<IconRefresh />} onClick={handleRefresh}>
-            刷新
+            {t('detail.refresh')}
           </Button>
           <Button type="primary" icon={<IconEdit />} onClick={handleAdjustStock}>
-            库存调整
+            {t('detail.adjustStock')}
           </Button>
         </div>
       </div>
 
       {/* Basic Info Card */}
       <Card className="detail-card">
-        <Title heading={5}>基本信息</Title>
+        <Title heading={5}>{t('detail.basicInfo.title')}</Title>
         <Descriptions
           data={[
-            { key: '仓库', value: warehouseName },
-            { key: '商品', value: productName },
-            { key: '更新时间', value: formatDate(inventoryItem.updated_at) },
+            { key: t('detail.basicInfo.warehouse'), value: warehouseName },
+            { key: t('detail.basicInfo.product'), value: productName },
+            { key: t('detail.basicInfo.updatedAt'), value: formatDate(inventoryItem.updated_at, 'dateTime') },
           ]}
         />
       </Card>
 
       {/* Quantity Info Card */}
       <Card className="detail-card">
-        <Title heading={5}>库存数量</Title>
+        <Title heading={5}>{t('detail.quantity.title')}</Title>
         <div className="quantity-grid">
           <div className="quantity-item">
-            <Text type="tertiary">可用数量</Text>
+            <Text type="tertiary">{t('detail.quantity.available')}</Text>
             <Text
               className={`quantity-value ${inventoryItem.is_below_minimum ? 'quantity-warning' : ''}`}
             >
@@ -457,7 +436,7 @@ export default function StockDetailPage() {
             </Text>
           </div>
           <div className="quantity-item">
-            <Text type="tertiary">锁定数量</Text>
+            <Text type="tertiary">{t('detail.quantity.locked')}</Text>
             <Text
               className={`quantity-value ${inventoryItem.locked_quantity && inventoryItem.locked_quantity > 0 ? 'quantity-locked' : ''}`}
             >
@@ -465,7 +444,7 @@ export default function StockDetailPage() {
             </Text>
           </div>
           <div className="quantity-item">
-            <Text type="tertiary">总数量</Text>
+            <Text type="tertiary">{t('detail.quantity.total')}</Text>
             <Text className="quantity-value">{formatQuantity(inventoryItem.total_quantity)}</Text>
           </div>
         </div>
@@ -473,33 +452,33 @@ export default function StockDetailPage() {
 
       {/* Cost Info Card */}
       <Card className="detail-card">
-        <Title heading={5}>成本信息</Title>
+        <Title heading={5}>{t('detail.cost.title')}</Title>
         <Descriptions
           data={[
-            { key: '单位成本', value: formatCurrency(inventoryItem.unit_cost) },
-            { key: '库存总值', value: formatCurrency(inventoryItem.total_value) },
+            { key: t('detail.cost.unitCost'), value: formatCurrency(inventoryItem.unit_cost) },
+            { key: t('detail.cost.totalValue'), value: formatCurrency(inventoryItem.total_value) },
           ]}
         />
       </Card>
 
       {/* Threshold Info Card */}
       <Card className="detail-card">
-        <Title heading={5}>库存阈值</Title>
+        <Title heading={5}>{t('detail.threshold.title')}</Title>
         <Descriptions
           data={[
             {
-              key: '最小库存',
+              key: t('detail.threshold.minQuantity'),
               value:
                 inventoryItem.min_quantity !== undefined && inventoryItem.min_quantity !== null
                   ? formatQuantity(inventoryItem.min_quantity)
-                  : '未设置',
+                  : t('detail.threshold.notSet'),
             },
             {
-              key: '最大库存',
+              key: t('detail.threshold.maxQuantity'),
               value:
                 inventoryItem.max_quantity !== undefined && inventoryItem.max_quantity !== null
                   ? formatQuantity(inventoryItem.max_quantity)
-                  : '未设置',
+                  : t('detail.threshold.notSet'),
             },
           ]}
         />
@@ -508,7 +487,7 @@ export default function StockDetailPage() {
       {/* Transactions Tab */}
       <Card className="detail-card transactions-card">
         <Tabs type="line">
-          <TabPane tab="流水记录" itemKey="transactions">
+          <TabPane tab={t('detail.transactions.title')} itemKey="transactions">
             <Spin spinning={transactionsLoading}>
               <DataTable<Transaction>
                 data={transactions}

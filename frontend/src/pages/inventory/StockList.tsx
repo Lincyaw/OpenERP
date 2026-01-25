@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Spin, Tooltip } from '@douyinfe/semi-ui'
 import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -10,6 +11,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getProducts } from '@/api/products/products'
@@ -28,19 +30,10 @@ const { Title } = Typography
 // Inventory item type with index signature for DataTable compatibility
 type InventoryItem = HandlerInventoryItemResponse & Record<string, unknown>
 
-// Warehouse option type
 type WarehouseOption = {
   label: string
   value: string
 }
-
-// Stock status filter options
-const STOCK_STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '有库存', value: 'has_stock' },
-  { label: '低库存预警', value: 'below_minimum' },
-  { label: '无库存', value: 'no_stock' },
-]
 
 /**
  * Format quantity for display with 2 decimal places
@@ -48,29 +41,6 @@ const STOCK_STATUS_OPTIONS = [
 function formatQuantity(quantity?: number): string {
   if (quantity === undefined || quantity === null) return '-'
   return quantity.toFixed(2)
-}
-
-/**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 /**
@@ -86,9 +56,22 @@ function formatDate(dateStr?: string): string {
  */
 export default function StockListPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
   const productsApi = useMemo(() => getProducts(), [])
+
+  // Wrapper functions to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
+  const formatDate = useCallback(
+    (date?: string, style?: 'date' | 'dateTime'): string =>
+      date ? formatDateBase(date, style === 'dateTime' ? 'medium' : 'short') : '-',
+    [formatDateBase]
+  )
 
   // State for data
   const [inventoryList, setInventoryList] = useState<InventoryItem[]>([])
@@ -122,7 +105,7 @@ export default function StockListPage() {
       if (response.success && response.data) {
         const warehouses = response.data as HandlerWarehouseListResponse[]
         const options: WarehouseOption[] = [
-          { label: '全部仓库', value: '' },
+          { label: t('stock.allWarehouses'), value: '' },
           ...warehouses.map((w) => ({
             label: w.name || w.code || '',
             value: w.id || '',
@@ -142,7 +125,7 @@ export default function StockListPage() {
     } catch {
       console.error('Failed to fetch warehouses')
     }
-  }, [warehousesApi])
+  }, [warehousesApi, t])
 
   // Fetch products for display names
   const fetchProducts = useCallback(async () => {
@@ -199,7 +182,7 @@ export default function StockListPage() {
         }
       }
     } catch {
-      Toast.error('获取库存列表失败')
+      Toast.error(t('stock.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -308,17 +291,28 @@ export default function StockListPage() {
     [productMap]
   )
 
+  // Stock status filter options
+  const STOCK_STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('stock.statusFilter.all'), value: '' },
+      { label: t('stock.statusFilter.hasStock'), value: 'has_stock' },
+      { label: t('stock.statusFilter.belowMinimum'), value: 'below_minimum' },
+      { label: t('stock.statusFilter.noStock'), value: 'no_stock' },
+    ],
+    [t]
+  )
+
   // Table columns
   const tableColumns: DataTableColumn<InventoryItem>[] = useMemo(
     () => [
       {
-        title: '仓库',
+        title: t('stock.columns.warehouse'),
         dataIndex: 'warehouse_id',
         width: 120,
         render: (warehouseId: unknown) => getWarehouseName(warehouseId as string | undefined),
       },
       {
-        title: '商品',
+        title: t('stock.columns.product'),
         dataIndex: 'product_id',
         width: 180,
         ellipsis: true,
@@ -329,7 +323,7 @@ export default function StockListPage() {
         ),
       },
       {
-        title: '可用数量',
+        title: t('stock.columns.availableQuantity'),
         dataIndex: 'available_quantity',
         width: 110,
         align: 'right',
@@ -343,7 +337,7 @@ export default function StockListPage() {
                 {formatQuantity(availableQty)}
               </span>
               {isBelowMin && (
-                <Tooltip content="低于安全库存">
+                <Tooltip content={t('stock.tooltip.belowMinimum')}>
                   <IconAlertTriangle className="warning-icon" />
                 </Tooltip>
               )}
@@ -352,7 +346,7 @@ export default function StockListPage() {
         },
       },
       {
-        title: '锁定数量',
+        title: t('stock.columns.lockedQuantity'),
         dataIndex: 'locked_quantity',
         width: 100,
         align: 'right',
@@ -367,7 +361,7 @@ export default function StockListPage() {
         },
       },
       {
-        title: '总数量',
+        title: t('stock.columns.totalQuantity'),
         dataIndex: 'total_quantity',
         width: 100,
         align: 'right',
@@ -375,7 +369,7 @@ export default function StockListPage() {
         render: (qty: unknown) => formatQuantity(qty as number | undefined),
       },
       {
-        title: '单位成本',
+        title: t('stock.columns.unitCost'),
         dataIndex: 'unit_cost',
         width: 100,
         align: 'right',
@@ -383,7 +377,7 @@ export default function StockListPage() {
         render: (cost: unknown) => formatCurrency(cost as number | undefined),
       },
       {
-        title: '库存总值',
+        title: t('stock.columns.totalValue'),
         dataIndex: 'total_value',
         width: 110,
         align: 'right',
@@ -391,33 +385,33 @@ export default function StockListPage() {
         render: (value: unknown) => formatCurrency(value as number | undefined),
       },
       {
-        title: '状态',
+        title: t('stock.columns.status'),
         dataIndex: 'is_below_minimum',
         width: 90,
         align: 'center',
         render: (_: unknown, record: InventoryItem) => {
           if (record.is_below_minimum) {
-            return <Tag color="orange">低库存</Tag>
+            return <Tag color="orange">{t('stock.status.lowStock')}</Tag>
           }
           if (record.is_above_maximum) {
-            return <Tag color="blue">超上限</Tag>
+            return <Tag color="blue">{t('stock.status.overMax')}</Tag>
           }
           const totalQty = record.total_quantity
           if (totalQty === undefined || totalQty === null || totalQty <= 0) {
-            return <Tag color="red">无库存</Tag>
+            return <Tag color="red">{t('stock.status.noStock')}</Tag>
           }
-          return <Tag color="green">正常</Tag>
+          return <Tag color="green">{t('stock.status.normal')}</Tag>
         },
       },
       {
-        title: '更新时间',
+        title: t('stock.columns.updatedAt'),
         dataIndex: 'updated_at',
         width: 150,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDate(date as string | undefined, 'dateTime'),
       },
     ],
-    [getWarehouseName, getProductName]
+    [getWarehouseName, getProductName, t, formatCurrency, formatDate]
   )
 
   // Table row actions
@@ -425,21 +419,21 @@ export default function StockListPage() {
     () => [
       {
         key: 'view',
-        label: '查看明细',
+        label: t('stock.actions.viewDetail'),
         onClick: handleViewDetail,
       },
       {
         key: 'transactions',
-        label: '流水记录',
+        label: t('stock.actions.viewTransactions'),
         onClick: handleViewTransactions,
       },
       {
         key: 'adjust',
-        label: '库存调整',
+        label: t('stock.actions.adjustStock'),
         onClick: handleAdjustStock,
       },
     ],
-    [handleViewDetail, handleViewTransactions, handleAdjustStock]
+    [handleViewDetail, handleViewTransactions, handleAdjustStock, t]
   )
 
   return (
@@ -447,18 +441,18 @@ export default function StockListPage() {
       <Card className="stock-list-card">
         <div className="stock-list-header">
           <Title heading={4} style={{ margin: 0 }}>
-            库存查询
+            {t('stock.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索商品..."
+          searchPlaceholder={t('stock.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('stock.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -466,14 +460,14 @@ export default function StockListPage() {
           filters={
             <Space>
               <Select
-                placeholder="选择仓库"
+                placeholder={t('stock.selectWarehouse')}
                 value={warehouseFilter}
                 onChange={handleWarehouseChange}
                 optionList={warehouseOptions}
                 style={{ width: 150 }}
               />
               <Select
-                placeholder="库存状态"
+                placeholder={t('stock.stockStatus')}
                 value={stockStatusFilter}
                 onChange={handleStockStatusChange}
                 optionList={STOCK_STATUS_OPTIONS}

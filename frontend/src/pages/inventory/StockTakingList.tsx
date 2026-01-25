@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Spin, Button } from '@douyinfe/semi-ui'
 import { IconRefresh, IconPlus } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -10,6 +11,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type {
@@ -37,17 +39,6 @@ import type { TagProps } from '@douyinfe/semi-ui/lib/es/tag'
 
 type TagColor = TagProps['color']
 
-// Status filter options
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'DRAFT' },
-  { label: '盘点中', value: 'COUNTING' },
-  { label: '待审批', value: 'PENDING_APPROVAL' },
-  { label: '已通过', value: 'APPROVED' },
-  { label: '已拒绝', value: 'REJECTED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
-
 // Status colors
 const STATUS_COLORS: Record<string, TagColor> = {
   DRAFT: 'grey',
@@ -56,52 +47,6 @@ const STATUS_COLORS: Record<string, TagColor> = {
   APPROVED: 'green',
   REJECTED: 'red',
   CANCELLED: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: '草稿',
-  COUNTING: '盘点中',
-  PENDING_APPROVAL: '待审批',
-  APPROVED: '已通过',
-  REJECTED: '已拒绝',
-  CANCELLED: '已取消',
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-/**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
 }
 
 /**
@@ -115,8 +60,35 @@ function formatCurrency(value?: number): string {
  */
 export default function StockTakingListPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const stockTakingApi = useMemo(() => getStockTaking(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
+
+  // Wrapper functions to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
+  const formatDate = useCallback(
+    (date?: string, style?: 'date' | 'dateTime'): string =>
+      date ? formatDateBase(date, style === 'dateTime' ? 'medium' : 'short') : '-',
+    [formatDateBase]
+  )
+
+  // Status filter options
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('stockTaking.list.status.all'), value: '' },
+      { label: t('stockTaking.list.status.DRAFT'), value: 'DRAFT' },
+      { label: t('stockTaking.list.status.COUNTING'), value: 'COUNTING' },
+      { label: t('stockTaking.list.status.PENDING_APPROVAL'), value: 'PENDING_APPROVAL' },
+      { label: t('stockTaking.list.status.APPROVED'), value: 'APPROVED' },
+      { label: t('stockTaking.list.status.REJECTED'), value: 'REJECTED' },
+      { label: t('stockTaking.list.status.CANCELLED'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
 
   // State for data
   const [stockTakingList, setStockTakingList] = useState<StockTakingItem[]>([])
@@ -148,7 +120,7 @@ export default function StockTakingListPage() {
       if (response.success && response.data) {
         const warehouses = response.data as HandlerWarehouseListResponse[]
         const options: WarehouseOption[] = [
-          { label: '全部仓库', value: '' },
+          { label: t('stockTaking.list.allWarehouses'), value: '' },
           ...warehouses.map((w) => ({
             label: w.name || w.code || '',
             value: w.id || '',
@@ -159,7 +131,7 @@ export default function StockTakingListPage() {
     } catch {
       console.error('Failed to fetch warehouses')
     }
-  }, [warehousesApi])
+  }, [warehousesApi, t])
 
   // Fetch stock takings
   const fetchStockTakings = useCallback(async () => {
@@ -191,7 +163,7 @@ export default function StockTakingListPage() {
         }
       }
     } catch {
-      Toast.error('获取盘点单列表失败')
+      Toast.error(t('stockTaking.list.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -278,38 +250,38 @@ export default function StockTakingListPage() {
   const tableColumns: DataTableColumn<StockTakingItem>[] = useMemo(
     () => [
       {
-        title: '盘点单号',
+        title: t('stockTaking.list.columns.takingNumber'),
         dataIndex: 'taking_number',
         width: 160,
         render: (number: unknown) => <span className="taking-number">{number as string}</span>,
       },
       {
-        title: '仓库',
+        title: t('stockTaking.list.columns.warehouse'),
         dataIndex: 'warehouse_name',
         width: 120,
       },
       {
-        title: '状态',
+        title: t('stockTaking.list.columns.status'),
         dataIndex: 'status',
         width: 100,
         render: (status: unknown) => {
           const statusStr = status as string
           return (
             <Tag color={STATUS_COLORS[statusStr] || 'grey'}>
-              {STATUS_LABELS[statusStr] || statusStr}
+              {String(t(`stockTaking.list.status.${statusStr}`, { defaultValue: statusStr }))}
             </Tag>
           )
         },
       },
       {
-        title: '盘点日期',
+        title: t('stockTaking.list.columns.takingDate'),
         dataIndex: 'taking_date',
         width: 110,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string),
+        render: (date: unknown) => formatDate(date as string | undefined, 'date'),
       },
       {
-        title: '进度',
+        title: t('stockTaking.list.columns.progress'),
         dataIndex: 'progress',
         width: 100,
         align: 'right',
@@ -321,7 +293,7 @@ export default function StockTakingListPage() {
         },
       },
       {
-        title: '差异金额',
+        title: t('stockTaking.list.columns.totalDifference'),
         dataIndex: 'total_difference',
         width: 110,
         align: 'right',
@@ -339,19 +311,19 @@ export default function StockTakingListPage() {
         },
       },
       {
-        title: '创建人',
+        title: t('stockTaking.list.columns.createdBy'),
         dataIndex: 'created_by_name',
         width: 100,
       },
       {
-        title: '创建时间',
+        title: t('stockTaking.list.columns.createdAt'),
         dataIndex: 'created_at',
         width: 150,
         sortable: true,
-        render: (date: unknown) => formatDateTime(date as string),
+        render: (date: unknown) => formatDate(date as string | undefined, 'dateTime'),
       },
     ],
-    []
+    [t, formatDate, formatCurrency]
   )
 
   // Table row actions
@@ -359,18 +331,18 @@ export default function StockTakingListPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('stockTaking.list.actions.view'),
         onClick: handleViewDetail,
       },
       {
         key: 'execute',
-        label: '执行',
+        label: t('stockTaking.list.actions.execute'),
         onClick: handleExecute,
         condition: (record: StockTakingItem) =>
           record.status === 'DRAFT' || record.status === 'COUNTING',
       },
     ],
-    [handleViewDetail, handleExecute]
+    [handleViewDetail, handleExecute, t]
   )
 
   return (
@@ -378,21 +350,21 @@ export default function StockTakingListPage() {
       <Card className="stock-taking-list-card">
         <div className="stock-taking-list-header">
           <Title heading={4} style={{ margin: 0 }}>
-            盘点管理
+            {t('stockTaking.list.title')}
           </Title>
           <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
-            新建盘点
+            {t('stockTaking.list.newStockTaking')}
           </Button>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索盘点单号..."
+          searchPlaceholder={t('stockTaking.list.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('stockTaking.list.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -400,14 +372,14 @@ export default function StockTakingListPage() {
           filters={
             <Space>
               <Select
-                placeholder="选择仓库"
+                placeholder={t('stockTaking.list.selectWarehouse')}
                 value={warehouseFilter}
                 onChange={handleWarehouseChange}
                 optionList={warehouseOptions}
                 style={{ width: 150 }}
               />
               <Select
-                placeholder="盘点状态"
+                placeholder={t('stockTaking.list.stockTakingStatus')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}

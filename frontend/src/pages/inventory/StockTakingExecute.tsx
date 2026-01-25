@@ -22,7 +22,9 @@ import {
   IconClose,
 } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import type {
   HandlerStockTakingResponse,
@@ -45,45 +47,6 @@ const STATUS_COLORS: Record<string, TagColor> = {
   APPROVED: 'green',
   REJECTED: 'red',
   CANCELLED: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: '草稿',
-  COUNTING: '盘点中',
-  PENDING_APPROVAL: '待审批',
-  APPROVED: '已通过',
-  REJECTED: '已拒绝',
-  CANCELLED: '已取消',
-}
-
-/**
- * Format quantity for display with 2 decimal places
- */
-function formatQuantity(quantity?: number): string {
-  if (quantity === undefined || quantity === null) return '-'
-  return quantity.toFixed(2)
-}
-
-/**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 // Local item state for editing
@@ -111,7 +74,28 @@ interface LocalItemState {
 export default function StockTakingExecutePage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const stockTakingApi = useMemo(() => getStockTaking(), [])
+
+  // Wrapper functions to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
+  const formatDate = useCallback(
+    (date?: string, style?: 'date' | 'dateTime'): string =>
+      date ? formatDateBase(date, style === 'dateTime' ? 'medium' : 'short') : '-',
+    [formatDateBase]
+  )
+
+  /**
+   * Format quantity for display with 2 decimal places
+   */
+  const formatQuantity = useCallback((quantity?: number): string => {
+    if (quantity === undefined || quantity === null) return '-'
+    return quantity.toFixed(2)
+  }, [])
 
   // State for stock taking data
   const [stockTaking, setStockTaking] = useState<HandlerStockTakingResponse | null>(null)
@@ -149,11 +133,11 @@ export default function StockTakingExecutePage() {
         })
         setLocalItems(newLocalItems)
       } else {
-        Toast.error('获取盘点单失败')
+        Toast.error(t('stockTaking.execute.messages.fetchError'))
         navigate('/inventory/stock-taking')
       }
     } catch {
-      Toast.error('获取盘点单失败')
+      Toast.error(t('stockTaking.execute.messages.fetchError'))
       navigate('/inventory/stock-taking')
     } finally {
       setLoading(false)
@@ -176,15 +160,15 @@ export default function StockTakingExecutePage() {
     try {
       const response = await stockTakingApi.postInventoryStockTakingsIdStart(id)
       if (response.success && response.data) {
-        Toast.success('已开始盘点')
+        Toast.success(t('stockTaking.execute.messages.startSuccess'))
         setStockTaking(response.data)
       } else {
-        Toast.error(response.error?.message || '开始盘点失败')
+        Toast.error(response.error?.message || t('stockTaking.execute.messages.startError'))
       }
     } catch {
-      Toast.error('开始盘点失败')
+      Toast.error(t('stockTaking.execute.messages.startError'))
     }
-  }, [id, stockTakingApi])
+  }, [id, stockTakingApi, t])
 
   // Handle local quantity change
   const handleQuantityChange = useCallback((productId: string, value: number | string) => {
@@ -226,7 +210,7 @@ export default function StockTakingExecutePage() {
 
       const localItem = localItems.get(productId)
       if (!localItem || localItem.actual_quantity === null) {
-        Toast.warning('请输入实盘数量')
+        Toast.warning(t('stockTaking.execute.messages.inputQuantityFirst'))
         return
       }
 
@@ -239,7 +223,7 @@ export default function StockTakingExecutePage() {
 
         const response = await stockTakingApi.postInventoryStockTakingsIdCount(id, request)
         if (response.success && response.data) {
-          Toast.success('保存成功')
+          Toast.success(t('stockTaking.execute.messages.saveSuccess'))
           setStockTaking(response.data)
           // Update local item as not dirty
           setLocalItems((prev) => {
@@ -254,13 +238,13 @@ export default function StockTakingExecutePage() {
             return newMap
           })
         } else {
-          Toast.error(response.error?.message || '保存失败')
+          Toast.error(response.error?.message || t('stockTaking.execute.messages.saveError'))
         }
       } catch {
-        Toast.error('保存失败')
+        Toast.error(t('stockTaking.execute.messages.saveError'))
       }
     },
-    [id, localItems, stockTakingApi]
+    [id, localItems, stockTakingApi, t]
   )
 
   // Save all dirty items
@@ -272,7 +256,7 @@ export default function StockTakingExecutePage() {
     )
 
     if (dirtyItems.length === 0) {
-      Toast.info('没有需要保存的数据')
+      Toast.info(t('stockTaking.execute.messages.noDataToSave'))
       return
     }
 
@@ -286,7 +270,7 @@ export default function StockTakingExecutePage() {
 
       const response = await stockTakingApi.postInventoryStockTakingsIdCounts(id, { counts })
       if (response.success && response.data) {
-        Toast.success(`已保存 ${dirtyItems.length} 条记录`)
+        Toast.success(t('stockTaking.execute.messages.saveAllSuccess', { count: dirtyItems.length }))
         setStockTaking(response.data)
         // Clear dirty flags
         setLocalItems((prev) => {
@@ -300,14 +284,14 @@ export default function StockTakingExecutePage() {
           return newMap
         })
       } else {
-        Toast.error(response.error?.message || '保存失败')
+        Toast.error(response.error?.message || t('stockTaking.execute.messages.saveAllError'))
       }
     } catch {
-      Toast.error('保存失败')
+      Toast.error(t('stockTaking.execute.messages.saveAllError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, localItems, stockTakingApi])
+  }, [id, localItems, stockTakingApi, t])
 
   // Handle submit for approval
   const handleSubmitForApproval = useCallback(async () => {
@@ -317,18 +301,18 @@ export default function StockTakingExecutePage() {
     try {
       const response = await stockTakingApi.postInventoryStockTakingsIdSubmit(id)
       if (response.success && response.data) {
-        Toast.success('已提交审批')
+        Toast.success(t('stockTaking.execute.messages.submitSuccess'))
         setStockTaking(response.data)
         setShowSubmitModal(false)
       } else {
-        Toast.error(response.error?.message || '提交审批失败')
+        Toast.error(response.error?.message || t('stockTaking.execute.messages.submitError'))
       }
     } catch {
-      Toast.error('提交审批失败')
+      Toast.error(t('stockTaking.execute.messages.submitError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, stockTakingApi])
+  }, [id, stockTakingApi, t])
 
   // Handle cancel
   const handleCancel = useCallback(async () => {
@@ -340,19 +324,19 @@ export default function StockTakingExecutePage() {
         reason: cancelReason || undefined,
       })
       if (response.success && response.data) {
-        Toast.success('已取消盘点')
+        Toast.success(t('stockTaking.execute.messages.cancelSuccess'))
         setStockTaking(response.data)
         setShowCancelModal(false)
         setCancelReason('')
       } else {
-        Toast.error(response.error?.message || '取消失败')
+        Toast.error(response.error?.message || t('stockTaking.execute.messages.cancelError'))
       }
     } catch {
-      Toast.error('取消失败')
+      Toast.error(t('stockTaking.execute.messages.cancelError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, cancelReason, stockTakingApi])
+  }, [id, cancelReason, stockTakingApi, t])
 
   // Calculate local difference for an item
   const calculateDifference = useCallback(
@@ -424,31 +408,31 @@ export default function StockTakingExecutePage() {
   const tableColumns = useMemo(
     () => [
       {
-        title: '商品编码',
+        title: t('stockTaking.execute.columns.productCode'),
         dataIndex: 'product_code',
         width: 120,
         fixed: 'left' as const,
       },
       {
-        title: '商品名称',
+        title: t('stockTaking.execute.columns.productName'),
         dataIndex: 'product_name',
         width: 180,
       },
       {
-        title: '单位',
+        title: t('stockTaking.execute.columns.unit'),
         dataIndex: 'unit',
         width: 60,
         align: 'center' as const,
       },
       {
-        title: '系统数量',
+        title: t('stockTaking.execute.columns.systemQuantity'),
         dataIndex: 'system_quantity',
         width: 100,
         align: 'right' as const,
         render: (qty: number) => formatQuantity(qty),
       },
       {
-        title: '实盘数量',
+        title: t('stockTaking.execute.columns.actualQuantity'),
         dataIndex: 'actual_quantity',
         width: 140,
         render: (_: unknown, record: HandlerStockTakingItemResponse) => {
@@ -461,7 +445,7 @@ export default function StockTakingExecutePage() {
               value={localItem?.actual_quantity ?? undefined}
               min={0}
               precision={2}
-              placeholder="输入数量"
+              placeholder={t('stockTaking.execute.columns.actualQuantityPlaceholder')}
               onChange={(value) => handleQuantityChange(record.product_id || '', value as number)}
               style={{ width: '100%' }}
             />
@@ -469,7 +453,7 @@ export default function StockTakingExecutePage() {
         },
       },
       {
-        title: '差异数量',
+        title: t('stockTaking.execute.columns.differenceQty'),
         dataIndex: 'difference_qty',
         width: 100,
         align: 'right' as const,
@@ -485,7 +469,7 @@ export default function StockTakingExecutePage() {
         },
       },
       {
-        title: '差异金额',
+        title: t('stockTaking.execute.columns.differenceAmount'),
         dataIndex: 'difference_amount',
         width: 110,
         align: 'right' as const,
@@ -501,7 +485,7 @@ export default function StockTakingExecutePage() {
         },
       },
       {
-        title: '备注',
+        title: t('stockTaking.execute.columns.remark'),
         dataIndex: 'remark',
         width: 150,
         render: (_: unknown, record: HandlerStockTakingItemResponse) => {
@@ -512,7 +496,7 @@ export default function StockTakingExecutePage() {
           return (
             <Input
               value={localItem?.remark ?? ''}
-              placeholder="备注"
+              placeholder={t('stockTaking.execute.columns.remarkPlaceholder')}
               onChange={(value) => handleRemarkChange(record.product_id || '', value)}
               style={{ width: '100%' }}
             />
@@ -520,7 +504,7 @@ export default function StockTakingExecutePage() {
         },
       },
       {
-        title: '状态',
+        title: t('stockTaking.execute.columns.status'),
         dataIndex: 'counted',
         width: 80,
         align: 'center' as const,
@@ -529,13 +513,13 @@ export default function StockTakingExecutePage() {
           const hasValue =
             localItem?.actual_quantity !== null && localItem?.actual_quantity !== undefined
           if (counted || hasValue) {
-            return <Tag color="green">已盘</Tag>
+            return <Tag color="green">{t('stockTaking.execute.itemStatus.counted')}</Tag>
           }
-          return <Tag color="grey">未盘</Tag>
+          return <Tag color="grey">{t('stockTaking.execute.itemStatus.notCounted')}</Tag>
         },
       },
       {
-        title: '操作',
+        title: t('stockTaking.execute.columns.operation'),
         width: 80,
         fixed: 'right' as const,
         render: (_: unknown, record: HandlerStockTakingItemResponse) => {
@@ -549,7 +533,7 @@ export default function StockTakingExecutePage() {
               theme="light"
               onClick={() => handleSaveItemCount(record.product_id || '')}
             >
-              保存
+              {t('stockTaking.execute.saveItem')}
             </Button>
           )
         },
@@ -562,6 +546,9 @@ export default function StockTakingExecutePage() {
       handleQuantityChange,
       handleRemarkChange,
       handleSaveItemCount,
+      t,
+      formatQuantity,
+      formatCurrency,
     ]
   )
 
@@ -570,7 +557,7 @@ export default function StockTakingExecutePage() {
       <Container size="lg" className="stock-taking-execute-page">
         <div className="loading-container">
           <Spin size="large" />
-          <Text type="tertiary">加载中...</Text>
+          <Text type="tertiary">{t('stockTaking.execute.loading')}</Text>
         </div>
       </Container>
     )
@@ -580,9 +567,9 @@ export default function StockTakingExecutePage() {
     return (
       <Container size="lg" className="stock-taking-execute-page">
         <Card>
-          <Text type="danger">盘点单不存在</Text>
+          <Text type="danger">{t('stockTaking.execute.notExist')}</Text>
           <Button onClick={handleBack} style={{ marginTop: 'var(--spacing-4)' }}>
-            返回列表
+            {t('stockTaking.execute.backToList')}
           </Button>
         </Card>
       </Container>
@@ -595,19 +582,19 @@ export default function StockTakingExecutePage() {
       <div className="stock-taking-execute-header">
         <div className="header-left">
           <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            返回
+            {t('stockTaking.execute.back')}
           </Button>
           <Title heading={4} style={{ margin: 0 }}>
-            盘点执行 - {stockTaking.taking_number}
+            {t('stockTaking.execute.title')} - {stockTaking.taking_number}
           </Title>
           <Tag color={STATUS_COLORS[stockTaking.status || ''] || 'grey'}>
-            {STATUS_LABELS[stockTaking.status || ''] || stockTaking.status}
+            {String(t(`stockTaking.list.status.${stockTaking.status}`, { defaultValue: stockTaking.status }))}
           </Tag>
         </div>
         <div className="header-right">
           {stockTaking.status === 'DRAFT' && (
             <Button icon={<IconPlay />} type="primary" onClick={handleStartCounting}>
-              开始盘点
+              {t('stockTaking.execute.actions.startCounting')}
             </Button>
           )}
           {isEditable && (
@@ -618,7 +605,7 @@ export default function StockTakingExecutePage() {
                 loading={submitting}
                 disabled={!hasDirtyItems}
               >
-                保存全部
+                {t('stockTaking.execute.actions.saveAll')}
               </Button>
               <Button
                 icon={<IconSend />}
@@ -626,7 +613,7 @@ export default function StockTakingExecutePage() {
                 onClick={() => setShowSubmitModal(true)}
                 disabled={!canSubmit}
               >
-                提交审批
+                {t('stockTaking.execute.actions.submitApproval')}
               </Button>
               <Button
                 icon={<IconClose />}
@@ -634,7 +621,7 @@ export default function StockTakingExecutePage() {
                 theme="light"
                 onClick={() => setShowCancelModal(true)}
               >
-                取消盘点
+                {t('stockTaking.execute.actions.cancelTaking')}
               </Button>
             </>
           )}
@@ -645,19 +632,19 @@ export default function StockTakingExecutePage() {
       <Card className="stock-taking-summary-card">
         <div className="summary-grid">
           <Descriptions row>
-            <Descriptions.Item itemKey="仓库">{stockTaking.warehouse_name}</Descriptions.Item>
-            <Descriptions.Item itemKey="盘点日期">
-              {formatDate(stockTaking.taking_date)}
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.warehouse')}>{stockTaking.warehouse_name}</Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.takingDate')}>
+              {formatDate(stockTaking.taking_date, 'date')}
             </Descriptions.Item>
-            <Descriptions.Item itemKey="创建人">{stockTaking.created_by_name}</Descriptions.Item>
-            <Descriptions.Item itemKey="备注">{stockTaking.remark || '-'}</Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.createdBy')}>{stockTaking.created_by_name}</Descriptions.Item>
+            <Descriptions.Item itemKey={t('stockTaking.execute.summary.remark')}>{stockTaking.remark || '-'}</Descriptions.Item>
           </Descriptions>
 
           <div className="progress-section">
             <div className="progress-info">
-              <Text strong>盘点进度</Text>
+              <Text strong>{t('stockTaking.execute.summary.progress')}</Text>
               <Text type="tertiary">
-                {localTotals.countedItems}/{localTotals.totalItems} 项已盘点
+                {t('stockTaking.execute.summary.progressCount', { counted: localTotals.countedItems, total: localTotals.totalItems })}
               </Text>
             </div>
             <Progress
@@ -669,7 +656,7 @@ export default function StockTakingExecutePage() {
           </div>
 
           <div className="total-difference">
-            <Text type="tertiary">差异金额合计</Text>
+            <Text type="tertiary">{t('stockTaking.execute.summary.totalDifference')}</Text>
             <span
               className={`total-value ${localTotals.totalDiff > 0 ? 'diff-positive' : localTotals.totalDiff < 0 ? 'diff-negative' : ''}`}
             >
@@ -684,10 +671,10 @@ export default function StockTakingExecutePage() {
       <Card className="stock-taking-items-card">
         <div className="items-header">
           <Title heading={5} style={{ margin: 0 }}>
-            盘点明细
+            {t('stockTaking.execute.detail.title')}
           </Title>
           <Button icon={<IconRefresh />} theme="borderless" onClick={fetchStockTaking}>
-            刷新
+            {t('stockTaking.execute.detail.refresh')}
           </Button>
         </div>
         <Table
@@ -702,25 +689,25 @@ export default function StockTakingExecutePage() {
 
       {/* Submit Confirmation Modal */}
       <Modal
-        title="提交审批确认"
+        title={t('stockTaking.execute.submitModal.title')}
         visible={showSubmitModal}
         onCancel={() => setShowSubmitModal(false)}
         onOk={handleSubmitForApproval}
-        okText="确认提交"
-        cancelText="取消"
+        okText={t('stockTaking.execute.submitModal.confirm')}
+        cancelText={t('stockTaking.execute.submitModal.cancel')}
         confirmLoading={submitting}
       >
         <div className="submit-modal-content">
           <div className="confirm-item">
             <IconTickCircle style={{ color: 'var(--color-success)', fontSize: 48 }} />
           </div>
-          <Text>所有商品已完成盘点，确定提交审批吗？</Text>
+          <Text>{t('stockTaking.execute.submitModal.content')}</Text>
           <div className="confirm-details">
             <Descriptions row>
-              <Descriptions.Item itemKey="盘点商品数">
-                {localTotals.totalItems} 项
+              <Descriptions.Item itemKey={t('stockTaking.execute.submitModal.itemCount')}>
+                {localTotals.totalItems} {t('common:unit.items', { defaultValue: '项' })}
               </Descriptions.Item>
-              <Descriptions.Item itemKey="差异金额">
+              <Descriptions.Item itemKey={t('stockTaking.execute.submitModal.differenceAmount')}>
                 <span
                   className={
                     localTotals.totalDiff > 0
@@ -741,19 +728,19 @@ export default function StockTakingExecutePage() {
 
       {/* Cancel Confirmation Modal */}
       <Modal
-        title="取消盘点确认"
+        title={t('stockTaking.execute.cancelModal.title')}
         visible={showCancelModal}
         onCancel={() => setShowCancelModal(false)}
         onOk={handleCancel}
-        okText="确认取消"
+        okText={t('stockTaking.execute.cancelModal.confirm')}
         okType="danger"
-        cancelText="返回"
+        cancelText={t('stockTaking.execute.cancelModal.cancel')}
         confirmLoading={submitting}
       >
         <div className="cancel-modal-content">
-          <Text>确定要取消此盘点单吗？取消后无法恢复。</Text>
+          <Text>{t('stockTaking.execute.cancelModal.content')}</Text>
           <Input
-            placeholder="请输入取消原因（可选）"
+            placeholder={t('stockTaking.execute.cancelModal.reasonPlaceholder')}
             value={cancelReason}
             onChange={setCancelReason}
             style={{ marginTop: 'var(--spacing-4)' }}

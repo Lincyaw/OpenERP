@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { Card, Typography, Toast, Spin, Empty, Button, Descriptions, Tag } from '@douyinfe/semi-ui'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormActions,
@@ -15,6 +16,7 @@ import {
   validationMessages,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getProducts } from '@/api/products/products'
@@ -26,16 +28,6 @@ import type {
 import './StockAdjust.css'
 
 const { Title, Text } = Typography
-
-// Adjustment reason options
-const ADJUSTMENT_REASONS = [
-  { value: 'STOCK_TAKE', label: '盘点调整' },
-  { value: 'DAMAGED', label: '破损报废' },
-  { value: 'LOST', label: '丢失' },
-  { value: 'CORRECTION', label: '数据校正' },
-  { value: 'INITIAL', label: '期初录入' },
-  { value: 'OTHER', label: '其他' },
-]
 
 // Form validation schema
 const stockAdjustSchema = z.object({
@@ -61,14 +53,6 @@ function formatQuantity(quantity?: number): string {
 }
 
 /**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
-}
-
-/**
  * Stock Adjustment Page
  *
  * Features:
@@ -81,9 +65,17 @@ function formatCurrency(value?: number): string {
 export default function StockAdjustPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
   const productsApi = useMemo(() => getProducts(), [])
+
+  // Wrapper function to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
 
   // URL params
   const urlWarehouseId = searchParams.get('warehouse_id')
@@ -115,11 +107,24 @@ export default function StockAdjustPage() {
     [urlWarehouseId, urlProductId]
   )
 
+  // Adjustment reason options
+  const ADJUSTMENT_REASONS = useMemo(
+    () => [
+      { value: 'STOCK_TAKE', label: t('adjust.reasons.STOCK_TAKE') },
+      { value: 'DAMAGED', label: t('adjust.reasons.DAMAGED') },
+      { value: 'LOST', label: t('adjust.reasons.LOST') },
+      { value: 'CORRECTION', label: t('adjust.reasons.CORRECTION') },
+      { value: 'INITIAL', label: t('adjust.reasons.INITIAL') },
+      { value: 'OTHER', label: t('adjust.reasons.OTHER') },
+    ],
+    [t]
+  )
+
   const { control, handleFormSubmit, isSubmitting, watch, setValue } =
     useFormWithValidation<StockAdjustFormData>({
       schema: stockAdjustSchema,
       defaultValues,
-      successMessage: '库存调整成功',
+      successMessage: t('adjust.messages.success'),
       onSuccess: () => {
         navigate('/inventory/stock')
       },
@@ -153,7 +158,7 @@ export default function StockAdjustPage() {
         )
       }
     } catch {
-      Toast.error('获取仓库列表失败')
+      Toast.error(t('adjust.messages.fetchWarehouseError'))
     } finally {
       setLoadingWarehouses(false)
     }
@@ -177,7 +182,7 @@ export default function StockAdjustPage() {
         )
       }
     } catch {
-      Toast.error('获取商品列表失败')
+      Toast.error(t('adjust.messages.fetchProductError'))
     } finally {
       setLoadingProducts(false)
     }
@@ -240,7 +245,7 @@ export default function StockAdjustPage() {
     })
 
     if (!response.success) {
-      throw new Error(response.error?.message || '调整失败')
+      throw new Error(response.error?.message || t('adjust.messages.error'))
     }
   }
 
@@ -264,10 +269,10 @@ export default function StockAdjustPage() {
       <div className="stock-adjust-header">
         <div className="header-left">
           <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            返回
+            {t('adjust.back')}
           </Button>
           <Title heading={4} style={{ margin: 0 }}>
-            库存调整
+            {t('adjust.title')}
           </Title>
         </div>
       </div>
@@ -275,13 +280,13 @@ export default function StockAdjustPage() {
       <Card className="stock-adjust-card">
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
           {/* Selection Section */}
-          <FormSection title="选择库存" description="选择要调整的仓库和商品">
+          <FormSection title={t('adjust.selection.title')} description={t('adjust.selection.description')}>
             <FormRow cols={2}>
               <SelectField
                 name="warehouse_id"
                 control={control}
-                label="仓库"
-                placeholder={loadingWarehouses ? '加载中...' : '请选择仓库'}
+                label={t('adjust.selection.warehouse')}
+                placeholder={loadingWarehouses ? t('adjust.selection.loading') : t('adjust.selection.warehousePlaceholder')}
                 options={warehouses}
                 required
                 showSearch
@@ -290,8 +295,8 @@ export default function StockAdjustPage() {
               <SelectField
                 name="product_id"
                 control={control}
-                label="商品"
-                placeholder={loadingProducts ? '加载中...' : '请选择商品'}
+                label={t('adjust.selection.product')}
+                placeholder={loadingProducts ? t('adjust.selection.loading') : t('adjust.selection.productPlaceholder')}
                 options={products}
                 required
                 showSearch
@@ -302,7 +307,7 @@ export default function StockAdjustPage() {
 
           {/* Current Stock Info */}
           {warehouseId && productId && (
-            <FormSection title="当前库存" description="选定仓库和商品的当前库存信息">
+            <FormSection title={t('adjust.currentStock.title')} description={t('adjust.currentStock.description')}>
               {loadingInventory ? (
                 <div className="loading-container">
                   <Spin />
@@ -312,56 +317,56 @@ export default function StockAdjustPage() {
                   <Descriptions
                     data={[
                       {
-                        key: '总数量',
+                        key: t('adjust.currentStock.totalQuantity'),
                         value: <Text strong>{formatQuantity(inventoryItem.total_quantity)}</Text>,
                       },
                       {
-                        key: '可用数量',
+                        key: t('adjust.currentStock.availableQuantity'),
                         value: formatQuantity(inventoryItem.available_quantity),
                       },
                       {
-                        key: '锁定数量',
+                        key: t('adjust.currentStock.lockedQuantity'),
                         value: formatQuantity(inventoryItem.locked_quantity),
                       },
-                      { key: '单位成本', value: formatCurrency(inventoryItem.unit_cost) },
-                      { key: '库存总值', value: formatCurrency(inventoryItem.total_value) },
+                      { key: t('adjust.currentStock.unitCost'), value: formatCurrency(inventoryItem.unit_cost) },
+                      { key: t('adjust.currentStock.totalValue'), value: formatCurrency(inventoryItem.total_value) },
                     ]}
                   />
                   {inventoryItem.locked_quantity && inventoryItem.locked_quantity > 0 && (
                     <div className="stock-warning">
                       <Tag color="orange">
-                        注意：当前有 {formatQuantity(inventoryItem.locked_quantity)} 数量被锁定
+                        {t('adjust.currentStock.lockedWarning', { quantity: formatQuantity(inventoryItem.locked_quantity) })}
                       </Tag>
                     </div>
                   )}
                 </div>
               ) : (
                 <Empty
-                  title="暂无库存记录"
-                  description="该仓库和商品组合尚无库存记录，调整后将创建新记录"
+                  title={t('adjust.currentStock.noRecord')}
+                  description={t('adjust.currentStock.noRecordDesc')}
                 />
               )}
             </FormSection>
           )}
 
           {/* Adjustment Input */}
-          <FormSection title="调整信息" description="输入实际数量和调整原因">
+          <FormSection title={t('adjust.form.title')} description={t('adjust.form.description')}>
             <FormRow cols={2}>
               <NumberField
                 name="actual_quantity"
                 control={control}
-                label="实际数量"
-                placeholder="请输入实际盘点数量"
+                label={t('adjust.form.actualQuantity')}
+                placeholder={t('adjust.form.actualQuantityPlaceholder')}
                 min={0}
                 precision={2}
                 required
-                helperText="系统库存将调整为此数量"
+                helperText={t('adjust.form.actualQuantityHelper')}
               />
               <SelectField
                 name="reason"
                 control={control}
-                label="调整原因"
-                placeholder="请选择调整原因"
+                label={t('adjust.form.reason')}
+                placeholder={t('adjust.form.reasonPlaceholder')}
                 options={ADJUSTMENT_REASONS}
                 required
               />
@@ -369,8 +374,8 @@ export default function StockAdjustPage() {
             <TextAreaField
               name="source_id"
               control={control}
-              label="备注"
-              placeholder="请输入调整备注信息（可选）"
+              label={t('adjust.form.remark')}
+              placeholder={t('adjust.form.remarkPlaceholder')}
               rows={2}
               maxCount={100}
             />
@@ -378,23 +383,23 @@ export default function StockAdjustPage() {
 
           {/* Adjustment Preview */}
           {warehouseId && productId && actualQuantity !== undefined && (
-            <FormSection title="调整预览" description="确认调整后的库存变化">
+            <FormSection title={t('adjust.preview.title')} description={t('adjust.preview.description')}>
               <div className="adjustment-preview">
                 <div className="preview-row">
                   <div className="preview-item">
-                    <Text type="tertiary">当前数量</Text>
+                    <Text type="tertiary">{t('adjust.preview.currentQuantity')}</Text>
                     <Text className="preview-value">{formatQuantity(currentQuantity)}</Text>
                   </div>
                   <div className="preview-arrow">→</div>
                   <div className="preview-item">
-                    <Text type="tertiary">调整后数量</Text>
+                    <Text type="tertiary">{t('adjust.preview.afterQuantity')}</Text>
                     <Text className="preview-value" strong>
                       {formatQuantity(actualQuantity)}
                     </Text>
                   </div>
                 </div>
                 <div className="preview-diff">
-                  <Text type="tertiary">变动数量：</Text>
+                  <Text type="tertiary">{t('adjust.preview.changeQuantity')}</Text>
                   <Text
                     className={`diff-value ${adjustmentType === 'increase' ? 'diff-positive' : adjustmentType === 'decrease' ? 'diff-negative' : ''}`}
                   >
@@ -406,7 +411,7 @@ export default function StockAdjustPage() {
                       color={adjustmentType === 'increase' ? 'green' : 'red'}
                       className="diff-tag"
                     >
-                      {adjustmentType === 'increase' ? '盘盈' : '盘亏'}
+                      {adjustmentType === 'increase' ? t('adjust.preview.profit') : t('adjust.preview.loss')}
                     </Tag>
                   )}
                 </div>
@@ -415,7 +420,7 @@ export default function StockAdjustPage() {
           )}
 
           <FormActions
-            submitText="确认调整"
+            submitText={t('adjust.submit')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

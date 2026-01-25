@@ -2771,7 +2771,7 @@
       "npm run build 类型检查通过",
       "库存模块页面中英文切换正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-I18N-008",

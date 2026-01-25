@@ -14,6 +14,7 @@ import {
 } from '@douyinfe/semi-ui'
 import { IconArrowLeft, IconPlus, IconDelete, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormActions,
@@ -26,6 +27,7 @@ import {
   validationMessages,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getInventory } from '@/api/inventory/inventory'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
@@ -66,22 +68,6 @@ interface SelectedProduct {
 }
 
 /**
- * Format quantity for display with 2 decimal places
- */
-function formatQuantity(quantity?: number): string {
-  if (quantity === undefined || quantity === null) return '-'
-  return quantity.toFixed(2)
-}
-
-/**
- * Format currency value
- */
-function formatCurrency(value?: number): string {
-  if (value === undefined || value === null) return '-'
-  return `¥${value.toFixed(2)}`
-}
-
-/**
  * Stock Taking Create Page
  *
  * Features:
@@ -98,10 +84,26 @@ function formatCurrency(value?: number): string {
  */
 export default function StockTakingCreatePage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['inventory', 'common'])
+  const { formatCurrency: formatCurrencyBase } = useFormatters()
   const warehousesApi = useMemo(() => getWarehouses(), [])
   const inventoryApi = useMemo(() => getInventory(), [])
   const stockTakingApi = useMemo(() => getStockTaking(), [])
   const { user } = useAuthStore()
+
+  // Wrapper function to handle undefined values
+  const formatCurrency = useCallback(
+    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    [formatCurrencyBase]
+  )
+
+  /**
+   * Format quantity for display with 2 decimal places
+   */
+  const formatQuantity = useCallback((quantity?: number): string => {
+    if (quantity === undefined || quantity === null) return '-'
+    return quantity.toFixed(2)
+  }, [])
 
   // State for warehouses dropdown
   const [warehouses, setWarehouses] = useState<Array<{ value: string; label: string }>>([])
@@ -139,7 +141,7 @@ export default function StockTakingCreatePage() {
   } = useFormWithValidation<StockTakingCreateFormData>({
     schema: stockTakingCreateSchema,
     defaultValues,
-    successMessage: '盘点单创建成功',
+    successMessage: t('stockTaking.create.messages.success'),
     onSuccess: () => {
       navigate('/inventory/stock-taking')
     },
@@ -174,7 +176,7 @@ export default function StockTakingCreatePage() {
         setWarehouseMap(map)
       }
     } catch {
-      Toast.error('获取仓库列表失败')
+      Toast.error(t('stockTaking.create.messages.fetchWarehouseError'))
     } finally {
       setLoadingWarehouses(false)
     }
@@ -198,7 +200,7 @@ export default function StockTakingCreatePage() {
         setInventoryItems(response.data as ExtendedInventoryItem[])
       }
     } catch {
-      Toast.error('获取库存列表失败')
+      Toast.error(t('stockTaking.create.messages.fetchInventoryError'))
     } finally {
       setLoadingInventory(false)
     }
@@ -229,8 +231,8 @@ export default function StockTakingCreatePage() {
     }))
     setSelectedProducts(products)
     setSelectedRowKeys(products.map((p) => p.product_id))
-    Toast.success(`已导入 ${products.length} 个商品`)
-  }, [inventoryItems])
+    Toast.success(t('stockTaking.create.messages.importSuccess', { count: products.length }))
+  }, [inventoryItems, t])
 
   // Handle opening product selection modal
   const handleOpenProductModal = useCallback(() => {
@@ -253,8 +255,8 @@ export default function StockTakingCreatePage() {
     setSelectedProducts(products)
     setSelectedRowKeys(modalSelectedKeys)
     setShowProductModal(false)
-    Toast.success(`已选择 ${products.length} 个商品`)
-  }, [inventoryItems, modalSelectedKeys])
+    Toast.success(t('stockTaking.create.messages.selectSuccess', { count: products.length }))
+  }, [inventoryItems, modalSelectedKeys, t])
 
   // Handle removing a product from selection
   const handleRemoveProduct = useCallback((productId: string) => {
@@ -265,12 +267,12 @@ export default function StockTakingCreatePage() {
   // Handle form submission
   const onSubmit = async (data: StockTakingCreateFormData) => {
     if (selectedProducts.length === 0) {
-      Toast.error('请至少选择一个商品')
+      Toast.error(t('stockTaking.create.messages.noProductError'))
       throw new Error('No products selected')
     }
 
     if (!user?.id) {
-      Toast.error('用户未登录')
+      Toast.error(t('stockTaking.create.messages.userNotLoggedIn'))
       throw new Error('User not logged in')
     }
 
@@ -287,7 +289,7 @@ export default function StockTakingCreatePage() {
     })
 
     if (!createResponse.success || !createResponse.data) {
-      throw new Error(createResponse.error?.message || '创建盘点单失败')
+      throw new Error(createResponse.error?.message || t('stockTaking.create.messages.createError'))
     }
 
     const stockTakingId = createResponse.data.id
@@ -308,7 +310,7 @@ export default function StockTakingCreatePage() {
     )
 
     if (!addItemsResponse.success) {
-      throw new Error(addItemsResponse.error?.message || '添加盘点商品失败')
+      throw new Error(addItemsResponse.error?.message || t('stockTaking.create.messages.addItemsError'))
     }
   }
 
@@ -321,94 +323,100 @@ export default function StockTakingCreatePage() {
   }
 
   // Table columns for selected products
-  const selectedProductColumns = [
-    {
-      title: '商品编码',
-      dataIndex: 'product_code',
-      width: 120,
-    },
-    {
-      title: '商品名称',
-      dataIndex: 'product_name',
-      width: 200,
-    },
-    {
-      title: '单位',
-      dataIndex: 'unit',
-      width: 80,
-    },
-    {
-      title: '系统数量',
-      dataIndex: 'system_quantity',
-      width: 100,
-      align: 'right' as const,
-      render: (qty: number) => formatQuantity(qty),
-    },
-    {
-      title: '单位成本',
-      dataIndex: 'unit_cost',
-      width: 100,
-      align: 'right' as const,
-      render: (cost: number) => formatCurrency(cost),
-    },
-    {
-      title: '操作',
-      width: 80,
-      render: (_: unknown, record: SelectedProduct) => (
-        <Button
-          icon={<IconDelete />}
-          type="danger"
-          theme="borderless"
-          size="small"
-          onClick={() => handleRemoveProduct(record.product_id)}
-        />
-      ),
-    },
-  ]
+  const selectedProductColumns = useMemo(
+    () => [
+      {
+        title: t('stockTaking.create.products.columns.productCode'),
+        dataIndex: 'product_code',
+        width: 120,
+      },
+      {
+        title: t('stockTaking.create.products.columns.productName'),
+        dataIndex: 'product_name',
+        width: 200,
+      },
+      {
+        title: t('stockTaking.create.products.columns.unit'),
+        dataIndex: 'unit',
+        width: 80,
+      },
+      {
+        title: t('stockTaking.create.products.columns.systemQuantity'),
+        dataIndex: 'system_quantity',
+        width: 100,
+        align: 'right' as const,
+        render: (qty: number) => formatQuantity(qty),
+      },
+      {
+        title: t('stockTaking.create.products.columns.unitCost'),
+        dataIndex: 'unit_cost',
+        width: 100,
+        align: 'right' as const,
+        render: (cost: number) => formatCurrency(cost),
+      },
+      {
+        title: t('stockTaking.create.products.columns.operation'),
+        width: 80,
+        render: (_: unknown, record: SelectedProduct) => (
+          <Button
+            icon={<IconDelete />}
+            type="danger"
+            theme="borderless"
+            size="small"
+            onClick={() => handleRemoveProduct(record.product_id)}
+          />
+        ),
+      },
+    ],
+    [t, formatQuantity, formatCurrency, handleRemoveProduct]
+  )
 
   // Table columns for inventory items in modal
-  const inventoryColumns = [
-    {
-      title: '商品编码',
-      dataIndex: 'product_code',
-      width: 120,
-    },
-    {
-      title: '商品名称',
-      dataIndex: 'product_name',
-      width: 200,
-    },
-    {
-      title: '单位',
-      dataIndex: 'unit',
-      width: 80,
-    },
-    {
-      title: '系统数量',
-      dataIndex: 'total_quantity',
-      width: 100,
-      align: 'right' as const,
-      render: (qty: number) => formatQuantity(qty),
-    },
-    {
-      title: '单位成本',
-      dataIndex: 'unit_cost',
-      width: 100,
-      align: 'right' as const,
-      render: (cost: number) => formatCurrency(cost),
-    },
-    {
-      title: '状态',
-      dataIndex: 'is_below_minimum',
-      width: 80,
-      render: (_: unknown, record: HandlerInventoryItemResponse) => {
-        if (record.is_below_minimum) {
-          return <Tag color="orange">低库存</Tag>
-        }
-        return <Tag color="green">正常</Tag>
+  const inventoryColumns = useMemo(
+    () => [
+      {
+        title: t('stockTaking.create.products.columns.productCode'),
+        dataIndex: 'product_code',
+        width: 120,
       },
-    },
-  ]
+      {
+        title: t('stockTaking.create.products.columns.productName'),
+        dataIndex: 'product_name',
+        width: 200,
+      },
+      {
+        title: t('stockTaking.create.products.columns.unit'),
+        dataIndex: 'unit',
+        width: 80,
+      },
+      {
+        title: t('stockTaking.create.products.columns.systemQuantity'),
+        dataIndex: 'total_quantity',
+        width: 100,
+        align: 'right' as const,
+        render: (qty: number) => formatQuantity(qty),
+      },
+      {
+        title: t('stockTaking.create.products.columns.unitCost'),
+        dataIndex: 'unit_cost',
+        width: 100,
+        align: 'right' as const,
+        render: (cost: number) => formatCurrency(cost),
+      },
+      {
+        title: t('stockTaking.create.products.columns.status'),
+        dataIndex: 'is_below_minimum',
+        width: 80,
+        render: (_: unknown, record: HandlerInventoryItemResponse) => {
+          if (record.is_below_minimum) {
+            return <Tag color="orange">{t('stockTaking.create.products.status.lowStock')}</Tag>
+          }
+          return <Tag color="green">{t('stockTaking.create.products.status.normal')}</Tag>
+        },
+      },
+    ],
+    [t, formatQuantity, formatCurrency]
+  )
 
   return (
     <Container size="lg" className="stock-taking-create-page">
@@ -416,10 +424,10 @@ export default function StockTakingCreatePage() {
       <div className="stock-taking-create-header">
         <div className="header-left">
           <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            返回
+            {t('stockTaking.create.back')}
           </Button>
           <Title heading={4} style={{ margin: 0 }}>
-            创建盘点单
+            {t('stockTaking.create.title')}
           </Title>
         </div>
       </div>
@@ -427,13 +435,13 @@ export default function StockTakingCreatePage() {
       <Card className="stock-taking-create-card">
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
           {/* Basic Info Section */}
-          <FormSection title="基本信息" description="选择要盘点的仓库和盘点日期">
+          <FormSection title={t('stockTaking.create.basicInfo.title')} description={t('stockTaking.create.basicInfo.description')}>
             <FormRow cols={2}>
               <SelectField
                 name="warehouse_id"
                 control={control}
-                label="仓库"
-                placeholder={loadingWarehouses ? '加载中...' : '请选择仓库'}
+                label={t('stockTaking.create.basicInfo.warehouse')}
+                placeholder={loadingWarehouses ? t('stockTaking.create.products.loading') : t('stockTaking.create.basicInfo.warehousePlaceholder')}
                 options={warehouses}
                 required
                 showSearch
@@ -442,39 +450,39 @@ export default function StockTakingCreatePage() {
               <DateField
                 name="taking_date"
                 control={control}
-                label="盘点日期"
-                placeholder="请选择盘点日期"
+                label={t('stockTaking.create.basicInfo.takingDate')}
+                placeholder={t('stockTaking.create.basicInfo.takingDatePlaceholder')}
               />
             </FormRow>
             <TextAreaField
               name="remark"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息（可选）"
+              label={t('stockTaking.create.basicInfo.remark')}
+              placeholder={t('stockTaking.create.basicInfo.remarkPlaceholder')}
               rows={2}
               maxCount={500}
             />
           </FormSection>
 
           {/* Product Selection Section */}
-          <FormSection title="盘点商品" description="选择要盘点的商品，将导入系统当前库存数量">
+          <FormSection title={t('stockTaking.create.products.title')} description={t('stockTaking.create.products.description')}>
             {!warehouseId ? (
-              <Empty title="请先选择仓库" description="选择仓库后可导入该仓库的库存商品" />
+              <Empty title={t('stockTaking.create.products.selectWarehouseFirst')} description={t('stockTaking.create.products.selectWarehouseFirstDesc')} />
             ) : loadingInventory ? (
               <div className="loading-container">
                 <Spin />
-                <Text type="tertiary">正在加载库存数据...</Text>
+                <Text type="tertiary">{t('stockTaking.create.products.loadingInventory')}</Text>
               </div>
             ) : inventoryItems.length === 0 ? (
-              <Empty title="暂无库存数据" description="该仓库暂无可盘点的库存商品" />
+              <Empty title={t('stockTaking.create.products.noInventory')} description={t('stockTaking.create.products.noInventoryDesc')} />
             ) : (
               <>
                 {/* Toolbar */}
                 <div className="product-toolbar">
                   <div className="toolbar-left">
-                    <Text strong>已选择 {selectedProducts.length} 个商品</Text>
+                    <Text strong>{t('stockTaking.create.products.selectedCount', { count: selectedProducts.length })}</Text>
                     <Text type="tertiary" style={{ marginLeft: 'var(--spacing-3)' }}>
-                      (仓库共有 {inventoryItems.length} 个商品有库存)
+                      {t('stockTaking.create.products.totalCount', { count: inventoryItems.length })}
                     </Text>
                   </div>
                   <div className="toolbar-right">
@@ -483,13 +491,13 @@ export default function StockTakingCreatePage() {
                       onClick={fetchInventory}
                       disabled={loadingInventory}
                     >
-                      刷新
+                      {t('stockTaking.create.products.refresh')}
                     </Button>
                     <Button icon={<IconPlus />} onClick={handleOpenProductModal}>
-                      选择商品
+                      {t('stockTaking.create.products.selectProducts')}
                     </Button>
                     <Button type="primary" onClick={handleImportAll}>
-                      全部导入
+                      {t('stockTaking.create.products.importAll')}
                     </Button>
                   </div>
                 </div>
@@ -506,8 +514,8 @@ export default function StockTakingCreatePage() {
                   />
                 ) : (
                   <Empty
-                    title="未选择商品"
-                    description="点击「选择商品」或「全部导入」添加盘点商品"
+                    title={t('stockTaking.create.products.noProductSelected')}
+                    description={t('stockTaking.create.products.noProductSelectedDesc')}
                     style={{ padding: 'var(--spacing-8) 0' }}
                   />
                 )}
@@ -516,7 +524,7 @@ export default function StockTakingCreatePage() {
           </FormSection>
 
           <FormActions
-            submitText="创建盘点单"
+            submitText={t('stockTaking.create.submit')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel
@@ -526,12 +534,12 @@ export default function StockTakingCreatePage() {
 
       {/* Product Selection Modal */}
       <Modal
-        title="选择盘点商品"
+        title={t('stockTaking.create.modal.title')}
         visible={showProductModal}
         onCancel={() => setShowProductModal(false)}
         onOk={handleConfirmProductSelection}
-        okText="确认选择"
-        cancelText="取消"
+        okText={t('stockTaking.create.modal.confirm')}
+        cancelText={t('stockTaking.create.modal.cancel')}
         width={800}
         bodyStyle={{ padding: 0 }}
       >
@@ -552,7 +560,7 @@ export default function StockTakingCreatePage() {
                 }
               }}
             >
-              全选 ({modalSelectedKeys.length}/{inventoryItems.length})
+              {t('stockTaking.create.modal.selectAll')} ({modalSelectedKeys.length}/{inventoryItems.length})
             </Checkbox>
           </div>
           <Table

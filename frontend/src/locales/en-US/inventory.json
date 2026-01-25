@@ -1,0 +1,343 @@
+{
+  "stock": {
+    "title": "Inventory Query",
+    "searchPlaceholder": "Search products...",
+    "refresh": "Refresh",
+    "selectWarehouse": "Select Warehouse",
+    "allWarehouses": "All Warehouses",
+    "stockStatus": "Stock Status",
+    "statusFilter": {
+      "all": "All Status",
+      "hasStock": "In Stock",
+      "belowMinimum": "Low Stock Alert",
+      "noStock": "Out of Stock"
+    },
+    "columns": {
+      "warehouse": "Warehouse",
+      "product": "Product",
+      "availableQuantity": "Available Qty",
+      "lockedQuantity": "Locked Qty",
+      "totalQuantity": "Total Qty",
+      "unitCost": "Unit Cost",
+      "totalValue": "Total Value",
+      "status": "Status",
+      "updatedAt": "Updated At"
+    },
+    "status": {
+      "normal": "Normal",
+      "lowStock": "Low Stock",
+      "overMax": "Over Max",
+      "noStock": "No Stock"
+    },
+    "actions": {
+      "viewDetail": "View Details",
+      "viewTransactions": "Transactions",
+      "adjustStock": "Adjust Stock"
+    },
+    "tooltip": {
+      "belowMinimum": "Below safety stock"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch inventory list"
+    }
+  },
+  "detail": {
+    "title": "Inventory Details",
+    "back": "Back",
+    "refresh": "Refresh",
+    "adjustStock": "Adjust Stock",
+    "notFound": "Inventory record not found",
+    "notFoundDesc": "Please check if the inventory ID is correct",
+    "backToList": "Back to List",
+    "basicInfo": {
+      "title": "Basic Information",
+      "warehouse": "Warehouse",
+      "product": "Product",
+      "updatedAt": "Updated At"
+    },
+    "quantity": {
+      "title": "Inventory Quantity",
+      "available": "Available Qty",
+      "locked": "Locked Qty",
+      "total": "Total Qty"
+    },
+    "cost": {
+      "title": "Cost Information",
+      "unitCost": "Unit Cost",
+      "totalValue": "Total Value"
+    },
+    "threshold": {
+      "title": "Inventory Threshold",
+      "minQuantity": "Min Quantity",
+      "maxQuantity": "Max Quantity",
+      "notSet": "Not Set"
+    },
+    "transactions": {
+      "title": "Transaction History",
+      "columns": {
+        "transactionDate": "Transaction Date",
+        "type": "Type",
+        "signedQuantity": "Qty Change",
+        "balanceBefore": "Balance Before",
+        "balanceAfter": "Balance After",
+        "unitCost": "Unit Cost",
+        "sourceType": "Source Type",
+        "sourceId": "Source ID",
+        "remark": "Remark"
+      },
+      "type": {
+        "INBOUND": "Inbound",
+        "OUTBOUND": "Outbound",
+        "LOCK": "Lock",
+        "UNLOCK": "Unlock",
+        "ADJUSTMENT": "Adjustment"
+      },
+      "sourceType": {
+        "PURCHASE_ORDER": "Purchase Order",
+        "SALES_ORDER": "Sales Order",
+        "SALES_RETURN": "Sales Return",
+        "PURCHASE_RETURN": "Purchase Return",
+        "STOCK_TAKE": "Stock Take",
+        "MANUAL": "Manual Adjustment",
+        "INITIAL": "Initial"
+      }
+    },
+    "messages": {
+      "fetchError": "Failed to fetch inventory details",
+      "fetchTransactionsError": "Failed to fetch transaction history"
+    }
+  },
+  "adjust": {
+    "title": "Stock Adjustment",
+    "back": "Back",
+    "selection": {
+      "title": "Select Inventory",
+      "description": "Select warehouse and product to adjust",
+      "warehouse": "Warehouse",
+      "warehousePlaceholder": "Select warehouse",
+      "product": "Product",
+      "productPlaceholder": "Select product",
+      "loading": "Loading..."
+    },
+    "currentStock": {
+      "title": "Current Stock",
+      "description": "Current inventory information for selected warehouse and product",
+      "totalQuantity": "Total Qty",
+      "availableQuantity": "Available Qty",
+      "lockedQuantity": "Locked Qty",
+      "unitCost": "Unit Cost",
+      "totalValue": "Total Value",
+      "noRecord": "No inventory record",
+      "noRecordDesc": "No inventory record for this warehouse-product combination. A new record will be created after adjustment",
+      "lockedWarning": "Note: {{quantity}} units are currently locked"
+    },
+    "form": {
+      "title": "Adjustment Information",
+      "description": "Enter actual quantity and adjustment reason",
+      "actualQuantity": "Actual Quantity",
+      "actualQuantityPlaceholder": "Enter actual count quantity",
+      "actualQuantityHelper": "System inventory will be adjusted to this quantity",
+      "reason": "Adjustment Reason",
+      "reasonPlaceholder": "Select adjustment reason",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter adjustment notes (optional)"
+    },
+    "reasons": {
+      "STOCK_TAKE": "Stock Take Adjustment",
+      "DAMAGED": "Damaged/Scrapped",
+      "LOST": "Lost",
+      "CORRECTION": "Data Correction",
+      "INITIAL": "Initial Entry",
+      "OTHER": "Other"
+    },
+    "preview": {
+      "title": "Adjustment Preview",
+      "description": "Confirm inventory changes after adjustment",
+      "currentQuantity": "Current Qty",
+      "afterQuantity": "After Adjustment",
+      "changeQuantity": "Change Qty:",
+      "profit": "Surplus",
+      "loss": "Deficit"
+    },
+    "submit": "Confirm Adjustment",
+    "messages": {
+      "success": "Stock adjusted successfully",
+      "error": "Adjustment failed",
+      "fetchWarehouseError": "Failed to fetch warehouse list",
+      "fetchProductError": "Failed to fetch product list"
+    }
+  },
+  "stockTaking": {
+    "list": {
+      "title": "Stock Taking Management",
+      "newStockTaking": "New Stock Taking",
+      "searchPlaceholder": "Search stock taking number...",
+      "refresh": "Refresh",
+      "selectWarehouse": "Select Warehouse",
+      "allWarehouses": "All Warehouses",
+      "stockTakingStatus": "Stock Taking Status",
+      "columns": {
+        "takingNumber": "Taking Number",
+        "warehouse": "Warehouse",
+        "status": "Status",
+        "takingDate": "Taking Date",
+        "progress": "Progress",
+        "totalDifference": "Total Difference",
+        "createdBy": "Created By",
+        "createdAt": "Created At"
+      },
+      "status": {
+        "all": "All Status",
+        "DRAFT": "Draft",
+        "COUNTING": "Counting",
+        "PENDING_APPROVAL": "Pending Approval",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "actions": {
+        "view": "View",
+        "execute": "Execute"
+      },
+      "messages": {
+        "fetchError": "Failed to fetch stock taking list"
+      }
+    },
+    "create": {
+      "title": "Create Stock Taking",
+      "back": "Back",
+      "basicInfo": {
+        "title": "Basic Information",
+        "description": "Select warehouse and taking date",
+        "warehouse": "Warehouse",
+        "warehousePlaceholder": "Select warehouse",
+        "takingDate": "Taking Date",
+        "takingDatePlaceholder": "Select taking date",
+        "remark": "Remark",
+        "remarkPlaceholder": "Enter remarks (optional)"
+      },
+      "products": {
+        "title": "Stock Taking Products",
+        "description": "Select products to include in stock taking, system inventory will be imported",
+        "selectWarehouseFirst": "Please select warehouse first",
+        "selectWarehouseFirstDesc": "Select a warehouse to import inventory products",
+        "loadingInventory": "Loading inventory data...",
+        "noInventory": "No inventory data",
+        "noInventoryDesc": "No products with stock available for this warehouse",
+        "selectedCount": "Selected {{count}} products",
+        "totalCount": "({{count}} products with stock in warehouse)",
+        "refresh": "Refresh",
+        "selectProducts": "Select Products",
+        "importAll": "Import All",
+        "noProductSelected": "No product selected",
+        "noProductSelectedDesc": "Click 'Select Products' or 'Import All' to add products",
+        "columns": {
+          "productCode": "Product Code",
+          "productName": "Product Name",
+          "unit": "Unit",
+          "systemQuantity": "System Qty",
+          "unitCost": "Unit Cost",
+          "status": "Status",
+          "operation": "Action"
+        },
+        "status": {
+          "normal": "Normal",
+          "lowStock": "Low Stock"
+        }
+      },
+      "modal": {
+        "title": "Select Stock Taking Products",
+        "selectAll": "Select All",
+        "confirm": "Confirm Selection",
+        "cancel": "Cancel"
+      },
+      "submit": "Create Stock Taking",
+      "messages": {
+        "success": "Stock taking created successfully",
+        "noProductError": "Please select at least one product",
+        "userNotLoggedIn": "User not logged in",
+        "createError": "Failed to create stock taking",
+        "addItemsError": "Failed to add stock taking items",
+        "fetchWarehouseError": "Failed to fetch warehouse list",
+        "fetchInventoryError": "Failed to fetch inventory list",
+        "importSuccess": "Imported {{count}} products",
+        "selectSuccess": "Selected {{count}} products"
+      }
+    },
+    "execute": {
+      "title": "Stock Taking Execution",
+      "back": "Back",
+      "notExist": "Stock taking does not exist",
+      "backToList": "Back to List",
+      "loading": "Loading...",
+      "actions": {
+        "startCounting": "Start Counting",
+        "saveAll": "Save All",
+        "submitApproval": "Submit for Approval",
+        "cancelTaking": "Cancel Stock Taking"
+      },
+      "summary": {
+        "warehouse": "Warehouse",
+        "takingDate": "Taking Date",
+        "createdBy": "Created By",
+        "remark": "Remark",
+        "progress": "Counting Progress",
+        "progressCount": "{{counted}}/{{total}} items counted",
+        "totalDifference": "Total Difference Amount"
+      },
+      "detail": {
+        "title": "Stock Taking Details",
+        "refresh": "Refresh"
+      },
+      "columns": {
+        "productCode": "Product Code",
+        "productName": "Product Name",
+        "unit": "Unit",
+        "systemQuantity": "System Qty",
+        "actualQuantity": "Actual Qty",
+        "actualQuantityPlaceholder": "Enter quantity",
+        "differenceQty": "Diff Qty",
+        "differenceAmount": "Diff Amount",
+        "remark": "Remark",
+        "remarkPlaceholder": "Remark",
+        "status": "Status",
+        "operation": "Action"
+      },
+      "itemStatus": {
+        "counted": "Counted",
+        "notCounted": "Not Counted"
+      },
+      "saveItem": "Save",
+      "submitModal": {
+        "title": "Confirm Submit for Approval",
+        "content": "All products have been counted. Do you want to submit for approval?",
+        "itemCount": "Products Counted",
+        "differenceAmount": "Difference Amount",
+        "confirm": "Confirm Submit",
+        "cancel": "Cancel"
+      },
+      "cancelModal": {
+        "title": "Confirm Cancel Stock Taking",
+        "content": "Are you sure you want to cancel this stock taking? This action cannot be undone.",
+        "reasonPlaceholder": "Enter cancellation reason (optional)",
+        "confirm": "Confirm Cancel",
+        "cancel": "Go Back"
+      },
+      "messages": {
+        "fetchError": "Failed to fetch stock taking",
+        "startSuccess": "Stock taking started",
+        "startError": "Failed to start stock taking",
+        "saveSuccess": "Saved successfully",
+        "saveError": "Failed to save",
+        "saveAllSuccess": "Saved {{count}} records",
+        "saveAllError": "Failed to save",
+        "noDataToSave": "No data to save",
+        "inputQuantityFirst": "Please enter actual quantity",
+        "submitSuccess": "Submitted for approval",
+        "submitError": "Failed to submit for approval",
+        "cancelSuccess": "Stock taking cancelled",
+        "cancelError": "Failed to cancel"
+      }
+    }
+  }
+}

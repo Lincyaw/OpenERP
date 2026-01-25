@@ -1,0 +1,343 @@
+{
+  "stock": {
+    "title": "库存查询",
+    "searchPlaceholder": "搜索商品...",
+    "refresh": "刷新",
+    "selectWarehouse": "选择仓库",
+    "allWarehouses": "全部仓库",
+    "stockStatus": "库存状态",
+    "statusFilter": {
+      "all": "全部状态",
+      "hasStock": "有库存",
+      "belowMinimum": "低库存预警",
+      "noStock": "无库存"
+    },
+    "columns": {
+      "warehouse": "仓库",
+      "product": "商品",
+      "availableQuantity": "可用数量",
+      "lockedQuantity": "锁定数量",
+      "totalQuantity": "总数量",
+      "unitCost": "单位成本",
+      "totalValue": "库存总值",
+      "status": "状态",
+      "updatedAt": "更新时间"
+    },
+    "status": {
+      "normal": "正常",
+      "lowStock": "低库存",
+      "overMax": "超上限",
+      "noStock": "无库存"
+    },
+    "actions": {
+      "viewDetail": "查看明细",
+      "viewTransactions": "流水记录",
+      "adjustStock": "库存调整"
+    },
+    "tooltip": {
+      "belowMinimum": "低于安全库存"
+    },
+    "messages": {
+      "fetchError": "获取库存列表失败"
+    }
+  },
+  "detail": {
+    "title": "库存详情",
+    "back": "返回",
+    "refresh": "刷新",
+    "adjustStock": "库存调整",
+    "notFound": "未找到库存记录",
+    "notFoundDesc": "请检查库存ID是否正确",
+    "backToList": "返回列表",
+    "basicInfo": {
+      "title": "基本信息",
+      "warehouse": "仓库",
+      "product": "商品",
+      "updatedAt": "更新时间"
+    },
+    "quantity": {
+      "title": "库存数量",
+      "available": "可用数量",
+      "locked": "锁定数量",
+      "total": "总数量"
+    },
+    "cost": {
+      "title": "成本信息",
+      "unitCost": "单位成本",
+      "totalValue": "库存总值"
+    },
+    "threshold": {
+      "title": "库存阈值",
+      "minQuantity": "最小库存",
+      "maxQuantity": "最大库存",
+      "notSet": "未设置"
+    },
+    "transactions": {
+      "title": "流水记录",
+      "columns": {
+        "transactionDate": "交易时间",
+        "type": "类型",
+        "signedQuantity": "变动数量",
+        "balanceBefore": "变动前余额",
+        "balanceAfter": "变动后余额",
+        "unitCost": "单位成本",
+        "sourceType": "来源类型",
+        "sourceId": "来源单号",
+        "remark": "备注"
+      },
+      "type": {
+        "INBOUND": "入库",
+        "OUTBOUND": "出库",
+        "LOCK": "锁定",
+        "UNLOCK": "解锁",
+        "ADJUSTMENT": "调整"
+      },
+      "sourceType": {
+        "PURCHASE_ORDER": "采购订单",
+        "SALES_ORDER": "销售订单",
+        "SALES_RETURN": "销售退货",
+        "PURCHASE_RETURN": "采购退货",
+        "STOCK_TAKE": "盘点",
+        "MANUAL": "手动调整",
+        "INITIAL": "期初"
+      }
+    },
+    "messages": {
+      "fetchError": "获取库存详情失败",
+      "fetchTransactionsError": "获取流水记录失败"
+    }
+  },
+  "adjust": {
+    "title": "库存调整",
+    "back": "返回",
+    "selection": {
+      "title": "选择库存",
+      "description": "选择要调整的仓库和商品",
+      "warehouse": "仓库",
+      "warehousePlaceholder": "请选择仓库",
+      "product": "商品",
+      "productPlaceholder": "请选择商品",
+      "loading": "加载中..."
+    },
+    "currentStock": {
+      "title": "当前库存",
+      "description": "选定仓库和商品的当前库存信息",
+      "totalQuantity": "总数量",
+      "availableQuantity": "可用数量",
+      "lockedQuantity": "锁定数量",
+      "unitCost": "单位成本",
+      "totalValue": "库存总值",
+      "noRecord": "暂无库存记录",
+      "noRecordDesc": "该仓库和商品组合尚无库存记录，调整后将创建新记录",
+      "lockedWarning": "注意：当前有 {{quantity}} 数量被锁定"
+    },
+    "form": {
+      "title": "调整信息",
+      "description": "输入实际数量和调整原因",
+      "actualQuantity": "实际数量",
+      "actualQuantityPlaceholder": "请输入实际盘点数量",
+      "actualQuantityHelper": "系统库存将调整为此数量",
+      "reason": "调整原因",
+      "reasonPlaceholder": "请选择调整原因",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入调整备注信息（可选）"
+    },
+    "reasons": {
+      "STOCK_TAKE": "盘点调整",
+      "DAMAGED": "破损报废",
+      "LOST": "丢失",
+      "CORRECTION": "数据校正",
+      "INITIAL": "期初录入",
+      "OTHER": "其他"
+    },
+    "preview": {
+      "title": "调整预览",
+      "description": "确认调整后的库存变化",
+      "currentQuantity": "当前数量",
+      "afterQuantity": "调整后数量",
+      "changeQuantity": "变动数量：",
+      "profit": "盘盈",
+      "loss": "盘亏"
+    },
+    "submit": "确认调整",
+    "messages": {
+      "success": "库存调整成功",
+      "error": "调整失败",
+      "fetchWarehouseError": "获取仓库列表失败",
+      "fetchProductError": "获取商品列表失败"
+    }
+  },
+  "stockTaking": {
+    "list": {
+      "title": "盘点管理",
+      "newStockTaking": "新建盘点",
+      "searchPlaceholder": "搜索盘点单号...",
+      "refresh": "刷新",
+      "selectWarehouse": "选择仓库",
+      "allWarehouses": "全部仓库",
+      "stockTakingStatus": "盘点状态",
+      "columns": {
+        "takingNumber": "盘点单号",
+        "warehouse": "仓库",
+        "status": "状态",
+        "takingDate": "盘点日期",
+        "progress": "进度",
+        "totalDifference": "差异金额",
+        "createdBy": "创建人",
+        "createdAt": "创建时间"
+      },
+      "status": {
+        "all": "全部状态",
+        "DRAFT": "草稿",
+        "COUNTING": "盘点中",
+        "PENDING_APPROVAL": "待审批",
+        "APPROVED": "已通过",
+        "REJECTED": "已拒绝",
+        "CANCELLED": "已取消"
+      },
+      "actions": {
+        "view": "查看",
+        "execute": "执行"
+      },
+      "messages": {
+        "fetchError": "获取盘点单列表失败"
+      }
+    },
+    "create": {
+      "title": "创建盘点单",
+      "back": "返回",
+      "basicInfo": {
+        "title": "基本信息",
+        "description": "选择要盘点的仓库和盘点日期",
+        "warehouse": "仓库",
+        "warehousePlaceholder": "请选择仓库",
+        "takingDate": "盘点日期",
+        "takingDatePlaceholder": "请选择盘点日期",
+        "remark": "备注",
+        "remarkPlaceholder": "请输入备注信息（可选）"
+      },
+      "products": {
+        "title": "盘点商品",
+        "description": "选择要盘点的商品，将导入系统当前库存数量",
+        "selectWarehouseFirst": "请先选择仓库",
+        "selectWarehouseFirstDesc": "选择仓库后可导入该仓库的库存商品",
+        "loadingInventory": "正在加载库存数据...",
+        "noInventory": "暂无库存数据",
+        "noInventoryDesc": "该仓库暂无可盘点的库存商品",
+        "selectedCount": "已选择 {{count}} 个商品",
+        "totalCount": "(仓库共有 {{count}} 个商品有库存)",
+        "refresh": "刷新",
+        "selectProducts": "选择商品",
+        "importAll": "全部导入",
+        "noProductSelected": "未选择商品",
+        "noProductSelectedDesc": "点击「选择商品」或「全部导入」添加盘点商品",
+        "columns": {
+          "productCode": "商品编码",
+          "productName": "商品名称",
+          "unit": "单位",
+          "systemQuantity": "系统数量",
+          "unitCost": "单位成本",
+          "status": "状态",
+          "operation": "操作"
+        },
+        "status": {
+          "normal": "正常",
+          "lowStock": "低库存"
+        }
+      },
+      "modal": {
+        "title": "选择盘点商品",
+        "selectAll": "全选",
+        "confirm": "确认选择",
+        "cancel": "取消"
+      },
+      "submit": "创建盘点单",
+      "messages": {
+        "success": "盘点单创建成功",
+        "noProductError": "请至少选择一个商品",
+        "userNotLoggedIn": "用户未登录",
+        "createError": "创建盘点单失败",
+        "addItemsError": "添加盘点商品失败",
+        "fetchWarehouseError": "获取仓库列表失败",
+        "fetchInventoryError": "获取库存列表失败",
+        "importSuccess": "已导入 {{count}} 个商品",
+        "selectSuccess": "已选择 {{count}} 个商品"
+      }
+    },
+    "execute": {
+      "title": "盘点执行",
+      "back": "返回",
+      "notExist": "盘点单不存在",
+      "backToList": "返回列表",
+      "loading": "加载中...",
+      "actions": {
+        "startCounting": "开始盘点",
+        "saveAll": "保存全部",
+        "submitApproval": "提交审批",
+        "cancelTaking": "取消盘点"
+      },
+      "summary": {
+        "warehouse": "仓库",
+        "takingDate": "盘点日期",
+        "createdBy": "创建人",
+        "remark": "备注",
+        "progress": "盘点进度",
+        "progressCount": "{{counted}}/{{total}} 项已盘点",
+        "totalDifference": "差异金额合计"
+      },
+      "detail": {
+        "title": "盘点明细",
+        "refresh": "刷新"
+      },
+      "columns": {
+        "productCode": "商品编码",
+        "productName": "商品名称",
+        "unit": "单位",
+        "systemQuantity": "系统数量",
+        "actualQuantity": "实盘数量",
+        "actualQuantityPlaceholder": "输入数量",
+        "differenceQty": "差异数量",
+        "differenceAmount": "差异金额",
+        "remark": "备注",
+        "remarkPlaceholder": "备注",
+        "status": "状态",
+        "operation": "操作"
+      },
+      "itemStatus": {
+        "counted": "已盘",
+        "notCounted": "未盘"
+      },
+      "saveItem": "保存",
+      "submitModal": {
+        "title": "提交审批确认",
+        "content": "所有商品已完成盘点，确定提交审批吗？",
+        "itemCount": "盘点商品数",
+        "differenceAmount": "差异金额",
+        "confirm": "确认提交",
+        "cancel": "取消"
+      },
+      "cancelModal": {
+        "title": "取消盘点确认",
+        "content": "确定要取消此盘点单吗？取消后无法恢复。",
+        "reasonPlaceholder": "请输入取消原因（可选）",
+        "confirm": "确认取消",
+        "cancel": "返回"
+      },
+      "messages": {
+        "fetchError": "获取盘点单失败",
+        "startSuccess": "已开始盘点",
+        "startError": "开始盘点失败",
+        "saveSuccess": "保存成功",
+        "saveError": "保存失败",
+        "saveAllSuccess": "已保存 {{count}} 条记录",
+        "saveAllError": "保存失败",
+        "noDataToSave": "没有需要保存的数据",
+        "inputQuantityFirst": "请输入实盘数量",
+        "submitSuccess": "已提交审批",
+        "submitError": "提交审批失败",
+        "cancelSuccess": "已取消盘点",
+        "cancelError": "取消失败"
+      }
+    }
+  }
+}
