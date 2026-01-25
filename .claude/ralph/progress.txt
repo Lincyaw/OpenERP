@@ -15283,3 +15283,50 @@ catalog.json
 - ProductDetail.tsx mentioned in PRD doesn't exist - ProductEdit.tsx is the actual edit page
 - CategoryForm.tsx doesn't exist as separate file - form is inline in Categories.tsx
 - When using cross-namespace translations, pass array of namespaces to useTranslation
+
+
+
+### 2026-01-25: E2E Test Investigation - Tables Show Empty Despite API Returning Data
+
+**Issue**: E2E tests for Partners, Products, Finance, Inventory modules all failing with timeout waiting for `.semi-table-tbody`
+
+**Root Cause Found**:
+The test environment was starting containers fresh but **seed data was not being loaded automatically**. The `docker-compose.test.yml` runs migrations via the `migrate` service, but the seed data (`docker/seed-data.sql`) is NOT automatically applied.
+
+**Debug Process**:
+1. Created `debug-customer.spec.ts` to trace API calls and UI state
+2. Found API returning `{"success":true,"data":[],"meta":{"total":0,...}}` - empty data
+3. Verified database had no customers: `SELECT * FROM customers` returned 0 rows
+4. Ran `./docker/quick-test.sh seed` to load seed data
+5. After seeding, API returns 5 customers correctly
+6. **However**, UI still shows "暂无数据" (No data) even though direct API call returns data
+
+**Current Status**:
+- API returns correct data after seeding (verified via Playwright's `page.evaluate()` direct fetch)
+- But the React component shows empty table
+- Network request/response logging shows: API responds with 200 and customer data
+- Yet `Empty state visible: true` and `Table rows: 0`
+
+**Next Steps to Investigate**:
+1. Check if there's a timing issue (API response arrives but component doesn't re-render)
+2. Check if there's an issue with how orval-generated client processes the response
+3. Add console.log to Customers.tsx to trace data flow from API to state
+4. May need to check if there's a race condition in useEffect
+
+**Files Created**:
+- `frontend/tests/e2e/debug-customer.spec.ts` - Debug test for tracing API and UI state
+
+**Commands for Reproducing**:
+```bash
+# Start test environment
+docker compose -f docker-compose.test.yml up -d
+
+# Load seed data (REQUIRED!)
+./docker/quick-test.sh seed
+
+# Run debug test
+docker compose -f docker-compose.test.yml --profile e2e run --rm \
+    -e HOME=/tmp \
+    -e E2E_BASE_URL=http://frontend:80 \
+    playwright npx playwright test tests/e2e/debug-customer.spec.ts --project=chromium --reporter=list
+```

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -11,6 +12,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getCustomers } from '@/api/customers/customers'
 import type {
   HandlerCustomerListResponse,
@@ -30,43 +32,11 @@ const { Title } = Typography
 // Customer type with index signature for DataTable compatibility
 type Customer = HandlerCustomerListResponse & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '启用', value: 'active' },
-  { label: '停用', value: 'inactive' },
-  { label: '暂停', value: 'suspended' },
-]
-
-// Type options for filter
-const TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '个人', value: 'individual' },
-  { label: '企业/组织', value: 'organization' },
-]
-
-// Level options for filter
-const LEVEL_OPTIONS = [
-  { label: '全部等级', value: '' },
-  { label: '普通', value: 'normal' },
-  { label: '白银', value: 'silver' },
-  { label: '黄金', value: 'gold' },
-  { label: '铂金', value: 'platinum' },
-  { label: 'VIP', value: 'vip' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<HandlerCustomerListResponseStatus, 'green' | 'grey' | 'orange'> = {
   active: 'green',
   inactive: 'grey',
   suspended: 'orange',
-}
-
-// Status labels
-const STATUS_LABELS: Record<HandlerCustomerListResponseStatus, string> = {
-  active: '启用',
-  inactive: '停用',
-  suspended: '暂停',
 }
 
 // Level tag color mapping
@@ -81,34 +51,6 @@ const LEVEL_TAG_COLORS: Record<
   vip: 'violet',
 }
 
-// Level labels
-const LEVEL_LABELS: Record<HandlerCustomerListResponseLevel, string> = {
-  normal: '普通',
-  silver: '白银',
-  gold: '黄金',
-  platinum: '铂金',
-  vip: 'VIP',
-}
-
-// Type labels
-const TYPE_LABELS: Record<HandlerCustomerListResponseType, string> = {
-  individual: '个人',
-  organization: '企业',
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
 /**
  * Customers list page
  *
@@ -121,7 +63,41 @@ function formatDate(dateStr?: string): string {
  */
 export default function CustomersPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['partner', 'common'])
+  const { formatDate } = useFormatters()
   const api = useMemo(() => getCustomers(), [])
+
+  // Memoized options with translations
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('customers.allStatus'), value: '' },
+      { label: t('customers.status.active'), value: 'active' },
+      { label: t('customers.status.inactive'), value: 'inactive' },
+      { label: t('customers.status.suspended'), value: 'suspended' },
+    ],
+    [t]
+  )
+
+  const TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('customers.allTypes'), value: '' },
+      { label: t('customers.type.individual'), value: 'individual' },
+      { label: t('customers.type.organization'), value: 'organization' },
+    ],
+    [t]
+  )
+
+  const LEVEL_OPTIONS = useMemo(
+    () => [
+      { label: t('customers.allLevels'), value: '' },
+      { label: t('customers.level.normal'), value: 'normal' },
+      { label: t('customers.level.silver'), value: 'silver' },
+      { label: t('customers.level.gold'), value: 'gold' },
+      { label: t('customers.level.platinum'), value: 'platinum' },
+      { label: t('customers.level.vip'), value: 'vip' },
+    ],
+    [t]
+  )
 
   // State for data
   const [customerList, setCustomerList] = useState<Customer[]>([])
@@ -171,12 +147,13 @@ export default function CustomersPage() {
         }
       }
     } catch {
-      Toast.error('获取客户列表失败')
+      Toast.error(t('customers.messages.fetchError'))
     } finally {
       setLoading(false)
     }
   }, [
     api,
+    t,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -237,13 +214,13 @@ export default function CustomersPage() {
       if (!customer.id) return
       try {
         await api.postPartnerCustomersIdActivate(customer.id)
-        Toast.success(`客户 "${customer.name}" 已启用`)
+        Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
-        Toast.error('启用客户失败')
+        Toast.error(t('customers.messages.activateError'))
       }
     },
-    [api, fetchCustomers]
+    [api, fetchCustomers, t]
   )
 
   // Handle deactivate customer
@@ -252,13 +229,13 @@ export default function CustomersPage() {
       if (!customer.id) return
       try {
         await api.postPartnerCustomersIdDeactivate(customer.id)
-        Toast.success(`客户 "${customer.name}" 已停用`)
+        Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
-        Toast.error('停用客户失败')
+        Toast.error(t('customers.messages.deactivateError'))
       }
     },
-    [api, fetchCustomers]
+    [api, fetchCustomers, t]
   )
 
   // Handle suspend customer
@@ -266,23 +243,23 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       Modal.confirm({
-        title: '确认暂停',
-        content: `确定要暂停客户 "${customer.name}" 吗？暂停后该客户将无法下单。`,
-        okText: '确认暂停',
-        cancelText: '取消',
+        title: t('customers.confirm.suspendTitle'),
+        content: t('customers.confirm.suspendContent', { name: customer.name }),
+        okText: t('customers.confirm.suspendOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
             await api.postPartnerCustomersIdSuspend(customer.id!)
-            Toast.success(`客户 "${customer.name}" 已暂停`)
+            Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
-            Toast.error('暂停客户失败')
+            Toast.error(t('customers.messages.suspendError'))
           }
         },
       })
     },
-    [api, fetchCustomers]
+    [api, fetchCustomers, t]
   )
 
   // Handle delete customer
@@ -290,23 +267,23 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除客户 "${customer.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('customers.confirm.deleteTitle'),
+        content: t('customers.confirm.deleteContent', { name: customer.name }),
+        okText: t('customers.confirm.deleteOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.deletePartnerCustomersId(customer.id!)
-            Toast.success(`客户 "${customer.name}" 已删除`)
+            Toast.success(t('customers.messages.deleteSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
-            Toast.error('删除客户失败，该客户可能有余额或关联订单')
+            Toast.error(t('customers.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchCustomers]
+    [api, fetchCustomers, t]
   )
 
   // Handle edit customer
@@ -333,38 +310,40 @@ export default function CustomersPage() {
   const handleBulkActivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerCustomersIdActivate(id)))
-      Toast.success(`已启用 ${selectedRowKeys.length} 个客户`)
+      Toast.success(t('customers.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchCustomers()
     } catch {
-      Toast.error('批量启用失败')
+      Toast.error(t('customers.messages.batchActivateError'))
     }
-  }, [api, selectedRowKeys, fetchCustomers])
+  }, [api, selectedRowKeys, fetchCustomers, t])
 
   // Handle bulk deactivate
   const handleBulkDeactivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerCustomersIdDeactivate(id)))
-      Toast.success(`已停用 ${selectedRowKeys.length} 个客户`)
+      Toast.success(
+        t('customers.messages.batchDeactivateSuccess', { count: selectedRowKeys.length })
+      )
       setSelectedRowKeys([])
       fetchCustomers()
     } catch {
-      Toast.error('批量停用失败')
+      Toast.error(t('customers.messages.batchDeactivateError'))
     }
-  }, [api, selectedRowKeys, fetchCustomers])
+  }, [api, selectedRowKeys, fetchCustomers, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Customer>[] = useMemo(
     () => [
       {
-        title: '客户编码',
+        title: t('customers.columns.code'),
         dataIndex: 'code',
         width: 120,
         sortable: true,
         render: (code: unknown) => <span className="customer-code">{(code as string) || '-'}</span>,
       },
       {
-        title: '客户名称',
+        title: t('customers.columns.name'),
         dataIndex: 'name',
         sortable: true,
         ellipsis: true,
@@ -376,7 +355,7 @@ export default function CustomersPage() {
         ),
       },
       {
-        title: '类型',
+        title: t('customers.columns.type'),
         dataIndex: 'type',
         width: 80,
         align: 'center',
@@ -385,13 +364,13 @@ export default function CustomersPage() {
           if (!typeValue) return '-'
           return (
             <Tag className="type-tag" color={typeValue === 'organization' ? 'blue' : 'light-blue'}>
-              {TYPE_LABELS[typeValue]}
+              {t(`customers.type.${typeValue}`)}
             </Tag>
           )
         },
       },
       {
-        title: '联系方式',
+        title: t('customers.columns.contact'),
         dataIndex: 'phone',
         width: 160,
         render: (_phone: unknown, record: Customer) => (
@@ -403,7 +382,7 @@ export default function CustomersPage() {
         ),
       },
       {
-        title: '地区',
+        title: t('customers.columns.region'),
         dataIndex: 'city',
         width: 120,
         render: (_city: unknown, record: Customer) => (
@@ -415,7 +394,7 @@ export default function CustomersPage() {
         ),
       },
       {
-        title: '等级',
+        title: t('customers.columns.level'),
         dataIndex: 'level',
         width: 80,
         align: 'center',
@@ -425,31 +404,36 @@ export default function CustomersPage() {
           if (!levelValue) return '-'
           return (
             <Tag className="level-tag" color={LEVEL_TAG_COLORS[levelValue]}>
-              {LEVEL_LABELS[levelValue]}
+              {t(`customers.level.${levelValue}`)}
             </Tag>
           )
         },
       },
       {
-        title: '状态',
+        title: t('customers.columns.status'),
         dataIndex: 'status',
         width: 90,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as HandlerCustomerListResponseStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`customers.status.${statusValue}`)}</Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('customers.columns.createdAt'),
         dataIndex: 'created_at',
         width: 120,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const dateStr = date as string | undefined
+          return dateStr ? formatDate(dateStr) : '-'
+        },
       },
     ],
-    []
+    [t, formatDate]
   )
 
   // Handle view balance
@@ -467,49 +451,50 @@ export default function CustomersPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('customers.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('customers.actions.edit'),
         onClick: handleEdit,
       },
       {
         key: 'balance',
-        label: '余额',
+        label: t('customers.actions.balance'),
         type: 'primary',
         onClick: handleViewBalance,
       },
       {
         key: 'activate',
-        label: '启用',
+        label: t('customers.actions.activate'),
         type: 'primary',
         onClick: handleActivate,
         hidden: (record) => record.status === 'active',
       },
       {
         key: 'deactivate',
-        label: '停用',
+        label: t('customers.actions.deactivate'),
         type: 'warning',
         onClick: handleDeactivate,
         hidden: (record) => record.status !== 'active',
       },
       {
         key: 'suspend',
-        label: '暂停',
+        label: t('customers.actions.suspend'),
         type: 'warning',
         onClick: handleSuspend,
         hidden: (record) => record.status !== 'active',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('customers.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
       },
     ],
     [
+      t,
       handleView,
       handleEdit,
       handleViewBalance,
@@ -535,23 +520,23 @@ export default function CustomersPage() {
       <Card className="customers-card">
         <div className="customers-header">
           <Title heading={4} style={{ margin: 0 }}>
-            客户管理
+            {t('customers.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索客户名称、编码、电话、邮箱..."
+          searchPlaceholder={t('customers.searchPlaceholder')}
           primaryAction={{
-            label: '新增客户',
+            label: t('customers.addCustomer'),
             icon: <IconPlus />,
             onClick: () => navigate('/partner/customers/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common:actions.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -559,21 +544,21 @@ export default function CustomersPage() {
           filters={
             <Space className="customers-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('customers.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="类型筛选"
+                placeholder={t('customers.typeFilter')}
                 value={typeFilter}
                 onChange={handleTypeChange}
                 optionList={TYPE_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="等级筛选"
+                placeholder={t('customers.levelFilter')}
                 value={levelFilter}
                 onChange={handleLevelChange}
                 optionList={LEVEL_OPTIONS}
@@ -589,10 +574,10 @@ export default function CustomersPage() {
             onCancel={() => setSelectedRowKeys([])}
           >
             <Tag color="blue" onClick={handleBulkActivate} style={{ cursor: 'pointer' }}>
-              批量启用
+              {t('customers.actions.batchActivate')}
             </Tag>
             <Tag color="orange" onClick={handleBulkDeactivate} style={{ cursor: 'pointer' }}>
-              批量停用
+              {t('customers.actions.batchDeactivate')}
             </Tag>
           </BulkActionBar>
         )}

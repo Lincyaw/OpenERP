@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin, Rating } from '@douyinfe/semi-ui'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -11,6 +12,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerSupplierListResponse,
@@ -27,48 +29,11 @@ const { Title } = Typography
 // Supplier type with index signature for DataTable compatibility
 type Supplier = HandlerSupplierListResponse & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '启用', value: 'active' },
-  { label: '停用', value: 'inactive' },
-  { label: '拉黑', value: 'blocked' },
-]
-
-// Type options for filter
-const TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '生产商', value: 'manufacturer' },
-  { label: '经销商', value: 'distributor' },
-  { label: '零售商', value: 'retailer' },
-  { label: '服务商', value: 'service' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<HandlerSupplierListResponseStatus, 'green' | 'grey' | 'red'> = {
   active: 'green',
   inactive: 'grey',
   blocked: 'red',
-}
-
-// Status labels
-const STATUS_LABELS: Record<HandlerSupplierListResponseStatus, string> = {
-  active: '启用',
-  inactive: '停用',
-  blocked: '拉黑',
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 /**
@@ -83,7 +48,31 @@ function formatDate(dateStr?: string): string {
  */
 export default function SuppliersPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['partner', 'common'])
+  const { formatDate } = useFormatters()
   const api = useMemo(() => getSuppliers(), [])
+
+  // Memoized options with translations
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('suppliers.allStatus'), value: '' },
+      { label: t('suppliers.status.active'), value: 'active' },
+      { label: t('suppliers.status.inactive'), value: 'inactive' },
+      { label: t('suppliers.status.blocked'), value: 'blocked' },
+    ],
+    [t]
+  )
+
+  const TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('suppliers.allTypes'), value: '' },
+      { label: t('suppliers.type.manufacturer'), value: 'manufacturer' },
+      { label: t('suppliers.type.distributor'), value: 'distributor' },
+      { label: t('suppliers.type.retailer'), value: 'retailer' },
+      { label: t('suppliers.type.service'), value: 'service' },
+    ],
+    [t]
+  )
 
   // State for data
   const [supplierList, setSupplierList] = useState<Supplier[]>([])
@@ -131,12 +120,13 @@ export default function SuppliersPage() {
         }
       }
     } catch {
-      Toast.error('获取供应商列表失败')
+      Toast.error(t('suppliers.messages.fetchError'))
     } finally {
       setLoading(false)
     }
   }, [
     api,
+    t,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -186,13 +176,13 @@ export default function SuppliersPage() {
       if (!supplier.id) return
       try {
         await api.postPartnerSuppliersIdActivate(supplier.id)
-        Toast.success(`供应商 "${supplier.name}" 已启用`)
+        Toast.success(t('suppliers.messages.activateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
-        Toast.error('启用供应商失败')
+        Toast.error(t('suppliers.messages.activateError'))
       }
     },
-    [api, fetchSuppliers]
+    [api, fetchSuppliers, t]
   )
 
   // Handle deactivate supplier
@@ -201,13 +191,13 @@ export default function SuppliersPage() {
       if (!supplier.id) return
       try {
         await api.postPartnerSuppliersIdDeactivate(supplier.id)
-        Toast.success(`供应商 "${supplier.name}" 已停用`)
+        Toast.success(t('suppliers.messages.deactivateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
-        Toast.error('停用供应商失败')
+        Toast.error(t('suppliers.messages.deactivateError'))
       }
     },
-    [api, fetchSuppliers]
+    [api, fetchSuppliers, t]
   )
 
   // Handle block supplier
@@ -215,23 +205,23 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       Modal.confirm({
-        title: '确认拉黑',
-        content: `确定要拉黑供应商 "${supplier.name}" 吗？拉黑后该供应商将无法进行业务往来。`,
-        okText: '确认拉黑',
-        cancelText: '取消',
+        title: t('suppliers.confirm.blockTitle'),
+        content: t('suppliers.confirm.blockContent', { name: supplier.name }),
+        okText: t('suppliers.confirm.blockOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.postPartnerSuppliersIdBlock(supplier.id!)
-            Toast.success(`供应商 "${supplier.name}" 已拉黑`)
+            Toast.success(t('suppliers.messages.blockSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
-            Toast.error('拉黑供应商失败')
+            Toast.error(t('suppliers.messages.blockError'))
           }
         },
       })
     },
-    [api, fetchSuppliers]
+    [api, fetchSuppliers, t]
   )
 
   // Handle delete supplier
@@ -239,23 +229,23 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除供应商 "${supplier.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('suppliers.confirm.deleteTitle'),
+        content: t('suppliers.confirm.deleteContent', { name: supplier.name }),
+        okText: t('suppliers.confirm.deleteOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.deletePartnerSuppliersId(supplier.id!)
-            Toast.success(`供应商 "${supplier.name}" 已删除`)
+            Toast.success(t('suppliers.messages.deleteSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
-            Toast.error('删除供应商失败，该供应商可能有关联订单')
+            Toast.error(t('suppliers.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchSuppliers]
+    [api, fetchSuppliers, t]
   )
 
   // Handle edit supplier
@@ -282,38 +272,40 @@ export default function SuppliersPage() {
   const handleBulkActivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerSuppliersIdActivate(id)))
-      Toast.success(`已启用 ${selectedRowKeys.length} 个供应商`)
+      Toast.success(t('suppliers.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchSuppliers()
     } catch {
-      Toast.error('批量启用失败')
+      Toast.error(t('suppliers.messages.batchActivateError'))
     }
-  }, [api, selectedRowKeys, fetchSuppliers])
+  }, [api, selectedRowKeys, fetchSuppliers, t])
 
   // Handle bulk deactivate
   const handleBulkDeactivate = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerSuppliersIdDeactivate(id)))
-      Toast.success(`已停用 ${selectedRowKeys.length} 个供应商`)
+      Toast.success(
+        t('suppliers.messages.batchDeactivateSuccess', { count: selectedRowKeys.length })
+      )
       setSelectedRowKeys([])
       fetchSuppliers()
     } catch {
-      Toast.error('批量停用失败')
+      Toast.error(t('suppliers.messages.batchDeactivateError'))
     }
-  }, [api, selectedRowKeys, fetchSuppliers])
+  }, [api, selectedRowKeys, fetchSuppliers, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Supplier>[] = useMemo(
     () => [
       {
-        title: '供应商编码',
+        title: t('suppliers.columns.code'),
         dataIndex: 'code',
         width: 120,
         sortable: true,
         render: (code: unknown) => <span className="supplier-code">{(code as string) || '-'}</span>,
       },
       {
-        title: '供应商名称',
+        title: t('suppliers.columns.name'),
         dataIndex: 'name',
         sortable: true,
         ellipsis: true,
@@ -325,7 +317,7 @@ export default function SuppliersPage() {
         ),
       },
       {
-        title: '联系方式',
+        title: t('suppliers.columns.contact'),
         dataIndex: 'phone',
         width: 160,
         render: (_phone: unknown, record: Supplier) => (
@@ -337,7 +329,7 @@ export default function SuppliersPage() {
         ),
       },
       {
-        title: '地区',
+        title: t('suppliers.columns.region'),
         dataIndex: 'city',
         width: 120,
         render: (_city: unknown, record: Supplier) => (
@@ -349,7 +341,7 @@ export default function SuppliersPage() {
         ),
       },
       {
-        title: '评级',
+        title: t('suppliers.columns.rating'),
         dataIndex: 'rating',
         width: 130,
         align: 'center',
@@ -361,7 +353,7 @@ export default function SuppliersPage() {
         },
       },
       {
-        title: '账期(天)',
+        title: t('suppliers.columns.paymentTermDays'),
         dataIndex: 'payment_term_days',
         width: 90,
         align: 'right',
@@ -373,25 +365,30 @@ export default function SuppliersPage() {
         },
       },
       {
-        title: '状态',
+        title: t('suppliers.columns.status'),
         dataIndex: 'status',
         width: 90,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as HandlerSupplierListResponseStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`suppliers.status.${statusValue}`)}</Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('suppliers.columns.createdAt'),
         dataIndex: 'created_at',
         width: 120,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const dateStr = date as string | undefined
+          return dateStr ? formatDate(dateStr) : '-'
+        },
       },
     ],
-    []
+    [t, formatDate]
   )
 
   // Table row actions
@@ -399,43 +396,43 @@ export default function SuppliersPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('suppliers.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('suppliers.actions.edit'),
         onClick: handleEdit,
       },
       {
         key: 'activate',
-        label: '启用',
+        label: t('suppliers.actions.activate'),
         type: 'primary',
         onClick: handleActivate,
         hidden: (record) => record.status === 'active',
       },
       {
         key: 'deactivate',
-        label: '停用',
+        label: t('suppliers.actions.deactivate'),
         type: 'warning',
         onClick: handleDeactivate,
         hidden: (record) => record.status !== 'active',
       },
       {
         key: 'block',
-        label: '拉黑',
+        label: t('suppliers.actions.block'),
         type: 'danger',
         onClick: handleBlock,
         hidden: (record) => record.status === 'blocked',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('suppliers.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
       },
     ],
-    [handleView, handleEdit, handleActivate, handleDeactivate, handleBlock, handleDelete]
+    [t, handleView, handleEdit, handleActivate, handleDeactivate, handleBlock, handleDelete]
   )
 
   // Row selection handler
@@ -453,23 +450,23 @@ export default function SuppliersPage() {
       <Card className="suppliers-card">
         <div className="suppliers-header">
           <Title heading={4} style={{ margin: 0 }}>
-            供应商管理
+            {t('suppliers.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索供应商名称、编码、电话、邮箱..."
+          searchPlaceholder={t('suppliers.searchPlaceholder')}
           primaryAction={{
-            label: '新增供应商',
+            label: t('suppliers.addSupplier'),
             icon: <IconPlus />,
             onClick: () => navigate('/partner/suppliers/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common:actions.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -477,14 +474,14 @@ export default function SuppliersPage() {
           filters={
             <Space className="suppliers-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('suppliers.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="类型筛选"
+                placeholder={t('suppliers.typeFilter')}
                 value={typeFilter}
                 onChange={handleTypeChange}
                 optionList={TYPE_OPTIONS}
@@ -500,10 +497,10 @@ export default function SuppliersPage() {
             onCancel={() => setSelectedRowKeys([])}
           >
             <Tag color="blue" onClick={handleBulkActivate} style={{ cursor: 'pointer' }}>
-              批量启用
+              {t('suppliers.actions.batchActivate')}
             </Tag>
             <Tag color="orange" onClick={handleBulkDeactivate} style={{ cursor: 'pointer' }}>
-              批量停用
+              {t('suppliers.actions.batchDeactivate')}
             </Tag>
           </BulkActionBar>
         )}

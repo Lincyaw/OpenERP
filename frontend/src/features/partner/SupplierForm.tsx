@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { Card, Typography, Rating } from '@douyinfe/semi-ui'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormActions,
@@ -22,123 +23,8 @@ import './SupplierForm.css'
 
 const { Title, Text } = Typography
 
-// Supplier type options
-const SUPPLIER_TYPE_OPTIONS = [
-  { label: '生产商', value: 'manufacturer' },
-  { label: '经销商', value: 'distributor' },
-  { label: '零售商', value: 'retailer' },
-  { label: '服务商', value: 'service' },
-]
-
 // Supplier type values
 const SUPPLIER_TYPES = ['manufacturer', 'distributor', 'retailer', 'service'] as const
-
-// Form validation schema
-const supplierFormSchema = z.object({
-  code: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(50, validationMessages.maxLength(50))
-    .regex(/^[A-Za-z0-9_-]+$/, '编码只能包含字母、数字、下划线和横线'),
-  name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
-  short_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  type: createEnumSchema(SUPPLIER_TYPES, true),
-  contact_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  phone: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  email: z
-    .string()
-    .email('请输入有效的邮箱地址')
-    .max(200, validationMessages.maxLength(200))
-    .optional()
-    .or(z.literal(''))
-    .transform((val) => val || undefined),
-  tax_id: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  country: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  province: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  city: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  postal_code: z
-    .string()
-    .max(20, validationMessages.maxLength(20))
-    .optional()
-    .transform((val) => val || undefined),
-  address: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-  bank_name: z
-    .string()
-    .max(200, validationMessages.maxLength(200))
-    .optional()
-    .transform((val) => val || undefined),
-  bank_account: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  credit_limit: z
-    .number()
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  credit_days: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  rating: z
-    .number()
-    .min(0, '评级最小为 0')
-    .max(5, '评级最大为 5')
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  sort_order: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  notes: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-})
-
-type SupplierFormData = z.infer<typeof supplierFormSchema>
 
 interface SupplierFormProps {
   /** Supplier ID for edit mode, undefined for create mode */
@@ -159,8 +45,134 @@ interface SupplierFormProps {
  */
 export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation(['partner', 'common'])
   const api = useMemo(() => getSuppliers(), [])
   const isEditMode = Boolean(supplierId)
+
+  // Supplier type options with translations
+  const SUPPLIER_TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('suppliers.type.manufacturer'), value: 'manufacturer' },
+      { label: t('suppliers.type.distributor'), value: 'distributor' },
+      { label: t('suppliers.type.retailer'), value: 'retailer' },
+      { label: t('suppliers.type.service'), value: 'service' },
+    ],
+    [t]
+  )
+
+  // Form validation schema with translations
+  const supplierFormSchema = useMemo(
+    () =>
+      z.object({
+        code: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(50, validationMessages.maxLength(50))
+          .regex(/^[A-Za-z0-9_-]+$/, t('suppliers.form.codeRegexError')),
+        name: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(200, validationMessages.maxLength(200)),
+        short_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        type: createEnumSchema(SUPPLIER_TYPES, true),
+        contact_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        phone: z
+          .string()
+          .max(50, validationMessages.maxLength(50))
+          .optional()
+          .transform((val) => val || undefined),
+        email: z
+          .string()
+          .email(t('suppliers.form.emailError'))
+          .max(200, validationMessages.maxLength(200))
+          .optional()
+          .or(z.literal(''))
+          .transform((val) => val || undefined),
+        tax_id: z
+          .string()
+          .max(50, validationMessages.maxLength(50))
+          .optional()
+          .transform((val) => val || undefined),
+        country: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        province: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        city: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        postal_code: z
+          .string()
+          .max(20, validationMessages.maxLength(20))
+          .optional()
+          .transform((val) => val || undefined),
+        address: z
+          .string()
+          .max(500, validationMessages.maxLength(500))
+          .optional()
+          .transform((val) => val || undefined),
+        bank_name: z
+          .string()
+          .max(200, validationMessages.maxLength(200))
+          .optional()
+          .transform((val) => val || undefined),
+        bank_account: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        credit_limit: z
+          .number()
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        credit_days: z
+          .number()
+          .int(validationMessages.integer)
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        rating: z
+          .number()
+          .min(0, t('suppliers.form.ratingMinError'))
+          .max(5, t('suppliers.form.ratingMaxError'))
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        sort_order: z
+          .number()
+          .int(validationMessages.integer)
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        notes: z
+          .string()
+          .max(2000, validationMessages.maxLength(2000))
+          .optional()
+          .transform((val) => val || undefined),
+      }),
+    [t]
+  )
+
+  type SupplierFormData = z.infer<typeof supplierFormSchema>
 
   // Transform API data to form values
   const defaultValues: Partial<SupplierFormData> = useMemo(() => {
@@ -221,7 +233,9 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
     useFormWithValidation<SupplierFormData>({
       schema: supplierFormSchema,
       defaultValues,
-      successMessage: isEditMode ? '供应商更新成功' : '供应商创建成功',
+      successMessage: isEditMode
+        ? t('suppliers.messages.updateSuccess')
+        : t('suppliers.messages.createSuccess'),
       onSuccess: () => {
         navigate('/partner/suppliers')
       },
@@ -262,7 +276,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '更新失败')
+        throw new Error(response.error?.message || t('suppliers.messages.updateError'))
       }
     } else {
       // Create new supplier
@@ -289,7 +303,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+        throw new Error(response.error?.message || t('suppliers.messages.createError'))
       }
     }
   }
@@ -307,27 +321,34 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
       <Card className="supplier-form-card">
         <div className="supplier-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑供应商' : '新增供应商'}
+            {isEditMode ? t('suppliers.editSupplier') : t('suppliers.addSupplier')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="基本信息" description="供应商的基本属性和标识信息">
+          <FormSection
+            title={t('suppliers.form.basicInfo')}
+            description={t('suppliers.form.basicInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="code"
                 control={control}
-                label="供应商编码"
-                placeholder="请输入供应商编码"
+                label={t('suppliers.form.code')}
+                placeholder={t('suppliers.form.codePlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? '编码创建后不可修改' : '支持字母、数字、下划线和横线'}
+                helperText={
+                  isEditMode
+                    ? t('suppliers.form.codeHelperEdit')
+                    : t('suppliers.form.codeHelperCreate')
+                }
               />
               <TextField
                 name="name"
                 control={control}
-                label="供应商名称"
-                placeholder="请输入供应商全称"
+                label={t('suppliers.form.name')}
+                placeholder={t('suppliers.form.namePlaceholder')}
                 required
               />
             </FormRow>
@@ -335,14 +356,14 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
               <TextField
                 name="short_name"
                 control={control}
-                label="简称"
-                placeholder="请输入供应商简称 (可选)"
+                label={t('suppliers.form.shortName')}
+                placeholder={t('suppliers.form.shortNamePlaceholder')}
               />
               <SelectField
                 name="type"
                 control={control}
-                label="供应商类型"
-                placeholder="请选择供应商类型"
+                label={t('suppliers.form.supplierType')}
+                placeholder={t('suppliers.form.supplierTypePlaceholder')}
                 options={SUPPLIER_TYPE_OPTIONS}
                 required
                 disabled={isEditMode}
@@ -350,92 +371,129 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
             </FormRow>
           </FormSection>
 
-          <FormSection title="联系信息" description="供应商的联系人和联系方式">
+          <FormSection
+            title={t('suppliers.form.contactInfo')}
+            description={t('suppliers.form.contactInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="contact_name"
                 control={control}
-                label="联系人"
-                placeholder="请输入联系人姓名"
+                label={t('suppliers.form.contactName')}
+                placeholder={t('suppliers.form.contactNamePlaceholder')}
               />
-              <TextField name="phone" control={control} label="电话" placeholder="请输入联系电话" />
+              <TextField
+                name="phone"
+                control={control}
+                label={t('suppliers.form.phone')}
+                placeholder={t('suppliers.form.phonePlaceholder')}
+              />
             </FormRow>
             <FormRow cols={2}>
-              <TextField name="email" control={control} label="邮箱" placeholder="请输入电子邮箱" />
+              <TextField
+                name="email"
+                control={control}
+                label={t('suppliers.form.email')}
+                placeholder={t('suppliers.form.emailPlaceholder')}
+              />
               <TextField
                 name="tax_id"
                 control={control}
-                label="税号"
-                placeholder="请输入税务登记号"
+                label={t('suppliers.form.taxId')}
+                placeholder={t('suppliers.form.taxIdPlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="地址信息" description="供应商的地址和邮寄信息">
+          <FormSection
+            title={t('suppliers.form.addressInfo')}
+            description={t('suppliers.form.addressInfoDesc')}
+          >
             <FormRow cols={3}>
-              <TextField name="country" control={control} label="国家" placeholder="请输入国家" />
-              <TextField name="province" control={control} label="省份" placeholder="请输入省份" />
-              <TextField name="city" control={control} label="城市" placeholder="请输入城市" />
+              <TextField
+                name="country"
+                control={control}
+                label={t('suppliers.form.country')}
+                placeholder={t('suppliers.form.countryPlaceholder')}
+              />
+              <TextField
+                name="province"
+                control={control}
+                label={t('suppliers.form.province')}
+                placeholder={t('suppliers.form.provincePlaceholder')}
+              />
+              <TextField
+                name="city"
+                control={control}
+                label={t('suppliers.form.city')}
+                placeholder={t('suppliers.form.cityPlaceholder')}
+              />
             </FormRow>
             <FormRow cols={2}>
               <TextField
                 name="address"
                 control={control}
-                label="详细地址"
-                placeholder="请输入详细地址"
+                label={t('suppliers.form.address')}
+                placeholder={t('suppliers.form.addressPlaceholder')}
               />
               <TextField
                 name="postal_code"
                 control={control}
-                label="邮政编码"
-                placeholder="请输入邮政编码"
+                label={t('suppliers.form.postalCode')}
+                placeholder={t('suppliers.form.postalCodePlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="银行信息" description="供应商的银行账户信息 (用于付款)">
+          <FormSection
+            title={t('suppliers.form.bankInfo')}
+            description={t('suppliers.form.bankInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="bank_name"
                 control={control}
-                label="开户银行"
-                placeholder="请输入开户银行"
+                label={t('suppliers.form.bankName')}
+                placeholder={t('suppliers.form.bankNamePlaceholder')}
               />
               <TextField
                 name="bank_account"
                 control={control}
-                label="银行账号"
-                placeholder="请输入银行账号"
+                label={t('suppliers.form.bankAccount')}
+                placeholder={t('suppliers.form.bankAccountPlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="采购设置" description="信用额度、付款周期、评级等设置">
+          <FormSection
+            title={t('suppliers.form.purchaseSettings')}
+            description={t('suppliers.form.purchaseSettingsDesc')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="credit_limit"
                 control={control}
-                label="信用额度"
-                placeholder="请输入信用额度"
+                label={t('suppliers.form.creditLimit')}
+                placeholder={t('suppliers.form.creditLimitPlaceholder')}
                 min={0}
                 precision={2}
                 prefix="¥"
-                helperText="供应商允许的最大赊购金额"
+                helperText={t('suppliers.form.creditLimitHelper')}
               />
               <NumberField
                 name="credit_days"
                 control={control}
-                label="账期天数"
-                placeholder="请输入账期天数"
+                label={t('suppliers.form.creditDays')}
+                placeholder={t('suppliers.form.creditDaysPlaceholder')}
                 min={0}
                 precision={0}
-                suffix="天"
-                helperText="付款到期天数"
+                suffix={t('suppliers.form.creditDaysSuffix')}
+                helperText={t('suppliers.form.creditDaysHelper')}
               />
             </FormRow>
             <FormRow cols={2}>
               <div className="rating-field">
-                <Text className="rating-label">供应商评级</Text>
+                <Text className="rating-label">{t('suppliers.form.rating')}</Text>
                 <div className="rating-wrapper">
                   <Rating
                     value={ratingValue ?? 0}
@@ -444,35 +502,37 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
                     size="default"
                   />
                   <Text type="tertiary" className="rating-value">
-                    {ratingValue !== undefined ? `${ratingValue} 分` : '未评级'}
+                    {ratingValue !== undefined
+                      ? t('suppliers.form.ratingScore', { score: ratingValue })
+                      : t('suppliers.form.ratingNotRated')}
                   </Text>
                 </div>
                 <Text type="tertiary" className="rating-helper">
-                  对供应商的综合评价 (0-5 分)
+                  {t('suppliers.form.ratingHelper')}
                 </Text>
               </div>
               <NumberField
                 name="sort_order"
                 control={control}
-                label="排序"
-                placeholder="请输入排序值"
+                label={t('suppliers.form.sortOrder')}
+                placeholder={t('suppliers.form.sortOrderPlaceholder')}
                 min={0}
                 precision={0}
-                helperText="数值越小越靠前"
+                helperText={t('suppliers.form.sortOrderHelper')}
               />
             </FormRow>
             <TextAreaField
               name="notes"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息 (可选)"
+              label={t('suppliers.form.notes')}
+              placeholder={t('suppliers.form.notesPlaceholder')}
               rows={3}
               maxCount={2000}
             />
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={isEditMode ? t('common:actions.save') : t('common:actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

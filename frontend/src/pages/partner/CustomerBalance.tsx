@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -17,6 +18,7 @@ import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/
 import { Container } from '@/components/common/layout'
 import { getBalance } from '@/api/balance/balance'
 import { getCustomers } from '@/api/customers/customers'
+import { useFormatters } from '@/hooks/useFormatters'
 import type {
   HandlerBalanceTransactionResponse,
   HandlerBalanceSummaryResponse,
@@ -33,35 +35,6 @@ const { Title, Text } = Typography
 // Transaction type with index signature for DataTable compatibility
 type BalanceTransaction = HandlerBalanceTransactionResponse & Record<string, unknown>
 
-// Transaction type options for filter
-const TRANSACTION_TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '充值', value: 'RECHARGE' },
-  { label: '消费', value: 'CONSUME' },
-  { label: '退款', value: 'REFUND' },
-  { label: '调整', value: 'ADJUSTMENT' },
-  { label: '过期', value: 'EXPIRE' },
-]
-
-// Source type options for filter
-const SOURCE_TYPE_OPTIONS = [
-  { label: '全部来源', value: '' },
-  { label: '手动操作', value: 'MANUAL' },
-  { label: '销售订单', value: 'SALES_ORDER' },
-  { label: '销售退货', value: 'SALES_RETURN' },
-  { label: '收款单', value: 'RECEIPT_VOUCHER' },
-  { label: '系统', value: 'SYSTEM' },
-]
-
-// Transaction type labels
-const TRANSACTION_TYPE_LABELS: Record<string, string> = {
-  RECHARGE: '充值',
-  CONSUME: '消费',
-  REFUND: '退款',
-  ADJUSTMENT: '调整',
-  EXPIRE: '过期',
-}
-
 // Transaction type colors
 const TRANSACTION_TYPE_COLORS: Record<string, 'green' | 'red' | 'blue' | 'orange' | 'grey'> = {
   RECHARGE: 'green',
@@ -69,41 +42,6 @@ const TRANSACTION_TYPE_COLORS: Record<string, 'green' | 'red' | 'blue' | 'orange
   REFUND: 'blue',
   ADJUSTMENT: 'orange',
   EXPIRE: 'grey',
-}
-
-// Source type labels
-const SOURCE_TYPE_LABELS: Record<string, string> = {
-  MANUAL: '手动操作',
-  SALES_ORDER: '销售订单',
-  SALES_RETURN: '销售退货',
-  RECEIPT_VOUCHER: '收款单',
-  SYSTEM: '系统',
-}
-
-/**
- * Format currency for display
- */
-function formatCurrency(amount?: number): string {
-  if (amount === undefined || amount === null) return '¥0.00'
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'CNY',
-  }).format(amount)
-}
-
-/**
- * Format date for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 /**
@@ -115,10 +53,62 @@ function formatDateTime(dateStr?: string): string {
  * - Recharge entry point
  */
 export default function CustomerBalancePage() {
+  const { t } = useTranslation(['partner', 'common'])
+  const { formatDateTime, formatCurrency } = useFormatters()
   const navigate = useNavigate()
   const { id: customerId } = useParams<{ id: string }>()
   const balanceApi = useMemo(() => getBalance(), [])
   const customerApi = useMemo(() => getCustomers(), [])
+
+  // Memoized transaction type options with translations
+  const transactionTypeOptions = useMemo(
+    () => [
+      { label: t('partner:balance.transactionType.all'), value: '' },
+      { label: t('partner:balance.transactionType.RECHARGE'), value: 'RECHARGE' },
+      { label: t('partner:balance.transactionType.CONSUME'), value: 'CONSUME' },
+      { label: t('partner:balance.transactionType.REFUND'), value: 'REFUND' },
+      { label: t('partner:balance.transactionType.ADJUSTMENT'), value: 'ADJUSTMENT' },
+      { label: t('partner:balance.transactionType.EXPIRE'), value: 'EXPIRE' },
+    ],
+    [t]
+  )
+
+  // Memoized source type options with translations
+  const sourceTypeOptions = useMemo(
+    () => [
+      { label: t('partner:balance.sourceType.all'), value: '' },
+      { label: t('partner:balance.sourceType.MANUAL'), value: 'MANUAL' },
+      { label: t('partner:balance.sourceType.SALES_ORDER'), value: 'SALES_ORDER' },
+      { label: t('partner:balance.sourceType.SALES_RETURN'), value: 'SALES_RETURN' },
+      { label: t('partner:balance.sourceType.RECEIPT_VOUCHER'), value: 'RECEIPT_VOUCHER' },
+      { label: t('partner:balance.sourceType.SYSTEM'), value: 'SYSTEM' },
+    ],
+    [t]
+  )
+
+  // Memoized transaction type labels for display
+  const transactionTypeLabels = useMemo(
+    () => ({
+      RECHARGE: t('partner:balance.transactionType.RECHARGE'),
+      CONSUME: t('partner:balance.transactionType.CONSUME'),
+      REFUND: t('partner:balance.transactionType.REFUND'),
+      ADJUSTMENT: t('partner:balance.transactionType.ADJUSTMENT'),
+      EXPIRE: t('partner:balance.transactionType.EXPIRE'),
+    }),
+    [t]
+  )
+
+  // Memoized source type labels for display
+  const sourceTypeLabels = useMemo(
+    () => ({
+      MANUAL: t('partner:balance.sourceType.MANUAL'),
+      SALES_ORDER: t('partner:balance.sourceType.SALES_ORDER'),
+      SALES_RETURN: t('partner:balance.sourceType.SALES_RETURN'),
+      RECEIPT_VOUCHER: t('partner:balance.sourceType.RECEIPT_VOUCHER'),
+      SYSTEM: t('partner:balance.sourceType.SYSTEM'),
+    }),
+    [t]
+  )
 
   // State for customer info
   const [customerName, setCustomerName] = useState<string>('')
@@ -158,9 +148,9 @@ export default function CustomerBalancePage() {
         setCustomerCode(response.data.code || '')
       }
     } catch {
-      Toast.error('获取客户信息失败')
+      Toast.error(t('partner:customers.messages.fetchCustomerError'))
     }
-  }, [customerId, customerApi])
+  }, [customerId, customerApi, t])
 
   // Fetch balance summary
   const fetchBalanceSummary = useCallback(async () => {
@@ -172,11 +162,11 @@ export default function CustomerBalancePage() {
         setBalanceSummary(response.data)
       }
     } catch {
-      Toast.error('获取余额信息失败')
+      Toast.error(t('partner:balance.fetchBalanceError'))
     } finally {
       setSummaryLoading(false)
     }
-  }, [customerId, balanceApi])
+  }, [customerId, balanceApi, t])
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {
@@ -213,7 +203,7 @@ export default function CustomerBalancePage() {
         }
       }
     } catch {
-      Toast.error('获取交易记录失败')
+      Toast.error(t('partner:balance.fetchTransactionsError'))
     } finally {
       setTransactionsLoading(false)
     }
@@ -225,6 +215,7 @@ export default function CustomerBalancePage() {
     transactionTypeFilter,
     sourceTypeFilter,
     dateRange,
+    t,
   ])
 
   // Fetch data on mount
@@ -243,8 +234,8 @@ export default function CustomerBalancePage() {
     setRechargeModalVisible(false)
     fetchBalanceSummary()
     fetchTransactions()
-    Toast.success('充值成功')
-  }, [fetchBalanceSummary, fetchTransactions])
+    Toast.success(t('partner:balance.rechargeModal.rechargeSuccess'))
+  }, [fetchBalanceSummary, fetchTransactions, t])
 
   // Handle transaction type filter change
   const handleTransactionTypeChange = useCallback(
@@ -288,18 +279,36 @@ export default function CustomerBalancePage() {
     fetchTransactions()
   }, [fetchBalanceSummary, fetchTransactions])
 
+  // Helper function to format currency with fallback
+  const formatCurrencyValue = useCallback(
+    (amount?: number): string => {
+      if (amount === undefined || amount === null) return formatCurrency(0)
+      return formatCurrency(amount)
+    },
+    [formatCurrency]
+  )
+
+  // Helper function to format date with fallback
+  const formatDateTimeValue = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      return formatDateTime(dateStr)
+    },
+    [formatDateTime]
+  )
+
   // Table columns
   const tableColumns: DataTableColumn<BalanceTransaction>[] = useMemo(
     () => [
       {
-        title: '交易时间',
+        title: t('partner:balance.columns.transactionDate'),
         dataIndex: 'transaction_date',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDateTime(date as string | undefined),
+        render: (date: unknown) => formatDateTimeValue(date as string | undefined),
       },
       {
-        title: '交易类型',
+        title: t('partner:balance.columns.transactionType'),
         dataIndex: 'transaction_type',
         width: 100,
         align: 'center',
@@ -308,13 +317,13 @@ export default function CustomerBalancePage() {
           if (!typeValue) return '-'
           return (
             <Tag color={TRANSACTION_TYPE_COLORS[typeValue] || 'grey'}>
-              {TRANSACTION_TYPE_LABELS[typeValue] || typeValue}
+              {transactionTypeLabels[typeValue as keyof typeof transactionTypeLabels] || typeValue}
             </Tag>
           )
         },
       },
       {
-        title: '交易金额',
+        title: t('partner:balance.columns.amount'),
         dataIndex: 'amount',
         width: 120,
         align: 'right',
@@ -330,58 +339,60 @@ export default function CustomerBalancePage() {
           return (
             <span className={isIncrease ? 'amount-increase' : 'amount-decrease'}>
               {isIncrease ? '+' : '-'}
-              {formatCurrency(amountValue)}
+              {formatCurrencyValue(amountValue)}
             </span>
           )
         },
       },
       {
-        title: '变动前余额',
+        title: t('partner:balance.columns.balanceBefore'),
         dataIndex: 'balance_before',
         width: 120,
         align: 'right',
-        render: (balance: unknown) => formatCurrency(balance as number | undefined),
+        render: (balance: unknown) => formatCurrencyValue(balance as number | undefined),
       },
       {
-        title: '变动后余额',
+        title: t('partner:balance.columns.balanceAfter'),
         dataIndex: 'balance_after',
         width: 120,
         align: 'right',
         render: (balance: unknown) => (
-          <span className="balance-after">{formatCurrency(balance as number | undefined)}</span>
+          <span className="balance-after">
+            {formatCurrencyValue(balance as number | undefined)}
+          </span>
         ),
       },
       {
-        title: '来源',
+        title: t('partner:balance.columns.source'),
         dataIndex: 'source_type',
         width: 100,
         render: (source: unknown) => {
           const sourceValue = source as string | undefined
           if (!sourceValue) return '-'
-          return SOURCE_TYPE_LABELS[sourceValue] || sourceValue
+          return sourceTypeLabels[sourceValue as keyof typeof sourceTypeLabels] || sourceValue
         },
       },
       {
-        title: '参考号',
+        title: t('partner:balance.columns.reference'),
         dataIndex: 'reference',
         width: 140,
         ellipsis: true,
         render: (ref: unknown) => (ref as string) || '-',
       },
       {
-        title: '备注',
+        title: t('partner:balance.columns.remark'),
         dataIndex: 'remark',
         ellipsis: true,
         render: (remark: unknown) => (remark as string) || '-',
       },
     ],
-    []
+    [t, formatDateTimeValue, formatCurrencyValue, transactionTypeLabels, sourceTypeLabels]
   )
 
   if (!customerId) {
     return (
       <Container size="full" className="customer-balance-page">
-        <Empty description="未找到客户" />
+        <Empty description={t('partner:balance.customerNotFound')} />
       </Container>
     )
   }
@@ -395,10 +406,10 @@ export default function CustomerBalancePage() {
           theme="borderless"
           onClick={() => navigate('/partner/customers')}
         >
-          返回客户列表
+          {t('partner:balance.backToList')}
         </Button>
         <Title heading={4} style={{ margin: 0 }}>
-          客户余额管理
+          {t('partner:balance.pageTitle')}
         </Title>
       </div>
 
@@ -421,30 +432,30 @@ export default function CustomerBalancePage() {
 
             <div className="balance-cards-section">
               <div className="balance-card current-balance">
-                <div className="balance-card-label">当前余额</div>
+                <div className="balance-card-label">{t('partner:balance.currentBalance')}</div>
                 <div className="balance-card-value">
-                  {formatCurrency(balanceSummary?.current_balance)}
+                  {formatCurrencyValue(balanceSummary?.current_balance)}
                 </div>
               </div>
 
               <div className="balance-card total-recharge">
-                <div className="balance-card-label">累计充值</div>
+                <div className="balance-card-label">{t('partner:balance.totalRecharge')}</div>
                 <div className="balance-card-value">
-                  {formatCurrency(balanceSummary?.total_recharge)}
+                  {formatCurrencyValue(balanceSummary?.total_recharge)}
                 </div>
               </div>
 
               <div className="balance-card total-consume">
-                <div className="balance-card-label">累计消费</div>
+                <div className="balance-card-label">{t('partner:balance.totalConsume')}</div>
                 <div className="balance-card-value">
-                  {formatCurrency(balanceSummary?.total_consume)}
+                  {formatCurrencyValue(balanceSummary?.total_consume)}
                 </div>
               </div>
 
               <div className="balance-card total-refund">
-                <div className="balance-card-label">累计退款</div>
+                <div className="balance-card-label">{t('partner:balance.totalRefund')}</div>
                 <div className="balance-card-value">
-                  {formatCurrency(balanceSummary?.total_refund)}
+                  {formatCurrencyValue(balanceSummary?.total_refund)}
                 </div>
               </div>
             </div>
@@ -455,7 +466,7 @@ export default function CustomerBalancePage() {
                 icon={<IconPlus />}
                 onClick={() => setRechargeModalVisible(true)}
               >
-                充值
+                {t('partner:balance.recharge')}
               </Button>
             </div>
           </div>
@@ -467,7 +478,7 @@ export default function CustomerBalancePage() {
         <div className="transactions-header">
           <Title heading={5} style={{ margin: 0 }}>
             <IconHistory style={{ marginRight: 8 }} />
-            交易流水
+            {t('partner:balance.transactionHistory')}
           </Title>
         </div>
 
@@ -477,7 +488,7 @@ export default function CustomerBalancePage() {
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common:actions.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -485,22 +496,25 @@ export default function CustomerBalancePage() {
           filters={
             <Space className="transactions-filter-container">
               <Select
-                placeholder="交易类型"
+                placeholder={t('partner:balance.transactionType.all')}
                 value={transactionTypeFilter}
                 onChange={handleTransactionTypeChange}
-                optionList={TRANSACTION_TYPE_OPTIONS}
+                optionList={transactionTypeOptions}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="来源类型"
+                placeholder={t('partner:balance.sourceType.all')}
                 value={sourceTypeFilter}
                 onChange={handleSourceTypeChange}
-                optionList={SOURCE_TYPE_OPTIONS}
+                optionList={sourceTypeOptions}
                 style={{ width: 120 }}
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[
+                  t('partner:balance.dateRange.start'),
+                  t('partner:balance.dateRange.end'),
+                ]}
                 value={dateRange || undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}
@@ -519,7 +533,7 @@ export default function CustomerBalancePage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1000 }}
-            empty="暂无交易记录"
+            empty={t('partner:balance.noTransactions')}
           />
         </Spin>
       </Card>

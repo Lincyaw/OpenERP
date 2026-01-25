@@ -2755,7 +2755,7 @@
       "npm run build 类型检查通过",
       "客户/供应商/仓库页面中英文切换正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-I18N-007",

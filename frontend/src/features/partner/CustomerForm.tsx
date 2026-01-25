@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { Card, Typography } from '@douyinfe/semi-ui'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Form,
   FormActions,
@@ -22,110 +23,9 @@ import './CustomerForm.css'
 
 const { Title } = Typography
 
-// Customer type options
-const CUSTOMER_TYPE_OPTIONS = [
-  { label: '个人', value: 'individual' },
-  { label: '企业/组织', value: 'organization' },
-]
-
-// Customer level options (only for edit mode)
-const CUSTOMER_LEVEL_OPTIONS = [
-  { label: '普通', value: 'normal' },
-  { label: '白银', value: 'silver' },
-  { label: '黄金', value: 'gold' },
-  { label: '铂金', value: 'platinum' },
-  { label: 'VIP', value: 'vip' },
-]
-
 // Customer type and level values
 const CUSTOMER_TYPES = ['individual', 'organization'] as const
 const CUSTOMER_LEVELS = ['normal', 'silver', 'gold', 'platinum', 'vip'] as const
-
-// Form validation schema
-const customerFormSchema = z.object({
-  code: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(50, validationMessages.maxLength(50))
-    .regex(/^[A-Za-z0-9_-]+$/, '编码只能包含字母、数字、下划线和横线'),
-  name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
-  short_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  type: createEnumSchema(CUSTOMER_TYPES, true),
-  level: createEnumSchema(CUSTOMER_LEVELS, false)
-    .nullable()
-    .transform((val) => val ?? undefined),
-  contact_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  phone: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  email: z
-    .string()
-    .email('请输入有效的邮箱地址')
-    .max(200, validationMessages.maxLength(200))
-    .optional()
-    .or(z.literal(''))
-    .transform((val) => val || undefined),
-  tax_id: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  country: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  province: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  city: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  postal_code: z
-    .string()
-    .max(20, validationMessages.maxLength(20))
-    .optional()
-    .transform((val) => val || undefined),
-  address: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-  credit_limit: z
-    .number()
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  sort_order: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  notes: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-})
-
-type CustomerFormData = z.infer<typeof customerFormSchema>
 
 interface CustomerFormProps {
   /** Customer ID for edit mode, undefined for create mode */
@@ -145,8 +45,123 @@ interface CustomerFormProps {
  */
 export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation(['partner', 'common'])
   const api = useMemo(() => getCustomers(), [])
   const isEditMode = Boolean(customerId)
+
+  // Customer type options with translations
+  const CUSTOMER_TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('customers.type.individual'), value: 'individual' },
+      { label: t('customers.type.organization'), value: 'organization' },
+    ],
+    [t]
+  )
+
+  // Customer level options with translations
+  const CUSTOMER_LEVEL_OPTIONS = useMemo(
+    () => [
+      { label: t('customers.level.normal'), value: 'normal' },
+      { label: t('customers.level.silver'), value: 'silver' },
+      { label: t('customers.level.gold'), value: 'gold' },
+      { label: t('customers.level.platinum'), value: 'platinum' },
+      { label: t('customers.level.vip'), value: 'vip' },
+    ],
+    [t]
+  )
+
+  // Form validation schema with translations
+  const customerFormSchema = useMemo(
+    () =>
+      z.object({
+        code: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(50, validationMessages.maxLength(50))
+          .regex(/^[A-Za-z0-9_-]+$/, t('customers.form.codeRegexError')),
+        name: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(200, validationMessages.maxLength(200)),
+        short_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        type: createEnumSchema(CUSTOMER_TYPES, true),
+        level: createEnumSchema(CUSTOMER_LEVELS, false)
+          .nullable()
+          .transform((val) => val ?? undefined),
+        contact_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        phone: z
+          .string()
+          .max(50, validationMessages.maxLength(50))
+          .optional()
+          .transform((val) => val || undefined),
+        email: z
+          .string()
+          .email(t('customers.form.emailError'))
+          .max(200, validationMessages.maxLength(200))
+          .optional()
+          .or(z.literal(''))
+          .transform((val) => val || undefined),
+        tax_id: z
+          .string()
+          .max(50, validationMessages.maxLength(50))
+          .optional()
+          .transform((val) => val || undefined),
+        country: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        province: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        city: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        postal_code: z
+          .string()
+          .max(20, validationMessages.maxLength(20))
+          .optional()
+          .transform((val) => val || undefined),
+        address: z
+          .string()
+          .max(500, validationMessages.maxLength(500))
+          .optional()
+          .transform((val) => val || undefined),
+        credit_limit: z
+          .number()
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        sort_order: z
+          .number()
+          .int(validationMessages.integer)
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        notes: z
+          .string()
+          .max(2000, validationMessages.maxLength(2000))
+          .optional()
+          .transform((val) => val || undefined),
+      }),
+    [t]
+  )
+
+  type CustomerFormData = z.infer<typeof customerFormSchema>
 
   // Transform API data to form values
   const defaultValues: Partial<CustomerFormData> = useMemo(() => {
@@ -196,7 +211,9 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
     useFormWithValidation<CustomerFormData>({
       schema: customerFormSchema,
       defaultValues,
-      successMessage: isEditMode ? '客户更新成功' : '客户创建成功',
+      successMessage: isEditMode
+        ? t('customers.messages.updateSuccess')
+        : t('customers.messages.createSuccess'),
       onSuccess: () => {
         navigate('/partner/customers')
       },
@@ -231,7 +248,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '更新失败')
+        throw new Error(response.error?.message || t('customers.messages.updateError'))
       }
     } else {
       // Create new customer
@@ -254,7 +271,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+        throw new Error(response.error?.message || t('customers.messages.createError'))
       }
     }
   }
@@ -268,27 +285,34 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
       <Card className="customer-form-card">
         <div className="customer-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑客户' : '新增客户'}
+            {isEditMode ? t('customers.editCustomer') : t('customers.addCustomer')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="基本信息" description="客户的基本属性和标识信息">
+          <FormSection
+            title={t('customers.form.basicInfo')}
+            description={t('customers.form.basicInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="code"
                 control={control}
-                label="客户编码"
-                placeholder="请输入客户编码"
+                label={t('customers.form.code')}
+                placeholder={t('customers.form.codePlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? '编码创建后不可修改' : '支持字母、数字、下划线和横线'}
+                helperText={
+                  isEditMode
+                    ? t('customers.form.codeHelperEdit')
+                    : t('customers.form.codeHelperCreate')
+                }
               />
               <TextField
                 name="name"
                 control={control}
-                label="客户名称"
-                placeholder="请输入客户全称"
+                label={t('customers.form.name')}
+                placeholder={t('customers.form.namePlaceholder')}
                 required
               />
             </FormRow>
@@ -296,14 +320,14 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
               <TextField
                 name="short_name"
                 control={control}
-                label="简称"
-                placeholder="请输入客户简称 (可选)"
+                label={t('customers.form.shortName')}
+                placeholder={t('customers.form.shortNamePlaceholder')}
               />
               <SelectField
                 name="type"
                 control={control}
-                label="客户类型"
-                placeholder="请选择客户类型"
+                label={t('customers.form.customerType')}
+                placeholder={t('customers.form.customerTypePlaceholder')}
                 options={CUSTOMER_TYPE_OPTIONS}
                 required
                 disabled={isEditMode}
@@ -314,8 +338,8 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
                 <SelectField
                   name="level"
                   control={control}
-                  label="客户等级"
-                  placeholder="请选择客户等级"
+                  label={t('customers.form.customerLevel')}
+                  placeholder={t('customers.form.customerLevelPlaceholder')}
                   options={CUSTOMER_LEVEL_OPTIONS}
                   allowClear
                 />
@@ -324,83 +348,117 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
             )}
           </FormSection>
 
-          <FormSection title="联系信息" description="客户的联系人和联系方式">
+          <FormSection
+            title={t('customers.form.contactInfo')}
+            description={t('customers.form.contactInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="contact_name"
                 control={control}
-                label="联系人"
-                placeholder="请输入联系人姓名"
+                label={t('customers.form.contactName')}
+                placeholder={t('customers.form.contactNamePlaceholder')}
               />
-              <TextField name="phone" control={control} label="电话" placeholder="请输入联系电话" />
+              <TextField
+                name="phone"
+                control={control}
+                label={t('customers.form.phone')}
+                placeholder={t('customers.form.phonePlaceholder')}
+              />
             </FormRow>
             <FormRow cols={2}>
-              <TextField name="email" control={control} label="邮箱" placeholder="请输入电子邮箱" />
+              <TextField
+                name="email"
+                control={control}
+                label={t('customers.form.email')}
+                placeholder={t('customers.form.emailPlaceholder')}
+              />
               <TextField
                 name="tax_id"
                 control={control}
-                label="税号"
-                placeholder="请输入税务登记号 (企业客户)"
+                label={t('customers.form.taxId')}
+                placeholder={t('customers.form.taxIdPlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="地址信息" description="客户的地址和邮寄信息">
+          <FormSection
+            title={t('customers.form.addressInfo')}
+            description={t('customers.form.addressInfoDesc')}
+          >
             <FormRow cols={3}>
-              <TextField name="country" control={control} label="国家" placeholder="请输入国家" />
-              <TextField name="province" control={control} label="省份" placeholder="请输入省份" />
-              <TextField name="city" control={control} label="城市" placeholder="请输入城市" />
+              <TextField
+                name="country"
+                control={control}
+                label={t('customers.form.country')}
+                placeholder={t('customers.form.countryPlaceholder')}
+              />
+              <TextField
+                name="province"
+                control={control}
+                label={t('customers.form.province')}
+                placeholder={t('customers.form.provincePlaceholder')}
+              />
+              <TextField
+                name="city"
+                control={control}
+                label={t('customers.form.city')}
+                placeholder={t('customers.form.cityPlaceholder')}
+              />
             </FormRow>
             <FormRow cols={2}>
               <TextField
                 name="address"
                 control={control}
-                label="详细地址"
-                placeholder="请输入详细地址"
+                label={t('customers.form.address')}
+                placeholder={t('customers.form.addressPlaceholder')}
               />
               <TextField
                 name="postal_code"
                 control={control}
-                label="邮政编码"
-                placeholder="请输入邮政编码"
+                label={t('customers.form.postalCode')}
+                placeholder={t('customers.form.postalCodePlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="其他设置" description="信用额度、排序等其他设置">
+          <FormSection
+            title={t('customers.form.otherSettings')}
+            description={t('customers.form.otherSettingsDesc')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="credit_limit"
                 control={control}
-                label="信用额度"
-                placeholder="请输入信用额度"
+                label={t('customers.form.creditLimit')}
+                placeholder={t('customers.form.creditLimitPlaceholder')}
                 min={0}
                 precision={2}
                 prefix="¥"
-                helperText="客户允许的最大赊账金额"
+                helperText={t('customers.form.creditLimitHelper')}
               />
               <NumberField
                 name="sort_order"
                 control={control}
-                label="排序"
-                placeholder="请输入排序值"
+                label={t('customers.form.sortOrder')}
+                placeholder={t('customers.form.sortOrderPlaceholder')}
                 min={0}
                 precision={0}
-                helperText="数值越小越靠前"
+                helperText={t('customers.form.sortOrderHelper')}
               />
             </FormRow>
             <TextAreaField
               name="notes"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息 (可选)"
+              label={t('customers.form.notes')}
+              placeholder={t('customers.form.notesPlaceholder')}
               rows={3}
               maxCount={2000}
             />
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={isEditMode ? t('common:actions.save') : t('common:actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

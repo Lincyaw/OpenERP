@@ -31,6 +31,8 @@ import zhCNAuth from '../locales/zh-CN/auth.json'
 import enUSAuth from '../locales/en-US/auth.json'
 import zhCNCatalog from '../locales/zh-CN/catalog.json'
 import enUSCatalog from '../locales/en-US/catalog.json'
+import zhCNPartner from '../locales/zh-CN/partner.json'
+import enUSPartner from '../locales/en-US/partner.json'
 
 /**
  * Translation resources
@@ -44,12 +46,14 @@ const resources = {
     validation: zhCNValidation,
     auth: zhCNAuth,
     catalog: zhCNCatalog,
+    partner: zhCNPartner,
   },
   'en-US': {
     common: enUSCommon,
     validation: enUSValidation,
     auth: enUSAuth,
     catalog: enUSCatalog,
+    partner: enUSPartner,
   },
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Switch } from '@douyinfe/semi-ui'
 import { useNavigate } from 'react-router-dom'
@@ -22,96 +23,8 @@ import './WarehouseForm.css'
 
 const { Title, Text } = Typography
 
-// Warehouse type options (matching API HandlerCreateWarehouseRequestType)
-const WAREHOUSE_TYPE_OPTIONS = [
-  { label: '普通仓库', value: 'physical' },
-  { label: '虚拟仓库', value: 'virtual' },
-  { label: '寄售仓库', value: 'consign' },
-  { label: '中转仓库', value: 'transit' },
-]
-
 // Warehouse type values (matching API)
 const WAREHOUSE_TYPES = ['physical', 'virtual', 'consign', 'transit'] as const
-
-// Form validation schema
-const warehouseFormSchema = z.object({
-  code: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(50, validationMessages.maxLength(50))
-    .regex(/^[A-Za-z0-9_-]+$/, '编码只能包含字母、数字、下划线和横线'),
-  name: z.string().min(1, validationMessages.required).max(200, validationMessages.maxLength(200)),
-  short_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  type: createEnumSchema(WAREHOUSE_TYPES, true),
-  contact_name: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  phone: z
-    .string()
-    .max(50, validationMessages.maxLength(50))
-    .optional()
-    .transform((val) => val || undefined),
-  email: z
-    .string()
-    .email('请输入有效的邮箱地址')
-    .max(200, validationMessages.maxLength(200))
-    .optional()
-    .or(z.literal(''))
-    .transform((val) => val || undefined),
-  country: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  province: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  city: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  postal_code: z
-    .string()
-    .max(20, validationMessages.maxLength(20))
-    .optional()
-    .transform((val) => val || undefined),
-  address: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-  capacity: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  is_default: z.boolean().optional().default(false),
-  sort_order: z
-    .number()
-    .int(validationMessages.integer)
-    .nonnegative(validationMessages.nonNegative)
-    .optional()
-    .nullable()
-    .transform((val) => val ?? undefined),
-  notes: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-})
-
-type WarehouseFormData = z.infer<typeof warehouseFormSchema>
 
 interface WarehouseFormProps {
   /** Warehouse ID for edit mode, undefined for create mode */
@@ -129,11 +42,111 @@ interface WarehouseFormProps {
  * - Form sections for better organization (basic info, contact, address, settings)
  * - API integration with error handling
  * - Default warehouse toggle
+ * - Full i18n support
  */
 export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) {
+  const { t } = useTranslation(['partner', 'common'])
   const navigate = useNavigate()
   const api = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(warehouseId)
+
+  // Memoized warehouse type options with translations
+  const warehouseTypeOptions = useMemo(
+    () => [
+      { label: t('warehouses.type.physical'), value: 'physical' },
+      { label: t('warehouses.type.virtual'), value: 'virtual' },
+      { label: t('warehouses.type.consign'), value: 'consign' },
+      { label: t('warehouses.type.transit'), value: 'transit' },
+    ],
+    [t]
+  )
+
+  // Form validation schema with translated error messages
+  const warehouseFormSchema = useMemo(
+    () =>
+      z.object({
+        code: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(50, validationMessages.maxLength(50))
+          .regex(/^[A-Za-z0-9_-]+$/, t('warehouses.form.codeRegexError')),
+        name: z
+          .string()
+          .min(1, validationMessages.required)
+          .max(200, validationMessages.maxLength(200)),
+        short_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        type: createEnumSchema(WAREHOUSE_TYPES, true),
+        contact_name: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        phone: z
+          .string()
+          .max(50, validationMessages.maxLength(50))
+          .optional()
+          .transform((val) => val || undefined),
+        email: z
+          .string()
+          .email(t('warehouses.form.emailError'))
+          .max(200, validationMessages.maxLength(200))
+          .optional()
+          .or(z.literal(''))
+          .transform((val) => val || undefined),
+        country: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        province: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        city: z
+          .string()
+          .max(100, validationMessages.maxLength(100))
+          .optional()
+          .transform((val) => val || undefined),
+        postal_code: z
+          .string()
+          .max(20, validationMessages.maxLength(20))
+          .optional()
+          .transform((val) => val || undefined),
+        address: z
+          .string()
+          .max(500, validationMessages.maxLength(500))
+          .optional()
+          .transform((val) => val || undefined),
+        capacity: z
+          .number()
+          .int(validationMessages.integer)
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        is_default: z.boolean().optional().default(false),
+        sort_order: z
+          .number()
+          .int(validationMessages.integer)
+          .nonnegative(validationMessages.nonNegative)
+          .optional()
+          .nullable()
+          .transform((val) => val ?? undefined),
+        notes: z
+          .string()
+          .max(2000, validationMessages.maxLength(2000))
+          .optional()
+          .transform((val) => val || undefined),
+      }),
+    [t]
+  )
+
+  type WarehouseFormData = z.infer<typeof warehouseFormSchema>
 
   // Transform API data to form values
   const defaultValues: Partial<WarehouseFormData> = useMemo(() => {
@@ -181,7 +194,9 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
     useFormWithValidation<WarehouseFormData>({
       schema: warehouseFormSchema,
       defaultValues,
-      successMessage: isEditMode ? '仓库更新成功' : '仓库创建成功',
+      successMessage: isEditMode
+        ? t('warehouses.messages.updateSuccess')
+        : t('warehouses.messages.createSuccess'),
       onSuccess: () => {
         navigate('/partner/warehouses')
       },
@@ -218,7 +233,7 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '更新失败')
+        throw new Error(response.error?.message || t('warehouses.messages.updateError'))
       }
     } else {
       // Create new warehouse
@@ -241,7 +256,7 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         notes: data.notes,
       })
       if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+        throw new Error(response.error?.message || t('warehouses.messages.createError'))
       }
     }
   }
@@ -259,27 +274,34 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
       <Card className="warehouse-form-card">
         <div className="warehouse-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑仓库' : '新增仓库'}
+            {isEditMode ? t('warehouses.editWarehouse') : t('warehouses.addWarehouse')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="基本信息" description="仓库的基本属性和标识信息">
+          <FormSection
+            title={t('warehouses.form.basicInfo')}
+            description={t('warehouses.form.basicInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="code"
                 control={control}
-                label="仓库编码"
-                placeholder="请输入仓库编码"
+                label={t('warehouses.form.code')}
+                placeholder={t('warehouses.form.codePlaceholder')}
                 required
                 disabled={isEditMode}
-                helperText={isEditMode ? '编码创建后不可修改' : '支持字母、数字、下划线和横线'}
+                helperText={
+                  isEditMode
+                    ? t('warehouses.form.codeHelperEdit')
+                    : t('warehouses.form.codeHelperCreate')
+                }
               />
               <TextField
                 name="name"
                 control={control}
-                label="仓库名称"
-                placeholder="请输入仓库名称"
+                label={t('warehouses.form.name')}
+                placeholder={t('warehouses.form.namePlaceholder')}
                 required
               />
             </FormRow>
@@ -287,106 +309,140 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
               <TextField
                 name="short_name"
                 control={control}
-                label="简称"
-                placeholder="请输入仓库简称 (可选)"
+                label={t('warehouses.form.shortName')}
+                placeholder={t('warehouses.form.shortNamePlaceholder')}
               />
               <SelectField
                 name="type"
                 control={control}
-                label="仓库类型"
-                placeholder="请选择仓库类型"
-                options={WAREHOUSE_TYPE_OPTIONS}
+                label={t('warehouses.form.warehouseType')}
+                placeholder={t('warehouses.form.warehouseTypePlaceholder')}
+                options={warehouseTypeOptions}
                 required
                 disabled={isEditMode}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="联系信息" description="仓库管理员和联系方式">
+          <FormSection
+            title={t('warehouses.form.contactInfo')}
+            description={t('warehouses.form.contactInfoDesc')}
+          >
             <FormRow cols={2}>
               <TextField
                 name="contact_name"
                 control={control}
-                label="仓库管理员"
-                placeholder="请输入管理员姓名"
+                label={t('warehouses.form.manager')}
+                placeholder={t('warehouses.form.managerPlaceholder')}
               />
-              <TextField name="phone" control={control} label="电话" placeholder="请输入联系电话" />
+              <TextField
+                name="phone"
+                control={control}
+                label={t('warehouses.form.phone')}
+                placeholder={t('warehouses.form.phonePlaceholder')}
+              />
             </FormRow>
-            <TextField name="email" control={control} label="邮箱" placeholder="请输入电子邮箱" />
+            <TextField
+              name="email"
+              control={control}
+              label={t('warehouses.form.email')}
+              placeholder={t('warehouses.form.emailPlaceholder')}
+            />
           </FormSection>
 
-          <FormSection title="地址信息" description="仓库的地理位置和邮寄地址">
+          <FormSection
+            title={t('warehouses.form.addressInfo')}
+            description={t('warehouses.form.addressInfoDesc')}
+          >
             <FormRow cols={3}>
-              <TextField name="country" control={control} label="国家" placeholder="请输入国家" />
-              <TextField name="province" control={control} label="省份" placeholder="请输入省份" />
-              <TextField name="city" control={control} label="城市" placeholder="请输入城市" />
+              <TextField
+                name="country"
+                control={control}
+                label={t('warehouses.form.country')}
+                placeholder={t('warehouses.form.countryPlaceholder')}
+              />
+              <TextField
+                name="province"
+                control={control}
+                label={t('warehouses.form.province')}
+                placeholder={t('warehouses.form.provincePlaceholder')}
+              />
+              <TextField
+                name="city"
+                control={control}
+                label={t('warehouses.form.city')}
+                placeholder={t('warehouses.form.cityPlaceholder')}
+              />
             </FormRow>
             <FormRow cols={2}>
               <TextField
                 name="address"
                 control={control}
-                label="详细地址"
-                placeholder="请输入详细地址"
+                label={t('warehouses.form.address')}
+                placeholder={t('warehouses.form.addressPlaceholder')}
               />
               <TextField
                 name="postal_code"
                 control={control}
-                label="邮政编码"
-                placeholder="请输入邮政编码"
+                label={t('warehouses.form.postalCode')}
+                placeholder={t('warehouses.form.postalCodePlaceholder')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="仓库设置" description="容量、默认状态、排序等设置">
+          <FormSection
+            title={t('warehouses.form.warehouseSettings')}
+            description={t('warehouses.form.warehouseSettingsDesc')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="capacity"
                 control={control}
-                label="存储容量"
-                placeholder="请输入存储容量"
+                label={t('warehouses.form.capacity')}
+                placeholder={t('warehouses.form.capacityPlaceholder')}
                 min={0}
                 precision={0}
-                suffix="单位"
-                helperText="仓库的最大存储能力"
+                suffix={t('warehouses.form.capacitySuffix')}
+                helperText={t('warehouses.form.capacityHelper')}
               />
               <NumberField
                 name="sort_order"
                 control={control}
-                label="排序"
-                placeholder="请输入排序值"
+                label={t('warehouses.form.sortOrder')}
+                placeholder={t('warehouses.form.sortOrderPlaceholder')}
                 min={0}
                 precision={0}
-                helperText="数值越小越靠前"
+                helperText={t('warehouses.form.sortOrderHelper')}
               />
             </FormRow>
             <div className="default-field">
               <div className="default-field-content">
                 <div className="default-field-label">
-                  <Text strong>设为默认仓库</Text>
+                  <Text strong>{t('warehouses.form.isDefault')}</Text>
                   <Text type="tertiary" className="default-field-helper">
-                    默认仓库将作为出入库操作的首选仓库
+                    {t('warehouses.form.isDefaultHelper')}
                   </Text>
                 </div>
                 <Switch
                   checked={isDefaultValue}
                   onChange={handleDefaultChange}
-                  checkedText="是"
-                  uncheckedText="否"
+                  checkedText={t('warehouses.form.isDefaultYes')}
+                  uncheckedText={t('warehouses.form.isDefaultNo')}
                 />
               </div>
             </div>
             <TextAreaField
               name="notes"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息 (可选)"
+              label={t('warehouses.form.notes')}
+              placeholder={t('warehouses.form.notesPlaceholder')}
               rows={3}
               maxCount={2000}
             />
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={isEditMode ? t('common:actions.save') : t('common:actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   Form,
@@ -11,6 +12,7 @@ import {
 } from '@douyinfe/semi-ui'
 import { getBalance } from '@/api/balance/balance'
 import type { HandlerRechargeRequest } from '@/api/models'
+import { useFormatters } from '@/hooks/useFormatters'
 import './RechargeModal.css'
 
 const { Text } = Typography
@@ -22,17 +24,6 @@ interface RechargeModalProps {
   currentBalance: number
   onClose: () => void
   onSuccess: () => void
-}
-
-/**
- * Format currency for display
- */
-function formatCurrency(amount?: number): string {
-  if (amount === undefined || amount === null) return '¥0.00'
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'CNY',
-  }).format(amount)
 }
 
 /**
@@ -52,6 +43,8 @@ export default function RechargeModal({
   onClose,
   onSuccess,
 }: RechargeModalProps) {
+  const { t } = useTranslation(['partner', 'common'])
+  const { formatCurrency } = useFormatters()
   const balanceApi = useMemo(() => getBalance(), [])
 
   // Form state
@@ -80,7 +73,7 @@ export default function RechargeModal({
   const handleSubmit = useCallback(async () => {
     // Validate amount
     if (!amount || amount <= 0) {
-      Toast.error('请输入有效的充值金额')
+      Toast.error(t('balance.rechargeModal.amountRequired'))
       return
     }
 
@@ -101,14 +94,14 @@ export default function RechargeModal({
         handleClose()
         onSuccess()
       } else {
-        Toast.error('充值失败，请稍后重试')
+        Toast.error(t('balance.rechargeModal.rechargeError'))
       }
     } catch {
-      Toast.error('充值失败，请稍后重试')
+      Toast.error(t('balance.rechargeModal.rechargeError'))
     } finally {
       setSubmitting(false)
     }
-  }, [amount, reference, remark, customerId, balanceApi, handleClose, onSuccess])
+  }, [amount, reference, remark, customerId, balanceApi, handleClose, onSuccess, t])
 
   // Handle amount change
   const handleAmountChange = useCallback((value: number | string) => {
@@ -118,12 +111,12 @@ export default function RechargeModal({
 
   return (
     <Modal
-      title="客户充值"
+      title={t('balance.rechargeModal.title')}
       visible={visible}
       onCancel={handleClose}
       onOk={handleSubmit}
-      okText="确认充值"
-      cancelText="取消"
+      okText={t('balance.rechargeModal.confirmRecharge')}
+      cancelText={t('common:actions.cancel')}
       confirmLoading={submitting}
       className="recharge-modal"
       maskClosable={false}
@@ -134,19 +127,22 @@ export default function RechargeModal({
           <Descriptions
             row
             data={[
-              { key: '客户名称', value: customerName },
-              { key: '当前余额', value: <Text strong>{formatCurrency(currentBalance)}</Text> },
+              { key: t('balance.rechargeModal.customerName'), value: customerName },
+              {
+                key: t('balance.rechargeModal.currentBalance'),
+                value: <Text strong>{formatCurrency(currentBalance)}</Text>,
+              },
             ]}
           />
         </div>
 
         {/* Recharge Form */}
         <Form className="recharge-form" labelPosition="top">
-          <Form.Slot label="充值金额 *">
+          <Form.Slot label={`${t('balance.rechargeModal.amount')} *`}>
             <InputNumber
               value={amount ?? undefined}
               onChange={handleAmountChange}
-              placeholder="请输入充值金额"
+              placeholder={t('balance.rechargeModal.amountPlaceholder')}
               prefix="¥"
               min={0.01}
               precision={2}
@@ -156,20 +152,20 @@ export default function RechargeModal({
             />
           </Form.Slot>
 
-          <Form.Slot label="参考号">
+          <Form.Slot label={t('balance.rechargeModal.reference')}>
             <Input
               value={reference}
               onChange={(value) => setReference(value)}
-              placeholder="可选，如收据编号、流水号等"
+              placeholder={t('balance.rechargeModal.referencePlaceholder')}
               maxLength={100}
             />
           </Form.Slot>
 
-          <Form.Slot label="备注">
+          <Form.Slot label={t('balance.rechargeModal.remark')}>
             <TextArea
               value={remark}
               onChange={(value) => setRemark(value)}
-              placeholder="可选，充值备注信息"
+              placeholder={t('balance.rechargeModal.remarkPlaceholder')}
               maxLength={500}
               rows={3}
               showClear
@@ -181,16 +177,22 @@ export default function RechargeModal({
         {amount && amount > 0 && (
           <div className="balance-preview">
             <div className="balance-preview-row">
-              <span className="balance-preview-label">当前余额</span>
+              <span className="balance-preview-label">
+                {t('balance.rechargeModal.preview.currentBalance')}
+              </span>
               <span className="balance-preview-value">{formatCurrency(currentBalance)}</span>
             </div>
             <div className="balance-preview-row">
-              <span className="balance-preview-label">充值金额</span>
+              <span className="balance-preview-label">
+                {t('balance.rechargeModal.preview.rechargeAmount')}
+              </span>
               <span className="balance-preview-value balance-add">+{formatCurrency(amount)}</span>
             </div>
             <div className="balance-preview-divider" />
             <div className="balance-preview-row balance-preview-total">
-              <span className="balance-preview-label">充值后余额</span>
+              <span className="balance-preview-label">
+                {t('balance.rechargeModal.preview.balanceAfter')}
+              </span>
               <span className="balance-preview-value balance-after">
                 {formatCurrency(balanceAfter)}
               </span>

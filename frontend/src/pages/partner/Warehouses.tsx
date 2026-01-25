@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui'
 import { IconPlus, IconRefresh, IconStar } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
@@ -11,6 +12,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerWarehouseListResponse,
@@ -28,31 +30,10 @@ const { Title } = Typography
 // Warehouse type with index signature for DataTable compatibility
 type Warehouse = HandlerWarehouseListResponse & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '启用', value: 'enabled' },
-  { label: '停用', value: 'disabled' },
-]
-
-// Type options for filter
-const TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '普通仓库', value: 'normal' },
-  { label: '虚拟仓库', value: 'virtual' },
-  { label: '中转仓库', value: 'transit' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<HandlerWarehouseListResponseStatus, 'green' | 'grey'> = {
   enabled: 'green',
   disabled: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<HandlerWarehouseListResponseStatus, string> = {
-  enabled: '启用',
-  disabled: '停用',
 }
 
 // Type tag color mapping
@@ -60,26 +41,6 @@ const TYPE_TAG_COLORS: Record<HandlerWarehouseListResponseType, 'blue' | 'purple
   normal: 'blue',
   virtual: 'purple',
   transit: 'cyan',
-}
-
-// Type labels
-const TYPE_LABELS: Record<HandlerWarehouseListResponseType, string> = {
-  normal: '普通仓库',
-  virtual: '虚拟仓库',
-  transit: '中转仓库',
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 /**
@@ -95,7 +56,29 @@ function formatDate(dateStr?: string): string {
  */
 export default function WarehousesPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['partner', 'common'])
+  const { formatDate } = useFormatters()
   const api = useMemo(() => getWarehouses(), [])
+
+  // Memoized options with translations
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('warehouses.allStatus'), value: '' },
+      { label: t('warehouses.status.enabled'), value: 'enabled' },
+      { label: t('warehouses.status.disabled'), value: 'disabled' },
+    ],
+    [t]
+  )
+
+  const TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('warehouses.allTypes'), value: '' },
+      { label: t('warehouses.type.normal'), value: 'normal' },
+      { label: t('warehouses.type.virtual'), value: 'virtual' },
+      { label: t('warehouses.type.transit'), value: 'transit' },
+    ],
+    [t]
+  )
 
   // State for data
   const [warehouseList, setWarehouseList] = useState<Warehouse[]>([])
@@ -143,12 +126,13 @@ export default function WarehousesPage() {
         }
       }
     } catch {
-      Toast.error('获取仓库列表失败')
+      Toast.error(t('warehouses.messages.fetchError'))
     } finally {
       setLoading(false)
     }
   }, [
     api,
+    t,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -198,13 +182,13 @@ export default function WarehousesPage() {
       if (!warehouse.id) return
       try {
         await api.postPartnerWarehousesIdEnable(warehouse.id)
-        Toast.success(`仓库 "${warehouse.name}" 已启用`)
+        Toast.success(t('warehouses.messages.enableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
-        Toast.error('启用仓库失败')
+        Toast.error(t('warehouses.messages.enableError'))
       }
     },
-    [api, fetchWarehouses]
+    [api, fetchWarehouses, t]
   )
 
   // Handle disable warehouse
@@ -212,18 +196,18 @@ export default function WarehousesPage() {
     async (warehouse: Warehouse) => {
       if (!warehouse.id) return
       if (warehouse.is_default) {
-        Toast.warning('无法停用默认仓库')
+        Toast.warning(t('warehouses.messages.disableDefaultWarning'))
         return
       }
       try {
         await api.postPartnerWarehousesIdDisable(warehouse.id)
-        Toast.success(`仓库 "${warehouse.name}" 已停用`)
+        Toast.success(t('warehouses.messages.disableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
-        Toast.error('停用仓库失败')
+        Toast.error(t('warehouses.messages.disableError'))
       }
     },
-    [api, fetchWarehouses]
+    [api, fetchWarehouses, t]
   )
 
   // Handle set default warehouse
@@ -231,26 +215,26 @@ export default function WarehousesPage() {
     async (warehouse: Warehouse) => {
       if (!warehouse.id) return
       if (warehouse.is_default) {
-        Toast.info('该仓库已是默认仓库')
+        Toast.info(t('warehouses.messages.alreadyDefault'))
         return
       }
       Modal.confirm({
-        title: '设为默认仓库',
-        content: `确定要将 "${warehouse.name}" 设为默认仓库吗？原默认仓库将被取消。`,
-        okText: '确认',
-        cancelText: '取消',
+        title: t('warehouses.confirm.setDefaultTitle'),
+        content: t('warehouses.confirm.setDefaultContent', { name: warehouse.name }),
+        okText: t('warehouses.confirm.setDefaultOk'),
+        cancelText: t('common:actions.cancel'),
         onOk: async () => {
           try {
             await api.postPartnerWarehousesIdSetDefault(warehouse.id!)
-            Toast.success(`已将 "${warehouse.name}" 设为默认仓库`)
+            Toast.success(t('warehouses.messages.setDefaultSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
-            Toast.error('设置默认仓库失败')
+            Toast.error(t('warehouses.messages.setDefaultError'))
           }
         },
       })
     },
-    [api, fetchWarehouses]
+    [api, fetchWarehouses, t]
   )
 
   // Handle delete warehouse
@@ -258,27 +242,27 @@ export default function WarehousesPage() {
     async (warehouse: Warehouse) => {
       if (!warehouse.id) return
       if (warehouse.is_default) {
-        Toast.warning('无法删除默认仓库')
+        Toast.warning(t('warehouses.messages.deleteDefaultWarning'))
         return
       }
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除仓库 "${warehouse.name}" 吗？删除后无法恢复。`,
-        okText: '确认删除',
-        cancelText: '取消',
+        title: t('warehouses.confirm.deleteTitle'),
+        content: t('warehouses.confirm.deleteContent', { name: warehouse.name }),
+        okText: t('warehouses.confirm.deleteOk'),
+        cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
             await api.deletePartnerWarehousesId(warehouse.id!)
-            Toast.success(`仓库 "${warehouse.name}" 已删除`)
+            Toast.success(t('warehouses.messages.deleteSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
-            Toast.error('删除仓库失败，该仓库可能有库存记录')
+            Toast.error(t('warehouses.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchWarehouses]
+    [api, fetchWarehouses, t]
   )
 
   // Handle edit warehouse
@@ -305,13 +289,13 @@ export default function WarehousesPage() {
   const handleBulkEnable = useCallback(async () => {
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerWarehousesIdEnable(id)))
-      Toast.success(`已启用 ${selectedRowKeys.length} 个仓库`)
+      Toast.success(t('warehouses.messages.batchEnableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()
     } catch {
-      Toast.error('批量启用失败')
+      Toast.error(t('warehouses.messages.batchEnableError'))
     }
-  }, [api, selectedRowKeys, fetchWarehouses])
+  }, [api, selectedRowKeys, fetchWarehouses, t])
 
   // Handle bulk disable
   const handleBulkDisable = useCallback(async () => {
@@ -320,24 +304,24 @@ export default function WarehousesPage() {
       (w) => selectedRowKeys.includes(w.id || '') && w.is_default
     )
     if (hasDefault) {
-      Toast.warning('选中的仓库中包含默认仓库，无法批量停用')
+      Toast.warning(t('warehouses.messages.batchDisableDefaultWarning'))
       return
     }
     try {
       await Promise.all(selectedRowKeys.map((id) => api.postPartnerWarehousesIdDisable(id)))
-      Toast.success(`已停用 ${selectedRowKeys.length} 个仓库`)
+      Toast.success(t('warehouses.messages.batchDisableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()
     } catch {
-      Toast.error('批量停用失败')
+      Toast.error(t('warehouses.messages.batchDisableError'))
     }
-  }, [api, selectedRowKeys, fetchWarehouses, warehouseList])
+  }, [api, selectedRowKeys, fetchWarehouses, warehouseList, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Warehouse>[] = useMemo(
     () => [
       {
-        title: '仓库编码',
+        title: t('warehouses.columns.code'),
         dataIndex: 'code',
         width: 120,
         sortable: true,
@@ -346,7 +330,7 @@ export default function WarehousesPage() {
         ),
       },
       {
-        title: '仓库名称',
+        title: t('warehouses.columns.name'),
         dataIndex: 'name',
         sortable: true,
         ellipsis: true,
@@ -356,7 +340,7 @@ export default function WarehousesPage() {
               {(name as string) || '-'}
               {record.is_default && (
                 <Tag className="default-tag" color="light-blue" size="small">
-                  <IconStar size="small" /> 默认
+                  <IconStar size="small" /> {t('warehouses.defaultTag')}
                 </Tag>
               )}
             </span>
@@ -365,7 +349,7 @@ export default function WarehousesPage() {
         ),
       },
       {
-        title: '类型',
+        title: t('warehouses.columns.type'),
         dataIndex: 'type',
         width: 100,
         align: 'center',
@@ -374,13 +358,13 @@ export default function WarehousesPage() {
           if (!typeValue) return '-'
           return (
             <Tag className="type-tag" color={TYPE_TAG_COLORS[typeValue]}>
-              {TYPE_LABELS[typeValue]}
+              {t(`warehouses.type.${typeValue}`)}
             </Tag>
           )
         },
       },
       {
-        title: '地区',
+        title: t('warehouses.columns.region'),
         dataIndex: 'city',
         width: 140,
         render: (_city: unknown, record: Warehouse) => (
@@ -392,7 +376,7 @@ export default function WarehousesPage() {
         ),
       },
       {
-        title: '排序',
+        title: t('warehouses.columns.sortOrder'),
         dataIndex: 'sort_order',
         width: 80,
         align: 'center',
@@ -403,25 +387,32 @@ export default function WarehousesPage() {
         },
       },
       {
-        title: '状态',
+        title: t('warehouses.columns.status'),
         dataIndex: 'status',
         width: 90,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as HandlerWarehouseListResponseStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`warehouses.status.${statusValue}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('warehouses.columns.createdAt'),
         dataIndex: 'created_at',
         width: 120,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const dateStr = date as string | undefined
+          return dateStr ? formatDate(dateStr) : '-'
+        },
       },
     ],
-    []
+    [t, formatDate]
   )
 
   // Table row actions
@@ -429,44 +420,44 @@ export default function WarehousesPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('warehouses.actions.view'),
         onClick: handleView,
       },
       {
         key: 'edit',
-        label: '编辑',
+        label: t('warehouses.actions.edit'),
         onClick: handleEdit,
       },
       {
         key: 'setDefault',
-        label: '设为默认',
+        label: t('warehouses.actions.setDefault'),
         type: 'primary',
         onClick: handleSetDefault,
         hidden: (record) => !!record.is_default,
       },
       {
         key: 'enable',
-        label: '启用',
+        label: t('warehouses.actions.enable'),
         type: 'primary',
         onClick: handleEnable,
         hidden: (record) => record.status === 'enabled',
       },
       {
         key: 'disable',
-        label: '停用',
+        label: t('warehouses.actions.disable'),
         type: 'warning',
         onClick: handleDisable,
         hidden: (record) => record.status !== 'enabled' || !!record.is_default,
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('warehouses.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
         hidden: (record) => !!record.is_default,
       },
     ],
-    [handleView, handleEdit, handleSetDefault, handleEnable, handleDisable, handleDelete]
+    [t, handleView, handleEdit, handleSetDefault, handleEnable, handleDisable, handleDelete]
   )
 
   // Row selection handler
@@ -484,23 +475,23 @@ export default function WarehousesPage() {
       <Card className="warehouses-card">
         <div className="warehouses-header">
           <Title heading={4} style={{ margin: 0 }}>
-            仓库管理
+            {t('warehouses.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索仓库名称、编码..."
+          searchPlaceholder={t('warehouses.searchPlaceholder')}
           primaryAction={{
-            label: '新增仓库',
+            label: t('warehouses.addWarehouse'),
             icon: <IconPlus />,
             onClick: () => navigate('/partner/warehouses/new'),
           }}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('common:actions.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -508,14 +499,14 @@ export default function WarehousesPage() {
           filters={
             <Space className="warehouses-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('warehouses.statusFilter')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="类型筛选"
+                placeholder={t('warehouses.typeFilter')}
                 value={typeFilter}
                 onChange={handleTypeChange}
                 optionList={TYPE_OPTIONS}
@@ -531,10 +522,10 @@ export default function WarehousesPage() {
             onCancel={() => setSelectedRowKeys([])}
           >
             <Tag color="blue" onClick={handleBulkEnable} style={{ cursor: 'pointer' }}>
-              批量启用
+              {t('warehouses.actions.batchEnable')}
             </Tag>
             <Tag color="orange" onClick={handleBulkDisable} style={{ cursor: 'pointer' }}>
-              批量停用
+              {t('warehouses.actions.batchDisable')}
             </Tag>
           </BulkActionBar>
         )}
