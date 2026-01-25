@@ -555,4 +555,356 @@ export class FinancePage extends BasePage {
   async takeReconcileScreenshot(name: string = 'reconcile'): Promise<void> {
     await this.screenshot(`finance/${name}`)
   }
+
+  // =========== Expenses Page ===========
+
+  async navigateToExpenses(): Promise<void> {
+    await this.goto('/finance/expenses')
+    await this.waitForPageLoad()
+    await this.page.waitForSelector('.semi-table', { timeout: 10000 })
+  }
+
+  async navigateToNewExpense(): Promise<void> {
+    await this.goto('/finance/expenses/new')
+    await this.waitForPageLoad()
+  }
+
+  async assertExpensesPageLoaded(): Promise<void> {
+    const title = this.page.locator('h4').filter({ hasText: '费用管理' })
+    await expect(title).toBeVisible()
+    await expect(this.page.locator('.semi-table')).toBeVisible()
+  }
+
+  async getExpenseCount(): Promise<number> {
+    await this.waitForTableLoad()
+    const rows = this.page.locator('.semi-table-tbody .semi-table-row')
+    return rows.count()
+  }
+
+  async assertExpenseExists(expenseNumber: string): Promise<void> {
+    const row = this.page.locator('.semi-table-row').filter({ hasText: expenseNumber })
+    await expect(row).toBeVisible()
+  }
+
+  async assertExpenseStatus(expenseNumber: string, status: string): Promise<void> {
+    const row = this.page.locator('.semi-table-row').filter({ hasText: expenseNumber })
+    const statusTag = row.locator('.semi-tag').first()
+    await expect(statusTag).toContainText(status)
+  }
+
+  async filterExpensesByCategory(
+    category: 'RENT' | 'UTILITIES' | 'SALARY' | 'OFFICE' | 'TRAVEL' | 'MARKETING' | 'OTHER' | ''
+  ): Promise<void> {
+    await this.page
+      .locator('.semi-select')
+      .filter({ hasText: /分类筛选|全部分类/ })
+      .click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+
+    const categoryMap: Record<string, string> = {
+      RENT: '房租',
+      UTILITIES: '水电费',
+      SALARY: '工资',
+      OFFICE: '办公费',
+      TRAVEL: '差旅费',
+      MARKETING: '市场营销',
+      OTHER: '其他费用',
+      '': '全部分类',
+    }
+    await this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: categoryMap[category] })
+      .click()
+    await this.waitForTableLoad()
+  }
+
+  async filterExpensesByStatus(
+    status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | ''
+  ): Promise<void> {
+    // Find the status select - second select in the filter area
+    const statusSelect = this.page.locator('.expenses-filter-container .semi-select').nth(1)
+    await statusSelect.click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+
+    const statusMap: Record<string, string> = {
+      DRAFT: '草稿',
+      PENDING: '待审批',
+      APPROVED: '已审批',
+      REJECTED: '已拒绝',
+      CANCELLED: '已取消',
+      '': '全部状态',
+    }
+    await this.page.locator('.semi-select-option').filter({ hasText: statusMap[status] }).click()
+    await this.waitForTableLoad()
+  }
+
+  async getExpenseSummaryValues(): Promise<{
+    totalApproved: string
+    totalPending: string
+  }> {
+    await this.page.waitForSelector('.expenses-summary', { timeout: 5000 })
+    const totalApproved =
+      (await this.page
+        .locator('.summary-item')
+        .filter({ hasText: /已审批/ })
+        .locator('.summary-value')
+        .textContent()) || '-'
+    const totalPending =
+      (await this.page
+        .locator('.summary-item')
+        .filter({ hasText: /待审批/ })
+        .locator('.summary-value')
+        .textContent()) || '-'
+
+    return { totalApproved, totalPending }
+  }
+
+  async clickNewExpenseButton(): Promise<void> {
+    const newButton = this.page.getByRole('button', { name: /新增费用|新增/ })
+    await newButton.click()
+    await this.page.waitForURL(/\/finance\/expenses\/new/)
+  }
+
+  async fillExpenseForm(data: {
+    category: string
+    amount: number
+    description: string
+    incurredAt?: Date
+  }): Promise<void> {
+    // Select category
+    const categorySelect = this.page.locator('.semi-select').filter({ hasText: /请选择分类/ })
+    await categorySelect.click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+    await this.page.locator('.semi-select-option').filter({ hasText: data.category }).click()
+
+    // Fill amount
+    const amountInput = this.page.locator('.semi-input-number input')
+    await amountInput.fill(data.amount.toString())
+
+    // Fill description
+    const descriptionInput = this.page.locator('textarea').first()
+    await descriptionInput.fill(data.description)
+  }
+
+  async submitExpenseForm(): Promise<void> {
+    const submitButton = this.page.getByRole('button', { name: /提交|创建|保存/ })
+    await submitButton.click()
+  }
+
+  async clickExpenseAction(expenseNumber: string, action: 'edit' | 'submit' | 'approve' | 'delete'): Promise<void> {
+    const row = this.page.locator('.semi-table-row').filter({ hasText: expenseNumber })
+
+    // Look for action buttons or dropdown
+    const actionButton = row.locator('button, .semi-button').filter({ hasText: action === 'edit' ? '编辑' : action === 'submit' ? '提交' : action === 'approve' ? '审批' : '删除' })
+
+    if (await actionButton.isVisible()) {
+      await actionButton.click()
+    } else {
+      // Try dropdown menu
+      const moreButton = row.locator('.semi-dropdown-trigger, button').filter({ hasText: /更多|操作/ }).first()
+      if (await moreButton.isVisible()) {
+        await moreButton.click()
+        await this.page.waitForSelector('.semi-dropdown-menu', { state: 'visible' })
+        const menuItem = this.page.locator('.semi-dropdown-item').filter({ hasText: action === 'edit' ? '编辑' : action === 'submit' ? '提交' : action === 'approve' ? '审批' : '删除' })
+        await menuItem.click()
+      }
+    }
+  }
+
+  async takeExpensesScreenshot(name: string = 'expenses'): Promise<void> {
+    await this.screenshot(`finance/${name}`)
+  }
+
+  // =========== Other Incomes Page ===========
+
+  async navigateToOtherIncomes(): Promise<void> {
+    await this.goto('/finance/incomes')
+    await this.waitForPageLoad()
+    await this.page.waitForSelector('.semi-table', { timeout: 10000 })
+  }
+
+  async navigateToNewIncome(): Promise<void> {
+    await this.goto('/finance/incomes/new')
+    await this.waitForPageLoad()
+  }
+
+  async assertIncomesPageLoaded(): Promise<void> {
+    const title = this.page.locator('h4').filter({ hasText: /其他收入管理|收入记录/ })
+    await expect(title).toBeVisible()
+    await expect(this.page.locator('.semi-table')).toBeVisible()
+  }
+
+  async getIncomeCount(): Promise<number> {
+    await this.waitForTableLoad()
+    const rows = this.page.locator('.semi-table-tbody .semi-table-row')
+    return rows.count()
+  }
+
+  async assertIncomeExists(incomeNumber: string): Promise<void> {
+    const row = this.page.locator('.semi-table-row').filter({ hasText: incomeNumber })
+    await expect(row).toBeVisible()
+  }
+
+  async assertIncomeStatus(incomeNumber: string, status: string): Promise<void> {
+    const row = this.page.locator('.semi-table-row').filter({ hasText: incomeNumber })
+    const statusTag = row.locator('.semi-tag').first()
+    await expect(statusTag).toContainText(status)
+  }
+
+  async filterIncomesByCategory(
+    category: 'INVESTMENT' | 'SUBSIDY' | 'INTEREST' | 'RENTAL' | 'REFUND' | 'OTHER' | ''
+  ): Promise<void> {
+    await this.page
+      .locator('.semi-select')
+      .filter({ hasText: /分类筛选|全部分类/ })
+      .click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+
+    const categoryMap: Record<string, string> = {
+      INVESTMENT: '投资收益',
+      SUBSIDY: '补贴收入',
+      INTEREST: '利息收入',
+      RENTAL: '租金收入',
+      REFUND: '退款收入',
+      OTHER: '其他收入',
+      '': '全部分类',
+    }
+    await this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: categoryMap[category] })
+      .click()
+    await this.waitForTableLoad()
+  }
+
+  async getIncomeSummaryValues(): Promise<{
+    totalConfirmed: string
+    totalPending: string
+  }> {
+    await this.page.waitForSelector('.incomes-summary, .summary-descriptions', { timeout: 5000 })
+    const totalConfirmed =
+      (await this.page
+        .locator('.summary-item')
+        .filter({ hasText: /已确认/ })
+        .locator('.summary-value')
+        .textContent()) || '-'
+    const totalPending =
+      (await this.page
+        .locator('.summary-item')
+        .filter({ hasText: /待确认/ })
+        .locator('.summary-value')
+        .textContent()) || '-'
+
+    return { totalConfirmed, totalPending }
+  }
+
+  async clickNewIncomeButton(): Promise<void> {
+    const newButton = this.page.getByRole('button', { name: /新增收入|新增/ })
+    await newButton.click()
+    await this.page.waitForURL(/\/finance\/incomes\/new/)
+  }
+
+  async fillIncomeForm(data: {
+    category: string
+    amount: number
+    description: string
+    incomeDate?: Date
+  }): Promise<void> {
+    // Select category
+    const categorySelect = this.page.locator('.semi-select').filter({ hasText: /请选择分类/ })
+    await categorySelect.click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+    await this.page.locator('.semi-select-option').filter({ hasText: data.category }).click()
+
+    // Fill amount
+    const amountInput = this.page.locator('.semi-input-number input')
+    await amountInput.fill(data.amount.toString())
+
+    // Fill description
+    const descriptionInput = this.page.locator('textarea').first()
+    await descriptionInput.fill(data.description)
+  }
+
+  async submitIncomeForm(): Promise<void> {
+    const submitButton = this.page.getByRole('button', { name: /提交|创建|保存/ })
+    await submitButton.click()
+  }
+
+  async takeIncomesScreenshot(name: string = 'incomes'): Promise<void> {
+    await this.screenshot(`finance/${name}`)
+  }
+
+  // =========== Cash Flow Page ===========
+
+  async navigateToCashFlow(): Promise<void> {
+    await this.goto('/finance/cash-flow')
+    await this.waitForPageLoad()
+    await this.page.waitForSelector('.semi-table, .cash-flow-page', { timeout: 10000 })
+  }
+
+  async assertCashFlowPageLoaded(): Promise<void> {
+    const title = this.page.locator('h4').filter({ hasText: /收支流水|现金流/ })
+    await expect(title).toBeVisible()
+  }
+
+  async getCashFlowCount(): Promise<number> {
+    await this.waitForTableLoad()
+    const rows = this.page.locator('.semi-table-tbody .semi-table-row')
+    return rows.count()
+  }
+
+  async filterCashFlowByDateRange(startDate: Date, endDate: Date): Promise<void> {
+    const dateRangePicker = this.page.locator('.semi-datepicker')
+    await dateRangePicker.click()
+
+    // This is simplified - actual implementation may need date selection
+    await this.page.waitForTimeout(500)
+    await this.page.keyboard.press('Escape')
+  }
+
+  async filterCashFlowByType(type: 'income' | 'expense' | ''): Promise<void> {
+    await this.page
+      .locator('.semi-select')
+      .filter({ hasText: /类型筛选|全部类型/ })
+      .click()
+    await this.page.waitForSelector('.semi-select-option-list', { state: 'visible' })
+
+    const typeMap: Record<string, string> = {
+      income: '收入',
+      expense: '支出',
+      '': '全部类型',
+    }
+    await this.page.locator('.semi-select-option').filter({ hasText: typeMap[type] }).click()
+    await this.waitForTableLoad()
+  }
+
+  async getCashFlowSummary(): Promise<{
+    totalIncome: string
+    totalExpense: string
+    netBalance: string
+  }> {
+    const totalIncome =
+      (await this.page
+        .locator('.summary-item, .cash-flow-summary')
+        .filter({ hasText: /总收入/ })
+        .locator('.summary-value, .amount')
+        .textContent()) || '-'
+    const totalExpense =
+      (await this.page
+        .locator('.summary-item, .cash-flow-summary')
+        .filter({ hasText: /总支出/ })
+        .locator('.summary-value, .amount')
+        .textContent()) || '-'
+    const netBalance =
+      (await this.page
+        .locator('.summary-item, .cash-flow-summary')
+        .filter({ hasText: /净额|结余/ })
+        .locator('.summary-value, .amount')
+        .textContent()) || '-'
+
+    return { totalIncome, totalExpense, netBalance }
+  }
+
+  async takeCashFlowScreenshot(name: string = 'cash-flow'): Promise<void> {
+    await this.screenshot(`finance/${name}`)
+  }
 }

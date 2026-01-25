@@ -286,16 +286,16 @@ ON CONFLICT DO NOTHING;
 
 -- Expense records
 INSERT INTO expense_records (id, tenant_id, record_number, category, amount, expense_date, description, status) VALUES
-('84000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0001', 'rent', 15000.0000, NOW() - INTERVAL '15 days', 'Monthly warehouse rent - Beijing', 'confirmed'),
-('84000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0002', 'utilities', 3500.0000, NOW() - INTERVAL '10 days', 'Electricity and water bills', 'confirmed'),
-('84000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0003', 'logistics', 8000.0000, NOW() - INTERVAL '5 days', 'Shipping costs for January', 'confirmed'),
-('84000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0004', 'salary', 50000.0000, NOW() - INTERVAL '1 day', 'Staff salaries', 'draft')
+('84000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0001', 'RENT', 15000.0000, NOW() - INTERVAL '15 days', 'Monthly warehouse rent - Beijing', 'confirmed'),
+('84000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0002', 'UTILITIES', 3500.0000, NOW() - INTERVAL '10 days', 'Electricity and water bills', 'confirmed'),
+('84000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0003', 'OTHER', 8000.0000, NOW() - INTERVAL '5 days', 'Shipping costs for January', 'confirmed'),
+('84000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'EXP-2026-0004', 'SALARY', 50000.0000, NOW() - INTERVAL '1 day', 'Staff salaries', 'draft')
 ON CONFLICT DO NOTHING;
 
 -- Other income records
 INSERT INTO other_income_records (id, tenant_id, record_number, category, amount, income_date, description, status) VALUES
-('85000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'INC-2026-0001', 'service', 5000.0000, NOW() - INTERVAL '12 days', 'Installation service fee', 'confirmed'),
-('85000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'INC-2026-0002', 'interest', 1200.0000, NOW() - INTERVAL '8 days', 'Bank interest income', 'confirmed')
+('85000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'INC-2026-0001', 'OTHER', 5000.0000, NOW() - INTERVAL '12 days', 'Installation service fee', 'confirmed'),
+('85000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'INC-2026-0002', 'INTEREST', 1200.0000, NOW() - INTERVAL '8 days', 'Bank interest income', 'confirmed')
 ON CONFLICT DO NOTHING;
 
 -- Balance transactions (customer prepaid balance changes)
