@@ -14589,3 +14589,116 @@ npm run e2e:report
 6. **Serial Mode**: Tests run serially in the "Order Confirm" and "Order Ship" suites due to shared state
 7. **Screenshots**: Screenshots saved to test-results/screenshots/sales-orders/
 8. **Next Tasks**: P3-INT-002 (Purchase order E2E), P3-INT-003 (Sales return E2E)
+
+---
+
+## P3-INT-002: Purchase Order E2E Tests (2026-01-25)
+
+Implemented comprehensive E2E tests for the purchase order module (P3-INT-002) with the following components:
+
+### Files Created/Changed
+| File | Change |
+|------|--------|
+| `frontend/tests/e2e/pages/PurchaseOrderPage.ts` | Created Page Object for purchase order module |
+| `frontend/tests/e2e/transactions/purchase-order.spec.ts` | Created E2E test suite (20 tests) |
+| `frontend/tests/e2e/pages/index.ts` | Added PurchaseOrderPage export |
+| `frontend/tests/e2e/fixtures/test-fixtures.ts` | Added purchaseOrderPage fixture |
+| `.claude/ralph/plans/prd.json` | P3-INT-002: passes: true |
+
+### Test Coverage
+**Total Tests**: 20 tests across 9 test suites
+
+**Purchase Order List Display Tests** (3 tests):
+1. Display purchase order list page with correct title
+2. Display empty list or seed orders correctly
+3. Status filter with correct options (draft, confirmed, partial_received, completed, cancelled)
+
+**Purchase Order Creation Tests** (4 tests):
+1. Navigate to new order form
+2. Display supplier selection dropdown
+3. Create purchase order with supplier and single product
+4. Create order with multiple products
+
+**Order Amount Calculation Tests** (1 test):
+1. Calculate item amount correctly (unit cost × quantity)
+
+**Order Confirm with Status Change Tests** (1 test):
+1. Create and confirm order, verifying status change from draft to confirmed
+
+**Full Receiving Operation Tests** (1 test):
+1. Receive all items and verify inventory increase in warehouse
+
+**Partial Receiving Operation Tests** (2 tests):
+1. Perform partial receiving and verify progress display
+2. Complete remaining receiving and show completed status
+
+**Accounts Payable Auto-Generation Tests** (1 test):
+1. Verify accounts payable is generated after receiving
+
+**Order Cancellation Tests** (2 tests):
+1. Cancel draft order
+2. Cancel confirmed order before receiving
+
+**Screenshot Documentation Tests** (3 tests):
+1. Capture purchase order list page screenshot
+2. Capture purchase order creation form screenshot
+3. Capture receiving page screenshot
+
+**Video Recording Tests** (1 test):
+1. Record complete purchase order lifecycle video (run with --video=on)
+
+### Seed Data Used
+From `docker/seed-data.sql`:
+- Suppliers: Apple China Distribution, Samsung Electronics China, Xiaomi Technology Ltd
+- Products: iPhone 15 Pro (8999), Samsung Galaxy S24 (7999), Xiaomi 14 Pro (4999), MacBook Pro 14 (14999)
+- Warehouses: Main Warehouse Beijing (default), Shanghai Distribution Center
+
+### Key Features Tested
+1. **Order CRUD**: Create, view, edit (draft only), and list orders
+2. **Amount Calculation**: Unit cost × quantity
+3. **Status Flow**: Draft → Confirmed → Partial Received / Completed / Cancelled
+4. **Receiving Operations**:
+   - Full receiving with inventory increase
+   - Partial receiving with progress display
+   - Warehouse selection
+5. **Inventory Integration**:
+   - Verify inventory increases after receiving
+6. **Accounts Payable**:
+   - Verify AP auto-generation after receiving
+
+### PurchaseOrderPage Page Object Methods
+- Navigation: `navigateToList()`, `navigateToNewOrder()`, `navigateToDetail()`, `navigateToReceive()`
+- List: `getOrderCount()`, `search()`, `filterByStatus()`, `filterBySupplier()`
+- Form: `selectSupplier()`, `addProductRow()`, `selectProductInRow()`, `setQuantityInRow()`, `setUnitCostInRow()`
+- Receive: `selectReceiveWarehouse()`, `clickReceiveAll()`, `setReceiveQuantity()`, `submitReceive()`
+- Actions: `confirmOrder()`, `cancelOrder()`, `clickRowAction()`
+
+### How to Run Tests
+```bash
+# Start test environment
+./docker/quick-test.sh start
+./docker/quick-test.sh seed
+
+# Run all purchase order E2E tests
+cd frontend && npx playwright test tests/e2e/transactions/purchase-order.spec.ts --project=chromium
+
+# Run with headed mode for debugging
+npx playwright test tests/e2e/transactions/purchase-order.spec.ts --project=chromium --headed
+
+# Run with video recording
+npx playwright test tests/e2e/transactions/purchase-order.spec.ts --project=chromium --video=on
+
+# Generate HTML report
+npm run e2e:report
+```
+
+### Notes for Next Developer
+1. **Docker Required**: Tests require docker-compose.test.yml environment running
+2. **Seed Data**: Tests depend on seed-data.sql suppliers, products, warehouses, and inventory
+3. **Auth Setup**: Tests use shared authentication state from auth.setup.ts
+4. **Page Object**: PurchaseOrderPage provides reusable methods for all order and receiving operations
+5. **Inventory Tests**: Verify inventory increases by comparing before/after quantities
+6. **Serial Mode**: Some tests run serially due to shared state (partial receiving tests)
+7. **Screenshots**: Screenshots saved to test-results/screenshots/purchase-orders/
+8. **Next Tasks**: P3-INT-003 (Sales return E2E), P3-INT-004 (Purchase return E2E)
+
