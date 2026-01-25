@@ -729,6 +729,199 @@ export class PurchaseOrderPage extends BasePage {
     await expect(this.receiveProgress).toBeVisible()
   }
 
+  // Detail page action methods (using direct buttons instead of dropdown menus)
+  // These methods work reliably in headless Chrome where dropdown menus may fail
+
+  /**
+   * Click View action on a row to navigate to detail page
+   * Uses the first visible action button (View) in the row
+   */
+  async viewOrderFromRow(row: Locator): Promise<void> {
+    // Hover to show action buttons
+    await row.scrollIntoViewIfNeeded()
+    await row.hover()
+    await this.page.waitForTimeout(200)
+
+    // Click View button directly
+    const viewButton = row.locator('button').filter({ hasText: '查看' })
+    const buttonVisible = await viewButton.isVisible().catch(() => false)
+
+    if (buttonVisible) {
+      await viewButton.click()
+    } else {
+      // Try to find in dropdown menu
+      const moreButton = row.locator('[data-testid="table-row-more-actions"]')
+      if (await moreButton.isVisible().catch(() => false)) {
+        await moreButton.click()
+        await this.page.waitForTimeout(200)
+        const menuItem = this.page.getByRole('menuitem', { name: '查看' })
+        await menuItem.click()
+      } else {
+        throw new Error('View button not found in row')
+      }
+    }
+
+    // Wait for navigation to detail page
+    await this.page.waitForURL(/\/trade\/purchase\/[^/]+$/, { timeout: 10000 })
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Get order ID from the first order row
+   * Useful for navigating directly to detail page
+   */
+  async getOrderIdFromRow(row: Locator): Promise<string | null> {
+    // Try to extract order ID from row data attributes or link
+    const link = row.locator('a[href*="/trade/purchase/"]')
+    if ((await link.count()) > 0) {
+      const href = await link.first().getAttribute('href')
+      const match = href?.match(/\/trade\/purchase\/([^/]+)/)
+      return match?.[1] || null
+    }
+
+    // Alternative: get order number and search in a different way
+    const orderText = await row.textContent()
+    const orderNumberMatch = orderText?.match(/PO-[\w-]+/)
+    if (orderNumberMatch) {
+      // Store order number for later API lookup if needed
+      return orderNumberMatch[0]
+    }
+
+    return null
+  }
+
+  /**
+   * Confirm order from the detail page
+   * Navigates to detail page first if not already there
+   */
+  async confirmOrderFromDetail(): Promise<void> {
+    // Ensure we're on detail page
+    const currentUrl = this.page.url()
+    if (!currentUrl.match(/\/trade\/purchase\/[^/]+$/)) {
+      throw new Error('Not on detail page - cannot confirm order')
+    }
+
+    // Wait for confirm button to be visible and enabled
+    const confirmButton = this.page.locator('button').filter({ hasText: '确认' }).first()
+    await confirmButton.waitFor({ state: 'visible', timeout: 5000 })
+    await expect(confirmButton).toBeEnabled()
+    await confirmButton.click()
+
+    // Handle confirmation modal
+    const modal = this.page.locator('.semi-modal')
+    await modal.waitFor({ state: 'visible', timeout: 5000 })
+
+    const confirmModalBtn = modal.locator('.semi-modal-footer .semi-button-primary')
+    await confirmModalBtn.click()
+
+    // Wait for modal to close and success toast
+    await modal.waitFor({ state: 'hidden', timeout: 5000 })
+    await this.page.waitForTimeout(500)
+  }
+
+  /**
+   * Cancel order from the detail page
+   */
+  async cancelOrderFromDetail(): Promise<void> {
+    const currentUrl = this.page.url()
+    if (!currentUrl.match(/\/trade\/purchase\/[^/]+$/)) {
+      throw new Error('Not on detail page - cannot cancel order')
+    }
+
+    // Find and click cancel button
+    const cancelButton = this.page
+      .locator('button')
+      .filter({ hasText: /取消$|取消订单/ })
+      .first()
+    await cancelButton.waitFor({ state: 'visible', timeout: 5000 })
+    await expect(cancelButton).toBeEnabled()
+    await cancelButton.click()
+
+    // Handle confirmation modal
+    const modal = this.page.locator('.semi-modal')
+    await modal.waitFor({ state: 'visible', timeout: 5000 })
+
+    const confirmModalBtn = modal.locator(
+      '.semi-modal-footer .semi-button-primary, .semi-modal-footer .semi-button-danger'
+    )
+    await confirmModalBtn.click()
+
+    await modal.waitFor({ state: 'hidden', timeout: 5000 })
+    await this.page.waitForTimeout(500)
+  }
+
+  /**
+   * Navigate to receive page from the detail page
+   */
+  async goToReceiveFromDetail(): Promise<void> {
+    const currentUrl = this.page.url()
+    if (!currentUrl.match(/\/trade\/purchase\/[^/]+$/)) {
+      throw new Error('Not on detail page - cannot go to receive')
+    }
+
+    const receiveButton = this.page.locator('button').filter({ hasText: '收货' }).first()
+    await receiveButton.waitFor({ state: 'visible', timeout: 5000 })
+    await expect(receiveButton).toBeEnabled()
+    await receiveButton.click()
+
+    // Wait for navigation to receive page
+    await this.page.waitForURL(/\/receive$/, { timeout: 10000 })
+    await this.waitForPageLoad()
+  }
+
+  /**
+   * Get order number from detail page
+   */
+  async getOrderNumberFromDetail(): Promise<string> {
+    const infoSection = this.page.locator('.info-card, .order-info-card, .semi-descriptions')
+    const text = await infoSection.textContent()
+    const match = text?.match(/PO-[\w-]+/)
+    return match?.[0] || ''
+  }
+
+  /**
+   * Get order status from detail page
+   */
+  async getOrderStatusFromDetail(): Promise<string> {
+    const statusTag = this.page
+      .locator('.page-header .semi-tag, .header-left .semi-tag, .status-tag')
+      .first()
+    return (await statusTag.textContent()) || ''
+  }
+
+  /**
+   * Verify order is in specified status on detail page
+   */
+  async assertDetailPageStatus(expectedStatus: string): Promise<void> {
+    const statusLabels: Record<string, string> = {
+      draft: '草稿',
+      confirmed: '已确认',
+      partial_received: '部分收货',
+      completed: '已完成',
+      cancelled: '已取消',
+    }
+    const expectedLabel = statusLabels[expectedStatus] || expectedStatus
+    const statusTag = this.page
+      .locator('.page-header .semi-tag, .header-left .semi-tag, .status-tag')
+      .first()
+    await expect(statusTag).toContainText(expectedLabel)
+  }
+
+  /**
+   * Go back to list from detail page
+   */
+  async goBackToList(): Promise<void> {
+    const backButton = this.page.locator('button').filter({ hasText: '返回列表' })
+    if (await backButton.isVisible()) {
+      await backButton.click()
+    } else {
+      // Navigate directly
+      await this.navigateToList()
+    }
+    await this.page.waitForURL(/\/trade\/purchase$/, { timeout: 10000 })
+    await this.waitForTableLoad()
+  }
+
   // Screenshot methods
   async screenshotOrderList(name: string): Promise<void> {
     await this.screenshot(`purchase-orders/${name}`)

@@ -129,9 +129,8 @@ test.describe('Purchase Order Creation', () => {
     await expect(page).toHaveURL(/\/trade\/purchase/)
   })
 
-  // TODO: This test requires dropdown menu interaction which is unreliable in headless Chrome
-  // due to Semi Design dropdown positioning issues. Skip for now.
-  test.skip('should create order with multiple products', async ({ page }) => {
+  // Using detail page actions instead of dropdown menus
+  test('should create order with multiple products', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
     await purchaseOrderPage.navigateToNewOrder()
 
@@ -164,8 +163,8 @@ test.describe('Order Amount Calculation', () => {
     await page.goto('/')
   })
 
-  // TODO: Skip - requires dropdown interaction for confirm action
-  test.skip('should calculate item amount correctly (unit cost × quantity)', async ({ page }) => {
+  // Using detail page for verification
+  test('should calculate item amount correctly (unit cost × quantity)', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
     await purchaseOrderPage.navigateToNewOrder()
 
@@ -192,8 +191,8 @@ test.describe('Order Confirm with Status Change', () => {
 
   let createdOrderNumber: string
 
-  // TODO: Skip - requires dropdown interaction for confirm action
-  test.skip('should create and confirm order, verifying status change', async ({ page }) => {
+  // Using detail page actions instead of dropdown menus for reliable headless Chrome testing
+  test('should create and confirm order, verifying status change', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Create a new order first
@@ -223,12 +222,18 @@ test.describe('Order Confirm with Status Change', () => {
     // Verify it's in draft status
     await expect(firstRow.locator('.semi-tag')).toContainText('草稿')
 
-    // Click confirm action
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    // Navigate to detail page and confirm from there
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
+    await purchaseOrderPage.assertDetailPageStatus('draft')
+
+    // Confirm the order from detail page
+    await purchaseOrderPage.confirmOrderFromDetail()
 
     // Verify status changed to confirmed
-    await purchaseOrderPage.navigateToList()
+    await purchaseOrderPage.assertDetailPageStatus('confirmed')
+
+    // Go back to list and verify there too
+    await purchaseOrderPage.goBackToList()
     const confirmedRow = await purchaseOrderPage.getOrderRowByNumber(createdOrderNumber)
     if (confirmedRow) {
       await expect(confirmedRow.locator('.semi-tag')).toContainText('已确认')
@@ -239,10 +244,10 @@ test.describe('Order Confirm with Status Change', () => {
 test.describe('Full Receiving Operation', () => {
   test.describe.configure({ mode: 'serial' })
 
-  let testOrderNumber: string
+  let _testOrderNumber: string
 
-  // TODO: Skip - requires dropdown interaction for receive action
-  test.skip('should receive all items and verify inventory increase', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should receive all items and verify inventory increase', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
     const inventoryPage = new InventoryPage(page)
 
@@ -272,41 +277,37 @@ test.describe('Full Receiving Operation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Get the order number and confirm it
+    // Get the order number
     await purchaseOrderPage.navigateToList()
     await page.waitForTimeout(500)
 
     const firstRow = await purchaseOrderPage.getOrderRow(0)
     const orderText = await firstRow.textContent()
     const orderNumberMatch = orderText?.match(/PO-[\w-]+/)
-    testOrderNumber = orderNumberMatch?.[0] || ''
+    _testOrderNumber = orderNumberMatch?.[0] || ''
 
-    // Confirm the order
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    // Navigate to detail page and confirm
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
+    await purchaseOrderPage.confirmOrderFromDetail()
+    await purchaseOrderPage.assertDetailPageStatus('confirmed')
 
-    // Navigate to receive page
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRowByNumber(testOrderNumber)
-    if (confirmedRow) {
-      await purchaseOrderPage.clickRowAction(confirmedRow, 'receive')
-      await page.waitForTimeout(500)
+    // Go to receive page from detail page
+    await purchaseOrderPage.goToReceiveFromDetail()
 
-      // Verify receive page is displayed
-      await purchaseOrderPage.assertReceivePageDisplayed()
+    // Verify receive page is displayed
+    await purchaseOrderPage.assertReceivePageDisplayed()
 
-      // Select warehouse
-      await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
-      await page.waitForTimeout(300)
+    // Select warehouse
+    await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
+    await page.waitForTimeout(300)
 
-      // Click receive all
-      await purchaseOrderPage.clickReceiveAll()
-      await page.waitForTimeout(300)
+    // Click receive all
+    await purchaseOrderPage.clickReceiveAll()
+    await page.waitForTimeout(300)
 
-      // Submit receive
-      await purchaseOrderPage.submitReceive()
-      await purchaseOrderPage.waitForReceiveSuccess()
-    }
+    // Submit receive
+    await purchaseOrderPage.submitReceive()
+    await purchaseOrderPage.waitForReceiveSuccess()
 
     // Verify inventory increased
     await inventoryPage.navigateToStockList()
@@ -329,8 +330,8 @@ test.describe('Partial Receiving Operation', () => {
 
   let partialOrderNumber: string
 
-  // TODO: Skip - requires dropdown interaction for receive action
-  test.skip('should perform partial receiving and verify progress display', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should perform partial receiving and verify progress display', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Create and confirm a new purchase order with larger quantity
@@ -347,7 +348,7 @@ test.describe('Partial Receiving Operation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Get the order number and confirm it
+    // Get the order number
     await purchaseOrderPage.navigateToList()
     await page.waitForTimeout(500)
 
@@ -356,26 +357,22 @@ test.describe('Partial Receiving Operation', () => {
     const orderNumberMatch = orderText?.match(/PO-[\w-]+/)
     partialOrderNumber = orderNumberMatch?.[0] || ''
 
-    // Confirm the order
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    // Navigate to detail page and confirm
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
+    await purchaseOrderPage.confirmOrderFromDetail()
+    await purchaseOrderPage.assertDetailPageStatus('confirmed')
 
-    // Navigate to receive page
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRowByNumber(partialOrderNumber)
-    if (confirmedRow) {
-      await purchaseOrderPage.clickRowAction(confirmedRow, 'receive')
-      await page.waitForTimeout(500)
+    // Go to receive page from detail page
+    await purchaseOrderPage.goToReceiveFromDetail()
 
-      // Set partial receive quantity (only 10 out of 20)
-      await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
-      await purchaseOrderPage.setReceiveQuantity(0, 10)
-      await page.waitForTimeout(300)
+    // Set partial receive quantity (only 10 out of 20)
+    await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
+    await purchaseOrderPage.setReceiveQuantity(0, 10)
+    await page.waitForTimeout(300)
 
-      // Submit partial receive
-      await purchaseOrderPage.submitReceive()
-      await purchaseOrderPage.waitForReceiveSuccess()
-    }
+    // Submit partial receive
+    await purchaseOrderPage.submitReceive()
+    await purchaseOrderPage.waitForReceiveSuccess()
 
     // Verify order shows partial received status with progress
     await purchaseOrderPage.navigateToList()
@@ -390,8 +387,8 @@ test.describe('Partial Receiving Operation', () => {
     }
   })
 
-  // TODO: Skip - requires dropdown interaction for receive action (depends on partial receiving)
-  test.skip('should complete remaining receiving and show completed status', async ({ page }) => {
+  // Using detail page actions
+  test('should complete remaining receiving and show completed status', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Find the partial order and complete receiving
@@ -404,8 +401,9 @@ test.describe('Partial Receiving Operation', () => {
 
     const partialRow = await purchaseOrderPage.getOrderRow(0)
     if (partialRow) {
-      await purchaseOrderPage.clickRowAction(partialRow, 'receive')
-      await page.waitForTimeout(500)
+      // Navigate to detail page, then to receive page
+      await purchaseOrderPage.viewOrderFromRow(partialRow)
+      await purchaseOrderPage.goToReceiveFromDetail()
 
       // Receive all remaining
       await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
@@ -429,7 +427,8 @@ test.describe('Partial Receiving Operation', () => {
 
 test.describe('Accounts Payable Auto-Generation', () => {
   // TODO: Skip - requires dropdown interaction for receive action
-  test.skip('should verify accounts payable is generated after receiving', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should verify accounts payable is generated after receiving', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Create, confirm, and receive a purchase order
@@ -446,7 +445,7 @@ test.describe('Accounts Payable Auto-Generation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Get order number, confirm, and receive
+    // Get order number
     await purchaseOrderPage.navigateToList()
     await page.waitForTimeout(500)
 
@@ -455,22 +454,15 @@ test.describe('Accounts Payable Auto-Generation', () => {
     const orderNumberMatch = orderText?.match(/PO-[\w-]+/)
     const orderNumber = orderNumberMatch?.[0] || ''
 
-    // Confirm
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    // Navigate to detail page, confirm, and receive using detail page actions
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
+    await purchaseOrderPage.confirmOrderFromDetail()
+    await purchaseOrderPage.goToReceiveFromDetail()
 
-    // Receive
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRowByNumber(orderNumber)
-    if (confirmedRow) {
-      await purchaseOrderPage.clickRowAction(confirmedRow, 'receive')
-      await page.waitForTimeout(500)
-
-      await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
-      await purchaseOrderPage.clickReceiveAll()
-      await purchaseOrderPage.submitReceive()
-      await purchaseOrderPage.waitForReceiveSuccess()
-    }
+    await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
+    await purchaseOrderPage.clickReceiveAll()
+    await purchaseOrderPage.submitReceive()
+    await purchaseOrderPage.waitForReceiveSuccess()
 
     // Navigate to accounts payable list to verify AP was generated
     await page.goto('/finance/payable')
@@ -498,12 +490,8 @@ test.describe('Accounts Payable Auto-Generation', () => {
 })
 
 test.describe('Order Cancellation', () => {
-  // TODO: These tests are skipped due to Semi Design dropdown menu positioning issues
-  // in Docker/headless environment. The dropdown menu items are rendered outside viewport
-  // and cannot be clicked reliably. This needs investigation with Semi Design team or
-  // implementing a detail page for purchase orders (like sales orders have).
-  // Related issue: Semi Dropdown positions menu items outside viewport bounds in headless Chrome
-  test.skip('should cancel draft order', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should cancel draft order', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Create a new order
@@ -520,56 +508,22 @@ test.describe('Order Cancellation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Navigate to list
+    // Navigate to list and then to detail page
     await purchaseOrderPage.navigateToList()
     await page.waitForTimeout(500)
 
-    // Scroll to top of page to ensure dropdown has room to appear
-    await page.evaluate(() => window.scrollTo(0, 0))
-    await page.waitForTimeout(200)
-
-    // Get first row
+    // Get first row and navigate to detail page
     const firstRow = await purchaseOrderPage.getOrderRow(0)
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
 
-    // Find and click the more actions button
-    const moreButton = firstRow.locator('[data-testid="table-row-more-actions"]')
-    await moreButton.click()
-    await page.waitForTimeout(400)
-
-    // Wait for dropdown and click cancel
-    const cancelMenuItem = page.getByRole('menuitem', { name: '取消' })
-    await cancelMenuItem.waitFor({ state: 'visible', timeout: 5000 })
-
-    // Try clicking - if viewport issue occurs, use JS
-    try {
-      await cancelMenuItem.click({ timeout: 3000 })
-    } catch {
-      // Fallback: use JavaScript click
-      await page.evaluate(() => {
-        const items = document.querySelectorAll('[role="menuitem"]')
-        for (const item of items) {
-          if (item.textContent?.includes('取消')) {
-            ;(item as HTMLElement).click()
-            break
-          }
-        }
-      })
-    }
-
-    await page.waitForTimeout(500)
-
-    // Handle confirmation modal
-    const modal = page.locator('.semi-modal')
-    await modal.waitFor({ state: 'visible', timeout: 5000 })
-    const confirmBtn = modal.locator(
-      '.semi-modal-footer .semi-button-primary, .semi-modal-footer .semi-button-danger'
-    )
-    await confirmBtn.click()
-    await modal.waitFor({ state: 'hidden', timeout: 5000 })
-    await page.waitForTimeout(500)
+    // Cancel from detail page
+    await purchaseOrderPage.cancelOrderFromDetail()
 
     // Verify status changed to cancelled
-    await purchaseOrderPage.navigateToList()
+    await purchaseOrderPage.assertDetailPageStatus('cancelled')
+
+    // Go back to list and verify
+    await purchaseOrderPage.goBackToList()
     await purchaseOrderPage.filterByStatus('cancelled')
     await page.waitForTimeout(500)
 
@@ -577,7 +531,7 @@ test.describe('Order Cancellation', () => {
     expect(cancelledCount).toBeGreaterThan(0)
   })
 
-  test.skip('should cancel confirmed order before receiving', async ({ page }) => {
+  test('should cancel confirmed order before receiving', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // Create and confirm a new order
@@ -594,22 +548,22 @@ test.describe('Order Cancellation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Confirm the order
+    // Navigate to list and then to detail page to confirm
     await purchaseOrderPage.navigateToList()
     await page.waitForTimeout(500)
 
     const firstRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
 
-    // Now cancel the confirmed order
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(confirmedRow, 'cancel')
-    await page.waitForTimeout(500)
+    // Confirm then cancel from detail page
+    await purchaseOrderPage.confirmOrderFromDetail()
+    await purchaseOrderPage.assertDetailPageStatus('confirmed')
 
-    // Verify cancelled
-    await purchaseOrderPage.navigateToList()
+    await purchaseOrderPage.cancelOrderFromDetail()
+    await purchaseOrderPage.assertDetailPageStatus('cancelled')
+
+    // Verify cancelled in list
+    await purchaseOrderPage.goBackToList()
     await purchaseOrderPage.filterByStatus('cancelled')
     const cancelledCount = await purchaseOrderPage.getOrderCount()
     expect(cancelledCount).toBeGreaterThan(0)
@@ -642,8 +596,8 @@ test.describe('Screenshot Documentation', () => {
     await purchaseOrderPage.screenshotOrderForm('purchase-order-form')
   })
 
-  // TODO: Skip - requires dropdown interaction for receive action
-  test.skip('should capture receiving page screenshot', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should capture receiving page screenshot', async ({ page }) => {
     const purchaseOrderPage = new PurchaseOrderPage(page)
 
     // First create and confirm an order
@@ -660,17 +614,14 @@ test.describe('Screenshot Documentation', () => {
     await purchaseOrderPage.submitOrder()
     await purchaseOrderPage.waitForOrderCreateSuccess()
 
-    // Confirm
+    // Navigate to list, then detail page, then confirm
     await purchaseOrderPage.navigateToList()
     const firstRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(firstRow, 'confirm')
-    await page.waitForTimeout(500)
+    await purchaseOrderPage.viewOrderFromRow(firstRow)
+    await purchaseOrderPage.confirmOrderFromDetail()
 
-    // Navigate to receive page
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(confirmedRow, 'receive')
-    await page.waitForTimeout(500)
+    // Navigate to receive page from detail page
+    await purchaseOrderPage.goToReceiveFromDetail()
 
     await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)
     await purchaseOrderPage.clickReceiveAll()
@@ -681,8 +632,8 @@ test.describe('Screenshot Documentation', () => {
 })
 
 test.describe('Video Recording - Complete Purchase Flow', () => {
-  // TODO: Skip - requires dropdown interaction for confirm/receive actions
-  test.skip('should record complete purchase order lifecycle video', async ({ page }) => {
+  // Using detail page actions for reliable headless Chrome testing
+  test('should record complete purchase order lifecycle video', async ({ page }) => {
     // This test is designed to be run with --video=on flag
     // npx playwright test --grep "complete purchase order lifecycle" --video=on
 
@@ -712,16 +663,15 @@ test.describe('Video Recording - Complete Purchase Flow', () => {
     await purchaseOrderPage.waitForOrderCreateSuccess()
     await page.waitForTimeout(1000)
 
-    // Step 5: Confirm order
+    // Step 5: Navigate to detail page and confirm order
     await purchaseOrderPage.navigateToList()
     const draftRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(draftRow, 'confirm')
+    await purchaseOrderPage.viewOrderFromRow(draftRow)
+    await purchaseOrderPage.confirmOrderFromDetail()
     await page.waitForTimeout(1000)
 
-    // Step 6: Receive order
-    await purchaseOrderPage.navigateToList()
-    const confirmedRow = await purchaseOrderPage.getOrderRow(0)
-    await purchaseOrderPage.clickRowAction(confirmedRow, 'receive')
+    // Step 6: Receive order from detail page
+    await purchaseOrderPage.goToReceiveFromDetail()
     await page.waitForTimeout(500)
 
     await purchaseOrderPage.selectReceiveWarehouse(TEST_DATA.warehouses.beijing)

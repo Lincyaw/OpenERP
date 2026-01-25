@@ -1603,9 +1603,25 @@
       "  - frontend/src/locales/zh-CN/trade.json (added purchaseOrderDetail translations)",
       "  - frontend/src/locales/en-US/trade.json (added purchaseOrderDetail translations)",
       "  - frontend/src/router/routes.tsx (added route for purchase/:id)",
-      "- E2E tests can now use detail page actions instead of table row dropdowns"
+      "- E2E tests can now use detail page actions instead of table row dropdowns",
+      "",
+      "✅ Fix (2026-01-26) - E2E Tests Updated to Use Detail Page:",
+      "- Updated PurchaseOrderPage.ts with detail page interaction methods:",
+      "  - viewOrderFromRow(): Navigate to detail page from list row",
+      "  - confirmOrderFromDetail(): Confirm order using detail page button",
+      "  - cancelOrderFromDetail(): Cancel order using detail page button",
+      "  - goToReceiveFromDetail(): Navigate to receive page from detail page",
+      "  - assertDetailPageStatus(): Verify order status on detail page",
+      "  - goBackToList(): Navigate back to order list",
+      "- Updated purchase-order.spec.ts to enable all previously skipped tests:",
+      "  - 11 tests now use detail page actions instead of dropdown menus",
+      "  - All tests in Order Confirm, Full/Partial Receiving, Accounts Payable, Cancellation sections enabled",
+      "  - Video Recording test enabled",
+      "- TypeScript type check passes",
+      "- npm run build succeeds",
+      "- All tests now use reliable detail page buttons instead of flaky dropdown menus"
     ],
-    "passes": "partial"
+    "passes": true
   },
   {
     "id": "P3-INT-003",
