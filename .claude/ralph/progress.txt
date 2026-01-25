@@ -17130,3 +17130,36 @@ Added `omitempty` to all Page/PageSize binding tags in backend DTOs:
 3. `frontend/src/locales/zh-CN/inventory.json` - Chinese translation
 4. `frontend/src/locales/en-US/inventory.json` - English translation
 5. `.claude/ralph/plans/prd.json` - Updated P9-UI-001-L to passes: true
+
+
+---
+
+## 2026-01-26: P9-UI-001 - Mark Parent Item as Passed
+
+### Summary
+All sub-items of P9-UI-001 (frontend UI bug fixes) have been completed:
+- ✅ P9-UI-001-C1: StockDetail页面崩溃 - 修复formatQuantity类型检查
+- ✅ P9-UI-001-C2: StockTransactions页面崩溃 - 修复格式化函数类型检查
+- ✅ P9-UI-001-H1: 产品详情页缺失 - 创建ProductDetail.tsx和路由
+- ✅ P9-UI-001-H2: TableActions下拉菜单 - 添加clickToHide属性
+- ✅ P9-UI-001-H3: 仓库状态翻译 - 后端DTO层添加状态映射
+- ✅ P9-UI-001-H4H5H6: Trade模块下拉框 - 修复仓库API status参数
+- ✅ P9-UI-001-M: Finance/Report模块 - 后端API和前端SDK修复
+- ✅ P9-UI-001-L: 低优先级UX问题 - StockAdjust布局和错误处理
+- ⏸️ P9-UI-001-GLOBAL: 全局模式修复 - 可选,未实施
+
+### Verification
+- TypeScript type check: `npx tsc --noEmit` - Pass
+- Frontend build: `npm run build` - Pass
+- Backend build: `go build ./...` - Pass
+
+### Status
+P9-UI-001 marked as `passes: true` since all critical/high priority sub-items are complete.
+The optional GLOBAL item (P9-UI-001-GLOBAL) remains as low priority for future work.
+
+### Next Steps
+The remaining failing high-priority items are E2E integration tests:
+- P3-INT-002: 采购订单前后端联调 (需要Docker环境运行E2E测试)
+- P4-INT-001: 财务核心功能联调 (需要Docker环境运行E2E测试)
+- P6-INT-001: 多租户隔离联调 (需要Docker环境运行E2E测试)
+
