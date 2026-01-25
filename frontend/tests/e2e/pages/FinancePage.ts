@@ -304,15 +304,25 @@ export class FinancePage extends BasePage {
   // =========== Receipt Voucher Creation ===========
 
   async selectCustomer(customerName: string): Promise<void> {
-    // Click on customer select and search
-    const customerSelect = this.page
-      .locator('.customer-select-wrapper .semi-select, .semi-select')
-      .filter({ hasText: /客户/ })
-      .first()
-    await customerSelect.click()
-    await this.page.locator('.semi-select input').fill(customerName)
-    await this.page.waitForTimeout(500) // Wait for search results
-    await this.page.locator('.semi-select-option').filter({ hasText: customerName }).first().click()
+    // Semi Design Select with filter + remote creates a searchable input inside
+    const customerSelectWrapper = this.page.locator('.customer-select-wrapper')
+    const select = customerSelectWrapper.locator('.semi-select')
+
+    // Click to open and focus the select
+    await select.click()
+    await this.page.waitForTimeout(300)
+
+    // The filter-enabled select has an input inside for searching
+    // Use getByRole('textbox') to find the search input
+    const searchInput = this.page.getByRole('textbox').first()
+    await searchInput.fill(customerName)
+    await this.page.waitForTimeout(1000) // Wait for API search results
+
+    // Wait for option to appear and click
+    const option = this.page.locator('.semi-select-option').filter({ hasText: customerName }).first()
+    await option.waitFor({ state: 'visible', timeout: 8000 })
+    await option.click()
+    await this.page.waitForTimeout(300)
   }
 
   async fillReceiptAmount(amount: number): Promise<void> {
@@ -365,14 +375,24 @@ export class FinancePage extends BasePage {
   // =========== Payment Voucher Creation ===========
 
   async selectSupplier(supplierName: string): Promise<void> {
-    const supplierSelect = this.page
-      .locator('.supplier-select-wrapper .semi-select, .semi-select')
-      .filter({ hasText: /供应商/ })
-      .first()
-    await supplierSelect.click()
-    await this.page.locator('.semi-select input').fill(supplierName)
-    await this.page.waitForTimeout(500)
-    await this.page.locator('.semi-select-option').filter({ hasText: supplierName }).first().click()
+    // Semi Design Select with filter + remote creates a searchable input inside
+    const supplierSelectWrapper = this.page.locator('.supplier-select-wrapper')
+    const select = supplierSelectWrapper.locator('.semi-select')
+
+    // Click to open and focus the select
+    await select.click()
+    await this.page.waitForTimeout(300)
+
+    // The filter-enabled select has an input inside for searching
+    const searchInput = this.page.getByRole('textbox').first()
+    await searchInput.fill(supplierName)
+    await this.page.waitForTimeout(1000) // Wait for API search results
+
+    // Wait for option to appear and click
+    const option = this.page.locator('.semi-select-option').filter({ hasText: supplierName }).first()
+    await option.waitFor({ state: 'visible', timeout: 8000 })
+    await option.click()
+    await this.page.waitForTimeout(300)
   }
 
   async fillPaymentAmount(amount: number): Promise<void> {

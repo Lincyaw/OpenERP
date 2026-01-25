@@ -401,7 +401,7 @@ export default function ReceiptVoucherNewPage() {
                   onSearch={handleCustomerSearch}
                   optionList={customerOptions}
                   loading={customerLoading}
-                  filter={false}
+                  filter
                   remote
                   showClear
                   style={{ width: '100%' }}

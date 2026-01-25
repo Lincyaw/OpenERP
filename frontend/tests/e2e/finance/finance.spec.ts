@@ -95,18 +95,8 @@ test.describe('Finance Module E2E Tests', () => {
     test('should create receipt voucher with customer and payment method', async ({ page }) => {
       await financePage.navigateToNewReceiptVoucher()
 
-      // Search and select customer
-      const customerSelect = page.locator('.semi-select').filter({ hasText: /客户/ }).first()
-      await customerSelect.click()
-      await page.locator('.semi-select input').fill('Beijing')
-      await page.waitForTimeout(1000)
-
-      // Select first matching customer
-      const options = page.locator('.semi-select-option')
-      const optionCount = await options.count()
-      if (optionCount > 0) {
-        await options.first().click()
-      }
+      // Search and select customer using the FinancePage method
+      await financePage.selectCustomer('Beijing Tech')
 
       // Fill amount
       await financePage.fillReceiptAmount(5000)
@@ -204,21 +194,8 @@ test.describe('Finance Module E2E Tests', () => {
     test('should create payment voucher with supplier and amount', async ({ page }) => {
       await financePage.navigateToNewPaymentVoucher()
 
-      // Search and select supplier
-      const supplierSelect = page
-        .locator('.semi-select')
-        .filter({ hasText: /供应商/ })
-        .first()
-      await supplierSelect.click()
-      await page.locator('.semi-select input').fill('Apple')
-      await page.waitForTimeout(1000)
-
-      // Select first matching supplier
-      const options = page.locator('.semi-select-option')
-      const optionCount = await options.count()
-      if (optionCount > 0) {
-        await options.first().click()
-      }
+      // Search and select supplier using the FinancePage method
+      await financePage.selectSupplier('Apple China')
 
       // Fill amount
       await financePage.fillPaymentAmount(10000)

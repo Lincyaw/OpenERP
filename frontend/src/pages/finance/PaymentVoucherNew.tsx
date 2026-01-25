@@ -395,7 +395,7 @@ export default function PaymentVoucherNewPage() {
                   onSearch={handleSupplierSearch}
                   optionList={supplierOptions}
                   loading={supplierLoading}
-                  filter={false}
+                  filter
                   remote
                   showClear
                   style={{ width: '100%' }}

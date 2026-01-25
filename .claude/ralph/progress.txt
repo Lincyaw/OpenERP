@@ -17328,3 +17328,49 @@ All tests now use the detail page workflow:
 ### Next Steps
 - Run E2E tests in Docker to verify all pass: `make e2e ARGS="tests/e2e/transactions/purchase-order.spec.ts"`
 - P3-INT-003 (销售退货全流程联调) or P3-INT-004 (采购退货全流程联调) are next candidates
+
+---
+
+## 2026-01-26 - P4-INT-001: Finance E2E Tests Fixed (23/23 passing)
+
+### Task
+**P4-INT-001**: 财务核心功能联调 (Finance Core E2E Tests)
+
+### Issue
+Finance E2E tests were failing with timeout errors when trying to select customers in the receipt voucher creation form.
+
+**Root Cause**: The Semi Design Select component in `ReceiptVoucherNew.tsx` and `PaymentVoucherNew.tsx` was configured with `filter={false}` and `remote`, which doesn't render a searchable input inside the dropdown. This made it impossible for Playwright to type and trigger the search functionality.
+
+### Solution
+1. Changed the Semi Design Select component configuration from `filter={false}` to `filter` in both pages:
+   - `frontend/src/pages/finance/ReceiptVoucherNew.tsx` - Customer select
+   - `frontend/src/pages/finance/PaymentVoucherNew.tsx` - Supplier select
+
+2. Updated the FinancePage test helpers to use the working pattern from SalesOrderPage:
+   - `selectCustomer()` - Click select, use getByRole('textbox').first().fill() to search
+   - `selectSupplier()` - Same pattern for supplier selection
+
+### Technical Details
+- Semi Design Select with `filter` + `remote` renders an input for searching (works with E2E)
+- Semi Design Select with `filter={false}` + `remote` relies on keyboard events on the combobox div (doesn't work reliably with Playwright)
+- The SalesOrderForm uses `filter` + `remote` which is why it was working
+
+### Test Results
+All 23 finance E2E tests now pass:
+- Accounts Receivable List Display (5 tests)
+- Receipt Voucher Creation (2 tests)
+- Receipt Reconciliation - FIFO Mode (2 tests)
+- Accounts Payable List Display (3 tests)
+- Payment Voucher Creation (2 tests)
+- Balance Verification After Reconciliation (2 tests)
+- Screenshot Documentation (3 tests)
+- Video Recording - Complete Receipt Reconciliation Flow (1 test)
+- Finance Complete Integration Flow (2 tests)
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/src/pages/finance/ReceiptVoucherNew.tsx` | Changed `filter={false}` to `filter` on customer Select |
+| `frontend/src/pages/finance/PaymentVoucherNew.tsx` | Changed `filter={false}` to `filter` on supplier Select |
+| `frontend/tests/e2e/pages/FinancePage.ts` | Updated selectCustomer() and selectSupplier() methods |
+| `.claude/ralph/plans/prd.json` | P4-INT-001: passes: true |
