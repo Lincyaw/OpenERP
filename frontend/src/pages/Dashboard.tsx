@@ -12,12 +12,14 @@ import {
   IconClock,
 } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Container, Row, Stack } from '@/components/common/layout'
 import { getProducts } from '@/api/products/products'
 import { getCustomers } from '@/api/customers/customers'
 import { getInventory } from '@/api/inventory/inventory'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import { getFinanceApi } from '@/api/finance'
+import { useFormatters } from '@/hooks/useFormatters'
 import './Dashboard.css'
 
 const { Title, Text, Paragraph } = Typography
@@ -53,39 +55,6 @@ interface RecentOrder {
 }
 
 /**
- * Format currency for display
- */
-function formatCurrency(amount?: number): string {
-  if (amount === undefined || amount === null) return '¥0.00'
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'CNY',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
-}
-
-/**
- * Format number with comma separators
- */
-function formatNumber(num?: number): string {
-  if (num === undefined || num === null) return '0'
-  return new Intl.NumberFormat('zh-CN').format(num)
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
  * Dashboard/Home page
  *
  * Features (P5-FE-006):
@@ -95,6 +64,8 @@ function formatDate(dateStr?: string): string {
  */
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
+  const { formatCurrency, formatNumber, formatDate } = useFormatters()
 
   // API instances
   const productsApi = useMemo(() => getProducts(), [])
@@ -225,7 +196,7 @@ export default function DashboardPage() {
           }) => ({
             id: order.id || '',
             orderNumber: order.order_number || '',
-            customerName: order.customer_name || '未知客户',
+            customerName: order.customer_name || t('dashboard.recentOrders.unknownCustomer'),
             totalAmount: order.total_amount || 0,
             status: order.status || '',
             orderDate: order.order_date || '',
@@ -244,8 +215,8 @@ export default function DashboardPage() {
           tasks.push({
             id: 'draft-orders',
             type: 'order',
-            title: `${draftCount} 个草稿订单待确认`,
-            description: '有销售订单处于草稿状态，需要确认后才能发货',
+            title: t('dashboard.pendingTasks.draftOrders', { count: draftCount }),
+            description: t('dashboard.pendingTasks.draftOrdersDesc'),
             priority: 'medium',
             link: '/trade/sales-orders?status=DRAFT',
           })
@@ -259,8 +230,8 @@ export default function DashboardPage() {
           tasks.push({
             id: 'confirmed-orders',
             type: 'order',
-            title: `${confirmedCount} 个订单待发货`,
-            description: '已确认的订单等待发货处理',
+            title: t('dashboard.pendingTasks.confirmedOrders', { count: confirmedCount }),
+            description: t('dashboard.pendingTasks.confirmedOrdersDesc'),
             priority: 'high',
             link: '/trade/sales-orders?status=CONFIRMED',
           })
@@ -274,8 +245,8 @@ export default function DashboardPage() {
           tasks.push({
             id: 'low-stock',
             type: 'stock',
-            title: `${lowStockTotal} 个商品库存不足`,
-            description: '部分商品库存低于安全库存线，建议及时补货',
+            title: t('dashboard.pendingTasks.lowStock', { count: lowStockTotal }),
+            description: t('dashboard.pendingTasks.lowStockDesc'),
             priority: 'high',
             link: '/inventory/stock',
           })
@@ -289,8 +260,10 @@ export default function DashboardPage() {
           tasks.push({
             id: 'pending-receivables',
             type: 'receivable',
-            title: `${pendingCount} 笔应收款待收`,
-            description: formatCurrency(receivablesRes.value.data.total_outstanding) + ' 待收款',
+            title: t('dashboard.pendingTasks.pendingReceivables', { count: pendingCount }),
+            description: t('dashboard.pendingTasks.pendingReceivablesDesc', {
+              amount: formatCurrency(receivablesRes.value.data.total_outstanding),
+            }),
             priority: 'medium',
             link: '/finance/receivables',
           })
@@ -304,8 +277,10 @@ export default function DashboardPage() {
           tasks.push({
             id: 'pending-payables',
             type: 'payable',
-            title: `${pendingCount} 笔应付款待付`,
-            description: formatCurrency(payablesRes.value.data.total_outstanding) + ' 待付款',
+            title: t('dashboard.pendingTasks.pendingPayables', { count: pendingCount }),
+            description: t('dashboard.pendingTasks.pendingPayablesDesc', {
+              amount: formatCurrency(payablesRes.value.data.total_outstanding),
+            }),
             priority: 'low',
             link: '/finance/payables',
           })
@@ -314,11 +289,11 @@ export default function DashboardPage() {
 
       setPendingTasks(tasks)
     } catch {
-      Toast.error('获取仪表盘数据失败')
+      Toast.error(t('dashboard.fetchError'))
     } finally {
       setLoading(false)
     }
-  }, [productsApi, customersApi, inventoryApi, salesOrdersApi, financeApi])
+  }, [productsApi, customersApi, inventoryApi, salesOrdersApi, financeApi, t, formatCurrency])
 
   // Fetch data on mount
   useEffect(() => {
@@ -330,9 +305,9 @@ export default function DashboardPage() {
     () => [
       {
         key: 'products',
-        label: '商品总数',
+        label: t('dashboard.metrics.products'),
         value: formatNumber(productCount.total),
-        subLabel: '启用商品',
+        subLabel: t('dashboard.metrics.activeProducts'),
         subValue: formatNumber(productCount.active),
         icon: <IconGridView size="large" />,
         color: 'var(--semi-color-primary)',
@@ -340,9 +315,9 @@ export default function DashboardPage() {
       },
       {
         key: 'customers',
-        label: '客户总数',
+        label: t('dashboard.metrics.customers'),
         value: formatNumber(customerCount.total),
-        subLabel: '活跃客户',
+        subLabel: t('dashboard.metrics.activeCustomers'),
         subValue: formatNumber(customerCount.active),
         icon: <IconUserGroup size="large" />,
         color: 'var(--semi-color-success)',
@@ -350,9 +325,9 @@ export default function DashboardPage() {
       },
       {
         key: 'orders',
-        label: '销售订单',
+        label: t('dashboard.metrics.salesOrders'),
         value: formatNumber(orderSummary.total),
-        subLabel: '待发货',
+        subLabel: t('dashboard.metrics.pendingShipment'),
         subValue: formatNumber(orderSummary.confirmed),
         icon: <IconSend size="large" />,
         color: 'var(--semi-color-info)',
@@ -360,9 +335,9 @@ export default function DashboardPage() {
       },
       {
         key: 'lowStock',
-        label: '库存预警',
+        label: t('dashboard.metrics.lowStockAlert'),
         value: formatNumber(lowStockCount),
-        subLabel: '需要补货',
+        subLabel: t('dashboard.metrics.needRestock'),
         subValue: lowStockCount > 0 ? '!' : '-',
         icon: <IconAlertTriangle size="large" />,
         color: lowStockCount > 0 ? 'var(--semi-color-danger)' : 'var(--semi-color-tertiary)',
@@ -370,9 +345,9 @@ export default function DashboardPage() {
       },
       {
         key: 'receivables',
-        label: '应收账款',
+        label: t('dashboard.metrics.receivables'),
         value: formatCurrency(receivableSummary.totalAmount),
-        subLabel: '待收笔数',
+        subLabel: t('dashboard.metrics.pendingReceipts'),
         subValue: formatNumber(receivableSummary.pendingCount),
         icon: <IconPriceTag size="large" />,
         color: 'var(--semi-color-warning)',
@@ -380,9 +355,9 @@ export default function DashboardPage() {
       },
       {
         key: 'payables',
-        label: '应付账款',
+        label: t('dashboard.metrics.payables'),
         value: formatCurrency(payableSummary.totalAmount),
-        subLabel: '待付笔数',
+        subLabel: t('dashboard.metrics.pendingPayments'),
         subValue: formatNumber(payableSummary.pendingCount),
         icon: <IconCreditCard size="large" />,
         color: 'var(--semi-color-tertiary)',
@@ -397,6 +372,9 @@ export default function DashboardPage() {
       receivableSummary,
       payableSummary,
       navigate,
+      t,
+      formatNumber,
+      formatCurrency,
     ]
   )
 
@@ -413,16 +391,19 @@ export default function DashboardPage() {
   }
 
   // Get priority label
-  const getPriorityLabel = (priority: string): string => {
-    switch (priority) {
-      case 'high':
-        return '紧急'
-      case 'medium':
-        return '重要'
-      default:
-        return '一般'
-    }
-  }
+  const getPriorityLabel = useCallback(
+    (priority: string): string => {
+      switch (priority) {
+        case 'high':
+          return t('dashboard.pendingTasks.priority.high')
+        case 'medium':
+          return t('dashboard.pendingTasks.priority.medium')
+        default:
+          return t('dashboard.pendingTasks.priority.low')
+      }
+    },
+    [t]
+  )
 
   // Get task type icon
   const getTaskIcon = (type: string): React.ReactNode => {
@@ -441,19 +422,28 @@ export default function DashboardPage() {
   }
 
   // Get order status tag
-  const getOrderStatusTag = (status: string): React.ReactNode => {
-    const statusConfig: Record<string, { color: string; label: string }> = {
-      DRAFT: { color: 'grey', label: '草稿' },
-      CONFIRMED: { color: 'blue', label: '已确认' },
-      SHIPPED: { color: 'cyan', label: '已发货' },
-      COMPLETED: { color: 'green', label: '已完成' },
-      CANCELLED: { color: 'red', label: '已取消' },
-    }
-    const config = statusConfig[status] || { color: 'grey', label: status }
-    return (
-      <Tag color={config.color as 'grey' | 'blue' | 'cyan' | 'green' | 'red'}>{config.label}</Tag>
-    )
-  }
+  const getOrderStatusTag = useCallback(
+    (status: string): React.ReactNode => {
+      const statusLabels: Record<string, string> = {
+        DRAFT: t('dashboard.orderStats.draft'),
+        CONFIRMED: t('dashboard.orderStats.confirmed'),
+        SHIPPED: t('dashboard.orderStats.shipped'),
+        COMPLETED: t('dashboard.orderStats.completed'),
+        CANCELLED: t('dashboard.orderStats.cancelled'),
+      }
+      const statusColors: Record<string, 'grey' | 'blue' | 'cyan' | 'green' | 'red'> = {
+        DRAFT: 'grey',
+        CONFIRMED: 'blue',
+        SHIPPED: 'cyan',
+        COMPLETED: 'green',
+        CANCELLED: 'red',
+      }
+      return (
+        <Tag color={statusColors[status] || 'grey'}>{statusLabels[status] || status}</Tag>
+      )
+    },
+    [t]
+  )
 
   // Calculate order completion rate
   const orderCompletionRate = useMemo(() => {
@@ -467,9 +457,9 @@ export default function DashboardPage() {
         {/* Page Header */}
         <div className="dashboard-header">
           <Title heading={3} style={{ margin: 0 }}>
-            工作台
+            {t('dashboard.title')}
           </Title>
-          <Text type="secondary">欢迎回来，这是您的业务概览</Text>
+          <Text type="secondary">{t('dashboard.welcome')}</Text>
         </div>
 
         {/* Metric Cards */}
@@ -527,7 +517,7 @@ export default function DashboardPage() {
           <div className="dashboard-col-left">
             <Stack gap="md">
               {/* Order Statistics */}
-              <Card title="订单统计" className="stats-card">
+              <Card title={t('dashboard.orderStats.title')} className="stats-card">
                 <div className="order-stats">
                   <div className="order-progress">
                     <Progress
@@ -538,7 +528,7 @@ export default function DashboardPage() {
                         <div className="progress-content">
                           <Text strong>{orderCompletionRate}%</Text>
                           <Text type="tertiary" size="small">
-                            完成率
+                            {t('dashboard.orderStats.completionRate')}
                           </Text>
                         </div>
                       )}
@@ -547,22 +537,22 @@ export default function DashboardPage() {
                   <div className="order-breakdown">
                     <div className="breakdown-item">
                       <span className="breakdown-dot draft"></span>
-                      <Text>草稿</Text>
+                      <Text>{t('dashboard.orderStats.draft')}</Text>
                       <Text strong>{orderSummary.draft}</Text>
                     </div>
                     <div className="breakdown-item">
                       <span className="breakdown-dot confirmed"></span>
-                      <Text>已确认</Text>
+                      <Text>{t('dashboard.orderStats.confirmed')}</Text>
                       <Text strong>{orderSummary.confirmed}</Text>
                     </div>
                     <div className="breakdown-item">
                       <span className="breakdown-dot shipped"></span>
-                      <Text>已发货</Text>
+                      <Text>{t('dashboard.orderStats.shipped')}</Text>
                       <Text strong>{orderSummary.shipped}</Text>
                     </div>
                     <div className="breakdown-item">
                       <span className="breakdown-dot completed"></span>
-                      <Text>已完成</Text>
+                      <Text>{t('dashboard.orderStats.completed')}</Text>
                       <Text strong>{orderSummary.completed}</Text>
                     </div>
                   </div>
@@ -571,7 +561,7 @@ export default function DashboardPage() {
 
               {/* Recent Orders */}
               <Card
-                title="最近订单"
+                title={t('dashboard.recentOrders.title')}
                 className="recent-orders-card"
                 headerExtraContent={
                   <Text
@@ -579,12 +569,12 @@ export default function DashboardPage() {
                     onClick={() => navigate('/trade/sales-orders')}
                     style={{ cursor: 'pointer' }}
                   >
-                    查看全部
+                    {t('dashboard.recentOrders.viewAll')}
                   </Text>
                 }
               >
                 {recentOrders.length === 0 ? (
-                  <Empty description="暂无订单" />
+                  <Empty description={t('dashboard.recentOrders.noOrders')} />
                 ) : (
                   <div className="recent-orders-list">
                     {recentOrders.map((order) => (
@@ -606,7 +596,7 @@ export default function DashboardPage() {
                           <Space>
                             {getOrderStatusTag(order.status)}
                             <Text type="tertiary" size="small">
-                              {formatDate(order.orderDate)}
+                              {formatDate(order.orderDate, 'short')}
                             </Text>
                           </Space>
                         </div>
@@ -620,12 +610,12 @@ export default function DashboardPage() {
 
           {/* Right Column - Pending Tasks */}
           <div className="dashboard-col-right">
-            <Card title="待办事项" className="pending-tasks-card">
+            <Card title={t('dashboard.pendingTasks.title')} className="pending-tasks-card">
               {pendingTasks.length === 0 ? (
                 <div className="no-tasks">
                   <IconTick size="extra-large" style={{ color: 'var(--semi-color-success)' }} />
                   <Paragraph type="secondary" style={{ marginTop: 16 }}>
-                    太棒了！暂无待办事项
+                    {t('dashboard.pendingTasks.noTasks')}
                   </Paragraph>
                 </div>
               ) : (

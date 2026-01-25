@@ -116,6 +116,48 @@ export interface CommonTranslations {
   'table.selectedItems': string
   'table.totalRecords': string
   'table.searchPlaceholder': string
+  // Dashboard
+  'dashboard.title': string
+  'dashboard.welcome': string
+  'dashboard.fetchError': string
+  'dashboard.metrics.products': string
+  'dashboard.metrics.activeProducts': string
+  'dashboard.metrics.customers': string
+  'dashboard.metrics.activeCustomers': string
+  'dashboard.metrics.salesOrders': string
+  'dashboard.metrics.pendingShipment': string
+  'dashboard.metrics.lowStockAlert': string
+  'dashboard.metrics.needRestock': string
+  'dashboard.metrics.receivables': string
+  'dashboard.metrics.pendingReceipts': string
+  'dashboard.metrics.payables': string
+  'dashboard.metrics.pendingPayments': string
+  'dashboard.orderStats.title': string
+  'dashboard.orderStats.completionRate': string
+  'dashboard.orderStats.draft': string
+  'dashboard.orderStats.confirmed': string
+  'dashboard.orderStats.shipped': string
+  'dashboard.orderStats.completed': string
+  'dashboard.orderStats.cancelled': string
+  'dashboard.recentOrders.title': string
+  'dashboard.recentOrders.viewAll': string
+  'dashboard.recentOrders.noOrders': string
+  'dashboard.recentOrders.unknownCustomer': string
+  'dashboard.pendingTasks.title': string
+  'dashboard.pendingTasks.noTasks': string
+  'dashboard.pendingTasks.priority.high': string
+  'dashboard.pendingTasks.priority.medium': string
+  'dashboard.pendingTasks.priority.low': string
+  'dashboard.pendingTasks.draftOrders': string
+  'dashboard.pendingTasks.draftOrdersDesc': string
+  'dashboard.pendingTasks.confirmedOrders': string
+  'dashboard.pendingTasks.confirmedOrdersDesc': string
+  'dashboard.pendingTasks.lowStock': string
+  'dashboard.pendingTasks.lowStockDesc': string
+  'dashboard.pendingTasks.pendingReceivables': string
+  'dashboard.pendingTasks.pendingReceivablesDesc': string
+  'dashboard.pendingTasks.pendingPayables': string
+  'dashboard.pendingTasks.pendingPayablesDesc': string
   // Navigation
   'nav.dashboard': string
   'nav.catalog': string

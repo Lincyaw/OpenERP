@@ -111,6 +111,59 @@
     "totalRecords": "Total {{total}} records",
     "searchPlaceholder": "Search..."
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back! Here's your business overview",
+    "fetchError": "Failed to fetch dashboard data",
+    "metrics": {
+      "products": "Total Products",
+      "activeProducts": "Active Products",
+      "customers": "Total Customers",
+      "activeCustomers": "Active Customers",
+      "salesOrders": "Sales Orders",
+      "pendingShipment": "Pending Shipment",
+      "lowStockAlert": "Low Stock Alert",
+      "needRestock": "Need Restock",
+      "receivables": "Receivables",
+      "pendingReceipts": "Pending Receipts",
+      "payables": "Payables",
+      "pendingPayments": "Pending Payments"
+    },
+    "orderStats": {
+      "title": "Order Statistics",
+      "completionRate": "Completion Rate",
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "viewAll": "View All",
+      "noOrders": "No orders yet",
+      "unknownCustomer": "Unknown Customer"
+    },
+    "pendingTasks": {
+      "title": "Pending Tasks",
+      "noTasks": "Awesome! No pending tasks",
+      "priority": {
+        "high": "Urgent",
+        "medium": "Important",
+        "low": "Normal"
+      },
+      "draftOrders": "{{count}} draft orders pending confirmation",
+      "draftOrdersDesc": "Sales orders in draft status need confirmation before shipping",
+      "confirmedOrders": "{{count}} orders pending shipment",
+      "confirmedOrdersDesc": "Confirmed orders awaiting shipment processing",
+      "lowStock": "{{count}} products low on stock",
+      "lowStockDesc": "Some products are below safety stock level, consider restocking",
+      "pendingReceivables": "{{count}} receivables pending",
+      "pendingReceivablesDesc": "{{amount}} to collect",
+      "pendingPayables": "{{count}} payables pending",
+      "pendingPayablesDesc": "{{amount}} to pay"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "catalog": "Catalog",

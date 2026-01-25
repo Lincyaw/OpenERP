@@ -15163,3 +15163,63 @@ cd frontend && npx tsc --noEmit
 - Service files (token-refresh.ts, axios-instance.ts) import i18n directly since they're not React components
 - Session expired messages now show in the user's current language
 - Login page checks for redirect messages on mount to display session expired notifications
+
+---
+
+## 2026-01-25 - P0-I18N-004: Dashboard Module i18n Migration
+
+### Completed
+- **P0-I18N-004**: Dashboard 模块 i18n 迁移
+
+### What was done
+
+1. **Added Dashboard Translation Keys to common.json**
+   - `frontend/src/locales/zh-CN/common.json` - Added dashboard section with all metric cards, order stats, recent orders, and pending tasks translations
+   - `frontend/src/locales/en-US/common.json` - Added English translations for all dashboard text
+
+2. **Updated i18n Types**
+   - `frontend/src/i18n/types.ts` - Extended CommonTranslations interface with all dashboard-related keys including:
+     - dashboard.title, dashboard.welcome, dashboard.fetchError
+     - dashboard.metrics.* (products, customers, salesOrders, receivables, payables, etc.)
+     - dashboard.orderStats.* (title, completionRate, draft, confirmed, shipped, completed, cancelled)
+     - dashboard.recentOrders.* (title, viewAll, noOrders, unknownCustomer)
+     - dashboard.pendingTasks.* (title, noTasks, priority levels, task descriptions with interpolation)
+
+3. **Updated Dashboard.tsx**
+   - Removed hardcoded formatCurrency, formatNumber, formatDate functions
+   - Integrated useTranslation hook and useFormatters hook for locale-aware formatting
+   - Updated all metric cards to use translated labels
+   - Updated order statistics section with translated status labels
+   - Updated recent orders section with translated titles and empty state
+   - Updated pending tasks section with translated titles, priority labels, and task descriptions
+   - Used i18n interpolation for dynamic values (e.g., `{{count}}`, `{{amount}}`)
+   - Wrapped getPriorityLabel and getOrderStatusTag in useCallback with t dependency
+
+### Translation Keys Added
+- dashboard.title: "工作台" / "Dashboard"
+- dashboard.welcome: "欢迎回来，这是您的业务概览" / "Welcome back! Here's your business overview"
+- dashboard.fetchError: "获取仪表盘数据失败" / "Failed to fetch dashboard data"
+- dashboard.metrics.* (12 keys for metric cards)
+- dashboard.orderStats.* (7 keys for order statistics)
+- dashboard.recentOrders.* (4 keys for recent orders section)
+- dashboard.pendingTasks.* (12 keys for pending tasks with interpolation support)
+
+### Files Created
+- None (all translations added to existing files)
+
+### Files Modified
+- `frontend/src/locales/zh-CN/common.json`
+- `frontend/src/locales/en-US/common.json`
+- `frontend/src/i18n/types.ts`
+- `frontend/src/pages/Dashboard.tsx`
+
+### Build Verification
+- `npm run build` - SUCCESS (TypeScript check passed)
+
+### Notes
+- Dashboard now uses useFormatters hook for locale-aware currency, number, and date formatting
+- Pending task descriptions use interpolation for dynamic amounts (e.g., `{{count}} draft orders pending confirmation`)
+- formatDate now uses the 'short' style from useFormatters for order dates
+- All hardcoded Chinese strings have been replaced with i18n translation keys
+- The dashboard will automatically update text when the user switches language
+
