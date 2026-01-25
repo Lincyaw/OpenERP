@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -37,24 +38,6 @@ const { Title, Text } = Typography
 // Receivable type with index signature for DataTable compatibility
 type ReceivableRow = AccountReceivable & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '待收款', value: 'PENDING' },
-  { label: '部分收款', value: 'PARTIAL' },
-  { label: '已收款', value: 'PAID' },
-  { label: '已冲红', value: 'REVERSED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
-
-// Source type options for filter
-const SOURCE_TYPE_OPTIONS = [
-  { label: '全部来源', value: '' },
-  { label: '销售订单', value: 'SALES_ORDER' },
-  { label: '销售退货', value: 'SALES_RETURN' },
-  { label: '手工录入', value: 'MANUAL' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
   AccountReceivableStatus,
@@ -65,22 +48,6 @@ const STATUS_TAG_COLORS: Record<
   PAID: 'green',
   REVERSED: 'red',
   CANCELLED: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<AccountReceivableStatus, string> = {
-  PENDING: '待收款',
-  PARTIAL: '部分收款',
-  PAID: '已收款',
-  REVERSED: '已冲红',
-  CANCELLED: '已取消',
-}
-
-// Source type labels
-const SOURCE_TYPE_LABELS: Record<ReceivableSourceType, string> = {
-  SALES_ORDER: '销售订单',
-  SALES_RETURN: '销售退货',
-  MANUAL: '手工录入',
 }
 
 /**
@@ -129,8 +96,33 @@ function isOverdue(receivable: AccountReceivable): boolean {
  * - Navigate to receivable detail for collection
  */
 export default function ReceivablesPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const api = useMemo(() => getFinanceApi(), [])
+
+  // Status options for filter
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('receivables.filter.allStatus'), value: '' },
+      { label: t('receivables.status.PENDING'), value: 'PENDING' },
+      { label: t('receivables.status.PARTIAL'), value: 'PARTIAL' },
+      { label: t('receivables.status.PAID'), value: 'PAID' },
+      { label: t('receivables.status.REVERSED'), value: 'REVERSED' },
+      { label: t('receivables.status.CANCELLED'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
+
+  // Source type options for filter
+  const SOURCE_TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('receivables.filter.allSource'), value: '' },
+      { label: t('receivables.sourceType.SALES_ORDER'), value: 'SALES_ORDER' },
+      { label: t('receivables.sourceType.SALES_RETURN'), value: 'SALES_RETURN' },
+      { label: t('receivables.sourceType.MANUAL'), value: 'MANUAL' },
+    ],
+    [t]
+  )
 
   // State for data
   const [receivableList, setReceivableList] = useState<ReceivableRow[]>([])
@@ -182,7 +174,7 @@ export default function ReceivablesPage() {
         }
       }
     } catch {
-      Toast.error('获取应收账款列表失败')
+      Toast.error(t('receivables.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -309,7 +301,7 @@ export default function ReceivablesPage() {
   const tableColumns: DataTableColumn<ReceivableRow>[] = useMemo(
     () => [
       {
-        title: '单据编号',
+        title: t('receivables.columns.receivableNumber'),
         dataIndex: 'receivable_number',
         width: 140,
         sortable: true,
@@ -317,7 +309,7 @@ export default function ReceivablesPage() {
           <div className="receivable-number-cell">
             <span className="receivable-number">{(number as string) || '-'}</span>
             {isOverdue(record) && (
-              <Tooltip content="已逾期">
+              <Tooltip content={t('receivables.tooltip.overdue')}>
                 <IconAlertCircle className="overdue-icon" />
               </Tooltip>
             )}
@@ -325,27 +317,27 @@ export default function ReceivablesPage() {
         ),
       },
       {
-        title: '客户名称',
+        title: t('receivables.columns.customerName'),
         dataIndex: 'customer_name',
         sortable: true,
         ellipsis: true,
         render: (name: unknown) => <span className="customer-name">{(name as string) || '-'}</span>,
       },
       {
-        title: '来源单据',
+        title: t('receivables.columns.sourceDocument'),
         dataIndex: 'source_number',
         width: 140,
         render: (sourceNumber: unknown, record: ReceivableRow) => (
           <div className="source-cell">
             <span className="source-number">{(sourceNumber as string) || '-'}</span>
             <span className="source-type">
-              {record.source_type ? SOURCE_TYPE_LABELS[record.source_type] : '-'}
+              {record.source_type ? t(`receivables.sourceType.${record.source_type}`) : '-'}
             </span>
           </div>
         ),
       },
       {
-        title: '应收金额',
+        title: t('receivables.columns.totalAmount'),
         dataIndex: 'total_amount',
         width: 120,
         align: 'right',
@@ -355,7 +347,7 @@ export default function ReceivablesPage() {
         ),
       },
       {
-        title: '已收金额',
+        title: t('receivables.columns.paidAmount'),
         dataIndex: 'paid_amount',
         width: 120,
         align: 'right',
@@ -364,7 +356,7 @@ export default function ReceivablesPage() {
         ),
       },
       {
-        title: '待收金额',
+        title: t('receivables.columns.outstandingAmount'),
         dataIndex: 'outstanding_amount',
         width: 120,
         align: 'right',
@@ -376,7 +368,7 @@ export default function ReceivablesPage() {
         ),
       },
       {
-        title: '到期日',
+        title: t('receivables.columns.dueDate'),
         dataIndex: 'due_date',
         width: 110,
         sortable: true,
@@ -387,25 +379,29 @@ export default function ReceivablesPage() {
         ),
       },
       {
-        title: '状态',
+        title: t('receivables.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as AccountReceivableStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>
+              {t(`receivables.status.${statusValue}`)}
+            </Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('receivables.columns.createdAt'),
         dataIndex: 'created_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    []
+    [t]
   )
 
   // Table row actions
@@ -413,19 +409,19 @@ export default function ReceivablesPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('receivables.actions.view'),
         onClick: handleView,
       },
       {
         key: 'collect',
-        label: '收款',
+        label: t('receivables.actions.collect'),
         type: 'primary',
         onClick: handleCollect,
         hidden: (record) =>
           record.status === 'PAID' || record.status === 'CANCELLED' || record.status === 'REVERSED',
       },
     ],
-    [handleView, handleCollect]
+    [handleView, handleCollect, t]
   )
 
   return (
@@ -437,7 +433,7 @@ export default function ReceivablesPage() {
             <Descriptions.Item itemKey="total_outstanding">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待收总额
+                  {t('receivables.summary.totalOutstanding')}
                 </Text>
                 <Text className="summary-value primary">
                   {formatCurrency(summary?.total_outstanding)}
@@ -447,7 +443,7 @@ export default function ReceivablesPage() {
             <Descriptions.Item itemKey="total_overdue">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  逾期总额
+                  {t('receivables.summary.totalOverdue')}
                 </Text>
                 <Text className="summary-value danger">
                   {formatCurrency(summary?.total_overdue)}
@@ -457,7 +453,7 @@ export default function ReceivablesPage() {
             <Descriptions.Item itemKey="pending_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待收款单
+                  {t('receivables.summary.pendingCount')}
                 </Text>
                 <Text className="summary-value">{summary?.pending_count ?? '-'}</Text>
               </div>
@@ -465,7 +461,7 @@ export default function ReceivablesPage() {
             <Descriptions.Item itemKey="partial_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  部分收款
+                  {t('receivables.summary.partialCount')}
                 </Text>
                 <Text className="summary-value">{summary?.partial_count ?? '-'}</Text>
               </div>
@@ -473,7 +469,7 @@ export default function ReceivablesPage() {
             <Descriptions.Item itemKey="overdue_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  逾期单数
+                  {t('receivables.summary.overdueCount')}
                 </Text>
                 <Text className="summary-value warning">{summary?.overdue_count ?? '-'}</Text>
               </div>
@@ -486,18 +482,18 @@ export default function ReceivablesPage() {
       <Card className="receivables-card">
         <div className="receivables-header">
           <Title heading={4} style={{ margin: 0 }}>
-            应收账款
+            {t('receivables.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索单据编号、客户名称..."
+          searchPlaceholder={t('receivables.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('receivables.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -505,32 +501,32 @@ export default function ReceivablesPage() {
           filters={
             <Space className="receivables-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('receivables.filter.statusPlaceholder')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="来源筛选"
+                placeholder={t('receivables.filter.sourcePlaceholder')}
                 value={sourceTypeFilter}
                 onChange={handleSourceTypeChange}
                 optionList={SOURCE_TYPE_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="逾期筛选"
+                placeholder={t('receivables.filter.overduePlaceholder')}
                 value={overdueOnly ? 'true' : ''}
                 onChange={handleOverdueChange}
                 optionList={[
-                  { label: '全部', value: '' },
-                  { label: '仅逾期', value: 'true' },
+                  { label: t('receivables.filter.all'), value: '' },
+                  { label: t('receivables.filter.overdueOnly'), value: 'true' },
                 ]}
                 style={{ width: 100 }}
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('receivables.filter.startDate'), t('receivables.filter.endDate')]}
                 value={dateRange as [Date, Date] | undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}

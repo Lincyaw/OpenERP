@@ -15562,3 +15562,64 @@ Completed the Product Module E2E integration tests. All 25 tests pass consistent
 - Semi UI Dropdown and Tooltip components should not be nested (Tooltip blocks click events)
 - Use `test.describe.serial()` when tests modify shared data
 - Reseed database before running integration tests to ensure clean state
+
+## 2026-01-25 - P0-I18N-009: Finance Module i18n Migration Complete
+
+### Completed
+- **P0-I18N-009**: Finance 模块 i18n 迁移 (应收应付/收支)
+
+### What was done
+1. Created locale files:
+   - `frontend/src/locales/zh-CN/finance.json`: Complete Chinese translations for finance module
+   - `frontend/src/locales/en-US/finance.json`: Complete English translations for finance module
+
+2. Updated i18n configuration:
+   - Added finance namespace imports to `frontend/src/i18n/index.ts`
+   - (finance namespace was already in config.ts NAMESPACES array)
+
+3. Migrated all finance module pages to use i18n:
+   - `Receivables.tsx` - Accounts receivable list with status/source type filters
+   - `Payables.tsx` - Accounts payable list with status/source type filters
+   - `ReceiptVoucherNew.tsx` - Receipt voucher creation form
+   - `PaymentVoucherNew.tsx` - Payment voucher creation form
+   - `Expenses.tsx` - Expense management with categories and approval workflow
+   - `ExpenseForm.tsx` - Expense entry form
+   - `OtherIncomes.tsx` - Other income management
+   - `OtherIncomeForm.tsx` - Other income entry form
+   - `ReceiptReconcile.tsx` - Receipt reconciliation page
+   - `PaymentReconcile.tsx` - Payment reconciliation page
+
+4. Translation coverage includes:
+   - Page titles and navigation
+   - Summary card labels
+   - Filter options (status, category, source type)
+   - Table column headers
+   - Action buttons
+   - Modal dialogs
+   - Toast messages (success/error)
+   - Form labels, placeholders, and helper text
+   - Validation messages
+   - Payment method labels (Cash, Bank Transfer, WeChat Pay, etc.)
+   - Status labels (Draft, Pending, Approved, etc.)
+   - Category labels (Rent, Utilities, Salary, Investment, etc.)
+
+5. Build verification:
+   - `npm run build` passes with no TypeScript errors
+   - All translations properly integrated
+
+### Files Created
+- `frontend/src/locales/zh-CN/finance.json`
+- `frontend/src/locales/en-US/finance.json`
+
+### Files Modified
+- `frontend/src/i18n/index.ts`
+- `frontend/src/pages/finance/Receivables.tsx`
+- `frontend/src/pages/finance/Payables.tsx`
+- `frontend/src/pages/finance/ReceiptVoucherNew.tsx`
+- `frontend/src/pages/finance/PaymentVoucherNew.tsx`
+- `frontend/src/pages/finance/Expenses.tsx`
+- `frontend/src/pages/finance/ExpenseForm.tsx`
+- `frontend/src/pages/finance/OtherIncomes.tsx`
+- `frontend/src/pages/finance/OtherIncomeForm.tsx`
+- `frontend/src/pages/finance/ReceiptReconcile.tsx`
+- `frontend/src/pages/finance/PaymentReconcile.tsx`

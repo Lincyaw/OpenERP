@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -40,39 +41,6 @@ const { Title, Text } = Typography
 // Expense type with index signature for DataTable compatibility
 type ExpenseRow = ExpenseRecord & Record<string, unknown>
 
-// Category options for filter
-const CATEGORY_OPTIONS = [
-  { label: '全部分类', value: '' },
-  { label: '房租', value: 'RENT' },
-  { label: '水电费', value: 'UTILITIES' },
-  { label: '工资', value: 'SALARY' },
-  { label: '办公费', value: 'OFFICE' },
-  { label: '差旅费', value: 'TRAVEL' },
-  { label: '市场营销', value: 'MARKETING' },
-  { label: '设备费', value: 'EQUIPMENT' },
-  { label: '维修费', value: 'MAINTENANCE' },
-  { label: '保险费', value: 'INSURANCE' },
-  { label: '税费', value: 'TAX' },
-  { label: '其他费用', value: 'OTHER' },
-]
-
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'DRAFT' },
-  { label: '待审批', value: 'PENDING' },
-  { label: '已审批', value: 'APPROVED' },
-  { label: '已拒绝', value: 'REJECTED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
-
-// Payment status options for filter
-const PAYMENT_STATUS_OPTIONS = [
-  { label: '全部付款状态', value: '' },
-  { label: '未付款', value: 'UNPAID' },
-  { label: '已付款', value: 'PAID' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<ExpenseStatus, 'grey' | 'orange' | 'green' | 'red'> = {
   DRAFT: 'grey',
@@ -80,21 +48,6 @@ const STATUS_TAG_COLORS: Record<ExpenseStatus, 'grey' | 'orange' | 'green' | 're
   APPROVED: 'green',
   REJECTED: 'red',
   CANCELLED: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<ExpenseStatus, string> = {
-  DRAFT: '草稿',
-  PENDING: '待审批',
-  APPROVED: '已审批',
-  REJECTED: '已拒绝',
-  CANCELLED: '已取消',
-}
-
-// Payment status labels
-const PAYMENT_STATUS_LABELS: Record<ExpensePaymentStatus, string> = {
-  UNPAID: '未付款',
-  PAID: '已付款',
 }
 
 // Payment status tag colors
@@ -140,8 +93,49 @@ function formatDate(dateStr?: string): string {
  * - CRUD operations with approval workflow
  */
 export default function ExpensesPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const api = useMemo(() => getFinanceApi(), [])
+
+  // Filter options with i18n
+  const categoryOptions = useMemo(
+    () => [
+      { label: t('expenses.filter.allCategory'), value: '' },
+      { label: t('expenses.category.RENT'), value: 'RENT' },
+      { label: t('expenses.category.UTILITIES'), value: 'UTILITIES' },
+      { label: t('expenses.category.SALARY'), value: 'SALARY' },
+      { label: t('expenses.category.OFFICE'), value: 'OFFICE' },
+      { label: t('expenses.category.TRAVEL'), value: 'TRAVEL' },
+      { label: t('expenses.category.MARKETING'), value: 'MARKETING' },
+      { label: t('expenses.category.EQUIPMENT'), value: 'EQUIPMENT' },
+      { label: t('expenses.category.MAINTENANCE'), value: 'MAINTENANCE' },
+      { label: t('expenses.category.INSURANCE'), value: 'INSURANCE' },
+      { label: t('expenses.category.TAX'), value: 'TAX' },
+      { label: t('expenses.category.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
+
+  const statusOptions = useMemo(
+    () => [
+      { label: t('expenses.filter.allStatus'), value: '' },
+      { label: t('expenses.status.DRAFT'), value: 'DRAFT' },
+      { label: t('expenses.status.PENDING'), value: 'PENDING' },
+      { label: t('expenses.status.APPROVED'), value: 'APPROVED' },
+      { label: t('expenses.status.REJECTED'), value: 'REJECTED' },
+      { label: t('expenses.status.CANCELLED'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
+
+  const paymentStatusOptions = useMemo(
+    () => [
+      { label: t('expenses.filter.allPaymentStatus'), value: '' },
+      { label: t('expenses.paymentStatus.UNPAID'), value: 'UNPAID' },
+      { label: t('expenses.paymentStatus.PAID'), value: 'PAID' },
+    ],
+    [t]
+  )
 
   // State for data
   const [expenseList, setExpenseList] = useState<ExpenseRow[]>([])
@@ -200,7 +194,7 @@ export default function ExpensesPage() {
         }
       }
     } catch {
-      Toast.error('获取费用列表失败')
+      Toast.error(t('expenses.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -213,6 +207,7 @@ export default function ExpensesPage() {
     statusFilter,
     paymentStatusFilter,
     dateRange,
+    t,
   ])
 
   // Fetch summary
@@ -325,16 +320,16 @@ export default function ExpensesPage() {
       try {
         const response = await api.postFinanceExpensesIdSubmit(expense.id)
         if (response.success) {
-          Toast.success('费用已提交审批')
+          Toast.success(t('expenses.messages.submitSuccess'))
           fetchExpenses()
         } else {
-          Toast.error(response.error || '提交失败')
+          Toast.error(response.error || t('expenses.messages.submitError'))
         }
       } catch {
-        Toast.error('提交失败')
+        Toast.error(t('expenses.messages.submitError'))
       }
     },
-    [api, fetchExpenses]
+    [api, fetchExpenses, t]
   )
 
   // Handle approve expense
@@ -343,16 +338,16 @@ export default function ExpensesPage() {
       try {
         const response = await api.postFinanceExpensesIdApprove(expense.id)
         if (response.success) {
-          Toast.success('费用已审批通过')
+          Toast.success(t('expenses.messages.approveSuccess'))
           fetchExpenses()
         } else {
-          Toast.error(response.error || '审批失败')
+          Toast.error(response.error || t('expenses.messages.approveError'))
         }
       } catch {
-        Toast.error('审批失败')
+        Toast.error(t('expenses.messages.approveError'))
       }
     },
-    [api, fetchExpenses]
+    [api, fetchExpenses, t]
   )
 
   // Open reject modal
@@ -365,7 +360,7 @@ export default function ExpensesPage() {
   // Handle reject expense
   const handleReject = useCallback(async () => {
     if (!selectedExpense || !actionReason.trim()) {
-      Toast.warning('请输入拒绝原因')
+      Toast.warning(t('expenses.messages.reasonRequired'))
       return
     }
     setActionLoading(true)
@@ -374,18 +369,18 @@ export default function ExpensesPage() {
         reason: actionReason,
       })
       if (response.success) {
-        Toast.success('费用已拒绝')
+        Toast.success(t('expenses.messages.rejectSuccess'))
         setRejectModalVisible(false)
         fetchExpenses()
       } else {
-        Toast.error(response.error || '拒绝失败')
+        Toast.error(response.error || t('expenses.messages.rejectError'))
       }
     } catch {
-      Toast.error('拒绝失败')
+      Toast.error(t('expenses.messages.rejectError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedExpense, actionReason, fetchExpenses])
+  }, [api, selectedExpense, actionReason, fetchExpenses, t])
 
   // Open cancel modal
   const openCancelModal = useCallback((expense: ExpenseRow) => {
@@ -397,7 +392,7 @@ export default function ExpensesPage() {
   // Handle cancel expense
   const handleCancel = useCallback(async () => {
     if (!selectedExpense || !actionReason.trim()) {
-      Toast.warning('请输入取消原因')
+      Toast.warning(t('expenses.messages.cancelReasonRequired'))
       return
     }
     setActionLoading(true)
@@ -406,44 +401,44 @@ export default function ExpensesPage() {
         reason: actionReason,
       })
       if (response.success) {
-        Toast.success('费用已取消')
+        Toast.success(t('expenses.messages.cancelSuccess'))
         setCancelModalVisible(false)
         fetchExpenses()
       } else {
-        Toast.error(response.error || '取消失败')
+        Toast.error(response.error || t('expenses.messages.cancelError'))
       }
     } catch {
-      Toast.error('取消失败')
+      Toast.error(t('expenses.messages.cancelError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedExpense, actionReason, fetchExpenses])
+  }, [api, selectedExpense, actionReason, fetchExpenses, t])
 
   // Handle delete expense
   const handleDelete = useCallback(
     async (expense: ExpenseRow) => {
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除费用 ${expense.expense_number} 吗？此操作不可恢复。`,
-        okText: '删除',
-        cancelText: '取消',
+        title: t('expenses.modal.deleteTitle'),
+        content: t('expenses.modal.deleteContent', { expenseNumber: expense.expense_number }),
+        okText: t('expenses.modal.deleteOk'),
+        cancelText: t('expenses.modal.deleteCancel'),
         okType: 'danger',
         onOk: async () => {
           try {
             const response = await api.deleteFinanceExpensesId(expense.id)
             if (response.success) {
-              Toast.success('费用已删除')
+              Toast.success(t('expenses.messages.deleteSuccess'))
               fetchExpenses()
             } else {
-              Toast.error(response.error || '删除失败')
+              Toast.error(response.error || t('expenses.messages.deleteError'))
             }
           } catch {
-            Toast.error('删除失败')
+            Toast.error(t('expenses.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchExpenses]
+    [api, fetchExpenses, t]
   )
 
   // Refresh handler
@@ -456,7 +451,7 @@ export default function ExpensesPage() {
   const tableColumns: DataTableColumn<ExpenseRow>[] = useMemo(
     () => [
       {
-        title: '费用编号',
+        title: t('expenses.columns.expenseNumber'),
         dataIndex: 'expense_number',
         width: 140,
         sortable: true,
@@ -465,19 +460,19 @@ export default function ExpensesPage() {
         ),
       },
       {
-        title: '费用分类',
+        title: t('expenses.columns.category'),
         dataIndex: 'category_name',
         width: 100,
         render: (name: unknown) => <span>{(name as string) || '-'}</span>,
       },
       {
-        title: '描述',
+        title: t('expenses.columns.description'),
         dataIndex: 'description',
         ellipsis: true,
         render: (desc: unknown) => <span>{(desc as string) || '-'}</span>,
       },
       {
-        title: '金额',
+        title: t('expenses.columns.amount'),
         dataIndex: 'amount',
         width: 120,
         align: 'right',
@@ -487,25 +482,27 @@ export default function ExpensesPage() {
         ),
       },
       {
-        title: '发生日期',
+        title: t('expenses.columns.incurredAt'),
         dataIndex: 'incurred_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
       {
-        title: '审批状态',
+        title: t('expenses.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as ExpenseStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`expenses.status.${statusValue}`)}</Tag>
+          )
         },
       },
       {
-        title: '付款状态',
+        title: t('expenses.columns.paymentStatus'),
         dataIndex: 'payment_status',
         width: 100,
         align: 'center',
@@ -518,20 +515,20 @@ export default function ExpensesPage() {
           }
           return (
             <Tag color={PAYMENT_STATUS_TAG_COLORS[statusValue]}>
-              {PAYMENT_STATUS_LABELS[statusValue]}
+              {t(`expenses.paymentStatus.${statusValue}`)}
             </Tag>
           )
         },
       },
       {
-        title: '创建时间',
+        title: t('expenses.columns.createdAt'),
         dataIndex: 'created_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    []
+    [t]
   )
 
   // Table row actions
@@ -539,33 +536,33 @@ export default function ExpensesPage() {
     () => [
       {
         key: 'edit',
-        label: '编辑',
+        label: t('expenses.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.status !== 'DRAFT',
       },
       {
         key: 'submit',
-        label: '提交审批',
+        label: t('expenses.actions.submit'),
         type: 'primary',
         onClick: handleSubmit,
         hidden: (record) => record.status !== 'DRAFT',
       },
       {
         key: 'approve',
-        label: '审批通过',
+        label: t('expenses.actions.approve'),
         type: 'primary',
         onClick: handleApprove,
         hidden: (record) => record.status !== 'PENDING',
       },
       {
         key: 'reject',
-        label: '拒绝',
+        label: t('expenses.actions.reject'),
         onClick: openRejectModal,
         hidden: (record) => record.status !== 'PENDING',
       },
       {
         key: 'cancel',
-        label: '取消',
+        label: t('expenses.actions.cancel'),
         onClick: openCancelModal,
         hidden: (record) =>
           record.status === 'CANCELLED' ||
@@ -574,12 +571,12 @@ export default function ExpensesPage() {
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('expenses.actions.delete'),
         onClick: handleDelete,
         hidden: (record) => record.status !== 'DRAFT',
       },
     ],
-    [handleEdit, handleSubmit, handleApprove, openRejectModal, openCancelModal, handleDelete]
+    [handleEdit, handleSubmit, handleApprove, openRejectModal, openCancelModal, handleDelete, t]
   )
 
   return (
@@ -591,7 +588,7 @@ export default function ExpensesPage() {
             <Descriptions.Item itemKey="total_approved">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  已审批总额
+                  {t('expenses.summary.totalApproved')}
                 </Text>
                 <Text className="summary-value primary">
                   {formatCurrency(summary?.total_approved)}
@@ -601,7 +598,7 @@ export default function ExpensesPage() {
             <Descriptions.Item itemKey="total_pending">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待审批数量
+                  {t('expenses.summary.totalPending')}
                 </Text>
                 <Text className="summary-value warning">{summary?.total_pending ?? '-'}</Text>
               </div>
@@ -614,21 +611,21 @@ export default function ExpensesPage() {
       <Card className="expenses-card">
         <div className="expenses-header">
           <Title heading={4} style={{ margin: 0 }}>
-            费用管理
+            {t('expenses.title')}
           </Title>
           <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
-            新增费用
+            {t('expenses.newExpense')}
           </Button>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索费用编号、描述..."
+          searchPlaceholder={t('expenses.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('expenses.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -636,29 +633,29 @@ export default function ExpensesPage() {
           filters={
             <Space className="expenses-filter-container">
               <Select
-                placeholder="分类筛选"
+                placeholder={t('expenses.filter.categoryPlaceholder')}
                 value={categoryFilter}
                 onChange={handleCategoryChange}
-                optionList={CATEGORY_OPTIONS}
+                optionList={categoryOptions}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="审批状态"
+                placeholder={t('expenses.filter.statusPlaceholder')}
                 value={statusFilter}
                 onChange={handleStatusChange}
-                optionList={STATUS_OPTIONS}
+                optionList={statusOptions}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="付款状态"
+                placeholder={t('expenses.filter.paymentStatusPlaceholder')}
                 value={paymentStatusFilter}
                 onChange={handlePaymentStatusChange}
-                optionList={PAYMENT_STATUS_OPTIONS}
+                optionList={paymentStatusOptions}
                 style={{ width: 130 }}
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('expenses.filter.startDate'), t('expenses.filter.endDate')]}
                 value={dateRange as [Date, Date] | undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}
@@ -684,21 +681,21 @@ export default function ExpensesPage() {
 
       {/* Reject Modal */}
       <Modal
-        title="拒绝费用"
+        title={t('expenses.modal.rejectTitle')}
         visible={rejectModalVisible}
         onOk={handleReject}
         onCancel={() => setRejectModalVisible(false)}
-        okText="拒绝"
-        cancelText="取消"
+        okText={t('expenses.actions.reject')}
+        cancelText={t('expenses.modal.deleteCancel')}
         confirmLoading={actionLoading}
         okButtonProps={{ type: 'danger' }}
       >
         <div className="modal-content">
-          <Text>请输入拒绝原因：</Text>
+          <Text>{t('expenses.modal.rejectLabel')}</Text>
           <TextArea
             value={actionReason}
             onChange={(v: string) => setActionReason(v)}
-            placeholder="请输入拒绝原因"
+            placeholder={t('expenses.modal.rejectPlaceholder')}
             rows={3}
             maxCount={500}
             style={{ marginTop: 12 }}
@@ -708,20 +705,20 @@ export default function ExpensesPage() {
 
       {/* Cancel Modal */}
       <Modal
-        title="取消费用"
+        title={t('expenses.modal.cancelTitle')}
         visible={cancelModalVisible}
         onOk={handleCancel}
         onCancel={() => setCancelModalVisible(false)}
-        okText="取消费用"
-        cancelText="关闭"
+        okText={t('expenses.modal.cancelExpense')}
+        cancelText={t('expenses.modal.close')}
         confirmLoading={actionLoading}
       >
         <div className="modal-content">
-          <Text>请输入取消原因：</Text>
+          <Text>{t('expenses.modal.cancelLabel')}</Text>
           <TextArea
             value={actionReason}
             onChange={(v: string) => setActionReason(v)}
-            placeholder="请输入取消原因"
+            placeholder={t('expenses.modal.cancelPlaceholder')}
             rows={3}
             maxCount={500}
             style={{ marginTop: 12 }}

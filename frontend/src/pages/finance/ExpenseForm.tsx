@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Toast, Spin } from '@douyinfe/semi-ui'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -23,21 +24,6 @@ import './ExpenseForm.css'
 
 const { Title } = Typography
 
-// Expense category options
-const CATEGORY_OPTIONS = [
-  { label: '房租', value: 'RENT' },
-  { label: '水电费', value: 'UTILITIES' },
-  { label: '工资', value: 'SALARY' },
-  { label: '办公费', value: 'OFFICE' },
-  { label: '差旅费', value: 'TRAVEL' },
-  { label: '市场营销', value: 'MARKETING' },
-  { label: '设备费', value: 'EQUIPMENT' },
-  { label: '维修费', value: 'MAINTENANCE' },
-  { label: '保险费', value: 'INSURANCE' },
-  { label: '税费', value: 'TAX' },
-  { label: '其他费用', value: 'OTHER' },
-]
-
 // Category values
 const CATEGORIES = [
   'RENT',
@@ -53,28 +39,32 @@ const CATEGORIES = [
   'OTHER',
 ] as const
 
-// Form validation schema
-const expenseFormSchema = z.object({
-  category: createEnumSchema(CATEGORIES, true),
-  amount: z.number().positive('金额必须大于0').max(999999999.99, '金额不能超过999,999,999.99'),
-  description: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(200, validationMessages.maxLength(200)),
-  incurred_at: z.date({ message: validationMessages.required }),
-  remark: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-  attachment_urls: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-})
+// Form validation schema - moved inside component for i18n support
+const createExpenseFormSchema = (t: (key: string) => string) =>
+  z.object({
+    category: createEnumSchema(CATEGORIES, true),
+    amount: z
+      .number()
+      .positive(t('expenseForm.validation.amountPositive'))
+      .max(999999999.99, t('expenseForm.validation.amountMax')),
+    description: z
+      .string()
+      .min(1, validationMessages.required)
+      .max(200, validationMessages.maxLength(200)),
+    incurred_at: z.date({ message: validationMessages.required }),
+    remark: z
+      .string()
+      .max(500, validationMessages.maxLength(500))
+      .optional()
+      .transform((val) => val || undefined),
+    attachment_urls: z
+      .string()
+      .max(2000, validationMessages.maxLength(2000))
+      .optional()
+      .transform((val) => val || undefined),
+  })
 
-type ExpenseFormData = z.infer<typeof expenseFormSchema>
+type ExpenseFormData = z.infer<ReturnType<typeof createExpenseFormSchema>>
 
 /**
  * Expense entry form page (New/Edit)
@@ -87,10 +77,32 @@ type ExpenseFormData = z.infer<typeof expenseFormSchema>
  * - Edit mode support
  */
 export default function ExpenseFormPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEditMode = Boolean(id)
   const api = useMemo(() => getFinanceApi(), [])
+
+  // Expense category options with translated labels
+  const categoryOptions = useMemo(
+    () => [
+      { label: t('expenses.category.RENT'), value: 'RENT' },
+      { label: t('expenses.category.UTILITIES'), value: 'UTILITIES' },
+      { label: t('expenses.category.SALARY'), value: 'SALARY' },
+      { label: t('expenses.category.OFFICE'), value: 'OFFICE' },
+      { label: t('expenses.category.TRAVEL'), value: 'TRAVEL' },
+      { label: t('expenses.category.MARKETING'), value: 'MARKETING' },
+      { label: t('expenses.category.EQUIPMENT'), value: 'EQUIPMENT' },
+      { label: t('expenses.category.MAINTENANCE'), value: 'MAINTENANCE' },
+      { label: t('expenses.category.INSURANCE'), value: 'INSURANCE' },
+      { label: t('expenses.category.TAX'), value: 'TAX' },
+      { label: t('expenses.category.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
+
+  // Create schema with translated validation messages
+  const expenseFormSchema = useMemo(() => createExpenseFormSchema(t), [t])
 
   // State
   const [initialLoading, setInitialLoading] = useState(isEditMode)
@@ -112,7 +124,9 @@ export default function ExpenseFormPage() {
     {
       schema: expenseFormSchema,
       defaultValues,
-      successMessage: isEditMode ? '费用更新成功' : '费用创建成功',
+      successMessage: isEditMode
+        ? t('expenseForm.messages.updateSuccess')
+        : t('expenseForm.messages.createSuccess'),
       onSuccess: () => {
         navigate('/finance/expenses')
       },
@@ -137,11 +151,11 @@ export default function ExpenseFormPage() {
               attachment_urls: expense.attachment_urls || '',
             })
           } else {
-            Toast.error('加载费用信息失败')
+            Toast.error(t('expenseForm.messages.loadError'))
             navigate('/finance/expenses')
           }
         } catch {
-          Toast.error('加载费用信息失败')
+          Toast.error(t('expenseForm.messages.loadError'))
           navigate('/finance/expenses')
         } finally {
           setInitialLoading(false)
@@ -149,7 +163,7 @@ export default function ExpenseFormPage() {
       }
       loadExpense()
     }
-  }, [isEditMode, id, api, reset, navigate])
+  }, [isEditMode, id, api, reset, navigate, t])
 
   // Handle form submission
   const onSubmit = useCallback(
@@ -166,16 +180,16 @@ export default function ExpenseFormPage() {
       if (isEditMode && id) {
         const response = await api.putFinanceExpensesId(id, request)
         if (!response.success) {
-          throw new Error(response.error || '更新费用失败')
+          throw new Error(response.error || t('expenseForm.messages.updateError'))
         }
       } else {
         const response = await api.postFinanceExpenses(request)
         if (!response.success) {
-          throw new Error(response.error || '创建费用失败')
+          throw new Error(response.error || t('expenseForm.messages.createError'))
         }
       }
     },
-    [api, id, isEditMode]
+    [api, id, isEditMode, t]
   )
 
   // Handle cancel
@@ -200,26 +214,29 @@ export default function ExpenseFormPage() {
       <Card className="expense-form-card">
         <div className="expense-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑费用' : '新增费用'}
+            {isEditMode ? t('expenseForm.editTitle') : t('expenseForm.createTitle')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="费用信息" description="填写费用基本信息">
+          <FormSection
+            title={t('expenseForm.expenseInfo.title')}
+            description={t('expenseForm.expenseInfo.description')}
+          >
             <FormRow cols={2}>
               <SelectField
                 name="category"
                 control={control}
-                label="费用分类"
-                placeholder="请选择费用分类"
-                options={CATEGORY_OPTIONS}
+                label={t('expenseForm.expenseInfo.category')}
+                placeholder={t('expenseForm.expenseInfo.categoryPlaceholder')}
+                options={categoryOptions}
                 required
               />
               <NumberField
                 name="amount"
                 control={control}
-                label="金额"
-                placeholder="请输入金额"
+                label={t('expenseForm.expenseInfo.amount')}
+                placeholder={t('expenseForm.expenseInfo.amountPlaceholder')}
                 required
                 min={0.01}
                 max={999999999.99}
@@ -231,8 +248,8 @@ export default function ExpenseFormPage() {
               <DateField
                 name="incurred_at"
                 control={control}
-                label="发生日期"
-                placeholder="请选择发生日期"
+                label={t('expenseForm.expenseInfo.incurredAt')}
+                placeholder={t('expenseForm.expenseInfo.incurredAtPlaceholder')}
                 required
               />
               <div />
@@ -241,35 +258,40 @@ export default function ExpenseFormPage() {
               <TextField
                 name="description"
                 control={control}
-                label="费用描述"
-                placeholder="请输入费用描述"
+                label={t('expenseForm.expenseInfo.description')}
+                placeholder={t('expenseForm.expenseInfo.descriptionPlaceholder')}
                 required
                 maxLength={200}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="其他信息" description="备注和附件（可选）">
+          <FormSection
+            title={t('expenseForm.otherInfo.title')}
+            description={t('expenseForm.otherInfo.description')}
+          >
             <TextAreaField
               name="remark"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息（可选）"
+              label={t('expenseForm.otherInfo.remark')}
+              placeholder={t('expenseForm.otherInfo.remarkPlaceholder')}
               rows={3}
               maxCount={500}
             />
             <TextAreaField
               name="attachment_urls"
               control={control}
-              label="附件链接"
-              placeholder="请输入附件URL，多个URL请用逗号分隔（可选）"
+              label={t('expenseForm.otherInfo.attachmentUrls')}
+              placeholder={t('expenseForm.otherInfo.attachmentUrlsPlaceholder')}
               rows={2}
-              helperText="支持输入多个URL，用逗号分隔"
+              helperText={t('expenseForm.otherInfo.attachmentUrlsHelper')}
             />
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={
+              isEditMode ? t('expenseForm.actions.save') : t('expenseForm.actions.create')
+            }
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

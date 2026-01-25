@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Toast, Spin } from '@douyinfe/semi-ui'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -23,18 +24,6 @@ import './OtherIncomeForm.css'
 
 const { Title } = Typography
 
-// Income category options
-const CATEGORY_OPTIONS = [
-  { label: '投资收益', value: 'INVESTMENT' },
-  { label: '补贴收入', value: 'SUBSIDY' },
-  { label: '利息收入', value: 'INTEREST' },
-  { label: '租金收入', value: 'RENTAL' },
-  { label: '退款收入', value: 'REFUND' },
-  { label: '赔偿收入', value: 'COMPENSATION' },
-  { label: '资产处置', value: 'ASSET_DISPOSAL' },
-  { label: '其他收入', value: 'OTHER' },
-]
-
 // Category values
 const CATEGORIES = [
   'INVESTMENT',
@@ -48,27 +37,31 @@ const CATEGORIES = [
 ] as const
 
 // Form validation schema
-const incomeFormSchema = z.object({
-  category: createEnumSchema(CATEGORIES, true),
-  amount: z.number().positive('金额必须大于0').max(999999999.99, '金额不能超过999,999,999.99'),
-  description: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(200, validationMessages.maxLength(200)),
-  received_at: z.date({ message: validationMessages.required }),
-  remark: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-  attachment_urls: z
-    .string()
-    .max(2000, validationMessages.maxLength(2000))
-    .optional()
-    .transform((val) => val || undefined),
-})
+const createIncomeFormSchema = (t: (key: string) => string) =>
+  z.object({
+    category: createEnumSchema(CATEGORIES, true),
+    amount: z
+      .number()
+      .positive(t('otherIncomeForm.validation.amountPositive'))
+      .max(999999999.99, t('otherIncomeForm.validation.amountMax')),
+    description: z
+      .string()
+      .min(1, validationMessages.required)
+      .max(200, validationMessages.maxLength(200)),
+    received_at: z.date({ message: validationMessages.required }),
+    remark: z
+      .string()
+      .max(500, validationMessages.maxLength(500))
+      .optional()
+      .transform((val) => val || undefined),
+    attachment_urls: z
+      .string()
+      .max(2000, validationMessages.maxLength(2000))
+      .optional()
+      .transform((val) => val || undefined),
+  })
 
-type IncomeFormData = z.infer<typeof incomeFormSchema>
+type IncomeFormData = z.infer<ReturnType<typeof createIncomeFormSchema>>
 
 /**
  * Other Income entry form page (New/Edit)
@@ -83,8 +76,27 @@ type IncomeFormData = z.infer<typeof incomeFormSchema>
 export default function OtherIncomeFormPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { t } = useTranslation('finance')
   const isEditMode = Boolean(id)
   const api = useMemo(() => getFinanceApi(), [])
+
+  // Memoized schema with translations
+  const incomeFormSchema = useMemo(() => createIncomeFormSchema(t), [t])
+
+  // Memoized category options with translations
+  const categoryOptions = useMemo(
+    () => [
+      { label: t('otherIncomes.category.INVESTMENT'), value: 'INVESTMENT' },
+      { label: t('otherIncomes.category.SUBSIDY'), value: 'SUBSIDY' },
+      { label: t('otherIncomes.category.INTEREST'), value: 'INTEREST' },
+      { label: t('otherIncomes.category.RENTAL'), value: 'RENTAL' },
+      { label: t('otherIncomes.category.REFUND'), value: 'REFUND' },
+      { label: t('otherIncomes.category.COMPENSATION'), value: 'COMPENSATION' },
+      { label: t('otherIncomes.category.ASSET_DISPOSAL'), value: 'ASSET_DISPOSAL' },
+      { label: t('otherIncomes.category.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
 
   // State
   const [initialLoading, setInitialLoading] = useState(isEditMode)
@@ -105,7 +117,9 @@ export default function OtherIncomeFormPage() {
   const { control, handleFormSubmit, isSubmitting, reset } = useFormWithValidation<IncomeFormData>({
     schema: incomeFormSchema,
     defaultValues,
-    successMessage: isEditMode ? '收入更新成功' : '收入创建成功',
+    successMessage: isEditMode
+      ? t('otherIncomeForm.messages.updateSuccess')
+      : t('otherIncomeForm.messages.createSuccess'),
     onSuccess: () => {
       navigate('/finance/incomes')
     },
@@ -129,11 +143,11 @@ export default function OtherIncomeFormPage() {
               attachment_urls: income.attachment_urls || '',
             })
           } else {
-            Toast.error('加载收入信息失败')
+            Toast.error(t('otherIncomeForm.messages.loadError'))
             navigate('/finance/incomes')
           }
         } catch {
-          Toast.error('加载收入信息失败')
+          Toast.error(t('otherIncomeForm.messages.loadError'))
           navigate('/finance/incomes')
         } finally {
           setInitialLoading(false)
@@ -141,7 +155,7 @@ export default function OtherIncomeFormPage() {
       }
       loadIncome()
     }
-  }, [isEditMode, id, api, reset, navigate])
+  }, [isEditMode, id, api, reset, navigate, t])
 
   // Handle form submission
   const onSubmit = useCallback(
@@ -158,16 +172,16 @@ export default function OtherIncomeFormPage() {
       if (isEditMode && id) {
         const response = await api.putFinanceIncomesId(id, request)
         if (!response.success) {
-          throw new Error(response.error || '更新收入失败')
+          throw new Error(response.error || t('otherIncomeForm.messages.updateError'))
         }
       } else {
         const response = await api.postFinanceIncomes(request)
         if (!response.success) {
-          throw new Error(response.error || '创建收入失败')
+          throw new Error(response.error || t('otherIncomeForm.messages.createError'))
         }
       }
     },
-    [api, id, isEditMode]
+    [api, id, isEditMode, t]
   )
 
   // Handle cancel
@@ -192,26 +206,29 @@ export default function OtherIncomeFormPage() {
       <Card className="other-income-form-card">
         <div className="other-income-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            {isEditMode ? '编辑收入' : '新增收入'}
+            {isEditMode ? t('otherIncomeForm.editTitle') : t('otherIncomeForm.createTitle')}
           </Title>
         </div>
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="收入信息" description="填写收入基本信息">
+          <FormSection
+            title={t('otherIncomeForm.incomeInfo.title')}
+            description={t('otherIncomeForm.incomeInfo.description')}
+          >
             <FormRow cols={2}>
               <SelectField
                 name="category"
                 control={control}
-                label="收入分类"
-                placeholder="请选择收入分类"
-                options={CATEGORY_OPTIONS}
+                label={t('otherIncomeForm.incomeInfo.category')}
+                placeholder={t('otherIncomeForm.incomeInfo.categoryPlaceholder')}
+                options={categoryOptions}
                 required
               />
               <NumberField
                 name="amount"
                 control={control}
-                label="金额"
-                placeholder="请输入金额"
+                label={t('otherIncomeForm.incomeInfo.amount')}
+                placeholder={t('otherIncomeForm.incomeInfo.amountPlaceholder')}
                 required
                 min={0.01}
                 max={999999999.99}
@@ -223,8 +240,8 @@ export default function OtherIncomeFormPage() {
               <DateField
                 name="received_at"
                 control={control}
-                label="收入日期"
-                placeholder="请选择收入日期"
+                label={t('otherIncomeForm.incomeInfo.receivedAt')}
+                placeholder={t('otherIncomeForm.incomeInfo.receivedAtPlaceholder')}
                 required
               />
               <div />
@@ -233,35 +250,40 @@ export default function OtherIncomeFormPage() {
               <TextField
                 name="description"
                 control={control}
-                label="收入描述"
-                placeholder="请输入收入描述"
+                label={t('otherIncomeForm.incomeInfo.description')}
+                placeholder={t('otherIncomeForm.incomeInfo.descriptionPlaceholder')}
                 required
                 maxLength={200}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="其他信息" description="备注和附件（可选）">
+          <FormSection
+            title={t('otherIncomeForm.otherInfo.title')}
+            description={t('otherIncomeForm.otherInfo.description')}
+          >
             <TextAreaField
               name="remark"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息（可选）"
+              label={t('otherIncomeForm.otherInfo.remark')}
+              placeholder={t('otherIncomeForm.otherInfo.remarkPlaceholder')}
               rows={3}
               maxCount={500}
             />
             <TextAreaField
               name="attachment_urls"
               control={control}
-              label="附件链接"
-              placeholder="请输入附件URL，多个URL请用逗号分隔（可选）"
+              label={t('otherIncomeForm.otherInfo.attachmentUrls')}
+              placeholder={t('otherIncomeForm.otherInfo.attachmentUrlsPlaceholder')}
               rows={2}
-              helperText="支持输入多个URL，用逗号分隔"
+              helperText={t('otherIncomeForm.otherInfo.attachmentUrlsHelper')}
             />
           </FormSection>
 
           <FormActions
-            submitText={isEditMode ? '保存' : '创建'}
+            submitText={
+              isEditMode ? t('otherIncomeForm.actions.save') : t('otherIncomeForm.actions.create')
+            }
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

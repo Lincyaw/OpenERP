@@ -2821,7 +2821,7 @@
       "npm run build 类型检查通过",
       "财务模块所有页面中英文切换正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-I18N-010",

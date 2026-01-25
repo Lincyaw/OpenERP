@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -25,17 +26,6 @@ import './ReceiptVoucherNew.css'
 
 const { Title, Text } = Typography
 
-// Payment method options
-const PAYMENT_METHOD_OPTIONS = [
-  { label: '现金', value: 'CASH' },
-  { label: '银行转账', value: 'BANK_TRANSFER' },
-  { label: '微信支付', value: 'WECHAT' },
-  { label: '支付宝', value: 'ALIPAY' },
-  { label: '支票', value: 'CHECK' },
-  { label: '余额抵扣', value: 'BALANCE' },
-  { label: '其他', value: 'OTHER' },
-]
-
 // Payment method values
 const PAYMENT_METHODS = [
   'CASH',
@@ -47,29 +37,31 @@ const PAYMENT_METHODS = [
   'OTHER',
 ] as const
 
-// Form validation schema
-const receiptVoucherFormSchema = z.object({
-  customer_id: z.string().min(1, validationMessages.required),
-  customer_name: z.string().min(1, validationMessages.required),
-  amount: z
-    .number()
-    .positive('收款金额必须大于0')
-    .max(999999999.99, '收款金额不能超过999,999,999.99'),
-  payment_method: createEnumSchema(PAYMENT_METHODS, true),
-  payment_reference: z
-    .string()
-    .max(100, validationMessages.maxLength(100))
-    .optional()
-    .transform((val) => val || undefined),
-  receipt_date: z.date({ message: validationMessages.required }),
-  remark: z
-    .string()
-    .max(500, validationMessages.maxLength(500))
-    .optional()
-    .transform((val) => val || undefined),
-})
+// Create form validation schema with translations
+function createReceiptVoucherFormSchema(t: (key: string) => string) {
+  return z.object({
+    customer_id: z.string().min(1, validationMessages.required),
+    customer_name: z.string().min(1, validationMessages.required),
+    amount: z
+      .number()
+      .positive(t('receiptVoucher.validation.amountPositive'))
+      .max(999999999.99, t('receiptVoucher.validation.amountMax')),
+    payment_method: createEnumSchema(PAYMENT_METHODS, true),
+    payment_reference: z
+      .string()
+      .max(100, validationMessages.maxLength(100))
+      .optional()
+      .transform((val) => val || undefined),
+    receipt_date: z.date({ message: validationMessages.required }),
+    remark: z
+      .string()
+      .max(500, validationMessages.maxLength(500))
+      .optional()
+      .transform((val) => val || undefined),
+  })
+}
 
-type ReceiptVoucherFormData = z.infer<typeof receiptVoucherFormSchema>
+type ReceiptVoucherFormData = z.infer<ReturnType<typeof createReceiptVoucherFormSchema>>
 
 /**
  * Format currency for display
@@ -96,10 +88,28 @@ function formatCurrency(amount?: number): string {
  * - Shows customer's outstanding receivables summary
  */
 export default function ReceiptVoucherNewPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const financeApi = useMemo(() => getFinanceApi(), [])
   const customerApi = useMemo(() => getCustomers(), [])
+
+  // Payment method options with translated labels
+  const paymentMethodOptions = useMemo(
+    () => [
+      { label: t('paymentMethod.CASH'), value: 'CASH' },
+      { label: t('paymentMethod.BANK_TRANSFER'), value: 'BANK_TRANSFER' },
+      { label: t('paymentMethod.WECHAT'), value: 'WECHAT' },
+      { label: t('paymentMethod.ALIPAY'), value: 'ALIPAY' },
+      { label: t('paymentMethod.CHECK'), value: 'CHECK' },
+      { label: t('paymentMethod.BALANCE'), value: 'BALANCE' },
+      { label: t('paymentMethod.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
+
+  // Form validation schema with translated messages
+  const receiptVoucherFormSchema = useMemo(() => createReceiptVoucherFormSchema(t), [t])
 
   // URL params for pre-filling
   const preSelectedCustomerId = searchParams.get('customer_id') || ''
@@ -131,7 +141,7 @@ export default function ReceiptVoucherNewPage() {
     useFormWithValidation<ReceiptVoucherFormData>({
       schema: receiptVoucherFormSchema,
       defaultValues,
-      successMessage: '收款单创建成功',
+      successMessage: t('receiptVoucher.messages.createSuccess'),
       onSuccess: () => {
         navigate('/finance/receivables')
       },
@@ -165,12 +175,12 @@ export default function ReceiptVoucherNewPage() {
           setCustomerOptions(options)
         }
       } catch {
-        Toast.error('搜索客户失败')
+        Toast.error(t('receiptVoucher.messages.searchCustomerError'))
       } finally {
         setCustomerLoading(false)
       }
     },
-    [customerApi]
+    [customerApi, t]
   )
 
   // Fetch customer receivables when customer is selected
@@ -228,12 +238,12 @@ export default function ReceiptVoucherNewPage() {
             fetchCustomerReceivables(customer.id || '')
           }
         } catch {
-          Toast.error('加载客户信息失败')
+          Toast.error(t('receiptVoucher.messages.loadCustomerError'))
         }
       }
       loadCustomer()
     }
-  }, [preSelectedCustomerId, customerApi, setValue, fetchCustomerReceivables])
+  }, [preSelectedCustomerId, customerApi, setValue, fetchCustomerReceivables, t])
 
   // Watch for customer changes
   useEffect(() => {
@@ -283,7 +293,7 @@ export default function ReceiptVoucherNewPage() {
 
     const response = await financeApi.postFinanceReceipts(request)
     if (!response.success) {
-      throw new Error(response.error || '创建收款单失败')
+      throw new Error(response.error || t('receiptVoucher.messages.createError'))
     }
   }
 
@@ -302,7 +312,7 @@ export default function ReceiptVoucherNewPage() {
       <Card className="receipt-voucher-form-card">
         <div className="receipt-voucher-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            新增收款单
+            {t('receiptVoucher.title')}
           </Title>
         </div>
 
@@ -316,8 +326,10 @@ export default function ReceiptVoucherNewPage() {
                   description={
                     <div className="receivables-info">
                       <Text>
-                        客户 <strong>{selectedCustomer.name}</strong> 共有{' '}
-                        <strong>{customerReceivables.length}</strong> 笔待收账款，待收总额:{' '}
+                        {t('receiptVoucher.customerSummary.hasReceivables', {
+                          name: selectedCustomer.name,
+                          count: customerReceivables.length,
+                        })}{' '}
                         <strong className="amount-highlight">
                           {formatCurrency(totalOutstanding)}
                         </strong>
@@ -330,7 +342,9 @@ export default function ReceiptVoucherNewPage() {
                   type="success"
                   description={
                     <Text>
-                      客户 <strong>{selectedCustomer.name}</strong> 暂无待收账款
+                      {t('receiptVoucher.customerSummary.noReceivables', {
+                        name: selectedCustomer.name,
+                      })}
                     </Text>
                   }
                 />
@@ -341,7 +355,7 @@ export default function ReceiptVoucherNewPage() {
             {customerReceivables.length > 0 && (
               <div className="pending-receivables-list">
                 <Text type="secondary" className="list-title">
-                  待核销应收账款:
+                  {t('receiptVoucher.customerSummary.pendingReceivables')}
                 </Text>
                 <div className="receivables-tags">
                   {customerReceivables.slice(0, 5).map((receivable) => (
@@ -355,7 +369,11 @@ export default function ReceiptVoucherNewPage() {
                     </Tag>
                   ))}
                   {customerReceivables.length > 5 && (
-                    <Tag color="grey">+{customerReceivables.length - 5} 更多</Tag>
+                    <Tag color="grey">
+                      {t('receiptVoucher.customerSummary.more', {
+                        count: customerReceivables.length - 5,
+                      })}
+                    </Tag>
                   )}
                 </div>
               </div>
@@ -364,17 +382,20 @@ export default function ReceiptVoucherNewPage() {
         )}
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="客户信息" description="选择收款的客户">
+          <FormSection
+            title={t('receiptVoucher.customerInfo.title')}
+            description={t('receiptVoucher.customerInfo.description')}
+          >
             <FormRow cols={1}>
               <div className="customer-select-wrapper">
                 <label className="semi-form-field-label">
                   <span className="semi-form-field-label-text">
                     <span className="semi-form-field-label-required">*</span>
-                    客户
+                    {t('receiptVoucher.customerInfo.label')}
                   </span>
                 </label>
                 <Select
-                  placeholder="请输入客户名称或编码搜索"
+                  placeholder={t('receiptVoucher.customerInfo.placeholder')}
                   value={watchedCustomerId || undefined}
                   onChange={handleCustomerChange}
                   onSearch={handleCustomerSearch}
@@ -389,28 +410,35 @@ export default function ReceiptVoucherNewPage() {
             </FormRow>
           </FormSection>
 
-          <FormSection title="收款信息" description="填写收款金额和方式">
+          <FormSection
+            title={t('receiptVoucher.paymentInfo.title')}
+            description={t('receiptVoucher.paymentInfo.description')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="amount"
                 control={control}
-                label="收款金额"
-                placeholder="请输入收款金额"
+                label={t('receiptVoucher.paymentInfo.amount')}
+                placeholder={t('receiptVoucher.paymentInfo.amountPlaceholder')}
                 required
                 min={0.01}
                 max={999999999.99}
                 precision={2}
                 prefix="¥"
                 helperText={
-                  totalOutstanding > 0 ? `待收总额: ${formatCurrency(totalOutstanding)}` : undefined
+                  totalOutstanding > 0
+                    ? t('receiptVoucher.paymentInfo.outstandingHelper', {
+                        amount: formatCurrency(totalOutstanding),
+                      })
+                    : undefined
                 }
               />
               <SelectField
                 name="payment_method"
                 control={control}
-                label="收款方式"
-                placeholder="请选择收款方式"
-                options={PAYMENT_METHOD_OPTIONS}
+                label={t('receiptVoucher.paymentInfo.method')}
+                placeholder={t('receiptVoucher.paymentInfo.methodPlaceholder')}
+                options={paymentMethodOptions}
                 required
               />
             </FormRow>
@@ -418,33 +446,36 @@ export default function ReceiptVoucherNewPage() {
               <DateField
                 name="receipt_date"
                 control={control}
-                label="收款日期"
-                placeholder="请选择收款日期"
+                label={t('receiptVoucher.paymentInfo.date')}
+                placeholder={t('receiptVoucher.paymentInfo.datePlaceholder')}
                 required
               />
               <TextField
                 name="payment_reference"
                 control={control}
-                label="收款凭证号"
-                placeholder="交易流水号、支票号等 (可选)"
-                helperText="用于关联银行流水或支付平台交易"
+                label={t('receiptVoucher.paymentInfo.reference')}
+                placeholder={t('receiptVoucher.paymentInfo.referencePlaceholder')}
+                helperText={t('receiptVoucher.paymentInfo.referenceHelper')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="其他信息" description="备注说明">
+          <FormSection
+            title={t('receiptVoucher.otherInfo.title')}
+            description={t('receiptVoucher.otherInfo.description')}
+          >
             <TextAreaField
               name="remark"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息 (可选)"
+              label={t('receiptVoucher.otherInfo.remark')}
+              placeholder={t('receiptVoucher.otherInfo.remarkPlaceholder')}
               rows={3}
               maxCount={500}
             />
           </FormSection>
 
           <FormActions
-            submitText="创建"
+            submitText={t('receiptVoucher.actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

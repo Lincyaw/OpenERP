@@ -1,0 +1,674 @@
+{
+  "receivables": {
+    "title": "Accounts Receivable",
+    "searchPlaceholder": "Search document number, customer name...",
+    "refresh": "Refresh",
+    "summary": {
+      "totalOutstanding": "Total Outstanding",
+      "totalOverdue": "Total Overdue",
+      "pendingCount": "Pending Items",
+      "partialCount": "Partial Payment",
+      "overdueCount": "Overdue Items"
+    },
+    "filter": {
+      "statusPlaceholder": "Status Filter",
+      "sourcePlaceholder": "Source Filter",
+      "overduePlaceholder": "Overdue Filter",
+      "allStatus": "All Status",
+      "allSource": "All Sources",
+      "all": "All",
+      "overdueOnly": "Overdue Only",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PARTIAL": "Partial",
+      "PAID": "Paid",
+      "REVERSED": "Reversed",
+      "CANCELLED": "Cancelled"
+    },
+    "sourceType": {
+      "SALES_ORDER": "Sales Order",
+      "SALES_RETURN": "Sales Return",
+      "MANUAL": "Manual Entry"
+    },
+    "columns": {
+      "receivableNumber": "Document No.",
+      "customerName": "Customer Name",
+      "sourceDocument": "Source Document",
+      "totalAmount": "Total Amount",
+      "paidAmount": "Paid Amount",
+      "outstandingAmount": "Outstanding",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "createdAt": "Created At"
+    },
+    "actions": {
+      "view": "View",
+      "collect": "Collect"
+    },
+    "tooltip": {
+      "overdue": "Overdue"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch accounts receivable"
+    }
+  },
+  "payables": {
+    "title": "Accounts Payable",
+    "searchPlaceholder": "Search document number, supplier name...",
+    "refresh": "Refresh",
+    "summary": {
+      "totalOutstanding": "Total Outstanding",
+      "totalOverdue": "Total Overdue",
+      "pendingCount": "Pending Items",
+      "partialCount": "Partial Payment",
+      "overdueCount": "Overdue Items"
+    },
+    "filter": {
+      "statusPlaceholder": "Status Filter",
+      "sourcePlaceholder": "Source Filter",
+      "overduePlaceholder": "Overdue Filter",
+      "allStatus": "All Status",
+      "allSource": "All Sources",
+      "all": "All",
+      "overdueOnly": "Overdue Only",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PARTIAL": "Partial",
+      "PAID": "Paid",
+      "REVERSED": "Reversed",
+      "CANCELLED": "Cancelled"
+    },
+    "sourceType": {
+      "PURCHASE_ORDER": "Purchase Order",
+      "PURCHASE_RETURN": "Purchase Return",
+      "MANUAL": "Manual Entry"
+    },
+    "columns": {
+      "payableNumber": "Document No.",
+      "supplierName": "Supplier Name",
+      "sourceDocument": "Source Document",
+      "totalAmount": "Total Amount",
+      "paidAmount": "Paid Amount",
+      "outstandingAmount": "Outstanding",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "createdAt": "Created At"
+    },
+    "actions": {
+      "view": "View",
+      "pay": "Pay"
+    },
+    "tooltip": {
+      "overdue": "Overdue"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch accounts payable"
+    }
+  },
+  "receiptVoucher": {
+    "title": "New Receipt Voucher",
+    "customerInfo": {
+      "title": "Customer Information",
+      "description": "Select the customer for receipt",
+      "label": "Customer",
+      "placeholder": "Search by customer name or code"
+    },
+    "paymentInfo": {
+      "title": "Receipt Information",
+      "description": "Enter receipt amount and method",
+      "amount": "Receipt Amount",
+      "amountPlaceholder": "Enter receipt amount",
+      "method": "Payment Method",
+      "methodPlaceholder": "Select payment method",
+      "date": "Receipt Date",
+      "datePlaceholder": "Select receipt date",
+      "reference": "Reference Number",
+      "referencePlaceholder": "Transaction ID, check number, etc. (optional)",
+      "referenceHelper": "For linking to bank statement or payment platform",
+      "outstandingHelper": "Total Outstanding: {{amount}}"
+    },
+    "otherInfo": {
+      "title": "Other Information",
+      "description": "Remarks",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter remarks (optional)"
+    },
+    "customerSummary": {
+      "hasReceivables": "Customer {{name}} has {{count}} pending receivables, total outstanding:",
+      "noReceivables": "Customer {{name}} has no pending receivables",
+      "pendingReceivables": "Pending receivables for allocation:",
+      "more": "+{{count}} more"
+    },
+    "actions": {
+      "create": "Create"
+    },
+    "messages": {
+      "searchCustomerError": "Failed to search customers",
+      "loadCustomerError": "Failed to load customer information",
+      "createSuccess": "Receipt voucher created successfully",
+      "createError": "Failed to create receipt voucher"
+    },
+    "validation": {
+      "amountPositive": "Receipt amount must be greater than 0",
+      "amountMax": "Receipt amount cannot exceed 999,999,999.99"
+    }
+  },
+  "paymentVoucher": {
+    "title": "New Payment Voucher",
+    "supplierInfo": {
+      "title": "Supplier Information",
+      "description": "Select the supplier for payment",
+      "label": "Supplier",
+      "placeholder": "Search by supplier name or code"
+    },
+    "paymentInfo": {
+      "title": "Payment Information",
+      "description": "Enter payment amount and method",
+      "amount": "Payment Amount",
+      "amountPlaceholder": "Enter payment amount",
+      "method": "Payment Method",
+      "methodPlaceholder": "Select payment method",
+      "date": "Payment Date",
+      "datePlaceholder": "Select payment date",
+      "reference": "Reference Number",
+      "referencePlaceholder": "Transaction ID, check number, etc. (optional)",
+      "referenceHelper": "For linking to bank statement or payment platform",
+      "outstandingHelper": "Total Outstanding: {{amount}}"
+    },
+    "otherInfo": {
+      "title": "Other Information",
+      "description": "Remarks",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter remarks (optional)"
+    },
+    "supplierSummary": {
+      "hasPayables": "Supplier {{name}} has {{count}} pending payables, total outstanding:",
+      "noPayables": "Supplier {{name}} has no pending payables",
+      "pendingPayables": "Pending payables for allocation:",
+      "more": "+{{count}} more"
+    },
+    "actions": {
+      "create": "Create"
+    },
+    "messages": {
+      "searchSupplierError": "Failed to search suppliers",
+      "loadSupplierError": "Failed to load supplier information",
+      "createSuccess": "Payment voucher created successfully",
+      "createError": "Failed to create payment voucher"
+    },
+    "validation": {
+      "amountPositive": "Payment amount must be greater than 0",
+      "amountMax": "Payment amount cannot exceed 999,999,999.99"
+    }
+  },
+  "expenses": {
+    "title": "Expense Management",
+    "searchPlaceholder": "Search expense number, description...",
+    "newExpense": "New Expense",
+    "refresh": "Refresh",
+    "summary": {
+      "totalApproved": "Total Approved",
+      "totalPending": "Pending Count"
+    },
+    "filter": {
+      "categoryPlaceholder": "Category Filter",
+      "statusPlaceholder": "Approval Status",
+      "paymentStatusPlaceholder": "Payment Status",
+      "allCategory": "All Categories",
+      "allStatus": "All Status",
+      "allPaymentStatus": "All Payment Status",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "category": {
+      "RENT": "Rent",
+      "UTILITIES": "Utilities",
+      "SALARY": "Salary",
+      "OFFICE": "Office",
+      "TRAVEL": "Travel",
+      "MARKETING": "Marketing",
+      "EQUIPMENT": "Equipment",
+      "MAINTENANCE": "Maintenance",
+      "INSURANCE": "Insurance",
+      "TAX": "Tax",
+      "OTHER": "Other"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "paymentStatus": {
+      "UNPAID": "Unpaid",
+      "PAID": "Paid"
+    },
+    "columns": {
+      "expenseNumber": "Expense No.",
+      "category": "Category",
+      "description": "Description",
+      "amount": "Amount",
+      "incurredAt": "Incurred Date",
+      "status": "Approval Status",
+      "paymentStatus": "Payment Status",
+      "createdAt": "Created At"
+    },
+    "actions": {
+      "edit": "Edit",
+      "submit": "Submit for Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "modal": {
+      "rejectTitle": "Reject Expense",
+      "rejectPlaceholder": "Enter rejection reason",
+      "rejectLabel": "Please enter rejection reason:",
+      "cancelTitle": "Cancel Expense",
+      "cancelPlaceholder": "Enter cancellation reason",
+      "cancelLabel": "Please enter cancellation reason:",
+      "cancelExpense": "Cancel Expense",
+      "close": "Close",
+      "deleteTitle": "Confirm Delete",
+      "deleteContent": "Are you sure you want to delete expense {{expenseNumber}}? This action cannot be undone.",
+      "deleteOk": "Delete",
+      "deleteCancel": "Cancel"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch expenses",
+      "submitSuccess": "Expense submitted for approval",
+      "submitError": "Failed to submit",
+      "approveSuccess": "Expense approved",
+      "approveError": "Failed to approve",
+      "rejectSuccess": "Expense rejected",
+      "rejectError": "Failed to reject",
+      "cancelSuccess": "Expense cancelled",
+      "cancelError": "Failed to cancel",
+      "deleteSuccess": "Expense deleted",
+      "deleteError": "Failed to delete",
+      "reasonRequired": "Please enter rejection reason",
+      "cancelReasonRequired": "Please enter cancellation reason"
+    }
+  },
+  "expenseForm": {
+    "createTitle": "New Expense",
+    "editTitle": "Edit Expense",
+    "expenseInfo": {
+      "title": "Expense Information",
+      "description": "Enter expense details",
+      "category": "Category",
+      "categoryPlaceholder": "Select category",
+      "amount": "Amount",
+      "amountPlaceholder": "Enter amount",
+      "incurredAt": "Incurred Date",
+      "incurredAtPlaceholder": "Select date",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter expense description"
+    },
+    "otherInfo": {
+      "title": "Other Information",
+      "description": "Remarks and attachments (optional)",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter remarks (optional)",
+      "attachmentUrls": "Attachment URLs",
+      "attachmentUrlsPlaceholder": "Enter attachment URLs, separate multiple URLs with commas (optional)",
+      "attachmentUrlsHelper": "Multiple URLs supported, separate with commas"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save"
+    },
+    "messages": {
+      "loadError": "Failed to load expense information",
+      "createSuccess": "Expense created successfully",
+      "createError": "Failed to create expense",
+      "updateSuccess": "Expense updated successfully",
+      "updateError": "Failed to update expense"
+    },
+    "validation": {
+      "amountPositive": "Amount must be greater than 0",
+      "amountMax": "Amount cannot exceed 999,999,999.99"
+    }
+  },
+  "otherIncomes": {
+    "title": "Other Income Management",
+    "searchPlaceholder": "Search income number, description...",
+    "newIncome": "New Income",
+    "refresh": "Refresh",
+    "summary": {
+      "totalConfirmed": "Total Confirmed",
+      "totalDraft": "Pending Confirmation"
+    },
+    "filter": {
+      "categoryPlaceholder": "Category Filter",
+      "statusPlaceholder": "Status",
+      "receiptStatusPlaceholder": "Receipt Status",
+      "allCategory": "All Categories",
+      "allStatus": "All Status",
+      "allReceiptStatus": "All Receipt Status",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "category": {
+      "INVESTMENT": "Investment",
+      "SUBSIDY": "Subsidy",
+      "INTEREST": "Interest",
+      "RENTAL": "Rental",
+      "REFUND": "Refund",
+      "COMPENSATION": "Compensation",
+      "ASSET_DISPOSAL": "Asset Disposal",
+      "OTHER": "Other"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled"
+    },
+    "receiptStatus": {
+      "PENDING": "Pending",
+      "RECEIVED": "Received"
+    },
+    "columns": {
+      "incomeNumber": "Income No.",
+      "category": "Category",
+      "description": "Description",
+      "amount": "Amount",
+      "receivedAt": "Income Date",
+      "status": "Status",
+      "receiptStatus": "Receipt Status",
+      "createdAt": "Created At"
+    },
+    "actions": {
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "modal": {
+      "cancelTitle": "Cancel Income",
+      "cancelPlaceholder": "Enter cancellation reason",
+      "cancelLabel": "Please enter cancellation reason:",
+      "cancelIncome": "Cancel Income",
+      "close": "Close",
+      "deleteTitle": "Confirm Delete",
+      "deleteContent": "Are you sure you want to delete income {{incomeNumber}}? This action cannot be undone.",
+      "deleteOk": "Delete",
+      "deleteCancel": "Cancel"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch other incomes",
+      "confirmSuccess": "Income confirmed",
+      "confirmError": "Failed to confirm",
+      "cancelSuccess": "Income cancelled",
+      "cancelError": "Failed to cancel",
+      "deleteSuccess": "Income deleted",
+      "deleteError": "Failed to delete",
+      "cancelReasonRequired": "Please enter cancellation reason"
+    }
+  },
+  "otherIncomeForm": {
+    "createTitle": "New Income",
+    "editTitle": "Edit Income",
+    "incomeInfo": {
+      "title": "Income Information",
+      "description": "Enter income details",
+      "category": "Category",
+      "categoryPlaceholder": "Select category",
+      "amount": "Amount",
+      "amountPlaceholder": "Enter amount",
+      "receivedAt": "Income Date",
+      "receivedAtPlaceholder": "Select date",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter income description"
+    },
+    "otherInfo": {
+      "title": "Other Information",
+      "description": "Remarks and attachments (optional)",
+      "remark": "Remark",
+      "remarkPlaceholder": "Enter remarks (optional)",
+      "attachmentUrls": "Attachment URLs",
+      "attachmentUrlsPlaceholder": "Enter attachment URLs, separate multiple URLs with commas (optional)",
+      "attachmentUrlsHelper": "Multiple URLs supported, separate with commas"
+    },
+    "actions": {
+      "create": "Create",
+      "save": "Save"
+    },
+    "messages": {
+      "loadError": "Failed to load income information",
+      "createSuccess": "Income created successfully",
+      "createError": "Failed to create income",
+      "updateSuccess": "Income updated successfully",
+      "updateError": "Failed to update income"
+    },
+    "validation": {
+      "amountPositive": "Amount must be greater than 0",
+      "amountMax": "Amount cannot exceed 999,999,999.99"
+    }
+  },
+  "receiptReconcile": {
+    "title": "Receipt Reconciliation",
+    "back": "Back",
+    "refresh": "Refresh",
+    "notFound": "Receipt voucher not found",
+    "voucherInfo": {
+      "title": "Receipt Voucher Information",
+      "voucherNumber": "Voucher Number",
+      "customer": "Customer Name",
+      "paymentMethod": "Payment Method",
+      "receiptDate": "Receipt Date",
+      "totalAmount": "Receipt Amount",
+      "allocatedAmount": "Allocated Amount",
+      "unallocatedAmount": "Unallocated Amount",
+      "status": "Status"
+    },
+    "voucherStatus": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "Confirmed",
+      "ALLOCATED": "Allocated",
+      "CANCELLED": "Cancelled"
+    },
+    "receivableStatus": {
+      "PENDING": "Pending",
+      "PARTIAL": "Partial",
+      "PAID": "Paid",
+      "REVERSED": "Reversed",
+      "CANCELLED": "Cancelled"
+    },
+    "receivables": {
+      "title": "Pending Receivables for Allocation",
+      "empty": "No pending receivables for this customer",
+      "allocateAll": "Allocate All",
+      "clearAll": "Clear All"
+    },
+    "columns": {
+      "receivableNumber": "Receivable Number",
+      "sourceNumber": "Source Document",
+      "totalAmount": "Total Amount",
+      "outstandingAmount": "Outstanding Amount",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "allocateAmount": "Allocation Amount",
+      "fifoAllocation": "Expected Allocation"
+    },
+    "mode": {
+      "label": "Allocation Mode:",
+      "fifo": "Auto Allocate (FIFO)",
+      "manual": "Manual Allocate",
+      "fifoDescription": "Auto allocation will allocate receivables in order of due date (FIFO), until the receipt amount is exhausted or all receivables are allocated.",
+      "manualDescription": "Manual allocation allows you to select receivables and specify the allocation amount for each."
+    },
+    "summary": {
+      "availableAmount": "Available Amount:",
+      "fifoAllocateAmount": "Expected Allocation:",
+      "selectedAllocateAmount": "Selected Allocation:",
+      "totalAllocate": "Total Allocation",
+      "remaining": "Remaining After Allocation:"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "confirm": "Confirm Allocation",
+      "backToList": "Back to List"
+    },
+    "result": {
+      "title": "Reconciliation Complete",
+      "fullyReconciled": "Receipt voucher fully reconciled",
+      "partiallyReconciled": "Partial reconciliation complete, {{amount}} remaining",
+      "voucherNumber": "Voucher Number",
+      "customerName": "Customer Name",
+      "receiptAmount": "Receipt Amount",
+      "thisReconciled": "This Reconciliation",
+      "remainingUnallocated": "Remaining Unallocated",
+      "reconciledReceivables": "Reconciled Receivables",
+      "totalAmount": "Total Amount",
+      "paidAmount": "Paid Amount",
+      "outstandingAmount": "Outstanding Amount",
+      "status": "Status"
+    },
+    "existingAllocations": {
+      "title": "Existing Allocations",
+      "receivableNumber": "Receivable Number",
+      "amount": "Allocation Amount",
+      "allocatedAt": "Allocated At",
+      "remark": "Remark"
+    },
+    "warnings": {
+      "draftWarning": "This receipt voucher is not confirmed. Please confirm before reconciliation.",
+      "allocatedWarning": "This receipt voucher is fully allocated",
+      "cancelledWarning": "This receipt voucher is cancelled and cannot be reconciled",
+      "fullyAllocated": "This receipt voucher is fully allocated"
+    },
+    "messages": {
+      "fetchError": "Failed to load receipt voucher",
+      "fetchReceivablesError": "Failed to load data",
+      "allocateSuccess": "Reconciliation successful",
+      "allocateError": "Reconciliation failed",
+      "requestError": "Reconciliation request failed",
+      "noAllocation": "Please select at least one receivable for allocation",
+      "exceedAmount": "Allocation total cannot exceed unallocated amount",
+      "exceedOutstanding": "{{number}} allocation amount cannot exceed outstanding amount",
+      "onlyConfirmedCanReconcile": "Only confirmed receipt vouchers can be reconciled",
+      "noUnallocatedAmount": "This receipt voucher has no unallocated amount"
+    }
+  },
+  "paymentReconcile": {
+    "title": "Payment Reconciliation",
+    "back": "Back",
+    "refresh": "Refresh",
+    "voucherNotFound": "Payment voucher not found",
+    "voucherInfo": {
+      "title": "Payment Voucher Information",
+      "voucherNumber": "Voucher Number",
+      "supplierName": "Supplier Name",
+      "totalAmount": "Payment Amount",
+      "allocatedAmount": "Allocated Amount",
+      "unallocatedAmount": "Unallocated Amount",
+      "status": "Status",
+      "paymentMethod": "Payment Method",
+      "paymentDate": "Payment Date"
+    },
+    "voucherStatus": {
+      "DRAFT": "Draft",
+      "CONFIRMED": "Confirmed",
+      "ALLOCATED": "Allocated",
+      "CANCELLED": "Cancelled"
+    },
+    "payableStatus": {
+      "PENDING": "Pending",
+      "PARTIAL": "Partial",
+      "PAID": "Paid",
+      "REVERSED": "Reversed",
+      "CANCELLED": "Cancelled"
+    },
+    "payables": {
+      "title": "Pending Payables for Allocation",
+      "empty": "No pending payables for this supplier",
+      "allocateAll": "Allocate All",
+      "clearAll": "Clear All"
+    },
+    "columns": {
+      "payableNumber": "Payable Number",
+      "sourceNumber": "Source Document",
+      "totalAmount": "Total Amount",
+      "outstandingAmount": "Outstanding Amount",
+      "allocateAmount": "Allocation Amount",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "expectedAllocation": "Expected Allocation"
+    },
+    "reconcileMode": {
+      "label": "Allocation Mode:",
+      "fifo": "Auto Allocation (FIFO)",
+      "manual": "Manual Allocation",
+      "fifoDescription": "Auto allocation will allocate payables in order of due date (FIFO), until the payment amount is exhausted or all payables are allocated.",
+      "manualDescription": "Manual allocation allows you to select payables and specify the allocation amount for each."
+    },
+    "summary": {
+      "availableAmount": "Available Amount:",
+      "expectedAllocation": "Expected Allocation:",
+      "selectedAllocation": "Selected Allocation:",
+      "remainingAfter": "Remaining After Allocation:"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "confirm": "Confirm Allocation"
+    },
+    "result": {
+      "title": "Reconciliation Complete",
+      "backToList": "Back to List",
+      "fullyReconciled": "Payment voucher fully reconciled",
+      "partiallyReconciled": "Partial reconciliation complete, {{amount}} remaining",
+      "voucherNumber": "Voucher Number",
+      "supplierName": "Supplier Name",
+      "paymentAmount": "Payment Amount",
+      "thisReconciled": "This Reconciliation",
+      "remainingUnallocated": "Remaining Unallocated",
+      "reconciledPayables": "Reconciled Payables",
+      "paidAmount": "Paid Amount"
+    },
+    "existingAllocations": {
+      "title": "Existing Allocations",
+      "payableNumber": "Payable Number",
+      "amount": "Allocation Amount",
+      "allocatedAt": "Allocated At",
+      "remark": "Remark"
+    },
+    "statusWarning": {
+      "draft": "This payment voucher is not confirmed. Please confirm before reconciliation.",
+      "allocated": "This payment voucher is fully allocated",
+      "cancelled": "This payment voucher is cancelled and cannot be reconciled",
+      "fullyAllocated": "This payment voucher is fully allocated"
+    },
+    "messages": {
+      "fetchError": "Failed to load payment voucher",
+      "fetchDataError": "Failed to load data",
+      "allocateSuccess": "Reconciliation successful",
+      "allocateError": "Reconciliation failed",
+      "requestError": "Reconciliation request failed",
+      "onlyConfirmedCanReconcile": "Only confirmed payment vouchers can be reconciled",
+      "noUnallocatedAmount": "This payment voucher has no unallocated amount",
+      "noPayableSelected": "Please select at least one payable for allocation",
+      "exceedUnallocated": "Allocation total cannot exceed unallocated amount"
+    }
+  },
+  "paymentMethod": {
+    "CASH": "Cash",
+    "BANK_TRANSFER": "Bank Transfer",
+    "WECHAT": "WeChat Pay",
+    "ALIPAY": "Alipay",
+    "CHECK": "Check",
+    "BALANCE": "Balance",
+    "OTHER": "Other"
+  },
+  "common": {
+    "loading": "Loading..."
+  }
+}

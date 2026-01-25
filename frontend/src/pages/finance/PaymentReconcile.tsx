@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -84,19 +85,6 @@ function getVoucherStatusColor(status: string): TagColor {
 }
 
 /**
- * Get status label for payment voucher
- */
-function getVoucherStatusLabel(status: string): string {
-  const statusLabels: Record<string, string> = {
-    DRAFT: '草稿',
-    CONFIRMED: '已确认',
-    ALLOCATED: '已核销',
-    CANCELLED: '已取消',
-  }
-  return statusLabels[status] || status
-}
-
-/**
  * Get payable status tag color
  */
 function getPayableStatusColor(status: string): TagColor {
@@ -108,36 +96,6 @@ function getPayableStatusColor(status: string): TagColor {
     CANCELLED: 'grey',
   }
   return statusColors[status] || 'grey'
-}
-
-/**
- * Get payable status label
- */
-function getPayableStatusLabel(status: string): string {
-  const statusLabels: Record<string, string> = {
-    PENDING: '待付款',
-    PARTIAL: '部分付款',
-    PAID: '已付款',
-    REVERSED: '已红冲',
-    CANCELLED: '已取消',
-  }
-  return statusLabels[status] || status
-}
-
-/**
- * Get payment method label
- */
-function getPaymentMethodLabel(method: string): string {
-  const methodLabels: Record<string, string> = {
-    CASH: '现金',
-    BANK_TRANSFER: '银行转账',
-    WECHAT: '微信支付',
-    ALIPAY: '支付宝',
-    CHECK: '支票',
-    BALANCE: '余额抵扣',
-    OTHER: '其他',
-  }
-  return methodLabels[method] || method
 }
 
 interface AllocationItem {
@@ -162,6 +120,7 @@ interface AllocationItem {
  * - Show reconciliation result
  */
 export default function PaymentReconcilePage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const financeApi = useMemo(() => getFinanceApi(), [])
@@ -186,7 +145,7 @@ export default function PaymentReconcilePage() {
       // Load voucher
       const voucherResponse = await financeApi.getFinancePaymentsId(id)
       if (!voucherResponse.success || !voucherResponse.data) {
-        Toast.error('加载付款单失败')
+        Toast.error(t('paymentReconcile.messages.fetchError'))
         navigate('/finance/payables')
         return
       }
@@ -221,11 +180,11 @@ export default function PaymentReconcilePage() {
         setAllocationItems(items)
       }
     } catch {
-      Toast.error('加载数据失败')
+      Toast.error(t('paymentReconcile.messages.fetchDataError'))
     } finally {
       setLoading(false)
     }
-  }, [id, financeApi, navigate])
+  }, [id, financeApi, navigate, t])
 
   useEffect(() => {
     loadData()
@@ -365,12 +324,12 @@ export default function PaymentReconcilePage() {
 
     // Validate
     if (voucher.status !== 'CONFIRMED') {
-      Toast.error('只有已确认的付款单才能进行核销')
+      Toast.error(t('paymentReconcile.messages.onlyConfirmedCanReconcile'))
       return
     }
 
     if (voucher.unallocated_amount <= 0) {
-      Toast.error('该付款单没有未核销金额')
+      Toast.error(t('paymentReconcile.messages.noUnallocatedAmount'))
       return
     }
 
@@ -390,13 +349,13 @@ export default function PaymentReconcilePage() {
         }))
 
       if (manualAllocations.length === 0) {
-        Toast.error('请选择至少一个应付账款进行核销')
+        Toast.error(t('paymentReconcile.messages.noPayableSelected'))
         return
       }
 
       const totalManual = manualAllocations.reduce((sum, a) => sum + a.amount, 0)
       if (totalManual > voucher.unallocated_amount) {
-        Toast.error('核销总额不能超过未核销金额')
+        Toast.error(t('paymentReconcile.messages.exceedUnallocated'))
         return
       }
 
@@ -410,15 +369,15 @@ export default function PaymentReconcilePage() {
     try {
       const response = await financeApi.postFinancePaymentsIdReconcile(id, request)
       if (response.success && response.data) {
-        Toast.success('核销成功')
+        Toast.success(t('paymentReconcile.messages.allocateSuccess'))
         setReconcileResult(response.data)
         // Reload data to refresh state
         await loadData()
       } else {
-        Toast.error(response.error || '核销失败')
+        Toast.error(response.error || t('paymentReconcile.messages.allocateError'))
       }
     } catch {
-      Toast.error('核销请求失败')
+      Toast.error(t('paymentReconcile.messages.requestError'))
     } finally {
       setReconciling(false)
     }
@@ -455,26 +414,26 @@ export default function PaymentReconcilePage() {
   const columns = useMemo(() => {
     const baseColumns = [
       {
-        title: '应付账款编号',
+        title: t('paymentReconcile.columns.payableNumber'),
         dataIndex: 'payable_number',
         key: 'payable_number',
         width: 160,
       },
       {
-        title: '来源单据',
+        title: t('paymentReconcile.columns.sourceNumber'),
         dataIndex: 'source_number',
         key: 'source_number',
         width: 140,
       },
       {
-        title: '总金额',
+        title: t('paymentReconcile.columns.totalAmount'),
         dataIndex: 'total_amount',
         key: 'total_amount',
         width: 120,
         render: (value: number) => formatCurrency(value),
       },
       {
-        title: '待付金额',
+        title: t('paymentReconcile.columns.outstandingAmount'),
         dataIndex: 'outstanding_amount',
         key: 'outstanding_amount',
         width: 120,
@@ -485,19 +444,21 @@ export default function PaymentReconcilePage() {
         ),
       },
       {
-        title: '到期日',
+        title: t('paymentReconcile.columns.dueDate'),
         dataIndex: 'due_date',
         key: 'due_date',
         width: 100,
         render: (value: string) => formatDate(value),
       },
       {
-        title: '状态',
+        title: t('paymentReconcile.columns.status'),
         dataIndex: 'status',
         key: 'status',
         width: 100,
         render: (value: string) => (
-          <Tag color={getPayableStatusColor(value)}>{getPayableStatusLabel(value)}</Tag>
+          <Tag color={getPayableStatusColor(value)}>
+            {String(t(`paymentReconcile.payableStatus.${value}` as const)) || value}
+          </Tag>
         ),
       },
     ]
@@ -526,7 +487,7 @@ export default function PaymentReconcilePage() {
         },
         ...baseColumns,
         {
-          title: '核销金额',
+          title: t('paymentReconcile.columns.allocateAmount'),
           key: 'allocate_amount',
           width: 150,
           render: (_: unknown, record: AccountPayable) => {
@@ -553,7 +514,7 @@ export default function PaymentReconcilePage() {
     return [
       ...baseColumns,
       {
-        title: '预计核销',
+        title: t('paymentReconcile.columns.expectedAllocation'),
         key: 'fifo_allocation',
         width: 120,
         render: (_: unknown, record: AccountPayable) => {
@@ -570,6 +531,7 @@ export default function PaymentReconcilePage() {
       },
     ]
   }, [
+    t,
     reconcileMode,
     allSelected,
     someSelected,
@@ -593,7 +555,7 @@ export default function PaymentReconcilePage() {
   if (!voucher) {
     return (
       <Container size="lg" className="payment-reconcile-page">
-        <Empty description="未找到付款单" />
+        <Empty description={t('paymentReconcile.voucherNotFound')} />
       </Container>
     )
   }
@@ -604,9 +566,9 @@ export default function PaymentReconcilePage() {
       <Container size="lg" className="payment-reconcile-page">
         <Card className="reconcile-result-card">
           <div className="result-header">
-            <Title heading={4}>核销完成</Title>
+            <Title heading={4}>{t('paymentReconcile.result.title')}</Title>
             <Button icon={<IconArrowLeft />} onClick={handleBack}>
-              返回列表
+              {t('paymentReconcile.result.backToList')}
             </Button>
           </div>
 
@@ -614,8 +576,10 @@ export default function PaymentReconcilePage() {
             type={reconcileResult.fully_reconciled ? 'success' : 'info'}
             description={
               reconcileResult.fully_reconciled
-                ? '付款单已完全核销'
-                : `部分核销完成，剩余 ${formatCurrency(reconcileResult.remaining_unallocated)} 未核销`
+                ? t('paymentReconcile.result.fullyReconciled')
+                : t('paymentReconcile.result.partiallyReconciled', {
+                    amount: formatCurrency(reconcileResult.remaining_unallocated),
+                  })
             }
           />
 
@@ -623,23 +587,23 @@ export default function PaymentReconcilePage() {
             <Descriptions
               data={[
                 {
-                  key: '付款单编号',
+                  key: t('paymentReconcile.result.voucherNumber'),
                   value: reconcileResult.voucher.voucher_number,
                 },
                 {
-                  key: '供应商名称',
+                  key: t('paymentReconcile.result.supplierName'),
                   value: reconcileResult.voucher.supplier_name,
                 },
                 {
-                  key: '付款金额',
+                  key: t('paymentReconcile.result.paymentAmount'),
                   value: formatCurrency(reconcileResult.voucher.amount),
                 },
                 {
-                  key: '本次核销',
+                  key: t('paymentReconcile.result.thisReconciled'),
                   value: formatCurrency(reconcileResult.total_reconciled),
                 },
                 {
-                  key: '剩余未核销',
+                  key: t('paymentReconcile.result.remainingUnallocated'),
                   value: formatCurrency(reconcileResult.remaining_unallocated),
                 },
               ]}
@@ -649,39 +613,41 @@ export default function PaymentReconcilePage() {
           {reconcileResult.updated_payables.length > 0 && (
             <>
               <Divider />
-              <Title heading={5}>已核销应付账款</Title>
+              <Title heading={5}>{t('paymentReconcile.result.reconciledPayables')}</Title>
               <Table
                 dataSource={reconcileResult.updated_payables}
                 columns={[
                   {
-                    title: '应付账款编号',
+                    title: t('paymentReconcile.columns.payableNumber'),
                     dataIndex: 'payable_number',
                     key: 'payable_number',
                   },
                   {
-                    title: '总金额',
+                    title: t('paymentReconcile.columns.totalAmount'),
                     dataIndex: 'total_amount',
                     key: 'total_amount',
                     render: (value: number) => formatCurrency(value),
                   },
                   {
-                    title: '已付金额',
+                    title: t('paymentReconcile.result.paidAmount'),
                     dataIndex: 'paid_amount',
                     key: 'paid_amount',
                     render: (value: number) => formatCurrency(value),
                   },
                   {
-                    title: '待付金额',
+                    title: t('paymentReconcile.columns.outstandingAmount'),
                     dataIndex: 'outstanding_amount',
                     key: 'outstanding_amount',
                     render: (value: number) => formatCurrency(value),
                   },
                   {
-                    title: '状态',
+                    title: t('paymentReconcile.columns.status'),
                     dataIndex: 'status',
                     key: 'status',
                     render: (value: string) => (
-                      <Tag color={getPayableStatusColor(value)}>{getPayableStatusLabel(value)}</Tag>
+                      <Tag color={getPayableStatusColor(value)}>
+                        {String(t(`paymentReconcile.payableStatus.${value}` as const)) || value}
+                      </Tag>
                     ),
                   },
                 ]}
@@ -701,39 +667,54 @@ export default function PaymentReconcilePage() {
       <div className="page-header">
         <div className="header-left">
           <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            返回
+            {t('paymentReconcile.back')}
           </Button>
           <Title heading={4} style={{ margin: 0 }}>
-            付款核销
+            {t('paymentReconcile.title')}
           </Title>
         </div>
         <Button icon={<IconRefresh />} onClick={loadData} disabled={loading}>
-          刷新
+          {t('paymentReconcile.refresh')}
         </Button>
       </div>
 
       {/* Voucher Details */}
       <Card className="voucher-details-card">
-        <Title heading={5}>付款单信息</Title>
+        <Title heading={5}>{t('paymentReconcile.voucherInfo.title')}</Title>
         <Descriptions
           row
           data={[
-            { key: '付款单编号', value: voucher.voucher_number },
-            { key: '供应商名称', value: voucher.supplier_name },
+            { key: t('paymentReconcile.voucherInfo.voucherNumber'), value: voucher.voucher_number },
+            { key: t('paymentReconcile.voucherInfo.supplierName'), value: voucher.supplier_name },
             {
-              key: '状态',
+              key: t('paymentReconcile.voucherInfo.status'),
               value: (
                 <Tag color={getVoucherStatusColor(voucher.status)}>
-                  {getVoucherStatusLabel(voucher.status)}
+                  {String(t(`paymentReconcile.voucherStatus.${voucher.status}` as const)) ||
+                    voucher.status}
                 </Tag>
               ),
             },
-            { key: '付款方式', value: getPaymentMethodLabel(voucher.payment_method) },
-            { key: '付款日期', value: formatDate(voucher.payment_date) },
-            { key: '付款金额', value: formatCurrency(voucher.amount) },
-            { key: '已核销金额', value: formatCurrency(voucher.allocated_amount) },
             {
-              key: '未核销金额',
+              key: t('paymentReconcile.voucherInfo.paymentMethod'),
+              value:
+                String(t(`paymentMethod.${voucher.payment_method}` as const)) ||
+                voucher.payment_method,
+            },
+            {
+              key: t('paymentReconcile.voucherInfo.paymentDate'),
+              value: formatDate(voucher.payment_date),
+            },
+            {
+              key: t('paymentReconcile.voucherInfo.totalAmount'),
+              value: formatCurrency(voucher.amount),
+            },
+            {
+              key: t('paymentReconcile.voucherInfo.allocatedAmount'),
+              value: formatCurrency(voucher.allocated_amount),
+            },
+            {
+              key: t('paymentReconcile.voucherInfo.unallocatedAmount'),
               value: (
                 <Text strong type="warning">
                   {formatCurrency(voucher.unallocated_amount)}
@@ -749,16 +730,20 @@ export default function PaymentReconcilePage() {
             className="status-warning"
             description={
               voucher.status === 'DRAFT'
-                ? '该付款单尚未确认，请先确认后再进行核销'
+                ? t('paymentReconcile.statusWarning.draft')
                 : voucher.status === 'ALLOCATED'
-                  ? '该付款单已完全核销'
-                  : '该付款单已取消，无法进行核销'
+                  ? t('paymentReconcile.statusWarning.allocated')
+                  : t('paymentReconcile.statusWarning.cancelled')
             }
           />
         )}
 
         {voucher.status === 'CONFIRMED' && voucher.unallocated_amount <= 0 && (
-          <Banner type="success" className="status-warning" description="该付款单已完全核销" />
+          <Banner
+            type="success"
+            className="status-warning"
+            description={t('paymentReconcile.statusWarning.fullyAllocated')}
+          />
         )}
       </Card>
 
@@ -766,20 +751,20 @@ export default function PaymentReconcilePage() {
       {voucher.status === 'CONFIRMED' && voucher.unallocated_amount > 0 && (
         <Card className="reconcile-section-card">
           <div className="reconcile-header">
-            <Title heading={5}>待核销应付账款</Title>
+            <Title heading={5}>{t('paymentReconcile.payables.title')}</Title>
             <div className="mode-switch">
-              <Text type="secondary">核销方式：</Text>
+              <Text type="secondary">{t('paymentReconcile.reconcileMode.label')}</Text>
               <Button
                 theme={reconcileMode === 'FIFO' ? 'solid' : 'borderless'}
                 onClick={() => setReconcileMode('FIFO')}
               >
-                自动核销 (FIFO)
+                {t('paymentReconcile.reconcileMode.fifo')}
               </Button>
               <Button
                 theme={reconcileMode === 'MANUAL' ? 'solid' : 'borderless'}
                 onClick={() => setReconcileMode('MANUAL')}
               >
-                手动核销
+                {t('paymentReconcile.reconcileMode.manual')}
               </Button>
             </div>
           </div>
@@ -788,7 +773,7 @@ export default function PaymentReconcilePage() {
             <Banner
               type="info"
               className="mode-description"
-              description="自动核销将按照应付账款到期日期从早到晚的顺序（FIFO）进行核销，直到付款金额用完或所有应付账款核销完毕。"
+              description={t('paymentReconcile.reconcileMode.fifoDescription')}
             />
           )}
 
@@ -796,12 +781,12 @@ export default function PaymentReconcilePage() {
             <Banner
               type="info"
               className="mode-description"
-              description="手动核销允许您选择要核销的应付账款，并指定每笔应付账款的核销金额。"
+              description={t('paymentReconcile.reconcileMode.manualDescription')}
             />
           )}
 
           {payables.length === 0 ? (
-            <Empty description="该供应商暂无待核销的应付账款" />
+            <Empty description={t('paymentReconcile.payables.empty')} />
           ) : (
             <>
               <Table
@@ -815,19 +800,21 @@ export default function PaymentReconcilePage() {
               {/* Reconciliation Summary */}
               <div className="reconcile-summary">
                 <div className="summary-item">
-                  <Text type="secondary">可核销金额：</Text>
+                  <Text type="secondary">{t('paymentReconcile.summary.availableAmount')}</Text>
                   <Text strong>{formatCurrency(voucher.unallocated_amount)}</Text>
                 </div>
                 <div className="summary-item">
                   <Text type="secondary">
-                    {reconcileMode === 'FIFO' ? '预计核销金额：' : '已选核销金额：'}
+                    {reconcileMode === 'FIFO'
+                      ? t('paymentReconcile.summary.expectedAllocation')
+                      : t('paymentReconcile.summary.selectedAllocation')}
                   </Text>
                   <Text strong type="success">
                     {formatCurrency(totalAllocation)}
                   </Text>
                 </div>
                 <div className="summary-item">
-                  <Text type="secondary">核销后剩余：</Text>
+                  <Text type="secondary">{t('paymentReconcile.summary.remainingAfter')}</Text>
                   <Text strong type={totalAllocation > 0 ? 'warning' : 'tertiary'}>
                     {formatCurrency(voucher.unallocated_amount - totalAllocation)}
                   </Text>
@@ -836,14 +823,14 @@ export default function PaymentReconcilePage() {
 
               {/* Actions */}
               <div className="reconcile-actions">
-                <Button onClick={handleBack}>取消</Button>
+                <Button onClick={handleBack}>{t('paymentReconcile.actions.cancel')}</Button>
                 <Button
                   type="primary"
                   onClick={handleReconcile}
                   loading={reconciling}
                   disabled={!canReconcile}
                 >
-                  确认核销
+                  {t('paymentReconcile.actions.confirm')}
                 </Button>
               </div>
             </>
@@ -854,29 +841,29 @@ export default function PaymentReconcilePage() {
       {/* Existing Allocations */}
       {voucher.allocations && voucher.allocations.length > 0 && (
         <Card className="existing-allocations-card">
-          <Title heading={5}>已核销记录</Title>
+          <Title heading={5}>{t('paymentReconcile.existingAllocations.title')}</Title>
           <Table
             dataSource={voucher.allocations}
             columns={[
               {
-                title: '应付账款编号',
+                title: t('paymentReconcile.existingAllocations.payableNumber'),
                 dataIndex: 'payable_number',
                 key: 'payable_number',
               },
               {
-                title: '核销金额',
+                title: t('paymentReconcile.existingAllocations.amount'),
                 dataIndex: 'amount',
                 key: 'amount',
                 render: (value: number) => formatCurrency(value),
               },
               {
-                title: '核销时间',
+                title: t('paymentReconcile.existingAllocations.allocatedAt'),
                 dataIndex: 'allocated_at',
                 key: 'allocated_at',
-                render: (value: string) => (value ? new Date(value).toLocaleString('zh-CN') : '-'),
+                render: (value: string) => (value ? new Date(value).toLocaleString() : '-'),
               },
               {
-                title: '备注',
+                title: t('paymentReconcile.existingAllocations.remark'),
                 dataIndex: 'remark',
                 key: 'remark',
                 render: (value: string) => value || '-',

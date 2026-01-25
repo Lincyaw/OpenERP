@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -24,17 +25,6 @@ import type { HandlerSupplierResponse } from '@/api/models'
 import './PaymentVoucherNew.css'
 
 const { Title, Text } = Typography
-
-// Payment method options
-const PAYMENT_METHOD_OPTIONS = [
-  { label: '现金', value: 'CASH' },
-  { label: '银行转账', value: 'BANK_TRANSFER' },
-  { label: '微信支付', value: 'WECHAT' },
-  { label: '支付宝', value: 'ALIPAY' },
-  { label: '支票', value: 'CHECK' },
-  { label: '余额抵扣', value: 'BALANCE' },
-  { label: '其他', value: 'OTHER' },
-]
 
 // Payment method values
 const PAYMENT_METHODS = [
@@ -98,6 +88,7 @@ function formatCurrency(amount?: number): string {
 export default function PaymentVoucherNewPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { t } = useTranslation('finance')
   const financeApi = useMemo(() => getFinanceApi(), [])
   const supplierApi = useMemo(() => getSuppliers(), [])
 
@@ -112,6 +103,20 @@ export default function PaymentVoucherNewPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<HandlerSupplierResponse | null>(null)
   const [supplierPayables, setSupplierPayables] = useState<AccountPayable[]>([])
   const [payablesLoading, setPayablesLoading] = useState(false)
+
+  // Payment method options with translated labels
+  const paymentMethodOptions = useMemo(
+    () => [
+      { label: t('paymentMethod.CASH'), value: 'CASH' },
+      { label: t('paymentMethod.BANK_TRANSFER'), value: 'BANK_TRANSFER' },
+      { label: t('paymentMethod.WECHAT'), value: 'WECHAT' },
+      { label: t('paymentMethod.ALIPAY'), value: 'ALIPAY' },
+      { label: t('paymentMethod.CHECK'), value: 'CHECK' },
+      { label: t('paymentMethod.BALANCE'), value: 'BALANCE' },
+      { label: t('paymentMethod.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
 
   // Form setup
   const defaultValues: Partial<PaymentVoucherFormData> = useMemo(
@@ -131,7 +136,7 @@ export default function PaymentVoucherNewPage() {
     useFormWithValidation<PaymentVoucherFormData>({
       schema: paymentVoucherFormSchema,
       defaultValues,
-      successMessage: '付款单创建成功',
+      successMessage: t('paymentVoucher.messages.createSuccess'),
       onSuccess: () => {
         navigate('/finance/payables')
       },
@@ -165,12 +170,12 @@ export default function PaymentVoucherNewPage() {
           setSupplierOptions(options)
         }
       } catch {
-        Toast.error('搜索供应商失败')
+        Toast.error(t('paymentVoucher.messages.searchSupplierError'))
       } finally {
         setSupplierLoading(false)
       }
     },
-    [supplierApi]
+    [supplierApi, t]
   )
 
   // Fetch supplier payables when supplier is selected
@@ -228,12 +233,12 @@ export default function PaymentVoucherNewPage() {
             fetchSupplierPayables(supplier.id || '')
           }
         } catch {
-          Toast.error('加载供应商信息失败')
+          Toast.error(t('paymentVoucher.messages.loadSupplierError'))
         }
       }
       loadSupplier()
     }
-  }, [preSelectedSupplierId, supplierApi, setValue, fetchSupplierPayables])
+  }, [preSelectedSupplierId, supplierApi, setValue, fetchSupplierPayables, t])
 
   // Watch for supplier changes
   useEffect(() => {
@@ -283,7 +288,7 @@ export default function PaymentVoucherNewPage() {
 
     const response = await financeApi.postFinancePayments(request)
     if (!response.success) {
-      throw new Error(response.error || '创建付款单失败')
+      throw new Error(response.error || t('paymentVoucher.messages.createError'))
     }
   }
 
@@ -302,7 +307,7 @@ export default function PaymentVoucherNewPage() {
       <Card className="payment-voucher-form-card">
         <div className="payment-voucher-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            新增付款单
+            {t('paymentVoucher.title')}
           </Title>
         </div>
 
@@ -316,8 +321,10 @@ export default function PaymentVoucherNewPage() {
                   description={
                     <div className="payables-info">
                       <Text>
-                        供应商 <strong>{selectedSupplier.name}</strong> 共有{' '}
-                        <strong>{supplierPayables.length}</strong> 笔待付账款，待付总额:{' '}
+                        {t('paymentVoucher.supplierSummary.hasPayables', {
+                          name: selectedSupplier.name,
+                          count: supplierPayables.length,
+                        })}{' '}
                         <strong className="amount-highlight">
                           {formatCurrency(totalOutstanding)}
                         </strong>
@@ -330,7 +337,9 @@ export default function PaymentVoucherNewPage() {
                   type="success"
                   description={
                     <Text>
-                      供应商 <strong>{selectedSupplier.name}</strong> 暂无待付账款
+                      {t('paymentVoucher.supplierSummary.noPayables', {
+                        name: selectedSupplier.name,
+                      })}
                     </Text>
                   }
                 />
@@ -341,7 +350,7 @@ export default function PaymentVoucherNewPage() {
             {supplierPayables.length > 0 && (
               <div className="pending-payables-list">
                 <Text type="secondary" className="list-title">
-                  待核销应付账款:
+                  {t('paymentVoucher.supplierSummary.pendingPayables')}
                 </Text>
                 <div className="payables-tags">
                   {supplierPayables.slice(0, 5).map((payable) => (
@@ -354,7 +363,11 @@ export default function PaymentVoucherNewPage() {
                     </Tag>
                   ))}
                   {supplierPayables.length > 5 && (
-                    <Tag color="grey">+{supplierPayables.length - 5} 更多</Tag>
+                    <Tag color="grey">
+                      {t('paymentVoucher.supplierSummary.more', {
+                        count: supplierPayables.length - 5,
+                      })}
+                    </Tag>
                   )}
                 </div>
               </div>
@@ -363,17 +376,20 @@ export default function PaymentVoucherNewPage() {
         )}
 
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>
-          <FormSection title="供应商信息" description="选择付款的供应商">
+          <FormSection
+            title={t('paymentVoucher.supplierInfo.title')}
+            description={t('paymentVoucher.supplierInfo.description')}
+          >
             <FormRow cols={1}>
               <div className="supplier-select-wrapper">
                 <label className="semi-form-field-label">
                   <span className="semi-form-field-label-text">
                     <span className="semi-form-field-label-required">*</span>
-                    供应商
+                    {t('paymentVoucher.supplierInfo.label')}
                   </span>
                 </label>
                 <Select
-                  placeholder="请输入供应商名称或编码搜索"
+                  placeholder={t('paymentVoucher.supplierInfo.placeholder')}
                   value={watchedSupplierId || undefined}
                   onChange={handleSupplierChange}
                   onSearch={handleSupplierSearch}
@@ -388,28 +404,35 @@ export default function PaymentVoucherNewPage() {
             </FormRow>
           </FormSection>
 
-          <FormSection title="付款信息" description="填写付款金额和方式">
+          <FormSection
+            title={t('paymentVoucher.paymentInfo.title')}
+            description={t('paymentVoucher.paymentInfo.description')}
+          >
             <FormRow cols={2}>
               <NumberField
                 name="amount"
                 control={control}
-                label="付款金额"
-                placeholder="请输入付款金额"
+                label={t('paymentVoucher.paymentInfo.amount')}
+                placeholder={t('paymentVoucher.paymentInfo.amountPlaceholder')}
                 required
                 min={0.01}
                 max={999999999.99}
                 precision={2}
                 prefix="¥"
                 helperText={
-                  totalOutstanding > 0 ? `待付总额: ${formatCurrency(totalOutstanding)}` : undefined
+                  totalOutstanding > 0
+                    ? t('paymentVoucher.paymentInfo.outstandingHelper', {
+                        amount: formatCurrency(totalOutstanding),
+                      })
+                    : undefined
                 }
               />
               <SelectField
                 name="payment_method"
                 control={control}
-                label="付款方式"
-                placeholder="请选择付款方式"
-                options={PAYMENT_METHOD_OPTIONS}
+                label={t('paymentVoucher.paymentInfo.method')}
+                placeholder={t('paymentVoucher.paymentInfo.methodPlaceholder')}
+                options={paymentMethodOptions}
                 required
               />
             </FormRow>
@@ -417,33 +440,36 @@ export default function PaymentVoucherNewPage() {
               <DateField
                 name="payment_date"
                 control={control}
-                label="付款日期"
-                placeholder="请选择付款日期"
+                label={t('paymentVoucher.paymentInfo.date')}
+                placeholder={t('paymentVoucher.paymentInfo.datePlaceholder')}
                 required
               />
               <TextField
                 name="payment_reference"
                 control={control}
-                label="付款凭证号"
-                placeholder="交易流水号、支票号等 (可选)"
-                helperText="用于关联银行流水或支付平台交易"
+                label={t('paymentVoucher.paymentInfo.reference')}
+                placeholder={t('paymentVoucher.paymentInfo.referencePlaceholder')}
+                helperText={t('paymentVoucher.paymentInfo.referenceHelper')}
               />
             </FormRow>
           </FormSection>
 
-          <FormSection title="其他信息" description="备注说明">
+          <FormSection
+            title={t('paymentVoucher.otherInfo.title')}
+            description={t('paymentVoucher.otherInfo.description')}
+          >
             <TextAreaField
               name="remark"
               control={control}
-              label="备注"
-              placeholder="请输入备注信息 (可选)"
+              label={t('paymentVoucher.otherInfo.remark')}
+              placeholder={t('paymentVoucher.otherInfo.remarkPlaceholder')}
               rows={3}
               maxCount={500}
             />
           </FormSection>
 
           <FormActions
-            submitText="创建"
+            submitText={t('paymentVoucher.actions.create')}
             isSubmitting={isSubmitting}
             onCancel={handleCancel}
             showCancel

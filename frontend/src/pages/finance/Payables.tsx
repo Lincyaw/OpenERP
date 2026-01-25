@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -37,24 +38,6 @@ const { Title, Text } = Typography
 // Payable type with index signature for DataTable compatibility
 type PayableRow = AccountPayable & Record<string, unknown>
 
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '待付款', value: 'PENDING' },
-  { label: '部分付款', value: 'PARTIAL' },
-  { label: '已付款', value: 'PAID' },
-  { label: '已冲红', value: 'REVERSED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
-
-// Source type options for filter
-const SOURCE_TYPE_OPTIONS = [
-  { label: '全部来源', value: '' },
-  { label: '采购订单', value: 'PURCHASE_ORDER' },
-  { label: '采购退货', value: 'PURCHASE_RETURN' },
-  { label: '手工录入', value: 'MANUAL' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
   AccountPayableStatus,
@@ -65,22 +48,6 @@ const STATUS_TAG_COLORS: Record<
   PAID: 'green',
   REVERSED: 'red',
   CANCELLED: 'grey',
-}
-
-// Status labels
-const STATUS_LABELS: Record<AccountPayableStatus, string> = {
-  PENDING: '待付款',
-  PARTIAL: '部分付款',
-  PAID: '已付款',
-  REVERSED: '已冲红',
-  CANCELLED: '已取消',
-}
-
-// Source type labels
-const SOURCE_TYPE_LABELS: Record<PayableSourceType, string> = {
-  PURCHASE_ORDER: '采购订单',
-  PURCHASE_RETURN: '采购退货',
-  MANUAL: '手工录入',
 }
 
 /**
@@ -129,8 +96,33 @@ function isOverdue(payable: AccountPayable): boolean {
  * - Navigate to payable detail for payment
  */
 export default function PayablesPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const api = useMemo(() => getFinanceApi(), [])
+
+  // Status options for filter
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t('payables.filter.allStatus'), value: '' },
+      { label: t('payables.status.PENDING'), value: 'PENDING' },
+      { label: t('payables.status.PARTIAL'), value: 'PARTIAL' },
+      { label: t('payables.status.PAID'), value: 'PAID' },
+      { label: t('payables.status.REVERSED'), value: 'REVERSED' },
+      { label: t('payables.status.CANCELLED'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
+
+  // Source type options for filter
+  const SOURCE_TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('payables.filter.allSource'), value: '' },
+      { label: t('payables.sourceType.PURCHASE_ORDER'), value: 'PURCHASE_ORDER' },
+      { label: t('payables.sourceType.PURCHASE_RETURN'), value: 'PURCHASE_RETURN' },
+      { label: t('payables.sourceType.MANUAL'), value: 'MANUAL' },
+    ],
+    [t]
+  )
 
   // State for data
   const [payableList, setPayableList] = useState<PayableRow[]>([])
@@ -182,7 +174,7 @@ export default function PayablesPage() {
         }
       }
     } catch {
-      Toast.error('获取应付账款列表失败')
+      Toast.error(t('payables.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -195,6 +187,7 @@ export default function PayablesPage() {
     sourceTypeFilter,
     dateRange,
     overdueOnly,
+    t,
   ])
 
   // Fetch summary
@@ -309,7 +302,7 @@ export default function PayablesPage() {
   const tableColumns: DataTableColumn<PayableRow>[] = useMemo(
     () => [
       {
-        title: '单据编号',
+        title: t('payables.columns.payableNumber'),
         dataIndex: 'payable_number',
         width: 140,
         sortable: true,
@@ -317,7 +310,7 @@ export default function PayablesPage() {
           <div className="payable-number-cell">
             <span className="payable-number">{(number as string) || '-'}</span>
             {isOverdue(record) && (
-              <Tooltip content="已逾期">
+              <Tooltip content={t('payables.tooltip.overdue')}>
                 <IconAlertCircle className="overdue-icon" />
               </Tooltip>
             )}
@@ -325,27 +318,27 @@ export default function PayablesPage() {
         ),
       },
       {
-        title: '供应商名称',
+        title: t('payables.columns.supplierName'),
         dataIndex: 'supplier_name',
         sortable: true,
         ellipsis: true,
         render: (name: unknown) => <span className="supplier-name">{(name as string) || '-'}</span>,
       },
       {
-        title: '来源单据',
+        title: t('payables.columns.sourceDocument'),
         dataIndex: 'source_number',
         width: 140,
         render: (sourceNumber: unknown, record: PayableRow) => (
           <div className="source-cell">
             <span className="source-number">{(sourceNumber as string) || '-'}</span>
             <span className="source-type">
-              {record.source_type ? SOURCE_TYPE_LABELS[record.source_type] : '-'}
+              {record.source_type ? t(`payables.sourceType.${record.source_type}`) : '-'}
             </span>
           </div>
         ),
       },
       {
-        title: '应付金额',
+        title: t('payables.columns.totalAmount'),
         dataIndex: 'total_amount',
         width: 120,
         align: 'right',
@@ -355,7 +348,7 @@ export default function PayablesPage() {
         ),
       },
       {
-        title: '已付金额',
+        title: t('payables.columns.paidAmount'),
         dataIndex: 'paid_amount',
         width: 120,
         align: 'right',
@@ -364,7 +357,7 @@ export default function PayablesPage() {
         ),
       },
       {
-        title: '待付金额',
+        title: t('payables.columns.outstandingAmount'),
         dataIndex: 'outstanding_amount',
         width: 120,
         align: 'right',
@@ -376,7 +369,7 @@ export default function PayablesPage() {
         ),
       },
       {
-        title: '到期日',
+        title: t('payables.columns.dueDate'),
         dataIndex: 'due_date',
         width: 110,
         sortable: true,
@@ -387,25 +380,27 @@ export default function PayablesPage() {
         ),
       },
       {
-        title: '状态',
+        title: t('payables.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as AccountPayableStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return (
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`payables.status.${statusValue}`)}</Tag>
+          )
         },
       },
       {
-        title: '创建时间',
+        title: t('payables.columns.createdAt'),
         dataIndex: 'created_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    []
+    [t]
   )
 
   // Table row actions
@@ -413,19 +408,19 @@ export default function PayablesPage() {
     () => [
       {
         key: 'view',
-        label: '查看',
+        label: t('payables.actions.view'),
         onClick: handleView,
       },
       {
         key: 'pay',
-        label: '付款',
+        label: t('payables.actions.pay'),
         type: 'primary',
         onClick: handlePay,
         hidden: (record) =>
           record.status === 'PAID' || record.status === 'CANCELLED' || record.status === 'REVERSED',
       },
     ],
-    [handleView, handlePay]
+    [handleView, handlePay, t]
   )
 
   return (
@@ -437,7 +432,7 @@ export default function PayablesPage() {
             <Descriptions.Item itemKey="total_outstanding">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待付总额
+                  {t('payables.summary.totalOutstanding')}
                 </Text>
                 <Text className="summary-value primary">
                   {formatCurrency(summary?.total_outstanding)}
@@ -447,7 +442,7 @@ export default function PayablesPage() {
             <Descriptions.Item itemKey="total_overdue">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  逾期总额
+                  {t('payables.summary.totalOverdue')}
                 </Text>
                 <Text className="summary-value danger">
                   {formatCurrency(summary?.total_overdue)}
@@ -457,7 +452,7 @@ export default function PayablesPage() {
             <Descriptions.Item itemKey="pending_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待付款单
+                  {t('payables.summary.pendingCount')}
                 </Text>
                 <Text className="summary-value">{summary?.pending_count ?? '-'}</Text>
               </div>
@@ -465,7 +460,7 @@ export default function PayablesPage() {
             <Descriptions.Item itemKey="partial_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  部分付款
+                  {t('payables.summary.partialCount')}
                 </Text>
                 <Text className="summary-value">{summary?.partial_count ?? '-'}</Text>
               </div>
@@ -473,7 +468,7 @@ export default function PayablesPage() {
             <Descriptions.Item itemKey="overdue_count">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  逾期单数
+                  {t('payables.summary.overdueCount')}
                 </Text>
                 <Text className="summary-value warning">{summary?.overdue_count ?? '-'}</Text>
               </div>
@@ -486,18 +481,18 @@ export default function PayablesPage() {
       <Card className="payables-card">
         <div className="payables-header">
           <Title heading={4} style={{ margin: 0 }}>
-            应付账款
+            {t('payables.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索单据编号、供应商名称..."
+          searchPlaceholder={t('payables.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('payables.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -505,32 +500,32 @@ export default function PayablesPage() {
           filters={
             <Space className="payables-filter-container">
               <Select
-                placeholder="状态筛选"
+                placeholder={t('payables.filter.statusPlaceholder')}
                 value={statusFilter}
                 onChange={handleStatusChange}
                 optionList={STATUS_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="来源筛选"
+                placeholder={t('payables.filter.sourcePlaceholder')}
                 value={sourceTypeFilter}
                 onChange={handleSourceTypeChange}
                 optionList={SOURCE_TYPE_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="逾期筛选"
+                placeholder={t('payables.filter.overduePlaceholder')}
                 value={overdueOnly ? 'true' : ''}
                 onChange={handleOverdueChange}
                 optionList={[
-                  { label: '全部', value: '' },
-                  { label: '仅逾期', value: 'true' },
+                  { label: t('payables.filter.all'), value: '' },
+                  { label: t('payables.filter.overdueOnly'), value: 'true' },
                 ]}
                 style={{ width: 100 }}
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('payables.filter.startDate'), t('payables.filter.endDate')]}
                 value={dateRange as [Date, Date] | undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}

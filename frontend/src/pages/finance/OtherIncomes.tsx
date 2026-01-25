@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -40,52 +41,11 @@ const { Title, Text } = Typography
 // Income type with index signature for DataTable compatibility
 type IncomeRow = OtherIncomeRecord & Record<string, unknown>
 
-// Category options for filter
-const CATEGORY_OPTIONS = [
-  { label: '全部分类', value: '' },
-  { label: '投资收益', value: 'INVESTMENT' },
-  { label: '补贴收入', value: 'SUBSIDY' },
-  { label: '利息收入', value: 'INTEREST' },
-  { label: '租金收入', value: 'RENTAL' },
-  { label: '退款收入', value: 'REFUND' },
-  { label: '赔偿收入', value: 'COMPENSATION' },
-  { label: '资产处置', value: 'ASSET_DISPOSAL' },
-  { label: '其他收入', value: 'OTHER' },
-]
-
-// Status options for filter
-const STATUS_OPTIONS = [
-  { label: '全部状态', value: '' },
-  { label: '草稿', value: 'DRAFT' },
-  { label: '已确认', value: 'CONFIRMED' },
-  { label: '已取消', value: 'CANCELLED' },
-]
-
-// Receipt status options for filter
-const RECEIPT_STATUS_OPTIONS = [
-  { label: '全部到账状态', value: '' },
-  { label: '待到账', value: 'PENDING' },
-  { label: '已到账', value: 'RECEIVED' },
-]
-
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<IncomeStatus, 'grey' | 'green' | 'red'> = {
   DRAFT: 'grey',
   CONFIRMED: 'green',
   CANCELLED: 'red',
-}
-
-// Status labels
-const STATUS_LABELS: Record<IncomeStatus, string> = {
-  DRAFT: '草稿',
-  CONFIRMED: '已确认',
-  CANCELLED: '已取消',
-}
-
-// Receipt status labels
-const RECEIPT_STATUS_LABELS: Record<IncomeReceiptStatus, string> = {
-  PENDING: '待到账',
-  RECEIVED: '已到账',
 }
 
 // Receipt status tag colors
@@ -131,6 +91,7 @@ function formatDate(dateStr?: string): string {
  * - CRUD operations with confirmation workflow
  */
 export default function OtherIncomesPage() {
+  const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const api = useMemo(() => getFinanceApi(), [])
 
@@ -161,6 +122,62 @@ export default function OtherIncomesPage() {
     defaultSortOrder: 'desc',
   })
 
+  // Category options for filter (memoized with translations)
+  const categoryOptions = useMemo(
+    () => [
+      { label: t('otherIncomes.filter.allCategory'), value: '' },
+      { label: t('otherIncomes.category.INVESTMENT'), value: 'INVESTMENT' },
+      { label: t('otherIncomes.category.SUBSIDY'), value: 'SUBSIDY' },
+      { label: t('otherIncomes.category.INTEREST'), value: 'INTEREST' },
+      { label: t('otherIncomes.category.RENTAL'), value: 'RENTAL' },
+      { label: t('otherIncomes.category.REFUND'), value: 'REFUND' },
+      { label: t('otherIncomes.category.COMPENSATION'), value: 'COMPENSATION' },
+      { label: t('otherIncomes.category.ASSET_DISPOSAL'), value: 'ASSET_DISPOSAL' },
+      { label: t('otherIncomes.category.OTHER'), value: 'OTHER' },
+    ],
+    [t]
+  )
+
+  // Status options for filter (memoized with translations)
+  const statusOptions = useMemo(
+    () => [
+      { label: t('otherIncomes.filter.allStatus'), value: '' },
+      { label: t('otherIncomes.status.DRAFT'), value: 'DRAFT' },
+      { label: t('otherIncomes.status.CONFIRMED'), value: 'CONFIRMED' },
+      { label: t('otherIncomes.status.CANCELLED'), value: 'CANCELLED' },
+    ],
+    [t]
+  )
+
+  // Receipt status options for filter (memoized with translations)
+  const receiptStatusOptions = useMemo(
+    () => [
+      { label: t('otherIncomes.filter.allReceiptStatus'), value: '' },
+      { label: t('otherIncomes.receiptStatus.PENDING'), value: 'PENDING' },
+      { label: t('otherIncomes.receiptStatus.RECEIVED'), value: 'RECEIVED' },
+    ],
+    [t]
+  )
+
+  // Status labels (memoized with translations)
+  const statusLabels = useMemo(
+    (): Record<IncomeStatus, string> => ({
+      DRAFT: t('otherIncomes.status.DRAFT'),
+      CONFIRMED: t('otherIncomes.status.CONFIRMED'),
+      CANCELLED: t('otherIncomes.status.CANCELLED'),
+    }),
+    [t]
+  )
+
+  // Receipt status labels (memoized with translations)
+  const receiptStatusLabels = useMemo(
+    (): Record<IncomeReceiptStatus, string> => ({
+      PENDING: t('otherIncomes.receiptStatus.PENDING'),
+      RECEIVED: t('otherIncomes.receiptStatus.RECEIVED'),
+    }),
+    [t]
+  )
+
   // Fetch incomes
   const fetchIncomes = useCallback(async () => {
     setLoading(true)
@@ -190,7 +207,7 @@ export default function OtherIncomesPage() {
         }
       }
     } catch {
-      Toast.error('获取其他收入列表失败')
+      Toast.error(t('otherIncomes.messages.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -203,6 +220,7 @@ export default function OtherIncomesPage() {
     statusFilter,
     receiptStatusFilter,
     dateRange,
+    t,
   ])
 
   // Fetch summary
@@ -315,16 +333,16 @@ export default function OtherIncomesPage() {
       try {
         const response = await api.postFinanceIncomesIdConfirm(income.id)
         if (response.success) {
-          Toast.success('收入已确认')
+          Toast.success(t('otherIncomes.messages.confirmSuccess'))
           fetchIncomes()
         } else {
-          Toast.error(response.error || '确认失败')
+          Toast.error(response.error || t('otherIncomes.messages.confirmError'))
         }
       } catch {
-        Toast.error('确认失败')
+        Toast.error(t('otherIncomes.messages.confirmError'))
       }
     },
-    [api, fetchIncomes]
+    [api, fetchIncomes, t]
   )
 
   // Open cancel modal
@@ -337,7 +355,7 @@ export default function OtherIncomesPage() {
   // Handle cancel income
   const handleCancel = useCallback(async () => {
     if (!selectedIncome || !actionReason.trim()) {
-      Toast.warning('请输入取消原因')
+      Toast.warning(t('otherIncomes.messages.cancelReasonRequired'))
       return
     }
     setActionLoading(true)
@@ -346,44 +364,44 @@ export default function OtherIncomesPage() {
         reason: actionReason,
       })
       if (response.success) {
-        Toast.success('收入已取消')
+        Toast.success(t('otherIncomes.messages.cancelSuccess'))
         setCancelModalVisible(false)
         fetchIncomes()
       } else {
-        Toast.error(response.error || '取消失败')
+        Toast.error(response.error || t('otherIncomes.messages.cancelError'))
       }
     } catch {
-      Toast.error('取消失败')
+      Toast.error(t('otherIncomes.messages.cancelError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedIncome, actionReason, fetchIncomes])
+  }, [api, selectedIncome, actionReason, fetchIncomes, t])
 
   // Handle delete income
   const handleDelete = useCallback(
     async (income: IncomeRow) => {
       Modal.confirm({
-        title: '确认删除',
-        content: `确定要删除收入 ${income.income_number} 吗？此操作不可恢复。`,
-        okText: '删除',
-        cancelText: '取消',
+        title: t('otherIncomes.modal.deleteTitle'),
+        content: t('otherIncomes.modal.deleteContent', { incomeNumber: income.income_number }),
+        okText: t('otherIncomes.modal.deleteOk'),
+        cancelText: t('otherIncomes.modal.deleteCancel'),
         okType: 'danger',
         onOk: async () => {
           try {
             const response = await api.deleteFinanceIncomesId(income.id)
             if (response.success) {
-              Toast.success('收入已删除')
+              Toast.success(t('otherIncomes.messages.deleteSuccess'))
               fetchIncomes()
             } else {
-              Toast.error(response.error || '删除失败')
+              Toast.error(response.error || t('otherIncomes.messages.deleteError'))
             }
           } catch {
-            Toast.error('删除失败')
+            Toast.error(t('otherIncomes.messages.deleteError'))
           }
         },
       })
     },
-    [api, fetchIncomes]
+    [api, fetchIncomes, t]
   )
 
   // Refresh handler
@@ -396,7 +414,7 @@ export default function OtherIncomesPage() {
   const tableColumns: DataTableColumn<IncomeRow>[] = useMemo(
     () => [
       {
-        title: '收入编号',
+        title: t('otherIncomes.columns.incomeNumber'),
         dataIndex: 'income_number',
         width: 140,
         sortable: true,
@@ -405,19 +423,19 @@ export default function OtherIncomesPage() {
         ),
       },
       {
-        title: '收入分类',
+        title: t('otherIncomes.columns.category'),
         dataIndex: 'category_name',
         width: 100,
         render: (name: unknown) => <span>{(name as string) || '-'}</span>,
       },
       {
-        title: '描述',
+        title: t('otherIncomes.columns.description'),
         dataIndex: 'description',
         ellipsis: true,
         render: (desc: unknown) => <span>{(desc as string) || '-'}</span>,
       },
       {
-        title: '金额',
+        title: t('otherIncomes.columns.amount'),
         dataIndex: 'amount',
         width: 120,
         align: 'right',
@@ -427,25 +445,25 @@ export default function OtherIncomesPage() {
         ),
       },
       {
-        title: '收入日期',
+        title: t('otherIncomes.columns.receivedAt'),
         dataIndex: 'received_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
       {
-        title: '状态',
+        title: t('otherIncomes.columns.status'),
         dataIndex: 'status',
         width: 100,
         align: 'center',
         render: (status: unknown) => {
           const statusValue = status as IncomeStatus | undefined
           if (!statusValue) return '-'
-          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{STATUS_LABELS[statusValue]}</Tag>
+          return <Tag color={STATUS_TAG_COLORS[statusValue]}>{statusLabels[statusValue]}</Tag>
         },
       },
       {
-        title: '到账状态',
+        title: t('otherIncomes.columns.receiptStatus'),
         dataIndex: 'receipt_status',
         width: 100,
         align: 'center',
@@ -458,20 +476,20 @@ export default function OtherIncomesPage() {
           }
           return (
             <Tag color={RECEIPT_STATUS_TAG_COLORS[statusValue]}>
-              {RECEIPT_STATUS_LABELS[statusValue]}
+              {receiptStatusLabels[statusValue]}
             </Tag>
           )
         },
       },
       {
-        title: '创建时间',
+        title: t('otherIncomes.columns.createdAt'),
         dataIndex: 'created_at',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    []
+    [t, statusLabels, receiptStatusLabels]
   )
 
   // Table row actions
@@ -479,31 +497,31 @@ export default function OtherIncomesPage() {
     () => [
       {
         key: 'edit',
-        label: '编辑',
+        label: t('otherIncomes.actions.edit'),
         onClick: handleEdit,
         hidden: (record) => record.status !== 'DRAFT',
       },
       {
         key: 'confirm',
-        label: '确认',
+        label: t('otherIncomes.actions.confirm'),
         type: 'primary',
         onClick: handleConfirm,
         hidden: (record) => record.status !== 'DRAFT',
       },
       {
         key: 'cancel',
-        label: '取消',
+        label: t('otherIncomes.actions.cancel'),
         onClick: openCancelModal,
         hidden: (record) => record.status === 'CANCELLED' || record.status === 'CONFIRMED',
       },
       {
         key: 'delete',
-        label: '删除',
+        label: t('otherIncomes.actions.delete'),
         onClick: handleDelete,
         hidden: (record) => record.status !== 'DRAFT',
       },
     ],
-    [handleEdit, handleConfirm, openCancelModal, handleDelete]
+    [handleEdit, handleConfirm, openCancelModal, handleDelete, t]
   )
 
   return (
@@ -515,7 +533,7 @@ export default function OtherIncomesPage() {
             <Descriptions.Item itemKey="total_confirmed">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  已确认总额
+                  {t('otherIncomes.summary.totalConfirmed')}
                 </Text>
                 <Text className="summary-value success">
                   {formatCurrency(summary?.total_confirmed)}
@@ -525,7 +543,7 @@ export default function OtherIncomesPage() {
             <Descriptions.Item itemKey="total_draft">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  待确认总额
+                  {t('otherIncomes.summary.totalDraft')}
                 </Text>
                 <Text className="summary-value warning">
                   {formatCurrency(summary?.total_draft)}
@@ -540,21 +558,21 @@ export default function OtherIncomesPage() {
       <Card className="other-incomes-card">
         <div className="other-incomes-header">
           <Title heading={4} style={{ margin: 0 }}>
-            其他收入管理
+            {t('otherIncomes.title')}
           </Title>
           <Button type="primary" icon={<IconPlus />} onClick={handleCreate}>
-            新增收入
+            {t('otherIncomes.newIncome')}
           </Button>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索收入编号、描述..."
+          searchPlaceholder={t('otherIncomes.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('otherIncomes.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -562,29 +580,29 @@ export default function OtherIncomesPage() {
           filters={
             <Space className="other-incomes-filter-container">
               <Select
-                placeholder="分类筛选"
+                placeholder={t('otherIncomes.filter.categoryPlaceholder')}
                 value={categoryFilter}
                 onChange={handleCategoryChange}
-                optionList={CATEGORY_OPTIONS}
+                optionList={categoryOptions}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="状态"
+                placeholder={t('otherIncomes.filter.statusPlaceholder')}
                 value={statusFilter}
                 onChange={handleStatusChange}
-                optionList={STATUS_OPTIONS}
+                optionList={statusOptions}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="到账状态"
+                placeholder={t('otherIncomes.filter.receiptStatusPlaceholder')}
                 value={receiptStatusFilter}
                 onChange={handleReceiptStatusChange}
-                optionList={RECEIPT_STATUS_OPTIONS}
+                optionList={receiptStatusOptions}
                 style={{ width: 130 }}
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('otherIncomes.filter.startDate'), t('otherIncomes.filter.endDate')]}
                 value={dateRange as [Date, Date] | undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}
@@ -610,20 +628,20 @@ export default function OtherIncomesPage() {
 
       {/* Cancel Modal */}
       <Modal
-        title="取消收入"
+        title={t('otherIncomes.modal.cancelTitle')}
         visible={cancelModalVisible}
         onOk={handleCancel}
         onCancel={() => setCancelModalVisible(false)}
-        okText="取消收入"
-        cancelText="关闭"
+        okText={t('otherIncomes.modal.cancelIncome')}
+        cancelText={t('otherIncomes.modal.close')}
         confirmLoading={actionLoading}
       >
         <div className="modal-content">
-          <Text>请输入取消原因：</Text>
+          <Text>{t('otherIncomes.modal.cancelLabel')}</Text>
           <TextArea
             value={actionReason}
             onChange={(v: string) => setActionReason(v)}
-            placeholder="请输入取消原因"
+            placeholder={t('otherIncomes.modal.cancelPlaceholder')}
             rows={3}
             maxCount={500}
             style={{ marginTop: 12 }}

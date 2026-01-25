@@ -1,0 +1,674 @@
+{
+  "receivables": {
+    "title": "应收账款",
+    "searchPlaceholder": "搜索单据编号、客户名称...",
+    "refresh": "刷新",
+    "summary": {
+      "totalOutstanding": "待收总额",
+      "totalOverdue": "逾期总额",
+      "pendingCount": "待收款单",
+      "partialCount": "部分收款",
+      "overdueCount": "逾期单数"
+    },
+    "filter": {
+      "statusPlaceholder": "状态筛选",
+      "sourcePlaceholder": "来源筛选",
+      "overduePlaceholder": "逾期筛选",
+      "allStatus": "全部状态",
+      "allSource": "全部来源",
+      "all": "全部",
+      "overdueOnly": "仅逾期",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "status": {
+      "PENDING": "待收款",
+      "PARTIAL": "部分收款",
+      "PAID": "已收款",
+      "REVERSED": "已冲红",
+      "CANCELLED": "已取消"
+    },
+    "sourceType": {
+      "SALES_ORDER": "销售订单",
+      "SALES_RETURN": "销售退货",
+      "MANUAL": "手工录入"
+    },
+    "columns": {
+      "receivableNumber": "单据编号",
+      "customerName": "客户名称",
+      "sourceDocument": "来源单据",
+      "totalAmount": "应收金额",
+      "paidAmount": "已收金额",
+      "outstandingAmount": "待收金额",
+      "dueDate": "到期日",
+      "status": "状态",
+      "createdAt": "创建时间"
+    },
+    "actions": {
+      "view": "查看",
+      "collect": "收款"
+    },
+    "tooltip": {
+      "overdue": "已逾期"
+    },
+    "messages": {
+      "fetchError": "获取应收账款列表失败"
+    }
+  },
+  "payables": {
+    "title": "应付账款",
+    "searchPlaceholder": "搜索单据编号、供应商名称...",
+    "refresh": "刷新",
+    "summary": {
+      "totalOutstanding": "待付总额",
+      "totalOverdue": "逾期总额",
+      "pendingCount": "待付款单",
+      "partialCount": "部分付款",
+      "overdueCount": "逾期单数"
+    },
+    "filter": {
+      "statusPlaceholder": "状态筛选",
+      "sourcePlaceholder": "来源筛选",
+      "overduePlaceholder": "逾期筛选",
+      "allStatus": "全部状态",
+      "allSource": "全部来源",
+      "all": "全部",
+      "overdueOnly": "仅逾期",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "status": {
+      "PENDING": "待付款",
+      "PARTIAL": "部分付款",
+      "PAID": "已付款",
+      "REVERSED": "已冲红",
+      "CANCELLED": "已取消"
+    },
+    "sourceType": {
+      "PURCHASE_ORDER": "采购订单",
+      "PURCHASE_RETURN": "采购退货",
+      "MANUAL": "手工录入"
+    },
+    "columns": {
+      "payableNumber": "单据编号",
+      "supplierName": "供应商名称",
+      "sourceDocument": "来源单据",
+      "totalAmount": "应付金额",
+      "paidAmount": "已付金额",
+      "outstandingAmount": "待付金额",
+      "dueDate": "到期日",
+      "status": "状态",
+      "createdAt": "创建时间"
+    },
+    "actions": {
+      "view": "查看",
+      "pay": "付款"
+    },
+    "tooltip": {
+      "overdue": "已逾期"
+    },
+    "messages": {
+      "fetchError": "获取应付账款列表失败"
+    }
+  },
+  "receiptVoucher": {
+    "title": "新增收款单",
+    "customerInfo": {
+      "title": "客户信息",
+      "description": "选择收款的客户",
+      "label": "客户",
+      "placeholder": "请输入客户名称或编码搜索"
+    },
+    "paymentInfo": {
+      "title": "收款信息",
+      "description": "填写收款金额和方式",
+      "amount": "收款金额",
+      "amountPlaceholder": "请输入收款金额",
+      "method": "收款方式",
+      "methodPlaceholder": "请选择收款方式",
+      "date": "收款日期",
+      "datePlaceholder": "请选择收款日期",
+      "reference": "收款凭证号",
+      "referencePlaceholder": "交易流水号、支票号等 (可选)",
+      "referenceHelper": "用于关联银行流水或支付平台交易",
+      "outstandingHelper": "待收总额: {{amount}}"
+    },
+    "otherInfo": {
+      "title": "其他信息",
+      "description": "备注说明",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入备注信息 (可选)"
+    },
+    "customerSummary": {
+      "hasReceivables": "客户 {{name}} 共有 {{count}} 笔待收账款，待收总额:",
+      "noReceivables": "客户 {{name}} 暂无待收账款",
+      "pendingReceivables": "待核销应收账款:",
+      "more": "+{{count}} 更多"
+    },
+    "actions": {
+      "create": "创建"
+    },
+    "messages": {
+      "searchCustomerError": "搜索客户失败",
+      "loadCustomerError": "加载客户信息失败",
+      "createSuccess": "收款单创建成功",
+      "createError": "创建收款单失败"
+    },
+    "validation": {
+      "amountPositive": "收款金额必须大于0",
+      "amountMax": "收款金额不能超过999,999,999.99"
+    }
+  },
+  "paymentVoucher": {
+    "title": "新增付款单",
+    "supplierInfo": {
+      "title": "供应商信息",
+      "description": "选择付款的供应商",
+      "label": "供应商",
+      "placeholder": "请输入供应商名称或编码搜索"
+    },
+    "paymentInfo": {
+      "title": "付款信息",
+      "description": "填写付款金额和方式",
+      "amount": "付款金额",
+      "amountPlaceholder": "请输入付款金额",
+      "method": "付款方式",
+      "methodPlaceholder": "请选择付款方式",
+      "date": "付款日期",
+      "datePlaceholder": "请选择付款日期",
+      "reference": "付款凭证号",
+      "referencePlaceholder": "交易流水号、支票号等 (可选)",
+      "referenceHelper": "用于关联银行流水或支付平台交易",
+      "outstandingHelper": "待付总额: {{amount}}"
+    },
+    "otherInfo": {
+      "title": "其他信息",
+      "description": "备注说明",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入备注信息 (可选)"
+    },
+    "supplierSummary": {
+      "hasPayables": "供应商 {{name}} 共有 {{count}} 笔待付账款，待付总额:",
+      "noPayables": "供应商 {{name}} 暂无待付账款",
+      "pendingPayables": "待核销应付账款:",
+      "more": "+{{count}} 更多"
+    },
+    "actions": {
+      "create": "创建"
+    },
+    "messages": {
+      "searchSupplierError": "搜索供应商失败",
+      "loadSupplierError": "加载供应商信息失败",
+      "createSuccess": "付款单创建成功",
+      "createError": "创建付款单失败"
+    },
+    "validation": {
+      "amountPositive": "付款金额必须大于0",
+      "amountMax": "付款金额不能超过999,999,999.99"
+    }
+  },
+  "expenses": {
+    "title": "费用管理",
+    "searchPlaceholder": "搜索费用编号、描述...",
+    "newExpense": "新增费用",
+    "refresh": "刷新",
+    "summary": {
+      "totalApproved": "已审批总额",
+      "totalPending": "待审批数量"
+    },
+    "filter": {
+      "categoryPlaceholder": "分类筛选",
+      "statusPlaceholder": "审批状态",
+      "paymentStatusPlaceholder": "付款状态",
+      "allCategory": "全部分类",
+      "allStatus": "全部状态",
+      "allPaymentStatus": "全部付款状态",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "category": {
+      "RENT": "房租",
+      "UTILITIES": "水电费",
+      "SALARY": "工资",
+      "OFFICE": "办公费",
+      "TRAVEL": "差旅费",
+      "MARKETING": "市场营销",
+      "EQUIPMENT": "设备费",
+      "MAINTENANCE": "维修费",
+      "INSURANCE": "保险费",
+      "TAX": "税费",
+      "OTHER": "其他费用"
+    },
+    "status": {
+      "DRAFT": "草稿",
+      "PENDING": "待审批",
+      "APPROVED": "已审批",
+      "REJECTED": "已拒绝",
+      "CANCELLED": "已取消"
+    },
+    "paymentStatus": {
+      "UNPAID": "未付款",
+      "PAID": "已付款"
+    },
+    "columns": {
+      "expenseNumber": "费用编号",
+      "category": "费用分类",
+      "description": "描述",
+      "amount": "金额",
+      "incurredAt": "发生日期",
+      "status": "审批状态",
+      "paymentStatus": "付款状态",
+      "createdAt": "创建时间"
+    },
+    "actions": {
+      "edit": "编辑",
+      "submit": "提交审批",
+      "approve": "审批通过",
+      "reject": "拒绝",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "modal": {
+      "rejectTitle": "拒绝费用",
+      "rejectPlaceholder": "请输入拒绝原因",
+      "rejectLabel": "请输入拒绝原因：",
+      "cancelTitle": "取消费用",
+      "cancelPlaceholder": "请输入取消原因",
+      "cancelLabel": "请输入取消原因：",
+      "cancelExpense": "取消费用",
+      "close": "关闭",
+      "deleteTitle": "确认删除",
+      "deleteContent": "确定要删除费用 {{expenseNumber}} 吗？此操作不可恢复。",
+      "deleteOk": "删除",
+      "deleteCancel": "取消"
+    },
+    "messages": {
+      "fetchError": "获取费用列表失败",
+      "submitSuccess": "费用已提交审批",
+      "submitError": "提交失败",
+      "approveSuccess": "费用已审批通过",
+      "approveError": "审批失败",
+      "rejectSuccess": "费用已拒绝",
+      "rejectError": "拒绝失败",
+      "cancelSuccess": "费用已取消",
+      "cancelError": "取消失败",
+      "deleteSuccess": "费用已删除",
+      "deleteError": "删除失败",
+      "reasonRequired": "请输入拒绝原因",
+      "cancelReasonRequired": "请输入取消原因"
+    }
+  },
+  "expenseForm": {
+    "createTitle": "新增费用",
+    "editTitle": "编辑费用",
+    "expenseInfo": {
+      "title": "费用信息",
+      "description": "填写费用基本信息",
+      "category": "费用分类",
+      "categoryPlaceholder": "请选择费用分类",
+      "amount": "金额",
+      "amountPlaceholder": "请输入金额",
+      "incurredAt": "发生日期",
+      "incurredAtPlaceholder": "请选择发生日期",
+      "description": "费用描述",
+      "descriptionPlaceholder": "请输入费用描述"
+    },
+    "otherInfo": {
+      "title": "其他信息",
+      "description": "备注和附件（可选）",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入备注信息（可选）",
+      "attachmentUrls": "附件链接",
+      "attachmentUrlsPlaceholder": "请输入附件URL，多个URL请用逗号分隔（可选）",
+      "attachmentUrlsHelper": "支持输入多个URL，用逗号分隔"
+    },
+    "actions": {
+      "create": "创建",
+      "save": "保存"
+    },
+    "messages": {
+      "loadError": "加载费用信息失败",
+      "createSuccess": "费用创建成功",
+      "createError": "创建费用失败",
+      "updateSuccess": "费用更新成功",
+      "updateError": "更新费用失败"
+    },
+    "validation": {
+      "amountPositive": "金额必须大于0",
+      "amountMax": "金额不能超过999,999,999.99"
+    }
+  },
+  "otherIncomes": {
+    "title": "其他收入管理",
+    "searchPlaceholder": "搜索收入编号、描述...",
+    "newIncome": "新增收入",
+    "refresh": "刷新",
+    "summary": {
+      "totalConfirmed": "已确认总额",
+      "totalDraft": "待确认总额"
+    },
+    "filter": {
+      "categoryPlaceholder": "分类筛选",
+      "statusPlaceholder": "状态",
+      "receiptStatusPlaceholder": "到账状态",
+      "allCategory": "全部分类",
+      "allStatus": "全部状态",
+      "allReceiptStatus": "全部到账状态",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "category": {
+      "INVESTMENT": "投资收益",
+      "SUBSIDY": "补贴收入",
+      "INTEREST": "利息收入",
+      "RENTAL": "租金收入",
+      "REFUND": "退款收入",
+      "COMPENSATION": "赔偿收入",
+      "ASSET_DISPOSAL": "资产处置",
+      "OTHER": "其他收入"
+    },
+    "status": {
+      "DRAFT": "草稿",
+      "CONFIRMED": "已确认",
+      "CANCELLED": "已取消"
+    },
+    "receiptStatus": {
+      "PENDING": "待到账",
+      "RECEIVED": "已到账"
+    },
+    "columns": {
+      "incomeNumber": "收入编号",
+      "category": "收入分类",
+      "description": "描述",
+      "amount": "金额",
+      "receivedAt": "收入日期",
+      "status": "状态",
+      "receiptStatus": "到账状态",
+      "createdAt": "创建时间"
+    },
+    "actions": {
+      "edit": "编辑",
+      "confirm": "确认",
+      "cancel": "取消",
+      "delete": "删除"
+    },
+    "modal": {
+      "cancelTitle": "取消收入",
+      "cancelPlaceholder": "请输入取消原因",
+      "cancelLabel": "请输入取消原因：",
+      "cancelIncome": "取消收入",
+      "close": "关闭",
+      "deleteTitle": "确认删除",
+      "deleteContent": "确定要删除收入 {{incomeNumber}} 吗？此操作不可恢复。",
+      "deleteOk": "删除",
+      "deleteCancel": "取消"
+    },
+    "messages": {
+      "fetchError": "获取其他收入列表失败",
+      "confirmSuccess": "收入已确认",
+      "confirmError": "确认失败",
+      "cancelSuccess": "收入已取消",
+      "cancelError": "取消失败",
+      "deleteSuccess": "收入已删除",
+      "deleteError": "删除失败",
+      "cancelReasonRequired": "请输入取消原因"
+    }
+  },
+  "otherIncomeForm": {
+    "createTitle": "新增收入",
+    "editTitle": "编辑收入",
+    "incomeInfo": {
+      "title": "收入信息",
+      "description": "填写收入基本信息",
+      "category": "收入分类",
+      "categoryPlaceholder": "请选择收入分类",
+      "amount": "金额",
+      "amountPlaceholder": "请输入金额",
+      "receivedAt": "收入日期",
+      "receivedAtPlaceholder": "请选择收入日期",
+      "description": "收入描述",
+      "descriptionPlaceholder": "请输入收入描述"
+    },
+    "otherInfo": {
+      "title": "其他信息",
+      "description": "备注和附件（可选）",
+      "remark": "备注",
+      "remarkPlaceholder": "请输入备注信息（可选）",
+      "attachmentUrls": "附件链接",
+      "attachmentUrlsPlaceholder": "请输入附件URL，多个URL请用逗号分隔（可选）",
+      "attachmentUrlsHelper": "支持输入多个URL，用逗号分隔"
+    },
+    "actions": {
+      "create": "创建",
+      "save": "保存"
+    },
+    "messages": {
+      "loadError": "加载收入信息失败",
+      "createSuccess": "收入创建成功",
+      "createError": "创建收入失败",
+      "updateSuccess": "收入更新成功",
+      "updateError": "更新收入失败"
+    },
+    "validation": {
+      "amountPositive": "金额必须大于0",
+      "amountMax": "金额不能超过999,999,999.99"
+    }
+  },
+  "receiptReconcile": {
+    "title": "收款核销",
+    "back": "返回",
+    "refresh": "刷新",
+    "notFound": "未找到收款单",
+    "voucherInfo": {
+      "title": "收款单信息",
+      "voucherNumber": "收款单编号",
+      "customer": "客户名称",
+      "paymentMethod": "收款方式",
+      "receiptDate": "收款日期",
+      "totalAmount": "收款金额",
+      "allocatedAmount": "已核销金额",
+      "unallocatedAmount": "未核销金额",
+      "status": "状态"
+    },
+    "voucherStatus": {
+      "DRAFT": "草稿",
+      "CONFIRMED": "已确认",
+      "ALLOCATED": "已核销",
+      "CANCELLED": "已取消"
+    },
+    "receivableStatus": {
+      "PENDING": "待收款",
+      "PARTIAL": "部分收款",
+      "PAID": "已收款",
+      "REVERSED": "已红冲",
+      "CANCELLED": "已取消"
+    },
+    "receivables": {
+      "title": "待核销应收账款",
+      "empty": "该客户暂无待核销的应收账款",
+      "allocateAll": "全部核销",
+      "clearAll": "清空"
+    },
+    "columns": {
+      "receivableNumber": "应收账款编号",
+      "sourceNumber": "来源单据",
+      "totalAmount": "总金额",
+      "outstandingAmount": "待收金额",
+      "dueDate": "到期日",
+      "status": "状态",
+      "allocateAmount": "核销金额",
+      "fifoAllocation": "预计核销"
+    },
+    "mode": {
+      "label": "核销方式：",
+      "fifo": "自动核销 (FIFO)",
+      "manual": "手动核销",
+      "fifoDescription": "自动核销将按照应收账款到期日期从早到晚的顺序（FIFO）进行核销，直到收款金额用完或所有应收账款核销完毕。",
+      "manualDescription": "手动核销允许您选择要核销的应收账款，并指定每笔应收账款的核销金额。"
+    },
+    "summary": {
+      "availableAmount": "可核销金额：",
+      "fifoAllocateAmount": "预计核销金额：",
+      "selectedAllocateAmount": "已选核销金额：",
+      "totalAllocate": "本次核销合计",
+      "remaining": "核销后剩余："
+    },
+    "actions": {
+      "cancel": "取消",
+      "confirm": "确认核销",
+      "backToList": "返回列表"
+    },
+    "result": {
+      "title": "核销完成",
+      "fullyReconciled": "收款单已完全核销",
+      "partiallyReconciled": "部分核销完成，剩余 {{amount}} 未核销",
+      "voucherNumber": "收款单编号",
+      "customerName": "客户名称",
+      "receiptAmount": "收款金额",
+      "thisReconciled": "本次核销",
+      "remainingUnallocated": "剩余未核销",
+      "reconciledReceivables": "已核销应收账款",
+      "totalAmount": "总金额",
+      "paidAmount": "已收金额",
+      "outstandingAmount": "待收金额",
+      "status": "状态"
+    },
+    "existingAllocations": {
+      "title": "已核销记录",
+      "receivableNumber": "应收账款编号",
+      "amount": "核销金额",
+      "allocatedAt": "核销时间",
+      "remark": "备注"
+    },
+    "warnings": {
+      "draftWarning": "该收款单尚未确认，请先确认后再进行核销",
+      "allocatedWarning": "该收款单已完全核销",
+      "cancelledWarning": "该收款单已取消，无法进行核销",
+      "fullyAllocated": "该收款单已完全核销"
+    },
+    "messages": {
+      "fetchError": "加载收款单失败",
+      "fetchReceivablesError": "加载数据失败",
+      "allocateSuccess": "核销成功",
+      "allocateError": "核销失败",
+      "requestError": "核销请求失败",
+      "noAllocation": "请选择至少一个应收账款进行核销",
+      "exceedAmount": "核销总额不能超过未核销金额",
+      "exceedOutstanding": "{{number}} 核销金额不能超过待收金额",
+      "onlyConfirmedCanReconcile": "只有已确认的收款单才能进行核销",
+      "noUnallocatedAmount": "该收款单没有未核销金额"
+    }
+  },
+  "paymentReconcile": {
+    "title": "付款核销",
+    "back": "返回",
+    "refresh": "刷新",
+    "voucherNotFound": "未找到付款单",
+    "voucherInfo": {
+      "title": "付款单信息",
+      "voucherNumber": "付款单编号",
+      "supplierName": "供应商名称",
+      "totalAmount": "付款金额",
+      "allocatedAmount": "已核销金额",
+      "unallocatedAmount": "未核销金额",
+      "status": "状态",
+      "paymentMethod": "付款方式",
+      "paymentDate": "付款日期"
+    },
+    "voucherStatus": {
+      "DRAFT": "草稿",
+      "CONFIRMED": "已确认",
+      "ALLOCATED": "已核销",
+      "CANCELLED": "已取消"
+    },
+    "payableStatus": {
+      "PENDING": "待付款",
+      "PARTIAL": "部分付款",
+      "PAID": "已付款",
+      "REVERSED": "已红冲",
+      "CANCELLED": "已取消"
+    },
+    "payables": {
+      "title": "待核销应付账款",
+      "empty": "该供应商暂无待核销的应付账款",
+      "allocateAll": "全部核销",
+      "clearAll": "清空"
+    },
+    "columns": {
+      "payableNumber": "应付账款编号",
+      "sourceNumber": "来源单据",
+      "totalAmount": "总金额",
+      "outstandingAmount": "待付金额",
+      "allocateAmount": "核销金额",
+      "dueDate": "到期日",
+      "status": "状态",
+      "expectedAllocation": "预计核销"
+    },
+    "reconcileMode": {
+      "label": "核销方式：",
+      "fifo": "自动核销 (FIFO)",
+      "manual": "手动核销",
+      "fifoDescription": "自动核销将按照应付账款到期日期从早到晚的顺序（FIFO）进行核销，直到付款金额用完或所有应付账款核销完毕。",
+      "manualDescription": "手动核销允许您选择要核销的应付账款，并指定每笔应付账款的核销金额。"
+    },
+    "summary": {
+      "availableAmount": "可核销金额：",
+      "expectedAllocation": "预计核销金额：",
+      "selectedAllocation": "已选核销金额：",
+      "remainingAfter": "核销后剩余："
+    },
+    "actions": {
+      "cancel": "取消",
+      "confirm": "确认核销"
+    },
+    "result": {
+      "title": "核销完成",
+      "backToList": "返回列表",
+      "fullyReconciled": "付款单已完全核销",
+      "partiallyReconciled": "部分核销完成，剩余 {{amount}} 未核销",
+      "voucherNumber": "付款单编号",
+      "supplierName": "供应商名称",
+      "paymentAmount": "付款金额",
+      "thisReconciled": "本次核销",
+      "remainingUnallocated": "剩余未核销",
+      "reconciledPayables": "已核销应付账款",
+      "paidAmount": "已付金额"
+    },
+    "existingAllocations": {
+      "title": "已核销记录",
+      "payableNumber": "应付账款编号",
+      "amount": "核销金额",
+      "allocatedAt": "核销时间",
+      "remark": "备注"
+    },
+    "statusWarning": {
+      "draft": "该付款单尚未确认，请先确认后再进行核销",
+      "allocated": "该付款单已完全核销",
+      "cancelled": "该付款单已取消，无法进行核销",
+      "fullyAllocated": "该付款单已完全核销"
+    },
+    "messages": {
+      "fetchError": "加载付款单失败",
+      "fetchDataError": "加载数据失败",
+      "allocateSuccess": "核销成功",
+      "allocateError": "核销失败",
+      "requestError": "核销请求失败",
+      "onlyConfirmedCanReconcile": "只有已确认的付款单才能进行核销",
+      "noUnallocatedAmount": "该付款单没有未核销金额",
+      "noPayableSelected": "请选择至少一个应付账款进行核销",
+      "exceedUnallocated": "核销总额不能超过未核销金额"
+    }
+  },
+  "paymentMethod": {
+    "CASH": "现金",
+    "BANK_TRANSFER": "银行转账",
+    "WECHAT": "微信支付",
+    "ALIPAY": "支付宝",
+    "CHECK": "支票",
+    "BALANCE": "余额抵扣",
+    "OTHER": "其他"
+  },
+  "common": {
+    "loading": "加载中..."
+  }
+}
