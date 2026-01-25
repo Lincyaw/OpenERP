@@ -543,12 +543,60 @@ export class InventoryPage extends BasePage {
     // Find the form-field-wrapper containing the warehouse label
     const wrapper = this.page.locator('.form-field-wrapper').filter({ hasText: '仓库' }).first()
     const select = wrapper.locator('.semi-select')
+
+    // Check if the warehouse is already selected
+    const currentValue = await select.textContent()
+    if (currentValue?.includes(warehouseName)) {
+      // Already selected, just wait for inventory to load
+      await this.page.waitForTimeout(500)
+      return
+    }
+
+    // Wait for warehouse API to load before clicking - the select should not be disabled
+    // and should not show loading placeholder
+    await this.page.waitForFunction(
+      () => {
+        const selectEl = document.querySelector('.form-field-wrapper .semi-select')
+        if (!selectEl) return false
+        // Check not disabled
+        if (selectEl.classList.contains('semi-select-disabled')) return false
+        // Check not showing loading text
+        const placeholder = selectEl.querySelector('.semi-select-selection-placeholder')
+        if (placeholder?.textContent?.includes('加载中')) return false
+        return true
+      },
+      { timeout: 15000 }
+    )
+
+    // Wait for the warehouses API call to complete
+    await Promise.race([
+      this.page.waitForResponse(
+        (response) =>
+          response.url().includes('/partner/warehouses') && response.status() === 200,
+        { timeout: 15000 }
+      ),
+      this.page.waitForTimeout(2000), // fallback if response already completed
+    ])
+
     await select.click()
-    await this.page.waitForTimeout(300)
+    await this.page.waitForTimeout(500) // Give dropdown time to render options
 
     const optionToSelect = this.page
       .locator('.semi-select-option')
       .filter({ hasText: warehouseName })
+
+    // Check if we got "暂无数据" instead of actual options
+    const noDataOption = this.page.locator('.semi-select-option').filter({ hasText: '暂无数据' })
+    const hasNoData = await noDataOption.isVisible().catch(() => false)
+
+    if (hasNoData) {
+      // Close dropdown and retry
+      await this.page.keyboard.press('Escape')
+      await this.page.waitForTimeout(1000)
+      await select.click()
+      await this.page.waitForTimeout(500)
+    }
+
     await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
     await optionToSelect.click()
     await this.page.waitForTimeout(500) // Wait for inventory to load
@@ -609,9 +657,9 @@ export class InventoryPage extends BasePage {
    * Submit the stock taking create form
    */
   async submitStockTakingCreate(): Promise<void> {
-    const submitButton = this.page
-      .locator('button[type="submit"]')
-      .filter({ hasText: '创建盘点单' })
+    // Try different selectors for the submit button
+    const submitButton = this.page.locator('button').filter({ hasText: '创建盘点单' })
+    await submitButton.waitFor({ state: 'visible', timeout: 5000 })
     await submitButton.click()
   }
 
@@ -703,13 +751,24 @@ export class InventoryPage extends BasePage {
       await startButton.waitFor({ state: 'visible', timeout: 3000 })
       await startButton.click()
       await this.waitForToast('开始')
+      // Wait for the status to update after clicking
+      await this.page.waitForTimeout(1000)
     } catch {
       // Button not found or timed out - might already be in COUNTING status
     }
-    // Verify we're now in COUNTING status
-    const status = await this.getStockTakingStatus()
-    if (!status.includes('盘点中') && !status.includes('COUNTING')) {
-      throw new Error(`Expected status to be COUNTING but got: ${status}`)
+    // Wait for status to be COUNTING (with retry)
+    let attempts = 0
+    while (attempts < 5) {
+      const status = await this.getStockTakingStatus()
+      if (status.includes('盘点中') || status.includes('COUNTING')) {
+        return
+      }
+      await this.page.waitForTimeout(500)
+      attempts++
+    }
+    const finalStatus = await this.getStockTakingStatus()
+    if (!finalStatus.includes('盘点中') && !finalStatus.includes('COUNTING')) {
+      throw new Error(`Expected status to be COUNTING but got: ${finalStatus}`)
     }
   }
 
@@ -721,12 +780,38 @@ export class InventoryPage extends BasePage {
     const row = this.page
       .locator('.semi-table-tbody .semi-table-row')
       .filter({ hasText: productCode })
+      .first()
+
+    // Wait for the row to be visible
+    await row.waitFor({ state: 'visible', timeout: 5000 })
 
     // Find the InputNumber in that row (actual quantity column)
-    const input = row.locator('.semi-input-number input, [role="spinbutton"]').first()
+    const input = row.locator('[role="spinbutton"]').first()
+    await input.waitFor({ state: 'visible', timeout: 3000 })
+    await input.click()
     await input.clear()
     await input.fill(quantity.toString())
-    await this.page.waitForTimeout(200)
+    // Blur to trigger the onChange event
+    await input.press('Tab')
+    await this.page.waitForTimeout(300)
+  }
+
+  /**
+   * Enter actual quantity for a product by row index (0-based)
+   */
+  async enterActualQuantityByIndex(rowIndex: number, quantity: number): Promise<void> {
+    const row = this.page.locator('.semi-table-tbody .semi-table-row').nth(rowIndex)
+    await row.waitFor({ state: 'visible', timeout: 5000 })
+
+    // Find the spinbutton in that row
+    const input = row.locator('[role="spinbutton"]').first()
+    await input.waitFor({ state: 'visible', timeout: 3000 })
+    await input.click()
+    await input.clear()
+    await input.fill(quantity.toString())
+    // Blur to trigger the onChange event
+    await input.press('Tab')
+    await this.page.waitForTimeout(300)
   }
 
   /**
@@ -810,8 +895,24 @@ export class InventoryPage extends BasePage {
    * Get stock taking status from the header
    */
   async getStockTakingStatus(): Promise<string> {
-    const statusTag = this.page.locator('.stock-taking-execute-header .semi-tag')
-    return (await statusTag.textContent()) || ''
+    // Try multiple selectors to find the status tag
+    const statusSelectors = [
+      '.stock-taking-execute-header .semi-tag',
+      '.header-left .semi-tag',
+      '[class*="stock-taking"] .semi-tag',
+    ]
+
+    for (const selector of statusSelectors) {
+      const statusTag = this.page.locator(selector).first()
+      if (await statusTag.isVisible().catch(() => false)) {
+        return (await statusTag.textContent()) || ''
+      }
+    }
+
+    // Fallback: wait for any tag to appear and get its text
+    const anyTag = this.page.locator('.semi-tag').first()
+    await anyTag.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+    return (await anyTag.textContent()) || ''
   }
 
   /**

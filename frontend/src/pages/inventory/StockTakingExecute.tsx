@@ -12,7 +12,7 @@ import {
   Modal,
   Progress,
   Descriptions,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import {
   IconArrowLeft,
   IconPlay,
@@ -35,7 +35,7 @@ import './StockTakingExecute.css'
 
 const { Title, Text } = Typography
 
-import type { TagProps } from '@douyinfe/semi-ui/lib/es/tag'
+import type { TagProps } from '@douyinfe/semi-ui-19/lib/es/tag'
 
 type TagColor = TagProps['color']
 

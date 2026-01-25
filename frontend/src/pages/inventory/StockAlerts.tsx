@@ -11,7 +11,7 @@ import {
   Button,
   Modal,
   Form,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'

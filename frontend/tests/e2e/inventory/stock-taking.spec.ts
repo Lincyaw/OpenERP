@@ -262,25 +262,26 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       // Start counting
       await inventoryPage.clickStartCounting()
 
-      // Enter quantities for all items
+      // Enter quantities for all items using row index
       const itemRows = inventoryPage.page.locator('.semi-table-tbody .semi-table-row')
       const itemCount = await itemRows.count()
 
       for (let i = 0; i < itemCount; i++) {
         const row = itemRows.nth(i)
         const cells = row.locator('.semi-table-row-cell')
-        const productCode = ((await cells.first().textContent()) || '').trim()
 
-        // Get system quantity and use same value (no difference)
+        // Get system quantity (column index 3) and use same value (no difference)
         const systemQtyText = (await cells.nth(3).textContent()) || '0'
         const systemQty = parseFloat(systemQtyText.replace(/[^\d.-]/g, '')) || 0
 
-        await inventoryPage.enterActualQuantity(productCode, systemQty)
-        await inventoryPage.page.waitForTimeout(100)
+        await inventoryPage.enterActualQuantityByIndex(i, systemQty)
       }
 
       // Save all counts
       await inventoryPage.clickSaveAllCounts()
+
+      // Wait for progress to update after save
+      await inventoryPage.page.waitForTimeout(1000)
 
       // Progress should be 100%
       const progress = await inventoryPage.getStockTakingProgress()
@@ -298,29 +299,28 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       // Start counting
       await inventoryPage.clickStartCounting()
 
-      // Enter quantities for all items
+      // Enter quantities for all items using row index
       const itemRows = inventoryPage.page.locator('.semi-table-tbody .semi-table-row')
       const itemCount = await itemRows.count()
 
       for (let i = 0; i < itemCount; i++) {
         const row = itemRows.nth(i)
         const cells = row.locator('.semi-table-row-cell')
-        const productCode = ((await cells.first().textContent()) || '').trim()
         const systemQtyText = (await cells.nth(3).textContent()) || '0'
         const systemQty = parseFloat(systemQtyText.replace(/[^\d.-]/g, '')) || 0
-        await inventoryPage.enterActualQuantity(productCode, systemQty)
-        await inventoryPage.page.waitForTimeout(100)
+        await inventoryPage.enterActualQuantityByIndex(i, systemQty)
       }
 
-      // Save all counts
+      // Save all counts and wait for save to complete
       await inventoryPage.clickSaveAllCounts()
+      await inventoryPage.page.waitForTimeout(1000)
 
       // Submit for approval
       await inventoryPage.clickSubmitForApproval()
       await inventoryPage.confirmSubmitForApproval()
 
       // Status should change to PENDING_APPROVAL (待审批)
-      await inventoryPage.page.waitForTimeout(500)
+      await inventoryPage.page.waitForTimeout(1000)
       const status = await inventoryPage.getStockTakingStatus()
       expect(status).toContain('待审批')
 
@@ -362,9 +362,9 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       const diffText = await diffCell.textContent()
       expect(diffText).toMatch(/\+.*20/)
 
-      // Verify positive styling (green/positive class)
-      const hasPositiveClass = await diffCell.locator('.diff-positive').isVisible()
-      expect(hasPositiveClass).toBe(true)
+      // Verify positive styling (green/positive class) - look for span with diff-positive class
+      const positiveSpan = diffCell.locator('span.diff-positive')
+      await expect(positiveSpan).toBeVisible({ timeout: 5000 })
 
       await inventoryPage.screenshotStockTaking('stock-taking-gain')
     })
@@ -402,9 +402,9 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       const diffText = await diffCell.textContent()
       expect(diffText).toMatch(/-/)
 
-      // Verify negative styling (red/negative class)
-      const hasNegativeClass = await diffCell.locator('.diff-negative').isVisible()
-      expect(hasNegativeClass).toBe(true)
+      // Verify negative styling (red/negative class) - look for span with diff-negative class
+      const negativeSpan = diffCell.locator('span.diff-negative')
+      await expect(negativeSpan).toBeVisible({ timeout: 5000 })
 
       await inventoryPage.screenshotStockTaking('stock-taking-loss')
     })

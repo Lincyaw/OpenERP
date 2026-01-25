@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Button, Typography, Space } from '@douyinfe/semi-ui'
+import { Button, Typography, Space } from '@douyinfe/semi-ui-19'
 import { IconLock, IconHome } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 

@@ -1,8 +1,8 @@
 import { useMemo, useCallback } from 'react'
-import { Table, Pagination, Empty } from '@douyinfe/semi-ui'
+import { Table, Pagination, Empty } from '@douyinfe/semi-ui-19'
 import { IconInbox } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
-import type { ColumnProps, ChangeInfo } from '@douyinfe/semi-ui/lib/es/table'
+import type { ColumnProps, ChangeInfo } from '@douyinfe/semi-ui-19/lib/es/table'
 import type { DataTableProps, SortState } from './types'
 import { TableActions } from './TableActions'
 import './DataTable.css'
@@ -71,7 +71,7 @@ export function DataTable<T extends Record<string, unknown>>({
   scroll,
   className = '',
   sticky = false,
-  resizable = false,
+  resizable = true,
   expandable,
 }: DataTableProps<T>) {
   const { t } = useTranslation()

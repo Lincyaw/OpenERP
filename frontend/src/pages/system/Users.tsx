@@ -14,8 +14,8 @@ import {
   Button,
   Checkbox,
   TagGroup,
-} from '@douyinfe/semi-ui'
-import type { FormApi } from '@douyinfe/semi-ui/lib/es/form/interface'
+} from '@douyinfe/semi-ui-19'
+import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface'
 import { IconPlus, IconRefresh, IconKey, IconUnlock, IconLock } from '@douyinfe/semi-icons'
 import {
   DataTable,

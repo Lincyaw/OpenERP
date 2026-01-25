@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Spin, Tooltip } from '@douyinfe/semi-ui'
+import { Card, Typography, Tag, Toast, Select, Space, Spin, Tooltip } from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'

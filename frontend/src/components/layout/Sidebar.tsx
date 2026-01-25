@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Layout, Nav } from '@douyinfe/semi-ui'
+import { Layout, Nav } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
 import {
   IconHome,

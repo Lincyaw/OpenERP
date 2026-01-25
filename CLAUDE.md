@@ -29,59 +29,122 @@ An inventory management system based on DDD (Domain-Driven Design), adopting a m
 
 All technology stacks use the latest stable versions
 
-### 2.1 Backend
+### 3.1 Backend
 
 | Category | Technology |
-|------|----------|----------|
+|------|----------|
 | Language | Go |
-| Web Framework | Gin | v
-| ORM | GORM | 
-| Database | PostgreSQL | 
+| Web Framework | Gin |
+| ORM | GORM |
+| Database | PostgreSQL |
 | Cache | Redis |
 | Message Queue | Redis Stream |
 | Validation | go-playground/validator |
 | JWT | golang-jwt/jwt |
-| Logging | zap | 
+| Logging | zap |
 | Configuration | viper |
 | Migration | golang-migrate |
-| Testing | testify | 
+| Testing | testify |
 
-### 2.2 Frontend
+### 3.2 Frontend
 
-| Category | Technology | 
+| Category | Technology |
 |------|----------|
-| Framework | React | 
+| Framework | React |
 | Language | TypeScript |
-| UI Component Library | Semi Design  @douyinfe/semi-ui |
+| UI Component Library | Semi Design @douyinfe/semi-ui |
 | State Management | Zustand |
-| Routing | React Router | 
+| Routing | React Router |
 | HTTP Client | Axios |
 | Forms | React Hook Form |
 | Charts | ECharts / @visactor/vchart |
-| Build Tool | Vite | 
-| Testing | Vitest + React Testing Library | 
-| E2E Testing | Playwright | 
+| Build Tool | Vite |
+| Testing | Vitest + React Testing Library |
+| E2E Testing | Playwright |
 
-### 2.3 Semi Design Installation
+### 3.3 Semi Design Installation
 
 ```bash
 npm install @douyinfe/semi-ui
-
 npm install @douyinfe/semi-icons
 ```
 
-Use `semi-ui-skills` to write better frontend code with Semi Design, you can use this skill.
-
+Use `semi-ui-skills` to write better frontend code with Semi Design.
 
 ---
 
-## 3. API Contract & Code Generation
+## 4. Docker Compose Configuration
 
-### 3.1 Overview
+### 4.1 Two Usage Modes
+
+This project supports two development/deployment modes:
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **Docker Mode** | All services run in Docker containers | Quick start, CI/CD, demos |
+| **Local Dev Mode** | Database in Docker, frontend/backend run locally | Daily development, debugging |
+
+### 4.2 Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `.env.example` | Configuration template (copy to `.env`) |
+| `.env` | Your local configuration (gitignored) |
+| `backend/config.toml` | Application default configuration |
+
+### 4.3 Unified Port Configuration
+
+| Service | Port |
+|---------|------|
+| Backend | 8080 |
+| Frontend | 3000 |
+| PostgreSQL | 5432 |
+| Redis | 6379 |
+
+### 4.4 Quick Start
+
+**First-time setup:**
+```bash
+make setup
+```
+
+**Docker Mode (all services in containers):**
+```bash
+make docker-up      # Start all services
+# Access: http://localhost:3000
+# Login:  admin / test123
+make docker-down    # Stop all services
+```
+
+**Local Development Mode:**
+```bash
+make dev            # Start database (postgres + redis)
+make dev-backend    # Terminal 1: Run backend locally
+make dev-frontend   # Terminal 2: Run frontend locally
+make dev-stop       # Stop database
+```
+
+### 4.5 Environment Variable Overrides
+
+Override any `backend/config.toml` value using `ERP_` prefix:
+
+```bash
+ERP_DATABASE_PASSWORD=secret
+ERP_JWT_SECRET=my-secret-key
+ERP_LOG_LEVEL=debug
+```
+
+**Mapping:** `ERP_DATABASE_HOST` → `[database] host` in TOML
+
+---
+
+## 5. API Contract & Code Generation
+
+### 5.1 Overview
 
 This project uses **OpenAPI 3.0** specification as the single source of truth for API contracts. Frontend TypeScript SDK is auto-generated from the OpenAPI spec, reducing maintenance effort and ensuring type safety.
 
-### 3.2 Technology Stack
+### 5.2 Technology Stack
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -90,7 +153,7 @@ This project uses **OpenAPI 3.0** specification as the single source of truth fo
 | Client Generator | orval | Generate TypeScript axios client |
 | Generated SDK | `frontend/src/api/` | Auto-generated, DO NOT edit manually |
 
-### 3.3 Backend: Writing OpenAPI Annotations
+### 5.3 Backend: Writing OpenAPI Annotations
 
 Every HTTP handler MUST include swag annotations:
 
@@ -123,35 +186,21 @@ func (h *ProductHandler) Create(c *gin.Context) {
 - `@Security` - Authentication requirement
 - `@Router` - HTTP method and path
 
-### 3.4 Backend: Generating OpenAPI Spec
+### 5.4 Backend: Generating OpenAPI Spec
 
 ```bash
-# Install swag CLI (one-time)
-go install github.com/swaggo/swag/cmd/swag@latest
-
 # Generate OpenAPI spec from annotations
-cd backend
-swag init -g cmd/server/main.go -o docs --outputTypes yaml,json
+make api-docs
 
 # Output files:
-# - docs/swagger.yaml (OpenAPI spec)
-# - docs/swagger.json (OpenAPI spec)
-# - docs/docs.go (Go embed file)
+# - backend/docs/swagger.yaml (OpenAPI spec)
+# - backend/docs/swagger.json (OpenAPI spec)
+# - backend/docs/docs.go (Go embed file)
 ```
 
-Add to `backend/Makefile`:
-```makefile
-.PHONY: docs
-docs:
-	swag init -g cmd/server/main.go -o docs --outputTypes yaml,json
-```
-
-### 3.5 Frontend: Generating TypeScript SDK
+### 5.5 Frontend: Generating TypeScript SDK
 
 ```bash
-# Install orval (one-time)
-npm install -D orval
-
 # Generate SDK from OpenAPI spec
 cd frontend
 npx orval
@@ -182,24 +231,14 @@ export default defineConfig({
 })
 ```
 
-Add to `frontend/package.json`:
-```json
-{
-  "scripts": {
-    "api:generate": "orval",
-    "api:watch": "orval --watch"
-  }
-}
-```
-
-### 3.6 Workflow
+### 5.6 Workflow
 
 1. **Backend developer** adds/modifies API handler with swag annotations
-2. **Run** `make docs` in backend to regenerate OpenAPI spec
+2. **Run** `make api-docs` to regenerate OpenAPI spec
 3. **Run** `npm run api:generate` in frontend to regenerate SDK
 4. **Frontend developer** uses typed SDK with full autocomplete
 
-### 3.7 Rules
+### 5.7 Rules
 
 - **NEVER manually edit** files in `frontend/src/api/` - they are auto-generated
 - **ALWAYS regenerate SDK** after backend API changes
@@ -209,22 +248,20 @@ Add to `frontend/package.json`:
 
 ---
 
-## 4. E2E Testing Specification
+## 6. E2E Testing Specification
 
-### 4.1 Test Environment Requirements
+### 6.1 Test Environment
 
-All integration (INT) and end-to-end tests **MUST** be executed in Docker environment with connection to real database:
+All E2E tests use unified ports:
 
-| Component | Port | Description |
-|------|------|------|
-| Frontend | 3001 | Frontend application |
-| Backend | 8081 | Backend API |
-| PostgreSQL | 5433 | Real database |
-| Redis | 6380 | Cache service |
+| Component | Port |
+|-----------|------|
+| Frontend | 3000 |
+| Backend | 8080 |
+| PostgreSQL | 5432 |
+| Redis | 6379 |
 
-See [4.4 Test Commands](#44-test-commands) for specific test commands.
-
-### 4.2 E2E Testing Standards
+### 6.2 E2E Testing Standards
 
 1. **No Mocking**: Integration tests must connect to real database, API responses must NOT be mocked
 2. **Data Isolation**: Each test case should have independent test data to avoid side effects
@@ -233,123 +270,52 @@ See [4.4 Test Commands](#44-test-commands) for specific test commands.
 5. **Multi-Browser**: Must cover at least Chrome and Firefox
 6. **Responsive**: Test both desktop and mobile viewports
 
-### 4.3 Integration Test Acceptance Criteria
+### 6.3 Integration Test Acceptance Criteria
 
 A completed integration (INT) task must satisfy:
-- [ ] Docker environment (`docker-compose.test.yml`) starts successfully
+- [ ] Docker environment starts successfully
 - [ ] Seed data (`seed-data.sql`) loads completely
 - [ ] Playwright E2E tests pass at 100% rate
 - [ ] Tests cover all scenarios described in requirements
 - [ ] HTML test report is generated
 - [ ] No flaky tests (stable pass after 3 consecutive runs)
 
-### 4.4 Test Commands
-
-#### Docker Test Environment (CI/Full Integration)
+### 6.4 Test Commands
 
 ```bash
-# Start test environment (includes health checks, migration, seed, API checks)
-./docker/quick-test.sh start
+# Run E2E tests (resets environment, runs all tests)
+make e2e
 
-# Load seed data only
-./docker/quick-test.sh seed
-
-# View service status
-./docker/quick-test.sh status
-
-# View logs
-./docker/quick-test.sh logs
-
-# API smoke test
-./docker/quick-test.sh api
-
-# Stop test environment
-./docker/quick-test.sh stop
-
-# Stop and clean all data
-./docker/quick-test.sh clean
-```
-
-#### Local Test Environment (For Agent/Debugging)
-
-The local test environment runs PostgreSQL and Redis in Docker, but backend and frontend run locally. This allows for easier debugging and is suitable for agent-based E2E testing.
-
-```bash
-# Start complete local test environment (one command does everything)
-./docker/local-test.sh start
-
-# Check status of all services
-./docker/local-test.sh status
-
-# Run E2E tests
-./docker/local-test.sh run-e2e
+# Run E2E tests with Playwright UI (requires local services)
+make e2e-ui
 
 # Run E2E tests in debug mode
-./docker/local-test.sh run-e2e-debug
-
-# Run E2E tests with Playwright UI
-./docker/local-test.sh run-e2e-ui
+make e2e-debug
 
 # Run specific test file
-./docker/local-test.sh run-e2e tests/e2e/auth/auth.spec.ts
+make e2e ARGS="tests/e2e/auth/auth.spec.ts"
 
-# View backend logs (real-time)
-./docker/local-test.sh logs-backend
+# Run only Chromium browser
+make e2e ARGS="--project=chromium"
 
-# View frontend logs (real-time)
-./docker/local-test.sh logs-frontend
-
-# Stop everything
-./docker/local-test.sh stop
-
-# Clean up everything (including data)
-./docker/local-test.sh clean
+# Run tests against locally running services
+make e2e-local
 ```
 
-**Log Files Location:**
-- Backend: `logs/backend.log`
-- Frontend: `logs/frontend.log`
-
-**Makefile shortcuts:**
-```bash
-make local-test-start      # Start local test environment
-make local-test-stop       # Stop local test environment
-make local-test-status     # Check status
-make local-test-e2e        # Run E2E tests
-make local-test-e2e-ui     # Run E2E with Playwright UI
-make local-test-e2e-debug  # Run E2E in debug mode
-make local-test-clean      # Clean everything
-```
-
-#### Running E2E Tests in Docker (CI mode)
+### 6.5 Database Operations
 
 ```bash
-# 1. Start test environment
-docker compose -f docker-compose.test.yml up -d
+# Load seed data
+make db-seed
 
-# 2. Load seed data
-./docker/quick-test.sh seed
+# Reset database (clean + migrate + seed)
+make db-reset
 
-# 3. Run tests (execute from project root)
-docker compose -f docker-compose.test.yml run --rm \
-    --user "$(id -u):$(id -g)" \
-    -e HOME=/tmp \
-    -e E2E_BASE_URL=http://frontend:80 \
-    playwright npx playwright test --reporter=list
-
-# Run specific test file
-docker compose -f docker-compose.test.yml run --rm \
-    --user "$(id -u):$(id -g)" \
-    -e HOME=/tmp \
-    -e E2E_BASE_URL=http://frontend:80 \
-    playwright npx playwright test tests/e2e/auth/auth.spec.ts --project=chromium --reporter=list
-
-# 4. Stop test environment
-docker compose -f docker-compose.test.yml down -v
+# Open psql shell
+make db-psql
 ```
 
 **Notes**:
-- By default uses 16 workers to run in parallel
-- Add `-e CI=true` to switch to CI mode (2 workers, retry 2 times on failure)
-
-
+- E2E tests automatically reset the database before running
+- Default: 16 parallel workers
+- CI mode (CI=true): 2 workers with 2 retries on failure

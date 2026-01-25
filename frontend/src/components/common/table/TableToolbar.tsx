@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, Input, Space } from '@douyinfe/semi-ui'
+import { Button, Input, Space } from '@douyinfe/semi-ui-19'
 import { IconSearch, IconPlus } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { TableToolbarProps } from './types'

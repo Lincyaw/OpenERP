@@ -1,5 +1,5 @@
 import { Controller, type FieldValues, type FieldPath } from 'react-hook-form'
-import { Radio, RadioGroup } from '@douyinfe/semi-ui'
+import { Radio, RadioGroup } from '@douyinfe/semi-ui-19'
 import { FormFieldWrapper } from './FormFieldWrapper'
 import type { ControlledFieldProps, SelectOption } from './types'
 

@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders, screen, waitFor, within } from '@/tests/utils'
 import CategoriesPage from './Categories'
 import * as categoriesApi from '@/api/categories/categories'
-import { Toast, Modal } from '@douyinfe/semi-ui'
+import { Toast, Modal } from '@douyinfe/semi-ui-19'
 
 // Mock the categories API module
 vi.mock('@/api/categories/categories', () => ({

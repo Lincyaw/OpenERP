@@ -1,5 +1,5 @@
 import { Controller, type FieldValues, type FieldPath } from 'react-hook-form'
-import { Switch } from '@douyinfe/semi-ui'
+import { Switch } from '@douyinfe/semi-ui-19'
 import { FormFieldWrapper } from './FormFieldWrapper'
 import type { ControlledFieldProps } from './types'
 

@@ -17,7 +17,7 @@ import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import ReceiptVoucherNewPage from './ReceiptVoucherNew'
 import * as financeApi from '@/api/finance/finance'
 import * as customersApi from '@/api/customers/customers'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/finance/finance', () => ({

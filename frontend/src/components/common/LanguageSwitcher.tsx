@@ -5,7 +5,7 @@
  * Uses Semi Design Dropdown with language list from i18n config.
  */
 
-import { Dropdown, Button } from '@douyinfe/semi-ui'
+import { Dropdown, Button } from '@douyinfe/semi-ui-19'
 import { IconLanguage } from '@douyinfe/semi-icons'
 import { useI18n } from '@/hooks'
 import type { SupportedLanguage } from '@/i18n/config'
@@ -56,20 +56,27 @@ export function LanguageSwitcher({
   const currentLanguage = languages.find((l) => l.code === language)
 
   return (
-    <Dropdown trigger="click" position="bottomRight" menu={menuItems}>
-      <Button
-        theme="borderless"
-        icon={<IconLanguage />}
-        size={size}
-        className={className}
-        aria-label="Switch language"
-      >
-        {showLabel && currentLanguage && (
-          <span style={{ marginLeft: '4px' }}>
-            {currentLanguage.flag} {currentLanguage.name}
-          </span>
-        )}
-      </Button>
+    <Dropdown
+      trigger="click"
+      position="bottomRight"
+      menu={menuItems}
+      getPopupContainer={() => document.body}
+    >
+      <span style={{ display: 'inline-flex' }}>
+        <Button
+          theme="borderless"
+          icon={<IconLanguage />}
+          size={size}
+          className={className}
+          aria-label="Switch language"
+        >
+          {showLabel && currentLanguage && (
+            <span style={{ marginLeft: '4px' }}>
+              {currentLanguage.flag} {currentLanguage.name}
+            </span>
+          )}
+        </Button>
+      </span>
     </Dropdown>
   )
 }

@@ -17,7 +17,7 @@ import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import SalesReturnsPage from './SalesReturns'
 import * as salesReturnsApi from '@/api/sales-returns/sales-returns'
 import * as customersApi from '@/api/customers/customers'
-import { Toast, Modal } from '@douyinfe/semi-ui'
+import { Toast, Modal } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/sales-returns/sales-returns', () => ({

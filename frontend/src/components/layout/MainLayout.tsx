@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { Layout } from '@douyinfe/semi-ui'
+import { Layout } from '@douyinfe/semi-ui-19'
 
 import { useAppStore } from '@/store'
 import { Header } from './Header'

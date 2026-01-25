@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import PayablesPage from './Payables'
 import * as financeApi from '@/api/finance/finance'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/finance/finance', () => ({

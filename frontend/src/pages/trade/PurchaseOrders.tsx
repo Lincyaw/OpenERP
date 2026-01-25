@@ -10,7 +10,7 @@ import {
   Spin,
   DatePicker,
   Progress,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {

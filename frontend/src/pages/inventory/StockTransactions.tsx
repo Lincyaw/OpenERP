@@ -9,7 +9,7 @@ import {
   Select,
   DatePicker,
   Space,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'

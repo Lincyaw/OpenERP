@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
-import { Card, Typography, Rating } from '@douyinfe/semi-ui'
+import { Card, Typography, Rating } from '@douyinfe/semi-ui-19'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {

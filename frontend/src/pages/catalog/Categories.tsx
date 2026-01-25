@@ -14,9 +14,9 @@ import {
   Descriptions,
   Input,
   Dropdown,
-} from '@douyinfe/semi-ui'
-import type { FormApi } from '@douyinfe/semi-ui/lib/es/form/interface'
-import type { TreeNodeData, OnDragProps } from '@douyinfe/semi-ui/lib/es/tree/interface'
+} from '@douyinfe/semi-ui-19'
+import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface'
+import type { TreeNodeData, OnDragProps } from '@douyinfe/semi-ui-19/lib/es/tree/interface'
 import {
   IconPlus,
   IconRefresh,

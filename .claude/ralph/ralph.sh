@@ -24,8 +24,8 @@ log "Starting Ralph loop, max iterations: $MAX_ITER"
 log "Logs will be saved to: $MAIN_LOG"
 
 PROMPT="@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt  progress.txt may be long, so use tail, or grep to search it by id, like 'P0-BE-005'. \
-  1. Find the highest-priority feature to work on and work only on that feature. \
-  This should be the one YOU decide has the highest priority - not necessarily the first item. \
+  1. Find the highest-priority code bug fixing to work on and work only on that feature, if there are backend/frontend functionality missing, you also need to implement it. \
+  This should be the one YOU decide has the highest priority - not necessarily the first item. You can split it into sub-tasks by adding new prd to prd.json, to better control the quality. \
   2. If the prd.json is not clear, you can reference .claude/ralph/docs/spec.md and .claude/ralph/docs/task.md, but be careful the files is long, use grep, tail, head to find relevant information. \
   3. Update the PRD with the work that was done. \
   4. Append your progress to the progress.txt file, use this to leave a note for the next person working in the codebase. \
@@ -33,7 +33,7 @@ PROMPT="@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt  progress.txt 
   6. Call proper subagent and use proper skills for specfic tasks, but do not use Plan agent unless you feel it is must. \
   7. Make a git commit of that feature. \
   ONLY WORK ON A SINGLE FEATURE. \
-  8. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. \
+  8. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. You can skip e2e test by --no-verify, but need to check code type using tsc \
   If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> here."
 
 for ((i=1; i<=MAX_ITER; i++)); do

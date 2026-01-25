@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Modal, Select, Toast, Typography, Descriptions, Spin, Empty } from '@douyinfe/semi-ui'
+import { Modal, Select, Toast, Typography, Descriptions, Spin, Empty } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'

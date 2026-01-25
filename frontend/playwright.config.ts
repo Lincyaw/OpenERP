@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
  *
  * This configuration is optimized for:
  * - Multi-browser testing (Chromium, Firefox, WebKit)
- * - Docker test environment (http://localhost:3001)
+ * - Unified test environment (http://localhost:3000)
  * - Screenshot/video/trace capture for debugging
  * - CI/CD integration with GitHub Actions
  */
@@ -38,7 +38,7 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for the application under test
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3001',
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
 
     // Collect trace when retrying failed test
     trace: 'on-first-retry',
@@ -127,7 +127,7 @@ export default defineConfig({
   // Uncomment if you want Playwright to start the dev server
   // webServer: {
   //   command: 'npm run dev',
-  //   url: 'http://localhost:3001',
+  //   url: 'http://localhost:3000',
   //   reuseExistingServer: !process.env.CI,
   //   timeout: 120000,
   // },

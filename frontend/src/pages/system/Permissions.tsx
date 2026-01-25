@@ -14,8 +14,8 @@ import {
   Button,
   Tooltip,
   Banner,
-} from '@douyinfe/semi-ui'
-import type { TreeNodeData } from '@douyinfe/semi-ui/lib/es/tree/interface'
+} from '@douyinfe/semi-ui-19'
+import type { TreeNodeData } from '@douyinfe/semi-ui-19/lib/es/tree/interface'
 import { IconRefresh, IconSearch, IconInfoCircle } from '@douyinfe/semi-icons'
 import { Container } from '@/components/common/layout'
 import { getIdentity } from '@/api/identity'

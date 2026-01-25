@@ -1,5 +1,5 @@
 import { Controller, type FieldValues, type FieldPath } from 'react-hook-form'
-import { TextArea } from '@douyinfe/semi-ui'
+import { TextArea } from '@douyinfe/semi-ui-19'
 import { FormFieldWrapper } from './FormFieldWrapper'
 import type { ControlledFieldProps } from './types'
 import type { ComponentProps } from 'react'

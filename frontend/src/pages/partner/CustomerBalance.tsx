@@ -11,7 +11,7 @@ import {
   Spin,
   DatePicker,
   Empty,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconPlus, IconRefresh, IconHistory } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'

@@ -15,7 +15,7 @@ import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import StockTakingListPage from './StockTakingList'
 import * as stockTakingApi from '@/api/stock-taking/stock-taking'
 import * as warehousesApi from '@/api/warehouses/warehouses'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/stock-taking/stock-taking', () => ({

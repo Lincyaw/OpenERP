@@ -11,7 +11,7 @@ import {
   Checkbox,
   Tag,
   Modal,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconPlus, IconDelete, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'

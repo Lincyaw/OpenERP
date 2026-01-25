@@ -16,7 +16,7 @@ import {
   Select,
   DatePicker,
   Input,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconTick, IconClose, IconSearch, IconRefresh } from '@douyinfe/semi-icons'
 import { useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui'
+import { Card, Typography, Toast, Spin, Select, Tag, Banner } from '@douyinfe/semi-ui-19'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Form,

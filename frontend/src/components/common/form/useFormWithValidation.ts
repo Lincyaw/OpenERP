@@ -8,7 +8,7 @@ import {
 } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 import type { ApiError } from '@/types/api'
 
 interface UseFormWithValidationOptions<TFieldValues extends FieldValues> extends Omit<

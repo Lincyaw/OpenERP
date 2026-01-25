@@ -12,9 +12,9 @@ import {
   Descriptions,
   Divider,
   Select,
-} from '@douyinfe/semi-ui'
-import type { TagColor } from '@douyinfe/semi-ui/lib/es/tag'
-import type { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
+} from '@douyinfe/semi-ui-19'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
+import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
 import {
   IconPriceTag,
   IconMinus,

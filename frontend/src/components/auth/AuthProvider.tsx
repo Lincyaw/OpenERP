@@ -12,7 +12,7 @@
  */
 
 import { useEffect, type ReactNode } from 'react'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 import { useAuthStore } from '@/store'
 import { setupAutoRefresh } from '@/services/token-refresh'
 

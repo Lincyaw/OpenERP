@@ -13,7 +13,7 @@ import {
   Select,
   Radio,
   RadioGroup,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import {
   IconBarChartHStroked,
   IconShoppingBag,
@@ -28,7 +28,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
 import type { ProductSalesRanking, CustomerSalesRanking } from '@/api/reports'
-import type { TagColor } from '@douyinfe/semi-ui/lib/es/tag'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import './SalesRanking.css'
 
 // Register ECharts components

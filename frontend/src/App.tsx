@@ -10,7 +10,7 @@ import {
   Table,
   Avatar,
   Descriptions,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconHome, IconSearch, IconUser, IconSetting, IconGithubLogo } from '@douyinfe/semi-icons'
 
 const { Title, Text, Paragraph } = Typography

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Button, Typography, Space } from '@douyinfe/semi-ui'
+import { Button, Typography, Space } from '@douyinfe/semi-ui-19'
 import { IconAlertTriangle } from '@douyinfe/semi-icons'
 
 const { Title, Paragraph } = Typography

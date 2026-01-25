@@ -9,7 +9,7 @@ import {
   Button,
   Space,
   Breadcrumb,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import {
   IconMoon,
   IconSun,
@@ -162,6 +162,7 @@ export function Header() {
           <Dropdown
             trigger="click"
             position="bottomRight"
+            getPopupContainer={() => document.body}
             render={
               <Dropdown.Menu>
                 <div className="header__user-info">

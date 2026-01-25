@@ -10,7 +10,7 @@ import {
   Tabs,
   TabPane,
   Empty,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconRefresh, IconEdit } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'

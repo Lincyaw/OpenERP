@@ -13,7 +13,7 @@ import {
   Modal,
   TextArea,
   Button,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconPlus } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {

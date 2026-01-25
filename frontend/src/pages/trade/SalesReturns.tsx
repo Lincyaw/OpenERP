@@ -9,7 +9,7 @@ import {
   Modal,
   Spin,
   DatePicker,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh, IconTickCircle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {

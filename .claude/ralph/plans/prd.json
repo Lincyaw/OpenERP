@@ -3001,5 +3001,221 @@
       "相关文件: frontend/tests/e2e/inventory/inventory.spec.ts"
     ],
     "passes": false
+  },
+  {
+    "id": "P9-UI-001",
+    "story": "前端UI问题批量修复 (2026-01-26)",
+    "priority": "critical",
+    "requirements": [
+      "📋 问题汇总: 18个问题 (2 CRITICAL, 6 HIGH, 8 MEDIUM, 2 LOW)",
+      "📋 全局模式: 178处静默catch块, 65处未检查类型的toFixed调用, 18处状态翻译",
+      "",
+      "🔴 CRITICAL (页面崩溃):",
+      "- C1: StockDetail页面崩溃 - quantity.toFixed is not a function",
+      "  - 文件: frontend/src/pages/inventory/StockDetail.tsx:62-74",
+      "  - 根因: formatQuantity函数假设number类型但API可能返回string",
+      "- C2: StockTransactions页面崩溃 - 同上错误",
+      "  - 文件: frontend/src/pages/inventory/StockTransactions.tsx:90-109",
+      "",
+      "🟠 HIGH (功能失效):",
+      "- H1: 产品详情页缺失",
+      "  - 需要: 创建 ProductDetail.tsx, 添加路由 /catalog/products/:id",
+      "- H2: TableActions下拉菜单不响应",
+      "  - 文件: frontend/src/components/common/table/TableActions.tsx:172-207",
+      "  - 调查: Semi Design Dropdown menu onClick可能需要改用onSelect",
+      "- H3: 仓库状态显示原始key (warehouse.status.active)",
+      "  - 根因: 后端返回active/inactive, 前端翻译key是enabled/disabled",
+      "  - 修复: 添加 warehouses.status.active/inactive 翻译",
+      "- H4: 采购订单供应商下拉为空",
+      "  - 文件: frontend/src/features/trade/PurchaseOrderForm.tsx:162-182",
+      "  - 根因: 静默错误处理, status参数可能不匹配",
+      "- H5: 销售退货订单下拉为空",
+      "  - 文件: frontend/src/features/trade/SalesReturnForm.tsx:170-190",
+      "- H6: 采购退货订单下拉为空",
+      "  - 文件: frontend/src/features/trade/PurchaseReturnForm.tsx:172-192",
+      "",
+      "🟡 MEDIUM (数据不加载):",
+      "- M1: 费用列表加载失败 - Expenses.tsx",
+      "- M2: 其他收入列表加载失败 - OtherIncomes.tsx",
+      "- M3: 收支流水加载失败 - CashFlow.tsx",
+      "- M4-M8: 报表中心全部失败 (SalesReport, ProfitLoss, CashFlowReport, InventoryTurnover, SalesRanking)",
+      "- 前置条件: 需先检查后端API是否实现",
+      "",
+      "🔵 LOW (UX问题):",
+      "- L1: StockAdjust布局溢出 - StockAdjust.css",
+      "- L2: HAS_LOCKED_STOCK错误不友好 - StockAdjust.tsx:252-254",
+      "",
+      "📁 详细PRD: /home/nn/.claude/plans/prd.json"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-C1",
+    "story": "修复 StockDetail 页面崩溃",
+    "priority": "critical",
+    "requirements": [
+      "文件: frontend/src/pages/inventory/StockDetail.tsx",
+      "行号: 62-74",
+      "问题: formatQuantity/formatSignedQuantity函数调用toFixed但输入可能是string",
+      "修复代码:",
+      "function formatQuantity(quantity?: number | string): string {",
+      "  if (quantity === undefined || quantity === null) return '-'",
+      "  const num = typeof quantity === 'string' ? parseFloat(quantity) : quantity",
+      "  if (typeof num !== 'number' || isNaN(num)) return '-'",
+      "  return num.toFixed(2)",
+      "}",
+      "验证: 访问 /inventory/stock/:id 页面不再崩溃"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-C2",
+    "story": "修复 StockTransactions 页面崩溃",
+    "priority": "critical",
+    "requirements": [
+      "文件: frontend/src/pages/inventory/StockTransactions.tsx",
+      "行号: 90-109",
+      "问题: formatQuantity/formatSignedQuantity/formatCurrency函数与C1相同问题",
+      "修复: 同C1的类型检查方案",
+      "验证: 访问 /inventory/transactions 页面不再崩溃"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-H1",
+    "story": "创建产品详情页面",
+    "priority": "high",
+    "requirements": [
+      "新建文件: frontend/src/pages/catalog/ProductDetail.tsx",
+      "修改文件: frontend/src/router/routes.tsx (添加路由)",
+      "现有导航: Products.tsx:228 navigate(`/catalog/products/${product.id}`)",
+      "缺失路由: /catalog/products/:id (只有new和edit)",
+      "功能需求: 显示产品基本信息、价格、库存状态、图片、编辑按钮",
+      "验证: 产品列表点击查看能打开详情页"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-H2",
+    "story": "修复 TableActions 下拉菜单",
+    "priority": "high",
+    "requirements": [
+      "文件: frontend/src/components/common/table/TableActions.tsx",
+      "行号: 172-207",
+      "问题: Semi Design Dropdown menu属性中onClick可能不是正确的事件处理方式",
+      "调查步骤:",
+      "1. 检查Semi Design Dropdown组件menu属性API文档",
+      "2. 可能需要使用onSelect回调而不是menu item的onClick",
+      "3. 检查是否需要clickToHide属性",
+      "影响页面: Customers, Suppliers, Warehouses, Products",
+      "验证: 任意列表页点击三个点菜单能正常执行操作"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-H3",
+    "story": "修复仓库状态翻译",
+    "priority": "high",
+    "requirements": [
+      "问题: 仓库状态列显示 warehouse.status.active 而不是翻译后的文本",
+      "根因: 后端返回 active/inactive, 前端期望 enabled/disabled",
+      "后端定义: backend/internal/domain/partner/warehouse.go:15-16 (active/inactive)",
+      "前端翻译: frontend/src/locales/zh-CN/partner.json (只有enabled/disabled)",
+      "修复文件:",
+      "- frontend/src/locales/zh-CN/partner.json",
+      "- frontend/src/locales/en-US/partner.json",
+      "添加内容:",
+      "  warehouses.status.active: 启用 / Active",
+      "  warehouses.status.inactive: 停用 / Inactive",
+      "验证: 仓库列表状态列显示正确翻译"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-H4H5H6",
+    "story": "修复Trade模块下拉框数据加载",
+    "priority": "high",
+    "requirements": [
+      "H4 文件: frontend/src/features/trade/PurchaseOrderForm.tsx:162-182",
+      "H5 文件: frontend/src/features/trade/SalesReturnForm.tsx:170-190",
+      "H6 文件: frontend/src/features/trade/PurchaseReturnForm.tsx:172-192",
+      "共同问题:",
+      "1. 静默错误处理 (catch块为空)",
+      "2. status参数可能与后端不匹配",
+      "3. response.success为false时无处理",
+      "修复方案:",
+      "1. 添加错误提示 Toast.error()",
+      "2. 添加 console.error() 便于调试",
+      "3. 处理 response.success 为 false 的情况",
+      "验证: 采购订单/销售退货/采购退货的下拉框显示数据"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-M",
+    "story": "修复Finance和Report模块数据加载",
+    "priority": "medium",
+    "requirements": [
+      "前置条件: 需先检查后端API是否实现",
+      "Finance模块 (M1-M3):",
+      "- Expenses.tsx: api.getFinanceExpenses()",
+      "- OtherIncomes.tsx: api.getFinanceIncomes()",
+      "- CashFlow.tsx: api.getFinanceCashFlow()",
+      "Report模块 (M4-M8):",
+      "- SalesReport.tsx: 4个并行API调用, Promise.allSettled未检查response.success",
+      "- ProfitLoss.tsx, CashFlowReport.tsx, InventoryTurnover.tsx, SalesRanking.tsx: 类似问题",
+      "调查步骤:",
+      "1. 检查 backend/docs/swagger.yaml 中是否有对应 endpoint",
+      "2. 检查 frontend/src/api/finance/finance.ts 实现是否正确",
+      "3. 检查是否有权限问题(403)",
+      "验证: 各页面显示数据或明确错误信息"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-L",
+    "story": "修复低优先级UX问题",
+    "priority": "low",
+    "requirements": [
+      "L1: StockAdjust布局溢出",
+      "- 文件: frontend/src/pages/inventory/StockAdjust.css",
+      "- 修复: 添加 overflow: hidden 或 flex-wrap: wrap",
+      "- 验证: 不同屏幕尺寸下布局正常",
+      "",
+      "L2: HAS_LOCKED_STOCK错误不友好",
+      "- 文件: frontend/src/pages/inventory/StockAdjust.tsx:252-254",
+      "- 后端错误码: HAS_LOCKED_STOCK",
+      "- 修复: 识别错误码并显示友好提示",
+      "- 添加翻译: adjust.errors.hasLockedStock",
+      "- 验证: 调整有锁定的库存时显示友好错误"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P9-UI-001-GLOBAL",
+    "story": "全局模式修复 (可选)",
+    "priority": "low",
+    "requirements": [
+      "创建安全格式化工具函数:",
+      "- 文件: frontend/src/utils/format.ts",
+      "- safeToFixed(value: unknown, decimals = 2): string",
+      "- safeFormatCurrency(value: unknown, prefix = '¥'): string",
+      "",
+      "修复所有 riskyFiles 中的 toFixed 调用:",
+      "- SalesReturnForm.tsx:110,751",
+      "- PurchaseOrderForm.tsx:611,769,776,782",
+      "- SalesOrderForm.tsx:611,769,776,782",
+      "- PurchaseReturnForm.tsx:112,793",
+      "- PurchaseOrderReceive.tsx:345,352,361,552",
+      "- ShipOrderModal.tsx:33,153",
+      "- SalesReturnApproval.tsx:78,364,371,524",
+      "- SalesOrderDetail.tsx:212,313,335",
+      "- 所有 report/*.tsx 文件",
+      "",
+      "为所有空catch块添加错误处理:",
+      "- 统计: 178处空catch块",
+      "- 模块分布: trade(45), inventory(28), finance(26), partner(23), system(22), catalog(12), report(8), other(14)"
+    ],
+    "passes": false
   }
 ]

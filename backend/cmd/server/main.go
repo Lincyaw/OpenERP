@@ -334,6 +334,24 @@ func main() {
 	// Setup API routes using router
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))
 
+	// Apply JWT authentication middleware to API routes
+	// Configure skip paths for public endpoints
+	jwtConfig := middleware.JWTMiddlewareConfig{
+		JWTService: jwtService,
+		SkipPaths: []string{
+			"/api/v1/auth/login",
+			"/api/v1/auth/refresh",
+			"/api/v1/ping",
+			"/api/v1/system/ping",
+			"/api/v1/system/info",
+		},
+		SkipPathPrefixes: []string{
+			"/api/v1/payment/callback",
+		},
+		Logger: log,
+	}
+	r.Use(middleware.JWTAuthMiddlewareWithConfig(jwtConfig))
+
 	// Register domain route groups
 	// These will be populated as domain APIs are implemented
 

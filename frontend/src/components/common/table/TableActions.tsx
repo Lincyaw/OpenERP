@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState } from 'react'
-import { Button, Dropdown, Popconfirm, Space, Modal } from '@douyinfe/semi-ui'
+import { Button, Dropdown, Popconfirm, Space, Modal } from '@douyinfe/semi-ui-19'
 import { IconMore } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { TableAction } from './types'

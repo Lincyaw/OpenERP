@@ -1,141 +1,219 @@
-.PHONY: help docker-build docker-up docker-down docker-restart docker-logs docker-ps docker-clean setup
+# =============================================================================
+# ERP System - Makefile
+# =============================================================================
+# Unified commands for Docker mode and local development mode.
+# Run 'make help' to see all available commands.
+# =============================================================================
 
-# Default environment file
-ENV_FILE ?= .env.dev
+.PHONY: help setup docker-up docker-down docker-logs docker-build \
+        dev dev-stop dev-backend dev-frontend dev-status \
+        db-migrate db-seed db-reset db-psql \
+        e2e e2e-ui e2e-debug e2e-local \
+        clean logs api-docs
+
+# Default target
+.DEFAULT_GOAL := help
+
+# Configuration
+DOCKER_COMPOSE := docker compose
+MIGRATE_IMAGE := migrate/migrate:v4.17.0
+PLAYWRIGHT_IMAGE := mcr.microsoft.com/playwright:v1.48.0-noble
+
+# Colors for output
+CYAN := \033[0;36m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+RED := \033[0;31m
+NC := \033[0m
+
+# =============================================================================
+# Help
+# =============================================================================
 
 help: ## Show this help message
-	@echo 'Usage: make [target]'
-	@echo ''
-	@echo 'Available targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "$(CYAN)ERP System - Development Commands$(NC)"
+	@echo ""
+	@echo "$(GREEN)Setup:$(NC)"
+	@grep -E '^setup:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Docker Mode (all services in containers):$(NC)"
+	@grep -E '^docker-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Local Development (database in Docker, app locally):$(NC)"
+	@grep -E '^dev.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Database Management:$(NC)"
+	@grep -E '^db-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)E2E Testing:$(NC)"
+	@grep -E '^e2e.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Other:$(NC)"
+	@grep -E '^(clean|logs|api-docs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
 
-# ==============================================================================
-# Project Setup
-# ==============================================================================
+# =============================================================================
+# Setup
+# =============================================================================
 
-setup: ## Initialize project for development (run after cloning)
-	@echo "🚀 Setting up project for development..."
+setup: ## Initialize project (run after git clone)
+	@echo "$(CYAN)Setting up project...$(NC)"
+	@if [ ! -f .env ]; then \
+		echo "  → Creating .env from .env.example..."; \
+		cp .env.example .env; \
+	fi
 	@echo "  → Configuring git hooks..."
-	@git config core.hooksPath .husky
+	@git config core.hooksPath .husky 2>/dev/null || true
 	@echo "  → Installing frontend dependencies..."
 	@cd frontend && npm install
-	@echo "  → Installing backend development dependencies..."
+	@echo "  → Downloading backend dependencies..."
 	@cd backend && go mod download
 	@echo ""
-	@echo "✅ Project setup complete!"
+	@echo "$(GREEN)Setup complete!$(NC)"
 	@echo ""
 	@echo "Next steps:"
-	@echo "  1. Copy .env.dev to .env and configure if needed"
-	@echo "  2. Run 'make dev' to start the development environment"
+	@echo "  $(CYAN)make docker-up$(NC)      # Run all services in Docker"
+	@echo "  $(CYAN)make dev$(NC)            # Start database for local development"
 
-# ==============================================================================
-# Development Commands
-# ==============================================================================
+# =============================================================================
+# Docker Mode (Full Stack in Containers)
+# =============================================================================
 
-dev: ## Start development environment
-	@echo "Starting development environment..."
-	@cp -n .env.dev .env 2>/dev/null || true
-	$(MAKE) docker-up ENV_FILE=.env.dev
+docker-up: ## Start all services in Docker (postgres, redis, backend, frontend)
+	@echo "$(CYAN)Starting all services in Docker...$(NC)"
+	@$(DOCKER_COMPOSE) up -d postgres redis
+	@echo "  → Waiting for database..."
+	@sleep 5
+	@$(MAKE) db-migrate
+	@$(MAKE) db-seed
+	@$(DOCKER_COMPOSE) --profile docker up -d --build
+	@echo ""
+	@echo "$(GREEN)All services started!$(NC)"
+	@echo "  Frontend:  http://localhost:$${FRONTEND_PORT:-3000}"
+	@echo "  Backend:   http://localhost:$${BACKEND_PORT:-8080}"
+	@echo "  Login:     admin / test123"
 
-dev-logs: ## Show all logs in development
-	docker compose logs -f
+docker-down: ## Stop all Docker services
+	@echo "$(CYAN)Stopping all services...$(NC)"
+	@$(DOCKER_COMPOSE) --profile docker --profile e2e down
+	@echo "$(GREEN)Services stopped.$(NC)"
 
-dev-rebuild: ## Rebuild and restart development environment
-	@echo "Rebuilding development environment..."
-	$(MAKE) docker-up-build ENV_FILE=.env.dev
+# =============================================================================
+# Local Development Mode (Database in Docker, App Locally)
+# =============================================================================
 
-# ==============================================================================
-# Production Commands
-# ==============================================================================
+dev: ## Start database services (postgres + redis) for local development
+	@echo "$(CYAN)Starting database services...$(NC)"
+	@$(DOCKER_COMPOSE) up -d postgres redis
+	@echo "  → Waiting for database..."
+	@sleep 5
+	@$(MAKE) db-migrate
+	@$(MAKE) db-seed
+	@echo ""
+	@echo "$(GREEN)Database ready!$(NC)"
+	@echo "  PostgreSQL: localhost:$${DB_PORT:-5432}"
+	@echo "  Redis:      localhost:$${REDIS_PORT:-6379}"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  $(CYAN)make dev-backend$(NC)    # Run backend locally"
+	@echo "  $(CYAN)make dev-frontend$(NC)   # Run frontend locally"
 
-prod-setup: ## Setup production environment file
-	@if [ ! -f .env ]; then \
-		cp .env.docker .env; \
-		echo "Created .env file. Please edit it and set secure passwords!"; \
-		echo "IMPORTANT: Change DB_PASSWORD, JWT_SECRET, and other secrets"; \
-	else \
-		echo ".env file already exists"; \
-	fi
+dev-stop: ## Stop database services
+	@echo "$(CYAN)Stopping database services...$(NC)"
+	@$(DOCKER_COMPOSE) stop postgres redis
+	@echo "$(GREEN)Database stopped.$(NC)"
 
-prod: ## Start production environment
-	@if [ ! -f .env ]; then \
-		echo "ERROR: .env file not found. Run 'make prod-setup' first"; \
-		exit 1; \
-	fi
-	@echo "Starting production environment..."
-	$(MAKE) docker-up-build ENV_FILE=.env
+dev-backend: ## Run backend locally (requires database)
+	@echo "$(CYAN)Starting backend at http://localhost:$${BACKEND_PORT:-8080}$(NC)"
+	@cd backend && go run cmd/server/main.go
 
-# ==============================================================================
-# Health & Monitoring
-# ==============================================================================
+dev-frontend: ## Run frontend locally
+	@echo "$(CYAN)Starting frontend at http://localhost:$${FRONTEND_PORT:-3000}$(NC)"
+	@cd frontend && VITE_API_BASE_URL="http://localhost:$${BACKEND_PORT:-8080}/api/v1" npm run dev -- --host --port $${FRONTEND_PORT:-3000}
 
-health: ## Check health of all services
-	@echo "Checking service health..."
-	@echo "\n=== Backend Health ==="
-	@curl -sf http://localhost:8080/health || echo "Backend is not responding"
-	@echo "\n=== Frontend Health ==="
-	@curl -sf http://localhost:3000/health || echo "Frontend is not responding"
-	@echo "\n=== PostgreSQL Health ==="
-	@docker compose exec -T postgres pg_isready -U postgres || echo "PostgreSQL is not ready"
-	@echo "\n=== Redis Health ==="
-	@docker compose exec -T redis redis-cli ping || echo "Redis is not responding"
+# =============================================================================
+# Database Management
+# =============================================================================
 
-stats: ## Show Docker resource usage
-	docker stats --no-stream
+db-migrate: ## Run database migrations
+	@echo "$(CYAN)Running database migrations...$(NC)"
+	@docker run --rm --network erp-network \
+		-v "$(PWD)/backend/migrations:/migrations:ro" \
+		$(MIGRATE_IMAGE) \
+		-path=/migrations \
+		-database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-test123}@erp-postgres:5432/$${DB_NAME:-erp_dev}?sslmode=disable" \
+		up 2>/dev/null || echo "  Migrations may already be applied"
+	@echo "$(GREEN)Migrations complete.$(NC)"
 
-inspect-network: ## Inspect Docker network
-	docker network inspect erp-network
+db-seed: ## Load seed data into database
+	@echo "$(CYAN)Loading seed data...$(NC)"
+	@docker exec -i erp-postgres psql -U $${DB_USER:-postgres} -d $${DB_NAME:-erp_dev} < docker/seed-data.sql 2>/dev/null \
+		&& echo "$(GREEN)Seed data loaded.$(NC)" \
+		|| echo "$(YELLOW)Seed data may already be loaded (conflicts ignored).$(NC)"
 
-# ==============================================================================
-# Local Test Environment (for E2E debugging)
-# ==============================================================================
+db-reset: ## Reset database (drop data, run migrations, seed)
+	@echo "$(CYAN)Resetting database...$(NC)"
+	@$(DOCKER_COMPOSE) stop postgres
+	@$(DOCKER_COMPOSE) rm -f postgres
+	@docker volume rm erp-postgres-data 2>/dev/null || true
+	@$(DOCKER_COMPOSE) up -d postgres
+	@echo "  → Waiting for database..."
+	@sleep 5
+	@$(MAKE) db-migrate
+	@$(MAKE) db-seed
+	@echo "$(GREEN)Database reset complete.$(NC)"
 
-local-test-start: ## Start local test environment (DB in Docker, backend/frontend locally)
-	@./docker/local-test.sh start
+db-psql: ## Open psql shell to database
+	@docker exec -it erp-postgres psql -U $${DB_USER:-postgres} -d $${DB_NAME:-erp_dev}
 
-local-test-stop: ## Stop local test environment
-	@./docker/local-test.sh stop
+# =============================================================================
+# E2E Testing
+# =============================================================================
 
-local-test-status: ## Show local test environment status
-	@./docker/local-test.sh status
+e2e: ## Run E2E tests (resets environment, runs all tests)
+	@echo "$(CYAN)Running E2E tests with fresh environment...$(NC)"
+	@$(MAKE) db-reset
+	@echo ""
+	@echo "$(CYAN)Starting backend and frontend...$(NC)"
+	@$(DOCKER_COMPOSE) --profile docker up -d --build
+	@echo "  → Waiting for services to be healthy..."
+	@sleep 10
+	@echo ""
+	@echo "$(CYAN)Running Playwright tests...$(NC)"
+	@docker run --rm \
+		--user "$$(id -u):$$(id -g)" \
+		--network erp-network \
+		-v "$(PWD)/frontend:/app" \
+		-w /app \
+		-e HOME=/tmp \
+		-e E2E_BASE_URL="http://erp-frontend:80" \
+		-e CI=true \
+		$(PLAYWRIGHT_IMAGE) \
+		npx playwright test --reporter=list $(ARGS)
+	@echo ""
+	@echo "$(GREEN)E2E tests complete.$(NC)"
 
-local-test-logs-backend: ## Tail backend logs
-	@./docker/local-test.sh logs-backend
+e2e-ui: ## Run E2E tests with Playwright UI (requires local services)
+	@echo "$(CYAN)Starting Playwright UI...$(NC)"
+	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --ui
 
-local-test-logs-frontend: ## Tail frontend logs
-	@./docker/local-test.sh logs-frontend
+e2e-debug: ## Run E2E tests in debug mode (requires local services)
+	@echo "$(CYAN)Starting Playwright in debug mode...$(NC)"
+	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --debug $(ARGS)
 
-local-test-e2e: ## Run E2E tests against local environment
-	@./docker/local-test.sh run-e2e
+e2e-local: ## Run E2E tests locally (no Docker, requires running services)
+	@echo "$(CYAN)Running E2E tests against local services...$(NC)"
+	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --reporter=list $(ARGS)
 
-local-test-e2e-ui: ## Run E2E tests with Playwright UI
-	@./docker/local-test.sh run-e2e-ui
+# =============================================================================
+# Other Commands
+# =============================================================================
 
-local-test-e2e-debug: ## Run E2E tests in debug mode
-	@./docker/local-test.sh run-e2e-debug
+clean: ## Stop all services and remove data
+	@echo "$(CYAN)Cleaning up...$(NC)"
+	@$(DOCKER_COMPOSE) --profile docker --profile e2e --profile migrate down -v
+	@docker volume rm erp-postgres-data erp-redis-data 2>/dev/null || true
+	@rm -rf logs/ bin/
+	@echo "$(GREEN)Cleanup complete.$(NC)"
 
-local-test-clean: ## Clean local test environment
-	@./docker/local-test.sh clean
-
-# ==============================================================================
-# Utility Commands
-# ==============================================================================
-
-shell-backend: ## Access backend container shell
-	docker compose exec backend sh
-
-shell-frontend: ## Access frontend container shell
-	docker compose exec frontend sh
-
-version: ## Show versions of all components
-	@echo "=== Docker Version ==="
-	@docker --version
-	@echo "\n=== Docker Compose Version ==="
-	@docker compose --version
-	@echo "\n=== Application Versions ==="
-	@docker compose exec backend /app/server --version 2>/dev/null || echo "Backend not running"
-
-config: ## Show Docker Compose configuration
-	docker compose config
-
-.DEFAULT_GOAL := help

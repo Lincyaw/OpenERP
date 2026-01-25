@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Spin, Toast } from '@douyinfe/semi-ui'
+import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
 import { ProductForm } from '@/features/catalog/ProductForm'
 import { getProducts } from '@/api/products/products'

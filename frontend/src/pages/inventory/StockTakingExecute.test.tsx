@@ -18,7 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import StockTakingExecutePage from './StockTakingExecute'
 import * as stockTakingApi from '@/api/stock-taking/stock-taking'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/stock-taking/stock-taking', () => ({

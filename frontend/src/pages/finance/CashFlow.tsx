@@ -9,7 +9,7 @@ import {
   Spin,
   DatePicker,
   Descriptions,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconRefresh } from '@douyinfe/semi-icons'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'

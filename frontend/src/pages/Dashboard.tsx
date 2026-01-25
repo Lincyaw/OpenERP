@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Space, Spin, Tag, Empty, Toast, Progress } from '@douyinfe/semi-ui'
+import { Card, Typography, Space, Spin, Tag, Empty, Toast, Progress } from '@douyinfe/semi-ui-19'
 import {
   IconGridView,
   IconUserGroup,

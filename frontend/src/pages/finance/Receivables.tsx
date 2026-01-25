@@ -11,7 +11,7 @@ import {
   DatePicker,
   Descriptions,
   Tooltip,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertCircle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import {

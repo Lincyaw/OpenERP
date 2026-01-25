@@ -17,7 +17,7 @@ import { renderWithProviders, screen, waitFor, fireEvent } from '@/tests/utils'
 import PurchaseOrderReceivePage from './PurchaseOrderReceive'
 import * as purchaseOrdersApi from '@/api/purchase-orders/purchase-orders'
 import * as warehousesApi from '@/api/warehouses/warehouses'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/purchase-orders/purchase-orders', () => ({

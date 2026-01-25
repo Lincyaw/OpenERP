@@ -19,7 +19,7 @@ import * as purchaseOrdersApi from '@/api/purchase-orders/purchase-orders'
 import * as suppliersApi from '@/api/suppliers/suppliers'
 import * as productsApi from '@/api/products/products'
 import * as warehousesApi from '@/api/warehouses/warehouses'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/purchase-orders/purchase-orders', () => ({

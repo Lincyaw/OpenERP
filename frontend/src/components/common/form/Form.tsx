@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, Space, Spin } from '@douyinfe/semi-ui'
+import { Button, Space, Spin } from '@douyinfe/semi-ui-19'
 import './Form.css'
 
 interface FormProps {

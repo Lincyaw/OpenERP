@@ -7,9 +7,9 @@
 
 import { Suspense, useEffect, useMemo } from 'react'
 import { I18nextProvider } from 'react-i18next'
-import { LocaleProvider } from '@douyinfe/semi-ui'
-import zh_CN from '@douyinfe/semi-ui/lib/es/locale/source/zh_CN'
-import en_US from '@douyinfe/semi-ui/lib/es/locale/source/en_US'
+import { LocaleProvider } from '@douyinfe/semi-ui-19'
+import zh_CN from '@douyinfe/semi-ui-19/lib/es/locale/source/zh_CN'
+import en_US from '@douyinfe/semi-ui-19/lib/es/locale/source/en_US'
 import i18n from '@/i18n'
 import type { SupportedLanguage } from '@/i18n/config'
 import { useAppStore } from '@/store'

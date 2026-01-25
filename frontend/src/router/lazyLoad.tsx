@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { Spin } from '@douyinfe/semi-ui'
+import { Spin } from '@douyinfe/semi-ui-19'
 
 /**
  * Loading fallback component for lazy-loaded routes

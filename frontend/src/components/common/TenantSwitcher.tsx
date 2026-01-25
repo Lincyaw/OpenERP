@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Dropdown, Button, Spin, Toast } from '@douyinfe/semi-ui'
+import { Dropdown, Button, Spin, Toast } from '@douyinfe/semi-ui-19'
 import { IconGridSquare } from '@douyinfe/semi-icons'
 import { useI18n } from '@/hooks'
 import { useAuthStore, useUser } from '@/store'
@@ -193,18 +193,21 @@ export function TenantSwitcher({
       render={renderMenu()}
       visible={dropdownVisible}
       onVisibleChange={setDropdownVisible}
+      getPopupContainer={() => document.body}
     >
-      <Button
-        theme="borderless"
-        icon={<IconGridSquare />}
-        size={size}
-        className={className}
-        aria-label={t('tenantSwitcher.ariaLabel', 'Switch tenant')}
-      >
-        {showLabel && currentTenant && (
-          <span style={{ marginLeft: '4px' }}>{currentTenant.shortName || currentTenant.name}</span>
-        )}
-      </Button>
+      <span style={{ display: 'inline-flex' }}>
+        <Button
+          theme="borderless"
+          icon={<IconGridSquare />}
+          size={size}
+          className={className}
+          aria-label={t('tenantSwitcher.ariaLabel', 'Switch tenant')}
+        >
+          {showLabel && currentTenant && (
+            <span style={{ marginLeft: '4px' }}>{currentTenant.shortName || currentTenant.name}</span>
+          )}
+        </Button>
+      </span>
     </Dropdown>
   )
 }

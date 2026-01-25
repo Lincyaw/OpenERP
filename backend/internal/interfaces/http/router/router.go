@@ -14,6 +14,7 @@ type Router struct {
 	engine     *gin.Engine
 	apiVersion string
 	registrars []RouteRegistrar
+	middleware []gin.HandlerFunc
 }
 
 // RouterOption is a functional option for Router configuration
@@ -32,6 +33,7 @@ func NewRouter(engine *gin.Engine, opts ...RouterOption) *Router {
 		engine:     engine,
 		apiVersion: "v1",
 		registrars: make([]RouteRegistrar, 0),
+		middleware: make([]gin.HandlerFunc, 0),
 	}
 
 	for _, opt := range opts {
@@ -47,10 +49,21 @@ func (r *Router) Register(registrar RouteRegistrar) *Router {
 	return r
 }
 
+// Use adds middleware to be applied to the API group
+func (r *Router) Use(middleware ...gin.HandlerFunc) *Router {
+	r.middleware = append(r.middleware, middleware...)
+	return r
+}
+
 // Setup registers all routes with the engine
 func (r *Router) Setup() {
 	// Create versioned API group
 	api := r.engine.Group("/api/" + r.apiVersion)
+
+	// Apply global middleware to API group
+	if len(r.middleware) > 0 {
+		api.Use(r.middleware...)
+	}
 
 	// Register all route registrars
 	for _, registrar := range r.registrars {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Spin, Toast } from '@douyinfe/semi-ui'
+import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { SupplierForm } from '@/features/partner/SupplierForm'
 import { getSuppliers } from '@/api/suppliers/suppliers'
 import type { HandlerSupplierResponse } from '@/api/models'

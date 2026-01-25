@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Spin, Button } from '@douyinfe/semi-ui'
+import { Card, Typography, Tag, Toast, Select, Space, Spin, Button } from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconPlus } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -35,7 +35,7 @@ type WarehouseOption = {
   value: string
 }
 
-import type { TagProps } from '@douyinfe/semi-ui/lib/es/tag'
+import type { TagProps } from '@douyinfe/semi-ui-19/lib/es/tag'
 
 type TagColor = TagProps['color']
 

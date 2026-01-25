@@ -90,6 +90,9 @@ i18n
     defaultNS: DEFAULT_NAMESPACE,
     ns: NAMESPACES as unknown as string[],
 
+    // Only load the current language, don't try to load language hierarchy (zh-CN -> zh)
+    load: 'currentOnly',
+
     // Detection options
     detection: {
       // Order of language detection methods
@@ -98,6 +101,15 @@ i18n
       caches: ['localStorage'],
       // Key used in localStorage
       lookupLocalStorage: 'erp-language',
+      // Convert language codes like 'zh' to 'zh-CN'
+      convertDetectedLanguage: (lng: string) => {
+        // Map short codes to full codes
+        const languageMap: Record<string, string> = {
+          zh: 'zh-CN',
+          en: 'en-US',
+        }
+        return languageMap[lng] || lng
+      },
     },
 
     // Interpolation settings

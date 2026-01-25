@@ -9,7 +9,7 @@ import {
   Toast,
   Typography,
   Descriptions,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import { getBalance } from '@/api/balance/balance'
 import type { HandlerRechargeRequest } from '@/api/models'
 import { useFormatters } from '@/hooks/useFormatters'

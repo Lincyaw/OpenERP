@@ -3,10 +3,10 @@ package config
 import (
 	"fmt"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // Config holds all application configuration
@@ -63,9 +63,9 @@ type JWTConfig struct {
 	AccessTokenExpiration  time.Duration
 	RefreshTokenExpiration time.Duration
 	Issuer                 string
-	RefreshSecret          string // Optional separate secret for refresh tokens
-	MaxRefreshCount        int    // Maximum number of times a token can be refreshed
-	ExpirationHours        int    // Deprecated: use AccessTokenExpiration instead
+	RefreshSecret          string
+	MaxRefreshCount        int
+	ExpirationHours        int // Deprecated: use AccessTokenExpiration instead
 }
 
 // EventConfig holds event processing configuration
@@ -84,10 +84,10 @@ type HTTPConfig struct {
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
 	MaxHeaderBytes    int
-	MaxBodySize       int64 // Maximum request body size in bytes
+	MaxBodySize       int64
 	RateLimitEnabled  bool
-	RateLimitRequests int           // Requests per window
-	RateLimitWindow   time.Duration // Window duration
+	RateLimitRequests int
+	RateLimitWindow   time.Duration
 	CORSAllowOrigins  []string
 	CORSAllowMethods  []string
 	CORSAllowHeaders  []string
@@ -97,84 +97,114 @@ type HTTPConfig struct {
 // SchedulerConfig holds report scheduler configuration
 type SchedulerConfig struct {
 	Enabled           bool
-	DailyCronSchedule string        // Cron expression for daily reports (default: "0 2 * * *" = 2am)
-	MaxConcurrentJobs int           // Maximum concurrent report jobs
-	JobTimeout        time.Duration // Timeout for each job
-	RetryAttempts     int           // Number of retry attempts on failure
-	RetryDelay        time.Duration // Delay between retries
+	DailyCronSchedule string
+	MaxConcurrentJobs int
+	JobTimeout        time.Duration
+	RetryAttempts     int
+	RetryDelay        time.Duration
 }
 
-// Load loads configuration from environment variables
+// Load loads configuration from TOML file and environment variables
+// Priority (highest to lowest):
+// 1. Environment variables with ERP_ prefix (e.g., ERP_DATABASE_PASSWORD)
+// 2. config.toml
+// 3. Built-in defaults
 func Load() (*Config, error) {
+	v := viper.New()
+
+	// Set config file settings
+	v.SetConfigName("config")
+	v.SetConfigType("toml")
+	v.AddConfigPath(".")
+	v.AddConfigPath("./backend")
+	v.AddConfigPath("/app")
+
+	// Read config file
+	if err := v.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, fmt.Errorf("error reading config file: %w", err)
+		}
+		// Config file not found is OK, we'll use defaults and env vars
+	}
+
+	// Enable environment variable override
+	v.SetEnvPrefix("ERP")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	// Build config struct
 	cfg := &Config{
 		App: AppConfig{
-			Name: getEnv("APP_NAME", "erp-backend"),
-			Env:  getEnv("APP_ENV", "development"),
-			Port: getEnv("APP_PORT", "8080"),
+			Name: v.GetString("app.name"),
+			Env:  v.GetString("app.env"),
+			Port: v.GetString("app.port"),
 		},
 		Database: DatabaseConfig{
-			Host:            getEnv("DB_HOST", "localhost"),
-			Port:            getEnvAsInt("DB_PORT", 5432),
-			User:            getEnv("DB_USER", "postgres"),
-			Password:        getEnv("DB_PASSWORD", ""),
-			DBName:          getEnv("DB_NAME", "erp"),
-			SSLMode:         getEnv("DB_SSL_MODE", "disable"),
-			MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
-			MaxIdleConns:    getEnvAsInt("DB_MAX_IDLE_CONNS", 5),
-			ConnMaxLifetime: getEnvAsInt("DB_CONN_MAX_LIFETIME", 60),
-			ConnMaxIdleTime: getEnvAsInt("DB_CONN_MAX_IDLE_TIME", 30),
+			Host:            v.GetString("database.host"),
+			Port:            v.GetInt("database.port"),
+			User:            v.GetString("database.user"),
+			Password:        v.GetString("database.password"),
+			DBName:          v.GetString("database.dbname"),
+			SSLMode:         v.GetString("database.sslmode"),
+			MaxOpenConns:    v.GetInt("database.max_open_conns"),
+			MaxIdleConns:    v.GetInt("database.max_idle_conns"),
+			ConnMaxLifetime: v.GetInt("database.conn_max_lifetime"),
+			ConnMaxIdleTime: v.GetInt("database.conn_max_idle_time"),
 		},
 		Redis: RedisConfig{
-			Host:     getEnv("REDIS_HOST", "localhost"),
-			Port:     getEnvAsInt("REDIS_PORT", 6379),
-			Password: getEnv("REDIS_PASSWORD", ""),
-			DB:       getEnvAsInt("REDIS_DB", 0),
+			Host:     v.GetString("redis.host"),
+			Port:     v.GetInt("redis.port"),
+			Password: v.GetString("redis.password"),
+			DB:       v.GetInt("redis.db"),
 		},
 		JWT: JWTConfig{
-			Secret:                 getEnv("JWT_SECRET", ""),
-			AccessTokenExpiration:  getEnvAsDuration("JWT_ACCESS_TOKEN_EXPIRATION", 15*time.Minute),
-			RefreshTokenExpiration: getEnvAsDuration("JWT_REFRESH_TOKEN_EXPIRATION", 7*24*time.Hour),
-			Issuer:                 getEnv("JWT_ISSUER", "erp-backend"),
-			RefreshSecret:          getEnv("JWT_REFRESH_SECRET", ""),
-			MaxRefreshCount:        getEnvAsInt("JWT_MAX_REFRESH_COUNT", 10),
-			ExpirationHours:        getEnvAsInt("JWT_EXPIRATION_HOURS", 24),
+			Secret:                 v.GetString("jwt.secret"),
+			AccessTokenExpiration:  v.GetDuration("jwt.access_token_expiration"),
+			RefreshTokenExpiration: v.GetDuration("jwt.refresh_token_expiration"),
+			Issuer:                 v.GetString("jwt.issuer"),
+			RefreshSecret:          v.GetString("jwt.refresh_secret"),
+			MaxRefreshCount:        v.GetInt("jwt.max_refresh_count"),
+			ExpirationHours:        v.GetInt("jwt.expiration_hours"),
 		},
 		Log: LogConfig{
-			Level:  getEnv("LOG_LEVEL", "info"),
-			Format: getEnv("LOG_FORMAT", "console"),
-			Output: getEnv("LOG_OUTPUT", "stdout"),
+			Level:  v.GetString("log.level"),
+			Format: v.GetString("log.format"),
+			Output: v.GetString("log.output"),
 		},
 		Event: EventConfig{
-			ProcessorEnabled: getEnvAsBool("EVENT_PROCESSOR_ENABLED", true),
-			BatchSize:        getEnvAsInt("EVENT_PROCESSOR_BATCH_SIZE", 100),
-			PollInterval:     getEnvAsDuration("EVENT_PROCESSOR_INTERVAL", 5*time.Second),
-			MaxRetries:       getEnvAsInt("EVENT_MAX_RETRIES", 5),
-			CleanupEnabled:   getEnvAsBool("EVENT_CLEANUP_ENABLED", true),
-			CleanupRetention: getEnvAsDuration("EVENT_CLEANUP_RETENTION", 168*time.Hour),
+			ProcessorEnabled: v.GetBool("event.processor_enabled"),
+			BatchSize:        v.GetInt("event.batch_size"),
+			PollInterval:     v.GetDuration("event.poll_interval"),
+			MaxRetries:       v.GetInt("event.max_retries"),
+			CleanupEnabled:   v.GetBool("event.cleanup_enabled"),
+			CleanupRetention: v.GetDuration("event.cleanup_retention"),
 		},
 		HTTP: HTTPConfig{
-			ReadTimeout:       getEnvAsDuration("HTTP_READ_TIMEOUT", 15*time.Second),
-			WriteTimeout:      getEnvAsDuration("HTTP_WRITE_TIMEOUT", 15*time.Second),
-			IdleTimeout:       getEnvAsDuration("HTTP_IDLE_TIMEOUT", 60*time.Second),
-			MaxHeaderBytes:    getEnvAsInt("HTTP_MAX_HEADER_BYTES", 1<<20), // 1MB
-			MaxBodySize:       getEnvAsInt64("HTTP_MAX_BODY_SIZE", 10<<20), // 10MB
-			RateLimitEnabled:  getEnvAsBool("HTTP_RATE_LIMIT_ENABLED", true),
-			RateLimitRequests: getEnvAsInt("HTTP_RATE_LIMIT_REQUESTS", 100),
-			RateLimitWindow:   getEnvAsDuration("HTTP_RATE_LIMIT_WINDOW", time.Minute),
-			CORSAllowOrigins:  getEnvAsStringSlice("HTTP_CORS_ORIGINS", []string{"*"}),
-			CORSAllowMethods:  getEnvAsStringSlice("HTTP_CORS_METHODS", []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}),
-			CORSAllowHeaders:  getEnvAsStringSlice("HTTP_CORS_HEADERS", []string{"Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"}),
-			TrustedProxies:    getEnvAsStringSlice("HTTP_TRUSTED_PROXIES", nil),
+			ReadTimeout:       v.GetDuration("http.read_timeout"),
+			WriteTimeout:      v.GetDuration("http.write_timeout"),
+			IdleTimeout:       v.GetDuration("http.idle_timeout"),
+			MaxHeaderBytes:    v.GetInt("http.max_header_bytes"),
+			MaxBodySize:       v.GetInt64("http.max_body_size"),
+			RateLimitEnabled:  v.GetBool("http.rate_limit_enabled"),
+			RateLimitRequests: v.GetInt("http.rate_limit_requests"),
+			RateLimitWindow:   v.GetDuration("http.rate_limit_window"),
+			CORSAllowOrigins:  v.GetStringSlice("http.cors_allow_origins"),
+			CORSAllowMethods:  v.GetStringSlice("http.cors_allow_methods"),
+			CORSAllowHeaders:  v.GetStringSlice("http.cors_allow_headers"),
+			TrustedProxies:    v.GetStringSlice("http.trusted_proxies"),
 		},
 		Scheduler: SchedulerConfig{
-			Enabled:           getEnvAsBool("SCHEDULER_ENABLED", true),
-			DailyCronSchedule: getEnv("SCHEDULER_DAILY_CRON", "0 2 * * *"), // Default: 2am daily
-			MaxConcurrentJobs: getEnvAsInt("SCHEDULER_MAX_CONCURRENT_JOBS", 3),
-			JobTimeout:        getEnvAsDuration("SCHEDULER_JOB_TIMEOUT", 30*time.Minute),
-			RetryAttempts:     getEnvAsInt("SCHEDULER_RETRY_ATTEMPTS", 3),
-			RetryDelay:        getEnvAsDuration("SCHEDULER_RETRY_DELAY", 5*time.Minute),
+			Enabled:           v.GetBool("scheduler.enabled"),
+			DailyCronSchedule: v.GetString("scheduler.daily_cron_schedule"),
+			MaxConcurrentJobs: v.GetInt("scheduler.max_concurrent_jobs"),
+			JobTimeout:        v.GetDuration("scheduler.job_timeout"),
+			RetryAttempts:     v.GetInt("scheduler.retry_attempts"),
+			RetryDelay:        v.GetDuration("scheduler.retry_delay"),
 		},
 	}
+
+	// Apply defaults for empty values
+	applyDefaults(cfg)
 
 	// Validate configuration
 	if err := cfg.validate(); err != nil {
@@ -184,33 +214,157 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
+// applyDefaults sets default values for any empty config fields
+func applyDefaults(cfg *Config) {
+	if cfg.App.Name == "" {
+		cfg.App.Name = "erp-backend"
+	}
+	if cfg.App.Env == "" {
+		cfg.App.Env = "development"
+	}
+	if cfg.App.Port == "" {
+		cfg.App.Port = "8080"
+	}
+	if cfg.Database.Host == "" {
+		cfg.Database.Host = "localhost"
+	}
+	if cfg.Database.Port == 0 {
+		cfg.Database.Port = 5432
+	}
+	if cfg.Database.User == "" {
+		cfg.Database.User = "postgres"
+	}
+	if cfg.Database.DBName == "" {
+		cfg.Database.DBName = "erp"
+	}
+	if cfg.Database.SSLMode == "" {
+		cfg.Database.SSLMode = "disable"
+	}
+	if cfg.Database.MaxOpenConns == 0 {
+		cfg.Database.MaxOpenConns = 25
+	}
+	if cfg.Database.MaxIdleConns == 0 {
+		cfg.Database.MaxIdleConns = 5
+	}
+	if cfg.Database.ConnMaxLifetime == 0 {
+		cfg.Database.ConnMaxLifetime = 60
+	}
+	if cfg.Database.ConnMaxIdleTime == 0 {
+		cfg.Database.ConnMaxIdleTime = 30
+	}
+	if cfg.Redis.Host == "" {
+		cfg.Redis.Host = "localhost"
+	}
+	if cfg.Redis.Port == 0 {
+		cfg.Redis.Port = 6379
+	}
+	if cfg.JWT.AccessTokenExpiration == 0 {
+		cfg.JWT.AccessTokenExpiration = 15 * time.Minute
+	}
+	if cfg.JWT.RefreshTokenExpiration == 0 {
+		cfg.JWT.RefreshTokenExpiration = 168 * time.Hour
+	}
+	if cfg.JWT.Issuer == "" {
+		cfg.JWT.Issuer = "erp-backend"
+	}
+	if cfg.JWT.MaxRefreshCount == 0 {
+		cfg.JWT.MaxRefreshCount = 10
+	}
+	if cfg.Log.Level == "" {
+		cfg.Log.Level = "info"
+	}
+	if cfg.Log.Format == "" {
+		cfg.Log.Format = "console"
+	}
+	if cfg.Log.Output == "" {
+		cfg.Log.Output = "stdout"
+	}
+	if cfg.Event.BatchSize == 0 {
+		cfg.Event.BatchSize = 100
+	}
+	if cfg.Event.PollInterval == 0 {
+		cfg.Event.PollInterval = 5 * time.Second
+	}
+	if cfg.Event.MaxRetries == 0 {
+		cfg.Event.MaxRetries = 5
+	}
+	if cfg.Event.CleanupRetention == 0 {
+		cfg.Event.CleanupRetention = 168 * time.Hour
+	}
+	if cfg.HTTP.ReadTimeout == 0 {
+		cfg.HTTP.ReadTimeout = 15 * time.Second
+	}
+	if cfg.HTTP.WriteTimeout == 0 {
+		cfg.HTTP.WriteTimeout = 15 * time.Second
+	}
+	if cfg.HTTP.IdleTimeout == 0 {
+		cfg.HTTP.IdleTimeout = 60 * time.Second
+	}
+	if cfg.HTTP.MaxHeaderBytes == 0 {
+		cfg.HTTP.MaxHeaderBytes = 1 << 20 // 1MB
+	}
+	if cfg.HTTP.MaxBodySize == 0 {
+		cfg.HTTP.MaxBodySize = 10 << 20 // 10MB
+	}
+	if cfg.HTTP.RateLimitRequests == 0 {
+		cfg.HTTP.RateLimitRequests = 100
+	}
+	if cfg.HTTP.RateLimitWindow == 0 {
+		cfg.HTTP.RateLimitWindow = time.Minute
+	}
+	if len(cfg.HTTP.CORSAllowOrigins) == 0 {
+		cfg.HTTP.CORSAllowOrigins = []string{"*"}
+	}
+	if len(cfg.HTTP.CORSAllowMethods) == 0 {
+		cfg.HTTP.CORSAllowMethods = []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}
+	}
+	if len(cfg.HTTP.CORSAllowHeaders) == 0 {
+		cfg.HTTP.CORSAllowHeaders = []string{"Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"}
+	}
+	if cfg.Scheduler.DailyCronSchedule == "" {
+		cfg.Scheduler.DailyCronSchedule = "0 2 * * *"
+	}
+	if cfg.Scheduler.MaxConcurrentJobs == 0 {
+		cfg.Scheduler.MaxConcurrentJobs = 3
+	}
+	if cfg.Scheduler.JobTimeout == 0 {
+		cfg.Scheduler.JobTimeout = 30 * time.Minute
+	}
+	if cfg.Scheduler.RetryAttempts == 0 {
+		cfg.Scheduler.RetryAttempts = 3
+	}
+	if cfg.Scheduler.RetryDelay == 0 {
+		cfg.Scheduler.RetryDelay = 5 * time.Minute
+	}
+}
+
 // validate performs validation on the configuration
 func (c *Config) validate() error {
 	// Validate connection pool settings
 	if c.Database.MaxOpenConns <= 0 {
-		return fmt.Errorf("DB_MAX_OPEN_CONNS must be positive")
+		return fmt.Errorf("database.max_open_conns must be positive")
 	}
 	if c.Database.MaxIdleConns < 0 {
-		return fmt.Errorf("DB_MAX_IDLE_CONNS cannot be negative")
+		return fmt.Errorf("database.max_idle_conns cannot be negative")
 	}
 	if c.Database.MaxIdleConns > c.Database.MaxOpenConns {
-		return fmt.Errorf("DB_MAX_IDLE_CONNS (%d) cannot exceed DB_MAX_OPEN_CONNS (%d)",
+		return fmt.Errorf("database.max_idle_conns (%d) cannot exceed database.max_open_conns (%d)",
 			c.Database.MaxIdleConns, c.Database.MaxOpenConns)
 	}
 
 	// Production-specific validations
 	if c.App.Env == "production" {
 		if c.JWT.Secret == "" {
-			return fmt.Errorf("JWT_SECRET is required in production")
+			return fmt.Errorf("jwt.secret is required in production")
 		}
 		if len(c.JWT.Secret) < 32 {
-			return fmt.Errorf("JWT_SECRET must be at least 32 characters in production")
+			return fmt.Errorf("jwt.secret must be at least 32 characters in production")
 		}
 		if c.Database.Password == "" {
-			return fmt.Errorf("DB_PASSWORD is required in production")
+			return fmt.Errorf("database.password is required in production")
 		}
 		if c.Database.SSLMode == "disable" {
-			return fmt.Errorf("DB_SSL_MODE cannot be 'disable' in production")
+			return fmt.Errorf("database.sslmode cannot be 'disable' in production")
 		}
 	}
 
@@ -219,7 +373,6 @@ func (c *Config) validate() error {
 
 // DSN returns the database connection string with properly escaped values
 func (d *DatabaseConfig) DSN() string {
-	// Build URL-style DSN for proper handling of special characters
 	u := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(d.User, d.Password),
@@ -230,70 +383,4 @@ func (d *DatabaseConfig) DSN() string {
 	q.Set("sslmode", d.SSLMode)
 	u.RawQuery = q.Encode()
 	return u.String()
-}
-
-// getEnv gets an environment variable with a default fallback
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
-// getEnvAsInt gets an environment variable as int with a default fallback
-func getEnvAsInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			return intValue
-		}
-	}
-	return defaultValue
-}
-
-// getEnvAsBool gets an environment variable as bool with a default fallback
-func getEnvAsBool(key string, defaultValue bool) bool {
-	if value := os.Getenv(key); value != "" {
-		if boolValue, err := strconv.ParseBool(value); err == nil {
-			return boolValue
-		}
-	}
-	return defaultValue
-}
-
-// getEnvAsDuration gets an environment variable as duration with a default fallback
-func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
-	if value := os.Getenv(key); value != "" {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-	}
-	return defaultValue
-}
-
-// getEnvAsInt64 gets an environment variable as int64 with a default fallback
-func getEnvAsInt64(key string, defaultValue int64) int64 {
-	if value := os.Getenv(key); value != "" {
-		if intValue, err := strconv.ParseInt(value, 10, 64); err == nil {
-			return intValue
-		}
-	}
-	return defaultValue
-}
-
-// getEnvAsStringSlice gets an environment variable as string slice (comma-separated)
-func getEnvAsStringSlice(key string, defaultValue []string) []string {
-	if value := os.Getenv(key); value != "" {
-		parts := strings.Split(value, ",")
-		result := make([]string, 0, len(parts))
-		for _, part := range parts {
-			trimmed := strings.TrimSpace(part)
-			if trimmed != "" {
-				result = append(result, trimmed)
-			}
-		}
-		if len(result) > 0 {
-			return result
-		}
-	}
-	return defaultValue
 }

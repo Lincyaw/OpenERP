@@ -14,7 +14,7 @@ import StockListPage from './StockList'
 import * as inventoryApi from '@/api/inventory/inventory'
 import * as warehousesApi from '@/api/warehouses/warehouses'
 import * as productsApi from '@/api/products/products'
-import { Toast } from '@douyinfe/semi-ui'
+import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/inventory/inventory', () => ({

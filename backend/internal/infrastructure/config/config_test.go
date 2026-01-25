@@ -11,19 +11,19 @@ import (
 func TestLoad(t *testing.T) {
 	// Save original env vars and restore after tests
 	originalEnv := map[string]string{
-		"APP_NAME":             os.Getenv("APP_NAME"),
-		"APP_ENV":              os.Getenv("APP_ENV"),
-		"APP_PORT":             os.Getenv("APP_PORT"),
-		"DB_HOST":              os.Getenv("DB_HOST"),
-		"DB_PORT":              os.Getenv("DB_PORT"),
-		"DB_USER":              os.Getenv("DB_USER"),
-		"DB_PASSWORD":          os.Getenv("DB_PASSWORD"),
-		"DB_NAME":              os.Getenv("DB_NAME"),
-		"DB_SSL_MODE":          os.Getenv("DB_SSL_MODE"),
-		"DB_MAX_OPEN_CONNS":    os.Getenv("DB_MAX_OPEN_CONNS"),
-		"DB_MAX_IDLE_CONNS":    os.Getenv("DB_MAX_IDLE_CONNS"),
-		"JWT_SECRET":           os.Getenv("JWT_SECRET"),
-		"JWT_EXPIRATION_HOURS": os.Getenv("JWT_EXPIRATION_HOURS"),
+		"ERP_APP_NAME":             os.Getenv("ERP_APP_NAME"),
+		"ERP_APP_ENV":              os.Getenv("ERP_APP_ENV"),
+		"ERP_APP_PORT":             os.Getenv("ERP_APP_PORT"),
+		"ERP_DATABASE_HOST":        os.Getenv("ERP_DATABASE_HOST"),
+		"ERP_DATABASE_PORT":        os.Getenv("ERP_DATABASE_PORT"),
+		"ERP_DATABASE_USER":        os.Getenv("ERP_DATABASE_USER"),
+		"ERP_DATABASE_PASSWORD":    os.Getenv("ERP_DATABASE_PASSWORD"),
+		"ERP_DATABASE_DBNAME":      os.Getenv("ERP_DATABASE_DBNAME"),
+		"ERP_DATABASE_SSLMODE":     os.Getenv("ERP_DATABASE_SSLMODE"),
+		"ERP_DATABASE_MAX_OPEN_CONNS": os.Getenv("ERP_DATABASE_MAX_OPEN_CONNS"),
+		"ERP_DATABASE_MAX_IDLE_CONNS": os.Getenv("ERP_DATABASE_MAX_IDLE_CONNS"),
+		"ERP_JWT_SECRET":           os.Getenv("ERP_JWT_SECRET"),
+		"APP_ENV":                  os.Getenv("APP_ENV"),
 	}
 
 	defer func() {
@@ -61,19 +61,19 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, 5, cfg.Database.MaxIdleConns)
 	})
 
-	t.Run("loads values from environment variables", func(t *testing.T) {
+	t.Run("loads values from environment variables with ERP prefix", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_NAME", "test-app")
-		os.Setenv("APP_ENV", "testing")
-		os.Setenv("APP_PORT", "9000")
-		os.Setenv("DB_HOST", "testdb.local")
-		os.Setenv("DB_PORT", "5433")
-		os.Setenv("DB_USER", "testuser")
-		os.Setenv("DB_PASSWORD", "testpass")
-		os.Setenv("DB_NAME", "testdb")
-		os.Setenv("DB_SSL_MODE", "require")
-		os.Setenv("DB_MAX_OPEN_CONNS", "50")
-		os.Setenv("DB_MAX_IDLE_CONNS", "10")
+		os.Setenv("ERP_APP_NAME", "test-app")
+		os.Setenv("ERP_APP_ENV", "testing")
+		os.Setenv("ERP_APP_PORT", "9000")
+		os.Setenv("ERP_DATABASE_HOST", "testdb.local")
+		os.Setenv("ERP_DATABASE_PORT", "5433")
+		os.Setenv("ERP_DATABASE_USER", "testuser")
+		os.Setenv("ERP_DATABASE_PASSWORD", "testpass")
+		os.Setenv("ERP_DATABASE_DBNAME", "testdb")
+		os.Setenv("ERP_DATABASE_SSLMODE", "require")
+		os.Setenv("ERP_DATABASE_MAX_OPEN_CONNS", "50")
+		os.Setenv("ERP_DATABASE_MAX_IDLE_CONNS", "10")
 
 		cfg, err := Load()
 		require.NoError(t, err)
@@ -93,40 +93,42 @@ func TestLoad(t *testing.T) {
 
 	t.Run("validates MaxIdleConns cannot exceed MaxOpenConns", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("DB_MAX_OPEN_CONNS", "10")
-		os.Setenv("DB_MAX_IDLE_CONNS", "20")
+		os.Setenv("ERP_DATABASE_MAX_OPEN_CONNS", "10")
+		os.Setenv("ERP_DATABASE_MAX_IDLE_CONNS", "20")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "DB_MAX_IDLE_CONNS")
-		assert.Contains(t, err.Error(), "cannot exceed DB_MAX_OPEN_CONNS")
+		assert.Contains(t, err.Error(), "max_idle_conns")
+		assert.Contains(t, err.Error(), "cannot exceed")
 	})
 
-	t.Run("validates MaxOpenConns must be positive", func(t *testing.T) {
+	t.Run("zero MaxOpenConns uses default", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("DB_MAX_OPEN_CONNS", "0")
+		os.Setenv("ERP_DATABASE_MAX_OPEN_CONNS", "0")
 
-		_, err := Load()
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "DB_MAX_OPEN_CONNS must be positive")
+		cfg, err := Load()
+		require.NoError(t, err)
+		// 0 is treated as "not set", so default (25) is used
+		assert.Equal(t, 25, cfg.Database.MaxOpenConns)
 	})
 
 	t.Run("validates MaxIdleConns cannot be negative", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("DB_MAX_IDLE_CONNS", "-1")
+		os.Setenv("ERP_DATABASE_MAX_IDLE_CONNS", "-1")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "DB_MAX_IDLE_CONNS cannot be negative")
+		assert.Contains(t, err.Error(), "max_idle_conns cannot be negative")
 	})
 }
 
 func TestLoad_ProductionValidation(t *testing.T) {
 	originalEnv := map[string]string{
-		"APP_ENV":     os.Getenv("APP_ENV"),
-		"JWT_SECRET":  os.Getenv("JWT_SECRET"),
-		"DB_PASSWORD": os.Getenv("DB_PASSWORD"),
-		"DB_SSL_MODE": os.Getenv("DB_SSL_MODE"),
+		"ERP_APP_ENV":          os.Getenv("ERP_APP_ENV"),
+		"ERP_JWT_SECRET":       os.Getenv("ERP_JWT_SECRET"),
+		"ERP_DATABASE_PASSWORD": os.Getenv("ERP_DATABASE_PASSWORD"),
+		"ERP_DATABASE_SSLMODE": os.Getenv("ERP_DATABASE_SSLMODE"),
+		"APP_ENV":              os.Getenv("APP_ENV"),
 	}
 
 	defer func() {
@@ -140,64 +142,63 @@ func TestLoad_ProductionValidation(t *testing.T) {
 	}()
 
 	clearEnv := func() {
-		os.Unsetenv("APP_ENV")
-		os.Unsetenv("JWT_SECRET")
-		os.Unsetenv("DB_PASSWORD")
-		os.Unsetenv("DB_SSL_MODE")
+		for k := range originalEnv {
+			os.Unsetenv(k)
+		}
 	}
 
-	t.Run("requires JWT_SECRET in production", func(t *testing.T) {
+	t.Run("requires jwt.secret in production", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_ENV", "production")
-		os.Setenv("DB_PASSWORD", "secure-password")
-		os.Setenv("DB_SSL_MODE", "require")
+		os.Setenv("ERP_APP_ENV", "production")
+		os.Setenv("ERP_DATABASE_PASSWORD", "secure-password")
+		os.Setenv("ERP_DATABASE_SSLMODE", "require")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "JWT_SECRET is required in production")
+		assert.Contains(t, err.Error(), "jwt.secret is required in production")
 	})
 
-	t.Run("requires JWT_SECRET at least 32 characters in production", func(t *testing.T) {
+	t.Run("requires jwt.secret at least 32 characters in production", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_ENV", "production")
-		os.Setenv("JWT_SECRET", "short-secret")
-		os.Setenv("DB_PASSWORD", "secure-password")
-		os.Setenv("DB_SSL_MODE", "require")
+		os.Setenv("ERP_APP_ENV", "production")
+		os.Setenv("ERP_JWT_SECRET", "short-secret")
+		os.Setenv("ERP_DATABASE_PASSWORD", "secure-password")
+		os.Setenv("ERP_DATABASE_SSLMODE", "require")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "JWT_SECRET must be at least 32 characters")
+		assert.Contains(t, err.Error(), "jwt.secret must be at least 32 characters")
 	})
 
-	t.Run("requires DB_PASSWORD in production", func(t *testing.T) {
+	t.Run("requires database.password in production", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_ENV", "production")
-		os.Setenv("JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
-		os.Setenv("DB_SSL_MODE", "require")
+		os.Setenv("ERP_APP_ENV", "production")
+		os.Setenv("ERP_JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
+		os.Setenv("ERP_DATABASE_SSLMODE", "require")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "DB_PASSWORD is required in production")
+		assert.Contains(t, err.Error(), "database.password is required in production")
 	})
 
 	t.Run("requires SSL enabled in production", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_ENV", "production")
-		os.Setenv("JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
-		os.Setenv("DB_PASSWORD", "secure-password")
-		os.Setenv("DB_SSL_MODE", "disable")
+		os.Setenv("ERP_APP_ENV", "production")
+		os.Setenv("ERP_JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
+		os.Setenv("ERP_DATABASE_PASSWORD", "secure-password")
+		os.Setenv("ERP_DATABASE_SSLMODE", "disable")
 
 		_, err := Load()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "DB_SSL_MODE cannot be 'disable' in production")
+		assert.Contains(t, err.Error(), "database.sslmode cannot be 'disable' in production")
 	})
 
 	t.Run("passes validation with valid production config", func(t *testing.T) {
 		clearEnv()
-		os.Setenv("APP_ENV", "production")
-		os.Setenv("JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
-		os.Setenv("DB_PASSWORD", "secure-password")
-		os.Setenv("DB_SSL_MODE", "require")
+		os.Setenv("ERP_APP_ENV", "production")
+		os.Setenv("ERP_JWT_SECRET", "this-is-a-very-secure-jwt-secret-key-32chars")
+		os.Setenv("ERP_DATABASE_PASSWORD", "secure-password")
+		os.Setenv("ERP_DATABASE_SSLMODE", "require")
 
 		cfg, err := Load()
 		require.NoError(t, err)
@@ -251,57 +252,5 @@ func TestDatabaseConfig_DSN(t *testing.T) {
 
 		dsn := cfg.DSN()
 		assert.NotEmpty(t, dsn)
-	})
-}
-
-func TestGetEnv(t *testing.T) {
-	originalValue := os.Getenv("TEST_ENV_VAR")
-	defer func() {
-		if originalValue == "" {
-			os.Unsetenv("TEST_ENV_VAR")
-		} else {
-			os.Setenv("TEST_ENV_VAR", originalValue)
-		}
-	}()
-
-	t.Run("returns env value when set", func(t *testing.T) {
-		os.Setenv("TEST_ENV_VAR", "test-value")
-		value := getEnv("TEST_ENV_VAR", "default")
-		assert.Equal(t, "test-value", value)
-	})
-
-	t.Run("returns default when env not set", func(t *testing.T) {
-		os.Unsetenv("TEST_ENV_VAR")
-		value := getEnv("TEST_ENV_VAR", "default")
-		assert.Equal(t, "default", value)
-	})
-}
-
-func TestGetEnvAsInt(t *testing.T) {
-	originalValue := os.Getenv("TEST_INT_VAR")
-	defer func() {
-		if originalValue == "" {
-			os.Unsetenv("TEST_INT_VAR")
-		} else {
-			os.Setenv("TEST_INT_VAR", originalValue)
-		}
-	}()
-
-	t.Run("returns int value when valid", func(t *testing.T) {
-		os.Setenv("TEST_INT_VAR", "42")
-		value := getEnvAsInt("TEST_INT_VAR", 0)
-		assert.Equal(t, 42, value)
-	})
-
-	t.Run("returns default when env not set", func(t *testing.T) {
-		os.Unsetenv("TEST_INT_VAR")
-		value := getEnvAsInt("TEST_INT_VAR", 10)
-		assert.Equal(t, 10, value)
-	})
-
-	t.Run("returns default when value is not a valid integer", func(t *testing.T) {
-		os.Setenv("TEST_INT_VAR", "not-an-int")
-		value := getEnvAsInt("TEST_INT_VAR", 10)
-		assert.Equal(t, 10, value)
 	})
 }

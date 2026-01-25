@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui'
+import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui-19'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store'

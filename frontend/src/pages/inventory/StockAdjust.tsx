@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { z } from 'zod'
-import { Card, Typography, Toast, Spin, Empty, Button, Descriptions, Tag } from '@douyinfe/semi-ui'
+import { Card, Typography, Toast, Spin, Empty, Button, Descriptions, Tag } from '@douyinfe/semi-ui-19'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
