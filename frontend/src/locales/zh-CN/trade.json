@@ -78,6 +78,7 @@
     "searchPlaceholder": "搜索订单编号...",
     "newOrder": "新建订单",
     "refresh": "刷新",
+    "unit": "种",
     "columns": {
       "orderNumber": "订单编号",
       "supplier": "供应商",
@@ -112,6 +113,30 @@
       "cancelError": "取消订单失败",
       "deleteSuccess": "采购订单 \"{{orderNumber}}\" 已删除",
       "deleteError": "删除订单失败"
+    }
+  },
+  "purchaseOrderDetail": {
+    "title": "采购订单详情",
+    "items": {
+      "orderedQuantity": "订购数量",
+      "receivedQuantity": "已收数量",
+      "remainingQuantity": "待收数量",
+      "unitCost": "采购单价"
+    },
+    "receiveProgress": {
+      "title": "收货进度",
+      "received": "已收货"
+    },
+    "actions": {
+      "receive": "收货"
+    },
+    "messages": {
+      "notExist": "采购订单不存在",
+      "fetchError": "获取采购订单详情失败",
+      "confirmSuccess": "采购订单已确认",
+      "confirmError": "确认订单失败",
+      "cancelSuccess": "采购订单已取消",
+      "cancelError": "取消订单失败"
     }
   },
   "orderDetail": {

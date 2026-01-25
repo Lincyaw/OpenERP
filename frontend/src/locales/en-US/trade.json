@@ -78,6 +78,7 @@
     "searchPlaceholder": "Search order number...",
     "newOrder": "New Order",
     "refresh": "Refresh",
+    "unit": "items",
     "columns": {
       "orderNumber": "Order Number",
       "supplier": "Supplier",
@@ -112,6 +113,30 @@
       "cancelError": "Failed to cancel order",
       "deleteSuccess": "Purchase order \"{{orderNumber}}\" deleted",
       "deleteError": "Failed to delete order"
+    }
+  },
+  "purchaseOrderDetail": {
+    "title": "Purchase Order Details",
+    "items": {
+      "orderedQuantity": "Ordered Qty",
+      "receivedQuantity": "Received Qty",
+      "remainingQuantity": "Remaining Qty",
+      "unitCost": "Unit Cost"
+    },
+    "receiveProgress": {
+      "title": "Receive Progress",
+      "received": "Received"
+    },
+    "actions": {
+      "receive": "Receive"
+    },
+    "messages": {
+      "notExist": "Purchase order does not exist",
+      "fetchError": "Failed to fetch purchase order details",
+      "confirmSuccess": "Purchase order confirmed",
+      "confirmError": "Failed to confirm order",
+      "cancelSuccess": "Purchase order cancelled",
+      "cancelError": "Failed to cancel order"
     }
   },
   "orderDetail": {

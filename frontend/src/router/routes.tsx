@@ -59,6 +59,7 @@ const SalesOrderEditPage = () => lazyLoad(() => import('@/pages/trade/SalesOrder
 const SalesOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesOrderDetail'))
 const PurchaseOrdersPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrders'))
 const PurchaseOrderNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderNew'))
+const PurchaseOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderDetail'))
 const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderReceive'))
 const SalesReturnsPage = () => lazyLoad(() => import('@/pages/trade/SalesReturns'))
 const SalesReturnNewPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnNew'))
@@ -640,7 +641,7 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'sales/:id/edit', element: SalesOrderEditPage() },
           // Purchase order routes
           { path: 'purchase/new', element: PurchaseOrderNewPage() },
-          { path: 'purchase/:id', element: PurchaseOrdersPage() }, // TODO: detail page
+          { path: 'purchase/:id', element: PurchaseOrderDetailPage() },
           { path: 'purchase/:id/edit', element: PurchaseOrdersPage() }, // TODO: edit page
           { path: 'purchase/:id/receive', element: PurchaseOrderReceivePage() },
           // Sales returns routes

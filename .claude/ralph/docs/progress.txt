@@ -51,3 +51,53 @@ Worked on fixing Sales Order E2E tests (P3-INT-001). Made multiple backend and f
 ### Next Steps
 - P3-INT-001 core functionality is working
 - Remaining timing issues are E2E test stability concerns, not core bugs
+
+---
+
+## 2026-01-26 - P3-INT-002 Purchase Order E2E Test Fix
+
+### Summary
+Implemented PurchaseOrderDetail page to fix the E2E test issues caused by Semi Design dropdown menu positioning in headless Chrome. The dropdown menu items were positioned outside the viewport in Docker/headless environments, causing 11 E2E tests to be skipped.
+
+### Problem
+- Semi Design Dropdown menu items positioned outside viewport in Docker/headless Chrome
+- Affected: confirm, receive, cancel actions in table row dropdowns
+- 11 E2E tests were skipped due to this issue
+
+### Solution
+Created a dedicated PurchaseOrderDetail page (similar to SalesOrderDetail) that provides direct action buttons instead of relying on dropdown menus in table rows. E2E tests can now navigate to the detail page and use the action buttons directly.
+
+### Files Created
+
+#### Frontend - New Files
+- `frontend/src/pages/trade/PurchaseOrderDetail.tsx`
+  - Main detail page component following SalesOrderDetail.tsx pattern
+  - Features: order info display, items table with receive progress, status timeline
+  - Action buttons: Edit (draft), Confirm (draft), Receive (confirmed), Cancel (draft/confirmed)
+
+- `frontend/src/pages/trade/PurchaseOrderDetail.css`
+  - Styles matching SalesOrderDetail.css pattern
+  - Added receive-progress-section styling
+
+### Files Modified
+
+#### Frontend - Localization
+- `frontend/src/locales/zh-CN/trade.json`
+  - Added `purchaseOrderDetail` section with Chinese translations
+  - Added `"unit": "种"` to purchaseOrder section
+
+- `frontend/src/locales/en-US/trade.json`
+  - Added matching English translations for purchaseOrderDetail
+
+#### Frontend - Routing
+- `frontend/src/router/routes.tsx`
+  - Added lazy import for PurchaseOrderDetailPage
+  - Added route: `{ path: 'purchase/:id', element: PurchaseOrderDetailPage() }`
+
+### Test Results
+- TypeScript type check: PASSED
+- Build: PASSED
+
+### Next Steps
+- Update E2E tests to use detail page for confirm/receive/cancel actions
+- Run full E2E test suite to verify fix
