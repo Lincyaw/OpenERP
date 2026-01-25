@@ -193,6 +193,7 @@ export function TableActions<T>({
           <Dropdown
             trigger="click"
             position="bottomRight"
+            clickToHide
             menu={dropdownMenu}
             className="table-actions-dropdown"
           >

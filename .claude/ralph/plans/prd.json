@@ -3109,16 +3109,24 @@
     "priority": "high",
     "requirements": [
       "文件: frontend/src/components/common/table/TableActions.tsx",
-      "行号: 172-207",
+      "行号: 192-207 (Dropdown组件)",
       "问题: Semi Design Dropdown menu属性中onClick可能不是正确的事件处理方式",
       "调查步骤:",
       "1. 检查Semi Design Dropdown组件menu属性API文档",
       "2. 可能需要使用onSelect回调而不是menu item的onClick",
       "3. 检查是否需要clickToHide属性",
       "影响页面: Customers, Suppliers, Warehouses, Products",
-      "验证: 任意列表页点击三个点菜单能正常执行操作"
+      "验证: 任意列表页点击三个点菜单能正常执行操作",
+      "",
+      "✅ 修复完成 - 2026-01-26:",
+      "✅ 根因: Semi Design Dropdown的clickToHide属性默认为undefined(falsy)",
+      "✅ 当trigger='click'时, 点击menu item会触发onClick但dropdown不会自动关闭",
+      "✅ 修复: 在Dropdown组件添加clickToHide属性",
+      "✅ 代码变更: TableActions.tsx line 196 添加 clickToHide",
+      "✅ TypeScript类型检查通过",
+      "✅ 构建成功"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P9-UI-001-H3",

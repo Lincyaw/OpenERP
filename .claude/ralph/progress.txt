@@ -16677,3 +16677,53 @@ function formatQuantity(quantity?: number | string): string {
 - Exit code: 0
 
 ---
+
+## P9-UI-001-H2: Fix TableActions Dropdown Menu Click Issue (HIGH)
+**Status**: ✅ Completed
+**Date**: 2026-01-26
+
+### Problem
+TableActions dropdown menu items were not responding correctly to clicks. The menu would stay open after clicking an item.
+
+### Root Cause Analysis
+After thorough investigation of Semi Design's Dropdown component:
+1. The Dropdown component extends TooltipProps which includes `clickToHide` prop
+2. `clickToHide` defaults to `undefined` (falsy) in Tooltip defaultProps
+3. When `clickToHide` is falsy, clicking inside the dropdown content does NOT close the dropdown
+4. The `handlePortalInnerClick` in tooltip/index.js checks: `if (this.props.clickToHide) { this.foundation.hide(); }`
+5. Menu item `onClick` handlers work correctly, but the dropdown stays open
+
+### Investigation Steps
+1. Checked TableActions.tsx code - onClick handlers were correctly defined
+2. Analyzed Semi Design's dropdown/index.js - menu items spread props including onClick
+3. Found dropdownItem.js correctly binds onClick to the `<li>` element
+4. Discovered tooltip/index.js only hides on click when `clickToHide={true}`
+5. Verified Tooltip.defaultProps does NOT include clickToHide
+
+### Solution
+Added `clickToHide` prop to the Dropdown component in TableActions.tsx:
+
+```tsx
+<Dropdown
+  trigger="click"
+  position="bottomRight"
+  clickToHide    // <-- Added this prop
+  menu={dropdownMenu}
+  className="table-actions-dropdown"
+>
+```
+
+### Files Modified
+- `frontend/src/components/common/table/TableActions.tsx` (line 196)
+
+### Verification
+- TypeScript type check passes
+- Build succeeds
+- Affected pages: Customers, Suppliers, Warehouses, Products
+
+### Notes for Future
+- Semi Design's Dropdown `clickToHide` should be explicitly set when using `trigger="click"`
+- This is not well documented in Semi Design docs
+- The menu item onClick handlers work independently; clickToHide controls dropdown visibility
+
+---
