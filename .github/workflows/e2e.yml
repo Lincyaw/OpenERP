@@ -1,0 +1,114 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'docker/**'
+      - '.github/workflows/e2e.yml'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'docker/**'
+      - '.github/workflows/e2e.yml'
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose version
+
+      - name: Start test environment
+        run: |
+          cd docker
+          docker compose -f docker-compose.test.yml up -d --build
+          # Wait for services to be healthy
+          echo "Waiting for services to start..."
+          sleep 30
+
+      - name: Check service health
+        run: |
+          cd docker
+          # Check if PostgreSQL is ready
+          docker compose -f docker-compose.test.yml exec -T db pg_isready -U erp || exit 1
+          # Check if backend is responding
+          curl -sf http://localhost:8081/api/health || echo "Backend not ready yet, continuing..."
+          # Check if frontend is responding
+          curl -sf http://localhost:3001 || echo "Frontend not ready yet, continuing..."
+
+      - name: Load seed data
+        run: |
+          cd docker
+          docker compose -f docker-compose.test.yml exec -T db psql -U erp -d erp_db -f /docker-entrypoint-initdb.d/seed-data.sql || true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npm run e2e:ci
+        env:
+          E2E_BASE_URL: http://localhost:3001
+          CI: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Stop test environment
+        if: always()
+        run: |
+          cd docker
+          docker compose -f docker-compose.test.yml down -v
+
+  # Summary job for PR status
+  e2e-summary:
+    needs: e2e-tests
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check E2E test result
+        run: |
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "E2E tests passed!"
+            exit 0
+          else
+            echo "E2E tests failed!"
+            exit 1
+          fi

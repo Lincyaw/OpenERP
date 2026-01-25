@@ -33,3 +33,10 @@ coverage
 
 # Build artifacts
 *.tsbuildinfo
+
+# Playwright E2E
+test-results/
+playwright-report/
+tests/e2e/.auth/user.json
+blob-report/
+playwright/.cache/

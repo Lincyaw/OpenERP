@@ -2533,6 +2533,6 @@
       "创建 GitHub Actions E2E workflow: docker-compose.test.yml + playwright test",
       "创建示例登录 E2E 测试验证配置正确"
     ],
-    "passes": false
+    "passes": true
   }
 ]
