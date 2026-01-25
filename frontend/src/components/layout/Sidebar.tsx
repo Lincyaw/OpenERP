@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Layout, Nav } from '@douyinfe/semi-ui'
+import { useTranslation } from 'react-i18next'
 import {
   IconHome,
   IconGridView,
@@ -47,6 +48,44 @@ const iconMap: Record<string, React.ReactNode> = {
 }
 
 /**
+ * Map route titles to i18n keys
+ */
+const titleToI18nKey: Record<string, string> = {
+  Dashboard: 'nav.dashboard',
+  Catalog: 'nav.catalog',
+  Products: 'nav.products',
+  Categories: 'nav.categories',
+  Partners: 'nav.partners',
+  Customers: 'nav.customers',
+  Suppliers: 'nav.suppliers',
+  Warehouses: 'nav.warehouses',
+  Inventory: 'nav.inventory',
+  'Stock List': 'nav.stock',
+  'Stock Taking': 'nav.stockTaking',
+  Trade: 'nav.trade',
+  'Sales Orders': 'nav.salesOrders',
+  'Purchase Orders': 'nav.purchaseOrders',
+  'Sales Returns': 'nav.salesReturns',
+  'Purchase Returns': 'nav.purchaseReturns',
+  Finance: 'nav.finance',
+  Receivables: 'nav.receivables',
+  Payables: 'nav.payables',
+  Expenses: 'nav.expenses',
+  'Other Income': 'nav.otherIncome',
+  'Cash Flow': 'nav.cashFlow',
+  Reports: 'nav.reports',
+  'Sales Report': 'nav.salesReport',
+  'Sales Ranking': 'nav.salesRanking',
+  'Inventory Turnover': 'nav.inventoryTurnover',
+  'Profit & Loss': 'nav.profitLoss',
+  System: 'nav.system',
+  Users: 'nav.users',
+  Roles: 'nav.roles',
+  Permissions: 'nav.permissions',
+  Settings: 'nav.settings',
+}
+
+/**
  * Convert AppRoute to Semi Nav items
  */
 interface NavItem {
@@ -82,7 +121,11 @@ function hasRoutePermission(
 /**
  * Convert route to nav item, filtering by user permissions
  */
-function routeToNavItem(route: AppRoute, userPermissions: string[] | undefined): NavItem | null {
+function routeToNavItem(
+  route: AppRoute,
+  userPermissions: string[] | undefined,
+  translate: (key: string) => string
+): NavItem | null {
   // Skip routes that should be hidden from menu
   if (route.meta?.hideInMenu || !route.path || route.path === '*') {
     return null
@@ -94,13 +137,16 @@ function routeToNavItem(route: AppRoute, userPermissions: string[] | undefined):
   }
 
   const icon = route.meta?.icon ? iconMap[route.meta.icon] : undefined
-  const text = route.meta?.title || route.path
+  const title = route.meta?.title || route.path
+  // Get translated text using the title to i18n key mapping
+  const i18nKey = titleToI18nKey[title]
+  const text = i18nKey ? translate(i18nKey) : title
 
   // Handle routes with children
   if (route.children && route.children.length > 0) {
     const childItems = route.children
       .filter((child) => !child.redirect && !child.meta?.hideInMenu)
-      .map((child) => routeToNavItem(child, userPermissions))
+      .map((child) => routeToNavItem(child, userPermissions, translate))
       .filter((item): item is NavItem => item !== null)
       .sort((a, b) => {
         const aOrder = appRoutes.find((r) => r.path === a.itemKey)?.meta?.order ?? 999
@@ -141,22 +187,26 @@ function routeToNavItem(route: AppRoute, userPermissions: string[] | undefined):
 export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
   const toggleSidebar = useAppStore((state) => state.toggleSidebar)
   const userPermissions = useAuthStore((state) => state.user?.permissions)
 
   // Generate navigation items from routes, filtered by user permissions
   const navItems = useMemo(() => {
+    // Create a simple translate function that wraps the i18next t function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const translate = (key: string) => (t as any)(key) as string
     return appRoutes
       .filter((route) => !route.meta?.hideInMenu && route.path !== '*')
-      .map((route) => routeToNavItem(route, userPermissions))
+      .map((route) => routeToNavItem(route, userPermissions, translate))
       .filter((item): item is NavItem => item !== null)
       .sort((a, b) => {
         const aRoute = appRoutes.find((r) => r.path === a.itemKey)
         const bRoute = appRoutes.find((r) => r.path === b.itemKey)
         return (aRoute?.meta?.order ?? 999) - (bRoute?.meta?.order ?? 999)
       })
-  }, [userPermissions])
+  }, [userPermissions, t])
 
   // Determine selected keys based on current path
   const selectedKeys = useMemo(() => {

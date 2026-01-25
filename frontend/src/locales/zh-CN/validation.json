@@ -1,0 +1,23 @@
+{
+  "required": "此字段为必填项",
+  "email": "请输入有效的邮箱地址",
+  "minLength": "至少需要 {{min}} 个字符",
+  "maxLength": "最多 {{max}} 个字符",
+  "min": "不能小于 {{min}}",
+  "max": "不能大于 {{max}}",
+  "pattern": "格式不正确",
+  "phone": "请输入有效的手机号码",
+  "url": "请输入有效的URL",
+  "number": "请输入有效的数字",
+  "integer": "请输入整数",
+  "positive": "必须为正数",
+  "nonNegative": "不能为负数",
+  "date": "请输入有效的日期",
+  "dateRange": "结束日期不能早于开始日期",
+  "passwordMatch": "两次输入的密码不一致",
+  "unique": "该值已存在",
+  "invalidSku": "SKU只能包含字母、数字和横线",
+  "invalidBarcode": "请输入有效的条形码",
+  "invalidId": "无效的ID格式",
+  "moneyPrecision": "金额最多两位小数"
+}

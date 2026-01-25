@@ -25,6 +25,8 @@ import {
 // This approach ensures translations are bundled with the app
 import zhCNCommon from '../locales/zh-CN/common.json'
 import enUSCommon from '../locales/en-US/common.json'
+import zhCNValidation from '../locales/zh-CN/validation.json'
+import enUSValidation from '../locales/en-US/validation.json'
 
 /**
  * Translation resources
@@ -35,9 +37,11 @@ import enUSCommon from '../locales/en-US/common.json'
 const resources = {
   'zh-CN': {
     common: zhCNCommon,
+    validation: zhCNValidation,
   },
   'en-US': {
     common: enUSCommon,
+    validation: enUSValidation,
   },
 }
 

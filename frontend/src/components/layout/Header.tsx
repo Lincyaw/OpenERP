@@ -22,6 +22,8 @@ import {
 
 import { useAppStore, useAuthStore, useUser } from '@/store'
 import { getBreadcrumbs } from '@/router/routes'
+import { useI18n } from '@/hooks'
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher'
 
 import './Header.css'
 
@@ -46,6 +48,7 @@ export function Header() {
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
+  const { t } = useI18n()
 
   // Generate breadcrumbs from current path
   const breadcrumbItems = getBreadcrumbs(location.pathname)
@@ -71,14 +74,14 @@ export function Header() {
     {
       node: 'item',
       key: 'profile',
-      name: 'Profile',
+      name: t('nav.profile', 'Profile'),
       icon: <IconUser />,
       onClick: handleProfile,
     },
     {
       node: 'item',
       key: 'settings',
-      name: 'Settings',
+      name: t('nav.settings'),
       icon: <IconSetting />,
       onClick: handleSettings,
     },
@@ -89,7 +92,7 @@ export function Header() {
     {
       node: 'item',
       key: 'logout',
-      name: 'Logout',
+      name: t('actions.logout', 'Logout'),
       icon: <IconExit />,
       onClick: handleLogout,
       type: 'danger' as const,
@@ -129,16 +132,27 @@ export function Header() {
       {/* Right side actions */}
       <Nav mode="horizontal" className="header__nav">
         <Space spacing={8}>
+          {/* Language switcher */}
+          <LanguageSwitcher />
+
           {/* Theme toggle */}
           <Button
             theme="borderless"
             icon={theme === 'light' ? <IconMoon /> : <IconSun />}
             onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            aria-label={
+              theme === 'light'
+                ? t('actions.switchToDark', 'Switch to dark mode')
+                : t('actions.switchToLight', 'Switch to light mode')
+            }
           />
 
           {/* Notifications */}
-          <Button theme="borderless" icon={<IconBell />} aria-label="Notifications" />
+          <Button
+            theme="borderless"
+            icon={<IconBell />}
+            aria-label={t('nav.notifications', 'Notifications')}
+          />
 
           {/* User menu */}
           <Dropdown

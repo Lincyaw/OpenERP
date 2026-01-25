@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useState } from 'react'
 import { Button, Dropdown, Popconfirm, Space, Tooltip, Modal } from '@douyinfe/semi-ui'
 import { IconMore } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 import type { TableAction } from './types'
 import './TableActions.css'
 
@@ -51,6 +52,7 @@ export function TableActions<T>({
   maxVisible = 3,
   size = 'small',
 }: TableActionsProps<T>) {
+  const { t } = useTranslation()
   const [confirmAction, setConfirmAction] = useState<TableAction<T> | null>(null)
 
   // Filter out hidden actions
@@ -149,8 +151,8 @@ export function TableActions<T>({
             key={action.key}
             title={action.confirm.title}
             content={action.confirm.content}
-            okText={action.confirm.okText || '确定'}
-            cancelText={action.confirm.cancelText || '取消'}
+            okText={action.confirm.okText || t('actions.confirm')}
+            cancelText={action.confirm.cancelText || t('actions.cancel')}
             onConfirm={() => handleClick(action)}
           >
             {button}
@@ -160,7 +162,7 @@ export function TableActions<T>({
 
       return button
     },
-    [record, size, handleClick]
+    [record, size, handleClick, t]
   )
 
   if (visibleActions.length === 0) {
@@ -189,7 +191,7 @@ export function TableActions<T>({
         {directActions.map(renderActionButton)}
         {dropdownActions.length > 0 && (
           <Dropdown trigger="click" position="bottomRight" menu={dropdownMenu}>
-            <Tooltip content="更多操作">
+            <Tooltip content={t('actions.moreActions')}>
               <Button size={size} theme="borderless" icon={<IconMore />} />
             </Tooltip>
           </Dropdown>
@@ -206,8 +208,8 @@ export function TableActions<T>({
             setConfirmAction(null)
           }}
           onCancel={() => setConfirmAction(null)}
-          okText={confirmAction.confirm.okText || '确定'}
-          cancelText={confirmAction.confirm.cancelText || '取消'}
+          okText={confirmAction.confirm.okText || t('actions.confirm')}
+          cancelText={confirmAction.confirm.cancelText || t('actions.cancel')}
         >
           {confirmAction.confirm.content}
         </Modal>

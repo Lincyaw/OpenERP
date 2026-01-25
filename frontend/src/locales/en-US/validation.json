@@ -1,0 +1,23 @@
+{
+  "required": "This field is required",
+  "email": "Please enter a valid email address",
+  "minLength": "At least {{min}} characters required",
+  "maxLength": "Maximum {{max}} characters allowed",
+  "min": "Must be at least {{min}}",
+  "max": "Must be at most {{max}}",
+  "pattern": "Invalid format",
+  "phone": "Please enter a valid phone number",
+  "url": "Please enter a valid URL",
+  "number": "Please enter a valid number",
+  "integer": "Please enter an integer",
+  "positive": "Must be a positive number",
+  "nonNegative": "Cannot be negative",
+  "date": "Please enter a valid date",
+  "dateRange": "End date cannot be before start date",
+  "passwordMatch": "Passwords do not match",
+  "unique": "This value already exists",
+  "invalidSku": "SKU can only contain letters, numbers, and dashes",
+  "invalidBarcode": "Please enter a valid barcode",
+  "invalidId": "Invalid ID format",
+  "moneyPrecision": "Amount can have at most 2 decimal places"
+}

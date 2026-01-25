@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button, Input, Space } from '@douyinfe/semi-ui'
 import { IconSearch, IconPlus } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 import type { TableToolbarProps } from './types'
 import './TableToolbar.css'
 
@@ -32,7 +33,7 @@ import './TableToolbar.css'
  * ```
  */
 export function TableToolbar({
-  searchPlaceholder = '搜索...',
+  searchPlaceholder,
   searchValue = '',
   onSearchChange,
   primaryAction,
@@ -43,13 +44,17 @@ export function TableToolbar({
   selectedCount = 0,
   bulkActions,
 }: TableToolbarProps) {
+  const { t } = useTranslation()
   const showBulkMode = selectedCount > 0 && bulkActions
+  const placeholder = searchPlaceholder || t('table.searchPlaceholder')
 
   return (
     <div className={`table-toolbar ${className}`}>
       {showBulkMode ? (
         <div className="table-toolbar-bulk">
-          <span className="table-toolbar-bulk-info">已选择 {selectedCount} 项</span>
+          <span className="table-toolbar-bulk-info">
+            {t('table.selectedItems', { count: selectedCount })}
+          </span>
           <div className="table-toolbar-bulk-actions">{bulkActions}</div>
         </div>
       ) : (
@@ -58,7 +63,7 @@ export function TableToolbar({
             {showSearch && onSearchChange && (
               <Input
                 prefix={<IconSearch />}
-                placeholder={searchPlaceholder}
+                placeholder={placeholder}
                 value={searchValue}
                 onChange={onSearchChange}
                 showClear
@@ -123,6 +128,8 @@ export function BulkActionBar({
   children,
   className = '',
 }: BulkActionBarProps) {
+  const { t } = useTranslation()
+
   if (selectedCount === 0) {
     return null
   }
@@ -130,9 +137,11 @@ export function BulkActionBar({
   return (
     <div className={`bulk-action-bar ${className}`}>
       <div className="bulk-action-bar-info">
-        <span className="bulk-action-bar-count">已选择 {selectedCount} 项</span>
+        <span className="bulk-action-bar-count">
+          {t('table.selectedItems', { count: selectedCount })}
+        </span>
         <Button size="small" theme="borderless" onClick={onCancel}>
-          取消选择
+          {t('actions.cancelSelection')}
         </Button>
       </div>
       <Space className="bulk-action-bar-actions">{children}</Space>

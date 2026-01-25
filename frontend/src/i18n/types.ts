@@ -38,6 +38,11 @@ export interface CommonTranslations {
   'actions.batchDelete': string
   'actions.approve': string
   'actions.reject': string
+  'actions.logout': string
+  'actions.switchToDark': string
+  'actions.switchToLight': string
+  'actions.moreActions': string
+  'actions.cancelSelection': string
   // Status
   'status.enabled': string
   'status.disabled': string
@@ -105,8 +110,12 @@ export interface CommonTranslations {
   'pagination.goto': string
   // Table
   'table.noData': string
+  'table.noDataDescription': string
   'table.selectPlaceholder': string
   'table.actions': string
+  'table.selectedItems': string
+  'table.totalRecords': string
+  'table.searchPlaceholder': string
   // Navigation
   'nav.dashboard': string
   'nav.catalog': string
@@ -131,12 +140,19 @@ export interface CommonTranslations {
   'nav.payments': string
   'nav.expenses': string
   'nav.otherIncome': string
+  'nav.cashFlow': string
   'nav.reports': string
+  'nav.salesReport': string
+  'nav.salesRanking': string
+  'nav.inventoryTurnover': string
+  'nav.profitLoss': string
   'nav.system': string
   'nav.users': string
   'nav.roles': string
   'nav.permissions': string
   'nav.settings': string
+  'nav.profile': string
+  'nav.notifications': string
 }
 
 /**

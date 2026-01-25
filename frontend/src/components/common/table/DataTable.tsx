@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from 'react'
 import { Table, Pagination, Empty } from '@douyinfe/semi-ui'
 import { IconInbox } from '@douyinfe/semi-icons'
+import { useTranslation } from 'react-i18next'
 import type { ColumnProps, ChangeInfo } from '@douyinfe/semi-ui/lib/es/table'
 import type { DataTableProps, SortState } from './types'
 import { TableActions } from './TableActions'
@@ -73,6 +74,7 @@ export function DataTable<T extends Record<string, unknown>>({
   resizable = false,
   expandable,
 }: DataTableProps<T>) {
+  const { t } = useTranslation()
   // Convert our column definition to Semi Table column format
   const tableColumns = useMemo<ColumnProps<T>[]>(() => {
     const cols: ColumnProps<T>[] = columns
@@ -104,7 +106,7 @@ export function DataTable<T extends Record<string, unknown>>({
     // Add actions column if actions are provided
     if (actions && actions.length > 0) {
       cols.push({
-        title: '操作',
+        title: t('table.actions'),
         dataIndex: '__actions__',
         width: calculateActionsWidth(actions.length),
         fixed: 'right',
@@ -115,7 +117,7 @@ export function DataTable<T extends Record<string, unknown>>({
     }
 
     return cols
-  }, [columns, actions, sortState])
+  }, [columns, actions, sortState, t])
 
   // Handle sort change
   const handleSortChange = useCallback(
@@ -183,11 +185,11 @@ export function DataTable<T extends Record<string, unknown>>({
     return (
       <Empty
         image={<IconInbox size="extra-large" style={{ color: 'var(--semi-color-text-2)' }} />}
-        title="暂无数据"
-        description="当前列表为空"
+        title={t('table.noData')}
+        description={t('table.noDataDescription')}
       />
     )
-  }, [empty])
+  }, [empty, t])
 
   // Get row key
   const getRowKey = useCallback(
@@ -255,7 +257,9 @@ export function DataTable<T extends Record<string, unknown>>({
 
       {pagination && (
         <div className="data-table-pagination">
-          <div className="data-table-pagination-info">共 {pagination.total} 条记录</div>
+          <div className="data-table-pagination-info">
+            {t('table.totalRecords', { total: pagination.total })}
+          </div>
           <Pagination
             total={pagination.total}
             currentPage={pagination.page}

@@ -26,7 +26,12 @@
     "selectAll": "全选",
     "batchDelete": "批量删除",
     "approve": "审批通过",
-    "reject": "审批拒绝"
+    "reject": "审批拒绝",
+    "logout": "退出登录",
+    "switchToDark": "切换到暗色模式",
+    "switchToLight": "切换到亮色模式",
+    "moreActions": "更多操作",
+    "cancelSelection": "取消选择"
   },
   "status": {
     "enabled": "已启用",
@@ -99,8 +104,12 @@
   },
   "table": {
     "noData": "暂无数据",
+    "noDataDescription": "当前列表为空",
     "selectPlaceholder": "请选择",
-    "actions": "操作"
+    "actions": "操作",
+    "selectedItems": "已选择 {{count}} 项",
+    "totalRecords": "共 {{total}} 条记录",
+    "searchPlaceholder": "搜索..."
   },
   "nav": {
     "dashboard": "工作台",
@@ -126,11 +135,18 @@
     "payments": "付款管理",
     "expenses": "费用管理",
     "otherIncome": "其他收入",
+    "cashFlow": "收支流水",
     "reports": "报表中心",
+    "salesReport": "销售报表",
+    "salesRanking": "销售排行",
+    "inventoryTurnover": "库存周转",
+    "profitLoss": "损益报表",
     "system": "系统管理",
     "users": "用户管理",
     "roles": "角色管理",
     "permissions": "权限配置",
-    "settings": "系统设置"
+    "settings": "系统设置",
+    "profile": "个人资料",
+    "notifications": "通知"
   }
 }

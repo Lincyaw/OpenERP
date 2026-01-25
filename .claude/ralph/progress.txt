@@ -15007,3 +15007,91 @@ cd frontend && npm run build
 cd frontend && npx tsc --noEmit
 ```
 
+
+---
+
+## 2026-01-25 - P0-I18N-002: Common Components i18n Migration
+
+### Completed
+- **P0-I18N-002**: 通用组件 i18n 迁移 (Common Components)
+
+### What was done
+
+1. **Created LanguageSwitcher Component**
+   - `frontend/src/components/common/LanguageSwitcher.tsx`
+   - Dropdown component for switching between supported languages (zh-CN, en-US)
+   - Uses Semi Design Dropdown with language list from i18n config
+   - Shows flag emoji and language name
+
+2. **Updated Header with LanguageSwitcher**
+   - `frontend/src/components/layout/Header.tsx`
+   - Added LanguageSwitcher to header toolbar
+   - Translated user menu items (Profile, Settings, Logout)
+   - Uses useI18n hook for translations
+
+3. **Created Validation i18n Files**
+   - `frontend/src/locales/zh-CN/validation.json` - Chinese validation messages
+   - `frontend/src/locales/en-US/validation.json` - English validation messages
+   - Messages: required, email, minLength, maxLength, phone, number, etc.
+
+4. **Updated Validation.ts with i18n Support**
+   - `frontend/src/components/common/form/validation.ts`
+   - Validation messages now use i18n translations
+   - Messages evaluated at module load time (limitation of Zod's static message requirement)
+   - For language changes to take effect, page reload is required
+
+5. **Updated Table Components with i18n**
+   - `frontend/src/components/common/table/DataTable.tsx`
+     - Translated: actions column title, empty state, pagination text
+   - `frontend/src/components/common/table/TableToolbar.tsx`
+     - Translated: search placeholder, selected items count, cancel selection
+   - `frontend/src/components/common/table/TableActions.tsx`
+     - Translated: confirm/cancel buttons, "more actions" tooltip
+
+6. **Updated Sidebar with i18n**
+   - `frontend/src/components/layout/Sidebar.tsx`
+   - Created titleToI18nKey mapping for route titles to i18n keys
+   - All navigation menu items now use translated text
+   - Supports: Dashboard, Catalog, Products, Categories, Partners, etc.
+
+7. **Updated i18n Types**
+   - `frontend/src/i18n/types.ts`
+   - Added new translation keys:
+     - actions: logout, switchToDark, switchToLight, moreActions, cancelSelection
+     - table: noDataDescription, selectedItems, totalRecords, searchPlaceholder
+     - nav: profile, notifications, cashFlow, salesReport, salesRanking, inventoryTurnover, profitLoss
+
+8. **Updated i18n Index**
+   - `frontend/src/i18n/index.ts`
+   - Added validation namespace imports
+
+9. **Updated Common Translation Files**
+   - `frontend/src/locales/zh-CN/common.json`
+   - `frontend/src/locales/en-US/common.json`
+   - Added all new translation keys for table, actions, and nav sections
+
+### Files Created
+- `frontend/src/components/common/LanguageSwitcher.tsx`
+- `frontend/src/locales/zh-CN/validation.json`
+- `frontend/src/locales/en-US/validation.json`
+
+### Files Modified
+- `frontend/src/components/layout/Header.tsx`
+- `frontend/src/components/common/form/validation.ts`
+- `frontend/src/components/common/table/DataTable.tsx`
+- `frontend/src/components/common/table/TableToolbar.tsx`
+- `frontend/src/components/common/table/TableActions.tsx`
+- `frontend/src/components/layout/Sidebar.tsx`
+- `frontend/src/i18n/types.ts`
+- `frontend/src/i18n/index.ts`
+- `frontend/src/locales/zh-CN/common.json`
+- `frontend/src/locales/en-US/common.json`
+
+### Build Verification
+- `npm run build` - SUCCESS (TypeScript check passed)
+
+### Notes
+- Validation messages are evaluated at module load time due to Zod's requirement for static strings
+- For full dynamic language switching in forms, a page reload is needed
+- LanguageSwitcher can be configured with `showLabel` prop to display current language name
+- All Semi Design table components now support i18n through useTranslation hook

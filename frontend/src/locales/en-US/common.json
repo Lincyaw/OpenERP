@@ -26,7 +26,12 @@
     "selectAll": "Select All",
     "batchDelete": "Batch Delete",
     "approve": "Approve",
-    "reject": "Reject"
+    "reject": "Reject",
+    "logout": "Logout",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode",
+    "moreActions": "More actions",
+    "cancelSelection": "Cancel selection"
   },
   "status": {
     "enabled": "Enabled",
@@ -99,8 +104,12 @@
   },
   "table": {
     "noData": "No data",
+    "noDataDescription": "The list is empty",
     "selectPlaceholder": "Please select",
-    "actions": "Actions"
+    "actions": "Actions",
+    "selectedItems": "{{count}} items selected",
+    "totalRecords": "Total {{total}} records",
+    "searchPlaceholder": "Search..."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -126,11 +135,18 @@
     "payments": "Payments",
     "expenses": "Expenses",
     "otherIncome": "Other Income",
+    "cashFlow": "Cash Flow",
     "reports": "Reports",
+    "salesReport": "Sales Report",
+    "salesRanking": "Sales Ranking",
+    "inventoryTurnover": "Inventory Turnover",
+    "profitLoss": "Profit & Loss",
     "system": "System",
     "users": "Users",
     "roles": "Roles",
     "permissions": "Permissions",
-    "settings": "Settings"
+    "settings": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications"
   }
 }

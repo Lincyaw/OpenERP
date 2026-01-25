@@ -2692,7 +2692,7 @@
       "npm run build 类型检查通过",
       "中英文切换后通用组件文本正确变化"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P0-I18N-003",
