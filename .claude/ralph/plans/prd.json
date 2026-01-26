@@ -3703,7 +3703,13 @@
       "2. 或调整TableActions组件的maxVisible为2，多余放入下拉菜单",
       "3. 或在StockList中自定义操作列宽度"
     ],
-    "passes": false
+    "passes": true,
+    "fix_notes": [
+      "Root cause: calculateActionsWidth() estimated 60px per button, but Chinese text buttons need ~85px",
+      "For 3 buttons: Original calculation was 200px, actual needed ~280px",
+      "Fix: Updated calculateActionsWidth() in DataTable.tsx to use 85px per button",
+      "Also improved documentation and calculation logic for different action counts"
+    ]
   },
   {
     "id": "P10-BUG-006",

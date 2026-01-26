@@ -278,17 +278,33 @@ export function DataTable<T extends Record<string, unknown>>({
 
 /**
  * Calculate actions column width based on number of actions
+ *
+ * Button widths vary by content:
+ * - Chinese text buttons (4 chars): ~80px
+ * - English text buttons: ~90px
+ * - Icon-only buttons: ~32px
+ * - "More" dropdown button: ~32px
+ *
+ * We use a conservative estimate to accommodate i18n text variations.
  */
 function calculateActionsWidth(actionCount: number): number {
-  // Each button is approximately 60px, plus spacing
-  const buttonWidth = 60
+  // Each text button is approximately 85px (accounting for Chinese/English text)
+  const buttonWidth = 85
   const spacing = 4
-  const maxVisibleButtons = Math.min(actionCount, 3)
+  const moreButtonWidth = 32
+  const padding = 16
 
-  if (actionCount <= 3) {
-    return maxVisibleButtons * buttonWidth + (maxVisibleButtons - 1) * spacing + 16
+  if (actionCount <= 2) {
+    // Show all buttons directly
+    return actionCount * buttonWidth + Math.max(0, actionCount - 1) * spacing + padding
+  }
+
+  if (actionCount === 3) {
+    // Show 2 buttons + more dropdown (maxVisible defaults to 3, so all 3 show)
+    // But with longer text, we allocate for 3 buttons
+    return 3 * buttonWidth + 2 * spacing + padding
   }
 
   // If more than 3 actions, show 2 buttons + more dropdown
-  return 2 * buttonWidth + spacing + 32 + 16
+  return 2 * buttonWidth + spacing + moreButtonWidth + spacing + padding
 }

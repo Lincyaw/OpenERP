@@ -18373,3 +18373,56 @@ render: (value: unknown) => {
   ```typescript
   const numValue = typeof value === 'string' ? parseFloat(value) : value
   ```
+
+---
+
+## P10-BUG-005: 修复库存查询操作按钮溢出 (2026-01-26)
+
+### Problem
+The stock list table's action column had 3 buttons (查看明细, 流水记录, 库存调整) that overflowed beyond the table boundary because the calculated column width was too narrow.
+
+### Root Cause Analysis
+1. The `calculateActionsWidth()` function in DataTable.tsx estimated 60px per button
+2. Chinese text buttons like "查看明细" (4 characters) actually need ~80-90px
+3. For 3 buttons: Original calculation was `3*60 + 2*4 + 16 = 204px`
+4. Actual needed width: `3*85 + 2*4 + 16 = 279px`
+
+### Solution
+Updated the `calculateActionsWidth()` function in DataTable.tsx:
+- Changed `buttonWidth` from 60px to 85px to accommodate i18n text (Chinese/English)
+- Added better documentation explaining button width considerations
+- Improved calculation logic for different action counts (2, 3, or more)
+
+**Before:**
+```typescript
+function calculateActionsWidth(actionCount: number): number {
+  const buttonWidth = 60  // Too small for Chinese text
+  // ... calculations
+}
+```
+
+**After:**
+```typescript
+function calculateActionsWidth(actionCount: number): number {
+  // Each text button is approximately 85px (accounting for Chinese/English text)
+  const buttonWidth = 85
+  const moreButtonWidth = 32
+  // ... improved calculations
+}
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/components/common/table/DataTable.tsx` | Updated calculateActionsWidth() with larger button width (60px → 85px) |
+| `.claude/ralph/plans/prd.json` | Marked P10-BUG-005 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+
+### Notes
+- This fix affects all table pages that use the DataTable component with action buttons
+- The 85px width accommodates typical Chinese (4-char) and English action labels
+- For tables with more than 3 actions, overflow items are automatically placed in a dropdown menu
