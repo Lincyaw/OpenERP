@@ -306,30 +306,62 @@ export default function CustomersPage() {
     [navigate]
   )
 
-  // Handle bulk activate
+  // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerCustomersIdActivate(id)))
-      Toast.success(t('customers.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
-      setSelectedRowKeys([])
-      fetchCustomers()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postPartnerCustomersIdActivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('customers.messages.batchActivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('customers.messages.batchActivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('customers.messages.batchActivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchCustomers()
   }, [api, selectedRowKeys, fetchCustomers, t])
 
-  // Handle bulk deactivate
+  // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerCustomersIdDeactivate(id)))
-      Toast.success(
-        t('customers.messages.batchDeactivateSuccess', { count: selectedRowKeys.length })
-      )
-      setSelectedRowKeys([])
-      fetchCustomers()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postPartnerCustomersIdDeactivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('customers.messages.batchDeactivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('customers.messages.batchDeactivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('customers.messages.batchDeactivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchCustomers()
   }, [api, selectedRowKeys, fetchCustomers, t])
 
   // Table columns

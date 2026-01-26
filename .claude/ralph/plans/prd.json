@@ -4906,7 +4906,7 @@
       "分别统计成功和失败数量",
       "显示部分成功的提示信息"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "HIGH",

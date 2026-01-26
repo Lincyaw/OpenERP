@@ -231,28 +231,62 @@ export default function ProductsPage() {
     [navigate]
   )
 
-  // Handle bulk activate
+  // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postCatalogProductsIdActivate(id)))
-      Toast.success(t('products.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
-      setSelectedRowKeys([])
-      fetchProducts()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postCatalogProductsIdActivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('products.messages.batchActivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('products.messages.batchActivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('products.messages.batchActivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchProducts()
   }, [api, selectedRowKeys, fetchProducts, t])
 
-  // Handle bulk deactivate
+  // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postCatalogProductsIdDeactivate(id)))
-      Toast.success(t('products.messages.batchDeactivateSuccess', { count: selectedRowKeys.length }))
-      setSelectedRowKeys([])
-      fetchProducts()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postCatalogProductsIdDeactivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('products.messages.batchDeactivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('products.messages.batchDeactivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('products.messages.batchDeactivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchProducts()
   }, [api, selectedRowKeys, fetchProducts, t])
 
   // Status options for filter - memoized with t dependency
@@ -331,9 +365,7 @@ export default function ProductsPage() {
           const statusValue = status as HandlerProductListResponseStatus | undefined
           if (!statusValue) return '-'
           return (
-            <Tag color={STATUS_TAG_COLORS[statusValue]}>
-              {t(`products.status.${statusValue}`)}
-            </Tag>
+            <Tag color={STATUS_TAG_COLORS[statusValue]}>{t(`products.status.${statusValue}`)}</Tag>
           )
         },
       },

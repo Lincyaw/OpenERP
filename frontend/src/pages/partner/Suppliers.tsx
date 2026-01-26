@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin, Rating } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Modal,
+  Spin,
+  Rating,
+} from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -268,30 +278,62 @@ export default function SuppliersPage() {
     [navigate]
   )
 
-  // Handle bulk activate
+  // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerSuppliersIdActivate(id)))
-      Toast.success(t('suppliers.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
-      setSelectedRowKeys([])
-      fetchSuppliers()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postPartnerSuppliersIdActivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('suppliers.messages.batchActivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('suppliers.messages.batchActivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('suppliers.messages.batchActivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchSuppliers()
   }, [api, selectedRowKeys, fetchSuppliers, t])
 
-  // Handle bulk deactivate
+  // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerSuppliersIdDeactivate(id)))
-      Toast.success(
-        t('suppliers.messages.batchDeactivateSuccess', { count: selectedRowKeys.length })
-      )
-      setSelectedRowKeys([])
-      fetchSuppliers()
-    } catch {
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => api.postPartnerSuppliersIdDeactivate(id))
+    )
+
+    const successCount = results.filter((r) => r.status === 'fulfilled').length
+    const failureCount = results.filter((r) => r.status === 'rejected').length
+
+    if (failureCount === 0) {
+      // All succeeded
+      Toast.success(t('suppliers.messages.batchDeactivateSuccess', { count: successCount }))
+    } else if (successCount === 0) {
+      // All failed
       Toast.error(t('suppliers.messages.batchDeactivateError'))
+    } else {
+      // Partial success
+      Toast.warning(
+        t('suppliers.messages.batchDeactivatePartial', {
+          successCount,
+          failureCount,
+        })
+      )
     }
+
+    setSelectedRowKeys([])
+    fetchSuppliers()
   }, [api, selectedRowKeys, fetchSuppliers, t])
 
   // Table columns
