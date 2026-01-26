@@ -4313,7 +4313,7 @@
       "Update customer forms to use CustomerLevel dropdown from API",
       "Add CustomerLevel management page in admin section (optional)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5 - API Contract",
     "parentTask": "DDD-013",
     "affectedModules": [

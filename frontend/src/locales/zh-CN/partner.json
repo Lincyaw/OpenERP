@@ -125,7 +125,8 @@
       "sortOrderPlaceholder": "请输入排序值",
       "sortOrderHelper": "数值越小越靠前",
       "notes": "备注",
-      "notesPlaceholder": "请输入备注信息 (可选)"
+      "notesPlaceholder": "请输入备注信息 (可选)",
+      "invalidLevel": "请选择有效的客户等级"
     }
   },
   "suppliers": {

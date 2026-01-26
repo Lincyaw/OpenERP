@@ -420,6 +420,53 @@ definitions:
     required:
     - role_ids
     type: object
+  handler.AuditLogResponse:
+    description: Trial balance audit log response
+    properties:
+      checked_at:
+        type: string
+      checked_by:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      created_at:
+        type: string
+      critical_count:
+        example: 0
+        type: integer
+      discrepancy_count:
+        example: 0
+        type: integer
+      duration_ms:
+        example: 150
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      net_balance:
+        example: 0
+        type: number
+      notes:
+        type: string
+      period_end:
+        type: string
+      period_start:
+        type: string
+      status:
+        example: BALANCED
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      total_credits:
+        example: 50000
+        type: number
+      total_debits:
+        example: 50000
+        type: number
+      warning_count:
+        example: 0
+        type: integer
+    type: object
   handler.AuthUserResponse:
     properties:
       avatar:
@@ -443,6 +490,23 @@ definitions:
       tenant_id:
         type: string
       username:
+        type: string
+    type: object
+  handler.BalanceCheckGuardResponse:
+    description: Balance check guard response
+    properties:
+      allowed:
+        example: true
+        type: boolean
+      discrepancies:
+        items:
+          $ref: '#/definitions/handler.DiscrepancyResponse'
+        type: array
+      message:
+        example: Trial balance is balanced, operation allowed
+        type: string
+      status:
+        example: BALANCED
         type: string
     type: object
   handler.BalanceOperationRequest:
@@ -903,6 +967,41 @@ definitions:
         type: string
       sort_order:
         example: 0
+        type: integer
+    required:
+    - code
+    - name
+    type: object
+  handler.CreateCustomerLevelRequest:
+    description: Request body for creating a customer level
+    properties:
+      code:
+        example: gold
+        maxLength: 50
+        minLength: 1
+        type: string
+      description:
+        example: 5% discount on all purchases
+        maxLength: 500
+        type: string
+      discount_rate:
+        example: 0.05
+        maximum: 1
+        minimum: 0
+        type: number
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: 金卡会员
+        maxLength: 100
+        minLength: 1
+        type: string
+      sort_order:
+        example: 2
         type: integer
     required:
     - code
@@ -1735,6 +1834,80 @@ definitions:
         example: 125
         type: integer
     type: object
+  handler.CustomerLevelListResponse:
+    description: Customer level list item with customer count
+    properties:
+      code:
+        example: gold
+        type: string
+      customer_count:
+        example: 150
+        type: integer
+      discount_percent:
+        example: 5
+        type: number
+      discount_rate:
+        example: 0.05
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: 金卡会员
+        type: string
+      sort_order:
+        example: 2
+        type: integer
+    type: object
+  handler.CustomerLevelResponse:
+    description: Customer level details
+    properties:
+      code:
+        example: gold
+        type: string
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      customer_count:
+        example: 150
+        type: integer
+      description:
+        example: 5% discount on all purchases
+        type: string
+      discount_percent:
+        example: 5
+        type: number
+      discount_rate:
+        example: 0.05
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: 金卡会员
+        type: string
+      sort_order:
+        example: 2
+        type: integer
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+    type: object
   handler.CustomerListResponse:
     description: Customer list item with basic information
     properties:
@@ -1952,6 +2125,46 @@ definitions:
     - lock_id
     - source_id
     - source_type
+    type: object
+  handler.DiscrepancyResponse:
+    description: Balance discrepancy response
+    properties:
+      actual_amount:
+        example: 900
+        type: number
+      description:
+        example: Receivable paid + outstanding doesn't equal total amount
+        type: string
+      detected_at:
+        type: string
+      difference:
+        example: 100
+        type: number
+      entity_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      entity_number:
+        example: AR-2026-00001
+        type: string
+      entity_type:
+        example: AccountReceivable
+        type: string
+      expected_amount:
+        example: 1000
+        type: number
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      related_entities:
+        items:
+          $ref: '#/definitions/handler.RelatedEntityResponse'
+        type: array
+      severity:
+        example: CRITICAL
+        type: string
+      type:
+        example: RECEIVABLE_AMOUNT_MISMATCH
+        type: string
     type: object
   handler.ExpenseActionRequest:
     description: Expense action request
@@ -2509,6 +2722,67 @@ definitions:
         type: string
       version:
         example: 1
+        type: integer
+    type: object
+  handler.OutboxEntryResponse:
+    properties:
+      aggregate_id:
+        type: string
+      aggregate_type:
+        type: string
+      created_at:
+        type: string
+      event_id:
+        type: string
+      event_type:
+        type: string
+      id:
+        type: string
+      last_error:
+        type: string
+      max_retries:
+        type: integer
+      next_retry_at:
+        type: string
+      processed_at:
+        type: string
+      retry_count:
+        type: integer
+      status:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.OutboxListResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/handler.OutboxEntryResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  handler.OutboxStatsResponse:
+    properties:
+      dead:
+        type: integer
+      failed:
+        type: integer
+      pending:
+        type: integer
+      processing:
+        type: integer
+      sent:
+        type: integer
+      total:
         type: integer
     type: object
   handler.PayableAllocationResponse:
@@ -3493,6 +3767,14 @@ definitions:
       amount:
         example: 1000
         type: number
+      payment_method:
+        enum:
+        - CASH
+        - WECHAT
+        - ALIPAY
+        - BANK
+        example: CASH
+        type: string
       reference:
         example: RCH-20260124-001
         maxLength: 100
@@ -3503,6 +3785,7 @@ definitions:
         type: string
     required:
     - amount
+    - payment_method
     type: object
   handler.ReconcilePaymentResultResponse:
     description: Reconcile payment result response
@@ -3554,6 +3837,30 @@ definitions:
         type: string
     required:
     - strategy_type
+    type: object
+  handler.ReconciliationReportResponse:
+    description: Reconciliation report response
+    properties:
+      generated_at:
+        type: string
+      generated_by:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      health_score:
+        example: 100
+        type: integer
+      recommendations:
+        items:
+          type: string
+        type: array
+      report_type:
+        example: RECONCILIATION
+        type: string
+      total_entities_checked:
+        example: 133
+        type: integer
+      trial_balance:
+        $ref: '#/definitions/handler.TrialBalanceResponse'
     type: object
   handler.RecordCountRequest:
     description: Request body for recording physical count for a product
@@ -3676,6 +3983,19 @@ definitions:
     - approver_name
     - reason
     type: object
+  handler.RelatedEntityResponse:
+    description: Related entity response
+    properties:
+      entity_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      entity_type:
+        example: ReceiptVoucher
+        type: string
+      reference:
+        example: RV-2026-00001
+        type: string
+    type: object
   handler.ResetPasswordRequest:
     properties:
       new_password:
@@ -3684,6 +4004,11 @@ definitions:
         type: string
     required:
     - new_password
+    type: object
+  handler.RetryAllResponse:
+    properties:
+      count:
+        type: integer
     type: object
   handler.ReturnStatusSummaryResponse:
     description: Return status summary response
@@ -4440,6 +4765,44 @@ definitions:
         example: Main Warehouse
         type: string
     type: object
+  handler.StrategiesResponse:
+    properties:
+      allocation:
+        items:
+          $ref: '#/definitions/handler.StrategyInfo'
+        type: array
+      batch:
+        items:
+          $ref: '#/definitions/handler.StrategyInfo'
+        type: array
+      cost:
+        items:
+          $ref: '#/definitions/handler.StrategyInfo'
+        type: array
+      pricing:
+        items:
+          $ref: '#/definitions/handler.StrategyInfo'
+        type: array
+      validation:
+        items:
+          $ref: '#/definitions/handler.StrategyInfo'
+        type: array
+    type: object
+  handler.StrategyInfo:
+    properties:
+      description:
+        example: First In First Out batch selection
+        type: string
+      is_default:
+        example: true
+        type: boolean
+      name:
+        example: fifo
+        type: string
+      type:
+        example: batch
+        type: string
+    type: object
   handler.SupplierCountByStatusResponse:
     properties:
       active:
@@ -4764,6 +5127,132 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
     type: object
+  handler.TrialBalanceCheckRequest:
+    description: Request body for performing a trial balance check
+    properties:
+      check_credit_memos:
+        example: true
+        type: boolean
+      check_debit_memos:
+        example: true
+        type: boolean
+      check_payables:
+        example: true
+        type: boolean
+      check_payments:
+        example: true
+        type: boolean
+      check_receipts:
+        example: true
+        type: boolean
+      check_receivables:
+        example: true
+        type: boolean
+      notes:
+        example: Monthly balance check
+        type: string
+      period_end:
+        example: "2026-01-31"
+        type: string
+      period_start:
+        example: "2026-01-01"
+        type: string
+      validate_internal_consistency:
+        example: true
+        type: boolean
+      validate_memo_applications:
+        example: true
+        type: boolean
+      validate_voucher_allocations:
+        example: true
+        type: boolean
+    type: object
+  handler.TrialBalanceResponse:
+    description: Trial balance check response
+    properties:
+      checked_at:
+        type: string
+      checked_by:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      credit_memo_count:
+        example: 5
+        type: integer
+      critical_count:
+        example: 0
+        type: integer
+      debit_memo_count:
+        example: 3
+        type: integer
+      discrepancies:
+        items:
+          $ref: '#/definitions/handler.DiscrepancyResponse'
+        type: array
+      discrepancy_count:
+        example: 0
+        type: integer
+      execution_duration_ms:
+        example: 150
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      net_balance:
+        example: 0
+        type: number
+      notes:
+        example: Monthly balance check
+        type: string
+      payable_count:
+        example: 30
+        type: integer
+      payment_count:
+        example: 25
+        type: integer
+      period_end:
+        type: string
+      period_start:
+        type: string
+      receipt_count:
+        example: 20
+        type: integer
+      receivable_count:
+        example: 50
+        type: integer
+      status:
+        example: BALANCED
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      total_credit_memos:
+        example: 2000
+        type: number
+      total_credits:
+        example: 50000
+        type: number
+      total_debit_memos:
+        example: 3000
+        type: number
+      total_debits:
+        example: 50000
+        type: number
+      total_payables:
+        example: 20000
+        type: number
+      total_payments:
+        example: 15000
+        type: number
+      total_receipts:
+        example: 10000
+        type: number
+      total_receivables:
+        example: 30000
+        type: number
+      warning_count:
+        example: 0
+        type: integer
+    type: object
   handler.UnlockStockRequest:
     description: Request body for releasing locked stock
     properties:
@@ -4799,6 +5288,33 @@ definitions:
         type: string
     required:
     - code
+    type: object
+  handler.UpdateCustomerLevelRequest:
+    description: Request body for updating a customer level
+    properties:
+      description:
+        example: Updated description
+        maxLength: 500
+        type: string
+      discount_rate:
+        example: 0.08
+        maximum: 1
+        minimum: 0
+        type: number
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: 金卡会员
+        maxLength: 100
+        minLength: 1
+        type: string
+      sort_order:
+        example: 3
+        type: integer
     type: object
   handler.UpdateCustomerRequest:
     description: Request body for updating a customer
@@ -5547,7 +6063,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate user with username and password
+      description: Authenticate user with username and password. Returns access token
+        in response body and sets refresh token as httpOnly cookie.
       parameters:
       - description: Login credentials
         in: body
@@ -5610,7 +6127,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Logout and invalidate the current session
+      description: Logout and invalidate the current session. Clears refresh token
+        cookie.
       produces:
       - application/json
       responses:
@@ -5750,12 +6268,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: Get new access token using refresh token
+      description: Get new access token using refresh token from httpOnly cookie.
+        Falls back to request body for backward compatibility.
       parameters:
-      - description: Refresh token
+      - description: Refresh token (optional, prefer cookie)
         in: body
         name: request
-        required: true
         schema:
           $ref: '#/definitions/handler.RefreshTokenRequest'
       produces:
@@ -10726,6 +11244,201 @@ paths:
       summary: Get receivables summary
       tags:
       - finance-receivables
+  /finance/trial-balance/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the most recent trial balance audit logs
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - default: 20
+        description: Number of logs to retrieve
+        in: query
+        maximum: 100
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.AuditLogResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get trial balance audit logs
+      tags:
+      - finance-trial-balance
+  /finance/trial-balance/check:
+    post:
+      consumes:
+      - application/json
+      description: Performs a comprehensive trial balance check and returns discrepancies
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Trial balance check options
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.TrialBalanceCheckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TrialBalanceResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Perform trial balance check
+      tags:
+      - finance-trial-balance
+  /finance/trial-balance/quick-check:
+    get:
+      consumes:
+      - application/json
+      description: Performs a quick balance check (minimal validation) for use before
+        operations
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.BalanceCheckGuardResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Quick balance check
+      tags:
+      - finance-trial-balance
+  /finance/trial-balance/reconciliation-report:
+    get:
+      consumes:
+      - application/json
+      description: Generates a detailed reconciliation report with health score and
+        recommendations
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ReconciliationReportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get reconciliation report
+      tags:
+      - finance-trial-balance
   /identity/permissions:
     get:
       consumes:
@@ -16319,6 +17032,760 @@ paths:
       summary: Get balance transaction by ID
       tags:
       - balance
+  /partner/customer-levels:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all customer levels for the tenant
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - default: false
+        description: Only return active levels
+        in: query
+        name: active_only
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.CustomerLevelListResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List customer levels
+      tags:
+      - customer-levels
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer level for the tenant
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer level creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCustomerLevelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a customer level by ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a customer level
+      tags:
+      - customer-levels
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer level by its ID
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer level by ID
+      tags:
+      - customer-levels
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer level's details
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Customer level update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCustomerLevelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate an inactive customer level
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Activate a customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active customer level
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate a customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/{id}/set-default:
+    post:
+      consumes:
+      - application/json
+      description: Set a customer level as the default for new customers
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set default customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a customer level by its code
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      - description: Customer Level Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get customer level by code
+      tags:
+      - customer-levels
+  /partner/customer-levels/default:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the default customer level for the tenant
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.CustomerLevelResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get default customer level
+      tags:
+      - customer-levels
+  /partner/customer-levels/initialize:
+    post:
+      consumes:
+      - application/json
+      description: Create the default customer levels for a tenant
+      parameters:
+      - description: Tenant ID (optional for dev)
+        in: header
+        name: X-Tenant-ID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Initialize default customer levels
+      tags:
+      - customer-levels
   /partner/customers:
     get:
       consumes:
@@ -20812,6 +22279,331 @@ paths:
       summary: Get system information
       tags:
       - system
+  /system/outbox/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a single outbox entry by its ID
+      parameters:
+      - description: Outbox Entry ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OutboxEntryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get an outbox entry by ID
+      tags:
+      - outbox
+  /system/outbox/{id}/retry:
+    post:
+      consumes:
+      - application/json
+      description: Reset a dead letter entry for retry processing
+      parameters:
+      - description: Outbox Entry ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OutboxEntryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Retry a dead letter entry
+      tags:
+      - outbox
+  /system/outbox/dead:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of dead letter queue entries
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OutboxListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List dead letter entries
+      tags:
+      - outbox
+  /system/outbox/dead/retry-all:
+    post:
+      consumes:
+      - application/json
+      description: Reset all dead letter entries for retry processing
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.RetryAllResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Retry all dead letter entries
+      tags:
+      - outbox
+  /system/outbox/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get statistics about outbox entries by status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.OutboxStatsResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get outbox statistics
+      tags:
+      - outbox
   /system/ping:
     get:
       consumes:
@@ -20830,6 +22622,161 @@ paths:
                   $ref: '#/definitions/handler.PingResponse'
               type: object
       summary: Ping the API
+      tags:
+      - system
+  /system/strategies:
+    get:
+      consumes:
+      - application/json
+      description: Returns all registered strategies grouped by type
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.StrategiesResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: List available strategies
+      tags:
+      - system
+  /system/strategies/allocation:
+    get:
+      consumes:
+      - application/json
+      description: Returns all available payment allocation strategies (FIFO, etc.)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StrategyInfo'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: List payment allocation strategies
+      tags:
+      - system
+  /system/strategies/batch:
+    get:
+      consumes:
+      - application/json
+      description: Returns all available batch management strategies (FIFO, FEFO,
+        etc.)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StrategyInfo'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: List batch management strategies
+      tags:
+      - system
+  /system/strategies/cost:
+    get:
+      consumes:
+      - application/json
+      description: Returns all available cost calculation strategies (Moving Average,
+        FIFO, etc.)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StrategyInfo'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: List cost calculation strategies
+      tags:
+      - system
+  /system/strategies/pricing:
+    get:
+      consumes:
+      - application/json
+      description: Returns all available pricing strategies (Standard, Tiered, etc.)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.StrategyInfo'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      summary: List pricing strategies
       tags:
       - system
   /trade/purchase-orders:

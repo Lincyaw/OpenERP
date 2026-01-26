@@ -125,7 +125,8 @@
       "sortOrderPlaceholder": "Enter sort order",
       "sortOrderHelper": "Lower values appear first",
       "notes": "Notes",
-      "notesPlaceholder": "Enter notes (optional)"
+      "notesPlaceholder": "Enter notes (optional)",
+      "invalidLevel": "Please select a valid customer level"
     }
   },
   "suppliers": {

@@ -29,6 +29,46 @@ func NewCustomerLevelHandler(levelService *partnerapp.CustomerLevelService) *Cus
 	}
 }
 
+// =============================================================================
+// Customer Level Response DTOs (for Swagger)
+// =============================================================================
+
+// CustomerLevelResponse represents a customer level in API responses
+// @Description Customer level details
+type CustomerLevelResponse struct {
+	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID        string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Code            string  `json:"code" example:"gold"`
+	Name            string  `json:"name" example:"金卡会员"`
+	DiscountRate    float64 `json:"discount_rate" example:"0.05"`
+	DiscountPercent float64 `json:"discount_percent" example:"5"`
+	SortOrder       int     `json:"sort_order" example:"2"`
+	IsDefault       bool    `json:"is_default" example:"false"`
+	IsActive        bool    `json:"is_active" example:"true"`
+	Description     string  `json:"description" example:"5% discount on all purchases"`
+	CustomerCount   int64   `json:"customer_count,omitempty" example:"150"`
+	CreatedAt       string  `json:"created_at" example:"2024-01-15T10:30:00Z"`
+	UpdatedAt       string  `json:"updated_at" example:"2024-01-15T10:30:00Z"`
+}
+
+// CustomerLevelListResponse represents a customer level list item
+// @Description Customer level list item with customer count
+type CustomerLevelListResponse struct {
+	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Code            string  `json:"code" example:"gold"`
+	Name            string  `json:"name" example:"金卡会员"`
+	DiscountRate    float64 `json:"discount_rate" example:"0.05"`
+	DiscountPercent float64 `json:"discount_percent" example:"5"`
+	SortOrder       int     `json:"sort_order" example:"2"`
+	IsDefault       bool    `json:"is_default" example:"false"`
+	IsActive        bool    `json:"is_active" example:"true"`
+	CustomerCount   int64   `json:"customer_count" example:"150"`
+}
+
+// =============================================================================
+// Customer Level Request DTOs
+// =============================================================================
+
 // CreateCustomerLevelRequest represents a request to create a customer level
 // @Description Request body for creating a customer level
 type CreateCustomerLevelRequest struct {
@@ -60,7 +100,7 @@ type UpdateCustomerLevelRequest struct {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateCustomerLevelRequest true "Customer level creation request"
-// @Success      201 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      201 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
@@ -107,7 +147,7 @@ func (h *CustomerLevelHandler) Create(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -144,7 +184,7 @@ func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        code path string true "Customer Level Code"
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -184,7 +224,7 @@ func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -215,7 +255,7 @@ func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        active_only query bool false "Only return active levels" default(false)
-// @Success      200 {object} dto.Response{data=[]partnerapp.CustomerLevelListResponse}
+// @Success      200 {object} dto.Response{data=[]CustomerLevelListResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
@@ -248,7 +288,7 @@ func (h *CustomerLevelHandler) List(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Param        request body UpdateCustomerLevelRequest true "Customer level update request"
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -338,7 +378,7 @@ func (h *CustomerLevelHandler) Delete(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -376,7 +416,7 @@ func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
@@ -413,7 +453,7 @@ func (h *CustomerLevelHandler) Activate(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} dto.Response{data=partnerapp.CustomerLevelResponse}
+// @Success      200 {object} dto.Response{data=CustomerLevelResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      404 {object} dto.Response{error=dto.ErrorInfo}

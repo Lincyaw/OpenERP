@@ -12,11 +12,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import { CustomerForm } from '@/features/partner/CustomerForm'
 import * as customersApi from '@/api/customers/customers'
+import * as customerLevelsApi from '@/api/customer-levels/customer-levels'
 import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the customers API module
 vi.mock('@/api/customers/customers', () => ({
   getCustomers: vi.fn(),
+}))
+
+// Mock the customer levels API module
+vi.mock('@/api/customer-levels/customer-levels', () => ({
+  getCustomerLevels: vi.fn(),
 }))
 
 // Spy on Toast methods
@@ -75,11 +81,52 @@ const createErrorResponse = (message: string, code = 'ERR_VALIDATION') => ({
   },
 })
 
+// Mock customer levels data
+const mockCustomerLevels = [
+  {
+    id: '1',
+    code: 'normal',
+    name: '普通会员',
+    discount_rate: 0,
+    is_active: true,
+    is_default: true,
+  },
+  {
+    id: '2',
+    code: 'silver',
+    name: '银卡会员',
+    discount_rate: 0.02,
+    is_active: true,
+    is_default: false,
+  },
+  {
+    id: '3',
+    code: 'gold',
+    name: '金卡会员',
+    discount_rate: 0.05,
+    is_active: true,
+    is_default: false,
+  },
+  {
+    id: '4',
+    code: 'platinum',
+    name: '白金会员',
+    discount_rate: 0.08,
+    is_active: true,
+    is_default: false,
+  },
+  { id: '5', code: 'vip', name: 'VIP会员', discount_rate: 0.1, is_active: true, is_default: false },
+]
+
 describe('CustomerForm', () => {
   let mockApi: {
     postPartnerCustomers: ReturnType<typeof vi.fn>
     putPartnerCustomersId: ReturnType<typeof vi.fn>
     getPartnerCustomersId: ReturnType<typeof vi.fn>
+  }
+
+  let mockLevelsApi: {
+    getPartnerCustomerLevels: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -92,8 +139,18 @@ describe('CustomerForm', () => {
       getPartnerCustomersId: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
     }
 
+    mockLevelsApi = {
+      getPartnerCustomerLevels: vi
+        .fn()
+        .mockResolvedValue(createSuccessResponse(mockCustomerLevels)),
+    }
+
     vi.mocked(customersApi.getCustomers).mockReturnValue(
       mockApi as unknown as ReturnType<typeof customersApi.getCustomers>
+    )
+
+    vi.mocked(customerLevelsApi.getCustomerLevels).mockReturnValue(
+      mockLevelsApi as unknown as ReturnType<typeof customerLevelsApi.getCustomerLevels>
     )
   })
 

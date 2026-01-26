@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { z } from 'zod'
 import { Card, Typography } from '@douyinfe/semi-ui-19'
 import { useNavigate } from 'react-router-dom'
@@ -18,14 +18,14 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { getCustomers } from '@/api/customers/customers'
-import type { HandlerCustomerResponse } from '@/api/models'
+import { getCustomerLevels } from '@/api/customer-levels/customer-levels'
+import type { HandlerCustomerResponse, HandlerCustomerLevelListResponse } from '@/api/models'
 import './CustomerForm.css'
 
 const { Title } = Typography
 
-// Customer type and level values
+// Customer type values
 const CUSTOMER_TYPES = ['individual', 'organization'] as const
-const CUSTOMER_LEVELS = ['normal', 'silver', 'gold', 'platinum', 'vip'] as const
 
 interface CustomerFormProps {
   /** Customer ID for edit mode, undefined for create mode */
@@ -42,12 +42,39 @@ interface CustomerFormProps {
  * - Create/edit modes
  * - Form sections for better organization (basic info, contact, address, other settings)
  * - API integration with error handling
+ * - Dynamic customer level dropdown from API
  */
 export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const api = useMemo(() => getCustomers(), [])
+  const customerLevelsApi = useMemo(() => getCustomerLevels(), [])
   const isEditMode = Boolean(customerId)
+
+  // State for customer levels from API
+  const [customerLevels, setCustomerLevels] = useState<HandlerCustomerLevelListResponse[]>([])
+  const [levelsLoading, setLevelsLoading] = useState(true)
+
+  // Fetch customer levels from API
+  const fetchCustomerLevels = useCallback(async () => {
+    try {
+      setLevelsLoading(true)
+      const response = await customerLevelsApi.getPartnerCustomerLevels({ active_only: true })
+      if (response.success && response.data) {
+        setCustomerLevels(response.data)
+      }
+    } catch {
+      // Silent fail - will show empty dropdown
+      setCustomerLevels([])
+    } finally {
+      setLevelsLoading(false)
+    }
+  }, [customerLevelsApi])
+
+  // Load customer levels on mount
+  useEffect(() => {
+    fetchCustomerLevels()
+  }, [fetchCustomerLevels])
 
   // Customer type options with translations
   const CUSTOMER_TYPE_OPTIONS = useMemo(
@@ -58,19 +85,24 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
     [t]
   )
 
-  // Customer level options with translations
+  // Customer level options from API
   const CUSTOMER_LEVEL_OPTIONS = useMemo(
-    () => [
-      { label: t('customers.level.normal'), value: 'normal' },
-      { label: t('customers.level.silver'), value: 'silver' },
-      { label: t('customers.level.gold'), value: 'gold' },
-      { label: t('customers.level.platinum'), value: 'platinum' },
-      { label: t('customers.level.vip'), value: 'vip' },
-    ],
-    [t]
+    () =>
+      customerLevels.map((level) => ({
+        label: level.name || level.code || '',
+        value: level.code || '',
+      })),
+    [customerLevels]
+  )
+
+  // Get valid level codes for schema validation
+  const validLevelCodes = useMemo(
+    () => customerLevels.map((level) => level.code || '').filter(Boolean),
+    [customerLevels]
   )
 
   // Form validation schema with translations
+  // Note: level validation is dynamic based on fetched customer levels
   const customerFormSchema = useMemo(
     () =>
       z.object({
@@ -89,8 +121,13 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
           .optional()
           .transform((val) => val || undefined),
         type: createEnumSchema(CUSTOMER_TYPES, true),
-        level: createEnumSchema(CUSTOMER_LEVELS, false)
+        level: z
+          .string()
+          .optional()
           .nullable()
+          .refine((val) => !val || validLevelCodes.length === 0 || validLevelCodes.includes(val), {
+            message: t('customers.form.invalidLevel'),
+          })
           .transform((val) => val ?? undefined),
         contact_name: z
           .string()
@@ -158,7 +195,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
           .optional()
           .transform((val) => val || undefined),
       }),
-    [t]
+    [t, validLevelCodes]
   )
 
   type CustomerFormData = z.infer<typeof customerFormSchema>
@@ -197,7 +234,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
       name: initialData.name || '',
       short_name: initialData.short_name || '',
       type: (initialData.type as 'individual' | 'organization') || 'individual',
-      level: (initialData.level as 'normal' | 'silver' | 'gold' | 'platinum' | 'vip') || undefined,
+      level: initialData.level || undefined,
       contact_name: initialData.contact_name || '',
       phone: initialData.phone || '',
       email: initialData.email || '',
@@ -345,9 +382,15 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
                   name="level"
                   control={control}
                   label={t('customers.form.customerLevel')}
-                  placeholder={t('customers.form.customerLevelPlaceholder')}
+                  placeholder={
+                    levelsLoading
+                      ? t('common:loading')
+                      : t('customers.form.customerLevelPlaceholder')
+                  }
                   options={CUSTOMER_LEVEL_OPTIONS}
                   allowClear
+                  disabled={levelsLoading}
+                  loading={levelsLoading}
                 />
                 <div /> {/* Empty placeholder for grid alignment */}
               </FormRow>
