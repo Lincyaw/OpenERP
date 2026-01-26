@@ -263,6 +263,10 @@ func main() {
 	salesReturnCompletedHandler := tradeapp.NewSalesReturnCompletedHandler(inventoryService, log)
 	eventBus.Subscribe(salesReturnCompletedHandler)
 
+	// Sales return cancelled -> inventory reversal (if goods were received)
+	salesReturnCancelledHandler := tradeapp.NewSalesReturnCancelledHandler(inventoryService, log)
+	eventBus.Subscribe(salesReturnCancelledHandler)
+
 	// Purchase return shipped -> inventory deduction
 	purchaseReturnShippedHandler := tradeapp.NewPurchaseReturnShippedHandler(inventoryService, log)
 	eventBus.Subscribe(purchaseReturnShippedHandler)
@@ -279,6 +283,7 @@ func main() {
 		zap.Strings("sales_order_shipped_events", salesOrderShippedHandler.EventTypes()),
 		zap.Strings("sales_order_cancelled_events", salesOrderCancelledHandler.EventTypes()),
 		zap.Strings("sales_return_completed_events", salesReturnCompletedHandler.EventTypes()),
+		zap.Strings("sales_return_cancelled_events", salesReturnCancelledHandler.EventTypes()),
 		zap.Strings("purchase_return_shipped_events", purchaseReturnShippedHandler.EventTypes()),
 		zap.Strings("stock_below_threshold_events", stockBelowThresholdHandler.EventTypes()),
 	)

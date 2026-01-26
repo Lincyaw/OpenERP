@@ -21417,3 +21417,86 @@ Original: [X], Already returned: [Y], Remaining: [Z], Requested: [W]
 === Next Steps ===
 - Consider adding similar validation for purchase returns
 - Consider adding frontend UX to show remaining returnable quantity when creating returns
+
+2026-01-26 - Task BUG-007: Add inventory rollback when sales return is cancelled
+
+=== Problem Description ===
+When a sales return is cancelled after it has been approved or is in the RECEIVING status,
+any inventory that was restored needs to be reversed (deducted back). Without this handler,
+cancelled returns could leave inventory in an inconsistent state - showing stock that should
+not be there because the return was cancelled.
+
+Business scenario requiring this fix:
+- Sales return SR-001 is created for 10 units
+- Return is approved and moves to RECEIVING status  
+- 10 units are received back into warehouse (stock restored)
+- Return is cancelled (customer found the items or issue was resolved)
+- Without this fix: Inventory still shows +10 units (incorrect)
+- With this fix: Inventory is correctly deducted by 10 units
+
+=== Implementation Details ===
+
+1. **New Handler** (backend/internal/application/trade/sales_return_cancelled_handler.go):
+   - Created `SalesReturnCancelledHandler` to process `SalesReturnCancelledEvent`
+   - Subscribes to `EventTypeSalesReturnCancelled` events
+   - Logic flow:
+     a. Skip if `WasApproved` is false (no inventory operations occurred)
+     b. Skip if `WarehouseID` is nil (cannot reverse without warehouse info)
+     c. Query inventory transactions to check if stock was actually restored
+     d. For each item that was restored, call `DecreaseStock` to reverse
+   - Uses `BaseQuantity` for inventory operations (correct unit conversion support)
+   - Includes detailed logging for debugging and audit trail
+   - Continues processing remaining items even if one fails (partial failure handling)
+
+2. **Handler Registration** (backend/cmd/server/main.go):
+   - Registered `SalesReturnCancelledHandler` with event bus
+   - Added logging for new event handler subscription
+
+3. **Unit Tests** (backend/internal/application/trade/sales_return_cancelled_handler_test.go):
+   - 10 test cases covering:
+     - EventTypes() returns correct event type
+     - Not approved returns skip reversal
+     - Returns without warehouse skip reversal
+     - Wrong event type returns error
+     - No existing transactions skip reversal
+     - Successful single item reversal
+     - Multiple items with unit conversion
+     - Partial failure handling
+     - Transaction query failure fallback
+     - Handler construction
+
+=== Key Design Decisions ===
+
+1. **Transaction Query First**: Before reversing, query inventory transactions to see if
+   stock was actually restored. This prevents incorrect deductions if:
+   - Return was cancelled before receiving started
+   - Some items were received but not others
+
+2. **Graceful Degradation**: If transaction query fails, attempt full reversal anyway
+   rather than failing completely. Better to try than to leave inconsistent state.
+
+3. **Use BaseQuantity**: Like other inventory handlers, use `BaseQuantity` (not ReturnQuantity)
+   to ensure correct inventory quantities when auxiliary units are used.
+
+4. **Continue on Error**: If one item fails to reverse, continue processing others.
+   Report error at end so all items get attempted.
+
+5. **Source Type Tracking**: Use same source type (SALES_RETURN) and source ID for the
+   reversal transaction, enabling full audit trail and traceability.
+
+=== Key Files Modified ===
+- backend/internal/application/trade/sales_return_cancelled_handler.go (new file)
+- backend/internal/application/trade/sales_return_cancelled_handler_test.go (new file)
+- backend/cmd/server/main.go (registered handler)
+
+=== Verification ===
+- [x] All 10 new unit tests pass
+- [x] All existing sales return tests pass (28 tests)
+- [x] Go build succeeds
+- [x] Handler properly registered in main.go
+- [x] prd.json updated (passes: true)
+
+=== Next Steps ===
+- Consider adding similar cancellation handling for purchase returns
+- Consider adding integration/E2E tests for the full cancel-reversal flow
+- Monitor in production for any edge cases not covered by unit tests
