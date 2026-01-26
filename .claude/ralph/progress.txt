@@ -25399,3 +25399,84 @@ query.Order(sortField + " " + sortOrder)  // SAFE
 - SEC-003: Review and fix any other potential injection points
 - Consider adding middleware-level input validation for API parameters
 
+
+---
+
+2025-01-27 - Task SEC-002: 移除财务操作中的硬编码 User ID
+
+=== Implementation Details ===
+
+**Vulnerability Fixed: CRITICAL**
+
+The finance handler had hardcoded User IDs in four functions that were bypassing proper authentication and audit trail tracking. All financial operations (confirm/cancel receipts and payments) were being attributed to a static UUID `00000000-0000-0000-0000-000000000001` instead of the actual authenticated user.
+
+**Files Modified:**
+- `backend/internal/interfaces/http/handler/finance.go`
+
+**Functions Fixed (4 total):**
+
+1. **ConfirmReceiptVoucher** (line 673)
+   - Before: `userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")`
+   - After: Extracts user ID from JWT context with proper 401 error handling
+
+2. **CancelReceiptVoucher** (line 720)
+   - Before: `userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")`
+   - After: Extracts user ID from JWT context with proper 401 error handling
+
+3. **ConfirmPaymentVoucher** (line 975)
+   - Before: `userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")`
+   - After: Extracts user ID from JWT context with proper 401 error handling
+
+4. **CancelPaymentVoucher** (line 1022)
+   - Before: `userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")`
+   - After: Extracts user ID from JWT context with proper 401 error handling
+
+**Fix Pattern Applied:**
+```go
+// Old code (VULNERABLE)
+// TODO: Get actual user ID from auth context
+userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
+// New code (SECURE)
+// Get user ID from JWT context for audit tracking
+userID, err := getUserID(c)
+if err != nil {
+    h.Unauthorized(c, "Authentication required for this operation")
+    return
+}
+```
+
+**Key Design Decisions:**
+1. Used existing `getUserID(c)` function from base.go (already used in CreateReceiptVoucher/CreatePaymentVoucher)
+2. Returns 401 Unauthorized if user is not authenticated (vs. optional in create operations)
+3. Maintains audit trail integrity - userID properly stored in ConfirmedBy/CancelledBy fields
+4. JWT middleware integration through `middleware.GetJWTUserID()`
+
+=== Verification ===
+
+- [x] All hardcoded UUIDs removed (grep confirms no remaining `00000000-0000-0000-0000-000000000001`)
+- [x] Go build passes (`go build ./...`)
+- [x] Integration tests pass (`go test ./tests/integration/... -run Finance -short`)
+- [x] Security review passed (by security-reviewer agent)
+- [x] No remaining TODO comments for user ID extraction
+
+=== Requirements Satisfied ===
+✅ 从 JWT context 中正确提取 userID - getUserID(c) extracts from middleware.GetJWTUserID()
+✅ 移除 finance.go:673,720 处的硬编码 UUID - Removed all 4 instances (673, 720, 975, 1022)
+✅ 确保所有财务操作有正确的审计追踪 - UserID now properly recorded in ConfirmedBy/CancelledBy
+
+=== Security Impact ===
+- **Fixed**: Audit trail forgery vulnerability
+- **Fixed**: Accountability bypass in financial operations
+- **Fixed**: Compliance violation for financial system audit requirements
+- **Status**: APPROVED FOR PRODUCTION
+
+=== Notes ===
+- Additional hardcoded UUIDs found at lines 975 and 1022 (beyond the originally noted 673 and 720) - all fixed
+- The domain model already validates `userID != uuid.Nil` providing defense-in-depth
+- Development fallback (`X-User-ID` header) exists in base.go for local testing
+
+=== Next Steps ===
+- SEC-003: Review and fix any other potential injection points (if exists)
+- Consider adding rate limiting to critical financial operations
+- Consider applying similar pattern to reconciliation operations for consistency

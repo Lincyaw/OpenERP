@@ -4358,7 +4358,7 @@
       "移除 finance.go:673,720 处的硬编码 UUID",
       "确保所有财务操作有正确的审计追踪"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "CRITICAL",

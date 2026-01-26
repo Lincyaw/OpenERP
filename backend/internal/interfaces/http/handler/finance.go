@@ -669,8 +669,12 @@ func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get actual user ID from auth context
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	// Get user ID from JWT context for audit tracking
+	userID, err := getUserID(c)
+	if err != nil {
+		h.Unauthorized(c, "Authentication required for this operation")
+		return
+	}
 
 	voucher, err := h.financeService.ConfirmReceiptVoucher(c.Request.Context(), tenantID, voucherID, userID)
 	if err != nil {
@@ -716,8 +720,12 @@ func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get actual user ID from auth context
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	// Get user ID from JWT context for audit tracking
+	userID, err := getUserID(c)
+	if err != nil {
+		h.Unauthorized(c, "Authentication required for this operation")
+		return
+	}
 
 	voucher, err := h.financeService.CancelReceiptVoucher(c.Request.Context(), tenantID, voucherID, userID, req.Reason)
 	if err != nil {
@@ -971,8 +979,12 @@ func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get actual user ID from auth context
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	// Get user ID from JWT context for audit tracking
+	userID, err := getUserID(c)
+	if err != nil {
+		h.Unauthorized(c, "Authentication required for this operation")
+		return
+	}
 
 	voucher, err := h.financeService.ConfirmPaymentVoucher(c.Request.Context(), tenantID, voucherID, userID)
 	if err != nil {
@@ -1018,8 +1030,12 @@ func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
 		return
 	}
 
-	// TODO: Get actual user ID from auth context
-	userID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	// Get user ID from JWT context for audit tracking
+	userID, err := getUserID(c)
+	if err != nil {
+		h.Unauthorized(c, "Authentication required for this operation")
+		return
+	}
 
 	voucher, err := h.financeService.CancelPaymentVoucher(c.Request.Context(), tenantID, voucherID, userID, req.Reason)
 	if err != nil {
