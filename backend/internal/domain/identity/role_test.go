@@ -239,6 +239,26 @@ func TestDataScope_Equals(t *testing.T) {
 	assert.True(t, ds1.Equals(*ds2))
 	assert.False(t, ds1.Equals(*ds3)) // Different scope type
 	assert.False(t, ds1.Equals(*ds4)) // Different resource
+
+	// Test ScopeField comparison
+	t.Run("DataScopes with different ScopeFields are not equal", func(t *testing.T) {
+		ds5, _ := NewCustomDataScopeWithField("inventory", "warehouse_id", []string{"wh-1"})
+		ds6, _ := NewCustomDataScopeWithField("inventory", "region_id", []string{"wh-1"})
+		ds7, _ := NewCustomDataScopeWithField("inventory", "warehouse_id", []string{"wh-1"})
+
+		assert.False(t, ds5.Equals(*ds6)) // Different scope field
+		assert.True(t, ds5.Equals(*ds7))  // Same scope field
+	})
+
+	// Test WAREHOUSE scope equality
+	t.Run("Warehouse scopes are equal when matching", func(t *testing.T) {
+		ds8, _ := NewWarehouseDataScope("inventory", []string{"wh-001", "wh-002"})
+		ds9, _ := NewWarehouseDataScope("inventory", []string{"wh-001", "wh-002"})
+		ds10, _ := NewWarehouseDataScope("inventory", []string{"wh-001"})
+
+		assert.True(t, ds8.Equals(*ds9))
+		assert.False(t, ds8.Equals(*ds10)) // Different warehouse IDs
+	})
 }
 
 // Role Aggregate Tests

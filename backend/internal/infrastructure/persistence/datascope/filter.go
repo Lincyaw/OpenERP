@@ -1,11 +1,12 @@
 // Package datascope provides data-level permission filtering for GORM queries.
 //
 // This package implements automatic data scope filtering based on user roles
-// and their data scope configurations. It supports four scope types:
+// and their data scope configurations. It supports five scope types:
 //   - ALL: Access all data within the tenant
 //   - SELF: Only data created by the current user
 //   - DEPARTMENT: Data within the user's department (future support)
 //   - CUSTOM: Custom-defined scope values (e.g., specific regions)
+//   - WAREHOUSE: Data within the user's assigned warehouses (inventory-focused)
 //
 // Usage:
 //
@@ -16,6 +17,7 @@ package datascope
 
 import (
 	"context"
+	"slices"
 
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/infrastructure/logger"
@@ -31,6 +33,8 @@ const (
 	ScopesKey DataScopeContextKey = "data_scopes"
 	// UserRolesKey is the context key for storing user's roles
 	UserRolesKey DataScopeContextKey = "user_roles"
+	// WarehouseIDsKey is the context key for storing user's assigned warehouse IDs
+	WarehouseIDsKey DataScopeContextKey = "warehouse_ids"
 )
 
 // Filter applies data scope filtering to GORM queries
@@ -132,28 +136,56 @@ func (f *Filter) Apply(db *gorm.DB, resource string) *gorm.DB {
 	case identity.DataScopeDepartment:
 		// TODO: Implement department filtering
 		// This requires a department_id field and department membership
-		// For now, fall back to SELF
+		// For now, fall back to SELF with warning
 		if f.userID == uuid.Nil {
 			return db.Where("1 = 0")
 		}
 		return db.Where("created_by = ?", f.userID)
 
+	case identity.DataScopeWarehouse:
+		// Warehouse scope filtering - filters by warehouse_id
+		// Used for WAREHOUSE role users who can only access their assigned warehouses
+		if len(ds.ScopeValues) == 0 {
+			// No warehouses assigned - return empty result
+			return db.Where("1 = 0")
+		}
+		// warehouse_id is always the field for WAREHOUSE scope
+		return db.Where("warehouse_id IN ?", ds.ScopeValues)
+
 	case identity.DataScopeCustom:
-		// Custom scope filtering based on scope values
-		// The scope values define the allowed values for a specific field
+		// Custom scope filtering based on scope field and values
 		if len(ds.ScopeValues) == 0 {
 			// No scope values defined - return empty result
 			return db.Where("1 = 0")
 		}
-		// Custom scopes typically filter by a specific field
-		// The field name is derived from the resource name (e.g., warehouse_id)
-		// For now, we'll use scope values as IDs in a generic created_by-like field
-		return db.Where("created_by IN ?", ds.ScopeValues)
+		// Use the scope field if specified, otherwise default to resource-specific field
+		field := ds.ScopeField
+		if field == "" {
+			// Default field mapping based on resource type
+			field = f.getDefaultScopeField(resource)
+		}
+		if field == "" {
+			// No field to filter on - fall back to created_by
+			return db.Where("created_by IN ?", ds.ScopeValues)
+		}
+		// Validate field name against whitelist to prevent SQL injection
+		if !allowedScopeFields[field] {
+			// Unknown field - fall back to created_by for safety
+			return db.Where("created_by IN ?", ds.ScopeValues)
+		}
+		return db.Where(field+" IN ?", ds.ScopeValues)
 
 	default:
 		// Unknown scope type - fall back to ALL
 		return db
 	}
+}
+
+// getDefaultScopeField returns the default scope field for a resource
+// This supports warehouse-level scoping for inventory-related resources
+func (f *Filter) getDefaultScopeField(resource string) string {
+	// Use the consolidated warehouse scoped resources map
+	return warehouseScopedResources[resource]
 }
 
 // ApplyToQuery applies data scope filtering and returns a GORM scope function
@@ -223,6 +255,7 @@ func compareScopeLevel(a, b identity.DataScopeType) int {
 	levels := map[identity.DataScopeType]int{
 		identity.DataScopeAll:        100,
 		identity.DataScopeDepartment: 50,
+		identity.DataScopeWarehouse:  45, // Between DEPARTMENT and CUSTOM - specific to warehouses
 		identity.DataScopeCustom:     40,
 		identity.DataScopeSelf:       10,
 	}
@@ -245,4 +278,107 @@ func MergeScopes(scopesList ...[]identity.DataScope) map[string]identity.DataSco
 		}
 	}
 	return merged
+}
+
+// GetWarehouseIDs returns the warehouse IDs the filter user has access to
+// Returns nil if no warehouse scope is configured (ALL access)
+func (f *Filter) GetWarehouseIDs(resource string) []string {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return nil // No restriction
+	}
+	if ds.ScopeType == identity.DataScopeWarehouse {
+		return ds.ScopeValues
+	}
+	return nil
+}
+
+// HasWarehouseAccess checks if the user has access to a specific warehouse
+// Returns true if no warehouse scope is configured (ALL access) or if the
+// warehouse is in the user's assigned warehouses
+func (f *Filter) HasWarehouseAccess(resource string, warehouseID string) bool {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return true // No scope = full access
+	}
+	if ds.ScopeType == identity.DataScopeAll {
+		return true
+	}
+	if ds.ScopeType == identity.DataScopeWarehouse {
+		return slices.Contains(ds.ScopeValues, warehouseID)
+	}
+	// For other scope types, warehouse access is not explicitly restricted
+	return true
+}
+
+// IsWarehouseScoped returns true if the user has warehouse-level scope for the resource
+func (f *Filter) IsWarehouseScoped(resource string) bool {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return false
+	}
+	return ds.ScopeType == identity.DataScopeWarehouse
+}
+
+// WithWarehouseIDs adds warehouse IDs to context for use by middleware/handlers
+func WithWarehouseIDs(ctx context.Context, warehouseIDs []string) context.Context {
+	return context.WithValue(ctx, WarehouseIDsKey, warehouseIDs)
+}
+
+// GetWarehouseIDsFromContext extracts warehouse IDs from context
+func GetWarehouseIDsFromContext(ctx context.Context) []string {
+	if ids, ok := ctx.Value(WarehouseIDsKey).([]string); ok {
+		return ids
+	}
+	return nil
+}
+
+// warehouseScopedResources defines which resources support warehouse-level scoping
+// with their corresponding field name. This is the single source of truth for
+// warehouse scoping configuration.
+var warehouseScopedResources = map[string]string{
+	"inventory":       "warehouse_id",
+	"sales_order":     "warehouse_id",
+	"purchase_order":  "warehouse_id",
+	"stock_batch":     "warehouse_id",
+	"stock_lock":      "warehouse_id",
+	"sales_return":    "warehouse_id",
+	"purchase_return": "warehouse_id",
+	"stock_take":      "warehouse_id",
+	"stock_transfer":  "warehouse_id",
+}
+
+// allowedScopeFields defines valid field names that can be used in scope filtering.
+// This whitelist prevents SQL injection via dynamic field names.
+var allowedScopeFields = map[string]bool{
+	"warehouse_id":  true,
+	"region_id":     true,
+	"department_id": true,
+	"created_by":    true,
+	"owner_id":      true,
+	"assigned_to":   true,
+}
+
+// IsResourceWarehouseScoped returns true if the resource supports warehouse-level scoping
+func IsResourceWarehouseScoped(resource string) bool {
+	_, exists := warehouseScopedResources[resource]
+	return exists
+}
+
+// CreateWarehouseScopesForRole creates data scopes for all warehouse-related resources
+// This is a helper to configure a WAREHOUSE role with consistent warehouse access
+func CreateWarehouseScopesForRole(warehouseIDs []string) ([]identity.DataScope, error) {
+	if len(warehouseIDs) == 0 {
+		return nil, nil
+	}
+
+	var scopes []identity.DataScope
+	for resource := range warehouseScopedResources {
+		ds, err := identity.NewWarehouseDataScope(resource, warehouseIDs)
+		if err != nil {
+			return nil, err
+		}
+		scopes = append(scopes, *ds)
+	}
+	return scopes, nil
 }

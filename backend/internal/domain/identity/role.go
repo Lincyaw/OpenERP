@@ -17,6 +17,7 @@ const (
 	DataScopeSelf       DataScopeType = "self"       // Only data created by self
 	DataScopeDepartment DataScopeType = "department" // Data within the same department
 	DataScopeCustom     DataScopeType = "custom"     // Custom scope defined by scope values
+	DataScopeWarehouse  DataScopeType = "warehouse"  // Data within assigned warehouses (warehouse_id based)
 )
 
 // Permission represents a functional permission (resource:action pattern)
@@ -81,6 +82,7 @@ func (p Permission) IsEmpty() bool {
 type DataScope struct {
 	Resource    string        `gorm:"type:varchar(50);not null"` // e.g., "sales_order"
 	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"` // Type of scope
+	ScopeField  string        `gorm:"type:varchar(50)"`          // Field to filter on (e.g., "warehouse_id", "region_id")
 	ScopeValues []string      `gorm:"-"`                         // For custom scope: specific IDs or conditions
 	Description string        `gorm:"type:varchar(200)"`         // Optional description
 }
@@ -97,6 +99,7 @@ func NewDataScope(resource string, scopeType DataScopeType) (*DataScope, error) 
 	return &DataScope{
 		Resource:    strings.ToLower(strings.TrimSpace(resource)),
 		ScopeType:   scopeType,
+		ScopeField:  "",
 		ScopeValues: make([]string, 0),
 	}, nil
 }
@@ -118,6 +121,42 @@ func NewCustomDataScope(resource string, scopeValues []string) (*DataScope, erro
 	return ds, nil
 }
 
+// NewCustomDataScopeWithField creates a DataScope with custom scope values and a specific field
+func NewCustomDataScopeWithField(resource, scopeField string, scopeValues []string) (*DataScope, error) {
+	ds, err := NewCustomDataScope(resource, scopeValues)
+	if err != nil {
+		return nil, err
+	}
+
+	scopeField = strings.TrimSpace(scopeField)
+	if scopeField == "" {
+		return nil, shared.NewDomainError("INVALID_SCOPE_FIELD", "Scope field cannot be empty for custom data scope with field")
+	}
+
+	ds.ScopeField = scopeField
+	return ds, nil
+}
+
+// NewWarehouseDataScope creates a DataScope for warehouse-level access
+// This is specifically designed for WAREHOUSE role users who can only access
+// inventory and related data within their assigned warehouses
+func NewWarehouseDataScope(resource string, warehouseIDs []string) (*DataScope, error) {
+	if err := validateDataScopeResource(resource); err != nil {
+		return nil, err
+	}
+
+	if len(warehouseIDs) == 0 {
+		return nil, shared.NewDomainError("INVALID_WAREHOUSE_IDS", "Warehouse data scope must have at least one warehouse ID")
+	}
+
+	return &DataScope{
+		Resource:    strings.ToLower(strings.TrimSpace(resource)),
+		ScopeType:   DataScopeWarehouse,
+		ScopeField:  "warehouse_id",                      // Fixed field for warehouse scoping
+		ScopeValues: append([]string{}, warehouseIDs...), // Defensive copy
+	}, nil
+}
+
 // SetDescription sets the description for the data scope
 func (ds *DataScope) SetDescription(description string) {
 	ds.Description = description
@@ -125,7 +164,7 @@ func (ds *DataScope) SetDescription(description string) {
 
 // Equals checks if two data scopes are equal
 func (ds DataScope) Equals(other DataScope) bool {
-	if ds.Resource != other.Resource || ds.ScopeType != other.ScopeType {
+	if ds.Resource != other.Resource || ds.ScopeType != other.ScopeType || ds.ScopeField != other.ScopeField {
 		return false
 	}
 	if len(ds.ScopeValues) != len(other.ScopeValues) {
@@ -176,7 +215,8 @@ type RoleDataScope struct {
 	TenantID    uuid.UUID     `gorm:"type:uuid;not null;index"`
 	Resource    string        `gorm:"type:varchar(50);primaryKey"`
 	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"`
-	ScopeValues string        `gorm:"type:text"` // JSON array for custom scopes
+	ScopeField  string        `gorm:"type:varchar(50)"` // Field to filter on (e.g., "warehouse_id")
+	ScopeValues string        `gorm:"type:text"`        // JSON array for custom scopes
 	Description string        `gorm:"type:varchar(200)"`
 	CreatedAt   time.Time     `gorm:"not null"`
 }
@@ -588,7 +628,7 @@ func validateDataScopeResource(resource string) error {
 
 func validateDataScopeType(scopeType DataScopeType) error {
 	switch scopeType {
-	case DataScopeAll, DataScopeSelf, DataScopeDepartment, DataScopeCustom:
+	case DataScopeAll, DataScopeSelf, DataScopeDepartment, DataScopeCustom, DataScopeWarehouse:
 		return nil
 	default:
 		return shared.NewDomainError("INVALID_DATA_SCOPE_TYPE", "Invalid data scope type")

@@ -4398,7 +4398,7 @@
       "Filter inventory queries by user's assigned warehouses",
       "Test multi-warehouse data isolation"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 13.4 - Predefined Roles (WAREHOUSE role)",
     "affectedModules": [
       "backend/internal/infrastructure/persistence/datascope/filter.go",

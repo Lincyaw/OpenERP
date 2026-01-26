@@ -20477,3 +20477,101 @@ event, _ := serializer.Deserialize("OrderCreated", oldPayload)
 - Use versioning when evolving existing event schemas
 - Consider adding versioning to heavily-used events proactively
 - Document specific upgrade strategies for complex schema changes
+
+2026-01-26 - Task DDD-020: Warehouse-Level Data Scoping
+
+=== Implementation Details ===
+- Implemented comprehensive warehouse-level data scoping per spec.md Section 13.4
+- Added new DataScopeWarehouse type to support WAREHOUSE role's warehouse-specific access
+- Enhanced Filter.Apply() to handle warehouse scope type with warehouse_id filtering
+
+=== Key Files Created/Modified ===
+- backend/internal/domain/identity/role.go:
+  - Added `DataScopeWarehouse` constant to DataScopeType enum (value: "warehouse")
+  - Added `NewWarehouseDataScope()` function for creating warehouse-specific scopes
+  - Updated `validateDataScopeType()` to accept WAREHOUSE type
+  - Fixed `DataScope.Equals()` to compare ScopeField (was missing before)
+
+- backend/internal/infrastructure/persistence/datascope/filter.go:
+  - Added `WarehouseIDsKey` context key for storing user's assigned warehouses
+  - Added WAREHOUSE scope handling in `Apply()` method - filters by warehouse_id IN values
+  - Consolidated `warehouseScopedResources` map as single source of truth (9 resources)
+  - Added `allowedScopeFields` whitelist to prevent SQL injection via dynamic fields
+  - Added field validation in CUSTOM scope handling for security
+  - Updated `compareScopeLevel()` to include WAREHOUSE (level 45, between DEPARTMENT and CUSTOM)
+  - Added helper functions:
+    - `GetWarehouseIDs()` - Returns warehouse IDs for a resource
+    - `HasWarehouseAccess()` - Checks if user has access to a specific warehouse
+    - `IsWarehouseScoped()` - Checks if resource uses warehouse scoping
+    - `WithWarehouseIDs()` / `GetWarehouseIDsFromContext()` - Context helpers
+    - `IsResourceWarehouseScoped()` - Checks if a resource supports warehouse scoping
+    - `CreateWarehouseScopesForRole()` - Creates scopes for all warehouse resources
+
+=== Warehouse-Scoped Resources ===
+The following resources support warehouse-level data scoping:
+- inventory, sales_order, purchase_order, stock_batch, stock_lock
+- sales_return, purchase_return, stock_take, stock_transfer
+
+=== Scope Priority (highest to lowest) ===
+1. ALL (100) - Full access to all data
+2. DEPARTMENT (50) - Access to department data
+3. WAREHOUSE (45) - Access to assigned warehouses only
+4. CUSTOM (40) - Custom scope values
+5. SELF (10) - Only own records
+
+=== Usage Example ===
+```go
+// Create warehouse scopes for a WAREHOUSE role user
+warehouseIDs := []string{warehouseID1.String(), warehouseID2.String()}
+ds, err := identity.NewWarehouseDataScope("inventory", warehouseIDs)
+role.SetDataScope(*ds)
+
+// Or create scopes for all warehouse resources at once
+scopes, err := datascope.CreateWarehouseScopesForRole(warehouseIDs)
+for _, ds := range scopes {
+    role.SetDataScope(ds)
+}
+
+// Check access to a specific warehouse
+filter := datascope.NewFilterFromContext(ctx)
+if filter.HasWarehouseAccess("inventory", someWarehouseID) {
+    // User can access this warehouse
+}
+```
+
+=== Verification ===
+- All unit tests pass (30+ new test cases for warehouse scoping)
+- Build succeeds (go build ./...)
+- Code review completed - addressed HIGH priority issue (SQL injection prevention)
+- Code review completed - addressed MEDIUM issue (consolidated resource mappings)
+- Code review completed - addressed MEDIUM issue (DataScope.Equals with ScopeField)
+
+=== Security Considerations ===
+1. Added `allowedScopeFields` whitelist to prevent SQL injection in CUSTOM scope
+2. WAREHOUSE scope hardcodes "warehouse_id" field (no dynamic field injection)
+3. Empty warehouse IDs returns no results (WHERE 1 = 0)
+4. Defense in depth: field validation falls back to created_by if unknown field
+
+=== Design Decisions ===
+1. **New scope type**: Created dedicated WAREHOUSE type rather than using CUSTOM
+   - More explicit and self-documenting
+   - Prevents misconfiguration (field is always warehouse_id)
+   - Clear semantic meaning for WAREHOUSE role
+
+2. **Scope level 45**: Between DEPARTMENT (50) and CUSTOM (40)
+   - WAREHOUSE is more specific than department but not arbitrary like CUSTOM
+   - A user with both WAREHOUSE and CUSTOM roles gets WAREHOUSE scope
+
+3. **Defensive copy**: NewWarehouseDataScope copies input slice to prevent mutations
+
+4. **Consolidated mappings**: Single source of truth for warehouse-scoped resources
+
+=== Future Improvements ===
+- Add database migration for scope_field column if needed
+- Add logging for unimplemented DEPARTMENT scope fallback
+- Consider adding a threshold warning for large IN clauses (>100 warehouses)
+
+=== Next Steps ===
+- Use warehouse scoping when creating WAREHOUSE role users
+- Ensure middleware populates warehouse IDs in context during authentication
+- Document warehouse assignment process in admin UI
