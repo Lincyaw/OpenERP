@@ -428,5 +428,10 @@ func (r *GormProductRepository) applyFilterWithoutPagination(query *gorm.DB, fil
 	return query
 }
 
-// Ensure GormProductRepository implements ProductRepository
+// Compile-time interface compliance checks
+// GormProductRepository implements the full ProductRepository interface
+// which is composed of ProductReader, ProductFinder, and ProductWriter
 var _ catalog.ProductRepository = (*GormProductRepository)(nil)
+var _ catalog.ProductReader = (*GormProductRepository)(nil)
+var _ catalog.ProductFinder = (*GormProductRepository)(nil)
+var _ catalog.ProductWriter = (*GormProductRepository)(nil)

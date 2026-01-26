@@ -24278,3 +24278,103 @@ Chose to document pass-through behavior rather than implement default tiers beca
 
 - Consider adding percentage-based tier variant if business needs demand it
 - Future enhancement: Allow tiers to express discounts as percentages dynamically calculated from base price
+
+---
+
+2026-01-27 - DDD-M05: 拆分 ProductRepository 接口 / Split ProductRepository Interface
+
+=== Summary ===
+
+Split the monolithic 22-method ProductRepository interface into three focused, composable interfaces following Interface Segregation Principle (ISP):
+- **ProductReader** (6 methods): Single entity retrieval by ID/code
+- **ProductFinder** (12 methods): List, search, count, and existence checks
+- **ProductWriter** (4 methods): Create, update, and delete operations
+
+The composite **ProductRepository** interface embeds all three, maintaining backward compatibility.
+
+=== Implementation Details ===
+
+**1. Interface Design (backend/internal/domain/catalog/product_repository.go)**
+
+Split into three focused interfaces:
+
+```go
+// ProductReader - Read individual products
+type ProductReader interface {
+    FindByID, FindByIDForTenant, FindByCode, FindByBarcode, FindByIDs, FindByCodes
+}
+
+// ProductFinder - Search, filter, and count products
+type ProductFinder interface {
+    FindAll, FindAllForTenant, FindByCategory, FindByCategories, FindActive, FindByStatus
+    Count, CountForTenant, CountByCategory, CountByStatus, ExistsByCode, ExistsByBarcode
+}
+
+// ProductWriter - Persist and delete products
+type ProductWriter interface {
+    Save, SaveBatch, Delete, DeleteForTenant
+}
+
+// ProductRepository - Composite interface (backward compatible)
+type ProductRepository interface {
+    ProductReader
+    ProductFinder
+    ProductWriter
+}
+```
+
+**2. Infrastructure Implementation Update (backend/internal/infrastructure/persistence/product_repository.go)**
+
+Added compile-time interface compliance checks:
+```go
+var _ catalog.ProductRepository = (*GormProductRepository)(nil)
+var _ catalog.ProductReader = (*GormProductRepository)(nil)
+var _ catalog.ProductFinder = (*GormProductRepository)(nil)
+var _ catalog.ProductWriter = (*GormProductRepository)(nil)
+```
+
+**3. Application Services Updates**
+
+- **ProductSaleValidator**: Changed from `ProductRepository` to `ProductReader` (only needs FindByIDForTenant, FindByIDs)
+- **ProductUnitService**: Changed from `ProductRepository` to `ProductReader` (only needs FindByIDForTenant)
+- **ProductService**: Kept full `ProductRepository` (needs read/write/finder operations)
+- **CategoryService**: Left unchanged (has ProductRepository dependency but doesn't use it - potential future cleanup)
+
+**4. Test Updates**
+
+- **product_sale_validator_test.go**: Simplified mock from 22-method `mockProductRepository` to 6-method `mockProductReader`
+- Handler tests: MockProductRepository unchanged (still implements full interface, works with composite)
+
+=== Key Files Modified ===
+
+1. `backend/internal/domain/catalog/product_repository.go` - Interface split
+2. `backend/internal/infrastructure/persistence/product_repository.go` - Added interface checks
+3. `backend/internal/application/catalog/product_sale_validator.go` - Uses ProductReader
+4. `backend/internal/application/catalog/product_sale_validator_test.go` - Simplified mock
+5. `backend/internal/application/catalog/product_unit_service.go` - Uses ProductReader
+
+=== Benefits Achieved ===
+
+1. **Improved Testability**: Tests can now mock only the methods they need (e.g., 6 methods vs 22)
+2. **Clearer Intent**: Service dependencies express exactly what operations they require
+3. **Interface Segregation**: Clients don't depend on methods they don't use
+4. **Backward Compatibility**: Existing code using ProductRepository continues to work
+5. **Documentation**: Interface comments guide developers on when to use each
+
+=== Verification ===
+
+- Go build: PASS
+- Unit tests: PASS (domain/catalog, application/catalog, persistence)
+- Handler tests: PASS (all ProductHandler tests)
+- No breaking changes to existing code
+
+=== Notes ===
+
+- CategoryService declares ProductRepository but doesn't use it - potential cleanup candidate
+- Pre-existing test failures in unrelated modules (infrastructure/event, SalesOrderHandler) not related to this change
+
+=== Next Steps ===
+
+- Consider similar interface splits for other large repositories (CustomerRepository, etc.)
+- Clean up CategoryService's unused ProductRepository dependency
+- Apply ISP pattern to other monolithic interfaces in the codebase

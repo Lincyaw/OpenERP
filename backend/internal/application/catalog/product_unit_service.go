@@ -12,17 +12,19 @@ import (
 
 // ProductUnitService handles product unit operations
 type ProductUnitService struct {
-	productRepo     catalog.ProductRepository
+	productReader   catalog.ProductReader
 	productUnitRepo catalog.ProductUnitRepository
 }
 
 // NewProductUnitService creates a new ProductUnitService
+// Note: Uses narrower ProductReader interface as only read operations are needed.
+// The full ProductRepository also satisfies this interface.
 func NewProductUnitService(
-	productRepo catalog.ProductRepository,
+	productReader catalog.ProductReader,
 	productUnitRepo catalog.ProductUnitRepository,
 ) *ProductUnitService {
 	return &ProductUnitService{
-		productRepo:     productRepo,
+		productReader:   productReader,
 		productUnitRepo: productUnitRepo,
 	}
 }
@@ -30,7 +32,7 @@ func NewProductUnitService(
 // Create creates a new product unit
 func (s *ProductUnitService) Create(ctx context.Context, tenantID, productID uuid.UUID, req CreateProductUnitRequest) (*ProductUnitResponse, error) {
 	// Verify product exists
-	product, err := s.productRepo.FindByIDForTenant(ctx, tenantID, productID)
+	product, err := s.productReader.FindByIDForTenant(ctx, tenantID, productID)
 	if err != nil {
 		if errors.Is(err, shared.ErrNotFound) {
 			return nil, shared.NewDomainError("PRODUCT_NOT_FOUND", "Product not found")
@@ -116,7 +118,7 @@ func (s *ProductUnitService) GetByID(ctx context.Context, tenantID, id uuid.UUID
 // ListByProduct lists all units for a product
 func (s *ProductUnitService) ListByProduct(ctx context.Context, tenantID, productID uuid.UUID) ([]ProductUnitResponse, error) {
 	// Verify product exists
-	_, err := s.productRepo.FindByIDForTenant(ctx, tenantID, productID)
+	_, err := s.productReader.FindByIDForTenant(ctx, tenantID, productID)
 	if err != nil {
 		if errors.Is(err, shared.ErrNotFound) {
 			return nil, shared.NewDomainError("PRODUCT_NOT_FOUND", "Product not found")
@@ -222,7 +224,7 @@ func (s *ProductUnitService) Delete(ctx context.Context, tenantID, id uuid.UUID)
 // ConvertQuantity converts quantity between units
 func (s *ProductUnitService) ConvertQuantity(ctx context.Context, tenantID, productID uuid.UUID, req ConvertUnitRequest) (*ConvertUnitResponse, error) {
 	// Get product to check base unit
-	product, err := s.productRepo.FindByIDForTenant(ctx, tenantID, productID)
+	product, err := s.productReader.FindByIDForTenant(ctx, tenantID, productID)
 	if err != nil {
 		if errors.Is(err, shared.ErrNotFound) {
 			return nil, shared.NewDomainError("PRODUCT_NOT_FOUND", "Product not found")

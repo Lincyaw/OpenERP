@@ -7,8 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// ProductRepository defines the interface for product persistence
-type ProductRepository interface {
+// ProductReader defines the interface for reading individual products by ID/code
+// Use this interface when you only need to fetch specific products
+type ProductReader interface {
 	// FindByID finds a product by its ID
 	FindByID(ctx context.Context, id uuid.UUID) (*Product, error)
 
@@ -21,6 +22,16 @@ type ProductRepository interface {
 	// FindByBarcode finds a product by its barcode within a tenant
 	FindByBarcode(ctx context.Context, tenantID uuid.UUID, barcode string) (*Product, error)
 
+	// FindByIDs finds multiple products by their IDs
+	FindByIDs(ctx context.Context, tenantID uuid.UUID, ids []uuid.UUID) ([]Product, error)
+
+	// FindByCodes finds multiple products by their codes
+	FindByCodes(ctx context.Context, tenantID uuid.UUID, codes []string) ([]Product, error)
+}
+
+// ProductFinder defines the interface for searching and filtering products
+// Use this interface when you need to list, search, count, or check existence of products
+type ProductFinder interface {
 	// FindAll finds all products matching the filter
 	FindAll(ctx context.Context, filter shared.Filter) ([]Product, error)
 
@@ -39,24 +50,6 @@ type ProductRepository interface {
 	// FindByStatus finds products by status for a tenant
 	FindByStatus(ctx context.Context, tenantID uuid.UUID, status ProductStatus, filter shared.Filter) ([]Product, error)
 
-	// FindByIDs finds multiple products by their IDs
-	FindByIDs(ctx context.Context, tenantID uuid.UUID, ids []uuid.UUID) ([]Product, error)
-
-	// FindByCodes finds multiple products by their codes
-	FindByCodes(ctx context.Context, tenantID uuid.UUID, codes []string) ([]Product, error)
-
-	// Save creates or updates a product
-	Save(ctx context.Context, product *Product) error
-
-	// SaveBatch creates or updates multiple products
-	SaveBatch(ctx context.Context, products []*Product) error
-
-	// Delete deletes a product
-	Delete(ctx context.Context, id uuid.UUID) error
-
-	// DeleteForTenant deletes a product within a tenant
-	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
-
 	// Count counts products matching the filter
 	Count(ctx context.Context, filter shared.Filter) (int64, error)
 
@@ -74,4 +67,30 @@ type ProductRepository interface {
 
 	// ExistsByBarcode checks if a product with the given barcode exists in the tenant
 	ExistsByBarcode(ctx context.Context, tenantID uuid.UUID, barcode string) (bool, error)
+}
+
+// ProductWriter defines the interface for product persistence (create, update, delete)
+// Use this interface when you need to modify product data
+type ProductWriter interface {
+	// Save creates or updates a product
+	Save(ctx context.Context, product *Product) error
+
+	// SaveBatch creates or updates multiple products
+	SaveBatch(ctx context.Context, products []*Product) error
+
+	// Delete deletes a product
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant deletes a product within a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+}
+
+// ProductRepository defines the full interface for product persistence
+// This composite interface combines all product repository capabilities.
+// Prefer using the specific interfaces (ProductReader, ProductFinder, ProductWriter)
+// when possible to improve testability and express intent more clearly.
+type ProductRepository interface {
+	ProductReader
+	ProductFinder
+	ProductWriter
 }

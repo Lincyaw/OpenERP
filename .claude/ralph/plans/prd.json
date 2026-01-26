@@ -4793,7 +4793,7 @@
       "考虑合并为单一方法带参数",
       "或重命名以明确语义"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "MEDIUM",
@@ -4829,7 +4829,7 @@
       "按需组合接口",
       "提高可测试性"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "MEDIUM",

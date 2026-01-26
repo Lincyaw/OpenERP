@@ -11,13 +11,15 @@ import (
 // This service can be used by the trade context to check product eligibility
 // without directly depending on the catalog domain
 type ProductSaleValidator struct {
-	productRepo catalog.ProductRepository
+	productReader catalog.ProductReader
 }
 
 // NewProductSaleValidator creates a new ProductSaleValidator
-func NewProductSaleValidator(productRepo catalog.ProductRepository) *ProductSaleValidator {
+// Note: Accepts the narrower ProductReader interface for improved testability.
+// The full ProductRepository also satisfies this interface.
+func NewProductSaleValidator(productReader catalog.ProductReader) *ProductSaleValidator {
 	return &ProductSaleValidator{
-		productRepo: productRepo,
+		productReader: productReader,
 	}
 }
 
@@ -25,7 +27,7 @@ func NewProductSaleValidator(productRepo catalog.ProductRepository) *ProductSale
 // Returns true if the product can be sold, false otherwise
 // Returns an error if the product is not found
 func (v *ProductSaleValidator) CanBeSold(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
-	product, err := v.productRepo.FindByIDForTenant(ctx, tenantID, productID)
+	product, err := v.productReader.FindByIDForTenant(ctx, tenantID, productID)
 	if err != nil {
 		return false, err
 	}
@@ -41,7 +43,7 @@ func (v *ProductSaleValidator) CanBeSoldBatch(ctx context.Context, tenantID uuid
 		return make(map[uuid.UUID]bool), nil
 	}
 
-	products, err := v.productRepo.FindByIDs(ctx, tenantID, productIDs)
+	products, err := v.productReader.FindByIDs(ctx, tenantID, productIDs)
 	if err != nil {
 		return nil, err
 	}
