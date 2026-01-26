@@ -378,9 +378,18 @@ export class InventoryPage extends BasePage {
 
   // Transaction history methods
   async filterTransactionsByType(type: string): Promise<void> {
-    const typeSelect = this.page.locator('.semi-select').filter({ hasText: /类型/ })
+    // The transaction type filter is the first Select in the TableToolbar filters
+    // Look for Select with placeholder "交易类型" or containing transaction type options
+    const typeSelect = this.page
+      .locator('.semi-select')
+      .filter({ has: this.page.locator('.semi-select-selection-placeholder:has-text("交易类型")') })
+      .or(
+        this.page.locator('.semi-select').filter({ hasText: /入库|出库|锁定|解锁|调整|全部类型/ })
+      )
+      .first()
+
     await typeSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
 
     const optionText =
       type === 'INBOUND'
@@ -394,6 +403,9 @@ export class InventoryPage extends BasePage {
               : type === 'ADJUSTMENT'
                 ? '调整'
                 : '全部类型'
+
+    // Wait for dropdown to be visible
+    await this.page.locator('.semi-select-option-list').waitFor({ state: 'visible', timeout: 5000 })
     await this.page.locator('.semi-select-option').filter({ hasText: optionText }).click()
     await this.page.waitForTimeout(300)
     await this.waitForTableLoad()
@@ -969,14 +981,14 @@ export class InventoryPage extends BasePage {
    */
   async clickSubmitForApproval(): Promise<void> {
     // First, verify that progress is 100% (all items counted)
-    const progressText = this.page.locator('.progress-info, .semi-progress').filter({ hasText: '100' })
-    await progressText
-      .waitFor({ state: 'visible', timeout: 15000 })
-      .catch(async () => {
-        // Log current progress for debugging
-        const currentProgress = await this.page.locator('.semi-progress').textContent()
-        console.log(`Progress bar shows: ${currentProgress}`)
-      })
+    const progressText = this.page
+      .locator('.progress-info, .semi-progress')
+      .filter({ hasText: '100' })
+    await progressText.waitFor({ state: 'visible', timeout: 15000 }).catch(async () => {
+      // Log current progress for debugging
+      const currentProgress = await this.page.locator('.semi-progress').textContent()
+      console.log(`Progress bar shows: ${currentProgress}`)
+    })
 
     // Wait a bit for React state to propagate to button disabled state
     await this.page.waitForTimeout(500)
