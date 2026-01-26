@@ -16,6 +16,7 @@ const (
 	EventTypeProductStatusChanged = "ProductStatusChanged"
 	EventTypeProductPriceChanged  = "ProductPriceChanged"
 	EventTypeProductDeleted       = "ProductDeleted"
+	EventTypeProductDisabled      = "ProductDisabled"
 )
 
 // ProductCreatedEvent is published when a new product is created
@@ -120,6 +121,28 @@ func NewProductDeletedEvent(product *Product) *ProductDeletedEvent {
 		BaseDomainEvent: shared.NewBaseDomainEvent(EventTypeProductDeleted, AggregateTypeProduct, product.ID, product.TenantID),
 		ProductID:       product.ID,
 		Code:            product.Code,
+		CategoryID:      product.CategoryID,
+	}
+}
+
+// ProductDisabledEvent is published when a product is disabled
+// This event is used to notify other contexts (e.g., inventory, trade)
+// that the product should no longer be used for new operations
+type ProductDisabledEvent struct {
+	shared.BaseDomainEvent
+	ProductID  uuid.UUID  `json:"product_id"`
+	Code       string     `json:"code"`
+	Name       string     `json:"name"`
+	CategoryID *uuid.UUID `json:"category_id,omitempty"`
+}
+
+// NewProductDisabledEvent creates a new ProductDisabledEvent
+func NewProductDisabledEvent(product *Product) *ProductDisabledEvent {
+	return &ProductDisabledEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(EventTypeProductDisabled, AggregateTypeProduct, product.ID, product.TenantID),
+		ProductID:       product.ID,
+		Code:            product.Code,
+		Name:            product.Name,
 		CategoryID:      product.CategoryID,
 	}
 }

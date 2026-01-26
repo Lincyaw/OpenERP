@@ -290,6 +290,29 @@ func (p *Product) Discontinue() error {
 	return nil
 }
 
+// Disable disables the product, preventing it from being used in new sales orders
+// Unlike Deactivate, this method emits a ProductDisabledEvent for cross-context integration
+// (e.g., inventory context can mark inventory as inactive, trade context can prevent sales)
+func (p *Product) Disable() error {
+	if p.Status == ProductStatusInactive {
+		return shared.NewDomainError("ALREADY_DISABLED", "Product is already disabled")
+	}
+	if p.Status == ProductStatusDiscontinued {
+		return shared.NewDomainError("CANNOT_DISABLE", "Cannot disable a discontinued product")
+	}
+
+	oldStatus := p.Status
+	p.Status = ProductStatusInactive
+	p.UpdatedAt = time.Now()
+	p.IncrementVersion()
+
+	// Emit both events: status change and disabled (for cross-context integration)
+	p.AddDomainEvent(NewProductStatusChangedEvent(p, oldStatus, ProductStatusInactive))
+	p.AddDomainEvent(NewProductDisabledEvent(p))
+
+	return nil
+}
+
 // IsActive returns true if the product is active
 func (p *Product) IsActive() bool {
 	return p.Status == ProductStatusActive
@@ -303,6 +326,18 @@ func (p *Product) IsInactive() bool {
 // IsDiscontinued returns true if the product is discontinued
 func (p *Product) IsDiscontinued() bool {
 	return p.Status == ProductStatusDiscontinued
+}
+
+// IsDisabled returns true if the product is disabled (inactive)
+// This is an alias for IsInactive to match the Disable() method semantics
+func (p *Product) IsDisabled() bool {
+	return p.Status == ProductStatusInactive
+}
+
+// CanBeSold returns true if the product can be used in sales orders
+// Only active products can be sold
+func (p *Product) CanBeSold() bool {
+	return p.Status == ProductStatusActive
 }
 
 // HasCategory returns true if the product has a category assigned

@@ -4458,7 +4458,7 @@
       "Prevent sales of disabled products",
       "Add event handler tests"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.1 - Product Domain Events",
     "affectedModules": [
       "backend/internal/domain/catalog/product.go",

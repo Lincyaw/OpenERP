@@ -452,6 +452,92 @@ func TestProductStatus(t *testing.T) {
 	})
 }
 
+func TestProductDisable(t *testing.T) {
+	tenantID := uuid.New()
+
+	t.Run("disables active product", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		product.ClearDomainEvents()
+
+		err := product.Disable()
+		require.NoError(t, err)
+		assert.Equal(t, ProductStatusInactive, product.Status)
+		assert.True(t, product.IsDisabled())
+		assert.False(t, product.CanBeSold())
+
+		events := product.GetDomainEvents()
+		// Should have both ProductStatusChanged and ProductDisabled events
+		require.Len(t, events, 2)
+		assert.Equal(t, EventTypeProductStatusChanged, events[0].EventType())
+		assert.Equal(t, EventTypeProductDisabled, events[1].EventType())
+	})
+
+	t.Run("publishes ProductDisabled event with product details", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-002", "Test Product", "pcs")
+		categoryID := uuid.New()
+		product.CategoryID = &categoryID
+		product.ClearDomainEvents()
+
+		err := product.Disable()
+		require.NoError(t, err)
+
+		events := product.GetDomainEvents()
+		require.Len(t, events, 2)
+
+		disabledEvent, ok := events[1].(*ProductDisabledEvent)
+		require.True(t, ok)
+		assert.Equal(t, product.ID, disabledEvent.ProductID)
+		assert.Equal(t, product.Code, disabledEvent.Code)
+		assert.Equal(t, product.Name, disabledEvent.Name)
+		assert.Equal(t, &categoryID, disabledEvent.CategoryID)
+	})
+
+	t.Run("fails to disable already disabled product", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		product.Status = ProductStatusInactive
+
+		err := product.Disable()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "already disabled")
+	})
+
+	t.Run("fails to disable discontinued product", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		product.Status = ProductStatusDiscontinued
+
+		err := product.Disable()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "Cannot disable a discontinued product")
+	})
+}
+
+func TestProductCanBeSold(t *testing.T) {
+	tenantID := uuid.New()
+
+	t.Run("active product can be sold", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		assert.True(t, product.CanBeSold())
+	})
+
+	t.Run("inactive product cannot be sold", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		product.Status = ProductStatusInactive
+		assert.False(t, product.CanBeSold())
+	})
+
+	t.Run("discontinued product cannot be sold", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		product.Status = ProductStatusDiscontinued
+		assert.False(t, product.CanBeSold())
+	})
+
+	t.Run("disabled product cannot be sold", func(t *testing.T) {
+		product, _ := NewProduct(tenantID, "SKU-001", "Test", "pcs")
+		_ = product.Disable()
+		assert.False(t, product.CanBeSold())
+	})
+}
+
 func TestProductProfitMargin(t *testing.T) {
 	tenantID := uuid.New()
 

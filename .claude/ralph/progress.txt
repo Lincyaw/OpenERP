@@ -20768,3 +20768,81 @@ Some status enums use lowercase (active, inactive) matching database values, whi
 === Next Steps ===
 - Consider using domain types in form validation schemas
 - Update existing components to import from @/types instead of inline strings
+
+2026-01-26 - Task DDD-023: Product Disabled Event Implementation
+
+=== Implementation Details ===
+Implemented ProductDisabled event and related functionality for cross-context integration:
+
+1. **ProductDisabledEvent Struct**: Created in `product_events.go`
+   - Contains: ProductID, Code, Name, CategoryID
+   - Added EventTypeProductDisabled constant
+   - Follows existing event pattern with BaseDomainEvent
+
+2. **Product.Disable() Method**: Added to Product aggregate
+   - Sets status to ProductStatusInactive
+   - Emits both ProductStatusChangedEvent and ProductDisabledEvent
+   - Validates current status (cannot disable already inactive or discontinued products)
+
+3. **Helper Methods Added**:
+   - `IsDisabled()`: Returns true if product is inactive (alias for IsInactive)
+   - `CanBeSold()`: Returns true only if product is active
+
+4. **ProductDisabledHandler**: Created event handler in application layer
+   - Logs product disabled events
+   - Supports optional ProductDisabledNotifier for notifications
+   - Implements shared.EventHandler interface
+
+5. **ProductSaleValidator**: Created for sale eligibility checks
+   - `CanBeSold(ctx, tenantID, productID)`: Checks if product can be sold
+   - `CanBeSoldBatch()`: Batch validation for multiple products
+   - Used by SalesOrderService to validate products
+
+6. **SalesOrderService Integration**:
+   - Added ProductSaleValidator interface
+   - Added SetProductValidator() setter method
+   - Added validateProductForSale() validation method
+   - Create() and AddItem() now validate products before adding to order
+   - Returns PRODUCT_DISABLED error for disabled products
+
+=== Key Files Created/Modified ===
+
+**New Files:**
+- backend/internal/application/catalog/product_disabled_handler.go
+- backend/internal/application/catalog/product_disabled_handler_test.go
+- backend/internal/application/catalog/product_sale_validator.go
+- backend/internal/application/catalog/product_sale_validator_test.go
+
+**Modified Files:**
+- backend/internal/domain/catalog/product.go - Added Disable(), IsDisabled(), CanBeSold()
+- backend/internal/domain/catalog/product_events.go - Added ProductDisabledEvent
+- backend/internal/domain/catalog/product_test.go - Added tests for new methods
+- backend/internal/application/trade/sales_order_service.go - Added product validation
+
+=== Verification ===
+- All catalog domain tests pass: `go test ./internal/domain/catalog/...`
+- All catalog application tests pass: `go test ./internal/application/catalog/...`
+- Build succeeds: `go build ./...`
+
+=== Design Decisions ===
+1. **Disable vs Deactivate**: Disable() emits ProductDisabledEvent for cross-context integration, Deactivate() only emits ProductStatusChangedEvent
+2. **ProductSaleValidator Interface**: Created separate interface to allow trade context to validate products without direct domain dependency
+3. **Optional Validation**: Product validation is optional (validator can be nil) to maintain backward compatibility
+4. **Notification Pattern**: ProductDisabledHandler uses optional notifier pattern for extensible notifications
+
+=== Status Handling ===
+- Disable() sets status to ProductStatusInactive (same as Deactivate)
+- ProductDisabledEvent provides explicit signal for other contexts
+- CanBeSold() only returns true for ProductStatusActive
+
+=== Test Coverage ===
+- TestProductDisable: 4 test cases
+- TestProductCanBeSold: 4 test cases
+- TestProductDisabledHandler: 5 test cases
+- TestProductSaleValidator_CanBeSold: 5 test cases
+- TestProductSaleValidator_CanBeSoldBatch: 3 test cases
+
+=== Next Steps ===
+- Wire up ProductSaleValidator in dependency injection (cmd/server/main.go)
+- Subscribe ProductDisabledHandler to event bus
+- Consider adding inventory deactivation handler when product is disabled

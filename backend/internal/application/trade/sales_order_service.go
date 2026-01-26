@@ -2,6 +2,7 @@ package trade
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/strategy"
@@ -17,11 +18,22 @@ type PricingStrategyProvider interface {
 	GetPricingStrategyOrDefault(name string) strategy.PricingStrategy
 }
 
+// ProductSaleValidator validates whether a product can be sold
+// This interface allows the trade context to validate products without
+// directly depending on the catalog domain
+type ProductSaleValidator interface {
+	// CanBeSold checks if a product can be sold (is active)
+	// Returns true if the product can be sold, false otherwise
+	// Returns an error if the product is not found
+	CanBeSold(ctx context.Context, tenantID, productID uuid.UUID) (bool, error)
+}
+
 // SalesOrderService handles sales order business operations
 type SalesOrderService struct {
 	orderRepo        trade.SalesOrderRepository
 	eventPublisher   shared.EventPublisher
 	pricingProvider  PricingStrategyProvider
+	productValidator ProductSaleValidator
 }
 
 // NewSalesOrderService creates a new SalesOrderService
@@ -39,6 +51,32 @@ func (s *SalesOrderService) SetEventPublisher(publisher shared.EventPublisher) {
 // SetPricingProvider sets the pricing strategy provider
 func (s *SalesOrderService) SetPricingProvider(provider PricingStrategyProvider) {
 	s.pricingProvider = provider
+}
+
+// SetProductValidator sets the product validator for sale eligibility checks
+func (s *SalesOrderService) SetProductValidator(validator ProductSaleValidator) {
+	s.productValidator = validator
+}
+
+// validateProductForSale validates that a product can be sold
+// Returns an error if the product is disabled or not found
+func (s *SalesOrderService) validateProductForSale(ctx context.Context, tenantID, productID uuid.UUID, productCode string) error {
+	if s.productValidator == nil {
+		// No validator configured, skip validation
+		return nil
+	}
+
+	canBeSold, err := s.productValidator.CanBeSold(ctx, tenantID, productID)
+	if err != nil {
+		return fmt.Errorf("failed to validate product %s: %w", productCode, err)
+	}
+
+	if !canBeSold {
+		return shared.NewDomainError("PRODUCT_DISABLED",
+			fmt.Sprintf("Product %s is disabled and cannot be sold", productCode))
+	}
+
+	return nil
 }
 
 // calculateItemPrice calculates the unit price for an item using the pricing strategy
@@ -115,6 +153,11 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 
 	// Add items
 	for _, item := range req.Items {
+		// Validate product can be sold (not disabled/discontinued)
+		if err := s.validateProductForSale(ctx, tenantID, item.ProductID, item.ProductCode); err != nil {
+			return nil, err
+		}
+
 		// Calculate unit price using pricing strategy if configured
 		calculatedUnitPrice := s.calculateItemPrice(ctx, tenantID, item, req.CustomerLevel, req.PricingStrategyName)
 		unitPrice := valueobject.NewMoneyCNY(calculatedUnitPrice)
@@ -306,6 +349,11 @@ func (s *SalesOrderService) Update(ctx context.Context, tenantID, orderID uuid.U
 func (s *SalesOrderService) AddItem(ctx context.Context, tenantID, orderID uuid.UUID, req AddOrderItemRequest) (*SalesOrderResponse, error) {
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
+		return nil, err
+	}
+
+	// Validate product can be sold (not disabled/discontinued)
+	if err := s.validateProductForSale(ctx, tenantID, req.ProductID, req.ProductCode); err != nil {
 		return nil, err
 	}
 
