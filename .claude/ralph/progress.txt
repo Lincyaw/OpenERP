@@ -22191,3 +22191,90 @@ Modal.confirm({
 === Next Steps ===
 - Consider creating a follow-up task to apply this pattern across all Modal.confirm usages
 - Consider extracting to a reusable `confirmAsync` utility function for DRY compliance
+
+2026-01-26 - FE-003: InputNumber 类型转换安全处理
+
+=== Implementation Details ===
+
+### Problem Analysis
+Semi Design's InputNumber component's onChange callback can receive `undefined` when the user clears the input field. The existing code used unsafe type assertions (`value as number`) which:
+1. Did not handle `undefined` values
+2. Could lead to NaN propagation when undefined was cast to number
+3. Violated TypeScript's type safety principles
+
+### Solution Approach
+Updated all InputNumber onChange handlers to:
+1. Accept `undefined` in their type signature (`number | string | undefined`)
+2. Use `typeof` check for proper type safety
+3. Handle undefined/invalid values with a fallback to `0` using `parseFloat(String(value)) || 0`
+4. Remove unsafe `as number` type assertions from inline onChange handlers
+
+### Files Modified
+1. **frontend/src/features/trade/SalesOrderForm.tsx**
+   - `handleQuantityChange` - Updated type signature and conversion logic
+   - `handleUnitPriceChange` - Updated type signature and conversion logic
+   - `handleDiscountChange` - Updated type signature and conversion logic
+   - Table column onChange handlers - Removed `as number` assertions
+
+2. **frontend/src/features/trade/PurchaseOrderForm.tsx**
+   - `handleQuantityChange` - Updated type signature and conversion logic
+   - `handleUnitCostChange` - Updated type signature and conversion logic
+   - `handleDiscountChange` - Updated type signature and conversion logic
+   - Table column onChange handlers - Removed `as number` assertions
+
+### Implementation Pattern
+```typescript
+// Before (unsafe)
+const handleQuantityChange = useCallback((itemKey: string, quantity: number | string) => {
+  const qty = typeof quantity === 'number' ? quantity : parseFloat(quantity) || 0
+  // ...
+})
+
+// After (safe)
+const handleQuantityChange = useCallback(
+  (itemKey: string, quantity: number | string | undefined) => {
+    // Use typeof check for type safety - handle undefined and string cases
+    const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
+    // ...
+  },
+  []
+)
+
+// Before (inline with unsafe assertion)
+onChange={(value) => handleQuantityChange(record.key, value as number)}
+
+// After (inline without assertion)
+onChange={(value) => handleQuantityChange(record.key, value)}
+```
+
+### Key Design Decisions
+1. **String Conversion**: Using `String(value)` ensures safe conversion of undefined to "undefined" string before parseFloat
+2. **Fallback Value**: Using `|| 0` provides a safe default when parseFloat returns NaN
+3. **Consistent Pattern**: Applied the same pattern to all 6 handlers for maintainability
+4. **Comments Added**: Documented the purpose of the fix in code comments
+
+=== Verification ===
+- TypeScript compilation: PASSED (npx tsc --noEmit)
+- ESLint: PASSED (no errors in modified files)
+- Code review by code-reviewer agent: APPROVED
+  - No CRITICAL or HIGH issues found
+  - Proper typeof check implementation verified
+  - NaN prevention verified
+  - Code follows project patterns
+
+=== Code Review Summary ===
+- Implementation correctly addresses all PRD requirements
+- typeof checks properly used for type safety
+- NaN prevention working via || 0 fallback
+- Unsafe type assertions removed
+- Optional improvement suggested: Extract conversion logic to utility function (toSafeNumber)
+
+=== Notes ===
+- This is a HIGH severity fix that prevents potential runtime issues
+- The fix handles edge cases when users clear InputNumber fields
+- Semi Design's InputNumber onChange signature: (value: number | string | undefined) => void
+- The || 0 fallback handles: undefined, empty string, and invalid string inputs
+
+=== Next Steps ===
+- Consider creating a shared utility function `toSafeNumber()` for DRY compliance across codebase
+- FE-004 (批量操作使用 Promise.allSettled) is the next HIGH priority frontend task

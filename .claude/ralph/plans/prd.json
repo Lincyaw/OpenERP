@@ -4887,7 +4887,7 @@
       "使用 typeof 检查而非直接类型断言",
       "防止 NaN 问题"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "HIGH",

@@ -379,36 +379,46 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   )
 
   // Handle quantity change
-  const handleQuantityChange = useCallback((itemKey: string, quantity: number | string) => {
-    const qty = typeof quantity === 'number' ? quantity : parseFloat(quantity) || 0
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return {
-          ...item,
-          quantity: qty,
-          amount: item.unit_price * qty,
-        }
-      }),
-    }))
-  }, [])
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleQuantityChange = useCallback(
+    (itemKey: string, quantity: number | string | undefined) => {
+      // Use typeof check for type safety - handle undefined and string cases
+      const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
+      setFormData((prev) => ({
+        ...prev,
+        items: prev.items.map((item) => {
+          if (item.key !== itemKey) return item
+          return {
+            ...item,
+            quantity: qty,
+            amount: item.unit_price * qty,
+          }
+        }),
+      }))
+    },
+    []
+  )
 
   // Handle unit price change
-  const handleUnitPriceChange = useCallback((itemKey: string, price: number | string) => {
-    const unitPrice = typeof price === 'number' ? price : parseFloat(price) || 0
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return {
-          ...item,
-          unit_price: unitPrice,
-          amount: unitPrice * item.quantity,
-        }
-      }),
-    }))
-  }, [])
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleUnitPriceChange = useCallback(
+    (itemKey: string, price: number | string | undefined) => {
+      // Use typeof check for type safety - handle undefined and string cases
+      const unitPrice = typeof price === 'number' ? price : parseFloat(String(price)) || 0
+      setFormData((prev) => ({
+        ...prev,
+        items: prev.items.map((item) => {
+          if (item.key !== itemKey) return item
+          return {
+            ...item,
+            unit_price: unitPrice,
+            amount: unitPrice * item.quantity,
+          }
+        }),
+      }))
+    },
+    []
+  )
 
   // Handle item remark change
   const handleItemRemarkChange = useCallback((itemKey: string, remark: string) => {
@@ -442,8 +452,10 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   }, [])
 
   // Handle discount change
-  const handleDiscountChange = useCallback((value: number | string) => {
-    const discount = typeof value === 'number' ? value : parseFloat(value) || 0
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleDiscountChange = useCallback((value: number | string | undefined) => {
+    // Use typeof check for type safety - handle undefined and string cases
+    const discount = typeof value === 'number' ? value : parseFloat(String(value)) || 0
     setFormData((prev) => ({ ...prev, discount }))
   }, [])
 
@@ -607,7 +619,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         render: (price: number, record: OrderItemFormData) => (
           <InputNumber
             value={price}
-            onChange={(value) => handleUnitPriceChange(record.key, value as number)}
+            onChange={(value) => handleUnitPriceChange(record.key, value)}
             min={0}
             precision={2}
             prefix="¥"
@@ -623,7 +635,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         render: (qty: number, record: OrderItemFormData) => (
           <InputNumber
             value={qty}
-            onChange={(value) => handleQuantityChange(record.key, value as number)}
+            onChange={(value) => handleQuantityChange(record.key, value)}
             min={0.01}
             precision={2}
             style={{ width: '100%' }}
@@ -779,7 +791,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               <label className="form-label">{t('orderForm.summary.discount')} (%)</label>
               <InputNumber
                 value={formData.discount}
-                onChange={(value) => handleDiscountChange(value as number)}
+                onChange={(value) => handleDiscountChange(value)}
                 min={0}
                 max={100}
                 precision={2}

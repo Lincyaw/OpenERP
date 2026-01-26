@@ -379,24 +379,31 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   )
 
   // Handle quantity change
-  const handleQuantityChange = useCallback((itemKey: string, quantity: number | string) => {
-    const qty = typeof quantity === 'number' ? quantity : parseFloat(quantity) || 0
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return {
-          ...item,
-          quantity: qty,
-          amount: item.unit_cost * qty,
-        }
-      }),
-    }))
-  }, [])
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleQuantityChange = useCallback(
+    (itemKey: string, quantity: number | string | undefined) => {
+      // Use typeof check for type safety - handle undefined and string cases
+      const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
+      setFormData((prev) => ({
+        ...prev,
+        items: prev.items.map((item) => {
+          if (item.key !== itemKey) return item
+          return {
+            ...item,
+            quantity: qty,
+            amount: item.unit_cost * qty,
+          }
+        }),
+      }))
+    },
+    []
+  )
 
   // Handle unit cost change
-  const handleUnitCostChange = useCallback((itemKey: string, cost: number | string) => {
-    const unitCost = typeof cost === 'number' ? cost : parseFloat(cost) || 0
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleUnitCostChange = useCallback((itemKey: string, cost: number | string | undefined) => {
+    // Use typeof check for type safety - handle undefined and string cases
+    const unitCost = typeof cost === 'number' ? cost : parseFloat(String(cost)) || 0
     setFormData((prev) => ({
       ...prev,
       items: prev.items.map((item) => {
@@ -442,8 +449,10 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   }, [])
 
   // Handle discount change
-  const handleDiscountChange = useCallback((value: number | string) => {
-    const discount = typeof value === 'number' ? value : parseFloat(value) || 0
+  // InputNumber onChange can pass undefined when input is cleared
+  const handleDiscountChange = useCallback((value: number | string | undefined) => {
+    // Use typeof check for type safety - handle undefined and string cases
+    const discount = typeof value === 'number' ? value : parseFloat(String(value)) || 0
     setFormData((prev) => ({ ...prev, discount }))
   }, [])
 
@@ -607,7 +616,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         render: (cost: number, record: OrderItemFormData) => (
           <InputNumber
             value={cost}
-            onChange={(value) => handleUnitCostChange(record.key, value as number)}
+            onChange={(value) => handleUnitCostChange(record.key, value)}
             min={0}
             precision={2}
             prefix="¥"
@@ -623,7 +632,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         render: (qty: number, record: OrderItemFormData) => (
           <InputNumber
             value={qty}
-            onChange={(value) => handleQuantityChange(record.key, value as number)}
+            onChange={(value) => handleQuantityChange(record.key, value)}
             min={0.01}
             precision={2}
             style={{ width: '100%' }}
@@ -779,7 +788,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
               <label className="form-label">{t('orderForm.summary.discount')} (%)</label>
               <InputNumber
                 value={formData.discount}
-                onChange={(value) => handleDiscountChange(value as number)}
+                onChange={(value) => handleDiscountChange(value)}
                 min={0}
                 max={100}
                 precision={2}
