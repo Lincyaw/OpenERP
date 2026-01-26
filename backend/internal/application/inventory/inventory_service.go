@@ -451,9 +451,19 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 	// Publish domain events
 	s.publishDomainEvents(ctx, item)
 
-	// Update the lock record (use the updated lock from item.Locks, not the original)
+	// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
 	// The domain method marks the lock as Released in item.Locks
-	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
+	var releasedLock *inventory.StockLock
+	for idx := range item.Locks {
+		if item.Locks[idx].ID == req.LockID {
+			releasedLock = &item.Locks[idx]
+			break
+		}
+	}
+	if releasedLock == nil {
+		return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after unlock operation")
+	}
+	if err := s.lockRepo.Save(ctx, releasedLock); err != nil {
 		return err
 	}
 
@@ -524,9 +534,19 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 	// Publish domain events (including StockBelowThreshold if applicable)
 	s.publishDomainEvents(ctx, item)
 
-	// Update the lock record (use the updated lock from item.Locks, not the original)
+	// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
 	// The domain method marks the lock as Consumed in item.Locks
-	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
+	var consumedLock *inventory.StockLock
+	for idx := range item.Locks {
+		if item.Locks[idx].ID == req.LockID {
+			consumedLock = &item.Locks[idx]
+			break
+		}
+	}
+	if consumedLock == nil {
+		return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after deduct operation")
+	}
+	if err := s.lockRepo.Save(ctx, consumedLock); err != nil {
 		return err
 	}
 
@@ -1016,9 +1036,19 @@ func (s *InventoryService) UnlockBySource(ctx context.Context, tenantID uuid.UUI
 		// Publish domain events
 		s.publishDomainEvents(ctx, item)
 
-		// Update lock status (use the updated lock from item.Locks, not the original)
+		// Update lock status (find by ID, not by position - Locks[0] assumption is incorrect)
 		// The domain method marks the lock as Released in item.Locks
-		if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
+		var releasedLock *inventory.StockLock
+		for idx := range item.Locks {
+			if item.Locks[idx].ID == lock.ID {
+				releasedLock = &item.Locks[idx]
+				break
+			}
+		}
+		if releasedLock == nil {
+			continue
+		}
+		if err := s.lockRepo.Save(ctx, releasedLock); err != nil {
 			continue
 		}
 

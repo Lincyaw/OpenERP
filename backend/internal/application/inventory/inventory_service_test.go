@@ -708,6 +708,39 @@ func TestInventoryService_UnlockStock(t *testing.T) {
 
 		assert.Error(t, err)
 	})
+
+	t.Run("success - unlock specific lock from multiple locks", func(t *testing.T) {
+		// Create multiple locks - the target lock is NOT at index 0
+		lock1ID := uuid.New()
+		lock1 := inventory.NewStockLock(itemID, decimal.NewFromInt(10), "sales_order", "SO-001", time.Now().Add(time.Hour))
+		lock1.ID = lock1ID
+
+		lock2ID := uuid.New()
+		lock2 := inventory.NewStockLock(itemID, decimal.NewFromInt(30), "sales_order", "SO-002", time.Now().Add(time.Hour))
+		lock2.ID = lock2ID // This is the target lock at index 1
+
+		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(60), decimal.NewFromInt(40))
+		item.ID = itemID
+		item.Locks = []inventory.StockLock{*lock1, *lock2} // lock2 is at index 1, not 0
+
+		lockRepo.On("FindByID", ctx, lock2ID).Return(lock2, nil).Once()
+		invRepo.On("FindByID", ctx, itemID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+
+		// Verify that the correct lock (lock2) is saved, not lock1 at index 0
+		lockRepo.On("Save", ctx, mock.MatchedBy(func(l *inventory.StockLock) bool {
+			return l.ID == lock2ID && l.Released
+		})).Return(nil).Once()
+
+		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+
+		req := UnlockStockRequest{LockID: lock2ID}
+
+		err := service.UnlockStock(ctx, tenantID, req)
+
+		assert.NoError(t, err)
+		lockRepo.AssertExpectations(t)
+	})
 }
 
 func TestInventoryService_AdjustStock(t *testing.T) {

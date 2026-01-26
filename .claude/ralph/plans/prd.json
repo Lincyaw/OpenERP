@@ -4325,8 +4325,7 @@
     "blockedBy": [
       "impl-CustomerLevel-002"
     ]
-  }
-,
+  },
   {
     "id": "SEC-001",
     "story": "修复 SQL 注入漏洞 - ORDER BY 子句未验证",
@@ -4506,7 +4505,7 @@
       "在修改前保存 lock 引用或按 ID 查找",
       "添加空切片防护"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "HIGH",

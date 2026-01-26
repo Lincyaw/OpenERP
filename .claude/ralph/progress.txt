@@ -21174,3 +21174,75 @@ Fixed in `backend/internal/application/inventory/inventory_service.go`:
 
 === Next Steps ===
 - BUG-004: Fix other Locks[0] index assumptions in inventory_service.go
+
+2026-01-26 - Task BUG-004: Fix Lock index assumptions in inventory_service.go
+
+=== Problem Description ===
+Three locations in inventory_service.go incorrectly assumed that after calling domain methods 
+(UnlockStock, DeductStock), the modified lock would be at `item.Locks[0]`. This assumption fails 
+because:
+1. The lock is appended to `item.Locks` (so it's at the last position, not index 0)
+2. When there are multiple locks in the slice, using Locks[0] would save the wrong lock
+
+=== Affected Locations ===
+1. Line 456 (UnlockStock) - Saving `&item.Locks[0]` instead of the correct lock
+2. Line 529 (DeductStock) - Saving `&item.Locks[0]` instead of the correct lock
+3. Line 1021 (UnlockBySource) - Saving `&item.Locks[0]` instead of the correct lock
+
+=== Implementation Details ===
+Applied consistent fix pattern to all three locations - find the lock by ID instead of assuming position:
+
+```go
+// Old buggy code:
+if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
+    return err
+}
+
+// New fixed code:
+var releasedLock *inventory.StockLock
+for idx := range item.Locks {
+    if item.Locks[idx].ID == req.LockID {
+        releasedLock = &item.Locks[idx]
+        break
+    }
+}
+if releasedLock == nil {
+    return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after unlock operation")
+}
+if err := s.lockRepo.Save(ctx, releasedLock); err != nil {
+    return err
+}
+```
+
+=== Key Files Modified ===
+- backend/internal/application/inventory/inventory_service.go (3 locations fixed)
+- backend/internal/application/inventory/inventory_service_test.go (added multi-lock test)
+
+=== Verification ===
+- [x] All inventory service tests pass (30 tests)
+- [x] All domain inventory tests pass
+- [x] Go build succeeds
+- [x] Go vet passes
+- [x] Code review passed (no CRITICAL or HIGH issues)
+- [x] Multi-lock scenario test added to prevent regression
+
+=== Test Added ===
+Added "success - unlock specific lock from multiple locks" test case that verifies:
+- When item.Locks has multiple locks
+- And the target lock is NOT at index 0
+- The correct lock (identified by ID) is saved to the repository
+
+=== Design Decisions ===
+1. **Find by ID pattern**: Consistent with BUG-003 fix - search for lock by ID rather than assuming position
+2. **Error handling differentiation**: 
+   - Single operations (UnlockStock, DeductStock) return errors if lock not found
+   - Batch operations (UnlockBySource) silently continue to process other locks
+3. **Defensive programming**: Added nil check before saving to handle edge cases
+
+=== Related Work ===
+- BUG-003: Fixed similar issue in ReleaseExpiredLocks method (completed 2026-01-26)
+- Code review suggested extracting lock lookup to helper function (deferred for future refactoring)
+
+=== Next Steps ===
+- Consider extracting FindLockByID helper method to reduce code duplication
+- Consider adding warning logs in batch operations when lock is unexpectedly not found
