@@ -36872,6 +36872,16 @@ const docTemplate = `{
                 "unit_cost"
             ],
             "properties": {
+                "base_unit": {
+                    "description": "Base unit code - defaults to Unit if empty",
+                    "type": "string",
+                    "example": "pcs"
+                },
+                "conversion_rate": {
+                    "description": "Conversion rate to base unit - defaults to 1 if empty",
+                    "type": "number",
+                    "example": 1
+                },
                 "product_code": {
                     "type": "string",
                     "maxLength": 50,
@@ -37375,29 +37385,29 @@ const docTemplate = `{
             "description": "Individual cash flow item",
             "type": "object",
             "properties": {
-                "balance": {
+                "amount": {
                     "type": "number",
-                    "example": 55000
-                },
-                "category": {
-                    "type": "string",
-                    "example": "operating"
+                    "example": 5000
                 },
                 "date": {
                     "type": "string",
-                    "example": "2026-01-15"
+                    "example": "2026-01-15T00:00:00Z"
                 },
                 "description": {
                     "type": "string",
                     "example": "Sales collection"
                 },
-                "inflow": {
-                    "type": "number",
-                    "example": 5000
+                "reference_no": {
+                    "type": "string",
+                    "example": "RCV-2026-001"
                 },
-                "outflow": {
+                "running_balance": {
                     "type": "number",
-                    "example": 0
+                    "example": 55000
+                },
+                "type": {
+                    "type": "string",
+                    "example": "receipt"
                 }
             }
         },
@@ -37405,37 +37415,33 @@ const docTemplate = `{
             "description": "Cash flow statement",
             "type": "object",
             "properties": {
-                "cash_from_sales": {
-                    "type": "number",
-                    "example": 100000
-                },
-                "cash_to_expenses": {
-                    "type": "number",
-                    "example": 15000
-                },
-                "cash_to_purchases": {
-                    "type": "number",
-                    "example": 70000
-                },
-                "closing_cash_balance": {
-                    "type": "number",
-                    "example": 66000
-                },
-                "net_cash_flow": {
-                    "type": "number",
-                    "example": 16000
-                },
-                "opening_cash_balance": {
+                "beginning_cash": {
                     "type": "number",
                     "example": 50000
                 },
-                "other_cash_inflow": {
+                "ending_cash": {
+                    "type": "number",
+                    "example": 67000
+                },
+                "expense_payments": {
+                    "type": "number",
+                    "example": 15000
+                },
+                "net_cash_flow": {
+                    "type": "number",
+                    "example": 17000
+                },
+                "net_operating_cash_flow": {
+                    "type": "number",
+                    "example": 17000
+                },
+                "other_income": {
                     "type": "number",
                     "example": 2000
                 },
-                "other_cash_outflow": {
+                "payments_to_suppliers": {
                     "type": "number",
-                    "example": 1000
+                    "example": 70000
                 },
                 "period_end": {
                     "type": "string",
@@ -37444,6 +37450,10 @@ const docTemplate = `{
                 "period_start": {
                     "type": "string",
                     "example": "2026-01-01T00:00:00Z"
+                },
+                "receipts_from_customers": {
+                    "type": "number",
+                    "example": 100000
                 }
             }
         },
@@ -38147,6 +38157,16 @@ const docTemplate = `{
                 "unit_cost"
             ],
             "properties": {
+                "base_unit": {
+                    "description": "Base unit code - defaults to Unit if empty",
+                    "type": "string",
+                    "example": "pcs"
+                },
+                "conversion_rate": {
+                    "description": "Conversion rate to base unit - defaults to 1 if empty",
+                    "type": "number",
+                    "example": 1
+                },
                 "product_code": {
                     "type": "string",
                     "maxLength": 50,
@@ -39809,33 +39829,33 @@ const docTemplate = `{
             "description": "Monthly profit trend data point",
             "type": "object",
             "properties": {
-                "cost": {
+                "gross_margin": {
                     "type": "number",
-                    "example": 87500
-                },
-                "expenses": {
-                    "type": "number",
-                    "example": 15000
+                    "example": 0.3
                 },
                 "gross_profit": {
                     "type": "number",
                     "example": 37500
                 },
                 "month": {
-                    "type": "string",
-                    "example": "2026-01"
+                    "type": "integer",
+                    "example": 1
+                },
+                "net_margin": {
+                    "type": "number",
+                    "example": 0.18
                 },
                 "net_profit": {
                     "type": "number",
                     "example": 22500
                 },
-                "profit_margin": {
-                    "type": "number",
-                    "example": 18
-                },
-                "revenue": {
+                "sales_revenue": {
                     "type": "number",
                     "example": 125000
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2026
                 }
             }
         },
@@ -40401,9 +40421,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Electronics"
                 },
-                "cost": {
+                "cogs": {
                     "type": "number",
                     "example": 17500
+                },
+                "contribution": {
+                    "type": "number",
+                    "example": 0.15
+                },
+                "gross_margin": {
+                    "type": "number",
+                    "example": 0.3
                 },
                 "gross_profit": {
                     "type": "number",
@@ -40417,15 +40445,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Sample Product"
                 },
-                "profit_margin": {
-                    "type": "number",
-                    "example": 30
+                "product_sku": {
+                    "type": "string",
+                    "example": "SKU-001"
                 },
-                "quantity": {
-                    "type": "number",
-                    "example": 500
-                },
-                "revenue": {
+                "sales_revenue": {
                     "type": "number",
                     "example": 25000
                 }
@@ -40435,33 +40459,33 @@ const docTemplate = `{
             "description": "Detailed profit and loss statement",
             "type": "object",
             "properties": {
-                "cost_of_goods_sold": {
+                "cogs": {
                     "type": "number",
-                    "example": 87500
+                    "example": 84000
                 },
-                "gross_profit": {
-                    "type": "number",
-                    "example": 37500
-                },
-                "gross_profit_margin": {
-                    "type": "number",
-                    "example": 30
-                },
-                "net_profit": {
-                    "type": "number",
-                    "example": 23500
-                },
-                "net_profit_margin": {
-                    "type": "number",
-                    "example": 18.8
-                },
-                "operating_expenses": {
+                "expenses": {
                     "type": "number",
                     "example": 15000
                 },
-                "other_expenses": {
+                "gross_margin": {
                     "type": "number",
-                    "example": 1000
+                    "example": 0.3
+                },
+                "gross_profit": {
+                    "type": "number",
+                    "example": 36000
+                },
+                "net_margin": {
+                    "type": "number",
+                    "example": 0.19
+                },
+                "net_profit": {
+                    "type": "number",
+                    "example": 23000
+                },
+                "net_sales_revenue": {
+                    "type": "number",
+                    "example": 120000
                 },
                 "other_income": {
                     "type": "number",
@@ -40475,9 +40499,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-01-01T00:00:00Z"
                 },
-                "revenue": {
+                "sales_returns": {
+                    "type": "number",
+                    "example": 5000
+                },
+                "sales_revenue": {
                     "type": "number",
                     "example": 125000
+                },
+                "total_income": {
+                    "type": "number",
+                    "example": 38000
                 }
             }
         },

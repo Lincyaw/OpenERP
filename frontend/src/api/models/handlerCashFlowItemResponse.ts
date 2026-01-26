@@ -8,10 +8,10 @@
  * Individual cash flow item
  */
 export interface HandlerCashFlowItemResponse {
-  balance?: number
-  category?: string
+  amount?: number
   date?: string
   description?: string
-  inflow?: number
-  outflow?: number
+  reference_no?: string
+  running_balance?: number
+  type?: string
 }

@@ -18153,3 +18153,37 @@ The frontend had "View" actions in the Customers.tsx and Suppliers.tsx tables th
 - Both detail pages follow the same pattern as ProductDetail.tsx for consistency
 - API endpoints `getPartnerCustomersId` and `getPartnerSuppliersId` were already available
 - The pages support all status transitions (activate/deactivate/suspend/block) directly from the detail view
+
+=== 2026-01-26 P10-BUG-008 修复 - 报表页面加载失败 ===
+
+问题描述:
+- 所有报表页面都加载失败
+- 影响: SalesReport, CashFlowReport, ProfitLoss, InventoryTurnover等所有报表页面
+
+根本原因:
+- backend/internal/interfaces/http/handler/report.go中的swagger DTO类型定义
+  与实际service返回的类型字段名不匹配
+- 例如: swagger定义使用 revenue, cost_of_goods_sold
+  而service返回 sales_revenue, cogs
+- 导致orval生成的前端SDK类型与实际API响应不匹配
+
+修复内容:
+1. 更新handler/report.go中的以下swagger DTO类型以匹配service返回类型:
+   - ProfitLossStatementResponse
+   - MonthlyProfitTrendResponse
+   - ProfitByProductResponse
+   - CashFlowStatementResponse
+   - CashFlowItemResponse
+
+2. 重新生成文档和SDK:
+   - swag init -g cmd/server/main.go -o docs
+   - cd frontend && npx orval
+
+验证结果:
+- Backend build: ✓
+- Frontend build: ✓
+- TypeScript check: ✓
+
+注意事项:
+- 修改swagger DTO后必须重新运行swag init和orval
+- 确保handler swagger注释中的类型与service实际返回类型一致

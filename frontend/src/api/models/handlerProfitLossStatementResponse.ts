@@ -8,15 +8,17 @@
  * Detailed profit and loss statement
  */
 export interface HandlerProfitLossStatementResponse {
-  cost_of_goods_sold?: number
+  cogs?: number
+  expenses?: number
+  gross_margin?: number
   gross_profit?: number
-  gross_profit_margin?: number
+  net_margin?: number
   net_profit?: number
-  net_profit_margin?: number
-  operating_expenses?: number
-  other_expenses?: number
+  net_sales_revenue?: number
   other_income?: number
   period_end?: string
   period_start?: string
-  revenue?: number
+  sales_returns?: number
+  sales_revenue?: number
+  total_income?: number
 }

@@ -8,11 +8,11 @@
  * Monthly profit trend data point
  */
 export interface HandlerMonthlyProfitTrendResponse {
-  cost?: number
-  expenses?: number
+  gross_margin?: number
   gross_profit?: number
-  month?: string
+  month?: number
+  net_margin?: number
   net_profit?: number
-  profit_margin?: number
-  revenue?: number
+  sales_revenue?: number
+  year?: number
 }

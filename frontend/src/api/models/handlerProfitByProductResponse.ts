@@ -9,11 +9,12 @@
  */
 export interface HandlerProfitByProductResponse {
   category_name?: string
-  cost?: number
+  cogs?: number
+  contribution?: number
+  gross_margin?: number
   gross_profit?: number
   product_id?: string
   product_name?: string
-  profit_margin?: number
-  quantity?: number
-  revenue?: number
+  product_sku?: string
+  sales_revenue?: number
 }

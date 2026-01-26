@@ -202,6 +202,14 @@ definitions:
   handler.AddPurchaseOrderItemRequest:
     description: Request body for adding an item to a purchase order
     properties:
+      base_unit:
+        description: Base unit code - defaults to Unit if empty
+        example: pcs
+        type: string
+      conversion_rate:
+        description: Conversion rate to base unit - defaults to 1 if empty
+        example: 1
+        type: number
       product_code:
         example: SKU-001
         maxLength: 50
@@ -577,51 +585,48 @@ definitions:
   handler.CashFlowItemResponse:
     description: Individual cash flow item
     properties:
-      balance:
-        example: 55000
+      amount:
+        example: 5000
         type: number
-      category:
-        example: operating
-        type: string
       date:
-        example: "2026-01-15"
+        example: "2026-01-15T00:00:00Z"
         type: string
       description:
         example: Sales collection
         type: string
-      inflow:
-        example: 5000
+      reference_no:
+        example: RCV-2026-001
+        type: string
+      running_balance:
+        example: 55000
         type: number
-      outflow:
-        example: 0
-        type: number
+      type:
+        example: receipt
+        type: string
     type: object
   handler.CashFlowStatementResponse:
     description: Cash flow statement
     properties:
-      cash_from_sales:
-        example: 100000
-        type: number
-      cash_to_expenses:
-        example: 15000
-        type: number
-      cash_to_purchases:
-        example: 70000
-        type: number
-      closing_cash_balance:
-        example: 66000
-        type: number
-      net_cash_flow:
-        example: 16000
-        type: number
-      opening_cash_balance:
+      beginning_cash:
         example: 50000
         type: number
-      other_cash_inflow:
+      ending_cash:
+        example: 67000
+        type: number
+      expense_payments:
+        example: 15000
+        type: number
+      net_cash_flow:
+        example: 17000
+        type: number
+      net_operating_cash_flow:
+        example: 17000
+        type: number
+      other_income:
         example: 2000
         type: number
-      other_cash_outflow:
-        example: 1000
+      payments_to_suppliers:
+        example: 70000
         type: number
       period_end:
         example: "2026-01-31T23:59:59Z"
@@ -629,6 +634,9 @@ definitions:
       period_start:
         example: "2026-01-01T00:00:00Z"
         type: string
+      receipts_from_customers:
+        example: 100000
+        type: number
     type: object
   handler.CashFlowSummaryResponse:
     description: Cash flow summary response
@@ -1147,6 +1155,14 @@ definitions:
   handler.CreatePurchaseOrderItemInput:
     description: Purchase order item for creation
     properties:
+      base_unit:
+        description: Base unit code - defaults to Unit if empty
+        example: pcs
+        type: string
+      conversion_rate:
+        description: Conversion rate to base unit - defaults to 1 if empty
+        example: 1
+        type: number
       product_code:
         example: SKU-001
         maxLength: 50
@@ -2390,27 +2406,27 @@ definitions:
   handler.MonthlyProfitTrendResponse:
     description: Monthly profit trend data point
     properties:
-      cost:
-        example: 87500
-        type: number
-      expenses:
-        example: 15000
+      gross_margin:
+        example: 0.3
         type: number
       gross_profit:
         example: 37500
         type: number
       month:
-        example: 2026-01
-        type: string
+        example: 1
+        type: integer
+      net_margin:
+        example: 0.18
+        type: number
       net_profit:
         example: 22500
         type: number
-      profit_margin:
-        example: 18
-        type: number
-      revenue:
+      sales_revenue:
         example: 125000
         type: number
+      year:
+        example: 2026
+        type: integer
     type: object
   handler.MoveCategoryRequest:
     description: Request body for moving a category to a new parent
@@ -2822,8 +2838,14 @@ definitions:
       category_name:
         example: Electronics
         type: string
-      cost:
+      cogs:
         example: 17500
+        type: number
+      contribution:
+        example: 0.15
+        type: number
+      gross_margin:
+        example: 0.3
         type: number
       gross_profit:
         example: 7500
@@ -2834,39 +2856,36 @@ definitions:
       product_name:
         example: Sample Product
         type: string
-      profit_margin:
-        example: 30
-        type: number
-      quantity:
-        example: 500
-        type: number
-      revenue:
+      product_sku:
+        example: SKU-001
+        type: string
+      sales_revenue:
         example: 25000
         type: number
     type: object
   handler.ProfitLossStatementResponse:
     description: Detailed profit and loss statement
     properties:
-      cost_of_goods_sold:
-        example: 87500
+      cogs:
+        example: 84000
         type: number
-      gross_profit:
-        example: 37500
-        type: number
-      gross_profit_margin:
-        example: 30
-        type: number
-      net_profit:
-        example: 23500
-        type: number
-      net_profit_margin:
-        example: 18.8
-        type: number
-      operating_expenses:
+      expenses:
         example: 15000
         type: number
-      other_expenses:
-        example: 1000
+      gross_margin:
+        example: 0.3
+        type: number
+      gross_profit:
+        example: 36000
+        type: number
+      net_margin:
+        example: 0.19
+        type: number
+      net_profit:
+        example: 23000
+        type: number
+      net_sales_revenue:
+        example: 120000
         type: number
       other_income:
         example: 2000
@@ -2877,8 +2896,14 @@ definitions:
       period_start:
         example: "2026-01-01T00:00:00Z"
         type: string
-      revenue:
+      sales_returns:
+        example: 5000
+        type: number
+      sales_revenue:
         example: 125000
+        type: number
+      total_income:
+        example: 38000
         type: number
     type: object
   handler.PurchaseOrderItemResponse:

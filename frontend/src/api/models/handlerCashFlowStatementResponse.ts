@@ -8,14 +8,14 @@
  * Cash flow statement
  */
 export interface HandlerCashFlowStatementResponse {
-  cash_from_sales?: number
-  cash_to_expenses?: number
-  cash_to_purchases?: number
-  closing_cash_balance?: number
+  beginning_cash?: number
+  ending_cash?: number
+  expense_payments?: number
   net_cash_flow?: number
-  opening_cash_balance?: number
-  other_cash_inflow?: number
-  other_cash_outflow?: number
+  net_operating_cash_flow?: number
+  other_income?: number
+  payments_to_suppliers?: number
   period_end?: string
   period_start?: string
+  receipts_from_customers?: number
 }
