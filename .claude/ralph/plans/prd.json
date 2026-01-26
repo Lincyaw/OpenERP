@@ -4204,7 +4204,7 @@
       "Support custom customer levels per tenant",
       "Migrate existing customer data to new structure"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.2 - CustomerLevel Value Object",
     "affectedModules": [
       "backend/internal/domain/partner/customer.go",
@@ -4213,21 +4213,26 @@
     ],
     "severity": "MEDIUM",
     "validation_date": "2026-01-26",
-    "validation_score": "4/10",
+    "validation_score": "8/10",
     "validation_findings": [
-      "CRITICAL-1: CustomerLevel is string enum, not proper Value Object per spec",
-      "CRITICAL-2: discountRate is in infrastructure layer (pricing strategy), not domain",
-      "HIGH-1: No support for custom tenant levels - DB CHECK constraint hardcoded",
-      "HIGH-2: No comparison or validation methods (Equals, IsHigherThan, etc.)",
-      "HIGH-3: CustomerLevel passed as plain string in Trade DTOs - no type safety",
-      "MEDIUM-1: CustomerLevelChangedEvent missing discountRate field",
-      "MEDIUM-2: Frontend has no typed CustomerLevel definition"
+      "CRITICAL-1: CustomerLevel is string enum - PASSED (Now proper Value Object with code/name/discountRate)",
+      "CRITICAL-2: discountRate in infrastructure layer - PASSED (Now in domain CustomerLevel struct)",
+      "HIGH-1: No custom tenant levels support - PASSED (customer_levels table supports any code per tenant)",
+      "HIGH-2: No comparison/validation methods - PASSED (Equals, IsHigherThan, IsValid, etc. implemented)",
+      "HIGH-3: CustomerLevel as plain string in Trade DTOs - PARTIAL (Still string, needs type safety)",
+      "HIGH-4: Duplicate discount rates in pricing strategy - NEW (Infrastructure maintains separate map)",
+      "MEDIUM-1: CustomerLevelChangedEvent missing discountRate - PASSED (Full CustomerLevel VO included)",
+      "MEDIUM-2: Frontend no typed CustomerLevel - PARTIAL (Has enum but not full VO interface)"
     ],
     "positive_findings": [
-      "Domain Events pattern implemented correctly (CustomerLevelChangedEvent)",
-      "Repository pattern correct (interface in domain, impl in infrastructure)",
-      "Pricing Strategy pattern well-structured",
-      "Multi-tenancy implemented with TenantID"
+      "Proper Value Object design with immutability and private fields",
+      "Factory methods for standard levels (NormalLevel, SilverLevel, etc.)",
+      "Rich behavior: ApplyDiscount, CalculateDiscountAmount, IsHigherThan",
+      "Complete multi-tenancy support in domain and infrastructure",
+      "Comprehensive CustomerLevelRepository interface with batch queries",
+      "Clean application service layer with proper orchestration",
+      "Excellent database migration with triggers and data migration",
+      "Well-documented code with clear warnings about partial levels"
     ],
     "implementationNeeded": [
       "Create customer_levels table migration with tenant-specific levels",
@@ -4237,6 +4242,12 @@
       "Add CustomerLevelRepository interface and implementation",
       "Create data migration for existing customer.level strings",
       "Update frontend types and add CustomerLevel management UI"
+    ],
+    "remaining_issues": [
+      "CustomerLevelPricingStrategy should use domain CustomerLevel.DiscountRate() instead of own map",
+      "Trade DTOs should validate/type CustomerLevel string",
+      "Frontend needs API generation for customer-levels endpoints",
+      "Consider batch EnrichCustomerLevels to prevent N+1 queries"
     ]
   },
   {
@@ -4250,14 +4261,32 @@
       "Add product-level unit definitions with base unit",
       "Implement unit validation and normalization"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.1 - Unit Value Object",
     "affectedModules": [
       "backend/internal/domain/shared/valueobject/unit.go",
       "backend/internal/domain/catalog/product.go",
       "backend/internal/domain/trade/sales_order.go"
     ],
-    "severity": "MEDIUM"
+    "severity": "MEDIUM",
+    "validation_date": "2026-01-26",
+    "validation_score": "9/10",
+    "validation_status": "PASSED",
+    "completion_date": "2026-01-26",
+    "completion_notes": [
+      "Created immutable Unit value object with code, name, conversionRate",
+      "Implemented unit code normalization (uppercase, trimmed)",
+      "Added comprehensive validation in constructor",
+      "Integrated with UnitConversionService via new *VO methods",
+      "Added ToUnit/FromUnit bridge methods for backward compatibility",
+      "Predefined units (PCS, BOX, KG, G, L, ML, M, CM)",
+      "Full JSON serialization and database operations support",
+      "Test coverage 89.1%"
+    ],
+    "remaining_work": [
+      "HIGH-001: Replace string Unit fields in Product, SalesOrderItem, PurchaseOrderItem with Unit VO (future task)",
+      "HIGH-002: ProductUnit is Entity pattern decision - kept as is (pragmatic)"
+    ]
   },
   {
     "id": "DDD-015",

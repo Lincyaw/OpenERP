@@ -3,6 +3,7 @@ package service
 import (
 	"testing"
 
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -416,4 +417,228 @@ func TestUnitConversionService_ValidateConversionRate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// ================================================================
+// Tests for Unit value object integration
+// ================================================================
+
+func TestUnitInfo_ToUnit(t *testing.T) {
+	info := UnitInfo{
+		UnitCode:       "BOX",
+		UnitName:       "Box",
+		ConversionRate: decimal.NewFromInt(24),
+		IsBaseUnit:     false,
+	}
+
+	unit, err := info.ToUnit()
+	require.NoError(t, err)
+	assert.Equal(t, "BOX", unit.Code())
+	assert.Equal(t, "Box", unit.Name())
+	assert.True(t, unit.ConversionRate().Equal(decimal.NewFromInt(24)))
+}
+
+func TestFromUnit(t *testing.T) {
+	unit, err := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+	require.NoError(t, err)
+
+	info := FromUnit(unit)
+	assert.Equal(t, "BOX", info.UnitCode)
+	assert.Equal(t, "Box", info.UnitName)
+	assert.True(t, info.ConversionRate.Equal(decimal.NewFromInt(24)))
+	assert.False(t, info.IsBaseUnit)
+
+	// Test base unit
+	baseUnit, _ := valueobject.NewBaseUnit("PCS", "Pieces")
+	baseInfo := FromUnit(baseUnit)
+	assert.True(t, baseInfo.IsBaseUnit)
+}
+
+func TestUnitConversionService_ConvertToBaseUnitVO(t *testing.T) {
+	svc := NewUnitConversionService()
+
+	box, _ := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+	pcs, _ := valueobject.NewBaseUnit("PCS", "Pieces")
+
+	tests := []struct {
+		name       string
+		quantity   decimal.Decimal
+		sourceUnit valueobject.Unit
+		baseUnit   valueobject.Unit
+		wantBase   decimal.Decimal
+		wantErr    bool
+	}{
+		{
+			name:       "convert boxes to pieces",
+			quantity:   decimal.NewFromInt(10),
+			sourceUnit: box,
+			baseUnit:   pcs,
+			wantBase:   decimal.NewFromInt(240),
+			wantErr:    false,
+		},
+		{
+			name:       "zero quantity is valid",
+			quantity:   decimal.Zero,
+			sourceUnit: box,
+			baseUnit:   pcs,
+			wantBase:   decimal.Zero,
+			wantErr:    false,
+		},
+		{
+			name:       "negative quantity is error",
+			quantity:   decimal.NewFromInt(-10),
+			sourceUnit: box,
+			baseUnit:   pcs,
+			wantBase:   decimal.Zero,
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := svc.ConvertToBaseUnitVO(tt.quantity, tt.sourceUnit, tt.baseUnit)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, tt.wantBase.Equal(result.BaseQuantity))
+		})
+	}
+}
+
+func TestUnitConversionService_ConvertFromBaseUnitVO(t *testing.T) {
+	svc := NewUnitConversionService()
+
+	box, _ := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+	pcs, _ := valueobject.NewBaseUnit("PCS", "Pieces")
+
+	tests := []struct {
+		name         string
+		baseQuantity decimal.Decimal
+		targetUnit   valueobject.Unit
+		baseUnit     valueobject.Unit
+		wantTarget   decimal.Decimal
+		wantErr      bool
+	}{
+		{
+			name:         "convert pieces to boxes",
+			baseQuantity: decimal.NewFromInt(240),
+			targetUnit:   box,
+			baseUnit:     pcs,
+			wantTarget:   decimal.NewFromInt(10),
+			wantErr:      false,
+		},
+		{
+			name:         "convert with remainder",
+			baseQuantity: decimal.NewFromInt(30),
+			targetUnit:   box,
+			baseUnit:     pcs,
+			wantTarget:   decimal.NewFromFloat(1.25),
+			wantErr:      false,
+		},
+		{
+			name:         "negative quantity is error",
+			baseQuantity: decimal.NewFromInt(-10),
+			targetUnit:   box,
+			baseUnit:     pcs,
+			wantTarget:   decimal.Zero,
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := svc.ConvertFromBaseUnitVO(tt.baseQuantity, tt.targetUnit, tt.baseUnit)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, tt.wantTarget.Equal(result.SourceQuantity))
+		})
+	}
+}
+
+func TestUnitConversionService_ConvertBetweenUnitsVO(t *testing.T) {
+	svc := NewUnitConversionService()
+
+	box, _ := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+	dozen, _ := valueobject.NewUnit("DZ", "Dozen", decimal.NewFromInt(12))
+	pcs, _ := valueobject.NewBaseUnit("PCS", "Pieces")
+
+	tests := []struct {
+		name       string
+		quantity   decimal.Decimal
+		sourceUnit valueobject.Unit
+		targetUnit valueobject.Unit
+		wantTarget decimal.Decimal
+		wantErr    bool
+	}{
+		{
+			name:       "convert boxes to dozens",
+			quantity:   decimal.NewFromInt(1),
+			sourceUnit: box,
+			targetUnit: dozen,
+			wantTarget: decimal.NewFromInt(2), // 1 box = 24 pcs = 2 dozens
+			wantErr:    false,
+		},
+		{
+			name:       "convert dozens to boxes",
+			quantity:   decimal.NewFromInt(4),
+			sourceUnit: dozen,
+			targetUnit: box,
+			wantTarget: decimal.NewFromInt(2), // 4 dozens = 48 pcs = 2 boxes
+			wantErr:    false,
+		},
+		{
+			name:       "convert box to pieces",
+			quantity:   decimal.NewFromInt(2),
+			sourceUnit: box,
+			targetUnit: pcs,
+			wantTarget: decimal.NewFromInt(48),
+			wantErr:    false,
+		},
+		{
+			name:       "negative quantity is error",
+			quantity:   decimal.NewFromInt(-1),
+			sourceUnit: box,
+			targetUnit: dozen,
+			wantTarget: decimal.Zero,
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := svc.ConvertBetweenUnitsVO(tt.quantity, tt.sourceUnit, tt.targetUnit)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.True(t, tt.wantTarget.Equal(result),
+				"expected %s, got %s", tt.wantTarget, result)
+		})
+	}
+}
+
+func TestUnitConversionService_CalculateUnitPriceVO(t *testing.T) {
+	svc := NewUnitConversionService()
+
+	box, _ := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+
+	// 1.50 per piece, should be 36.00 per box
+	result := svc.CalculateUnitPriceVO(decimal.NewFromFloat(1.50), box)
+	assert.True(t, result.Equal(decimal.NewFromFloat(36.00)))
+}
+
+func TestUnitConversionService_CalculateBaseUnitPriceVO(t *testing.T) {
+	svc := NewUnitConversionService()
+
+	box, _ := valueobject.NewUnit("BOX", "Box", decimal.NewFromInt(24))
+
+	// 36.00 per box, should be 1.50 per piece
+	result := svc.CalculateBaseUnitPriceVO(decimal.NewFromFloat(36.00), box)
+	assert.True(t, result.Equal(decimal.NewFromFloat(1.50)))
 }
