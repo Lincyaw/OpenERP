@@ -20256,3 +20256,50 @@ New files:
 - Add integration tests with database
 - Consider adding rate limiting for expensive operations
 - Consider pagination for large tenant datasets
+
+2026-01-26 - Task DDD-017: Customer Balance Recharge Backend Integration
+
+=== Implementation Details ===
+- Enhanced customer balance recharge functionality with payment method support per spec.md section 17
+- Added PaymentMethod type (CASH, WECHAT, ALIPAY, BANK) with validation in customer_events.go
+- Updated RechargeRequest to include required payment_method field
+- Implemented domain event publishing for balance operations:
+  - CustomerBalanceTopUpEvent: Published when customer tops up balance
+  - CustomerBalanceDeductedEvent: Published when balance is consumed
+  - CustomerBalanceRefundedEvent: Published when balance is refunded
+  - CustomerBalanceAdjustedEvent: Published when balance is manually adjusted
+- Added SetEventBus method to BalanceTransactionService for event bus injection
+- Created comprehensive unit tests for balance transaction functionality (519 lines)
+
+=== Key Files Modified ===
+- backend/internal/domain/partner/customer_events.go - Added new balance transaction events and PaymentMethod type
+- backend/internal/application/partner/balance_transaction_service.go - Updated Recharge to accept PaymentMethod, added domain event publishing
+- backend/internal/interfaces/http/handler/balance_transaction.go - Updated RechargeRequest with payment_method field
+- backend/internal/application/partner/dto.go - Updated RechargeBalanceRequest with payment_method field
+- backend/internal/domain/partner/balance_transaction_test.go - New comprehensive unit tests
+
+=== API Changes ===
+- POST /partner/customers/{id}/balance/recharge now requires payment_method field
+  Request body example:
+  {
+    "amount": 1000.00,
+    "payment_method": "CASH",  // Required: CASH, WECHAT, ALIPAY, or BANK
+    "reference": "RCH-20260124-001",
+    "remark": "Customer deposit"
+  }
+
+=== Verification ===
+- All domain layer tests pass (go test ./internal/domain/partner/...)
+- All application layer tests pass (go test ./internal/application/partner/...)
+- Build verification passed (go build ./...)
+- Code review completed - identified areas for future improvement
+
+=== Future Improvements (from code review) ===
+- Add database transaction wrapper around balance update + transaction creation (atomicity)
+- Store PaymentMethod in BalanceTransaction record for audit trail
+- Add service layer unit tests for BalanceTransactionService
+- Consider transactional outbox pattern for more reliable event publishing
+
+=== Next Steps ===
+- Frontend integration for customer balance recharge form
+- E2E testing for complete recharge flow

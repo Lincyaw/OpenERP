@@ -2,6 +2,7 @@ package handler
 
 import (
 	partnerapp "github.com/erp/backend/internal/application/partner"
+	"github.com/erp/backend/internal/domain/partner"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -23,9 +24,10 @@ func NewBalanceTransactionHandler(balanceTxService *partnerapp.BalanceTransactio
 // RechargeRequest represents a request to recharge customer balance
 // @Description Request body for recharging customer balance
 type RechargeRequest struct {
-	Amount    float64 `json:"amount" binding:"required,gt=0" example:"1000.00"`
-	Reference string  `json:"reference" binding:"max=100" example:"RCH-20260124-001"`
-	Remark    string  `json:"remark" binding:"max=500" example:"Customer deposit"`
+	Amount        float64 `json:"amount" binding:"required,gt=0" example:"1000.00"`
+	PaymentMethod string  `json:"payment_method" binding:"required,oneof=CASH WECHAT ALIPAY BANK" example:"CASH"`
+	Reference     string  `json:"reference" binding:"max=100" example:"RCH-20260124-001"`
+	Remark        string  `json:"remark" binding:"max=500" example:"Customer deposit"`
 }
 
 // AdjustRequest represents a request to adjust customer balance
@@ -114,6 +116,7 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 	}
 
 	amount := decimal.NewFromFloat(req.Amount)
+	paymentMethod := partner.PaymentMethod(req.PaymentMethod)
 
 	// Get operator ID from context if available
 	var operatorID *uuid.UUID
@@ -128,6 +131,7 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 		tenantID,
 		customerID,
 		amount,
+		paymentMethod,
 		req.Reference,
 		req.Remark,
 		operatorID,

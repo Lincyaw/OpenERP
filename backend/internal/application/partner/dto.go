@@ -569,9 +569,10 @@ func ToWarehouseListResponses(warehouses []partner.Warehouse) []WarehouseListRes
 
 // RechargeBalanceRequest represents a request to recharge customer balance
 type RechargeBalanceRequest struct {
-	Amount    float64 `json:"amount" binding:"required,gt=0"`
-	Reference string  `json:"reference" binding:"max=100"`
-	Remark    string  `json:"remark" binding:"max=500"`
+	Amount        float64 `json:"amount" binding:"required,gt=0"`
+	PaymentMethod string  `json:"payment_method" binding:"required,oneof=CASH WECHAT ALIPAY BANK"`
+	Reference     string  `json:"reference" binding:"max=100"`
+	Remark        string  `json:"remark" binding:"max=500"`
 }
 
 // AdjustBalanceRequest represents a request to adjust customer balance

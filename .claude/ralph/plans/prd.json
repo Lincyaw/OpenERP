@@ -4339,7 +4339,7 @@
       "Implement balance refund for returns",
       "Add balance history query endpoint"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Appendix A - CustomerBalanceTopUp Event",
     "affectedModules": [
       "backend/internal/domain/partner/customer.go",

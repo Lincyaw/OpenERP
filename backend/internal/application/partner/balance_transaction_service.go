@@ -14,6 +14,7 @@ import (
 type BalanceTransactionService struct {
 	balanceTxRepo partner.BalanceTransactionRepository
 	customerRepo  partner.CustomerRepository
+	eventBus      shared.EventBus
 }
 
 // NewBalanceTransactionService creates a new BalanceTransactionService
@@ -27,14 +28,26 @@ func NewBalanceTransactionService(
 	}
 }
 
-// Recharge adds balance to a customer with transaction record
+// SetEventBus sets the event bus for publishing domain events
+func (s *BalanceTransactionService) SetEventBus(eventBus shared.EventBus) {
+	s.eventBus = eventBus
+}
+
+// Recharge adds balance to a customer with transaction record (top-up)
+// This is the main API for customer balance top-up per spec.md section 17
 func (s *BalanceTransactionService) Recharge(
 	ctx context.Context,
 	tenantID, customerID uuid.UUID,
 	amount decimal.Decimal,
+	paymentMethod partner.PaymentMethod,
 	reference, remark string,
 	operatorID *uuid.UUID,
 ) (*BalanceTransactionResponse, error) {
+	// Validate payment method
+	if !paymentMethod.IsValid() {
+		return nil, shared.NewDomainError("INVALID_PAYMENT_METHOD", "Invalid payment method")
+	}
+
 	// Get customer
 	customer, err := s.customerRepo.FindByIDForTenant(ctx, tenantID, customerID)
 	if err != nil {
@@ -80,8 +93,36 @@ func (s *BalanceTransactionService) Recharge(
 		return nil, err
 	}
 
+	// Publish domain event (CustomerBalanceTopUp)
+	if s.eventBus != nil {
+		event := partner.NewCustomerBalanceTopUpEvent(
+			tenantID,
+			customerID,
+			customer.Code,
+			amount,
+			balanceBefore,
+			transaction.BalanceAfter,
+			paymentMethod,
+			reference,
+			transaction.ID,
+			transaction.TransactionDate.Format(time.RFC3339),
+		)
+		_ = s.eventBus.Publish(ctx, event) // Ignore publish errors, don't fail the transaction
+	}
+
 	response := ToBalanceTransactionResponse(transaction)
 	return &response, nil
+}
+
+// RechargeWithDefaults adds balance with default payment method (for backward compatibility)
+func (s *BalanceTransactionService) RechargeWithDefaults(
+	ctx context.Context,
+	tenantID, customerID uuid.UUID,
+	amount decimal.Decimal,
+	reference, remark string,
+	operatorID *uuid.UUID,
+) (*BalanceTransactionResponse, error) {
+	return s.Recharge(ctx, tenantID, customerID, amount, partner.PaymentMethodCash, reference, remark, operatorID)
 }
 
 // Consume deducts balance from a customer with transaction record
@@ -140,6 +181,22 @@ func (s *BalanceTransactionService) Consume(
 	// Save transaction
 	if err := s.balanceTxRepo.Create(ctx, transaction); err != nil {
 		return nil, err
+	}
+
+	// Publish domain event (CustomerBalanceDeducted)
+	if s.eventBus != nil {
+		event := partner.NewCustomerBalanceDeductedEvent(
+			tenantID,
+			customerID,
+			customer.Code,
+			amount,
+			balanceBefore,
+			transaction.BalanceAfter,
+			reference,
+			transaction.ID,
+			transaction.TransactionDate.Format(time.RFC3339),
+		)
+		_ = s.eventBus.Publish(ctx, event)
 	}
 
 	response := ToBalanceTransactionResponse(transaction)
@@ -204,6 +261,22 @@ func (s *BalanceTransactionService) Refund(
 		return nil, err
 	}
 
+	// Publish domain event (CustomerBalanceRefunded)
+	if s.eventBus != nil {
+		event := partner.NewCustomerBalanceRefundedEvent(
+			tenantID,
+			customerID,
+			customer.Code,
+			amount,
+			balanceBefore,
+			transaction.BalanceAfter,
+			reference,
+			transaction.ID,
+			transaction.TransactionDate.Format(time.RFC3339),
+		)
+		_ = s.eventBus.Publish(ctx, event)
+	}
+
 	response := ToBalanceTransactionResponse(transaction)
 	return &response, nil
 }
@@ -266,6 +339,23 @@ func (s *BalanceTransactionService) Adjust(
 	// Save transaction
 	if err := s.balanceTxRepo.Create(ctx, transaction); err != nil {
 		return nil, err
+	}
+
+	// Publish domain event (CustomerBalanceAdjusted)
+	if s.eventBus != nil {
+		event := partner.NewCustomerBalanceAdjustedEvent(
+			tenantID,
+			customerID,
+			customer.Code,
+			amount,
+			isIncrease,
+			balanceBefore,
+			transaction.BalanceAfter,
+			remark,
+			transaction.ID,
+			transaction.TransactionDate.Format(time.RFC3339),
+		)
+		_ = s.eventBus.Publish(ctx, event)
 	}
 
 	response := ToBalanceTransactionResponse(transaction)
