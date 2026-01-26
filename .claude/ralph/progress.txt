@@ -18034,3 +18034,57 @@ Changed `page_size` from 1000 to 100 in `Permissions.tsx` line 205.
 - If more than 100 roles exist, pagination UI could be added in the future
 - This matches the backend's documented API maximum (100)
 
+
+
+---
+
+## P10-BUG-001: 修复商品管理表格进价售价不显示 (2026-01-26)
+
+### Task
+Fix the product management table where purchase_price and selling_price columns were showing empty instead of formatted currency values.
+
+### Root Cause Analysis
+The backend uses `decimal.Decimal` type for price fields which serialize to JSON as strings (e.g., `"7000"` instead of `7000`). The frontend `formatCurrency` function expects a `number` type parameter. When a string is passed, the internal check `typeof value !== 'number'` returns true, causing `formatNumber` to return an empty string.
+
+### Solution
+Modified the column render functions in Products.tsx to:
+1. Check if the price value is a string and parse it using `parseFloat()`
+2. Fall back to using the value directly if it's already a number
+3. Add `isNaN()` check to handle invalid values gracefully
+
+This pattern is consistent with the existing `formatCurrencyValue` helper in `CustomerBalance.tsx`.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/pages/catalog/Products.tsx` | Updated purchase_price and selling_price column render functions to parse string values |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-001 as passes: true with root cause documentation |
+
+### Code Change
+
+```tsx
+// Before: Assumed price was always number type
+render: (price: unknown) => {
+  const priceValue = price as number | undefined
+  if (priceValue === undefined || priceValue === null) return '-'
+  return formatCurrency(priceValue)
+}
+
+// After: Handle string values from API (decimal.Decimal serialization)
+render: (price: unknown) => {
+  if (price === undefined || price === null) return '-'
+  // API returns decimal values as strings, parse them to numbers
+  const numValue = typeof price === 'string' ? parseFloat(price) : (price as number)
+  if (isNaN(numValue)) return '-'
+  return formatCurrency(numValue)
+}
+```
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ API returns prices as strings: `{"purchase_price":"7000","selling_price":"8999"}`
+- ✅ Frontend now correctly parses and displays: `¥7,000.00` / `¥8,999.00`
+
+### Impact
+This fix ensures product prices are properly displayed in the product management table. The same pattern should be applied to any other component that displays decimal values from the API.

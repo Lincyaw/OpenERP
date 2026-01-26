@@ -3574,18 +3574,20 @@
       "问题: 商品列表表格中进价(purchase_price)和售价(selling_price)不渲染",
       "文件: frontend/src/pages/catalog/Products.tsx (L298-320)",
       "",
-      "调查结果:",
-      "- 前端表格列定义正确，使用了purchase_price和selling_price字段",
-      "- render函数中使用formatCurrency格式化",
-      "- 问题可能是API返回值为null/undefined",
+      "根本原因:",
+      "- 后端使用decimal.Decimal类型存储价格，JSON序列化时返回字符串(如'7000')而非数字",
+      "- 前端formatCurrency函数期望number类型参数",
+      "- 当传入字符串时，typeof value !== 'number' 判断返回true，导致formatNumber返回空字符串",
       "",
-      "修复步骤:",
-      "1. 检查后端ProductListResponse是否正确填充价格字段",
-      "2. 验证数据库中商品记录是否有价格数据",
-      "3. 确认formatCurrency函数对0值的处理",
-      "4. 必要时修改render函数的null判断逻辑"
+      "修复方案:",
+      "- 在render函数中添加字符串到数字的转换: typeof price === 'string' ? parseFloat(price) : price",
+      "- 添加isNaN检查防止无效数值",
+      "- 此模式与CustomerBalance.tsx中的formatCurrencyValue函数一致",
+      "",
+      "修改文件:",
+      "- frontend/src/pages/catalog/Products.tsx (L303-319): 修改purchase_price和selling_price列的render函数"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P10-BUG-002",

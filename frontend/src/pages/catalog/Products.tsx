@@ -301,9 +301,11 @@ export default function ProductsPage() {
         align: 'right',
         sortable: true,
         render: (price: unknown) => {
-          const priceValue = price as number | undefined
-          if (priceValue === undefined || priceValue === null) return '-'
-          return formatCurrency(priceValue)
+          if (price === undefined || price === null) return '-'
+          // API returns decimal values as strings, parse them to numbers
+          const numValue = typeof price === 'string' ? parseFloat(price) : (price as number)
+          if (isNaN(numValue)) return '-'
+          return formatCurrency(numValue)
         },
       },
       {
@@ -313,9 +315,11 @@ export default function ProductsPage() {
         align: 'right',
         sortable: true,
         render: (price: unknown) => {
-          const priceValue = price as number | undefined
-          if (priceValue === undefined || priceValue === null) return '-'
-          return formatCurrency(priceValue)
+          if (price === undefined || price === null) return '-'
+          // API returns decimal values as strings, parse them to numbers
+          const numValue = typeof price === 'string' ? parseFloat(price) : (price as number)
+          if (isNaN(numValue)) return '-'
+          return formatCurrency(numValue)
         },
       },
       {
