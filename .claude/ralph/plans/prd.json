@@ -3639,7 +3639,12 @@
       "2. 验证种子数据中供应商是否有账期值",
       "3. 确认数据库查询是否包含该字段"
     ],
-    "passes": false
+    "passes": true,
+    "fix_notes": [
+      "Root cause: Application DTO used credit_days JSON tag but swagger/frontend expected payment_term_days",
+      "Fixed: Updated SupplierResponse and SupplierListResponse JSON tags from credit_days to payment_term_days",
+      "Files: backend/internal/application/partner/dto.go (lines 264, 289)"
+    ]
   },
   {
     "id": "P10-BUG-004",

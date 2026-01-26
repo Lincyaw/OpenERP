@@ -261,7 +261,7 @@ type SupplierResponse struct {
 	TaxID           string          `json:"tax_id"`
 	BankName        string          `json:"bank_name"`
 	BankAccount     string          `json:"bank_account"`
-	CreditDays      int             `json:"credit_days"`
+	CreditDays      int             `json:"payment_term_days"`
 	CreditLimit     decimal.Decimal `json:"credit_limit"`
 	Balance         decimal.Decimal `json:"balance"`
 	AvailableCredit decimal.Decimal `json:"available_credit"`
@@ -286,7 +286,7 @@ type SupplierListResponse struct {
 	Phone       string          `json:"phone"`
 	Email       string          `json:"email"`
 	City        string          `json:"city"`
-	CreditDays  int             `json:"credit_days"`
+	CreditDays  int             `json:"payment_term_days"`
 	CreditLimit decimal.Decimal `json:"credit_limit"`
 	Balance     decimal.Decimal `json:"balance"`
 	Rating      int             `json:"rating"`

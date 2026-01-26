@@ -18276,3 +18276,46 @@ Updated frontend formatters to handle both number and string values:
 - This is a common issue when backend uses decimal libraries that serialize to strings
 - The fix is generalized and will work for any other fields using decimal serialization
 - Affects all inventory displays using formatCurrency/formatNumber functions
+
+---
+
+## P10-BUG-003: 修复供应商表格账期字段不显示 (2026-01-26)
+
+### Problem
+The supplier list table was not displaying the payment_term_days column - it showed as empty or dash.
+
+### Root Cause Analysis
+1. Frontend column definition correctly uses `dataIndex: 'payment_term_days'`
+2. Handler DTO (swagger) correctly defined `PaymentTermDays int json:"payment_term_days"`
+3. **BUT** Application DTO used `CreditDays int json:"credit_days"` 
+4. Since the handler returns the application DTO directly (not the handler DTO), the actual API response used `credit_days` instead of `payment_term_days`
+5. Frontend API models (auto-generated from swagger) expected `payment_term_days`, creating a mismatch
+
+JSON Field Name Mismatch:
+- Swagger/Handler DTO: `payment_term_days` 
+- Application DTO: `credit_days` ← Wrong!
+- Frontend expectation: `payment_term_days`
+
+### Solution
+Updated the application DTO JSON tags to match the swagger specification:
+
+**backend/internal/application/partner/dto.go:**
+- Line 264 (SupplierResponse): Changed `json:"credit_days"` to `json:"payment_term_days"`
+- Line 289 (SupplierListResponse): Changed `json:"credit_days"` to `json:"payment_term_days"`
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/application/partner/dto.go` | Updated JSON tags for CreditDays field in both SupplierResponse and SupplierListResponse |
+| `.claude/ralph/plans/prd.json` | Marked P10-BUG-003 as passes: true |
+
+### Verification
+- ✅ Backend build passes (`cd backend && go build ./...`)
+- ✅ TypeScript type check passes (`npm run type-check`)
+- ✅ Frontend build succeeds (`npm run build`)
+
+### Notes
+- This is a common issue when swagger annotations use different JSON field names than the actual DTO
+- The Go struct field name (CreditDays) remains unchanged, only the JSON serialization tag was updated
+- No frontend changes were needed as the auto-generated API models already expected `payment_term_days`
