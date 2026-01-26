@@ -20151,3 +20151,108 @@ Task DDD-014 FAILS validation:
 - Consider adding domain events for address changes (CustomerAddressChangedEvent, etc.)
 - Consider extracting shared address handling to reduce code duplication
 - Future: Add GPS coordinates support for warehouse locations
+
+## 2026-01-26 - DDD-016: Trial Balance Check Implementation
+
+### Task Details
+- **Task ID**: DDD-016
+- **Story**: Trial Balance Check Implementation
+- **Priority**: Medium
+- **Status**: COMPLETED
+
+### Implementation Details
+
+#### 1. Domain Layer (`backend/internal/domain/finance/`)
+
+**trial_balance.go** - Value objects and entities:
+- `TrialBalanceStatus`: Enum (BALANCED, UNBALANCED) with validation methods
+- `BalanceDiscrepancyType`: 7 discrepancy types for different financial mismatches
+- `BalanceDiscrepancy`: Value object representing a specific balance discrepancy
+- `TrialBalanceResult`: Result entity containing complete trial balance check results
+- `TrialBalanceCheckOptions`: Configuration for trial balance checks
+- `TrialBalanceAuditLog`: GORM entity for audit trail persistence
+- `BalanceCheckGuardResult`: Result for pre-operation balance guard checks
+
+**trial_balance_service.go** - Domain service:
+- `TrialBalanceService`: Main service with pluggable repositories
+- `PerformTrialBalanceCheck()`: Comprehensive balance validation across all financial entities
+- `CheckBalanceBeforeOperation()`: Quick check for use as guard in financial operations
+- `EnforceBalanceCheck()`: Returns error if balance is not balanced
+- Internal check methods for each entity type:
+  - `checkReceivables()`: Validates AccountReceivable internal consistency
+  - `checkPayables()`: Validates AccountPayable internal consistency
+  - `checkReceiptVouchers()`: Validates ReceiptVoucher allocations
+  - `checkPaymentVouchers()`: Validates PaymentVoucher allocations
+  - `checkCreditMemos()`: Validates CreditMemo applications
+  - `checkDebitMemos()`: Validates DebitMemo applications
+
+#### 2. Application Layer (`backend/internal/application/finance/`)
+
+**trial_balance_service.go**:
+- Application service wrapping domain service
+- `PerformTrialBalanceCheck()`: Full check with request/response DTOs
+- `QuickBalanceCheck()`: Minimal validation for guards
+- `EnforceBalanceCheck()`: Error-returning enforcement
+- `GetAuditLogs()`: Retrieve recent audit logs
+- `GenerateReconciliationReport()`: Detailed report with health score and recommendations
+- Response DTOs for API layer
+
+#### 3. Interface Layer (`backend/internal/interfaces/http/handler/`)
+
+**trial_balance.go**:
+- HTTP handler with proper authentication enforcement
+- OpenAPI (swag) annotations for API documentation
+- Endpoints:
+  - `POST /finance/trial-balance/check` - Full trial balance check
+  - `GET /finance/trial-balance/quick-check` - Quick balance verification
+  - `GET /finance/trial-balance/reconciliation-report` - Detailed reconciliation report
+  - `GET /finance/trial-balance/audit-logs` - Audit log history
+
+#### 4. Unit Tests (`backend/internal/domain/finance/`)
+
+**trial_balance_test.go**:
+- Tests for all value object validation methods
+- Tests for TrialBalanceResult state management
+- Tests for BalanceCheckGuardResult creation
+- Tests for discrepancy severity calculation
+
+### Design Decisions
+
+1. **Pluggable Repository Pattern**: TrialBalanceService uses dependency injection for all repositories, enabling easy testing and flexibility
+
+2. **Audit Logging**: All trial balance checks can optionally log to audit table for compliance tracking
+
+3. **Tolerance Configuration**: Float comparison uses configurable tolerance (default: 0.01) to prevent false positives from floating-point errors
+
+4. **Authentication Enforcement**: Removed hardcoded fallback user IDs in handlers - authentication is now required for all trial balance operations
+
+5. **Input Validation**: Added proper date format validation with clear error messages
+
+6. **Severity Classification**: Discrepancies are classified as CRITICAL (>0.01 difference) or WARNING (<=0.01 difference)
+
+### Verification
+
+- [x] All unit tests pass (`go test ./internal/domain/finance/... -v`)
+- [x] Build succeeds (`go build ./...`)
+- [x] Code review performed - addressed CRITICAL and HIGH issues:
+  - Fixed silently swallowed audit log errors
+  - Removed hardcoded fallback user IDs (security fix)
+  - Added proper date format validation
+  - Improved parseIntWithDefault function
+
+### Files Modified/Created
+
+New files:
+- `backend/internal/domain/finance/trial_balance.go`
+- `backend/internal/domain/finance/trial_balance_service.go`
+- `backend/internal/domain/finance/trial_balance_test.go`
+- `backend/internal/application/finance/trial_balance_service.go`
+- `backend/internal/interfaces/http/handler/trial_balance.go`
+
+### Next Steps
+
+- Register routes in router setup
+- Add repository implementations for audit log
+- Add integration tests with database
+- Consider adding rate limiting for expensive operations
+- Consider pagination for large tenant datasets

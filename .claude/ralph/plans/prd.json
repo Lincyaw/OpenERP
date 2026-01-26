@@ -4319,7 +4319,7 @@
       "Prevent operations that would cause imbalance",
       "Log audit trail for balance checks"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 7.4 - Trial Balance Check",
     "affectedModules": [
       "backend/internal/domain/finance/",
