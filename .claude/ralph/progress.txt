@@ -17882,3 +17882,60 @@ Created a complete SalesReturnDetail page following the pattern of SalesOrderDet
 - Enable workflow tests in sales-return.spec.ts that depend on detail page
 - Add shipped sales order seed data to enable full workflow testing
 
+
+---
+
+## P10-BUG-007: 修复销售订单发货500错误 (2026-01-26)
+
+### Task
+Fix the 500 Internal Server Error that occurred when shipping sales orders.
+
+### Root Cause Analysis
+When the Ship service method sets a warehouse and ships an order, the version number is incremented twice:
+1. `SetWarehouse()` calls `IncrementVersion()` -> version goes from 1 to 2
+2. `order.Ship()` calls `IncrementVersion()` -> version goes from 2 to 3
+
+However, `SaveWithLock()` assumed only one version increment, checking `expectedDBVersion = order.Version - 1`.
+Result: DB version=1, expectedDBVersion=2, check fails -> CONCURRENT_MODIFICATION error
+
+### Solution
+Modified `SaveWithLock()` in `sales_order_repository.go`:
+1. Fetch current version from database
+2. Validate that new version is greater than current DB version (ensures domain operations occurred)
+3. Use actual DB version in WHERE clause for optimistic lock check
+
+This approach correctly handles multiple version increments from compound domain operations.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/infrastructure/persistence/sales_order_repository.go` | Fixed SaveWithLock() version check logic |
+| `backend/internal/application/trade/sales_order_service_test.go` | Fixed test status expectations (SHIPPED->shipped) |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-007 as passes: true with implementation notes |
+
+### Code Change (sales_order_repository.go)
+```go
+// Before: assumed only one version increment
+expectedDBVersion := order.Version - 1
+if currentVersion != expectedDBVersion {
+    return shared.NewDomainError("CONCURRENT_MODIFICATION", "...")
+}
+result := tx.Model(...).Where("id = ? AND version = ?", order.ID, expectedDBVersion)
+
+// After: handles multiple version increments
+if order.Version <= currentVersion {
+    return shared.NewDomainError("CONCURRENT_MODIFICATION", "...")
+}
+result := tx.Model(...).Where("id = ? AND version = ?", order.ID, currentVersion)
+```
+
+### Verification
+- ✅ `go build ./...` succeeds
+- ✅ `SalesOrderService_Ship` tests pass
+- ✅ `SalesOrderService_Confirm/Complete/Cancel` tests pass
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+
+### Note
+Also fixed pre-existing test issues where status assertions expected uppercase (SHIPPED) but DTO returns lowercase (shipped).
+

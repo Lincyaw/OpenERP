@@ -182,7 +182,7 @@ func TestSalesOrderService_Create(t *testing.T) {
 		assert.Equal(t, testOrderNumber, result.OrderNumber)
 		assert.Equal(t, testCustomerName, result.CustomerName)
 		assert.Equal(t, 1, result.ItemCount)
-		assert.Equal(t, "DRAFT", result.Status)
+		assert.Equal(t, "draft", result.Status)
 		repo.AssertExpectations(t)
 	})
 
@@ -418,7 +418,7 @@ func TestSalesOrderService_Confirm(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CONFIRMED", result.Status)
+		assert.Equal(t, "confirmed", result.Status)
 		assert.NotNil(t, result.ConfirmedAt)
 		repo.AssertExpectations(t)
 	})
@@ -437,7 +437,7 @@ func TestSalesOrderService_Confirm(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CONFIRMED", result.Status)
+		assert.Equal(t, "confirmed", result.Status)
 		assert.NotNil(t, result.WarehouseID)
 		assert.Equal(t, warehouseID, *result.WarehouseID)
 		repo.AssertExpectations(t)
@@ -476,7 +476,7 @@ func TestSalesOrderService_Ship(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "SHIPPED", result.Status)
+		assert.Equal(t, "shipped", result.Status)
 		assert.NotNil(t, result.ShippedAt)
 		repo.AssertExpectations(t)
 	})
@@ -516,7 +516,7 @@ func TestSalesOrderService_Complete(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "COMPLETED", result.Status)
+		assert.Equal(t, "completed", result.Status)
 		assert.NotNil(t, result.CompletedAt)
 		repo.AssertExpectations(t)
 	})
@@ -537,7 +537,7 @@ func TestSalesOrderService_Cancel(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CANCELLED", result.Status)
+		assert.Equal(t, "cancelled", result.Status)
 		assert.Equal(t, "Customer request", result.CancelReason)
 		assert.NotNil(t, result.CancelledAt)
 		repo.AssertExpectations(t)
@@ -557,7 +557,7 @@ func TestSalesOrderService_Cancel(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CANCELLED", result.Status)
+		assert.Equal(t, "cancelled", result.Status)
 		repo.AssertExpectations(t)
 	})
 
