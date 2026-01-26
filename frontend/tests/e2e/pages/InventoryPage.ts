@@ -250,6 +250,24 @@ export class InventoryPage extends BasePage {
     }
   }
 
+  /**
+   * Get inventory item by warehouse and product name
+   * Filters by warehouse if provided and finds the product row
+   */
+  async getInventoryItem(
+    warehouseName: string,
+    productName: string
+  ): Promise<{ available: number; locked: number; total: number } | null> {
+    await this.navigateToList()
+    await this.filterByWarehouse(warehouseName)
+    await this.page.waitForTimeout(300)
+
+    const row = await this.getInventoryRowByProductName(productName)
+    if (!row) return null
+
+    return this.getQuantitiesFromRow(row)
+  }
+
   async clickRowAction(row: Locator, action: 'view' | 'transactions' | 'adjust'): Promise<void> {
     // Hover over the row to show actions
     await row.hover()
