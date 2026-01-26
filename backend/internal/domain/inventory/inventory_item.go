@@ -9,13 +9,37 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// InventoryUnit is the default unit for inventory quantities.
+// All inventory quantities within a single InventoryItem use the same unit,
+// which is determined by the product's base unit from the Catalog domain.
+// Using an empty string allows the Quantity value object to perform
+// arithmetic operations without unit mismatch errors.
+const InventoryUnit = ""
+
+// NewInventoryQuantity creates a new Quantity for inventory operations.
+// It validates that the quantity is non-negative.
+func NewInventoryQuantity(value decimal.Decimal) (valueobject.Quantity, error) {
+	return valueobject.NewQuantity(value, InventoryUnit)
+}
+
+// MustNewInventoryQuantity creates a new inventory Quantity, panics on error.
+// Use only in tests or when the value is known to be valid.
+func MustNewInventoryQuantity(value decimal.Decimal) valueobject.Quantity {
+	return valueobject.MustNewQuantity(value, InventoryUnit)
+}
+
+// ZeroInventoryQuantity returns a zero quantity for inventory.
+func ZeroInventoryQuantity() valueobject.Quantity {
+	return valueobject.ZeroQuantity(InventoryUnit)
+}
+
 // InventoryItem represents inventory at a specific warehouse for a specific product.
 // It is the aggregate root for inventory operations.
 // The composite identifier is WarehouseID + ProductID.
 //
 // DDD Aggregate Boundary:
 // InventoryItem is the aggregate root that manages:
-// - Stock quantities (available, locked)
+// - Stock quantities (available, locked) using Quantity value objects
 // - Unit cost calculations
 // - Stock thresholds (min, max)
 // - Child entities: StockBatch and StockLock
@@ -29,15 +53,21 @@ import (
 // - DeductStock() - consumes a lock and decreases locked quantity
 // - DecreaseStock() - directly decreases available stock (for returns)
 // - AdjustStock() - adjusts stock to match actual count
+//
+// Type Safety:
+// AvailableQuantity and LockedQuantity use the Quantity value object to ensure:
+// - Non-negative invariant is enforced
+// - Type-safe quantity operations (Add, Subtract)
+// - Immutability of quantity values
 type InventoryItem struct {
 	shared.TenantAggregateRoot
 	WarehouseID       uuid.UUID
 	ProductID         uuid.UUID
-	AvailableQuantity decimal.Decimal // Available for sale/use
-	LockedQuantity    decimal.Decimal // Reserved for pending orders
-	UnitCost          decimal.Decimal // Moving weighted average cost
-	MinQuantity       decimal.Decimal // Minimum stock threshold for alerts
-	MaxQuantity       decimal.Decimal // Maximum stock threshold
+	AvailableQuantity valueobject.Quantity // Available for sale/use
+	LockedQuantity    valueobject.Quantity // Reserved for pending orders
+	UnitCost          decimal.Decimal      // Moving weighted average cost
+	MinQuantity       valueobject.Quantity // Minimum stock threshold for alerts
+	MaxQuantity       valueobject.Quantity // Maximum stock threshold
 
 	// Associations - loaded lazily
 	Batches []StockBatch
@@ -57,11 +87,11 @@ func NewInventoryItem(tenantID, warehouseID, productID uuid.UUID) (*InventoryIte
 		TenantAggregateRoot: shared.NewTenantAggregateRoot(tenantID),
 		WarehouseID:         warehouseID,
 		ProductID:           productID,
-		AvailableQuantity:   decimal.Zero,
-		LockedQuantity:      decimal.Zero,
+		AvailableQuantity:   ZeroInventoryQuantity(),
+		LockedQuantity:      ZeroInventoryQuantity(),
 		UnitCost:            decimal.Zero,
-		MinQuantity:         decimal.Zero,
-		MaxQuantity:         decimal.Zero,
+		MinQuantity:         ZeroInventoryQuantity(),
+		MaxQuantity:         ZeroInventoryQuantity(),
 		Batches:             make([]StockBatch, 0),
 		Locks:               make([]StockLock, 0),
 	}
@@ -70,8 +100,9 @@ func NewInventoryItem(tenantID, warehouseID, productID uuid.UUID) (*InventoryIte
 }
 
 // TotalQuantity returns the total quantity (available + locked)
-func (i *InventoryItem) TotalQuantity() decimal.Decimal {
-	return i.AvailableQuantity.Add(i.LockedQuantity)
+func (i *InventoryItem) TotalQuantity() valueobject.Quantity {
+	total, _ := i.AvailableQuantity.Add(i.LockedQuantity)
+	return total
 }
 
 // IncreaseStock increases the stock quantity and recalculates unit cost using moving weighted average
@@ -84,8 +115,14 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 		return shared.NewDomainError("INVALID_COST", "Unit cost cannot be negative")
 	}
 
+	// Create quantity value object for type-safe operations
+	qtyToAdd, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
 	oldCost := i.UnitCost
-	oldQuantity := i.TotalQuantity()
+	oldQuantity := i.TotalQuantity().Amount()
 
 	// Calculate new weighted average cost
 	// New Cost = (Old Quantity * Old Cost + New Quantity * New Cost) / (Old Quantity + New Quantity)
@@ -102,8 +139,12 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 		i.UnitCost = totalValue.Div(totalQuantity).Round(4)
 	}
 
-	// Increase available quantity
-	i.AvailableQuantity = i.AvailableQuantity.Add(quantity)
+	// Increase available quantity using type-safe operation
+	newAvailable, err := i.AvailableQuantity.Add(qtyToAdd)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -137,11 +178,21 @@ func (i *InventoryItem) IncreaseStockWithCost(quantity decimal.Decimal, newUnitC
 		return shared.NewDomainError("INVALID_COST", "Unit cost cannot be negative")
 	}
 
+	// Create quantity value object for type-safe operations
+	qtyToAdd, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
 	// Set the new unit cost (pre-calculated by domain service using strategy)
 	i.UnitCost = newUnitCost
 
-	// Increase available quantity
-	i.AvailableQuantity = i.AvailableQuantity.Add(quantity)
+	// Increase available quantity using type-safe operation
+	newAvailable, err := i.AvailableQuantity.Add(qtyToAdd)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -164,15 +215,28 @@ func (i *InventoryItem) DecreaseStock(quantity decimal.Decimal, sourceType, sour
 	if quantity.LessThanOrEqual(decimal.Zero) {
 		return shared.NewDomainError("INVALID_QUANTITY", "Quantity must be positive")
 	}
-	if i.AvailableQuantity.LessThan(quantity) {
+
+	// Create quantity value object for type-safe operations
+	qtyToDecrease, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	// Check if we have enough available stock
+	hasEnough, _ := i.AvailableQuantity.GreaterThanOrEqual(qtyToDecrease)
+	if !hasEnough {
 		return shared.NewDomainError("INSUFFICIENT_STOCK", "Insufficient available stock to decrease")
 	}
 	if sourceType == "" || sourceID == "" {
 		return shared.NewDomainError("INVALID_SOURCE", "Source type and ID are required")
 	}
 
-	// Decrease available quantity
-	i.AvailableQuantity = i.AvailableQuantity.Sub(quantity)
+	// Decrease available quantity using type-safe operation
+	newAvailable, err := i.AvailableQuantity.Subtract(qtyToDecrease)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -180,8 +244,11 @@ func (i *InventoryItem) DecreaseStock(quantity decimal.Decimal, sourceType, sour
 	i.AddDomainEvent(NewStockDecreasedEvent(i, quantity, sourceType, sourceID, reason))
 
 	// Check if below minimum threshold
-	if i.MinQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().LessThan(i.MinQuantity) {
-		i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+	if !i.MinQuantity.IsZero() {
+		belowMin, _ := i.TotalQuantity().LessThan(i.MinQuantity)
+		if belowMin {
+			i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+		}
 	}
 
 	return nil
@@ -193,16 +260,33 @@ func (i *InventoryItem) LockStock(quantity decimal.Decimal, sourceType, sourceID
 	if quantity.LessThanOrEqual(decimal.Zero) {
 		return nil, shared.NewDomainError("INVALID_QUANTITY", "Lock quantity must be positive")
 	}
-	if i.AvailableQuantity.LessThan(quantity) {
+
+	// Create quantity value object for type-safe operations
+	qtyToLock, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return nil, shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	// Check if we have enough available stock
+	hasEnough, _ := i.AvailableQuantity.GreaterThanOrEqual(qtyToLock)
+	if !hasEnough {
 		return nil, shared.NewDomainError("INSUFFICIENT_STOCK", "Insufficient available stock to lock")
 	}
 	if sourceType == "" || sourceID == "" {
 		return nil, shared.NewDomainError("INVALID_SOURCE", "Source type and ID are required")
 	}
 
-	// Move quantity from available to locked
-	i.AvailableQuantity = i.AvailableQuantity.Sub(quantity)
-	i.LockedQuantity = i.LockedQuantity.Add(quantity)
+	// Move quantity from available to locked using type-safe operations
+	newAvailable, err := i.AvailableQuantity.Subtract(qtyToLock)
+	if err != nil {
+		return nil, shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	newLocked, err := i.LockedQuantity.Add(qtyToLock)
+	if err != nil {
+		return nil, shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.AvailableQuantity = newAvailable
+	i.LockedQuantity = newLocked
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -232,9 +316,23 @@ func (i *InventoryItem) UnlockStock(lockID uuid.UUID) error {
 		return shared.NewDomainError("LOCK_NOT_FOUND", "Stock lock not found or already released/consumed")
 	}
 
-	// Move quantity from locked back to available
-	i.LockedQuantity = i.LockedQuantity.Sub(lock.Quantity)
-	i.AvailableQuantity = i.AvailableQuantity.Add(lock.Quantity)
+	// Create quantity value object from the lock's quantity
+	qtyToUnlock, err := NewInventoryQuantity(lock.Quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	// Move quantity from locked back to available using type-safe operations
+	newLocked, err := i.LockedQuantity.Subtract(qtyToUnlock)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	newAvailable, err := i.AvailableQuantity.Add(qtyToUnlock)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.LockedQuantity = newLocked
+	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -264,8 +362,18 @@ func (i *InventoryItem) DeductStock(lockID uuid.UUID) error {
 		return shared.NewDomainError("LOCK_NOT_FOUND", "Stock lock not found or already released/consumed")
 	}
 
-	// Deduct from locked quantity
-	i.LockedQuantity = i.LockedQuantity.Sub(lock.Quantity)
+	// Create quantity value object from the lock's quantity
+	qtyToDeduct, err := NewInventoryQuantity(lock.Quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	// Deduct from locked quantity using type-safe operation
+	newLocked, err := i.LockedQuantity.Subtract(qtyToDeduct)
+	if err != nil {
+		return shared.NewDomainError("QUANTITY_OPERATION_ERROR", err.Error())
+	}
+	i.LockedQuantity = newLocked
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -275,8 +383,11 @@ func (i *InventoryItem) DeductStock(lockID uuid.UUID) error {
 	i.AddDomainEvent(NewStockDeductedEvent(i, lock.Quantity, lockID, lock.SourceType, lock.SourceID))
 
 	// Check if below minimum threshold
-	if i.MinQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().LessThan(i.MinQuantity) {
-		i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+	if !i.MinQuantity.IsZero() {
+		belowMin, _ := i.TotalQuantity().LessThan(i.MinQuantity)
+		if belowMin {
+			i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+		}
 	}
 
 	return nil
@@ -293,22 +404,31 @@ func (i *InventoryItem) AdjustStock(actualQuantity decimal.Decimal, reason strin
 	}
 
 	// Cannot adjust if there are outstanding locks
-	if i.LockedQuantity.GreaterThan(decimal.Zero) {
+	if !i.LockedQuantity.IsZero() {
 		return shared.NewDomainError("HAS_LOCKED_STOCK", "Cannot adjust stock while there are outstanding locks")
 	}
 
-	oldQuantity := i.AvailableQuantity
+	// Create new quantity value object
+	newQty, err := NewInventoryQuantity(actualQuantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	oldQuantity := i.AvailableQuantity.Amount()
 	difference := actualQuantity.Sub(oldQuantity)
 
-	i.AvailableQuantity = actualQuantity
+	i.AvailableQuantity = newQty
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
 	i.AddDomainEvent(NewStockAdjustedEvent(i, oldQuantity, actualQuantity, difference, reason))
 
 	// Check thresholds
-	if i.MinQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().LessThan(i.MinQuantity) {
-		i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+	if !i.MinQuantity.IsZero() {
+		belowMin, _ := i.TotalQuantity().LessThan(i.MinQuantity)
+		if belowMin {
+			i.AddDomainEvent(NewStockBelowThresholdEvent(i))
+		}
 	}
 
 	return nil
@@ -320,7 +440,12 @@ func (i *InventoryItem) SetMinQuantity(quantity decimal.Decimal) error {
 		return shared.NewDomainError("INVALID_QUANTITY", "Minimum quantity cannot be negative")
 	}
 
-	i.MinQuantity = quantity
+	minQty, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	i.MinQuantity = minQty
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -333,7 +458,12 @@ func (i *InventoryItem) SetMaxQuantity(quantity decimal.Decimal) error {
 		return shared.NewDomainError("INVALID_QUANTITY", "Maximum quantity cannot be negative")
 	}
 
-	i.MaxQuantity = quantity
+	maxQty, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return shared.NewDomainError("INVALID_QUANTITY", err.Error())
+	}
+
+	i.MaxQuantity = maxQty
 	i.UpdatedAt = time.Now()
 	i.IncrementVersion()
 
@@ -347,27 +477,40 @@ func (i *InventoryItem) GetUnitCostMoney() valueobject.Money {
 
 // GetTotalValue returns the total inventory value (total quantity * unit cost)
 func (i *InventoryItem) GetTotalValue() valueobject.Money {
-	return valueobject.NewMoneyCNY(i.TotalQuantity().Mul(i.UnitCost))
+	return valueobject.NewMoneyCNY(i.TotalQuantity().Amount().Mul(i.UnitCost))
 }
 
 // IsBelowMinimum returns true if total quantity is below minimum threshold
 func (i *InventoryItem) IsBelowMinimum() bool {
-	return i.MinQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().LessThan(i.MinQuantity)
+	if i.MinQuantity.IsZero() {
+		return false
+	}
+	belowMin, _ := i.TotalQuantity().LessThan(i.MinQuantity)
+	return belowMin
 }
 
 // IsAboveMaximum returns true if total quantity is above maximum threshold
 func (i *InventoryItem) IsAboveMaximum() bool {
-	return i.MaxQuantity.GreaterThan(decimal.Zero) && i.TotalQuantity().GreaterThan(i.MaxQuantity)
+	if i.MaxQuantity.IsZero() {
+		return false
+	}
+	aboveMax, _ := i.TotalQuantity().GreaterThan(i.MaxQuantity)
+	return aboveMax
 }
 
 // HasAvailableStock returns true if there is available stock
 func (i *InventoryItem) HasAvailableStock() bool {
-	return i.AvailableQuantity.GreaterThan(decimal.Zero)
+	return i.AvailableQuantity.IsPositive()
 }
 
 // CanFulfill returns true if the available quantity can fulfill the requested quantity
 func (i *InventoryItem) CanFulfill(quantity decimal.Decimal) bool {
-	return i.AvailableQuantity.GreaterThanOrEqual(quantity)
+	qtyToCheck, err := NewInventoryQuantity(quantity)
+	if err != nil {
+		return false
+	}
+	canFulfill, _ := i.AvailableQuantity.GreaterThanOrEqual(qtyToCheck)
+	return canFulfill
 }
 
 // GetActiveLocks returns all active (non-released, non-consumed) locks

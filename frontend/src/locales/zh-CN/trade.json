@@ -414,6 +414,84 @@
       "deleteError": "删除失败"
     }
   },
+  "salesReturnForm": {
+    "title": "新建销售退货",
+    "selectOrder": {
+      "title": "选择原订单",
+      "label": "原销售订单",
+      "placeholder": "搜索订单号或客户名称..."
+    },
+    "warehouse": {
+      "label": "退货入库仓库",
+      "placeholder": "选择退货入库仓库"
+    },
+    "orderInfo": {
+      "title": "订单信息",
+      "orderNumber": "订单号",
+      "customer": "客户",
+      "status": "状态",
+      "orderAmount": "订单金额"
+    },
+    "items": {
+      "title": "选择退货商品",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "empty": "暂无商品",
+      "columns": {
+        "select": "选择",
+        "productCode": "商品编码",
+        "productName": "商品名称",
+        "unit": "单位",
+        "unitPrice": "单价",
+        "originalQuantity": "原数量",
+        "returnQuantity": "退货数量",
+        "refundAmount": "退款金额",
+        "condition": "商品状况",
+        "reason": "退货原因",
+        "reasonPlaceholder": "原因"
+      }
+    },
+    "condition": {
+      "intact": "完好",
+      "damaged": "损坏",
+      "defective": "有瑕疵",
+      "wrongItem": "错误商品",
+      "other": "其他"
+    },
+    "summary": {
+      "itemCount": "退货商品数：",
+      "itemCountUnit": "种",
+      "totalQuantity": "退货总数量：",
+      "totalRefund": "退款总额："
+    },
+    "reason": {
+      "label": "退货原因",
+      "placeholder": "请填写退货原因"
+    },
+    "remark": {
+      "label": "备注",
+      "placeholder": "备注信息（可选）"
+    },
+    "actions": {
+      "cancel": "取消",
+      "create": "创建退货单"
+    },
+    "validation": {
+      "orderRequired": "请选择原订单",
+      "reasonRequired": "请填写退货原因",
+      "reasonTooLong": "退货原因不能超过500字",
+      "remarkTooLong": "备注不能超过500字",
+      "quantityPositive": "数量必须大于0",
+      "itemsRequired": "请至少选择一个退货商品",
+      "formError": "请检查表单填写是否正确"
+    },
+    "messages": {
+      "fetchOrderError": "获取订单详情失败",
+      "createSuccess": "退货单创建成功",
+      "createError": "创建退货单失败",
+      "createFailed": "创建失败"
+    }
+  },
   "salesReturnDetail": {
     "title": "退货单详情",
     "back": "返回列表",

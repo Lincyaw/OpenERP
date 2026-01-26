@@ -161,11 +161,11 @@ func TestSaveWithLock_UpdatedFields(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(80)
-		item.LockedQuantity = decimal.NewFromInt(20)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(80))
+		item.LockedQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(20))
 		item.UnitCost = decimal.NewFromFloat(15.50)
-		item.MinQuantity = decimal.NewFromInt(10)
-		item.MaxQuantity = decimal.NewFromInt(500)
+		item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10))
+		item.MaxQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(500))
 		item.Version = 3
 		item.UpdatedAt = time.Now()
 
@@ -193,11 +193,11 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 	t.Run("simulates read-modify-write race condition prevention", func(t *testing.T) {
 		// Simulate two readers getting the same inventory item (version 1)
 		reader1 := createTestInventoryItemForConcurrency(t)
-		reader1.AvailableQuantity = decimal.NewFromInt(100)
+		reader1.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		reader1.Version = 1
 
 		reader2 := createTestInventoryItemForConcurrency(t)
-		reader2.AvailableQuantity = decimal.NewFromInt(100)
+		reader2.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		reader2.Version = 1 // Same version as reader1
 
 		// Both readers perform domain operations
@@ -247,7 +247,7 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 func TestOversellPrevention_Domain(t *testing.T) {
 	t.Run("domain prevents locking more than available", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(50)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(50))
 
 		// Try to lock more than available - should fail at domain level
 		_, err := item.LockStock(decimal.NewFromInt(100), "order", "O-1", time.Now().Add(time.Hour))
@@ -258,14 +258,14 @@ func TestOversellPrevention_Domain(t *testing.T) {
 
 	t.Run("domain correctly tracks available vs locked", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		// Lock 30 units
 		_, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
 
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(70)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromInt(30)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(70)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromInt(30)))
 
 		// Can't lock another 80 (only 70 available)
 		_, err = item.LockStock(decimal.NewFromInt(80), "order", "O-2", time.Now().Add(time.Hour))
@@ -275,13 +275,13 @@ func TestOversellPrevention_Domain(t *testing.T) {
 		_, err = item.LockStock(decimal.NewFromInt(70), "order", "O-3", time.Now().Add(time.Hour))
 		require.NoError(t, err)
 
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(0)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromInt(100)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(0)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromInt(100)))
 	})
 
 	t.Run("CanFulfill correctly reports availability", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		assert.True(t, item.CanFulfill(decimal.NewFromInt(50)))
 		assert.True(t, item.CanFulfill(decimal.NewFromInt(100)))
@@ -299,7 +299,7 @@ func TestOversellPrevention_Domain(t *testing.T) {
 func TestVersionIncrement(t *testing.T) {
 	t.Run("LockStock increments version", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		initialVersion := item.Version
 
 		_, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
@@ -310,7 +310,7 @@ func TestVersionIncrement(t *testing.T) {
 
 	t.Run("UnlockStock increments version", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		lock, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
@@ -324,7 +324,7 @@ func TestVersionIncrement(t *testing.T) {
 
 	t.Run("DeductStock increments version", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		lock, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
@@ -352,7 +352,7 @@ func TestVersionIncrement(t *testing.T) {
 
 	t.Run("AdjustStock increments version", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		initialVersion := item.Version
 
 		err := item.AdjustStock(decimal.NewFromInt(110), "Found extra stock")
@@ -434,45 +434,48 @@ func TestStockLockRepository_Concurrency(t *testing.T) {
 func TestQuantityInvariant(t *testing.T) {
 	t.Run("TotalQuantity always equals Available + Locked", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		// Initial state
-		assert.True(t, item.TotalQuantity().Equal(item.AvailableQuantity.Add(item.LockedQuantity)))
+		expectedTotal, _ := item.AvailableQuantity.Add(item.LockedQuantity)
+		assert.True(t, item.TotalQuantity().Amount().Equal(expectedTotal.Amount()))
 
 		// After lock
 		_, _ = item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
-		assert.True(t, item.TotalQuantity().Equal(item.AvailableQuantity.Add(item.LockedQuantity)))
-		assert.True(t, item.TotalQuantity().Equal(decimal.NewFromInt(100)))
+		expectedTotal, _ = item.AvailableQuantity.Add(item.LockedQuantity)
+		assert.True(t, item.TotalQuantity().Amount().Equal(expectedTotal.Amount()))
+		assert.True(t, item.TotalQuantity().Amount().Equal(decimal.NewFromInt(100)))
 
 		// After another lock
 		_, _ = item.LockStock(decimal.NewFromInt(20), "order", "O-2", time.Now().Add(time.Hour))
-		assert.True(t, item.TotalQuantity().Equal(item.AvailableQuantity.Add(item.LockedQuantity)))
-		assert.True(t, item.TotalQuantity().Equal(decimal.NewFromInt(100)))
+		expectedTotal, _ = item.AvailableQuantity.Add(item.LockedQuantity)
+		assert.True(t, item.TotalQuantity().Amount().Equal(expectedTotal.Amount()))
+		assert.True(t, item.TotalQuantity().Amount().Equal(decimal.NewFromInt(100)))
 	})
 
 	t.Run("lock-unlock cycle preserves total", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		initialTotal := item.TotalQuantity()
 
 		lock, _ := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		_ = item.UnlockStock(lock.ID)
 
-		assert.True(t, item.TotalQuantity().Equal(initialTotal))
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(100)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.Zero))
+		assert.True(t, item.TotalQuantity().Amount().Equal(initialTotal.Amount()))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(100)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.Zero))
 	})
 
 	t.Run("deduction reduces total correctly", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		lock, _ := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		_ = item.DeductStock(lock.ID)
 
-		assert.True(t, item.TotalQuantity().Equal(decimal.NewFromInt(70)))
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(70)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.Zero))
+		assert.True(t, item.TotalQuantity().Amount().Equal(decimal.NewFromInt(70)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(70)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.Zero))
 	})
 }
 
@@ -480,7 +483,7 @@ func TestQuantityInvariant(t *testing.T) {
 func TestConcurrentMultipleLocks(t *testing.T) {
 	t.Run("multiple locks accumulate locked quantity correctly", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		// Create 5 locks of 10 units each
 		for range 5 {
@@ -493,14 +496,14 @@ func TestConcurrentMultipleLocks(t *testing.T) {
 			require.NoError(t, err)
 		}
 
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(50)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromInt(50)))
-		assert.True(t, item.TotalQuantity().Equal(decimal.NewFromInt(100)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(50)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromInt(50)))
+		assert.True(t, item.TotalQuantity().Amount().Equal(decimal.NewFromInt(100)))
 	})
 
 	t.Run("lock fails when exact available reached", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(50)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(50))
 
 		// Lock exactly all available
 		_, err := item.LockStock(decimal.NewFromInt(50), "order", "O-1", time.Now().Add(time.Hour))
@@ -517,7 +520,7 @@ func TestConcurrentMultipleLocks(t *testing.T) {
 func TestDeductionAndUnlockInteraction(t *testing.T) {
 	t.Run("cannot unlock a consumed lock", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		lock, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
@@ -533,7 +536,7 @@ func TestDeductionAndUnlockInteraction(t *testing.T) {
 
 	t.Run("cannot deduct an already unlocked lock", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		lock, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
@@ -552,7 +555,7 @@ func TestDeductionAndUnlockInteraction(t *testing.T) {
 func TestLockExpiration(t *testing.T) {
 	t.Run("GetExpiredLocks returns only expired locks", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		// Create an expired lock
 		_, err := item.LockStock(decimal.NewFromInt(10), "order", "O-1", time.Now().Add(-time.Hour))
@@ -569,7 +572,7 @@ func TestLockExpiration(t *testing.T) {
 
 	t.Run("ReleaseExpiredLocks releases expired locks", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		// Create 2 expired locks
 		_, _ = item.LockStock(decimal.NewFromInt(10), "order", "O-1", time.Now().Add(-time.Hour))
@@ -579,16 +582,16 @@ func TestLockExpiration(t *testing.T) {
 		_, _ = item.LockStock(decimal.NewFromInt(10), "order", "O-3", time.Now().Add(time.Hour))
 
 		// Available is now 70, locked is 30
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(70)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromInt(30)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(70)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromInt(30)))
 
 		// Release expired locks
 		count := item.ReleaseExpiredLocks()
 		assert.Equal(t, 2, count)
 
 		// Available should be 90 (70 + 20 released), locked should be 10
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromInt(90)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromInt(10)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromInt(90)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromInt(10)))
 	})
 }
 

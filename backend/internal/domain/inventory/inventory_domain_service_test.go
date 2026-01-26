@@ -108,7 +108,7 @@ func TestInventoryDomainService_StockIn_WithStrategy(t *testing.T) {
 	assert.Equal(t, item, result.Item)
 	assert.Equal(t, strategy.CostMethodMovingAverage, result.CostMethod)
 	assert.Equal(t, expectedCost.Round(4), result.CostCalculated)
-	assert.Equal(t, quantity, item.AvailableQuantity)
+	assert.Equal(t, quantity, item.AvailableQuantity.Amount())
 }
 
 func TestInventoryDomainService_StockIn_FIFOStrategy(t *testing.T) {
@@ -143,7 +143,7 @@ func TestInventoryDomainService_StockIn_FIFOStrategy(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, strategy.CostMethodFIFO, result.CostMethod)
-	assert.Equal(t, decimal.NewFromInt(150), item.AvailableQuantity) // 50 + 100
+	assert.Equal(t, decimal.NewFromInt(150), item.AvailableQuantity.Amount()) // 50 + 100
 }
 
 func TestInventoryDomainService_StockIn_InvalidQuantity(t *testing.T) {

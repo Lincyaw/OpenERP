@@ -29,30 +29,30 @@ type E2ETestSetup struct {
 	DB *TestDB
 
 	// Trade repositories
-	SalesOrderRepo    domaintrade.SalesOrderRepository
-	PurchaseOrderRepo domaintrade.PurchaseOrderRepository
-	SalesReturnRepo   domaintrade.SalesReturnRepository
+	SalesOrderRepo     domaintrade.SalesOrderRepository
+	PurchaseOrderRepo  domaintrade.PurchaseOrderRepository
+	SalesReturnRepo    domaintrade.SalesReturnRepository
 	PurchaseReturnRepo domaintrade.PurchaseReturnRepository
 
 	// Inventory repositories and service
-	InventoryRepo       inventory.InventoryItemRepository
-	LockRepo            inventory.StockLockRepository
-	BatchRepo           inventory.StockBatchRepository
-	TransactionRepo     inventory.InventoryTransactionRepository
-	InventoryService    *inventoryapp.InventoryService
+	InventoryRepo    inventory.InventoryItemRepository
+	LockRepo         inventory.StockLockRepository
+	BatchRepo        inventory.StockBatchRepository
+	TransactionRepo  inventory.InventoryTransactionRepository
+	InventoryService *inventoryapp.InventoryService
 
 	// Finance repositories
 	ReceivableRepo finance.AccountReceivableRepository
 	PayableRepo    finance.AccountPayableRepository
 
 	// Event handlers
-	SalesOrderConfirmedHandler  *trade.SalesOrderConfirmedHandler
-	SalesOrderShippedHandler    *trade.SalesOrderShippedHandler
-	SalesOrderCancelledHandler  *trade.SalesOrderCancelledHandler
+	SalesOrderConfirmedHandler      *trade.SalesOrderConfirmedHandler
+	SalesOrderShippedHandler        *trade.SalesOrderShippedHandler
+	SalesOrderCancelledHandler      *trade.SalesOrderCancelledHandler
 	SalesOrderShippedFinanceHandler *financeapp.SalesOrderShippedHandler
-	PurchaseOrderReceivedHandler *financeapp.PurchaseOrderReceivedHandler
-	SalesReturnCompletedHandler *financeapp.SalesReturnCompletedHandler
-	PurchaseReturnCompletedHandler *financeapp.PurchaseReturnCompletedHandler
+	PurchaseOrderReceivedHandler    *financeapp.PurchaseOrderReceivedHandler
+	SalesReturnCompletedHandler     *financeapp.SalesReturnCompletedHandler
+	PurchaseReturnCompletedHandler  *financeapp.PurchaseReturnCompletedHandler
 
 	Logger *zap.Logger
 
@@ -120,31 +120,31 @@ func NewE2ETestSetup(t *testing.T) *E2ETestSetup {
 	}
 
 	return &E2ETestSetup{
-		DB:                             testDB,
-		SalesOrderRepo:                 salesOrderRepo,
-		PurchaseOrderRepo:              purchaseOrderRepo,
-		SalesReturnRepo:                salesReturnRepo,
-		PurchaseReturnRepo:             purchaseReturnRepo,
-		InventoryRepo:                  inventoryRepo,
-		LockRepo:                       lockRepo,
-		BatchRepo:                      batchRepo,
-		TransactionRepo:                transactionRepo,
-		InventoryService:               inventoryService,
-		ReceivableRepo:                 receivableRepo,
-		PayableRepo:                    payableRepo,
-		SalesOrderConfirmedHandler:     salesOrderConfirmedHandler,
-		SalesOrderShippedHandler:       salesOrderShippedHandler,
-		SalesOrderCancelledHandler:     salesOrderCancelledHandler,
+		DB:                              testDB,
+		SalesOrderRepo:                  salesOrderRepo,
+		PurchaseOrderRepo:               purchaseOrderRepo,
+		SalesReturnRepo:                 salesReturnRepo,
+		PurchaseReturnRepo:              purchaseReturnRepo,
+		InventoryRepo:                   inventoryRepo,
+		LockRepo:                        lockRepo,
+		BatchRepo:                       batchRepo,
+		TransactionRepo:                 transactionRepo,
+		InventoryService:                inventoryService,
+		ReceivableRepo:                  receivableRepo,
+		PayableRepo:                     payableRepo,
+		SalesOrderConfirmedHandler:      salesOrderConfirmedHandler,
+		SalesOrderShippedHandler:        salesOrderShippedHandler,
+		SalesOrderCancelledHandler:      salesOrderCancelledHandler,
 		SalesOrderShippedFinanceHandler: salesOrderShippedFinanceHandler,
-		PurchaseOrderReceivedHandler:   purchaseOrderReceivedHandler,
-		SalesReturnCompletedHandler:    salesReturnCompletedHandler,
-		PurchaseReturnCompletedHandler: purchaseReturnCompletedHandler,
-		Logger:                         logger,
-		TenantID:                       tenantID,
-		WarehouseID:                    warehouseID,
-		CustomerID:                     customerID,
-		SupplierID:                     supplierID,
-		ProductIDs:                     productIDs,
+		PurchaseOrderReceivedHandler:    purchaseOrderReceivedHandler,
+		SalesReturnCompletedHandler:     salesReturnCompletedHandler,
+		PurchaseReturnCompletedHandler:  purchaseReturnCompletedHandler,
+		Logger:                          logger,
+		TenantID:                        tenantID,
+		WarehouseID:                     warehouseID,
+		CustomerID:                      customerID,
+		SupplierID:                      supplierID,
+		ProductIDs:                      productIDs,
 	}
 }
 
@@ -216,8 +216,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify inventory is locked
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(80)), "Available should be 100-20=80")
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(20)), "Locked should be 20")
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(80)), "Available should be 100-20=80")
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(20)), "Locked should be 20")
 
 		// Step 3: Ship order
 		err = order.Ship()
@@ -234,8 +234,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify inventory is deducted
 		invItem, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(80)), "Available should remain 80")
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should be 0 after ship")
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(80)), "Available should remain 80")
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should be 0 after ship")
 
 		// Process SalesOrderShippedEvent for finance - creates receivable
 		err = setup.SalesOrderShippedFinanceHandler.Handle(ctx, shippedEvent)
@@ -264,7 +264,7 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		t.Logf("E2E Sales Flow Completed:")
 		t.Logf("  Order: %s, Status: %s", order.OrderNumber, order.Status)
 		t.Logf("  Amount: %.2f, Shipped at: %v", order.PayableAmount.InexactFloat64(), order.ShippedAt)
-		t.Logf("  Inventory - Available: %.2f, Locked: %.2f", invItem.AvailableQuantity.InexactFloat64(), invItem.LockedQuantity.InexactFloat64())
+		t.Logf("  Inventory - Available: %.2f, Locked: %.2f", invItem.AvailableQuantity.Amount().InexactFloat64(), invItem.LockedQuantity.Amount().InexactFloat64())
 		t.Logf("  Receivable - Total: %.2f, Outstanding: %.2f", receivable.TotalAmount.InexactFloat64(), receivable.OutstandingAmount.InexactFloat64())
 	})
 
@@ -297,7 +297,7 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify stock locked
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(15)))
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(15)))
 
 		// Cancel the order
 		err = order.Cancel("Customer cancelled the order")
@@ -313,8 +313,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify stock released
 		invItem, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(50)), "Available should be restored to 50")
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should be 0")
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(50)), "Available should be restored to 50")
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should be 0")
 
 		// Verify order status
 		assert.Equal(t, domaintrade.OrderStatusCancelled, order.Status)
@@ -362,8 +362,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify inventory: 100 - 30 - 40 = 30 available, 70 locked
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(30)), "Available should be 30")
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(70)), "Locked should be 70")
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)), "Available should be 30")
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(70)), "Locked should be 70")
 
 		// Ship order 1
 		err = order1.Ship()
@@ -378,8 +378,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Verify: 30 available (unchanged), 40 locked (order 2)
 		invItem, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(30)))
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(40)))
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)))
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(40)))
 
 		// Ship order 2
 		err = order2.Ship()
@@ -394,8 +394,8 @@ func TestE2E_CompleteSalesFlow(t *testing.T) {
 		// Final inventory: 30 available, 0 locked
 		invItem, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(30)))
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(0)))
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)))
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)))
 
 		// Verify both receivables created
 		rec1, err := setup.ReceivableRepo.FindBySource(ctx, setup.TenantID, finance.SourceTypeSalesOrder, order1.ID)
@@ -631,7 +631,7 @@ func TestE2E_SalesReturnFlow(t *testing.T) {
 		// Verify inventory after shipment: 50 - 10 = 40
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(40)))
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(40)))
 
 		// Now create a sales return for 3 units
 		salesReturn, err := domaintrade.NewSalesReturn(
@@ -989,7 +989,7 @@ func TestE2E_FullBusinessCycle(t *testing.T) {
 		// Verify inventory: 100 - 60 = 40
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(40)))
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(40)))
 
 		t.Logf("  Sales Order: %s completed, Amount: 4800.00", salesOrder.OrderNumber)
 		t.Logf("  Remaining Inventory: 40 units")
@@ -1119,8 +1119,8 @@ func TestE2E_ErrorScenarios(t *testing.T) {
 		// Verify inventory unchanged
 		invItem, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, invItem.AvailableQuantity.Equal(decimal.NewFromFloat(10)))
-		assert.True(t, invItem.LockedQuantity.Equal(decimal.NewFromFloat(0)))
+		assert.True(t, invItem.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(10)))
+		assert.True(t, invItem.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)))
 	})
 
 	t.Run("cannot ship cancelled order", func(t *testing.T) {
@@ -1205,7 +1205,8 @@ func TestE2E_ErrorScenarios(t *testing.T) {
 		require.NoError(t, err)
 		// If idempotency is implemented, locked should be 10. If not, it may be 20.
 		// For now, we just verify the lock happened (locked >= 10)
-		assert.True(t, invItem.LockedQuantity.GreaterThanOrEqual(decimal.NewFromFloat(10)), "Should have locked at least 10 units")
+		locked, _ := invItem.LockedQuantity.GreaterThanOrEqual(inventory.MustNewInventoryQuantity(decimal.NewFromFloat(10)))
+		assert.True(t, locked, "Should have locked at least 10 units")
 
 		// Ship and test finance idempotency
 		order.Ship()

@@ -414,6 +414,84 @@
       "deleteError": "Failed to delete"
     }
   },
+  "salesReturnForm": {
+    "title": "New Sales Return",
+    "selectOrder": {
+      "title": "Select Original Order",
+      "label": "Original Sales Order",
+      "placeholder": "Search order number or customer name..."
+    },
+    "warehouse": {
+      "label": "Return Warehouse",
+      "placeholder": "Select return warehouse"
+    },
+    "orderInfo": {
+      "title": "Order Information",
+      "orderNumber": "Order Number",
+      "customer": "Customer",
+      "status": "Status",
+      "orderAmount": "Order Amount"
+    },
+    "items": {
+      "title": "Select Return Items",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "empty": "No items",
+      "columns": {
+        "select": "Select",
+        "productCode": "Product Code",
+        "productName": "Product Name",
+        "unit": "Unit",
+        "unitPrice": "Unit Price",
+        "originalQuantity": "Original Qty",
+        "returnQuantity": "Return Qty",
+        "refundAmount": "Refund Amount",
+        "condition": "Condition",
+        "reason": "Return Reason",
+        "reasonPlaceholder": "Reason"
+      }
+    },
+    "condition": {
+      "intact": "Intact",
+      "damaged": "Damaged",
+      "defective": "Defective",
+      "wrongItem": "Wrong Item",
+      "other": "Other"
+    },
+    "summary": {
+      "itemCount": "Return Items: ",
+      "itemCountUnit": "types",
+      "totalQuantity": "Total Quantity: ",
+      "totalRefund": "Total Refund: "
+    },
+    "reason": {
+      "label": "Return Reason",
+      "placeholder": "Enter return reason"
+    },
+    "remark": {
+      "label": "Remark",
+      "placeholder": "Remark (optional)"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "create": "Create Return"
+    },
+    "validation": {
+      "orderRequired": "Please select an order",
+      "reasonRequired": "Please enter return reason",
+      "reasonTooLong": "Return reason cannot exceed 500 characters",
+      "remarkTooLong": "Remark cannot exceed 500 characters",
+      "quantityPositive": "Quantity must be greater than 0",
+      "itemsRequired": "Please select at least one return item",
+      "formError": "Please check the form for errors"
+    },
+    "messages": {
+      "fetchOrderError": "Failed to fetch order details",
+      "createSuccess": "Return created successfully",
+      "createError": "Failed to create return",
+      "createFailed": "Creation failed"
+    }
+  },
   "salesReturnDetail": {
     "title": "Return Details",
     "back": "Back to List",

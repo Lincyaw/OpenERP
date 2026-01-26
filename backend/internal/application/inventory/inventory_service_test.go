@@ -368,8 +368,8 @@ func createTestInventoryItem(tenantID, warehouseID, productID uuid.UUID) *invent
 
 func createTestInventoryItemWithStock(tenantID, warehouseID, productID uuid.UUID, available, locked decimal.Decimal) *inventory.InventoryItem {
 	item, _ := inventory.NewInventoryItem(tenantID, warehouseID, productID)
-	item.AvailableQuantity = available
-	item.LockedQuantity = locked
+	item.AvailableQuantity = inventory.MustNewInventoryQuantity(available)
+	item.LockedQuantity = inventory.MustNewInventoryQuantity(locked)
 	item.UnitCost = decimal.NewFromFloat(10.0)
 	return item
 }
@@ -935,8 +935,8 @@ func TestToInventoryItemResponse(t *testing.T) {
 	productID := uuid.New()
 
 	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.NewFromInt(20))
-	item.MinQuantity = decimal.NewFromInt(10)
-	item.MaxQuantity = decimal.NewFromInt(500)
+	item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10))
+	item.MaxQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(500))
 
 	response := ToInventoryItemResponse(item)
 
@@ -989,7 +989,7 @@ func TestInventoryService_AdjustStock_PublishesStockBelowThresholdEvent(t *testi
 
 	// Create an inventory item with minQuantity set and initial stock above threshold
 	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(50), decimal.Zero)
-	item.MinQuantity = decimal.NewFromInt(10) // Set minimum threshold
+	item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10)) // Set minimum threshold
 
 	t.Run("publishes StockBelowThreshold event when stock drops below minimum", func(t *testing.T) {
 		eventPublisher.Reset()
@@ -1047,7 +1047,7 @@ func TestInventoryService_DecreaseStock_PublishesStockBelowThresholdEvent(t *tes
 
 	// Create an inventory item with minQuantity set and initial stock above threshold
 	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(15), decimal.Zero)
-	item.MinQuantity = decimal.NewFromInt(10) // Set minimum threshold
+	item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10)) // Set minimum threshold
 
 	t.Run("publishes StockBelowThreshold event when stock is decreased below minimum", func(t *testing.T) {
 		eventPublisher.Reset()
@@ -1088,7 +1088,7 @@ func TestInventoryService_DecreaseStock_PublishesStockBelowThresholdEvent(t *tes
 		eventPublisher.Reset()
 
 		// Reset item stock to above threshold
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		item.ClearDomainEvents()
 
 		// Mock FindByWarehouseAndProduct to return the item

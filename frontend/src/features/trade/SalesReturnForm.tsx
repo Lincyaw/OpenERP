@@ -16,6 +16,7 @@ import {
 } from '@douyinfe/semi-ui-19'
 import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
@@ -59,39 +60,25 @@ interface ReturnFormData {
   items: ReturnItemFormData[]
 }
 
-// Form validation schema
-const returnFormSchema = z.object({
-  sales_order_id: z.string().min(1, '请选择原订单'),
-  warehouse_id: z.string().optional(),
-  reason: z.string().min(1, '请填写退货原因').max(500, '退货原因不能超过500字'),
-  remark: z.string().max(500, '备注不能超过500字').optional(),
-  items: z
-    .array(
-      z.object({
-        sales_order_item_id: z.string().min(1),
-        return_quantity: z.number().positive('数量必须大于0'),
-      })
-    )
-    .min(1, '请至少选择一个退货商品'),
-})
-
-// Condition options for returned goods
-const CONDITION_OPTIONS = [
-  { label: '完好', value: 'intact' },
-  { label: '损坏', value: 'damaged' },
-  { label: '有瑕疵', value: 'defective' },
-  { label: '错误商品', value: 'wrong_item' },
-  { label: '其他', value: 'other' },
-]
-
-// Order status labels
-const ORDER_STATUS_LABELS: Record<string, string> = {
-  DRAFT: '草稿',
-  CONFIRMED: '已确认',
-  SHIPPED: '已发货',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
-}
+// Form validation schema factory
+const createReturnFormSchema = (t: (key: string) => string) =>
+  z.object({
+    sales_order_id: z.string().min(1, t('salesReturnForm.validation.orderRequired')),
+    warehouse_id: z.string().optional(),
+    reason: z
+      .string()
+      .min(1, t('salesReturnForm.validation.reasonRequired'))
+      .max(500, t('salesReturnForm.validation.reasonTooLong')),
+    remark: z.string().max(500, t('salesReturnForm.validation.remarkTooLong')).optional(),
+    items: z
+      .array(
+        z.object({
+          sales_order_item_id: z.string().min(1),
+          return_quantity: z.number().positive(t('salesReturnForm.validation.quantityPositive')),
+        })
+      )
+      .min(1, t('salesReturnForm.validation.itemsRequired')),
+  })
 
 // Order status colors
 const ORDER_STATUS_COLORS: Record<
@@ -127,6 +114,32 @@ export function SalesReturnForm() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preSelectedOrderId = searchParams.get('order_id')
+  const { t } = useTranslation('trade')
+
+  // Memoized translation-dependent constants
+  const CONDITION_OPTIONS = useMemo(
+    () => [
+      { label: t('salesReturnForm.condition.intact'), value: 'intact' },
+      { label: t('salesReturnForm.condition.damaged'), value: 'damaged' },
+      { label: t('salesReturnForm.condition.defective'), value: 'defective' },
+      { label: t('salesReturnForm.condition.wrongItem'), value: 'wrong_item' },
+      { label: t('salesReturnForm.condition.other'), value: 'other' },
+    ],
+    [t]
+  )
+
+  const ORDER_STATUS_LABELS = useMemo(
+    () => ({
+      DRAFT: t('salesOrder.status.draft'),
+      CONFIRMED: t('salesOrder.status.confirmed'),
+      SHIPPED: t('salesOrder.status.shipped'),
+      COMPLETED: t('salesOrder.status.completed'),
+      CANCELLED: t('salesOrder.status.cancelled'),
+    }),
+    [t]
+  )
+
+  const returnFormSchema = useMemo(() => createReturnFormSchema(t), [t])
 
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
@@ -227,12 +240,12 @@ export function SalesReturnForm() {
           }))
         }
       } catch {
-        Toast.error('获取订单详情失败')
+        Toast.error(t('salesReturnForm.messages.fetchOrderError'))
       } finally {
         setOrderLoading(false)
       }
     },
-    [salesOrderApi]
+    [salesOrderApi, t]
   )
 
   // Fetch warehouses
@@ -441,12 +454,12 @@ export function SalesReturnForm() {
 
     setErrors({})
     return true
-  }, [formData])
+  }, [formData, returnFormSchema])
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
-      Toast.error('请检查表单填写是否正确')
+      Toast.error(t('salesReturnForm.validation.formError'))
       return
     }
 
@@ -471,17 +484,19 @@ export function SalesReturnForm() {
       })
 
       if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+        throw new Error(response.error?.message || t('salesReturnForm.messages.createFailed'))
       }
 
-      Toast.success('退货单创建成功')
+      Toast.success(t('salesReturnForm.messages.createSuccess'))
       navigate('/trade/sales-returns')
     } catch (error) {
-      Toast.error(error instanceof Error ? error.message : '创建退货单失败')
+      Toast.error(
+        error instanceof Error ? error.message : t('salesReturnForm.messages.createError')
+      )
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, salesReturnApi, navigate, validateForm])
+  }, [formData, salesReturnApi, navigate, validateForm, t])
 
   // Handle cancel
   const handleCancel = useCallback(() => {
@@ -507,15 +522,15 @@ export function SalesReturnForm() {
       warehouses.map((w) => ({
         value: w.id || '',
         label: w.name || w.code || '',
-        extra: w.is_default ? '(默认)' : undefined,
+        extra: w.is_default ? `(${t('common.defaultWarehouse')})` : undefined,
       })),
-    [warehouses]
+    [warehouses, t]
   )
 
   // Table columns for return items
   const itemColumns = [
     {
-      title: '选择',
+      title: t('salesReturnForm.items.columns.select'),
       dataIndex: 'selected',
       width: 60,
       render: (selected: boolean, record: ReturnItemFormData) => (
@@ -528,40 +543,40 @@ export function SalesReturnForm() {
       ),
     },
     {
-      title: '商品编码',
+      title: t('salesReturnForm.items.columns.productCode'),
       dataIndex: 'product_code',
       width: 120,
       render: (code: string) => <Text>{code || '-'}</Text>,
     },
     {
-      title: '商品名称',
+      title: t('salesReturnForm.items.columns.productName'),
       dataIndex: 'product_name',
       width: 200,
       ellipsis: true,
       render: (name: string) => <Text>{name || '-'}</Text>,
     },
     {
-      title: '单位',
+      title: t('salesReturnForm.items.columns.unit'),
       dataIndex: 'unit',
       width: 60,
       render: (unit: string) => <Text>{unit || '-'}</Text>,
     },
     {
-      title: '单价',
+      title: t('salesReturnForm.items.columns.unitPrice'),
       dataIndex: 'unit_price',
       width: 100,
       align: 'right' as const,
       render: (price: number) => <Text>{formatPrice(price)}</Text>,
     },
     {
-      title: '原数量',
+      title: t('salesReturnForm.items.columns.originalQuantity'),
       dataIndex: 'original_quantity',
       width: 80,
       align: 'center' as const,
       render: (qty: number) => <Text>{qty}</Text>,
     },
     {
-      title: '退货数量',
+      title: t('salesReturnForm.items.columns.returnQuantity'),
       dataIndex: 'return_quantity',
       width: 120,
       render: (qty: number, record: ReturnItemFormData) => (
@@ -576,7 +591,7 @@ export function SalesReturnForm() {
       ),
     },
     {
-      title: '退款金额',
+      title: t('salesReturnForm.items.columns.refundAmount'),
       dataIndex: 'refund_amount',
       width: 100,
       align: 'right' as const,
@@ -587,7 +602,7 @@ export function SalesReturnForm() {
       ),
     },
     {
-      title: '商品状况',
+      title: t('salesReturnForm.items.columns.condition'),
       dataIndex: 'condition_on_return',
       width: 120,
       render: (condition: string, record: ReturnItemFormData) => (
@@ -602,14 +617,14 @@ export function SalesReturnForm() {
       ),
     },
     {
-      title: '退货原因',
+      title: t('salesReturnForm.items.columns.reason'),
       dataIndex: 'reason',
       width: 150,
       render: (reason: string, record: ReturnItemFormData) => (
         <Input
           value={reason}
           onChange={(value) => handleItemReasonChange(record.key, value)}
-          placeholder="原因"
+          placeholder={t('salesReturnForm.items.columns.reasonPlaceholder')}
           size="small"
           disabled={!record.selected}
         />
@@ -622,21 +637,23 @@ export function SalesReturnForm() {
       <Card className="sales-return-form-card">
         <div className="sales-return-form-header">
           <Title heading={4} style={{ margin: 0 }}>
-            新建销售退货
+            {t('salesReturnForm.title')}
           </Title>
         </div>
 
         {/* Order Selection Section */}
         <div className="form-section">
           <Title heading={5} className="section-title">
-            选择原订单
+            {t('salesReturnForm.selectOrder.title')}
           </Title>
           <div className="form-row">
             <div className="form-field">
-              <label className="form-label required">原销售订单</label>
+              <label className="form-label required">
+                {t('salesReturnForm.selectOrder.label')}
+              </label>
               <Select
                 value={formData.sales_order_id || undefined}
-                placeholder="搜索订单号或客户名称..."
+                placeholder={t('salesReturnForm.selectOrder.placeholder')}
                 onChange={handleOrderChange}
                 optionList={orderOptions}
                 filter
@@ -665,10 +682,10 @@ export function SalesReturnForm() {
               )}
             </div>
             <div className="form-field">
-              <label className="form-label">退货入库仓库</label>
+              <label className="form-label">{t('salesReturnForm.warehouse.label')}</label>
               <Select
                 value={formData.warehouse_id || undefined}
-                placeholder="选择退货入库仓库"
+                placeholder={t('salesReturnForm.warehouse.placeholder')}
                 onChange={handleWarehouseChange}
                 optionList={warehouseOptions}
                 loading={warehousesLoading}
@@ -689,21 +706,30 @@ export function SalesReturnForm() {
         {selectedOrder && (
           <div className="form-section order-info-section">
             <Title heading={5} className="section-title">
-              订单信息
+              {t('salesReturnForm.orderInfo.title')}
             </Title>
             <Descriptions
               data={[
-                { key: '订单号', value: selectedOrder.order_number || '-' },
-                { key: '客户', value: selectedOrder.customer_name || '-' },
                 {
-                  key: '状态',
+                  key: t('salesReturnForm.orderInfo.orderNumber'),
+                  value: selectedOrder.order_number || '-',
+                },
+                {
+                  key: t('salesReturnForm.orderInfo.customer'),
+                  value: selectedOrder.customer_name || '-',
+                },
+                {
+                  key: t('salesReturnForm.orderInfo.status'),
                   value: (
                     <Tag color={ORDER_STATUS_COLORS[selectedOrder.status || '']}>
                       {ORDER_STATUS_LABELS[selectedOrder.status || ''] || selectedOrder.status}
                     </Tag>
                   ),
                 },
-                { key: '订单金额', value: formatPrice(selectedOrder.total_amount) },
+                {
+                  key: t('salesReturnForm.orderInfo.orderAmount'),
+                  value: formatPrice(selectedOrder.total_amount),
+                },
               ]}
               row
             />
@@ -715,14 +741,14 @@ export function SalesReturnForm() {
           <div className="form-section">
             <div className="section-header">
               <Title heading={5} className="section-title">
-                选择退货商品
+                {t('salesReturnForm.items.title')}
               </Title>
               <Space>
                 <Button theme="light" size="small" onClick={handleSelectAll}>
-                  全选
+                  {t('salesReturnForm.items.selectAll')}
                 </Button>
                 <Button theme="light" size="small" onClick={handleDeselectAll}>
-                  取消全选
+                  {t('salesReturnForm.items.deselectAll')}
                 </Button>
               </Space>
             </div>
@@ -739,7 +765,7 @@ export function SalesReturnForm() {
               size="small"
               className="items-table"
               loading={orderLoading}
-              empty={<Empty description="暂无商品" />}
+              empty={<Empty description={t('salesReturnForm.items.empty')} />}
             />
           </div>
         )}
@@ -749,15 +775,17 @@ export function SalesReturnForm() {
           <div className="form-section summary-section">
             <div className="summary-totals">
               <div className="summary-item">
-                <Text type="tertiary">退货商品数：</Text>
-                <Text>{calculations.itemCount} 种</Text>
+                <Text type="tertiary">{t('salesReturnForm.summary.itemCount')}</Text>
+                <Text>
+                  {calculations.itemCount} {t('salesReturnForm.summary.itemCountUnit')}
+                </Text>
               </div>
               <div className="summary-item">
-                <Text type="tertiary">退货总数量：</Text>
+                <Text type="tertiary">{t('salesReturnForm.summary.totalQuantity')}</Text>
                 <Text>{safeToFixed(calculations.totalQuantity)}</Text>
               </div>
               <div className="summary-item total">
-                <Text strong>退款总额：</Text>
+                <Text strong>{t('salesReturnForm.summary.totalRefund')}</Text>
                 <Text strong className="total-amount">
                   {formatPrice(calculations.totalRefund)}
                 </Text>
@@ -769,11 +797,11 @@ export function SalesReturnForm() {
         {/* Reason Section */}
         <div className="form-section">
           <div className="form-field">
-            <label className="form-label required">退货原因</label>
+            <label className="form-label required">{t('salesReturnForm.reason.label')}</label>
             <Input
               value={formData.reason}
               onChange={handleReasonChange}
-              placeholder="请填写退货原因"
+              placeholder={t('salesReturnForm.reason.placeholder')}
               maxLength={500}
               showClear
               validateStatus={errors.reason ? 'error' : undefined}
@@ -785,11 +813,11 @@ export function SalesReturnForm() {
             )}
           </div>
           <div className="form-field" style={{ marginTop: 'var(--spacing-4)' }}>
-            <label className="form-label">备注</label>
+            <label className="form-label">{t('salesReturnForm.remark.label')}</label>
             <Input
               value={formData.remark}
               onChange={handleRemarkChange}
-              placeholder="备注信息（可选）"
+              placeholder={t('salesReturnForm.remark.placeholder')}
               maxLength={500}
               showClear
             />
@@ -800,7 +828,7 @@ export function SalesReturnForm() {
         <div className="form-actions">
           <Space>
             <Button onClick={handleCancel} disabled={isSubmitting}>
-              取消
+              {t('salesReturnForm.actions.cancel')}
             </Button>
             <Button
               type="primary"
@@ -808,7 +836,7 @@ export function SalesReturnForm() {
               loading={isSubmitting}
               disabled={isSubmitting || calculations.itemCount === 0}
             >
-              创建退货单
+              {t('salesReturnForm.actions.create')}
             </Button>
           </Space>
         </div>

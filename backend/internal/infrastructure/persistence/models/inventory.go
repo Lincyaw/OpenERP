@@ -46,11 +46,11 @@ func (m *InventoryItemModel) ToDomain() *inventory.InventoryItem {
 		},
 		WarehouseID:       m.WarehouseID,
 		ProductID:         m.ProductID,
-		AvailableQuantity: m.AvailableQuantity,
-		LockedQuantity:    m.LockedQuantity,
+		AvailableQuantity: inventory.MustNewInventoryQuantity(m.AvailableQuantity),
+		LockedQuantity:    inventory.MustNewInventoryQuantity(m.LockedQuantity),
 		UnitCost:          m.UnitCost,
-		MinQuantity:       m.MinQuantity,
-		MaxQuantity:       m.MaxQuantity,
+		MinQuantity:       inventory.MustNewInventoryQuantity(m.MinQuantity),
+		MaxQuantity:       inventory.MustNewInventoryQuantity(m.MaxQuantity),
 		Batches:           make([]inventory.StockBatch, len(m.Batches)),
 		Locks:             make([]inventory.StockLock, len(m.Locks)),
 	}
@@ -69,11 +69,11 @@ func (m *InventoryItemModel) FromDomain(i *inventory.InventoryItem) {
 	m.FromDomainTenantAggregateRoot(i.TenantAggregateRoot)
 	m.WarehouseID = i.WarehouseID
 	m.ProductID = i.ProductID
-	m.AvailableQuantity = i.AvailableQuantity
-	m.LockedQuantity = i.LockedQuantity
+	m.AvailableQuantity = i.AvailableQuantity.Amount()
+	m.LockedQuantity = i.LockedQuantity.Amount()
 	m.UnitCost = i.UnitCost
-	m.MinQuantity = i.MinQuantity
-	m.MaxQuantity = i.MaxQuantity
+	m.MinQuantity = i.MinQuantity.Amount()
+	m.MaxQuantity = i.MaxQuantity.Amount()
 	// Convert nested domain entities to models
 	m.Batches = make([]StockBatchModel, len(i.Batches))
 	for idx, batch := range i.Batches {

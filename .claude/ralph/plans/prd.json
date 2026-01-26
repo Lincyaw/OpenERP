@@ -4945,7 +4945,7 @@
       "SalesReturnForm.tsx:800 的取消按钮使用 i18n",
       "检查其他可能遗漏的硬编码文本"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "MEDIUM",

@@ -23629,3 +23629,154 @@ configureLogger({
 - Add logger tests for coverage
 - Document logger usage in frontend/README.md
 
+
+---
+
+2025-01-27 - DDD-M04: InventoryItem 使用 Quantity 值对象
+
+=== Implementation Details ===
+
+Refactored InventoryItem aggregate to use the existing Quantity value object from the shared domain layer instead of raw decimal.Decimal values. This improves type safety and enables consistent quantity operations across the codebase.
+
+Key changes:
+
+1. **Created helper functions in inventory_item.go:**
+   - `NewInventoryQuantity(value decimal.Decimal)` - Creates a Quantity with error handling
+   - `MustNewInventoryQuantity(value decimal.Decimal)` - Creates a Quantity, panics on error
+   - `ZeroInventoryQuantity()` - Creates a zero Quantity
+   - Defined `InventoryUnit = ""` constant for all inventory quantities
+
+2. **Updated InventoryItem struct fields:**
+   - `AvailableQuantity` - Changed from `decimal.Decimal` to `valueobject.Quantity`
+   - `LockedQuantity` - Changed from `decimal.Decimal` to `valueobject.Quantity`
+   - `MinQuantity` - Changed from `decimal.Decimal` to `valueobject.Quantity`
+   - `MaxQuantity` - Changed from `decimal.Decimal` to `valueobject.Quantity`
+   - `TotalQuantity()` method now returns `valueobject.Quantity`
+
+3. **Updated all InventoryItem methods to use type-safe Quantity operations:**
+   - `IncreaseStock()`, `DecreaseStock()` - Use `Quantity.Add()`, `Quantity.Subtract()`
+   - `LockStock()`, `UnlockStock()`, `ConsumeLock()` - Use type-safe comparisons
+   - `CanFulfill()` - Uses `Quantity.GreaterThanOrEqual()`
+   - `IsBelowMinimum()` - Uses `Quantity.LessThan()`
+
+4. **Updated persistence layer (models/inventory.go):**
+   - `ToDomain()` converts decimal.Decimal from DB to Quantity value objects
+   - `FromDomain()` converts Quantity value objects to decimal.Decimal for storage
+
+5. **Updated application layer:**
+   - DTOs use `.Amount()` to extract decimal.Decimal for API responses
+   - inventory_service.go updated to use `.Amount()` for transaction logging
+   - stock_lock_expiration_service.go rewritten to use type-safe operations
+
+6. **Updated domain events:**
+   - Event payloads continue to use decimal.Decimal for JSON serialization
+   - Event constructors call `.Amount()` on Quantity values
+
+Files modified:
+- backend/internal/domain/inventory/inventory_item.go
+- backend/internal/domain/inventory/inventory_events.go
+- backend/internal/domain/inventory/stock_allocation_service.go
+- backend/internal/infrastructure/persistence/models/inventory.go
+- backend/internal/application/inventory/dto.go
+- backend/internal/application/inventory/inventory_service.go
+- backend/internal/application/inventory/stock_lock_expiration_service.go
+- backend/internal/domain/inventory/inventory_item_test.go
+- backend/internal/domain/inventory/inventory_domain_service_test.go
+- backend/internal/domain/inventory/stock_allocation_service_test.go
+- backend/internal/application/inventory/inventory_service_test.go
+- backend/internal/application/inventory/stock_lock_expiration_service_test.go
+- backend/internal/application/inventory/inventory_concurrency_test.go
+- backend/internal/interfaces/http/handler/inventory_test.go
+
+=== Verification ===
+
+- All inventory domain tests pass: `go test ./internal/domain/inventory/...`
+- All inventory application tests pass: `go test ./internal/application/inventory/...`
+- Build succeeds: `go build ./...`
+- Type-safe operations ensure unit matching for Add/Subtract operations
+
+=== Design Decisions ===
+
+1. **InventoryUnit = ""**: Used empty string for inventory unit to maintain backward compatibility with existing data. The Quantity value object requires a unit, but since inventory historically used bare decimals, empty string provides a consistent "unitless" quantity.
+
+2. **Panic vs Error**: Used `MustNewInventoryQuantity` in test code and where values are known-valid. Used `NewInventoryQuantity` with proper error handling in production code paths.
+
+3. **Anti-corruption layer**: Persistence models convert to/from raw decimals to maintain database schema compatibility while domain uses rich Quantity types.
+
+4. **Event payloads**: Kept decimal.Decimal in event payloads for JSON serialization simplicity and backward compatibility with event consumers.
+
+=== Notes ===
+
+- The Quantity value object enforces unit matching during Add/Subtract operations, but since all inventory quantities use the same unit (""), this is effectively a no-op check
+- Future enhancement could add unit support (e.g., pieces, kg, liters) when multi-unit products are needed
+
+=== Next Steps ===
+
+- Consider applying similar pattern to other aggregates (DDD-M03: Product 使用 Money 值对象)
+- Review other opportunities for value object usage across the codebase
+
+
+---
+
+2026-01-27 - FE-006: 修复硬编码中文文本 / Fix hardcoded Chinese text
+
+=== Implementation Details ===
+
+Converted all hardcoded Chinese text in SalesReturnForm.tsx to use i18n translations.
+
+**Key changes:**
+
+1. **Added import for useTranslation hook:**
+   - Added `import { useTranslation } from 'react-i18next'`
+   - Added `const { t } = useTranslation('trade')` in component
+
+2. **Converted static constants to dynamic:**
+   - `CONDITION_OPTIONS` - Now uses useMemo with translations
+   - `ORDER_STATUS_LABELS` - Now uses useMemo with translations  
+   - `returnFormSchema` - Converted to factory function `createReturnFormSchema(t)`
+
+3. **Added new i18n keys to locale files:**
+   - Added `salesReturnForm` namespace to both zh-CN/trade.json and en-US/trade.json
+   - Keys include: title, selectOrder, warehouse, orderInfo, items, condition, summary, reason, remark, actions, validation, messages
+
+4. **Replaced all hardcoded strings:**
+   - Form labels and placeholders
+   - Table column headers
+   - Button text (including the 取消 button at line 800)
+   - Toast messages
+   - Empty state descriptions
+   - Validation error messages
+
+Files modified:
+- frontend/src/features/trade/SalesReturnForm.tsx
+- frontend/src/locales/zh-CN/trade.json
+- frontend/src/locales/en-US/trade.json
+
+=== Verification ===
+
+- TypeScript compilation: PASS (`npx tsc --noEmit`)
+- ESLint check: PASS (`npx eslint src/features/trade/SalesReturnForm.tsx --max-warnings 0`)
+- JSON validation: PASS (both locale files are valid JSON)
+- Prettier formatting: Applied
+
+=== Design Decisions ===
+
+1. **Used useMemo for translated constants**: Since CONDITION_OPTIONS and ORDER_STATUS_LABELS depend on the t() function, they need to be created inside the component using useMemo to ensure they update when language changes.
+
+2. **Schema factory function**: Created `createReturnFormSchema(t)` to allow Zod validation messages to be translated. The schema is then memoized in the component.
+
+3. **Used existing salesOrder.status translations**: For order status labels, reused the existing translations from `salesOrder.status` namespace to maintain consistency.
+
+4. **Followed existing patterns**: Matched the structure and naming conventions used in other trade module translations (e.g., salesReturn, purchaseReturn).
+
+=== Notes ===
+
+- This task addressed not just the cancel button mentioned in the requirements, but ALL hardcoded Chinese text in the file
+- The component now fully supports language switching
+- Fixed React Hook dependency warnings for useCallback hooks that use the t() function
+
+=== Next Steps ===
+
+- Consider similar i18n fixes in other trade form components (PurchaseOrderForm, SalesOrderForm)
+- Check other features/trade/*.tsx files for hardcoded text
+

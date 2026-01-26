@@ -260,10 +260,10 @@ func NewStockBelowThresholdEvent(item *InventoryItem) *StockBelowThresholdEvent 
 		InventoryItemID:   item.ID,
 		WarehouseID:       item.WarehouseID,
 		ProductID:         item.ProductID,
-		CurrentQuantity:   item.TotalQuantity(),
-		MinimumQuantity:   item.MinQuantity,
-		AvailableQuantity: item.AvailableQuantity,
-		LockedQuantity:    item.LockedQuantity,
+		CurrentQuantity:   item.TotalQuantity().Amount(),
+		MinimumQuantity:   item.MinQuantity.Amount(),
+		AvailableQuantity: item.AvailableQuantity.Amount(),
+		LockedQuantity:    item.LockedQuantity.Amount(),
 	}
 }
 

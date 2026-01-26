@@ -92,7 +92,7 @@ func TestInventoryRepository_Integration(t *testing.T) {
 		// Verify update
 		found, err := repo.FindByID(ctx, item.ID)
 		require.NoError(t, err)
-		assert.True(t, found.AvailableQuantity.Equal(decimal.NewFromFloat(100)))
+		assert.True(t, found.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(100)))
 		assert.True(t, found.UnitCost.Equal(decimal.NewFromFloat(10.00)))
 	})
 
@@ -126,8 +126,8 @@ func TestInventoryRepository_Integration(t *testing.T) {
 		// Verify lock persisted - check quantities
 		found, err := repo.FindByID(ctx, item.ID)
 		require.NoError(t, err)
-		assert.True(t, found.AvailableQuantity.Equal(decimal.NewFromFloat(70)))
-		assert.True(t, found.LockedQuantity.Equal(decimal.NewFromFloat(30)))
+		assert.True(t, found.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(70)))
+		assert.True(t, found.LockedQuantity.Amount().Equal(decimal.NewFromFloat(30)))
 
 		// Release lock using original item (which has the lock reference)
 		// Note: Repository doesn't preload Locks association, so we use the original item
@@ -140,8 +140,8 @@ func TestInventoryRepository_Integration(t *testing.T) {
 		// Verify unlock
 		found2, err := repo.FindByID(ctx, item.ID)
 		require.NoError(t, err)
-		assert.True(t, found2.AvailableQuantity.Equal(decimal.NewFromFloat(100)))
-		assert.True(t, found2.LockedQuantity.Equal(decimal.NewFromFloat(0)))
+		assert.True(t, found2.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(100)))
+		assert.True(t, found2.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)))
 	})
 
 	t.Run("FindByWarehouse", func(t *testing.T) {
@@ -223,7 +223,7 @@ func TestInventoryRepository_Integration(t *testing.T) {
 			item, err := inventory.NewInventoryItem(lowStockTenant, wh, prodID)
 			require.NoError(t, err)
 
-			item.MinQuantity = decimal.NewFromFloat(data.minQty)
+			item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromFloat(data.minQty))
 			unitCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(10.00))
 			err = item.IncreaseStock(decimal.NewFromFloat(data.current), unitCost, nil)
 			require.NoError(t, err)

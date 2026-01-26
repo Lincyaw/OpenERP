@@ -178,8 +178,8 @@ func TestOrderInventory_ConfirmLockStock(t *testing.T) {
 		item, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
 
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(70)), "Available should be 100-30=70")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(30)), "Locked should be 30")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(70)), "Available should be 100-30=70")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(30)), "Locked should be 30")
 
 		// Verify: Lock record should exist
 		locks, err := setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID.String())
@@ -246,14 +246,14 @@ func TestOrderInventory_ConfirmLockStock(t *testing.T) {
 		// Verify product 2 inventory
 		item2, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID2)
 		require.NoError(t, err)
-		assert.True(t, item2.AvailableQuantity.Equal(decimal.NewFromFloat(30)), "Product 2 available should be 50-20=30")
-		assert.True(t, item2.LockedQuantity.Equal(decimal.NewFromFloat(20)), "Product 2 locked should be 20")
+		assert.True(t, item2.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)), "Product 2 available should be 50-20=30")
+		assert.True(t, item2.LockedQuantity.Amount().Equal(decimal.NewFromFloat(20)), "Product 2 locked should be 20")
 
 		// Verify product 3 inventory
 		item3, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID3)
 		require.NoError(t, err)
-		assert.True(t, item3.AvailableQuantity.Equal(decimal.NewFromFloat(40)), "Product 3 available should be 80-40=40")
-		assert.True(t, item3.LockedQuantity.Equal(decimal.NewFromFloat(40)), "Product 3 locked should be 40")
+		assert.True(t, item3.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(40)), "Product 3 available should be 80-40=40")
+		assert.True(t, item3.LockedQuantity.Amount().Equal(decimal.NewFromFloat(40)), "Product 3 locked should be 40")
 
 		// Verify 2 lock records
 		locks, err := setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID.String())
@@ -306,8 +306,8 @@ func TestOrderInventory_ConfirmLockStock(t *testing.T) {
 		// Verify no stock was locked (inventory unchanged)
 		item, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, insufficientProductID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(10)), "Available should remain 10")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should remain 0")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(10)), "Available should remain 10")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should remain 0")
 	})
 }
 
@@ -364,8 +364,8 @@ func TestOrderInventory_ShipDeductStock(t *testing.T) {
 		// Verify intermediate state: stock locked
 		itemAfterLock, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
-		assert.True(t, itemAfterLock.AvailableQuantity.Equal(decimal.NewFromFloat(75)))
-		assert.True(t, itemAfterLock.LockedQuantity.Equal(decimal.NewFromFloat(25)))
+		assert.True(t, itemAfterLock.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(75)))
+		assert.True(t, itemAfterLock.LockedQuantity.Amount().Equal(decimal.NewFromFloat(25)))
 
 		// Now ship the order
 		shippedEvent := &domaintrade.SalesOrderShippedEvent{
@@ -404,8 +404,8 @@ func TestOrderInventory_ShipDeductStock(t *testing.T) {
 		itemAfterShip, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
 
-		assert.True(t, itemAfterShip.AvailableQuantity.Equal(decimal.NewFromFloat(75)), "Available should remain 75")
-		assert.True(t, itemAfterShip.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should be 0 after deduction")
+		assert.True(t, itemAfterShip.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(75)), "Available should remain 75")
+		assert.True(t, itemAfterShip.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should be 0 after deduction")
 
 		// Verify lock is marked as consumed
 		locks, err := setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID.String())
@@ -514,13 +514,13 @@ func TestOrderInventory_ShipDeductStock(t *testing.T) {
 		// Verify both products have stock deducted
 		item2, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID2)
 		require.NoError(t, err)
-		assert.True(t, item2.AvailableQuantity.Equal(decimal.NewFromFloat(45)), "Product 2: Available should be 60-15=45")
-		assert.True(t, item2.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Product 2: Locked should be 0")
+		assert.True(t, item2.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(45)), "Product 2: Available should be 60-15=45")
+		assert.True(t, item2.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Product 2: Locked should be 0")
 
 		item3, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID3)
 		require.NoError(t, err)
-		assert.True(t, item3.AvailableQuantity.Equal(decimal.NewFromFloat(55)), "Product 3: Available should be 90-35=55")
-		assert.True(t, item3.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Product 3: Locked should be 0")
+		assert.True(t, item3.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(55)), "Product 3: Available should be 90-35=55")
+		assert.True(t, item3.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Product 3: Locked should be 0")
 	})
 }
 
@@ -577,8 +577,8 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 		// Verify stock is locked
 		itemAfterLock, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
-		assert.True(t, itemAfterLock.AvailableQuantity.Equal(decimal.NewFromFloat(60)))
-		assert.True(t, itemAfterLock.LockedQuantity.Equal(decimal.NewFromFloat(40)))
+		assert.True(t, itemAfterLock.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(60)))
+		assert.True(t, itemAfterLock.LockedQuantity.Amount().Equal(decimal.NewFromFloat(40)))
 
 		// Cancel the order
 		cancelEvent := &domaintrade.SalesOrderCancelledEvent{
@@ -588,10 +588,10 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:      orderID,
-			OrderNumber:  orderNumber,
-			CustomerID:   uuid.New(),
-			WarehouseID:  &setup.WarehouseID,
+			OrderID:     orderID,
+			OrderNumber: orderNumber,
+			CustomerID:  uuid.New(),
+			WarehouseID: &setup.WarehouseID,
 			Items: []domaintrade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -616,8 +616,8 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 		itemAfterCancel, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
 
-		assert.True(t, itemAfterCancel.AvailableQuantity.Equal(decimal.NewFromFloat(100)), "Available should be restored to 100")
-		assert.True(t, itemAfterCancel.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should be 0 after release")
+		assert.True(t, itemAfterCancel.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(100)), "Available should be restored to 100")
+		assert.True(t, itemAfterCancel.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should be 0 after release")
 
 		// Verify lock is marked as released
 		locks, err := setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID.String())
@@ -641,10 +641,10 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:      orderID,
-			OrderNumber:  "SO-2024-CANCEL-002",
-			CustomerID:   uuid.New(),
-			WarehouseID:  nil, // Draft orders typically don't have warehouse set
+			OrderID:     orderID,
+			OrderNumber: "SO-2024-CANCEL-002",
+			CustomerID:  uuid.New(),
+			WarehouseID: nil, // Draft orders typically don't have warehouse set
 			Items: []domaintrade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -668,8 +668,8 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 		// Verify inventory unchanged
 		item, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(50)), "Available should remain 50")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Locked should remain 0")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(50)), "Available should remain 50")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Locked should remain 0")
 	})
 
 	t.Run("cancel order with multiple items releases all locks", func(t *testing.T) {
@@ -734,10 +734,10 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:      orderID,
-			OrderNumber:  orderNumber,
-			CustomerID:   uuid.New(),
-			WarehouseID:  &setup.WarehouseID,
+			OrderID:     orderID,
+			OrderNumber: orderNumber,
+			CustomerID:  uuid.New(),
+			WarehouseID: &setup.WarehouseID,
 			Items: []domaintrade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -771,13 +771,13 @@ func TestOrderInventory_CancelReleaseStock(t *testing.T) {
 		// Verify both products have stock released
 		item2, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID2)
 		require.NoError(t, err)
-		assert.True(t, item2.AvailableQuantity.Equal(decimal.NewFromFloat(70)), "Product 2: Available should be restored to 70")
-		assert.True(t, item2.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Product 2: Locked should be 0")
+		assert.True(t, item2.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(70)), "Product 2: Available should be restored to 70")
+		assert.True(t, item2.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Product 2: Locked should be 0")
 
 		item3, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID3)
 		require.NoError(t, err)
-		assert.True(t, item3.AvailableQuantity.Equal(decimal.NewFromFloat(100)), "Product 3: Available should be restored to 100")
-		assert.True(t, item3.LockedQuantity.Equal(decimal.NewFromFloat(0)), "Product 3: Locked should be 0")
+		assert.True(t, item3.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(100)), "Product 3: Available should be restored to 100")
+		assert.True(t, item3.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "Product 3: Locked should be 0")
 	})
 }
 
@@ -801,8 +801,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// Initial state: 200 available, 0 locked
 		item, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(200)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(0)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(200)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)))
 
 		// Step 1: Confirm order - locks 50 units
 		confirmEvent := &domaintrade.SalesOrderConfirmedEvent{
@@ -840,8 +840,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// State after confirm: 150 available, 50 locked
 		item, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(150)), "After confirm: Available=150")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(50)), "After confirm: Locked=50")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(150)), "After confirm: Available=150")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(50)), "After confirm: Locked=50")
 
 		// Step 2: Ship order - deducts 50 locked units
 		shippedEvent := &domaintrade.SalesOrderShippedEvent{
@@ -879,8 +879,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// Final state: 150 available, 0 locked (50 consumed)
 		item, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, setup.ProductID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(150)), "After ship: Available=150")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(0)), "After ship: Locked=0")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(150)), "After ship: Available=150")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(0)), "After ship: Locked=0")
 	})
 
 	t.Run("concurrent orders lock different stock", func(t *testing.T) {
@@ -925,8 +925,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// After order 1: 70 available, 30 locked
 		item, err := setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(70)))
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(30)))
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(70)))
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(30)))
 
 		// Second order: 40 units
 		orderID2 := uuid.New()
@@ -964,8 +964,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// After order 2: 30 available, 70 locked
 		item, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(30)), "After 2 orders: Available=30")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(70)), "After 2 orders: Locked=70")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)), "After 2 orders: Available=30")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(70)), "After 2 orders: Locked=70")
 
 		// Verify both orders have separate locks
 		locks1, err := setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID1.String())
@@ -1004,8 +1004,8 @@ func TestOrderInventory_FullLifecycle(t *testing.T) {
 		// After shipping order 1: 30 available, 40 locked (order 2's lock)
 		item, err = setup.InventoryRepo.FindByWarehouseAndProduct(ctx, setup.TenantID, setup.WarehouseID, productID)
 		require.NoError(t, err)
-		assert.True(t, item.AvailableQuantity.Equal(decimal.NewFromFloat(30)), "After ship order1: Available=30")
-		assert.True(t, item.LockedQuantity.Equal(decimal.NewFromFloat(40)), "After ship order1: Locked=40 (order2)")
+		assert.True(t, item.AvailableQuantity.Amount().Equal(decimal.NewFromFloat(30)), "After ship order1: Available=30")
+		assert.True(t, item.LockedQuantity.Amount().Equal(decimal.NewFromFloat(40)), "After ship order1: Locked=40 (order2)")
 
 		// Verify order 1's lock is consumed, order 2's lock is still active
 		locks1, err = setup.InventoryService.GetLocksBySource(ctx, "SALES_ORDER", orderID1.String())

@@ -127,7 +127,7 @@ func (m *mockInventoryItemRepository) FindWithAvailableStock(ctx context.Context
 	}
 	var result []inventory.InventoryItem
 	for _, item := range m.items {
-		if item.TenantID == tenantID && item.AvailableQuantity.GreaterThan(decimal.Zero) {
+		if item.TenantID == tenantID && item.AvailableQuantity.IsPositive() {
 			result = append(result, *item)
 		}
 	}
@@ -235,7 +235,7 @@ func (m *mockInventoryItemRepository) SumQuantityByProduct(ctx context.Context, 
 	var sum decimal.Decimal
 	for _, item := range m.items {
 		if item.TenantID == tenantID && item.ProductID == productID {
-			sum = sum.Add(item.AvailableQuantity)
+			sum = sum.Add(item.AvailableQuantity.Amount())
 		}
 	}
 	return sum, nil
@@ -560,7 +560,7 @@ func setupInventoryTestHandler() (*InventoryHandler, *mockInventoryItemRepositor
 
 func createTestInventoryItem(tenantID, warehouseID, productID uuid.UUID) *inventory.InventoryItem {
 	item, _ := inventory.NewInventoryItem(tenantID, warehouseID, productID)
-	item.AvailableQuantity = decimal.NewFromInt(100)
+	item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 	item.UnitCost = decimal.NewFromFloat(15.50)
 	return item
 }
@@ -809,7 +809,7 @@ func TestInventoryHandler_LockStock_InsufficientStock(t *testing.T) {
 
 	// Create item with only 10 units
 	item := createTestInventoryItem(tenantID, warehouseID, productID)
-	item.AvailableQuantity = decimal.NewFromInt(10)
+	item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10))
 	invRepo.items[item.ID] = item
 	invRepo.findByWPID = item
 

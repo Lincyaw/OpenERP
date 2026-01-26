@@ -56,8 +56,8 @@ func createTestExpiredLock(inventoryItemID uuid.UUID) inventory.StockLock {
 
 func createTestInventoryItemForExpiration(tenantID uuid.UUID) *inventory.InventoryItem {
 	item, _ := inventory.NewInventoryItem(tenantID, uuid.New(), uuid.New())
-	item.AvailableQuantity = decimal.NewFromInt(100)
-	item.LockedQuantity = decimal.NewFromInt(10)
+	item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
+	item.LockedQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10))
 	return item
 }
 
