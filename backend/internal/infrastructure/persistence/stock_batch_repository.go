@@ -22,6 +22,11 @@ func NewGormStockBatchRepository(db *gorm.DB) *GormStockBatchRepository {
 	return &GormStockBatchRepository{db: db}
 }
 
+// WithTx returns a new repository instance with the given transaction
+func (r *GormStockBatchRepository) WithTx(tx *gorm.DB) *GormStockBatchRepository {
+	return &GormStockBatchRepository{db: tx}
+}
+
 // FindByID finds a stock batch by its ID
 func (r *GormStockBatchRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.StockBatch, error) {
 	var batch inventory.StockBatch

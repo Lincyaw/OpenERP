@@ -21500,3 +21500,99 @@ Business scenario requiring this fix:
 - Consider adding similar cancellation handling for purchase returns
 - Consider adding integration/E2E tests for the full cancel-reversal flow
 - Monitor in production for any edge cases not covered by unit tests
+
+2026-01-26 - Task BUG-008: Add database transaction wrapping for multi-step inventory operations
+
+=== Problem Description ===
+Multi-step inventory operations (IncreaseStock, LockStock, UnlockStock, DeductStock, DecreaseStock,
+AdjustStock) were not wrapped in database transactions. If an operation failed partway through,
+data could be left in an inconsistent state. For example:
+- IncreaseStock could update the inventory item but fail to create the transaction record
+- LockStock could save the inventory item changes but fail to save the stock lock record
+
+This fix adds database transaction support to ensure atomicity - all changes succeed together
+or are rolled back on failure.
+
+=== Implementation Details ===
+
+1. **New TransactionScope Interface** (backend/internal/application/inventory/transaction_scope.go):
+   - Created `TransactionScope` interface to abstract database transactions at application layer
+   - Created `TransactionalRepositories` interface to provide transactional access to all repos
+   - Created `NoOpTransactionScope` implementation for backward compatibility and testing
+   - This design keeps infrastructure concerns (GORM) out of the domain/application layer
+
+2. **GORM Implementation** (backend/internal/infrastructure/persistence/inventory_transaction_scope.go):
+   - Created `GormTransactionScope` that uses GORM's `Transaction()` for actual DB transactions
+   - Creates transactional repository instances that share the same `*gorm.DB` transaction handle
+   - Transaction is committed on success, rolled back on error (GORM handles this automatically)
+
+3. **Repository WithTx Methods**:
+   - Added `WithTx(*gorm.DB)` method to all inventory repositories:
+     - `GormInventoryItemRepository`
+     - `GormStockLockRepository`
+     - `GormInventoryTransactionRepository`
+     - `GormStockBatchRepository`
+   - These methods return a new repository instance bound to the given transaction
+
+4. **InventoryService Changes** (backend/internal/application/inventory/inventory_service.go):
+   - Added `txScope TransactionScope` field to `InventoryService`
+   - Added `SetTransactionScope()` method for dependency injection
+   - Refactored 6 methods to use transaction scope when available:
+     - `IncreaseStock`: GetOrCreate + SaveWithLock + Create transaction record
+     - `LockStock`: FindByWarehouseAndProduct + SaveWithLock + Save lock + Create tx record
+     - `UnlockStock`: FindByID (lock) + FindByID (item) + SaveWithLock + Save lock + Create tx record
+     - `DeductStock`: FindByID (lock) + FindByID (item) + SaveWithLock + Save lock + Create tx record
+     - `DecreaseStock`: FindByWarehouseAndProduct + SaveWithLock + Create tx record
+     - `AdjustStock`: GetOrCreate + SaveWithLock + Create tx record
+   - Domain events are now published AFTER transaction commits (not inside transaction)
+   - Backward compatible: if no transaction scope is set, uses original repositories
+
+=== Key Design Decisions ===
+
+1. **Application Layer Interface**: TransactionScope is defined in the application layer,
+   not infrastructure, keeping DDD boundaries clean. Domain layer has no knowledge of transactions.
+
+2. **Backward Compatibility**: Service methods work without transaction scope for existing code.
+   Transaction support is opt-in via `SetTransactionScope()`.
+
+3. **Event Publishing Outside Transaction**: Domain events are captured inside the transaction
+   but published only after commit. This prevents events being published for rolled-back changes.
+
+4. **Factory Pattern for Repositories**: Instead of modifying repository interfaces (which would
+   leak infrastructure concerns), we use a factory that creates transactional repositories.
+
+5. **All-or-Nothing**: If any step fails within a transactional operation, all changes are
+   rolled back, including inventory updates, lock records, and transaction records.
+
+=== Key Files Created/Modified ===
+- backend/internal/application/inventory/transaction_scope.go (new file)
+- backend/internal/infrastructure/persistence/inventory_transaction_scope.go (new file)
+- backend/internal/infrastructure/persistence/inventory_repository.go (added WithTx)
+- backend/internal/infrastructure/persistence/stock_lock_repository.go (added WithTx)
+- backend/internal/infrastructure/persistence/inventory_transaction_repository.go (added WithTx)
+- backend/internal/infrastructure/persistence/stock_batch_repository.go (added WithTx)
+- backend/internal/application/inventory/inventory_service.go (refactored 6 methods)
+
+=== Verification ===
+- [x] Go build succeeds
+- [x] All inventory service tests pass (26+ tests)
+- [x] All inventory repository tests pass
+- [x] Backward compatible - existing tests work without transaction scope
+- [x] prd.json updated (passes: true)
+
+=== Usage Example ===
+```go
+// In main.go or dependency injection setup:
+db := persistence.NewDatabase(cfg)
+txScope := persistence.NewGormTransactionScope(db.DB)
+
+inventoryService := inventory.NewInventoryService(invRepo, batchRepo, lockRepo, txRepo)
+inventoryService.SetTransactionScope(txScope)
+
+// Now IncreaseStock, LockStock, etc. will be wrapped in DB transactions
+```
+
+=== Next Steps ===
+- Consider adding transaction support to other services (trade, finance) using same pattern
+- Consider integration tests that verify rollback behavior on failure
+- Monitor production for any transaction-related issues

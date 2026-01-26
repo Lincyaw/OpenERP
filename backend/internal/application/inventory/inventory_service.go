@@ -37,6 +37,7 @@ type InventoryService struct {
 	tenantRepo       identity.TenantRepository
 	strategyProvider CostStrategyProvider
 	eventPublisher   shared.EventPublisher
+	txScope          TransactionScope
 }
 
 // NewInventoryService creates a new InventoryService
@@ -86,6 +87,13 @@ func (s *InventoryService) SetTenantRepository(repo identity.TenantRepository) {
 // SetStrategyProvider sets the strategy provider (optional, for cost calculation)
 func (s *InventoryService) SetStrategyProvider(provider CostStrategyProvider) {
 	s.strategyProvider = provider
+}
+
+// SetTransactionScope sets the transaction scope for multi-step operations.
+// When set, operations like IncreaseStock, LockStock, etc. will be wrapped
+// in database transactions to ensure atomicity.
+func (s *InventoryService) SetTransactionScope(scope TransactionScope) {
+	s.txScope = scope
 }
 
 // getCostStrategyForTenant returns the cost calculation strategy based on tenant configuration.
@@ -256,15 +264,6 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		return nil, shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
 	}
 
-	// Get or create inventory item
-	item, err := s.inventoryRepo.GetOrCreate(ctx, tenantID, req.WarehouseID, req.ProductID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Record balance before
-	balanceBefore := item.AvailableQuantity
-
 	// Prepare batch info if provided
 	var batchInfo *inventory.BatchInfo
 	if req.BatchNumber != "" {
@@ -275,215 +274,311 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 	costStrategy := s.getCostStrategyForTenant(ctx, tenantID)
 	costMethod := string(strategy.CostMethodMovingAverage) // default
 
-	// Use domain service with injected strategy if available
-	if costStrategy != nil {
-		domainService := inventory.NewInventoryDomainService(costStrategy, nil)
-		unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+	var response *InventoryItemResponse
+	var domainEvents []shared.DomainEvent
 
-		result, err := domainService.StockIn(ctx, item, req.Quantity, unitCostMoney, batchInfo)
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Get or create inventory item
+		item, err := invRepo.GetOrCreate(ctx, tenantID, req.WarehouseID, req.ProductID)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		costMethod = string(result.CostMethod)
+
+		// Record balance before
+		balanceBefore := item.AvailableQuantity
+
+		// Use domain service with injected strategy if available
+		if costStrategy != nil {
+			domainService := inventory.NewInventoryDomainService(costStrategy, nil)
+			unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+
+			result, err := domainService.StockIn(ctx, item, req.Quantity, unitCostMoney, batchInfo)
+			if err != nil {
+				return err
+			}
+			costMethod = string(result.CostMethod)
+		} else {
+			// Fallback to legacy method (uses built-in moving average)
+			unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+			if err := item.IncreaseStock(req.Quantity, unitCostMoney, batchInfo); err != nil {
+				return err
+			}
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Create transaction record
+		tx, err := inventory.CreateInboundTransaction(
+			tenantID,
+			item.ID,
+			req.WarehouseID,
+			req.ProductID,
+			req.Quantity,
+			item.UnitCost, // Use the calculated unit cost
+			balanceBefore,
+			item.AvailableQuantity,
+			sourceType,
+			req.SourceID,
+		)
+		if err != nil {
+			return err
+		}
+
+		// Set optional fields
+		if req.Reference != "" {
+			tx.WithReference(req.Reference)
+		}
+		if req.Reason != "" {
+			tx.WithReason(req.Reason)
+		}
+		if req.OperatorID != nil {
+			tx.WithOperatorID(*req.OperatorID)
+		}
+
+		// Record the cost calculation method used
+		tx.WithCostMethod(costMethod)
+
+		if err := txRepo.Create(ctx, tx); err != nil {
+			return err
+		}
+
+		resp := ToInventoryItemResponse(item)
+		response = &resp
+		return nil
+	}
+
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.TransactionRepo())
+		})
 	} else {
-		// Fallback to legacy method (uses built-in moving average)
-		unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
-		if err := item.IncreaseStock(req.Quantity, unitCostMoney, batchInfo); err != nil {
-			return nil, err
-		}
+		err = executeOperation(s.inventoryRepo, s.transactionRepo)
 	}
 
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return nil, err
-	}
-
-	// Publish domain events (including StockBelowThreshold if applicable)
-	s.publishDomainEvents(ctx, item)
-
-	// Create transaction record
-	tx, err := inventory.CreateInboundTransaction(
-		tenantID,
-		item.ID,
-		req.WarehouseID,
-		req.ProductID,
-		req.Quantity,
-		item.UnitCost, // Use the calculated unit cost
-		balanceBefore,
-		item.AvailableQuantity,
-		sourceType,
-		req.SourceID,
-	)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set optional fields
-	if req.Reference != "" {
-		tx.WithReference(req.Reference)
-	}
-	if req.Reason != "" {
-		tx.WithReason(req.Reason)
-	}
-	if req.OperatorID != nil {
-		tx.WithOperatorID(*req.OperatorID)
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
-	// Record the cost calculation method used
-	tx.WithCostMethod(costMethod)
-
-	if err := s.transactionRepo.Create(ctx, tx); err != nil {
-		// Log error but don't fail the operation - transaction is for audit only
-		// In production, this would be handled by the outbox pattern
-		_ = err
-	}
-
-	response := ToInventoryItemResponse(item)
-	return &response, nil
+	return response, nil
 }
 
 // LockStock locks stock for a pending order
 func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, req LockStockRequest) (*LockStockResponse, error) {
-	// Get inventory item
-	item, err := s.inventoryRepo.FindByWarehouseAndProduct(ctx, tenantID, req.WarehouseID, req.ProductID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NO_INVENTORY", "No inventory found for this warehouse-product combination")
-		}
-		return nil, err
-	}
-
 	// Set expiry time
 	expireAt := time.Now().Add(DefaultLockExpiry)
 	if req.ExpireAt != nil {
 		expireAt = *req.ExpireAt
 	}
 
-	// Record balance before
-	balanceBefore := item.AvailableQuantity
+	var response *LockStockResponse
+	var domainEvents []shared.DomainEvent
 
-	// Lock stock
-	lock, err := item.LockStock(req.Quantity, req.SourceType, req.SourceID, expireAt)
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, lockRepo inventory.StockLockRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Get inventory item
+		item, err := invRepo.FindByWarehouseAndProduct(ctx, tenantID, req.WarehouseID, req.ProductID)
+		if err != nil {
+			if errors.Is(err, shared.ErrNotFound) {
+				return shared.NewDomainError("NO_INVENTORY", "No inventory found for this warehouse-product combination")
+			}
+			return err
+		}
+
+		// Record balance before
+		balanceBefore := item.AvailableQuantity
+
+		// Lock stock
+		lock, err := item.LockStock(req.Quantity, req.SourceType, req.SourceID, expireAt)
+		if err != nil {
+			return err
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Save the lock
+		if err := lockRepo.Save(ctx, lock); err != nil {
+			return err
+		}
+
+		// Create transaction record for the lock
+		tx, err := inventory.NewInventoryTransaction(
+			tenantID,
+			item.ID,
+			req.WarehouseID,
+			req.ProductID,
+			inventory.TransactionTypeLock,
+			req.Quantity,
+			item.UnitCost,
+			balanceBefore,
+			item.AvailableQuantity,
+			inventory.SourceType(req.SourceType),
+			req.SourceID,
+		)
+		if err == nil {
+			tx.WithLockID(lock.ID)
+			if err := txRepo.Create(ctx, tx); err != nil {
+				return err
+			}
+		}
+
+		response = &LockStockResponse{
+			LockID:          lock.ID,
+			InventoryItemID: item.ID,
+			WarehouseID:     req.WarehouseID,
+			ProductID:       req.ProductID,
+			Quantity:        req.Quantity,
+			ExpireAt:        expireAt,
+			SourceType:      req.SourceType,
+			SourceID:        req.SourceID,
+		}
+		return nil
+	}
+
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.LockRepo(), repos.TransactionRepo())
+		})
+	} else {
+		err = executeOperation(s.inventoryRepo, s.lockRepo, s.transactionRepo)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return nil, err
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
-	// Publish domain events
-	s.publishDomainEvents(ctx, item)
-
-	// Save the lock
-	if err := s.lockRepo.Save(ctx, lock); err != nil {
-		return nil, err
-	}
-
-	// Create transaction record for the lock
-	tx, err := inventory.NewInventoryTransaction(
-		tenantID,
-		item.ID,
-		req.WarehouseID,
-		req.ProductID,
-		inventory.TransactionTypeLock,
-		req.Quantity,
-		item.UnitCost,
-		balanceBefore,
-		item.AvailableQuantity,
-		inventory.SourceType(req.SourceType),
-		req.SourceID,
-	)
-	if err == nil {
-		tx.WithLockID(lock.ID)
-		_ = s.transactionRepo.Create(ctx, tx)
-	}
-
-	return &LockStockResponse{
-		LockID:          lock.ID,
-		InventoryItemID: item.ID,
-		WarehouseID:     req.WarehouseID,
-		ProductID:       req.ProductID,
-		Quantity:        req.Quantity,
-		ExpireAt:        expireAt,
-		SourceType:      req.SourceType,
-		SourceID:        req.SourceID,
-	}, nil
+	return response, nil
 }
 
 // UnlockStock releases a previously locked quantity back to available
 func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, req UnlockStockRequest) error {
-	// Find the lock
-	lock, err := s.lockRepo.FindByID(ctx, req.LockID)
-	if err != nil {
-		return err
-	}
+	var domainEvents []shared.DomainEvent
 
-	// Get the inventory item
-	item, err := s.inventoryRepo.FindByID(ctx, lock.InventoryItemID)
-	if err != nil {
-		return err
-	}
-
-	// Verify tenant
-	if item.TenantID != tenantID {
-		return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
-	}
-
-	// Add lock to item's Locks slice so domain method can find it
-	// (Repository doesn't preload associations)
-	item.Locks = append(item.Locks, *lock)
-
-	// Record balance before
-	balanceBefore := item.AvailableQuantity
-
-	// Unlock stock
-	if err := item.UnlockStock(req.LockID); err != nil {
-		return err
-	}
-
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return err
-	}
-
-	// Publish domain events
-	s.publishDomainEvents(ctx, item)
-
-	// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
-	// The domain method marks the lock as Released in item.Locks
-	var releasedLock *inventory.StockLock
-	for idx := range item.Locks {
-		if item.Locks[idx].ID == req.LockID {
-			releasedLock = &item.Locks[idx]
-			break
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, lockRepo inventory.StockLockRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Find the lock
+		lock, err := lockRepo.FindByID(ctx, req.LockID)
+		if err != nil {
+			return err
 		}
+
+		// Get the inventory item
+		item, err := invRepo.FindByID(ctx, lock.InventoryItemID)
+		if err != nil {
+			return err
+		}
+
+		// Verify tenant
+		if item.TenantID != tenantID {
+			return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
+		}
+
+		// Add lock to item's Locks slice so domain method can find it
+		// (Repository doesn't preload associations)
+		item.Locks = append(item.Locks, *lock)
+
+		// Record balance before
+		balanceBefore := item.AvailableQuantity
+
+		// Unlock stock
+		if err := item.UnlockStock(req.LockID); err != nil {
+			return err
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
+		// The domain method marks the lock as Released in item.Locks
+		var releasedLock *inventory.StockLock
+		for idx := range item.Locks {
+			if item.Locks[idx].ID == req.LockID {
+				releasedLock = &item.Locks[idx]
+				break
+			}
+		}
+		if releasedLock == nil {
+			return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after unlock operation")
+		}
+		if err := lockRepo.Save(ctx, releasedLock); err != nil {
+			return err
+		}
+
+		// Create transaction record for the unlock
+		tx, err := inventory.NewInventoryTransaction(
+			tenantID,
+			item.ID,
+			item.WarehouseID,
+			item.ProductID,
+			inventory.TransactionTypeUnlock,
+			lock.Quantity,
+			item.UnitCost,
+			balanceBefore,
+			item.AvailableQuantity,
+			inventory.SourceType(lock.SourceType),
+			lock.SourceID,
+		)
+		if err == nil {
+			tx.WithLockID(lock.ID)
+			if err := txRepo.Create(ctx, tx); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}
-	if releasedLock == nil {
-		return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after unlock operation")
+
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.LockRepo(), repos.TransactionRepo())
+		})
+	} else {
+		err = executeOperation(s.inventoryRepo, s.lockRepo, s.transactionRepo)
 	}
-	if err := s.lockRepo.Save(ctx, releasedLock); err != nil {
+
+	if err != nil {
 		return err
 	}
 
-	// Create transaction record for the unlock
-	tx, err := inventory.NewInventoryTransaction(
-		tenantID,
-		item.ID,
-		item.WarehouseID,
-		item.ProductID,
-		inventory.TransactionTypeUnlock,
-		lock.Quantity,
-		item.UnitCost,
-		balanceBefore,
-		item.AvailableQuantity,
-		inventory.SourceType(lock.SourceType),
-		lock.SourceID,
-	)
-	if err == nil {
-		tx.WithLockID(lock.ID)
-		_ = s.transactionRepo.Create(ctx, tx)
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
 	return nil
@@ -497,81 +592,110 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		return shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
 	}
 
-	// Find the lock
-	lock, err := s.lockRepo.FindByID(ctx, req.LockID)
+	var domainEvents []shared.DomainEvent
+
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, lockRepo inventory.StockLockRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Find the lock
+		lock, err := lockRepo.FindByID(ctx, req.LockID)
+		if err != nil {
+			return err
+		}
+
+		// Get the inventory item
+		item, err := invRepo.FindByID(ctx, lock.InventoryItemID)
+		if err != nil {
+			return err
+		}
+
+		// Verify tenant
+		if item.TenantID != tenantID {
+			return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
+		}
+
+		// Add lock to item's Locks slice so domain method can find it
+		// (Repository doesn't preload associations)
+		item.Locks = append(item.Locks, *lock)
+
+		// Record locked quantity before (deduct affects locked, not available)
+		lockedBefore := item.LockedQuantity
+
+		// Deduct stock
+		if err := item.DeductStock(req.LockID); err != nil {
+			return err
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
+		// The domain method marks the lock as Consumed in item.Locks
+		var consumedLock *inventory.StockLock
+		for idx := range item.Locks {
+			if item.Locks[idx].ID == req.LockID {
+				consumedLock = &item.Locks[idx]
+				break
+			}
+		}
+		if consumedLock == nil {
+			return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after deduct operation")
+		}
+		if err := lockRepo.Save(ctx, consumedLock); err != nil {
+			return err
+		}
+
+		// Create transaction record for the deduction (outbound)
+		tx, err := inventory.CreateOutboundTransaction(
+			tenantID,
+			item.ID,
+			item.WarehouseID,
+			item.ProductID,
+			lock.Quantity,
+			item.UnitCost,
+			lockedBefore,
+			item.LockedQuantity,
+			sourceType,
+			req.SourceID,
+		)
+		if err == nil {
+			tx.WithLockID(lock.ID)
+			if req.Reference != "" {
+				tx.WithReference(req.Reference)
+			}
+			if req.OperatorID != nil {
+				tx.WithOperatorID(*req.OperatorID)
+			}
+			if err := txRepo.Create(ctx, tx); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.LockRepo(), repos.TransactionRepo())
+		})
+	} else {
+		err = executeOperation(s.inventoryRepo, s.lockRepo, s.transactionRepo)
+	}
+
 	if err != nil {
 		return err
 	}
 
-	// Get the inventory item
-	item, err := s.inventoryRepo.FindByID(ctx, lock.InventoryItemID)
-	if err != nil {
-		return err
-	}
-
-	// Verify tenant
-	if item.TenantID != tenantID {
-		return shared.NewDomainError("FORBIDDEN", "Lock does not belong to this tenant")
-	}
-
-	// Add lock to item's Locks slice so domain method can find it
-	// (Repository doesn't preload associations)
-	item.Locks = append(item.Locks, *lock)
-
-	// Record locked quantity before (deduct affects locked, not available)
-	lockedBefore := item.LockedQuantity
-
-	// Deduct stock
-	if err := item.DeductStock(req.LockID); err != nil {
-		return err
-	}
-
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return err
-	}
-
-	// Publish domain events (including StockBelowThreshold if applicable)
-	s.publishDomainEvents(ctx, item)
-
-	// Update the lock record (find by ID, not by position - Locks[0] assumption is incorrect)
-	// The domain method marks the lock as Consumed in item.Locks
-	var consumedLock *inventory.StockLock
-	for idx := range item.Locks {
-		if item.Locks[idx].ID == req.LockID {
-			consumedLock = &item.Locks[idx]
-			break
-		}
-	}
-	if consumedLock == nil {
-		return shared.NewDomainError("LOCK_NOT_FOUND", "Lock not found in item after deduct operation")
-	}
-	if err := s.lockRepo.Save(ctx, consumedLock); err != nil {
-		return err
-	}
-
-	// Create transaction record for the deduction (outbound)
-	tx, err := inventory.CreateOutboundTransaction(
-		tenantID,
-		item.ID,
-		item.WarehouseID,
-		item.ProductID,
-		lock.Quantity,
-		item.UnitCost,
-		lockedBefore,
-		item.LockedQuantity,
-		sourceType,
-		req.SourceID,
-	)
-	if err == nil {
-		tx.WithLockID(lock.ID)
-		if req.Reference != "" {
-			tx.WithReference(req.Reference)
-		}
-		if req.OperatorID != nil {
-			tx.WithOperatorID(*req.OperatorID)
-		}
-		_ = s.transactionRepo.Create(ctx, tx)
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
 	return nil
@@ -586,52 +710,81 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 		return shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
 	}
 
-	// Get inventory item
-	item, err := s.inventoryRepo.FindByWarehouseAndProduct(ctx, tenantID, req.WarehouseID, req.ProductID)
+	var domainEvents []shared.DomainEvent
+
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Get inventory item
+		item, err := invRepo.FindByWarehouseAndProduct(ctx, tenantID, req.WarehouseID, req.ProductID)
+		if err != nil {
+			return err
+		}
+
+		// Record balance before
+		balanceBefore := item.AvailableQuantity
+
+		// Decrease stock
+		if err := item.DecreaseStock(req.Quantity, req.SourceType, req.SourceID, req.Reason); err != nil {
+			return err
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Create transaction record for the decrease (outbound)
+		tx, err := inventory.CreateOutboundTransaction(
+			tenantID,
+			item.ID,
+			item.WarehouseID,
+			item.ProductID,
+			req.Quantity,
+			item.UnitCost,
+			balanceBefore,
+			item.AvailableQuantity,
+			sourceType,
+			req.SourceID,
+		)
+		if err == nil {
+			if req.Reference != "" {
+				tx.WithReference(req.Reference)
+			}
+			if req.Reason != "" {
+				tx.WithReason(req.Reason)
+			}
+			if req.OperatorID != nil {
+				tx.WithOperatorID(*req.OperatorID)
+			}
+			if err := txRepo.Create(ctx, tx); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.TransactionRepo())
+		})
+	} else {
+		err = executeOperation(s.inventoryRepo, s.transactionRepo)
+	}
+
 	if err != nil {
 		return err
 	}
 
-	// Record balance before
-	balanceBefore := item.AvailableQuantity
-
-	// Decrease stock
-	if err := item.DecreaseStock(req.Quantity, req.SourceType, req.SourceID, req.Reason); err != nil {
-		return err
-	}
-
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return err
-	}
-
-	// Publish domain events (including StockBelowThreshold if applicable)
-	s.publishDomainEvents(ctx, item)
-
-	// Create transaction record for the decrease (outbound)
-	tx, err := inventory.CreateOutboundTransaction(
-		tenantID,
-		item.ID,
-		item.WarehouseID,
-		item.ProductID,
-		req.Quantity,
-		item.UnitCost,
-		balanceBefore,
-		item.AvailableQuantity,
-		sourceType,
-		req.SourceID,
-	)
-	if err == nil {
-		if req.Reference != "" {
-			tx.WithReference(req.Reference)
-		}
-		if req.Reason != "" {
-			tx.WithReason(req.Reason)
-		}
-		if req.OperatorID != nil {
-			tx.WithOperatorID(*req.OperatorID)
-		}
-		_ = s.transactionRepo.Create(ctx, tx)
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
 	return nil
@@ -639,29 +792,7 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 
 // AdjustStock adjusts the stock to match actual quantity
 func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, req AdjustStockRequest) (*InventoryItemResponse, error) {
-	// Get or create inventory item
-	item, err := s.inventoryRepo.GetOrCreate(ctx, tenantID, req.WarehouseID, req.ProductID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Record balance before
-	balanceBefore := item.AvailableQuantity
-
-	// Adjust stock
-	if err := item.AdjustStock(req.ActualQuantity, req.Reason); err != nil {
-		return nil, err
-	}
-
-	// Save with optimistic locking
-	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
-		return nil, err
-	}
-
-	// Publish domain events (including StockBelowThreshold if applicable)
-	s.publishDomainEvents(ctx, item)
-
-	// Determine source type and ID
+	// Determine source type and ID upfront
 	sourceType := inventory.SourceTypeManualAdjustment
 	if req.SourceType != "" {
 		st := inventory.SourceType(req.SourceType)
@@ -674,37 +805,86 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 		sourceID = fmt.Sprintf("ADJ-%s", time.Now().Format("20060102150405"))
 	}
 
-	// Calculate adjustment quantity (absolute value)
-	adjustmentQty := req.ActualQuantity.Sub(balanceBefore).Abs()
-	if adjustmentQty.IsZero() {
-		// No actual change
-		response := ToInventoryItemResponse(item)
-		return &response, nil
-	}
+	var response *InventoryItemResponse
+	var domainEvents []shared.DomainEvent
 
-	// Create transaction record
-	tx, err := inventory.CreateAdjustmentTransaction(
-		tenantID,
-		item.ID,
-		req.WarehouseID,
-		req.ProductID,
-		adjustmentQty,
-		item.UnitCost,
-		balanceBefore,
-		item.AvailableQuantity,
-		sourceType,
-		sourceID,
-		req.Reason,
-	)
-	if err == nil {
-		if req.OperatorID != nil {
-			tx.WithOperatorID(*req.OperatorID)
+	// Core operation function that can be executed within a transaction
+	executeOperation := func(invRepo inventory.InventoryItemRepository, txRepo inventory.InventoryTransactionRepository) error {
+		// Get or create inventory item
+		item, err := invRepo.GetOrCreate(ctx, tenantID, req.WarehouseID, req.ProductID)
+		if err != nil {
+			return err
 		}
-		_ = s.transactionRepo.Create(ctx, tx)
+
+		// Record balance before
+		balanceBefore := item.AvailableQuantity
+
+		// Adjust stock
+		if err := item.AdjustStock(req.ActualQuantity, req.Reason); err != nil {
+			return err
+		}
+
+		// Save with optimistic locking
+		if err := invRepo.SaveWithLock(ctx, item); err != nil {
+			return err
+		}
+
+		// Capture domain events for publishing after transaction commits
+		domainEvents = item.GetDomainEvents()
+		item.ClearDomainEvents()
+
+		// Calculate adjustment quantity (absolute value)
+		adjustmentQty := req.ActualQuantity.Sub(balanceBefore).Abs()
+		if !adjustmentQty.IsZero() {
+			// Create transaction record
+			tx, err := inventory.CreateAdjustmentTransaction(
+				tenantID,
+				item.ID,
+				req.WarehouseID,
+				req.ProductID,
+				adjustmentQty,
+				item.UnitCost,
+				balanceBefore,
+				item.AvailableQuantity,
+				sourceType,
+				sourceID,
+				req.Reason,
+			)
+			if err == nil {
+				if req.OperatorID != nil {
+					tx.WithOperatorID(*req.OperatorID)
+				}
+				if err := txRepo.Create(ctx, tx); err != nil {
+					return err
+				}
+			}
+		}
+
+		resp := ToInventoryItemResponse(item)
+		response = &resp
+		return nil
 	}
 
-	response := ToInventoryItemResponse(item)
-	return &response, nil
+	// Execute with or without transaction scope
+	var err error
+	if s.txScope != nil {
+		err = s.txScope.Execute(ctx, func(repos TransactionalRepositories) error {
+			return executeOperation(repos.InventoryRepo(), repos.TransactionRepo())
+		})
+	} else {
+		err = executeOperation(s.inventoryRepo, s.transactionRepo)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Publish domain events after successful transaction commit
+	if s.eventPublisher != nil && len(domainEvents) > 0 {
+		_ = s.eventPublisher.Publish(ctx, domainEvents...)
+	}
+
+	return response, nil
 }
 
 // SetThresholds sets min/max quantity thresholds for an inventory item

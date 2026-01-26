@@ -21,6 +21,11 @@ func NewGormStockLockRepository(db *gorm.DB) *GormStockLockRepository {
 	return &GormStockLockRepository{db: db}
 }
 
+// WithTx returns a new repository instance with the given transaction
+func (r *GormStockLockRepository) WithTx(tx *gorm.DB) *GormStockLockRepository {
+	return &GormStockLockRepository{db: tx}
+}
+
 // FindByID finds a stock lock by its ID
 func (r *GormStockLockRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.StockLock, error) {
 	var lock inventory.StockLock

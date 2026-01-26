@@ -23,6 +23,11 @@ func NewGormInventoryTransactionRepository(db *gorm.DB) *GormInventoryTransactio
 	return &GormInventoryTransactionRepository{db: db}
 }
 
+// WithTx returns a new repository instance with the given transaction
+func (r *GormInventoryTransactionRepository) WithTx(tx *gorm.DB) *GormInventoryTransactionRepository {
+	return &GormInventoryTransactionRepository{db: tx}
+}
+
 // FindByID finds a transaction by its ID
 func (r *GormInventoryTransactionRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.InventoryTransaction, error) {
 	var tx inventory.InventoryTransaction

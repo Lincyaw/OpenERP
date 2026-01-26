@@ -4579,7 +4579,7 @@
       "为 LockStock 添加数据库事务",
       "确保部分失败时回滚所有变更"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "HIGH",
