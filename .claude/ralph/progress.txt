@@ -24572,3 +24572,119 @@ Service interface:
 - P7-BE-012: Implement Taobao Adapter (optional)
 - Future: Create HTTP handlers for ProductMapping API endpoints
 - Future: Add database migration for product_mappings table
+
+---
+
+2027-01-27 - P0-SEED-001: 完成全面的 Seed Data 实现
+
+=== Summary ===
+
+Created comprehensive seed data covering all required entities with proper foreign key relationships, ensuring data consistency across all modules. The seed data supports frontend pagination, filtering, and various status scenarios for testing.
+
+=== Implementation Details ===
+
+**1. Layer 1 - Base Data**
+- 3 tenants (default + alpha + beta test companies)
+- 10 categories (4 root categories + 6 sub-categories forming tree structure)
+
+**2. Layer 2 - Master Data**
+- 15 customer levels (5 per tenant: normal/silver/gold/platinum/VIP)
+- 15 products across categories (phones, computers, accessories, clothing, office supplies, snacks)
+- 10 customers (5 organizations + 5 individuals, distributed across all levels)
+- 8 suppliers (manufacturers, distributors, retailers - fixed 'wholesaler' type constraint issue)
+- 5 warehouses (3 physical + 1 virtual + 1 returns warehouse)
+
+**3. Layer 3 - Users & Roles**
+- 6 users (admin + sales/warehouse/finance/purchaser/cashier)
+- Role permissions for SALES, WAREHOUSE, ACCOUNTANT roles
+
+**4. Layer 4 - Product Units**
+- 10 product units for multi-unit support (A4 paper, pens, T-shirts, chargers, chips)
+- Fixed schema mismatch: unit_code/unit_name instead of name, conversion_rate instead of ratio
+
+**5. Layer 5 - Inventory**
+- 20 inventory items across 3 warehouses
+- 10 stock batches with production dates
+- 5 stock locks (linked to confirmed sales orders)
+- 15 inventory transactions (fixed transaction_type enum: ADJUSTMENT_DECREASE instead of ADJUSTMENT)
+
+**6. Layer 6 - Trade**
+- 10 sales orders (DRAFT 2, CONFIRMED 2, SHIPPED 3, COMPLETED 2, CANCELLED 1)
+- 25 sales order items
+- 8 purchase orders (DRAFT 1, CONFIRMED 2, COMPLETED 4, CANCELLED 1)
+- 20 purchase order items
+- 4 sales returns (2 pending/submitted, 2 completed)
+- 8 sales return items
+- 3 purchase returns (1 submitted, 1 approved, 1 completed)
+- 6 purchase return items
+
+**7. Layer 7 - Finance**
+- 8 account receivables (3 pending, 2 partial, 3 paid) linked to sales orders
+- 6 account payables (2 pending, 1 partial, 3 paid) linked to purchase orders
+- 5 receipt vouchers (customer payments)
+- 4 payment vouchers (supplier payments)
+- 6 expense records (fixed schema: expense_number/incurred_at, status uppercase)
+- 4 other income records (fixed schema: income_number/received_at)
+- 10 balance transactions (customer prepaid balance recharges and consumptions)
+
+=== Key Files Modified ===
+
+1. `docker/seed-data.sql` - Complete rewrite with comprehensive seed data (682 lines)
+
+=== Schema Fixes Applied ===
+
+1. **suppliers.type**: Changed 'wholesaler' to 'distributor'/'retailer' (valid values: manufacturer, distributor, retailer, service)
+2. **product_units**: Fixed column names (unit_code, unit_name, conversion_rate, is_default_purchase_unit, is_default_sales_unit)
+3. **inventory_transactions.transaction_type**: Changed 'ADJUSTMENT' to 'ADJUSTMENT_DECREASE', 'INBOUND' to 'TRANSFER_IN'/'RETURN' for specific cases
+4. **expense_records**: Fixed column names (expense_number, incurred_at) and status values (uppercase: DRAFT, APPROVED)
+5. **other_income_records**: Fixed column names (income_number, received_at) and status values (uppercase: CONFIRMED)
+
+=== Verification ===
+
+Database counts after seed data load:
+- tenants: 3
+- categories: 10
+- customer_levels: 15
+- products: 15
+- customers: 10
+- suppliers: 8
+- warehouses: 5
+- users: 6
+- roles: 7
+- product_units: 10
+- inventory_items: 20
+- stock_batches: 10
+- stock_locks: 5
+- inventory_transactions: 15
+- sales_orders: 10
+- sales_order_items: 25
+- purchase_orders: 8
+- purchase_order_items: 20
+- sales_returns: 4
+- sales_return_items: 8
+- purchase_returns: 3
+- purchase_return_items: 6
+- account_receivables: 8
+- account_payables: 6
+- receipt_vouchers: 5
+- payment_vouchers: 4
+- expense_records: 6
+- other_income_records: 4
+- balance_transactions: 10
+
+All data loaded successfully via `make db-reset`.
+
+=== Data Consistency Notes ===
+
+- Sales order amounts = SUM(order item amounts)
+- Receivables linked to shipped/completed sales orders
+- Payables linked to confirmed/completed purchase orders
+- Stock locks linked to confirmed sales orders (SO-2026-0003, SO-2026-0004, SO-2026-0005)
+- Inventory transactions match inventory item quantities
+- Customer balances = SUM(recharges) - SUM(consumptions)
+
+=== Next Steps ===
+
+- Consider adding more E2E tests to verify frontend displays all seed data correctly
+- Add more variety in payment methods for finance vouchers
+- Consider adding sample stock taking records
