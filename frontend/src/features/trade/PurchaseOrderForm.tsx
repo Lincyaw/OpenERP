@@ -1,21 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { z } from 'zod'
-import {
-  Card,
-  Typography,
-  Button,
-  Table,
-  InputNumber,
-  Input,
-  Select,
-  Toast,
-  Space,
-  Popconfirm,
-  Empty,
-} from '@douyinfe/semi-ui-19'
-import { IconPlus, IconDelete, IconSearch } from '@douyinfe/semi-icons'
+import { Card, Typography, Button, Input, Select, Toast, Space } from '@douyinfe/semi-ui-19'
+import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
 import { getSuppliers } from '@/api/suppliers/suppliers'
 import { getProducts } from '@/api/products/products'
@@ -28,49 +17,18 @@ import type {
   HandlerCreatePurchaseOrderItemInput,
 } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
+import {
+  useOrderCalculations,
+  useOrderForm,
+  createEmptyPurchaseOrderItem,
+  type PurchaseOrderFormData,
+  type PurchaseOrderItemFormData,
+} from '@/hooks'
 import { createScopedLogger } from '@/utils'
-
-const log = createScopedLogger('PurchaseOrderForm')
-import { safeToFixed } from '@/utils'
 import './PurchaseOrderForm.css'
 
+const log = createScopedLogger('PurchaseOrderForm')
 const { Title, Text } = Typography
-
-// Order item form type
-interface OrderItemFormData {
-  key: string
-  product_id: string
-  product_code: string
-  product_name: string
-  unit: string
-  unit_cost: number
-  quantity: number
-  amount: number
-  remark?: string
-}
-
-// Order form data type
-interface OrderFormData {
-  supplier_id: string
-  supplier_name: string
-  warehouse_id?: string
-  discount: number
-  remark?: string
-  items: OrderItemFormData[]
-}
-
-// Initial empty item
-const createEmptyItem = (): OrderItemFormData => ({
-  key: `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-  product_id: '',
-  product_code: '',
-  product_name: '',
-  unit: '',
-  unit_cost: 0,
-  quantity: 1,
-  amount: 0,
-  remark: '',
-})
 
 interface PurchaseOrderFormProps {
   /** Order ID for edit mode, undefined for create mode */
@@ -99,7 +57,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
 
-  // Form validation schema with i18n
+  // Form validation schema
   const orderFormSchema = useMemo(
     () =>
       z.object({
@@ -124,19 +82,43 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     [t]
   )
 
-  // Form state
-  const [formData, setFormData] = useState<OrderFormData>({
-    supplier_id: '',
-    supplier_name: '',
-    warehouse_id: undefined,
-    discount: 0,
-    remark: '',
-    items: [createEmptyItem()],
+  // Initial form data
+  const initialFormData: PurchaseOrderFormData = useMemo(
+    () => ({
+      supplier_id: '',
+      supplier_name: '',
+      warehouse_id: undefined,
+      discount: 0,
+      remark: '',
+      items: [createEmptyPurchaseOrderItem()],
+    }),
+    []
+  )
+
+  // Use shared order form hook
+  const {
+    formData,
+    setFormData,
+    errors,
+    isSubmitting,
+    setIsSubmitting,
+    clearError,
+    validateForm,
+    resetForm,
+    addItem,
+    removeItem,
+    updateItemWithAmount,
+    handleDiscountChange,
+    handleRemarkChange,
+    handleWarehouseChange,
+  } = useOrderForm<PurchaseOrderFormData>({
+    initialData: initialFormData,
+    schema: orderFormSchema,
+    createEmptyItem: createEmptyPurchaseOrderItem,
   })
 
-  // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  // Use shared calculations hook
+  const calculations = useOrderCalculations(formData.items, formData.discount)
 
   // Data for dropdowns
   const [suppliers, setSuppliers] = useState<HandlerSupplierListResponse[]>([])
@@ -146,22 +128,9 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const [productsLoading, setProductsLoading] = useState(false)
   const [warehousesLoading, setWarehousesLoading] = useState(false)
 
-  // Search state for suppliers
+  // Search state
   const [supplierSearch, setSupplierSearch] = useState('')
   const [productSearch, setProductSearch] = useState('')
-
-  // Calculate totals
-  const calculations = useMemo(() => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.amount, 0)
-    const discountAmount = (subtotal * formData.discount) / 100
-    const total = subtotal - discountAmount
-    return {
-      subtotal,
-      discountAmount,
-      total,
-      itemCount: formData.items.filter((item) => item.product_id).length,
-    }
-  }, [formData.items, formData.discount])
 
   // Fetch suppliers
   const fetchSuppliers = useCallback(
@@ -169,11 +138,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       setSuppliersLoading(true)
       try {
         const response = await supplierApi.getPartnerSuppliers(
-          {
-            page_size: 50,
-            search: search || undefined,
-            status: 'active',
-          },
+          { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
         if (response.success && response.data) {
@@ -197,11 +162,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       setProductsLoading(true)
       try {
         const response = await productApi.getCatalogProducts(
-          {
-            page_size: 50,
-            search: search || undefined,
-            status: 'active',
-          },
+          { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
         if (response.success && response.data) {
@@ -225,15 +186,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       setWarehousesLoading(true)
       try {
         const response = await warehouseApi.getPartnerWarehouses(
-          {
-            page_size: 100,
-            status: 'enabled',
-          },
+          { page_size: 100, status: 'enabled' },
           { signal }
         )
         if (response.success && response.data) {
           setWarehouses(response.data)
-          // Set default warehouse if available and not in edit mode
           if (!isEditMode && !formData.warehouse_id) {
             const defaultWarehouse = response.data.find((w) => w.is_default)
             if (defaultWarehouse?.id) {
@@ -250,7 +207,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         setWarehousesLoading(false)
       }
     },
-    [warehouseApi, isEditMode, formData.warehouse_id]
+    [warehouseApi, isEditMode, formData.warehouse_id, setFormData]
   )
 
   // Initial data loading
@@ -266,9 +223,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   useEffect(() => {
     if (!supplierSearch) return
     const abortController = new AbortController()
-    const timer = setTimeout(() => {
-      fetchSuppliers(supplierSearch, abortController.signal)
-    }, 300)
+    const timer = setTimeout(() => fetchSuppliers(supplierSearch, abortController.signal), 300)
     return () => {
       clearTimeout(timer)
       abortController.abort()
@@ -279,9 +234,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   useEffect(() => {
     if (!productSearch) return
     const abortController = new AbortController()
-    const timer = setTimeout(() => {
-      fetchProducts(productSearch, abortController.signal)
-    }, 300)
+    const timer = setTimeout(() => fetchProducts(productSearch, abortController.signal), 300)
     return () => {
       clearTimeout(timer)
       abortController.abort()
@@ -291,11 +244,8 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   // Load initial data for edit mode
   useEffect(() => {
     if (initialData) {
-      // Calculate discount percentage from discount_amount and total_amount
       const totalAmount = initialData.total_amount || 0
       const discountAmount = initialData.discount_amount || 0
-      // discount_amount = subtotal * discount_percentage / 100
-      // subtotal = total_amount + discount_amount
       const subtotal = totalAmount + discountAmount
       const discountPercent = subtotal > 0 ? (discountAmount / subtotal) * 100 : 0
 
@@ -315,10 +265,10 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
           quantity: item.ordered_quantity || 1,
           amount: (item.unit_cost || 0) * (item.ordered_quantity || 1),
           remark: item.remark || '',
-        })) || [createEmptyItem()],
+        })) || [createEmptyPurchaseOrderItem()],
       })
     }
-  }, [initialData])
+  }, [initialData, setFormData])
 
   // Handle supplier selection
   const handleSupplierChange = useCallback(
@@ -330,37 +280,23 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         supplier_id: supplierId,
         supplier_name: supplier?.name || '',
       }))
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors.supplier_id
-        return newErrors
-      })
+      clearError('supplier_id')
     },
-    [suppliers]
-  )
-
-  // Handle warehouse selection
-  const handleWarehouseChange = useCallback(
-    (value: string | number | (string | number)[] | Record<string, unknown> | undefined) => {
-      const warehouseId = typeof value === 'string' ? value : undefined
-      setFormData((prev) => ({ ...prev, warehouse_id: warehouseId || undefined }))
-    },
-    []
+    [suppliers, setFormData, clearError]
   )
 
   // Handle product selection for an item
   const handleProductSelect = useCallback(
-    (itemKey: string, productId: string) => {
-      const product = products.find((p) => p.id === productId)
+    (itemKey: string, _productId: string, productOption: ProductOption) => {
+      const product = products.find((p) => p.id === productOption.value)
       if (!product) return
 
       setFormData((prev) => ({
         ...prev,
         items: prev.items.map((item) => {
           if (item.key !== itemKey) return item
-          // Use purchase_price (cost) for purchase orders instead of selling_price
           const unitCost = product.purchase_price || product.selling_price || 0
-          const newItem = {
+          return {
             ...item,
             product_id: product.id || '',
             product_code: product.code || '',
@@ -369,121 +305,45 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             unit_cost: unitCost,
             amount: unitCost * item.quantity,
           }
-          return newItem
         }),
       }))
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[`items.${itemKey}.product_id`]
-        return newErrors
-      })
+      clearError(`items.${itemKey}.product_id`)
     },
-    [products]
+    [products, setFormData, clearError]
   )
 
   // Handle quantity change
-  // InputNumber onChange can pass undefined when input is cleared
   const handleQuantityChange = useCallback(
     (itemKey: string, quantity: number | string | undefined) => {
-      // Use typeof check for type safety - handle undefined and string cases
       const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
-      setFormData((prev) => ({
-        ...prev,
-        items: prev.items.map((item) => {
-          if (item.key !== itemKey) return item
-          return {
-            ...item,
-            quantity: qty,
-            amount: item.unit_cost * qty,
-          }
-        }),
-      }))
+      updateItemWithAmount(itemKey, { quantity: qty }, 'unit_cost')
     },
-    []
+    [updateItemWithAmount]
   )
 
   // Handle unit cost change
-  // InputNumber onChange can pass undefined when input is cleared
-  const handleUnitCostChange = useCallback((itemKey: string, cost: number | string | undefined) => {
-    // Use typeof check for type safety - handle undefined and string cases
-    const unitCost = typeof cost === 'number' ? cost : parseFloat(String(cost)) || 0
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return {
-          ...item,
-          unit_cost: unitCost,
-          amount: unitCost * item.quantity,
-        }
-      }),
-    }))
-  }, [])
+  const handleUnitCostChange = useCallback(
+    (itemKey: string, cost: number | string | undefined) => {
+      const unitCost = typeof cost === 'number' ? cost : parseFloat(String(cost)) || 0
+      updateItemWithAmount(
+        itemKey,
+        { unit_cost: unitCost } as Partial<PurchaseOrderItemFormData>,
+        'unit_cost'
+      )
+    },
+    [updateItemWithAmount]
+  )
 
   // Handle item remark change
-  const handleItemRemarkChange = useCallback((itemKey: string, remark: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return { ...item, remark }
-      }),
-    }))
-  }, [])
-
-  // Add new item row
-  const handleAddItem = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [...prev.items, createEmptyItem()],
-    }))
-  }, [])
-
-  // Remove item row
-  const handleRemoveItem = useCallback((itemKey: string) => {
-    setFormData((prev) => {
-      const newItems = prev.items.filter((item) => item.key !== itemKey)
-      // Always keep at least one row
-      if (newItems.length === 0) {
-        return { ...prev, items: [createEmptyItem()] }
-      }
-      return { ...prev, items: newItems }
-    })
-  }, [])
-
-  // Handle discount change
-  // InputNumber onChange can pass undefined when input is cleared
-  const handleDiscountChange = useCallback((value: number | string | undefined) => {
-    // Use typeof check for type safety - handle undefined and string cases
-    const discount = typeof value === 'number' ? value : parseFloat(String(value)) || 0
-    setFormData((prev) => ({ ...prev, discount }))
-  }, [])
-
-  // Handle remark change
-  const handleRemarkChange = useCallback((value: string) => {
-    setFormData((prev) => ({ ...prev, remark: value }))
-  }, [])
-
-  // Validate form
-  const validateForm = useCallback((): boolean => {
-    const result = orderFormSchema.safeParse({
-      ...formData,
-      items: formData.items.filter((item) => item.product_id), // Only validate non-empty items
-    })
-
-    if (!result.success) {
-      const newErrors: Record<string, string> = {}
-      result.error.issues.forEach((issue) => {
-        const path = issue.path.join('.')
-        newErrors[path] = issue.message
-      })
-      setErrors(newErrors)
-      return false
-    }
-
-    setErrors({})
-    return true
-  }, [formData, orderFormSchema])
+  const handleItemRemarkChange = useCallback(
+    (itemKey: string, remark: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        items: prev.items.map((item) => (item.key !== itemKey ? item : { ...item, remark })),
+      }))
+    },
+    [setFormData]
+  )
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
@@ -494,7 +354,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
 
     setIsSubmitting(true)
     try {
-      // Filter out empty items and prepare for API
       const validItems = formData.items.filter((item) => item.product_id)
       const itemsPayload: HandlerCreatePurchaseOrderItemInput[] = validItems.map((item) => ({
         product_id: item.product_id,
@@ -507,7 +366,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       }))
 
       if (isEditMode && orderId) {
-        // Update existing order (supplier cannot be changed in edit mode)
         const response = await purchaseOrderApi.putTradePurchaseOrdersId(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
@@ -518,7 +376,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        // Create new order
         const response = await purchaseOrderApi.postTradePurchaseOrders({
           supplier_id: formData.supplier_id,
           supplier_name: formData.supplier_name,
@@ -532,31 +389,38 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         }
         Toast.success(t('orderForm.messages.createSuccess'))
       }
+      // Reset form state before navigation to prevent stale data if navigation fails
+      if (!isEditMode) {
+        resetForm()
+      }
       navigate('/trade/purchase')
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : t('orderForm.messages.createError'))
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, orderId, purchaseOrderApi, navigate, validateForm, t])
+  }, [
+    formData,
+    isEditMode,
+    orderId,
+    purchaseOrderApi,
+    navigate,
+    validateForm,
+    t,
+    setIsSubmitting,
+    resetForm,
+  ])
 
   // Handle cancel
-  const handleCancel = useCallback(() => {
-    navigate('/trade/purchase')
-  }, [navigate])
+  const handleCancel = useCallback(() => navigate('/trade/purchase'), [navigate])
 
-  // Supplier options for select
+  // Select options
   const supplierOptions = useMemo(
     () =>
-      suppliers.map((s) => ({
-        value: s.id || '',
-        label: s.name || s.code || '',
-        extra: s.code,
-      })),
+      suppliers.map((s) => ({ value: s.id || '', label: s.name || s.code || '', extra: s.code })),
     [suppliers]
   )
 
-  // Warehouse options for select
   const warehouseOptions = useMemo(
     () =>
       warehouses.map((w) => ({
@@ -567,8 +431,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     [warehouses, t]
   )
 
-  // Product options for select
-  const productOptions = useMemo(
+  const productOptions: ProductOption[] = useMemo(
     () =>
       products.map((p) => ({
         value: p.id || '',
@@ -579,119 +442,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         price: p.purchase_price || p.selling_price,
       })),
     [products]
-  )
-
-  // Table columns for order items
-  const itemColumns = useMemo(
-    () => [
-      {
-        title: t('orderForm.items.columns.product'),
-        dataIndex: 'product_id',
-        width: 280,
-        render: (_: unknown, record: OrderItemFormData) => (
-          <Select
-            value={record.product_id || undefined}
-            placeholder={t('orderForm.items.columns.productPlaceholder')}
-            onChange={(value) => handleProductSelect(record.key, value as string)}
-            optionList={productOptions}
-            filter
-            remote
-            onSearch={setProductSearch}
-            loading={productsLoading}
-            style={{ width: '100%' }}
-            prefix={<IconSearch />}
-            renderSelectedItem={(option: { label?: string }) => (
-              <span className="selected-product">{option.label}</span>
-            )}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.unit'),
-        dataIndex: 'unit',
-        width: 80,
-        render: (unit: string) => <Text>{unit || '-'}</Text>,
-      },
-      {
-        title: t('orderForm.items.columns.purchasePrice'),
-        dataIndex: 'unit_cost',
-        width: 120,
-        render: (cost: number, record: OrderItemFormData) => (
-          <InputNumber
-            value={cost}
-            onChange={(value) => handleUnitCostChange(record.key, value)}
-            min={0}
-            precision={2}
-            prefix="¥"
-            style={{ width: '100%' }}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.quantity'),
-        dataIndex: 'quantity',
-        width: 100,
-        render: (qty: number, record: OrderItemFormData) => (
-          <InputNumber
-            value={qty}
-            onChange={(value) => handleQuantityChange(record.key, value)}
-            min={0.01}
-            precision={2}
-            style={{ width: '100%' }}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.amount'),
-        dataIndex: 'amount',
-        width: 120,
-        align: 'right' as const,
-        render: (amount: number) => (
-          <Text strong className="item-amount">
-            ¥{safeToFixed(amount)}
-          </Text>
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.remark'),
-        dataIndex: 'remark',
-        width: 150,
-        render: (remark: string, record: OrderItemFormData) => (
-          <Input
-            value={remark}
-            onChange={(value) => handleItemRemarkChange(record.key, value)}
-            placeholder={t('orderForm.items.columns.remarkPlaceholder')}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.operation'),
-        dataIndex: 'actions',
-        width: 60,
-        render: (_: unknown, record: OrderItemFormData) => (
-          <Popconfirm
-            title={t('orderForm.items.remove')}
-            onConfirm={() => handleRemoveItem(record.key)}
-            position="left"
-          >
-            <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
-          </Popconfirm>
-        ),
-      },
-    ],
-    [
-      t,
-      productOptions,
-      productsLoading,
-      handleProductSelect,
-      handleUnitCostChange,
-      handleQuantityChange,
-      handleItemRemarkChange,
-      handleRemoveItem,
-    ]
   )
 
   return (
@@ -723,7 +473,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
                 style={{ width: '100%' }}
                 prefix={<IconSearch />}
                 validateStatus={errors.supplier_id ? 'error' : undefined}
-                disabled={isEditMode} // Cannot change supplier in edit mode
+                disabled={isEditMode}
                 renderSelectedItem={(option: { label?: string; extra?: string }) => (
                   <span>
                     {option.label}
@@ -764,7 +514,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             <Title heading={5} className="section-title">
               {t('orderForm.items.title')}
             </Title>
-            <Button icon={<IconPlus />} theme="light" onClick={handleAddItem}>
+            <Button icon={<IconPlus />} theme="light" onClick={addItem}>
               {t('orderForm.items.addProduct')}
             </Button>
           </div>
@@ -773,59 +523,30 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
               {errors.items}
             </Text>
           )}
-          <Table
-            columns={itemColumns}
-            dataSource={formData.items}
-            rowKey="key"
-            pagination={false}
-            size="small"
+          <OrderItemsTable
+            items={formData.items}
+            productOptions={productOptions}
+            productsLoading={productsLoading}
+            onProductSearch={setProductSearch}
+            onProductSelect={handleProductSelect}
+            onQuantityChange={handleQuantityChange}
+            onPriceChange={handleUnitCostChange}
+            onItemRemarkChange={handleItemRemarkChange}
+            onRemoveItem={removeItem}
+            t={t}
+            orderType="purchase"
             className="items-table"
-            empty={<Empty description={t('orderForm.items.empty')} />}
           />
         </div>
 
         {/* Summary Section */}
         <div className="form-section summary-section">
-          <div className="summary-row">
-            <div className="form-field discount-field">
-              <label className="form-label">{t('orderForm.summary.discount')} (%)</label>
-              <InputNumber
-                value={formData.discount}
-                onChange={(value) => handleDiscountChange(value)}
-                min={0}
-                max={100}
-                precision={2}
-                suffix="%"
-                style={{ width: 120 }}
-              />
-            </div>
-            <div className="summary-totals">
-              <div className="summary-item">
-                <Text type="tertiary">{t('orderForm.summary.itemCount')}:</Text>
-                <Text>
-                  {calculations.itemCount} {t('orderForm.summary.itemCountUnit')}
-                </Text>
-              </div>
-              <div className="summary-item">
-                <Text type="tertiary">{t('orderForm.summary.subtotal')}:</Text>
-                <Text>¥{safeToFixed(calculations.subtotal)}</Text>
-              </div>
-              {formData.discount > 0 && (
-                <div className="summary-item">
-                  <Text type="tertiary">
-                    {t('orderForm.summary.discount')} ({formData.discount}%):
-                  </Text>
-                  <Text type="danger">-¥{safeToFixed(calculations.discountAmount)}</Text>
-                </div>
-              )}
-              <div className="summary-item total">
-                <Text strong>{t('orderForm.summary.payableAmount')}:</Text>
-                <Text strong className="total-amount">
-                  ¥{safeToFixed(calculations.total)}
-                </Text>
-              </div>
-            </div>
-          </div>
+          <OrderSummary
+            calculations={calculations}
+            discount={formData.discount}
+            onDiscountChange={handleDiscountChange}
+            t={t}
+          />
         </div>
 
         {/* Remark Section */}

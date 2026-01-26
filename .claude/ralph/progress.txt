@@ -23780,3 +23780,151 @@ Files modified:
 - Consider similar i18n fixes in other trade form components (PurchaseOrderForm, SalesOrderForm)
 - Check other features/trade/*.tsx files for hardcoded text
 
+
+
+---
+
+2026-01-27 - FE-007: 拆分大型订单表单组件 / Split large order form components
+
+=== Implementation Details ===
+
+Refactored SalesOrderForm.tsx and PurchaseOrderForm.tsx to reduce file sizes from ~870 lines to ~590 lines each by extracting shared hooks and components.
+
+**New Shared Hooks:**
+
+1. **useOrderCalculations** (`src/hooks/useOrderCalculations.ts` - 60 lines)
+   - Calculates subtotal, discount amount, total, and item count
+   - Pure calculation logic extracted from both forms
+   - Memoized for performance
+
+2. **useOrderForm** (`src/hooks/useOrderForm.ts` - 324 lines)
+   - Generic form state management hook
+   - Handles form data, errors, and submission state
+   - Item CRUD operations (addItem, removeItem, updateItem, updateItemWithAmount)
+   - Common handlers: handleDiscountChange, handleRemarkChange, handleWarehouseChange
+   - Form validation with Zod schema
+   - Type-safe with generics for SalesOrderFormData and PurchaseOrderFormData
+
+**New Shared Components:**
+
+3. **OrderItemsTable** (`src/components/common/order/OrderItemsTable.tsx` - 257 lines)
+   - Generic table component for order line items
+   - Supports both sales (unit_price) and purchase (unit_cost) orders via orderType prop
+   - Product search and selection with debounced remote search
+   - Quantity and price editing with validation
+   - Item removal with confirmation
+
+4. **OrderSummary** (`src/components/common/order/OrderSummary.tsx` - 88 lines)
+   - Displays order totals: item count, subtotal, discount, payable amount
+   - Discount percentage input
+   - Conditional discount row display
+
+**File Size Results:**
+- SalesOrderForm.tsx: 869 → 589 lines (reduced 32%)
+- PurchaseOrderForm.tsx: 866 → 587 lines (reduced 32%)
+
+Files created:
+- frontend/src/hooks/useOrderCalculations.ts
+- frontend/src/hooks/useOrderForm.ts
+- frontend/src/components/common/order/OrderItemsTable.tsx
+- frontend/src/components/common/order/OrderSummary.tsx
+- frontend/src/components/common/order/index.ts
+
+Files modified:
+- frontend/src/features/trade/SalesOrderForm.tsx
+- frontend/src/features/trade/PurchaseOrderForm.tsx
+- frontend/src/hooks/index.ts
+- frontend/src/components/common/index.ts
+
+=== Verification ===
+
+- TypeScript compilation: PASS (`npx tsc --noEmit`)
+- ESLint check: PASS (`npx eslint --max-warnings 0`)
+- Prettier formatting: Applied
+- Both forms under 800 lines: PASS
+  - SalesOrderForm.tsx: 589 lines
+  - PurchaseOrderForm.tsx: 587 lines
+
+=== Design Decisions ===
+
+1. **Generic useOrderForm hook**: Used TypeScript generics to support both SalesOrderFormData and PurchaseOrderFormData while maintaining type safety. The hook is agnostic to the specific form type.
+
+2. **orderType prop in OrderItemsTable**: Rather than creating separate components, used a single table component with an orderType prop ('sales' | 'purchase') to determine which price field to use.
+
+3. **Callback-based handlers**: All handlers in useOrderForm accept callbacks for customization, allowing form-specific behavior while sharing common logic.
+
+4. **Kept API fetching in forms**: Data fetching (customers, suppliers, products, warehouses) remains in the form components as it's specific to each form's entity selection needs.
+
+5. **Type exports**: All types are exported from hooks/index.ts for easy consumption across the codebase.
+
+=== Notes ===
+
+- The useOrderForm hook includes additional utilities (clearAllErrors, resetForm) that were added during auto-linting
+- The extracted components follow the existing project patterns and design system guidelines
+- CSS files for forms were not modified; the extracted components inherit styles through className props
+
+=== Next Steps ===
+
+- Consider similar refactoring for other large form components (SalesReturnForm, PurchaseReturnForm)
+- The shared hooks and components can be reused for new order-type forms
+- Consider adding unit tests for the extracted hooks
+
+
+---
+
+2026-01-27 - FE-008: 表单提交后重置状态 / Reset form state after submission
+
+=== Implementation Details ===
+
+Added form reset functionality to prevent stale data when navigation fails after successful order creation.
+
+**Key changes:**
+
+1. **Added `resetForm` and `clearAllErrors` to useOrderForm hook:**
+   - `resetForm()`: Resets form data to initial state, clears all errors, and sets isSubmitting to false
+   - `clearAllErrors()`: Clears all validation errors
+   - Both functions are properly memoized with useCallback
+
+2. **Updated SalesOrderForm.tsx:**
+   - Destructured `resetForm` from useOrderForm hook
+   - Added `resetForm()` call after successful form submission (create mode only)
+   - Fixed redundant item check in `handleQuantityChange` (removed unnecessary formData.items dependency)
+
+3. **Updated PurchaseOrderForm.tsx:**
+   - Destructured `resetForm` from useOrderForm hook
+   - Added `resetForm()` call after successful form submission (create mode only)
+
+**Files modified:**
+- frontend/src/hooks/useOrderForm.ts
+- frontend/src/features/trade/SalesOrderForm.tsx
+- frontend/src/features/trade/PurchaseOrderForm.tsx
+
+=== Verification ===
+
+- TypeScript compilation: PASS (`npx tsc --noEmit`)
+- ESLint check: PASS
+- Code review: PASS (no critical/high issues)
+
+=== Design Decisions ===
+
+1. **Reset only in create mode**: Form is only reset when creating a new order (not in edit mode). In edit mode, we preserve the data in case the user navigates back or navigation fails.
+
+2. **Reset before navigate**: Form state is reset BEFORE navigation to ensure clean state if navigation fails. If navigation succeeds, the component will unmount anyway.
+
+3. **Hook-based approach**: Added resetForm to the shared useOrderForm hook so any form component can easily reset its state by calling a single function.
+
+4. **Defensive reset**: Even though resetForm sets isSubmitting to false, the finally block still calls setIsSubmitting(false) for the error path case.
+
+=== Notes ===
+
+- The implementation prevents stale data from appearing if:
+  - Navigation fails for any reason
+  - User uses browser back button to return to form
+  - Any routing edge case occurs
+
+- Code review identified and fixed a redundant item check in SalesOrderForm handleQuantityChange that was causing unnecessary re-renders due to formData.items in the dependency array
+
+=== Next Steps ===
+
+- Consider adding similar reset functionality to other form components (SalesReturnForm, PurchaseReturnForm) if they exhibit similar issues
+- Consider adding unit tests for the resetForm function in useOrderForm hook

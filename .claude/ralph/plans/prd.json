@@ -4963,7 +4963,7 @@
       "提取 useOrderForm/useOrderCalculations hooks",
       "提取 OrderItemsTable/OrderSummary 共享组件"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "MEDIUM",
@@ -4981,7 +4981,7 @@
       "创建订单成功后重置表单状态",
       "导航失败时不会残留旧数据"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "MEDIUM",

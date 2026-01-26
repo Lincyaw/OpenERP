@@ -1,21 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { z } from 'zod'
-import {
-  Card,
-  Typography,
-  Button,
-  Table,
-  InputNumber,
-  Input,
-  Select,
-  Toast,
-  Space,
-  Popconfirm,
-  Empty,
-} from '@douyinfe/semi-ui-19'
-import { IconPlus, IconDelete, IconSearch } from '@douyinfe/semi-icons'
+import { Card, Typography, Button, Input, Select, Toast, Space } from '@douyinfe/semi-ui-19'
+import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import { getCustomers } from '@/api/customers/customers'
 import { getProducts } from '@/api/products/products'
@@ -28,49 +17,18 @@ import type {
   HandlerCreateSalesOrderItemInput,
 } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
+import {
+  useOrderCalculations,
+  useOrderForm,
+  createEmptySalesOrderItem,
+  type SalesOrderFormData,
+  type SalesOrderItemFormData,
+} from '@/hooks'
 import { createScopedLogger } from '@/utils'
-
-const log = createScopedLogger('SalesOrderForm')
-import { safeToFixed } from '@/utils'
 import './SalesOrderForm.css'
 
+const log = createScopedLogger('SalesOrderForm')
 const { Title, Text } = Typography
-
-// Order item form type
-interface OrderItemFormData {
-  key: string
-  product_id: string
-  product_code: string
-  product_name: string
-  unit: string
-  unit_price: number
-  quantity: number
-  amount: number
-  remark?: string
-}
-
-// Order form data type
-interface OrderFormData {
-  customer_id: string
-  customer_name: string
-  warehouse_id?: string
-  discount: number
-  remark?: string
-  items: OrderItemFormData[]
-}
-
-// Initial empty item
-const createEmptyItem = (): OrderItemFormData => ({
-  key: `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-  product_id: '',
-  product_code: '',
-  product_name: '',
-  unit: '',
-  unit_price: 0,
-  quantity: 1,
-  amount: 0,
-  remark: '',
-})
 
 interface SalesOrderFormProps {
   /** Order ID for edit mode, undefined for create mode */
@@ -99,7 +57,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
 
-  // Form validation schema (memoized with translations)
+  // Form validation schema
   const orderFormSchema = useMemo(
     () =>
       z.object({
@@ -124,19 +82,43 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     [t]
   )
 
-  // Form state
-  const [formData, setFormData] = useState<OrderFormData>({
-    customer_id: '',
-    customer_name: '',
-    warehouse_id: undefined,
-    discount: 0,
-    remark: '',
-    items: [createEmptyItem()],
+  // Initial form data
+  const initialFormData: SalesOrderFormData = useMemo(
+    () => ({
+      customer_id: '',
+      customer_name: '',
+      warehouse_id: undefined,
+      discount: 0,
+      remark: '',
+      items: [createEmptySalesOrderItem()],
+    }),
+    []
+  )
+
+  // Use shared order form hook
+  const {
+    formData,
+    setFormData,
+    errors,
+    isSubmitting,
+    setIsSubmitting,
+    clearError,
+    validateForm,
+    resetForm,
+    addItem,
+    removeItem,
+    updateItemWithAmount,
+    handleDiscountChange,
+    handleRemarkChange,
+    handleWarehouseChange,
+  } = useOrderForm<SalesOrderFormData>({
+    initialData: initialFormData,
+    schema: orderFormSchema,
+    createEmptyItem: createEmptySalesOrderItem,
   })
 
-  // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  // Use shared calculations hook
+  const calculations = useOrderCalculations(formData.items, formData.discount)
 
   // Data for dropdowns
   const [customers, setCustomers] = useState<HandlerCustomerListResponse[]>([])
@@ -146,22 +128,12 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const [productsLoading, setProductsLoading] = useState(false)
   const [warehousesLoading, setWarehousesLoading] = useState(false)
 
-  // Search state for customers
+  // Search state
   const [customerSearch, setCustomerSearch] = useState('')
   const [productSearch, setProductSearch] = useState('')
 
-  // Calculate totals
-  const calculations = useMemo(() => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.amount, 0)
-    const discountAmount = (subtotal * formData.discount) / 100
-    const total = subtotal - discountAmount
-    return {
-      subtotal,
-      discountAmount,
-      total,
-      itemCount: formData.items.filter((item) => item.product_id).length,
-    }
-  }, [formData.items, formData.discount])
+  // Track if default warehouse has been set (to avoid re-setting on every render)
+  const hasSetDefaultWarehouse = useRef(false)
 
   // Fetch customers
   const fetchCustomers = useCallback(
@@ -169,11 +141,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       setCustomersLoading(true)
       try {
         const response = await customerApi.getPartnerCustomers(
-          {
-            page_size: 50,
-            search: search || undefined,
-            status: 'active',
-          },
+          { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
         if (response.success && response.data) {
@@ -197,11 +165,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       setProductsLoading(true)
       try {
         const response = await productApi.getCatalogProducts(
-          {
-            page_size: 50,
-            search: search || undefined,
-            status: 'active',
-          },
+          { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
         if (response.success && response.data) {
@@ -225,18 +189,16 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       setWarehousesLoading(true)
       try {
         const response = await warehouseApi.getPartnerWarehouses(
-          {
-            page_size: 100,
-            status: 'enabled',
-          },
+          { page_size: 100, status: 'enabled' },
           { signal }
         )
         if (response.success && response.data) {
           setWarehouses(response.data)
-          // Set default warehouse if available and not in edit mode
-          if (!isEditMode && !formData.warehouse_id) {
+          // Set default warehouse only once on initial load (not edit mode)
+          if (!isEditMode && !hasSetDefaultWarehouse.current) {
             const defaultWarehouse = response.data.find((w) => w.is_default)
             if (defaultWarehouse?.id) {
+              hasSetDefaultWarehouse.current = true
               setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
             }
           }
@@ -250,7 +212,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         setWarehousesLoading(false)
       }
     },
-    [warehouseApi, isEditMode, formData.warehouse_id]
+    [warehouseApi, isEditMode, setFormData]
   )
 
   // Initial data loading
@@ -266,9 +228,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   useEffect(() => {
     if (!customerSearch) return
     const abortController = new AbortController()
-    const timer = setTimeout(() => {
-      fetchCustomers(customerSearch, abortController.signal)
-    }, 300)
+    const timer = setTimeout(() => fetchCustomers(customerSearch, abortController.signal), 300)
     return () => {
       clearTimeout(timer)
       abortController.abort()
@@ -279,9 +239,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   useEffect(() => {
     if (!productSearch) return
     const abortController = new AbortController()
-    const timer = setTimeout(() => {
-      fetchProducts(productSearch, abortController.signal)
-    }, 300)
+    const timer = setTimeout(() => fetchProducts(productSearch, abortController.signal), 300)
     return () => {
       clearTimeout(timer)
       abortController.abort()
@@ -291,11 +249,8 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   // Load initial data for edit mode
   useEffect(() => {
     if (initialData) {
-      // Calculate discount percentage from discount_amount and total_amount
       const totalAmount = initialData.total_amount || 0
       const discountAmount = initialData.discount_amount || 0
-      // discount_amount = subtotal * discount_percentage / 100
-      // subtotal = total_amount + discount_amount
       const subtotal = totalAmount + discountAmount
       const discountPercent = subtotal > 0 ? (discountAmount / subtotal) * 100 : 0
 
@@ -315,178 +270,84 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
           quantity: item.quantity || 1,
           amount: (item.unit_price || 0) * (item.quantity || 1),
           remark: item.remark || '',
-        })) || [createEmptyItem()],
+        })) || [createEmptySalesOrderItem()],
       })
     }
-  }, [initialData])
+  }, [initialData, setFormData])
 
-  // Handle customer selection - receives full option object via onChangeWithObject
+  // Handle customer selection
   const handleCustomerChange = useCallback(
     (selectedOption: string | number | unknown[] | Record<string, unknown> | undefined) => {
-      // With onChangeWithObject, we receive the full option object
       const option = selectedOption as { value?: string; label?: string } | undefined
-      const customerId = option?.value || ''
-      const customerName = option?.label || ''
       setFormData((prev) => ({
         ...prev,
-        customer_id: customerId,
-        customer_name: customerName,
+        customer_id: option?.value || '',
+        customer_name: option?.label || '',
       }))
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors.customer_id
-        return newErrors
-      })
+      clearError('customer_id')
     },
-    []
-  )
-
-  // Handle warehouse selection
-  const handleWarehouseChange = useCallback(
-    (value: string | number | (string | number)[] | Record<string, unknown> | undefined) => {
-      const warehouseId = typeof value === 'string' ? value : undefined
-      setFormData((prev) => ({ ...prev, warehouse_id: warehouseId || undefined }))
-    },
-    []
+    [setFormData, clearError]
   )
 
   // Handle product selection for an item
   const handleProductSelect = useCallback(
-    (itemKey: string, productId: string) => {
-      const product = products.find((p) => p.id === productId)
+    (itemKey: string, _productId: string, productOption: ProductOption) => {
+      const product = products.find((p) => p.id === productOption.value)
       if (!product) return
 
       setFormData((prev) => ({
         ...prev,
         items: prev.items.map((item) => {
           if (item.key !== itemKey) return item
-          const newItem = {
+          const unitPrice = product.selling_price || 0
+          return {
             ...item,
             product_id: product.id || '',
             product_code: product.code || '',
             product_name: product.name || '',
             unit: product.unit || '',
-            unit_price: product.selling_price || 0,
-            amount: (product.selling_price || 0) * item.quantity,
-          }
-          return newItem
-        }),
-      }))
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[`items.${itemKey}.product_id`]
-        return newErrors
-      })
-    },
-    [products]
-  )
-
-  // Handle quantity change
-  // InputNumber onChange can pass undefined when input is cleared
-  const handleQuantityChange = useCallback(
-    (itemKey: string, quantity: number | string | undefined) => {
-      // Use typeof check for type safety - handle undefined and string cases
-      const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
-      setFormData((prev) => ({
-        ...prev,
-        items: prev.items.map((item) => {
-          if (item.key !== itemKey) return item
-          return {
-            ...item,
-            quantity: qty,
-            amount: item.unit_price * qty,
-          }
-        }),
-      }))
-    },
-    []
-  )
-
-  // Handle unit price change
-  // InputNumber onChange can pass undefined when input is cleared
-  const handleUnitPriceChange = useCallback(
-    (itemKey: string, price: number | string | undefined) => {
-      // Use typeof check for type safety - handle undefined and string cases
-      const unitPrice = typeof price === 'number' ? price : parseFloat(String(price)) || 0
-      setFormData((prev) => ({
-        ...prev,
-        items: prev.items.map((item) => {
-          if (item.key !== itemKey) return item
-          return {
-            ...item,
             unit_price: unitPrice,
             amount: unitPrice * item.quantity,
           }
         }),
       }))
+      clearError(`items.${itemKey}.product_id`)
     },
-    []
+    [products, setFormData, clearError]
+  )
+
+  // Handle quantity change
+  const handleQuantityChange = useCallback(
+    (itemKey: string, quantity: number | string | undefined) => {
+      const qty = typeof quantity === 'number' ? quantity : parseFloat(String(quantity)) || 0
+      updateItemWithAmount(itemKey, { quantity: qty }, 'unit_price')
+    },
+    [updateItemWithAmount]
+  )
+
+  // Handle unit price change
+  const handleUnitPriceChange = useCallback(
+    (itemKey: string, price: number | string | undefined) => {
+      const unitPrice = typeof price === 'number' ? price : parseFloat(String(price)) || 0
+      updateItemWithAmount(
+        itemKey,
+        { unit_price: unitPrice } as Partial<SalesOrderItemFormData>,
+        'unit_price'
+      )
+    },
+    [updateItemWithAmount]
   )
 
   // Handle item remark change
-  const handleItemRemarkChange = useCallback((itemKey: string, remark: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => {
-        if (item.key !== itemKey) return item
-        return { ...item, remark }
-      }),
-    }))
-  }, [])
-
-  // Add new item row
-  const handleAddItem = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [...prev.items, createEmptyItem()],
-    }))
-  }, [])
-
-  // Remove item row
-  const handleRemoveItem = useCallback((itemKey: string) => {
-    setFormData((prev) => {
-      const newItems = prev.items.filter((item) => item.key !== itemKey)
-      // Always keep at least one row
-      if (newItems.length === 0) {
-        return { ...prev, items: [createEmptyItem()] }
-      }
-      return { ...prev, items: newItems }
-    })
-  }, [])
-
-  // Handle discount change
-  // InputNumber onChange can pass undefined when input is cleared
-  const handleDiscountChange = useCallback((value: number | string | undefined) => {
-    // Use typeof check for type safety - handle undefined and string cases
-    const discount = typeof value === 'number' ? value : parseFloat(String(value)) || 0
-    setFormData((prev) => ({ ...prev, discount }))
-  }, [])
-
-  // Handle remark change
-  const handleRemarkChange = useCallback((value: string) => {
-    setFormData((prev) => ({ ...prev, remark: value }))
-  }, [])
-
-  // Validate form
-  const validateForm = useCallback((): boolean => {
-    const result = orderFormSchema.safeParse({
-      ...formData,
-      items: formData.items.filter((item) => item.product_id), // Only validate non-empty items
-    })
-
-    if (!result.success) {
-      const newErrors: Record<string, string> = {}
-      result.error.issues.forEach((issue) => {
-        const path = issue.path.join('.')
-        newErrors[path] = issue.message
-      })
-      setErrors(newErrors)
-      return false
-    }
-
-    setErrors({})
-    return true
-  }, [formData, orderFormSchema])
+  const handleItemRemarkChange = useCallback(
+    (itemKey: string, remark: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        items: prev.items.map((item) => (item.key !== itemKey ? item : { ...item, remark })),
+      }))
+    },
+    [setFormData]
+  )
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
@@ -497,7 +358,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
 
     setIsSubmitting(true)
     try {
-      // Filter out empty items and prepare for API
       const validItems = formData.items.filter((item) => item.product_id)
       const itemsPayload: HandlerCreateSalesOrderItemInput[] = validItems.map((item) => ({
         product_id: item.product_id,
@@ -510,7 +370,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       }))
 
       if (isEditMode && orderId) {
-        // Update existing order (customer cannot be changed in edit mode)
         const response = await salesOrderApi.putTradeSalesOrdersId(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
@@ -521,7 +380,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        // Create new order
         const response = await salesOrderApi.postTradeSalesOrders({
           customer_id: formData.customer_id,
           customer_name: formData.customer_name,
@@ -535,31 +393,38 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         }
         Toast.success(t('orderForm.messages.createSuccess'))
       }
+      // Reset form state before navigation to prevent stale data if navigation fails
+      if (!isEditMode) {
+        resetForm()
+      }
       navigate('/trade/sales')
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : t('orderForm.messages.createError'))
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, isEditMode, orderId, salesOrderApi, navigate, validateForm, t])
+  }, [
+    formData,
+    isEditMode,
+    orderId,
+    salesOrderApi,
+    navigate,
+    validateForm,
+    t,
+    setIsSubmitting,
+    resetForm,
+  ])
 
   // Handle cancel
-  const handleCancel = useCallback(() => {
-    navigate('/trade/sales')
-  }, [navigate])
+  const handleCancel = useCallback(() => navigate('/trade/sales'), [navigate])
 
-  // Customer options for select
+  // Select options
   const customerOptions = useMemo(
     () =>
-      customers.map((c) => ({
-        value: c.id || '',
-        label: c.name || c.code || '',
-        extra: c.code,
-      })),
+      customers.map((c) => ({ value: c.id || '', label: c.name || c.code || '', extra: c.code })),
     [customers]
   )
 
-  // Warehouse options for select
   const warehouseOptions = useMemo(
     () =>
       warehouses.map((w) => ({
@@ -570,8 +435,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     [warehouses, t]
   )
 
-  // Product options for select
-  const productOptions = useMemo(
+  const productOptions: ProductOption[] = useMemo(
     () =>
       products.map((p) => ({
         value: p.id || '',
@@ -582,119 +446,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         price: p.selling_price,
       })),
     [products]
-  )
-
-  // Table columns for order items
-  const itemColumns = useMemo(
-    () => [
-      {
-        title: t('orderForm.items.columns.product'),
-        dataIndex: 'product_id',
-        width: 280,
-        render: (_: unknown, record: OrderItemFormData) => (
-          <Select
-            value={record.product_id || undefined}
-            placeholder={t('orderForm.items.columns.productPlaceholder')}
-            onChange={(value) => handleProductSelect(record.key, value as string)}
-            optionList={productOptions}
-            filter
-            remote
-            onSearch={setProductSearch}
-            loading={productsLoading}
-            style={{ width: '100%' }}
-            prefix={<IconSearch />}
-            renderSelectedItem={(option: { label?: string }) => (
-              <span className="selected-product">{option.label}</span>
-            )}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.unit'),
-        dataIndex: 'unit',
-        width: 80,
-        render: (unit: string) => <Text>{unit || '-'}</Text>,
-      },
-      {
-        title: t('orderForm.items.columns.unitPrice'),
-        dataIndex: 'unit_price',
-        width: 120,
-        render: (price: number, record: OrderItemFormData) => (
-          <InputNumber
-            value={price}
-            onChange={(value) => handleUnitPriceChange(record.key, value)}
-            min={0}
-            precision={2}
-            prefix="¥"
-            style={{ width: '100%' }}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.quantity'),
-        dataIndex: 'quantity',
-        width: 100,
-        render: (qty: number, record: OrderItemFormData) => (
-          <InputNumber
-            value={qty}
-            onChange={(value) => handleQuantityChange(record.key, value)}
-            min={0.01}
-            precision={2}
-            style={{ width: '100%' }}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.amount'),
-        dataIndex: 'amount',
-        width: 120,
-        align: 'right' as const,
-        render: (amount: number) => (
-          <Text strong className="item-amount">
-            ¥{safeToFixed(amount)}
-          </Text>
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.remark'),
-        dataIndex: 'remark',
-        width: 150,
-        render: (remark: string, record: OrderItemFormData) => (
-          <Input
-            value={remark}
-            onChange={(value) => handleItemRemarkChange(record.key, value)}
-            placeholder={t('orderForm.items.columns.remarkPlaceholder')}
-            disabled={!record.product_id}
-          />
-        ),
-      },
-      {
-        title: t('orderForm.items.columns.operation'),
-        dataIndex: 'actions',
-        width: 60,
-        render: (_: unknown, record: OrderItemFormData) => (
-          <Popconfirm
-            title={t('orderForm.items.remove')}
-            onConfirm={() => handleRemoveItem(record.key)}
-            position="left"
-          >
-            <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
-          </Popconfirm>
-        ),
-      },
-    ],
-    [
-      t,
-      productOptions,
-      productsLoading,
-      handleProductSelect,
-      handleUnitPriceChange,
-      handleQuantityChange,
-      handleItemRemarkChange,
-      handleRemoveItem,
-    ]
   )
 
   return (
@@ -767,7 +518,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
             <Title heading={5} className="section-title">
               {t('orderForm.items.title')}
             </Title>
-            <Button icon={<IconPlus />} theme="light" onClick={handleAddItem}>
+            <Button icon={<IconPlus />} theme="light" onClick={addItem}>
               {t('orderForm.items.addProduct')}
             </Button>
           </div>
@@ -776,59 +527,30 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               {errors.items}
             </Text>
           )}
-          <Table
-            columns={itemColumns}
-            dataSource={formData.items}
-            rowKey="key"
-            pagination={false}
-            size="small"
+          <OrderItemsTable
+            items={formData.items}
+            productOptions={productOptions}
+            productsLoading={productsLoading}
+            onProductSearch={setProductSearch}
+            onProductSelect={handleProductSelect}
+            onQuantityChange={handleQuantityChange}
+            onPriceChange={handleUnitPriceChange}
+            onItemRemarkChange={handleItemRemarkChange}
+            onRemoveItem={removeItem}
+            t={t}
+            orderType="sales"
             className="items-table"
-            empty={<Empty description={t('orderForm.items.empty')} />}
           />
         </div>
 
         {/* Summary Section */}
         <div className="form-section summary-section">
-          <div className="summary-row">
-            <div className="form-field discount-field">
-              <label className="form-label">{t('orderForm.summary.discount')} (%)</label>
-              <InputNumber
-                value={formData.discount}
-                onChange={(value) => handleDiscountChange(value)}
-                min={0}
-                max={100}
-                precision={2}
-                suffix="%"
-                style={{ width: 120 }}
-              />
-            </div>
-            <div className="summary-totals">
-              <div className="summary-item">
-                <Text type="tertiary">{t('orderForm.summary.itemCount')}</Text>
-                <Text>
-                  {calculations.itemCount} {t('orderForm.summary.itemCountUnit')}
-                </Text>
-              </div>
-              <div className="summary-item">
-                <Text type="tertiary">{t('orderForm.summary.subtotal')}</Text>
-                <Text>¥{safeToFixed(calculations.subtotal)}</Text>
-              </div>
-              {formData.discount > 0 && (
-                <div className="summary-item">
-                  <Text type="tertiary">
-                    {t('orderForm.summary.discount')} ({formData.discount}%):
-                  </Text>
-                  <Text type="danger">-¥{safeToFixed(calculations.discountAmount)}</Text>
-                </div>
-              )}
-              <div className="summary-item total">
-                <Text strong>{t('orderForm.summary.payableAmount')}</Text>
-                <Text strong className="total-amount">
-                  ¥{safeToFixed(calculations.total)}
-                </Text>
-              </div>
-            </div>
-          </div>
+          <OrderSummary
+            calculations={calculations}
+            discount={formData.discount}
+            onDiscountChange={handleDiscountChange}
+            t={t}
+          />
         </div>
 
         {/* Remark Section */}
