@@ -111,6 +111,11 @@ func (m *MockCustomerRepository) Save(ctx context.Context, customer *partner.Cus
 	return args.Error(0)
 }
 
+func (m *MockCustomerRepository) SaveWithLock(ctx context.Context, customer *partner.Customer) error {
+	args := m.Called(ctx, customer)
+	return args.Error(0)
+}
+
 func (m *MockCustomerRepository) SaveBatch(ctx context.Context, customers []*partner.Customer) error {
 	args := m.Called(ctx, customers)
 	return args.Error(0)

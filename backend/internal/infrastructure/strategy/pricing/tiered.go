@@ -98,22 +98,32 @@ func (s *TieredPricingStrategy) SupportsTieredPricing() bool {
 	return true
 }
 
-// DefaultTieredPricingStrategy creates a tiered strategy with common volume discount tiers
-// - Base price for quantity < 10
-// - 5% discount for quantity >= 10
-// - 10% discount for quantity >= 50
-// - 15% discount for quantity >= 100
+// DefaultTieredPricingStrategy creates a tiered strategy with NO default tiers (pass-through).
+//
+// IMPORTANT: This is a pass-through strategy that returns the base price unchanged.
+// It is registered as an available strategy type, but actual tier configuration
+// must be provided per-tenant or per-product based on business requirements.
+//
+// To use tiered pricing with actual discounts, use NewTieredPricingStrategy() directly:
+//
+//	tiers := []PriceTier{
+//		{MinQuantity: decimal.NewFromInt(1), UnitPrice: decimal.NewFromInt(100)},
+//		{MinQuantity: decimal.NewFromInt(10), UnitPrice: decimal.NewFromInt(95)},   // 5% off
+//		{MinQuantity: decimal.NewFromInt(50), UnitPrice: decimal.NewFromInt(90)},   // 10% off
+//		{MinQuantity: decimal.NewFromInt(100), UnitPrice: decimal.NewFromInt(85)},  // 15% off
+//	}
+//	strategy := NewTieredPricingStrategy(tiers)
+//
+// Why no default tiers? Tiered pricing requires absolute unit prices which vary by product.
+// A "default" tier with fixed prices (e.g., 100 CNY) would be meaningless for products
+// priced at different levels (e.g., 10 CNY or 10,000 CNY items).
 func DefaultTieredPricingStrategy() *TieredPricingStrategy {
-	// Note: The actual price will be calculated from base price in CalculatePrice
-	// These tiers represent discount percentages as placeholders
 	return &TieredPricingStrategy{
 		BaseStrategy: strategy.NewBaseStrategy(
 			"tiered",
 			strategy.StrategyTypePricing,
-			"Default tiered pricing with volume discounts",
+			"Tiered pricing placeholder - configure tiers per tenant/product",
 		),
-		// Empty tiers mean base price will be used
-		// Actual tier configuration should come from tenant settings
 		tiers: []PriceTier{},
 	}
 }

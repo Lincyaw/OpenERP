@@ -4469,7 +4469,7 @@
       "为 Customer 实体添加版本号检查",
       "防止并发支付导致余额透支"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "CRITICAL",
@@ -5087,7 +5087,7 @@
       "DefaultTieredPricingStrategy 提供实际默认阶梯",
       "或清晰文档说明其为透传行为"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "LOW",

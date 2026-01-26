@@ -54,6 +54,10 @@ type CustomerRepository interface {
 	// Save creates or updates a customer
 	Save(ctx context.Context, customer *Customer) error
 
+	// SaveWithLock saves a customer with optimistic locking (version check)
+	// Returns error if the version has changed (concurrent modification)
+	SaveWithLock(ctx context.Context, customer *Customer) error
+
 	// SaveBatch creates or updates multiple customers
 	SaveBatch(ctx context.Context, customers []*Customer) error
 

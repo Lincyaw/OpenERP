@@ -265,6 +265,24 @@ func (r *GormCustomerRepository) Save(ctx context.Context, customer *partner.Cus
 	return r.db.WithContext(ctx).Save(model).Error
 }
 
+// SaveWithLock saves a customer with optimistic locking (version check)
+// Returns error if the version has changed (concurrent modification)
+func (r *GormCustomerRepository) SaveWithLock(ctx context.Context, customer *partner.Customer) error {
+	model := models.CustomerModelFromDomain(customer)
+	result := r.db.WithContext(ctx).
+		Model(model).
+		Where("id = ? AND version = ?", customer.ID, customer.Version-1).
+		Updates(model)
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The customer record has been modified by another transaction")
+	}
+	return nil
+}
+
 // SaveBatch creates or updates multiple customers
 func (r *GormCustomerRepository) SaveBatch(ctx context.Context, customers []*partner.Customer) error {
 	if len(customers) == 0 {

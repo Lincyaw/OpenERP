@@ -27,12 +27,12 @@ func TestTieredPricingStrategy_CalculatePrice(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name           string
-		quantity       decimal.Decimal
-		basePrice      decimal.Decimal
-		expectedUnit   decimal.Decimal
-		expectedTotal  decimal.Decimal
-		expectedRules  []string
+		name          string
+		quantity      decimal.Decimal
+		basePrice     decimal.Decimal
+		expectedUnit  decimal.Decimal
+		expectedTotal decimal.Decimal
+		expectedRules []string
 	}{
 		{
 			name:          "small quantity uses first tier",
@@ -171,4 +171,79 @@ func TestTieredPricingStrategy_Properties(t *testing.T) {
 	assert.Equal(t, strategy.StrategyTypePricing, s.Type())
 	assert.False(t, s.SupportsPromotion())
 	assert.True(t, s.SupportsTieredPricing())
+}
+
+func TestDefaultTieredPricingStrategy_PassThrough(t *testing.T) {
+	// DefaultTieredPricingStrategy is a pass-through (no tiers)
+	// It should return base price unchanged for all quantities
+	s := DefaultTieredPricingStrategy()
+	ctx := context.Background()
+
+	// Verify it has empty tiers
+	assert.Empty(t, s.GetTiers(), "default strategy should have empty tiers")
+
+	// Verify description indicates placeholder behavior
+	assert.Contains(t, s.Description(), "placeholder",
+		"description should indicate placeholder behavior")
+
+	tests := []struct {
+		name      string
+		quantity  decimal.Decimal
+		basePrice decimal.Decimal
+	}{
+		{
+			name:      "small quantity passes through base price",
+			quantity:  decimal.NewFromInt(5),
+			basePrice: decimal.NewFromInt(100),
+		},
+		{
+			name:      "medium quantity passes through base price",
+			quantity:  decimal.NewFromInt(50),
+			basePrice: decimal.NewFromFloat(49.99),
+		},
+		{
+			name:      "large quantity passes through base price",
+			quantity:  decimal.NewFromInt(1000),
+			basePrice: decimal.NewFromInt(25),
+		},
+		{
+			name:      "fractional quantity passes through base price",
+			quantity:  decimal.NewFromFloat(12.5),
+			basePrice: decimal.NewFromFloat(10.50),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pricingCtx := strategy.PricingContext{
+				TenantID:  "tenant-1",
+				ProductID: "product-1",
+				Quantity:  tt.quantity,
+				BasePrice: tt.basePrice,
+				Currency:  "CNY",
+			}
+
+			result, err := s.CalculatePrice(ctx, pricingCtx)
+			require.NoError(t, err)
+
+			// Unit price should equal base price (pass-through)
+			assert.True(t, tt.basePrice.Equal(result.UnitPrice),
+				"expected unit price %s, got %s", tt.basePrice, result.UnitPrice)
+
+			// Total should be quantity * base price
+			expectedTotal := tt.basePrice.Mul(tt.quantity)
+			assert.True(t, expectedTotal.Equal(result.TotalPrice),
+				"expected total %s, got %s", expectedTotal, result.TotalPrice)
+
+			// No discount should be applied
+			assert.True(t, decimal.Zero.Equal(result.DiscountAmount),
+				"expected no discount, got %s", result.DiscountAmount)
+			assert.True(t, decimal.Zero.Equal(result.DiscountPercent),
+				"expected 0%% discount, got %s%%", result.DiscountPercent)
+
+			// No rules should be applied (pass-through behavior)
+			assert.Empty(t, result.AppliedRules,
+				"expected no applied rules for pass-through")
+		})
+	}
 }

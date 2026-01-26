@@ -24121,3 +24121,160 @@ if result.RowsAffected == 0 {
 
 - Consider similar patterns for other GetOrCreate-style methods if they exist
 - The code reviewer suggested adding an integration test with real concurrent goroutines (optional enhancement)
+
+## 2026-01-27 - BUG-002: 修复余额支付缺少乐观锁
+
+### Task ID: BUG-002
+### Status: COMPLETED
+### Priority: CRITICAL
+
+=== Implementation Details ===
+
+**Root Cause:**
+The `ProcessBalancePayment` and `RefundBalancePayment` methods in `balance_payment_service.go` were using `customerRepo.Save()` instead of `SaveWithLock()`. This allowed concurrent payments to read the same customer balance, both pass the balance check, and both deduct from the balance - resulting in potential balance overdraft.
+
+**Changes Made:**
+
+1. **CustomerRepository Interface** (`backend/internal/domain/partner/customer_repository.go`):
+   - Added `SaveWithLock(ctx context.Context, customer *Customer) error` method to interface
+   - This method performs optimistic locking by checking the version field during update
+
+2. **GormCustomerRepository** (`backend/internal/infrastructure/persistence/customer_repository.go`):
+   - Implemented `SaveWithLock` method with version check
+   - Uses `WHERE id = ? AND version = ?` clause to ensure only one concurrent transaction succeeds
+   - Returns `OPTIMISTIC_LOCK_ERROR` domain error if version mismatch detected
+
+3. **BalancePaymentService** (`backend/internal/application/finance/balance_payment_service.go`):
+   - Changed `ProcessBalancePayment` to use `SaveWithLock` instead of `Save`
+   - Changed `RefundBalancePayment` to use `SaveWithLock` instead of `Save`
+   - Added descriptive comments about concurrency protection
+
+4. **Mock Repositories** (test files):
+   - Added `SaveWithLock` method to `MockCustomerRepository` in customer_service_test.go
+   - Added `SaveWithLock` method to `MockCustomerRepositoryForBalance` in balance_payment_service_test.go
+   - Updated all test expectations from `Save` to `SaveWithLock` for balance operations
+
+5. **New Test Cases** (`backend/internal/application/finance/balance_payment_service_test.go`):
+   - Added `TestBalancePaymentService_ProcessBalancePayment_OptimisticLockError`
+   - Added `TestBalancePaymentService_RefundBalancePayment_OptimisticLockError`
+   - Tests verify proper error handling when concurrent modification detected
+
+**Files Modified:**
+- backend/internal/domain/partner/customer_repository.go
+- backend/internal/infrastructure/persistence/customer_repository.go
+- backend/internal/application/finance/balance_payment_service.go
+- backend/internal/application/partner/customer_service_test.go
+- backend/internal/application/finance/balance_payment_service_test.go
+
+=== Verification ===
+
+- Go build: PASS (`go build ./...`)
+- Balance payment service tests: All 19 tests pass
+- Customer service tests: All 17 tests pass
+- Domain partner tests: All tests pass
+- No regressions introduced
+
+=== Design Decisions ===
+
+1. **Optimistic Locking Pattern**: Used version-based optimistic locking (already implemented in Customer entity via `IncrementVersion()`) rather than pessimistic locking. This provides better scalability for concurrent reads.
+
+2. **Version Check Logic**: The `SaveWithLock` checks for `version = currentVersion - 1` because `DeductBalance` and `RefundBalance` already call `IncrementVersion()` on the entity before save.
+
+3. **Error Code**: Used `OPTIMISTIC_LOCK_ERROR` error code consistent with other repositories (AccountReceivable, AccountPayable, etc.)
+
+=== How This Prevents Overdraft ===
+
+Before fix (race condition):
+```
+T1: Read customer (balance=100, version=1)
+T2: Read customer (balance=100, version=1)
+T1: Check balance >= 80 ✓
+T2: Check balance >= 80 ✓
+T1: Deduct 80 -> balance=20, version=2
+T2: Deduct 80 -> balance=20, version=2
+T1: Save (success)
+T2: Save (success - overwrites T1's save!)
+Result: Only 80 deducted but balance shows 20 (should be -60 or blocked)
+```
+
+After fix (optimistic locking):
+```
+T1: Read customer (balance=100, version=1)
+T2: Read customer (balance=100, version=1)
+T1: Check balance >= 80 ✓
+T2: Check balance >= 80 ✓
+T1: Deduct 80 -> balance=20, version=2
+T2: Deduct 80 -> balance=20, version=2
+T1: SaveWithLock WHERE version=1 (success, 1 row affected)
+T2: SaveWithLock WHERE version=1 (fails, 0 rows affected - version now 2!)
+Result: T2 gets OPTIMISTIC_LOCK_ERROR, must retry with fresh data
+```
+
+=== Notes ===
+
+- This fix follows the same pattern used in other finance repositories (AccountReceivableRepository, AccountPayableRepository, etc.)
+- Retry logic for optimistic lock failures should be handled at the application/handler layer if needed
+- Consider adding distributed lock or database-level SELECT FOR UPDATE for extremely high-concurrency scenarios
+
+=== Next Steps ===
+
+- Consider implementing retry logic in receipt voucher handler for optimistic lock failures
+- Add integration test for concurrent balance payment scenario
+- Review other services for similar missing optimistic lock issues
+
+---
+
+2026-01-27 - BUG-014: 修复 DefaultTieredPricingStrategy 文档误导问题 / Fix Misleading DefaultTieredPricingStrategy Documentation
+
+=== Root Cause ===
+
+`DefaultTieredPricingStrategy()` had misleading documentation:
+- Comments claimed it provides volume discount tiers (5%, 10%, 15% at different thresholds)
+- Actual implementation returned empty tiers `[]PriceTier{}` (pass-through behavior)
+- This disconnect could confuse developers expecting actual tiered pricing defaults
+
+=== Implementation Decision ===
+
+Chose to document pass-through behavior rather than implement default tiers because:
+1. Tiered pricing uses absolute `UnitPrice` per tier, not percentage discounts
+2. A "default" tier with fixed prices (e.g., 100 CNY) would be meaningless for products priced at different levels
+3. Actual tier configuration must come from tenant/product-specific business rules
+
+=== Changes Made ===
+
+**File: backend/internal/infrastructure/strategy/pricing/tiered.go**
+- Rewrote `DefaultTieredPricingStrategy()` documentation to clearly explain:
+  - It's a pass-through strategy that returns base price unchanged
+  - It exists to register "tiered" as an available strategy type
+  - Actual tiers must be configured per-tenant or per-product
+- Added usage example showing how to use `NewTieredPricingStrategy()` with actual tiers
+- Added rationale explaining WHY no default tiers exist
+- Updated strategy description from "Default tiered pricing with volume discounts" to "Tiered pricing placeholder - configure tiers per tenant/product"
+
+**File: backend/internal/infrastructure/strategy/pricing/tiered_test.go**
+- Added comprehensive test `TestDefaultTieredPricingStrategy_PassThrough`:
+  - Verifies empty tiers
+  - Validates description indicates placeholder behavior
+  - Tests pass-through for small, medium, large, and fractional quantities
+  - Asserts unit price equals base price (pass-through)
+  - Asserts zero discount amount and percent
+  - Asserts no applied rules (pass-through behavior)
+
+=== Verification ===
+
+- Go build: PASS (`go build ./...`)
+- Unit tests: PASS (`go test ./internal/infrastructure/strategy/pricing/... -run "Tiered"`)
+- All 6 tiered pricing tests pass including new `TestDefaultTieredPricingStrategy_PassThrough`
+- Code review agent: APPROVED
+
+=== Notes ===
+
+- This is a documentation-focused fix (LOW severity bug)
+- No breaking changes to existing behavior
+- The pass-through behavior was always the actual implementation; documentation now matches reality
+- Code reviewer suggested edge case tests for zero/negative quantities (optional enhancement)
+
+=== Next Steps ===
+
+- Consider adding percentage-based tier variant if business needs demand it
+- Future enhancement: Allow tiers to express discounts as percentages dynamically calculated from base price

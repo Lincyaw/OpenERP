@@ -30,14 +30,14 @@ func NewBalancePaymentService(
 
 // BalancePaymentRequest represents a request to process a balance payment
 type BalancePaymentRequest struct {
-	TenantID      uuid.UUID
-	CustomerID    uuid.UUID
-	Amount        decimal.Decimal
-	SourceType    partner.BalanceTransactionSourceType
-	SourceID      string // The voucher number or ID
-	Reference     string // Optional reference
-	Remark        string // Optional remark
-	OperatorID    *uuid.UUID
+	TenantID   uuid.UUID
+	CustomerID uuid.UUID
+	Amount     decimal.Decimal
+	SourceType partner.BalanceTransactionSourceType
+	SourceID   string // The voucher number or ID
+	Reference  string // Optional reference
+	Remark     string // Optional remark
+	OperatorID *uuid.UUID
 }
 
 // BalancePaymentResult represents the result of a balance payment
@@ -112,8 +112,9 @@ func (s *BalancePaymentService) ProcessBalancePayment(
 		transaction.WithOperatorID(*req.OperatorID)
 	}
 
-	// Save customer (with updated balance)
-	if err := s.customerRepo.Save(ctx, customer); err != nil {
+	// Save customer (with updated balance) using optimistic locking
+	// This prevents concurrent payments from causing balance overdraft
+	if err := s.customerRepo.SaveWithLock(ctx, customer); err != nil {
 		return nil, fmt.Errorf("failed to save customer: %w", err)
 	}
 
@@ -276,8 +277,8 @@ func (s *BalancePaymentService) RefundBalancePayment(
 		transaction.WithOperatorID(*operatorID)
 	}
 
-	// Save customer
-	if err := s.customerRepo.Save(ctx, customer); err != nil {
+	// Save customer using optimistic locking to prevent concurrent modification issues
+	if err := s.customerRepo.SaveWithLock(ctx, customer); err != nil {
 		return nil, fmt.Errorf("failed to save customer: %w", err)
 	}
 
