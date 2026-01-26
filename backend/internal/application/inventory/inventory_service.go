@@ -24,6 +24,7 @@ type InventoryService struct {
 	batchRepo       inventory.StockBatchRepository
 	lockRepo        inventory.StockLockRepository
 	transactionRepo inventory.InventoryTransactionRepository
+	eventPublisher  shared.EventPublisher
 }
 
 // NewInventoryService creates a new InventoryService
@@ -39,6 +40,26 @@ func NewInventoryService(
 		lockRepo:        lockRepo,
 		transactionRepo: transactionRepo,
 	}
+}
+
+// SetEventPublisher sets the event publisher for publishing domain events
+func (s *InventoryService) SetEventPublisher(publisher shared.EventPublisher) {
+	s.eventPublisher = publisher
+}
+
+// publishDomainEvents publishes all domain events from the inventory item
+func (s *InventoryService) publishDomainEvents(ctx context.Context, item *inventory.InventoryItem) {
+	if s.eventPublisher == nil {
+		return
+	}
+	events := item.GetDomainEvents()
+	if len(events) == 0 {
+		return
+	}
+	// Publish events (errors are logged by the event bus, not propagated)
+	_ = s.eventPublisher.Publish(ctx, events...)
+	// Clear events after publishing
+	item.ClearDomainEvents()
 }
 
 // GetByID retrieves an inventory item by ID
@@ -189,6 +210,9 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		return nil, err
 	}
 
+	// Publish domain events (including StockBelowThreshold if applicable)
+	s.publishDomainEvents(ctx, item)
+
 	// Create transaction record
 	tx, err := inventory.CreateInboundTransaction(
 		tenantID,
@@ -257,6 +281,9 @@ func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, re
 	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
 		return nil, err
 	}
+
+	// Publish domain events
+	s.publishDomainEvents(ctx, item)
 
 	// Save the lock
 	if err := s.lockRepo.Save(ctx, lock); err != nil {
@@ -330,6 +357,9 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 		return err
 	}
 
+	// Publish domain events
+	s.publishDomainEvents(ctx, item)
+
 	// Update the lock record (use the updated lock from item.Locks, not the original)
 	// The domain method marks the lock as Released in item.Locks
 	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
@@ -400,6 +430,9 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		return err
 	}
 
+	// Publish domain events (including StockBelowThreshold if applicable)
+	s.publishDomainEvents(ctx, item)
+
 	// Update the lock record (use the updated lock from item.Locks, not the original)
 	// The domain method marks the lock as Consumed in item.Locks
 	if err := s.lockRepo.Save(ctx, &item.Locks[0]); err != nil {
@@ -461,6 +494,9 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 		return err
 	}
 
+	// Publish domain events (including StockBelowThreshold if applicable)
+	s.publishDomainEvents(ctx, item)
+
 	// Create transaction record for the decrease (outbound)
 	tx, err := inventory.CreateOutboundTransaction(
 		tenantID,
@@ -510,6 +546,9 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 	if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
 		return nil, err
 	}
+
+	// Publish domain events (including StockBelowThreshold if applicable)
+	s.publishDomainEvents(ctx, item)
 
 	// Determine source type and ID
 	sourceType := inventory.SourceTypeManualAdjustment
@@ -648,6 +687,9 @@ func (s *InventoryService) ReleaseExpiredLocks(ctx context.Context) (int, error)
 		if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
 			continue
 		}
+
+		// Publish domain events
+		s.publishDomainEvents(ctx, item)
 
 		// Update lock
 		if err := s.lockRepo.Save(ctx, &lock); err != nil {
@@ -862,6 +904,9 @@ func (s *InventoryService) UnlockBySource(ctx context.Context, tenantID uuid.UUI
 		if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
 			continue
 		}
+
+		// Publish domain events
+		s.publishDomainEvents(ctx, item)
 
 		// Update lock status (use the updated lock from item.Locks, not the original)
 		// The domain method marks the lock as Released in item.Locks

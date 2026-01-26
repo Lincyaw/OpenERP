@@ -265,6 +265,12 @@ func main() {
 	purchaseReturnShippedHandler := tradeapp.NewPurchaseReturnShippedHandler(inventoryService, log)
 	eventBus.Subscribe(purchaseReturnShippedHandler)
 
+	// Stock below threshold -> notifications/alerts
+	stockBelowThresholdNotifier := inventoryapp.NewLoggingStockAlertNotifier(log)
+	stockBelowThresholdHandler := inventoryapp.NewStockBelowThresholdHandler(log).
+		WithNotifier(stockBelowThresholdNotifier)
+	eventBus.Subscribe(stockBelowThresholdHandler)
+
 	log.Info("Event handlers registered",
 		zap.Strings("purchase_order_received_events", purchaseOrderReceivedHandler.EventTypes()),
 		zap.Strings("sales_order_confirmed_events", salesOrderConfirmedHandler.EventTypes()),
@@ -272,6 +278,7 @@ func main() {
 		zap.Strings("sales_order_cancelled_events", salesOrderCancelledHandler.EventTypes()),
 		zap.Strings("sales_return_completed_events", salesReturnCompletedHandler.EventTypes()),
 		zap.Strings("purchase_return_shipped_events", purchaseReturnShippedHandler.EventTypes()),
+		zap.Strings("stock_below_threshold_events", stockBelowThresholdHandler.EventTypes()),
 	)
 
 	// Start event bus
@@ -310,6 +317,7 @@ func main() {
 	salesReturnService.SetEventPublisher(eventBus)
 	purchaseReturnService.SetEventPublisher(eventBus)
 	stockLockExpirationService.SetEventBus(eventBus)
+	inventoryService.SetEventPublisher(eventBus)
 
 	// Initialize report scheduler (if enabled)
 	if cfg.Scheduler.Enabled {

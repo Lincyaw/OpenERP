@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,7 +13,53 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
+
+// MockEventPublisher is a mock implementation of shared.EventPublisher
+type MockEventPublisher struct {
+	mu     sync.Mutex
+	events []shared.DomainEvent
+}
+
+func NewMockEventPublisher() *MockEventPublisher {
+	return &MockEventPublisher{
+		events: make([]shared.DomainEvent, 0),
+	}
+}
+
+func (m *MockEventPublisher) Publish(ctx context.Context, events ...shared.DomainEvent) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.events = append(m.events, events...)
+	return nil
+}
+
+func (m *MockEventPublisher) GetEvents() []shared.DomainEvent {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	result := make([]shared.DomainEvent, len(m.events))
+	copy(result, m.events)
+	return result
+}
+
+func (m *MockEventPublisher) GetEventsByType(eventType string) []shared.DomainEvent {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	result := make([]shared.DomainEvent, 0)
+	for _, e := range m.events {
+		if e.EventType() == eventType {
+			result = append(result, e)
+		}
+	}
+	return result
+}
+
+func (m *MockEventPublisher) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.events = make([]shared.DomainEvent, 0)
+}
 
 // MockInventoryItemRepository is a mock implementation of InventoryItemRepository
 type MockInventoryItemRepository struct {
@@ -861,4 +908,170 @@ func TestToStockLockResponse(t *testing.T) {
 	assert.False(t, response.IsExpired)
 	assert.False(t, response.Released)
 	assert.False(t, response.Consumed)
+}
+
+// Test event publishing
+
+func TestInventoryService_AdjustStock_PublishesStockBelowThresholdEvent(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	invRepo := new(MockInventoryItemRepository)
+	batchRepo := new(MockStockBatchRepository)
+	lockRepo := new(MockStockLockRepository)
+	txRepo := new(MockTransactionRepository)
+	eventPublisher := NewMockEventPublisher()
+
+	service := NewInventoryService(invRepo, batchRepo, lockRepo, txRepo)
+	service.SetEventPublisher(eventPublisher)
+
+	// Create an inventory item with minQuantity set and initial stock above threshold
+	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(50), decimal.Zero)
+	item.MinQuantity = decimal.NewFromInt(10) // Set minimum threshold
+
+	t.Run("publishes StockBelowThreshold event when stock drops below minimum", func(t *testing.T) {
+		eventPublisher.Reset()
+
+		// Mock GetOrCreate to return the item
+		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		// Mock SaveWithLock to succeed
+		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		// Mock transaction repo
+		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+
+		// Adjust stock to below minimum threshold (5 < 10)
+		req := AdjustStockRequest{
+			WarehouseID:    warehouseID,
+			ProductID:      productID,
+			ActualQuantity: decimal.NewFromInt(5),
+			Reason:         "Inventory count adjustment",
+		}
+
+		_, err := service.AdjustStock(ctx, tenantID, req)
+		require.NoError(t, err)
+
+		// Verify events were published
+		events := eventPublisher.GetEvents()
+		require.GreaterOrEqual(t, len(events), 1, "Expected at least one event to be published")
+
+		// Check for StockBelowThreshold event
+		thresholdEvents := eventPublisher.GetEventsByType(inventory.EventTypeStockBelowThreshold)
+		require.Len(t, thresholdEvents, 1, "Expected exactly one StockBelowThreshold event")
+
+		thresholdEvent, ok := thresholdEvents[0].(*inventory.StockBelowThresholdEvent)
+		require.True(t, ok, "Event should be of type *inventory.StockBelowThresholdEvent")
+
+		assert.Equal(t, warehouseID, thresholdEvent.WarehouseID)
+		assert.Equal(t, productID, thresholdEvent.ProductID)
+		assert.Equal(t, decimal.NewFromInt(5), thresholdEvent.CurrentQuantity)
+		assert.Equal(t, decimal.NewFromInt(10), thresholdEvent.MinimumQuantity)
+	})
+}
+
+func TestInventoryService_DecreaseStock_PublishesStockBelowThresholdEvent(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	invRepo := new(MockInventoryItemRepository)
+	batchRepo := new(MockStockBatchRepository)
+	lockRepo := new(MockStockLockRepository)
+	txRepo := new(MockTransactionRepository)
+	eventPublisher := NewMockEventPublisher()
+
+	service := NewInventoryService(invRepo, batchRepo, lockRepo, txRepo)
+	service.SetEventPublisher(eventPublisher)
+
+	// Create an inventory item with minQuantity set and initial stock above threshold
+	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(15), decimal.Zero)
+	item.MinQuantity = decimal.NewFromInt(10) // Set minimum threshold
+
+	t.Run("publishes StockBelowThreshold event when stock is decreased below minimum", func(t *testing.T) {
+		eventPublisher.Reset()
+
+		// Mock FindByWarehouseAndProduct to return the item
+		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		// Mock SaveWithLock to succeed
+		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		// Mock transaction repo
+		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+
+		// Decrease stock by 10 (15 - 10 = 5, which is below minimum of 10)
+		req := DecreaseStockRequest{
+			WarehouseID: warehouseID,
+			ProductID:   productID,
+			Quantity:    decimal.NewFromInt(10),
+			SourceType:  "PURCHASE_RETURN",
+			SourceID:    "PR-001",
+			Reason:      "Purchase return shipped",
+		}
+
+		err := service.DecreaseStock(ctx, tenantID, req)
+		require.NoError(t, err)
+
+		// Verify StockBelowThreshold event was published
+		thresholdEvents := eventPublisher.GetEventsByType(inventory.EventTypeStockBelowThreshold)
+		require.Len(t, thresholdEvents, 1, "Expected exactly one StockBelowThreshold event")
+
+		thresholdEvent, ok := thresholdEvents[0].(*inventory.StockBelowThresholdEvent)
+		require.True(t, ok)
+
+		assert.Equal(t, warehouseID, thresholdEvent.WarehouseID)
+		assert.Equal(t, productID, thresholdEvent.ProductID)
+		assert.Equal(t, decimal.NewFromInt(5), thresholdEvent.CurrentQuantity)
+	})
+
+	t.Run("does not publish event when stock remains above minimum", func(t *testing.T) {
+		eventPublisher.Reset()
+
+		// Reset item stock to above threshold
+		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.ClearDomainEvents()
+
+		// Mock FindByWarehouseAndProduct to return the item
+		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		// Mock SaveWithLock to succeed
+		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		// Mock transaction repo
+		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+
+		// Decrease stock by 10 (100 - 10 = 90, which is still above minimum of 10)
+		req := DecreaseStockRequest{
+			WarehouseID: warehouseID,
+			ProductID:   productID,
+			Quantity:    decimal.NewFromInt(10),
+			SourceType:  "PURCHASE_RETURN",
+			SourceID:    "PR-002",
+			Reason:      "Purchase return shipped",
+		}
+
+		err := service.DecreaseStock(ctx, tenantID, req)
+		require.NoError(t, err)
+
+		// Verify no StockBelowThreshold event was published
+		thresholdEvents := eventPublisher.GetEventsByType(inventory.EventTypeStockBelowThreshold)
+		assert.Len(t, thresholdEvents, 0, "Expected no StockBelowThreshold event when stock is above minimum")
+	})
+}
+
+func TestInventoryService_SetEventPublisher(t *testing.T) {
+	invRepo := new(MockInventoryItemRepository)
+	batchRepo := new(MockStockBatchRepository)
+	lockRepo := new(MockStockLockRepository)
+	txRepo := new(MockTransactionRepository)
+
+	service := NewInventoryService(invRepo, batchRepo, lockRepo, txRepo)
+
+	// Initially, eventPublisher should be nil
+	assert.Nil(t, service.eventPublisher)
+
+	// Set event publisher
+	eventPublisher := NewMockEventPublisher()
+	service.SetEventPublisher(eventPublisher)
+
+	// Now eventPublisher should be set
+	assert.NotNil(t, service.eventPublisher)
 }

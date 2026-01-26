@@ -18818,3 +18818,79 @@ Implemented FIFO and FEFO batch selection strategies and REST API to list all av
 - ✅ All 22 batch strategy unit tests pass
 - ✅ TypeScript type check passes
 
+
+## 2026-01-26 - DDD-004: StockBelowThreshold Event Publication to External Handlers
+
+### Summary
+Implemented domain event publication infrastructure for InventoryService and created StockBelowThresholdHandler for processing low stock alerts. Events were being added to aggregates but never published to the event bus - this fix ensures proper event-driven notifications.
+
+### Problem
+- `StockBelowThresholdEvent` was added to `InventoryItem` aggregate via `AddDomainEvent()`
+- Events were never published to the EventBus after save operations
+- No handler existed to process these events for notifications
+
+### Solution
+
+#### Event Publishing Infrastructure
+
+| Component | Description |
+|-----------|-------------|
+| `eventPublisher` field | Added to InventoryService for dependency injection |
+| `SetEventPublisher()` | Method to inject EventPublisher at startup |
+| `publishDomainEvents()` | Helper method to publish and clear aggregate events |
+
+#### Methods Updated with Event Publishing
+
+| Method | Description |
+|--------|-------------|
+| `IncreaseStock` | Stock increased event |
+| `LockStock` | Stock locked event |
+| `UnlockStock` | Stock unlocked event |
+| `DeductStock` | Stock deducted event + threshold check |
+| `DecreaseStock` | Stock decreased event + threshold check |
+| `AdjustStock` | Stock adjusted event + threshold check |
+| `ReleaseExpiredLocks` | Lock expired events |
+| `UnlockBySource` | Stock unlocked event |
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `backend/internal/application/inventory/stock_below_threshold_handler.go` | Event handler with notification support |
+| `backend/internal/application/inventory/stock_below_threshold_handler_test.go` | Unit tests for handler |
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/application/inventory/inventory_service.go` | Added event publisher injection and publishing after saves |
+| `backend/internal/application/inventory/inventory_service_test.go` | Added integration tests for event publication |
+| `backend/cmd/server/main.go` | Register handler and inject EventBus into InventoryService |
+
+### Handler Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  StockBelowThresholdHandler                                 │
+├─────────────────────────────────────────────────────────────┤
+│  Interfaces:                                                │
+│  ├── StockAlertNotifier - SendAlert(ctx, alert)            │
+│  └── StockAlertService - GetAlertConfig(), RecordAlert()   │
+│                                                             │
+│  Implementations:                                           │
+│  └── LoggingStockAlertNotifier (for dev/testing)           │
+│                                                             │
+│  Alert Types:                                               │
+│  ├── "low_stock" - quantity below threshold                │
+│  └── "out_of_stock" - quantity is zero                     │
+│                                                             │
+│  Notification Channels:                                     │
+│  └── Default: ["in_app"], configurable per inventory item  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Test Results
+- ✅ All unit tests pass for StockBelowThresholdHandler
+- ✅ All integration tests pass for event publication
+- ✅ Go build successful
+- ✅ Handler registered at startup, events published after inventory operations

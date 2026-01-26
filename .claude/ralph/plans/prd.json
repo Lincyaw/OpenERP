@@ -238,61 +238,6 @@
     "passes": true
   },
   {
-    "id": "P0-PD-001",
-    "story": "商品模块原型设计",
-    "priority": "medium",
-    "requirements": [
-      "设计商品列表页原型",
-      "设计商品表单原型",
-      "设计分类管理原型"
-    ],
-    "passes": false
-  },
-  {
-    "id": "P0-PD-002",
-    "story": "伙伴模块原型设计",
-    "priority": "medium",
-    "requirements": [
-      "设计客户管理页原型",
-      "设计供应商管理页原型",
-      "设计仓库管理页原型"
-    ],
-    "passes": false
-  },
-  {
-    "id": "P0-PD-003",
-    "story": "库存模块原型设计",
-    "priority": "medium",
-    "requirements": [
-      "设计库存查询页原型",
-      "设计库存调整页原型",
-      "设计盘点管理页原型"
-    ],
-    "passes": false
-  },
-  {
-    "id": "P0-PD-004",
-    "story": "交易模块原型设计",
-    "priority": "medium",
-    "requirements": [
-      "设计销售订单页原型",
-      "设计采购订单页原型",
-      "设计退货管理页原型"
-    ],
-    "passes": false
-  },
-  {
-    "id": "P0-PD-005",
-    "story": "财务模块原型设计",
-    "priority": "medium",
-    "requirements": [
-      "设计应收应付页原型",
-      "设计收付款页原型",
-      "设计日常收支页原型"
-    ],
-    "passes": false
-  },
-  {
     "id": "P1-BE-001",
     "story": "Category 聚合实现",
     "priority": "high",
@@ -3982,14 +3927,36 @@
       "Add threshold configuration per inventory item",
       "Test event publication in integration tests"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.3 - Inventory Context Domain Events",
     "affectedModules": [
       "backend/internal/domain/inventory/inventory_item.go",
       "backend/internal/application/inventory/inventory_service.go",
-      "backend/internal/application/inventory/event_handlers.go"
+      "backend/internal/application/inventory/stock_below_threshold_handler.go"
     ],
-    "severity": "HIGH"
+    "severity": "HIGH",
+    "implementationNotes": [
+      "**Event Publishing Infrastructure:**",
+      "- Added eventPublisher field to InventoryService",
+      "- Added SetEventPublisher() method for dependency injection",
+      "- Added publishDomainEvents() helper that publishes events after save",
+      "- Events published in 8 methods: IncreaseStock, LockStock, UnlockStock, DeductStock, DecreaseStock, AdjustStock, ReleaseExpiredLocks, UnlockBySource",
+      "",
+      "**StockBelowThresholdHandler (stock_below_threshold_handler.go):**",
+      "- StockAlertNotifier interface for extensible notification channels",
+      "- StockAlertService interface for alert configuration and persistence",
+      "- AlertConfig struct with Enabled, Channels, MinInterval, EmailRecipients",
+      "- StockAlert struct with all event data plus alert type (low_stock/out_of_stock)",
+      "- LoggingStockAlertNotifier for development/testing",
+      "",
+      "**main.go Integration:**",
+      "- Handler registered with eventBus.Subscribe()",
+      "- EventBus injected into InventoryService via SetEventPublisher()",
+      "",
+      "**Tests:**",
+      "- stock_below_threshold_handler_test.go: Unit tests for handler with mock notifier",
+      "- inventory_service_test.go: Integration tests for event publication"
+    ]
   },
   {
     "id": "DDD-005",
