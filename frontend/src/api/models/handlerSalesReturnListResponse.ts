@@ -15,6 +15,7 @@ export interface HandlerSalesReturnListResponse {
   customer_name?: string
   id?: string
   item_count?: number
+  received_at?: string
   return_number?: string
   sales_order_id?: string
   sales_order_number?: string

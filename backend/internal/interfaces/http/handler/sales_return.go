@@ -92,6 +92,12 @@ type CompleteReturnRequest struct {
 	WarehouseID *string `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 }
 
+// ReceiveReturnRequest represents a request to receive returned goods
+// @Description Request body for receiving returned goods
+type ReceiveReturnRequest struct {
+	WarehouseID *string `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+}
+
 // SalesReturnResponse represents a sales return in API responses
 // @Description Sales return response
 type SalesReturnResponse struct {
@@ -117,6 +123,7 @@ type SalesReturnResponse struct {
 	RejectedAt       *time.Time               `json:"rejected_at,omitempty"`
 	RejectedBy       *string                  `json:"rejected_by,omitempty"`
 	RejectionReason  string                   `json:"rejection_reason,omitempty"`
+	ReceivedAt       *time.Time               `json:"received_at,omitempty"`
 	CompletedAt      *time.Time               `json:"completed_at,omitempty"`
 	CancelledAt      *time.Time               `json:"cancelled_at,omitempty"`
 	CancelReason     string                   `json:"cancel_reason,omitempty"`
@@ -140,6 +147,7 @@ type SalesReturnListResponse struct {
 	Status           string     `json:"status" example:"pending"`
 	SubmittedAt      *time.Time `json:"submitted_at,omitempty"`
 	ApprovedAt       *time.Time `json:"approved_at,omitempty"`
+	ReceivedAt       *time.Time `json:"received_at,omitempty"`
 	CompletedAt      *time.Time `json:"completed_at,omitempty"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
@@ -170,6 +178,7 @@ type ReturnStatusSummaryResponse struct {
 	Draft           int64   `json:"draft" example:"3"`
 	Pending         int64   `json:"pending" example:"5"`
 	Approved        int64   `json:"approved" example:"2"`
+	Receiving       int64   `json:"receiving" example:"1"`
 	Rejected        int64   `json:"rejected" example:"1"`
 	Completed       int64   `json:"completed" example:"50"`
 	Cancelled       int64   `json:"cancelled" example:"2"`
@@ -753,6 +762,60 @@ func (h *SalesReturnHandler) Approve(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+// Receive godoc
+// @Summary      Receive returned goods
+// @Description  Start receiving returned goods into warehouse (transitions from APPROVED to RECEIVING)
+// @Tags         sales-returns
+// @Accept       json
+// @Produce      json
+// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
+// @Param        id path string true "Sales Return ID" format(uuid)
+// @Param        request body ReceiveReturnRequest false "Receive return request"
+// @Success      200 {object} dto.Response{data=SalesReturnResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /trade/sales-returns/{id}/receive [post]
+func (h *SalesReturnHandler) Receive(c *gin.Context) {
+	tenantID, err := getTenantID(c)
+	if err != nil {
+		h.BadRequest(c, "Invalid tenant ID")
+		return
+	}
+
+	returnID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		h.BadRequest(c, "Invalid return ID format")
+		return
+	}
+
+	var req ReceiveReturnRequest
+	// Allow empty body
+	_ = c.ShouldBindJSON(&req)
+
+	appReq := tradeapp.ReceiveReturnRequest{}
+
+	if req.WarehouseID != nil && *req.WarehouseID != "" {
+		warehouseID, err := uuid.Parse(*req.WarehouseID)
+		if err != nil {
+			h.BadRequest(c, "Invalid warehouse ID format")
+			return
+		}
+		appReq.WarehouseID = &warehouseID
+	}
+
+	sr, err := h.returnService.Receive(c.Request.Context(), tenantID, returnID, appReq)
+	if err != nil {
+		h.HandleDomainError(c, err)
+		return
+	}
+
+	h.Success(c, toSalesReturnResponse(sr))
+}
+
 // Reject godoc
 // @Summary      Reject a sales return
 // @Description  Reject a sales return (transitions from PENDING to REJECTED)
@@ -942,6 +1005,7 @@ func (h *SalesReturnHandler) GetStatusSummary(c *gin.Context) {
 		Draft:           summary.Draft,
 		Pending:         summary.Pending,
 		Approved:        summary.Approved,
+		Receiving:       summary.Receiving,
 		Rejected:        summary.Rejected,
 		Completed:       summary.Completed,
 		Cancelled:       summary.Cancelled,
@@ -992,6 +1056,7 @@ func toSalesReturnResponse(sr *tradeapp.SalesReturnResponse) SalesReturnResponse
 		ApprovalNote:     sr.ApprovalNote,
 		RejectedAt:       sr.RejectedAt,
 		RejectionReason:  sr.RejectionReason,
+		ReceivedAt:       sr.ReceivedAt,
 		CompletedAt:      sr.CompletedAt,
 		CancelledAt:      sr.CancelledAt,
 		CancelReason:     sr.CancelReason,
@@ -1034,6 +1099,7 @@ func toSalesReturnListResponses(returns []tradeapp.SalesReturnListItemResponse) 
 			Status:           sr.Status,
 			SubmittedAt:      sr.SubmittedAt,
 			ApprovedAt:       sr.ApprovedAt,
+			ReceivedAt:       sr.ReceivedAt,
 			CompletedAt:      sr.CompletedAt,
 			CreatedAt:        sr.CreatedAt,
 			UpdatedAt:        sr.UpdatedAt,

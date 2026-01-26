@@ -22,6 +22,7 @@ export interface HandlerSalesReturnResponse {
   item_count?: number
   items?: HandlerSalesReturnItemResponse[]
   reason?: string
+  received_at?: string
   rejected_at?: string
   rejected_by?: string
   rejection_reason?: string

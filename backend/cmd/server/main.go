@@ -580,6 +580,7 @@ func main() {
 	tradeRoutes.POST("/sales-returns/:id/submit", salesReturnHandler.Submit)
 	tradeRoutes.POST("/sales-returns/:id/approve", salesReturnHandler.Approve)
 	tradeRoutes.POST("/sales-returns/:id/reject", salesReturnHandler.Reject)
+	tradeRoutes.POST("/sales-returns/:id/receive", salesReturnHandler.Receive)
 	tradeRoutes.POST("/sales-returns/:id/complete", salesReturnHandler.Complete)
 	tradeRoutes.POST("/sales-returns/:id/cancel", salesReturnHandler.Cancel)
 
@@ -668,8 +669,8 @@ func main() {
 	// Sales reports
 	reportRoutes.GET("/sales/summary", reportHandler.GetSalesSummary)
 	reportRoutes.GET("/sales/daily-trend", reportHandler.GetDailySalesTrend)
-	reportRoutes.GET("/sales/product-ranking", reportHandler.GetProductSalesRanking)
-	reportRoutes.GET("/sales/customer-ranking", reportHandler.GetCustomerSalesRanking)
+	reportRoutes.GET("/sales/products/ranking", reportHandler.GetProductSalesRanking)
+	reportRoutes.GET("/sales/customers/ranking", reportHandler.GetCustomerSalesRanking)
 	// Inventory reports
 	reportRoutes.GET("/inventory/summary", reportHandler.GetInventorySummary)
 	reportRoutes.GET("/inventory/turnover", reportHandler.GetInventoryTurnover)
@@ -678,10 +679,10 @@ func main() {
 	reportRoutes.GET("/inventory/slow-moving", reportHandler.GetSlowMovingProducts)
 	// Finance reports
 	reportRoutes.GET("/finance/profit-loss", reportHandler.GetProfitLossStatement)
-	reportRoutes.GET("/finance/monthly-profit-trend", reportHandler.GetMonthlyProfitTrend)
+	reportRoutes.GET("/finance/monthly-trend", reportHandler.GetMonthlyProfitTrend)
 	reportRoutes.GET("/finance/profit-by-product", reportHandler.GetProfitByProduct)
 	reportRoutes.GET("/finance/cash-flow", reportHandler.GetCashFlowStatement)
-	reportRoutes.GET("/finance/cash-flow-items", reportHandler.GetCashFlowItems)
+	reportRoutes.GET("/finance/cash-flow/items", reportHandler.GetCashFlowItems)
 	// Report aggregation/refresh endpoints
 	reportRoutes.POST("/refresh", reportHandler.RefreshReport)
 	reportRoutes.POST("/refresh/all", reportHandler.RefreshAllReports)

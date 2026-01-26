@@ -340,3 +340,92 @@ const formatted = safeToFixed(value)
 - toFixed() fixes: COMPLETED (65 locations fixed)
 - Empty catch blocks: SKIPPED (178 locations, optional/low priority for future batch processing)
 
+
+---
+
+## 2026-01-26 - DDD-011: Sales Return RECEIVING Status
+
+### Summary
+Added RECEIVING status to the sales return workflow. This status represents the intermediate state when returned goods are being received into the warehouse, before the return is fully completed.
+
+### Status Flow
+```
+DRAFT -> PENDING -> APPROVED -> RECEIVING -> COMPLETED
+                              -> CANCELLED (from any status except COMPLETED)
+```
+
+### Files Modified
+
+#### Backend - Domain Layer
+- `backend/internal/domain/trade/sales_return.go`
+  - Added `ReturnStatusReceiving` constant to ReturnStatus enum
+  - Updated `IsValid()` to include RECEIVING
+  - Updated `CanTransitionTo()` for APPROVED -> RECEIVING and RECEIVING -> COMPLETED
+  - Added `ReceivedAt *time.Time` field to SalesReturn struct
+  - Added `Receive()` method for APPROVED -> RECEIVING transition
+  - Added `IsReceiving()` helper method
+  - Updated `Cancel()` to track wasApproved for RECEIVING status
+
+- `backend/internal/domain/trade/sales_return_events.go`
+  - Added `EventTypeSalesReturnReceiving` constant
+  - Added `SalesReturnReceivingEvent` struct
+  - Added `NewSalesReturnReceivingEvent()` constructor
+
+#### Backend - Application Layer
+- `backend/internal/application/trade/sales_return_service.go`
+  - Added `Receive()` method to handle APPROVED -> RECEIVING transition
+
+- `backend/internal/application/trade/dto.go`
+  - Added `ReceiveReturnRequest` struct
+  - Added `ReceivedAt` field to `SalesReturnResponse`
+  - Added `ReceivedAt` field to `SalesReturnListItemResponse`
+  - Added `Receiving` field to `ReturnStatusSummary`
+  - Updated conversion functions to include ReceivedAt
+
+#### Backend - HTTP Handler Layer
+- `backend/internal/interfaces/http/handler/sales_return.go`
+  - Added `ReceiveReturnRequest` struct for API
+  - Added `ReceivedAt` field to response structs
+  - Added `Receiving` to `ReturnStatusSummaryResponse`
+  - Added `Receive()` handler with swagger annotations
+  - Updated conversion functions
+
+- `backend/cmd/server/main.go`
+  - Added route: `POST /trade/sales-returns/:id/receive`
+
+#### Frontend - Pages
+- `frontend/src/pages/trade/SalesReturns.tsx`
+  - Added RECEIVING to STATUS_TAG_COLORS and STATUS_KEYS
+  - Added RECEIVING to STATUS_OPTIONS filter
+  - Added `handleReceive()` action handler
+  - Updated complete action to only show for RECEIVING status
+  - Updated cancel action to include RECEIVING status
+
+- `frontend/src/pages/trade/SalesReturnDetail.tsx`
+  - Added RECEIVING status mappings
+  - Added `handleReceive()` handler
+  - Updated action buttons: receive shows for APPROVED, complete shows for RECEIVING
+  - Added receiving timeline entry for received_at
+
+#### Frontend - Localization
+- `frontend/src/locales/en-US/trade.json`
+  - Added `receiving` status translation
+  - Added `receive` action translation
+  - Added `receiveSuccess` and `receiveError` messages
+  - Added `receiving` timeline entry
+
+- `frontend/src/locales/zh-CN/trade.json`
+  - Added corresponding Chinese translations
+
+#### Generated Files (Auto-regenerated)
+- `backend/docs/swagger.yaml`
+- `backend/docs/swagger.json`
+- `frontend/src/api/**/*` (TypeScript SDK)
+
+### Test Results
+- Backend compilation: PASSED
+- TypeScript type check: PASSED
+- API SDK generation: PASSED
+
+### PRD Status
+- DDD-011: PASSED (implementation complete, E2E test pending P3-INT-003)

@@ -14,6 +14,7 @@ export interface HandlerReturnStatusSummaryResponse {
   draft?: number
   pending?: number
   pending_approval?: number
+  receiving?: number
   rejected?: number
   total?: number
 }

@@ -36280,6 +36280,160 @@ const docTemplate = `{
                 }
             }
         },
+        "/trade/sales-returns/{id}/receive": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Start receiving returned goods into warehouse (transitions from APPROVED to RECEIVING)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sales-returns"
+                ],
+                "summary": "Receive returned goods",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID (optional for dev)",
+                        "name": "X-Tenant-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Sales Return ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Receive return request",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ReceiveReturnRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/handler.SalesReturnResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/dto.ErrorInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/dto.ErrorInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/dto.ErrorInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/dto.ErrorInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/dto.ErrorInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/trade/sales-returns/{id}/reject": {
             "post": {
                 "security": [
@@ -41264,6 +41418,16 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.ReceiveReturnRequest": {
+            "description": "Request body for receiving returned goods",
+            "type": "object",
+            "properties": {
+                "warehouse_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
         "handler.ReceivedItemResponse": {
             "description": "Received item info response",
             "type": "object",
@@ -41610,6 +41774,10 @@ const docTemplate = `{
                 "pending_approval": {
                     "type": "integer",
                     "example": 5
+                },
+                "receiving": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "rejected": {
                     "type": "integer",
@@ -41969,6 +42137,9 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 2
                 },
+                "received_at": {
+                    "type": "string"
+                },
                 "return_number": {
                     "type": "string",
                     "example": "SR-2026-00001"
@@ -42051,6 +42222,9 @@ const docTemplate = `{
                 "reason": {
                     "type": "string",
                     "example": "商品质量问题"
+                },
+                "received_at": {
+                    "type": "string"
                 },
                 "rejected_at": {
                     "type": "string"

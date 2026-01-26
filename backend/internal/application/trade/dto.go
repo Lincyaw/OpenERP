@@ -593,6 +593,11 @@ type CancelReturnRequest struct {
 	Reason string `json:"reason" binding:"required,min=1,max=500"`
 }
 
+// ReceiveReturnRequest represents a request to start receiving a return
+type ReceiveReturnRequest struct {
+	WarehouseID *uuid.UUID `json:"warehouse_id"` // Optional warehouse override
+}
+
 // CompleteReturnRequest represents a request to complete a return
 type CompleteReturnRequest struct {
 	WarehouseID *uuid.UUID `json:"warehouse_id"` // Optional warehouse override
@@ -640,6 +645,7 @@ type SalesReturnResponse struct {
 	RejectedAt       *time.Time                `json:"rejected_at,omitempty"`
 	RejectedBy       *uuid.UUID                `json:"rejected_by,omitempty"`
 	RejectionReason  string                    `json:"rejection_reason,omitempty"`
+	ReceivedAt       *time.Time                `json:"received_at,omitempty"`
 	CompletedAt      *time.Time                `json:"completed_at,omitempty"`
 	CancelledAt      *time.Time                `json:"cancelled_at,omitempty"`
 	CancelReason     string                    `json:"cancel_reason,omitempty"`
@@ -662,6 +668,7 @@ type SalesReturnListItemResponse struct {
 	Status           string          `json:"status"`
 	SubmittedAt      *time.Time      `json:"submitted_at,omitempty"`
 	ApprovedAt       *time.Time      `json:"approved_at,omitempty"`
+	ReceivedAt       *time.Time      `json:"received_at,omitempty"`
 	CompletedAt      *time.Time      `json:"completed_at,omitempty"`
 	CreatedAt        time.Time       `json:"created_at"`
 	UpdatedAt        time.Time       `json:"updated_at"`
@@ -690,6 +697,7 @@ type ReturnStatusSummary struct {
 	Draft           int64           `json:"draft"`
 	Pending         int64           `json:"pending"`
 	Approved        int64           `json:"approved"`
+	Receiving       int64           `json:"receiving"`
 	Rejected        int64           `json:"rejected"`
 	Completed       int64           `json:"completed"`
 	Cancelled       int64           `json:"cancelled"`
@@ -728,6 +736,7 @@ func ToSalesReturnResponse(sr *trade.SalesReturn) SalesReturnResponse {
 		RejectedAt:       sr.RejectedAt,
 		RejectedBy:       sr.RejectedBy,
 		RejectionReason:  sr.RejectionReason,
+		ReceivedAt:       sr.ReceivedAt,
 		CompletedAt:      sr.CompletedAt,
 		CancelledAt:      sr.CancelledAt,
 		CancelReason:     sr.CancelReason,
@@ -752,6 +761,7 @@ func ToSalesReturnListItemResponse(sr *trade.SalesReturn) SalesReturnListItemRes
 		Status:           strings.ToLower(string(sr.Status)),
 		SubmittedAt:      sr.SubmittedAt,
 		ApprovedAt:       sr.ApprovedAt,
+		ReceivedAt:       sr.ReceivedAt,
 		CompletedAt:      sr.CompletedAt,
 		CreatedAt:        sr.CreatedAt,
 		UpdatedAt:        sr.UpdatedAt,

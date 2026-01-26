@@ -29,11 +29,12 @@ const { Title, Text } = Typography
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
   string,
-  'blue' | 'cyan' | 'green' | 'grey' | 'red' | 'orange' | 'amber'
+  'blue' | 'cyan' | 'green' | 'grey' | 'red' | 'orange' | 'amber' | 'light-blue'
 > = {
   DRAFT: 'blue',
   PENDING: 'orange',
   APPROVED: 'cyan',
+  RECEIVING: 'light-blue',
   REJECTED: 'red',
   COMPLETED: 'green',
   CANCELLED: 'grey',
@@ -44,6 +45,7 @@ const STATUS_KEYS: Record<string, string> = {
   DRAFT: 'draft',
   PENDING: 'pendingApproval',
   APPROVED: 'approved',
+  RECEIVING: 'receiving',
   REJECTED: 'rejected',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
@@ -186,6 +188,21 @@ export default function SalesReturnDetailPage() {
     })
   }, [returnData, salesReturnApi, fetchReturn, t])
 
+  // Handle receive returned goods (start receiving)
+  const handleReceive = useCallback(async () => {
+    if (!returnData?.id) return
+    setActionLoading(true)
+    try {
+      await salesReturnApi.postTradeSalesReturnsIdReceive(returnData.id!, {})
+      Toast.success(t('salesReturn.messages.receiveSuccess'))
+      fetchReturn()
+    } catch {
+      Toast.error(t('salesReturn.messages.receiveError'))
+    } finally {
+      setActionLoading(false)
+    }
+  }, [returnData, salesReturnApi, fetchReturn, t])
+
   // Handle cancel return
   const handleCancel = useCallback(async () => {
     if (!returnData?.id) return
@@ -310,6 +327,15 @@ export default function SalesReturnDetailPage() {
         time: formatDateTime(returnData.approved_at),
         content: `${t('salesReturnDetail.timeline.approved')}${returnData.approval_note ? `: ${returnData.approval_note}` : ''}`,
         type: 'success' as const,
+      })
+    }
+
+    // Receiving
+    if (returnData.received_at) {
+      items.push({
+        time: formatDateTime(returnData.received_at),
+        content: t('salesReturnDetail.timeline.receiving'),
+        type: 'ongoing' as const,
       })
     }
 
@@ -462,6 +488,26 @@ export default function SalesReturnDetailPage() {
           </>
         )}
         {status === 'APPROVED' && (
+          <>
+            <Button
+              type="primary"
+              icon={<IconTick />}
+              onClick={handleReceive}
+              loading={actionLoading}
+            >
+              {t('salesReturn.actions.receive')}
+            </Button>
+            <Button
+              type="danger"
+              icon={<IconClose />}
+              onClick={() => setCancelModalVisible(true)}
+              loading={actionLoading}
+            >
+              {t('salesReturn.actions.cancel')}
+            </Button>
+          </>
+        )}
+        {status === 'RECEIVING' && (
           <>
             <Button
               type="primary"

@@ -17,6 +17,7 @@ const (
 	ReturnStatusDraft     ReturnStatus = "DRAFT"
 	ReturnStatusPending   ReturnStatus = "PENDING"   // Waiting for approval
 	ReturnStatusApproved  ReturnStatus = "APPROVED"  // Approved, ready for processing
+	ReturnStatusReceiving ReturnStatus = "RECEIVING" // Receiving returned goods into warehouse
 	ReturnStatusRejected  ReturnStatus = "REJECTED"  // Rejected by approver
 	ReturnStatusCompleted ReturnStatus = "COMPLETED" // Return completed, stock restored
 	ReturnStatusCancelled ReturnStatus = "CANCELLED"
@@ -26,7 +27,7 @@ const (
 func (s ReturnStatus) IsValid() bool {
 	switch s {
 	case ReturnStatusDraft, ReturnStatusPending, ReturnStatusApproved,
-		ReturnStatusRejected, ReturnStatusCompleted, ReturnStatusCancelled:
+		ReturnStatusReceiving, ReturnStatusRejected, ReturnStatusCompleted, ReturnStatusCancelled:
 		return true
 	}
 	return false
@@ -45,6 +46,8 @@ func (s ReturnStatus) CanTransitionTo(target ReturnStatus) bool {
 	case ReturnStatusPending:
 		return target == ReturnStatusApproved || target == ReturnStatusRejected || target == ReturnStatusCancelled
 	case ReturnStatusApproved:
+		return target == ReturnStatusReceiving || target == ReturnStatusCancelled
+	case ReturnStatusReceiving:
 		return target == ReturnStatusCompleted || target == ReturnStatusCancelled
 	case ReturnStatusRejected, ReturnStatusCompleted, ReturnStatusCancelled:
 		return false // Terminal states
@@ -184,6 +187,7 @@ type SalesReturn struct {
 	RejectedAt       *time.Time
 	RejectedBy       *uuid.UUID `gorm:"type:uuid"`
 	RejectionReason  string     `gorm:"type:varchar(500)"`
+	ReceivedAt       *time.Time // When receiving process started
 	CompletedAt      *time.Time
 	CancelledAt      *time.Time
 	CancelReason     string `gorm:"type:varchar(500)"`
@@ -422,7 +426,7 @@ func (r *SalesReturn) Reject(rejecterID uuid.UUID, reason string) error {
 
 // Complete marks the return as completed
 // This should be called after stock has been restored
-// Transitions from APPROVED to COMPLETED
+// Transitions from RECEIVING to COMPLETED
 func (r *SalesReturn) Complete() error {
 	if !r.Status.CanTransitionTo(ReturnStatusCompleted) {
 		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot complete return in %s status", r.Status))
@@ -442,8 +446,29 @@ func (r *SalesReturn) Complete() error {
 	return nil
 }
 
+// Receive starts the receiving process for returned goods
+// Transitions from APPROVED to RECEIVING
+func (r *SalesReturn) Receive() error {
+	if !r.Status.CanTransitionTo(ReturnStatusReceiving) {
+		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot start receiving return in %s status", r.Status))
+	}
+	if r.WarehouseID == nil {
+		return shared.NewDomainError("NO_WAREHOUSE", "Warehouse must be set before receiving return")
+	}
+
+	now := time.Now()
+	r.Status = ReturnStatusReceiving
+	r.ReceivedAt = &now
+	r.UpdatedAt = now
+	r.IncrementVersion()
+
+	r.AddDomainEvent(NewSalesReturnReceivingEvent(r))
+
+	return nil
+}
+
 // Cancel cancels the return
-// Allowed in DRAFT, PENDING, or APPROVED status
+// Allowed in DRAFT, PENDING, APPROVED, or RECEIVING status
 func (r *SalesReturn) Cancel(reason string) error {
 	if !r.Status.CanTransitionTo(ReturnStatusCancelled) {
 		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot cancel return in %s status", r.Status))
@@ -452,7 +477,8 @@ func (r *SalesReturn) Cancel(reason string) error {
 		return shared.NewDomainError("INVALID_REASON", "Cancel reason is required")
 	}
 
-	wasApproved := r.Status == ReturnStatusApproved
+	// Track if we were in approved or receiving state (may need to reverse inventory operations)
+	wasApproved := r.Status == ReturnStatusApproved || r.Status == ReturnStatusReceiving
 	now := time.Now()
 	r.Status = ReturnStatusCancelled
 	r.CancelledAt = &now
@@ -506,6 +532,11 @@ func (r *SalesReturn) IsPending() bool {
 // IsApproved returns true if return is approved
 func (r *SalesReturn) IsApproved() bool {
 	return r.Status == ReturnStatusApproved
+}
+
+// IsReceiving returns true if return is in receiving status
+func (r *SalesReturn) IsReceiving() bool {
+	return r.Status == ReturnStatusReceiving
 }
 
 // IsRejected returns true if return is rejected

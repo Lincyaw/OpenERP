@@ -466,6 +466,43 @@ func (s *SalesReturnService) Reject(ctx context.Context, tenantID, returnID, rej
 	return &response, nil
 }
 
+// Receive starts the receiving process for a return (after approval)
+func (s *SalesReturnService) Receive(ctx context.Context, tenantID, returnID uuid.UUID, req ReceiveReturnRequest) (*SalesReturnResponse, error) {
+	sr, err := s.returnRepo.FindByIDForTenant(ctx, tenantID, returnID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set warehouse if provided
+	if req.WarehouseID != nil {
+		if err := sr.SetWarehouse(*req.WarehouseID); err != nil {
+			return nil, err
+		}
+	}
+
+	// Start receiving the return
+	if err := sr.Receive(); err != nil {
+		return nil, err
+	}
+
+	// Save with optimistic locking
+	if err := s.returnRepo.SaveWithLock(ctx, sr); err != nil {
+		return nil, err
+	}
+
+	// Publish domain events
+	if s.eventPublisher != nil {
+		for _, event := range sr.GetDomainEvents() {
+			if err := s.eventPublisher.Publish(ctx, event); err != nil {
+				// Log but don't fail the operation
+			}
+		}
+	}
+
+	response := ToSalesReturnResponse(sr)
+	return &response, nil
+}
+
 // Complete marks a return as completed (after stock restoration)
 func (s *SalesReturnService) Complete(ctx context.Context, tenantID, returnID uuid.UUID, req CompleteReturnRequest) (*SalesReturnResponse, error) {
 	sr, err := s.returnRepo.FindByIDForTenant(ctx, tenantID, returnID)

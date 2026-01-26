@@ -47,11 +47,12 @@ interface CustomerOption {
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
   string,
-  'blue' | 'cyan' | 'green' | 'grey' | 'red' | 'orange' | 'amber'
+  'blue' | 'cyan' | 'green' | 'grey' | 'red' | 'orange' | 'amber' | 'light-blue'
 > = {
   DRAFT: 'blue',
   PENDING: 'orange',
   APPROVED: 'cyan',
+  RECEIVING: 'light-blue',
   REJECTED: 'red',
   COMPLETED: 'green',
   CANCELLED: 'grey',
@@ -62,6 +63,7 @@ const STATUS_KEYS: Record<string, string> = {
   DRAFT: 'draft',
   PENDING: 'pendingApproval',
   APPROVED: 'approved',
+  RECEIVING: 'receiving',
   REJECTED: 'rejected',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
@@ -113,6 +115,7 @@ export default function SalesReturnsPage() {
       { label: t('salesReturn.status.draft'), value: 'DRAFT' },
       { label: t('salesReturn.status.pendingApproval'), value: 'PENDING' },
       { label: t('salesReturn.status.approved'), value: 'APPROVED' },
+      { label: t('salesReturn.status.receiving'), value: 'RECEIVING' },
       { label: t('salesReturn.status.rejected'), value: 'REJECTED' },
       { label: t('salesReturn.status.completed'), value: 'COMPLETED' },
       { label: t('salesReturn.status.cancelled'), value: 'CANCELLED' },
@@ -336,6 +339,21 @@ export default function SalesReturnsPage() {
     [salesReturnApi, fetchReturns, t]
   )
 
+  // Handle receive returned goods (start receiving)
+  const handleReceive = useCallback(
+    async (returnItem: SalesReturn) => {
+      if (!returnItem.id) return
+      try {
+        await salesReturnApi.postTradeSalesReturnsIdReceive(returnItem.id!, {})
+        Toast.success(t('salesReturn.messages.receiveSuccess'))
+        fetchReturns()
+      } catch {
+        Toast.error(t('salesReturn.messages.receiveError'))
+      }
+    },
+    [salesReturnApi, fetchReturns, t]
+  )
+
   // Handle cancel return
   const handleCancel = useCallback(
     async (returnItem: SalesReturn) => {
@@ -508,11 +526,18 @@ export default function SalesReturnsPage() {
         hidden: (record) => record.status !== 'PENDING',
       },
       {
+        key: 'receive',
+        label: t('salesReturn.actions.receive'),
+        type: 'primary',
+        onClick: handleReceive,
+        hidden: (record) => record.status !== 'APPROVED',
+      },
+      {
         key: 'complete',
         label: t('salesReturn.actions.complete'),
         type: 'primary',
         onClick: handleComplete,
-        hidden: (record) => record.status !== 'APPROVED',
+        hidden: (record) => record.status !== 'RECEIVING',
       },
       {
         key: 'cancel',
@@ -520,7 +545,10 @@ export default function SalesReturnsPage() {
         type: 'warning',
         onClick: handleCancel,
         hidden: (record) =>
-          record.status !== 'DRAFT' && record.status !== 'PENDING' && record.status !== 'APPROVED',
+          record.status !== 'DRAFT' &&
+          record.status !== 'PENDING' &&
+          record.status !== 'APPROVED' &&
+          record.status !== 'RECEIVING',
       },
       {
         key: 'delete',
@@ -535,6 +563,7 @@ export default function SalesReturnsPage() {
       handleSubmit,
       handleApprove,
       handleReject,
+      handleReceive,
       handleComplete,
       handleCancel,
       handleDelete,

@@ -14,6 +14,7 @@ const (
 	EventTypeSalesReturnCreated   = "SalesReturnCreated"
 	EventTypeSalesReturnSubmitted = "SalesReturnSubmitted"
 	EventTypeSalesReturnApproved  = "SalesReturnApproved"
+	EventTypeSalesReturnReceiving = "SalesReturnReceiving"
 	EventTypeSalesReturnRejected  = "SalesReturnRejected"
 	EventTypeSalesReturnCompleted = "SalesReturnCompleted"
 	EventTypeSalesReturnCancelled = "SalesReturnCancelled"
@@ -169,6 +170,62 @@ func NewSalesReturnApprovedEvent(sr *SalesReturn) *SalesReturnApprovedEvent {
 // EventType returns the event type name
 func (e *SalesReturnApprovedEvent) EventType() string {
 	return EventTypeSalesReturnApproved
+}
+
+// SalesReturnReceivingEvent is raised when a sales return starts receiving process
+// This event triggers stock restoration in the inventory context
+type SalesReturnReceivingEvent struct {
+	shared.BaseDomainEvent
+	ReturnID         uuid.UUID             `json:"return_id"`
+	ReturnNumber     string                `json:"return_number"`
+	SalesOrderID     uuid.UUID             `json:"sales_order_id"`
+	SalesOrderNumber string                `json:"sales_order_number"`
+	CustomerID       uuid.UUID             `json:"customer_id"`
+	CustomerName     string                `json:"customer_name"`
+	WarehouseID      uuid.UUID             `json:"warehouse_id"`
+	Items            []SalesReturnItemInfo `json:"items"`
+	TotalRefund      decimal.Decimal       `json:"total_refund"`
+}
+
+// NewSalesReturnReceivingEvent creates a new SalesReturnReceivingEvent
+func NewSalesReturnReceivingEvent(sr *SalesReturn) *SalesReturnReceivingEvent {
+	items := make([]SalesReturnItemInfo, len(sr.Items))
+	for i, item := range sr.Items {
+		items[i] = SalesReturnItemInfo{
+			ItemID:           item.ID,
+			SalesOrderItemID: item.SalesOrderItemID,
+			ProductID:        item.ProductID,
+			ProductName:      item.ProductName,
+			ProductCode:      item.ProductCode,
+			ReturnQuantity:   item.ReturnQuantity,
+			UnitPrice:        item.UnitPrice,
+			RefundAmount:     item.RefundAmount,
+			Unit:             item.Unit,
+		}
+	}
+
+	var warehouseID uuid.UUID
+	if sr.WarehouseID != nil {
+		warehouseID = *sr.WarehouseID
+	}
+
+	return &SalesReturnReceivingEvent{
+		BaseDomainEvent:  shared.NewBaseDomainEvent(EventTypeSalesReturnReceiving, AggregateTypeSalesReturn, sr.ID, sr.TenantID),
+		ReturnID:         sr.ID,
+		ReturnNumber:     sr.ReturnNumber,
+		SalesOrderID:     sr.SalesOrderID,
+		SalesOrderNumber: sr.SalesOrderNumber,
+		CustomerID:       sr.CustomerID,
+		CustomerName:     sr.CustomerName,
+		WarehouseID:      warehouseID,
+		Items:            items,
+		TotalRefund:      sr.TotalRefund,
+	}
+}
+
+// EventType returns the event type name
+func (e *SalesReturnReceivingEvent) EventType() string {
+	return EventTypeSalesReturnReceiving
 }
 
 // SalesReturnRejectedEvent is raised when a sales return is rejected

@@ -366,6 +366,7 @@
       "draft": "Draft",
       "pendingApproval": "Pending Approval",
       "approved": "Approved",
+      "receiving": "Receiving",
       "rejected": "Rejected",
       "completed": "Completed",
       "cancelled": "Cancelled"
@@ -376,6 +377,7 @@
       "submit": "Submit for Approval",
       "approve": "Approve",
       "reject": "Reject",
+      "receive": "Receive",
       "complete": "Complete",
       "cancel": "Cancel",
       "delete": "Delete"
@@ -402,6 +404,8 @@
       "approveError": "Failed to approve",
       "rejectSuccess": "Return rejected",
       "rejectError": "Failed to reject",
+      "receiveSuccess": "Return receiving started",
+      "receiveError": "Failed to start receiving",
       "completeSuccess": "Return completed",
       "completeError": "Failed to complete return",
       "cancelSuccess": "Return cancelled",
@@ -451,6 +455,7 @@
       "created": "Return Created",
       "submitted": "Submitted for Approval",
       "approved": "Approved",
+      "receiving": "Started Receiving",
       "rejected": "Rejected",
       "completed": "Return Completed",
       "cancelled": "Return Cancelled"

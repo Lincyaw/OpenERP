@@ -366,6 +366,7 @@
       "draft": "草稿",
       "pendingApproval": "待审批",
       "approved": "已审批",
+      "receiving": "收货中",
       "rejected": "已拒绝",
       "completed": "已完成",
       "cancelled": "已取消"
@@ -376,6 +377,7 @@
       "submit": "提交审批",
       "approve": "审批通过",
       "reject": "拒绝",
+      "receive": "开始收货",
       "complete": "完成",
       "cancel": "取消",
       "delete": "删除"
@@ -402,6 +404,8 @@
       "approveError": "审批失败",
       "rejectSuccess": "退货单已拒绝",
       "rejectError": "拒绝失败",
+      "receiveSuccess": "已开始收货",
+      "receiveError": "开始收货失败",
       "completeSuccess": "退货单已完成",
       "completeError": "完成退货失败",
       "cancelSuccess": "退货单已取消",
@@ -451,6 +455,7 @@
       "created": "创建退货单",
       "submitted": "提交审批",
       "approved": "审批通过",
+      "receiving": "开始收货",
       "rejected": "审批拒绝",
       "completed": "退货完成",
       "cancelled": "退货取消"

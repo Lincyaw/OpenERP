@@ -15,6 +15,7 @@ import type {
   HandlerCancelReturnRequest,
   HandlerCompleteReturnRequest,
   HandlerCreateSalesReturnRequest,
+  HandlerReceiveReturnRequest,
   HandlerRejectReturnRequest,
   HandlerUpdateReturnItemRequest,
   HandlerUpdateSalesReturnRequest,
@@ -23,6 +24,7 @@ import type {
   PostTradeSalesReturnsIdCancel200,
   PostTradeSalesReturnsIdComplete200,
   PostTradeSalesReturnsIdItems200,
+  PostTradeSalesReturnsIdReceive200,
   PostTradeSalesReturnsIdReject200,
   PostTradeSalesReturnsIdSubmit200,
   PutTradeSalesReturnsId200,
@@ -218,6 +220,25 @@ export const getSalesReturns = () => {
     )
   }
   /**
+   * Start receiving returned goods into warehouse (transitions from APPROVED to RECEIVING)
+   * @summary Receive returned goods
+   */
+  const postTradeSalesReturnsIdReceive = (
+    id: string,
+    handlerReceiveReturnRequest: HandlerReceiveReturnRequest,
+    options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdReceive200>>
+  ) => {
+    return customInstance<PostTradeSalesReturnsIdReceive200>(
+      {
+        url: `/trade/sales-returns/${id}/receive`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: handlerReceiveReturnRequest,
+      },
+      options
+    )
+  }
+  /**
    * Reject a sales return (transitions from PENDING to REJECTED)
    * @summary Reject a sales return
    */
@@ -286,6 +307,7 @@ export const getSalesReturns = () => {
     postTradeSalesReturnsIdItems,
     deleteTradeSalesReturnsIdItemsItemId,
     putTradeSalesReturnsIdItemsItemId,
+    postTradeSalesReturnsIdReceive,
     postTradeSalesReturnsIdReject,
     postTradeSalesReturnsIdSubmit,
     getTradeSalesReturnsNumberReturnNumber,
@@ -324,6 +346,9 @@ export type DeleteTradeSalesReturnsIdItemsItemIdResult = NonNullable<
 >
 export type PutTradeSalesReturnsIdItemsItemIdResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSalesReturns>['putTradeSalesReturnsIdItemsItemId']>>
+>
+export type PostTradeSalesReturnsIdReceiveResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSalesReturns>['postTradeSalesReturnsIdReceive']>>
 >
 export type PostTradeSalesReturnsIdRejectResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSalesReturns>['postTradeSalesReturnsIdReject']>>
