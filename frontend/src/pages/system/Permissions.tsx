@@ -202,7 +202,7 @@ export default function PermissionsPage() {
     try {
       const query: RoleListQuery = {
         page: 1,
-        page_size: 1000, // Get all roles
+        page_size: 100, // Backend max is 100
         is_enabled: true,
       }
       const response = await api.listRoles(query)

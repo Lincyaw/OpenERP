@@ -18002,3 +18002,35 @@ This fix affects all table pages that use the TableActions component for row-lev
 - Stock taking
 - And all other tables with action columns
 
+
+---
+
+## P10-BUG-011: 修复权限配置页面角色列表400错误 (2026-01-26)
+
+### Task
+Fix the 400 error when loading the permission configuration page.
+
+### Root Cause
+The frontend Permissions.tsx was requesting `page_size=1000` when fetching roles, but the backend `RoleListQuery` validation limits `page_size` to `max=100`.
+
+Request: `GET /api/v1/identity/roles?page=1&page_size=1000&is_enabled=true`
+Backend validation: `binding:"omitempty,min=1,max=100"`
+
+### Solution
+Changed `page_size` from 1000 to 100 in `Permissions.tsx` line 205.
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/pages/system/Permissions.tsx` | Changed `page_size: 1000` to `page_size: 100` |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-011 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+
+### Notes
+- For most systems, 100 roles should be sufficient
+- If more than 100 roles exist, pagination UI could be added in the future
+- This matches the backend's documented API maximum (100)
+
