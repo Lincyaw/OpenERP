@@ -444,5 +444,71 @@
       "rechargeSuccess": "Recharge successful",
       "rechargeError": "Recharge failed, please try again later"
     }
+  },
+  "customerDetail": {
+    "title": "Customer Details",
+    "back": "Back to Customer List",
+    "notExist": "Customer Not Found",
+    "notExistDesc": "The requested customer does not exist",
+    "financeInfo": "Financial Information",
+    "timestamps": "Timestamps",
+    "notes": "Notes",
+    "fields": {
+      "code": "Customer Code",
+      "name": "Customer Name",
+      "shortName": "Short Name",
+      "type": "Customer Type",
+      "level": "Customer Level",
+      "status": "Status",
+      "contactName": "Contact Name",
+      "phone": "Phone",
+      "email": "Email",
+      "taxId": "Tax ID",
+      "country": "Country",
+      "province": "Province/State",
+      "city": "City",
+      "address": "Address",
+      "postalCode": "Postal Code",
+      "fullAddress": "Full Address",
+      "balance": "Account Balance",
+      "creditLimit": "Credit Limit",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    }
+  },
+  "supplierDetail": {
+    "title": "Supplier Details",
+    "back": "Back to Supplier List",
+    "notExist": "Supplier Not Found",
+    "notExistDesc": "The requested supplier does not exist",
+    "timestamps": "Timestamps",
+    "notes": "Notes",
+    "messages": {
+      "fetchError": "Failed to fetch supplier information"
+    },
+    "fields": {
+      "code": "Supplier Code",
+      "name": "Supplier Name",
+      "shortName": "Short Name",
+      "status": "Status",
+      "rating": "Rating",
+      "contactName": "Contact Name",
+      "phone": "Phone",
+      "email": "Email",
+      "taxId": "Tax ID",
+      "country": "Country",
+      "province": "Province/State",
+      "city": "City",
+      "address": "Address",
+      "postalCode": "Postal Code",
+      "fullAddress": "Full Address",
+      "bankName": "Bank Name",
+      "bankAccount": "Bank Account",
+      "bankAccountName": "Account Name",
+      "creditLimit": "Credit Limit",
+      "paymentTermDays": "Payment Terms",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    }
   }
 }

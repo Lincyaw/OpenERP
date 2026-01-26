@@ -444,5 +444,71 @@
       "rechargeSuccess": "充值成功",
       "rechargeError": "充值失败，请稍后重试"
     }
+  },
+  "customerDetail": {
+    "title": "客户详情",
+    "back": "返回客户列表",
+    "notExist": "客户不存在",
+    "notExistDesc": "未找到对应的客户信息",
+    "financeInfo": "财务信息",
+    "timestamps": "时间信息",
+    "notes": "备注",
+    "fields": {
+      "code": "客户编码",
+      "name": "客户名称",
+      "shortName": "简称",
+      "type": "客户类型",
+      "level": "客户等级",
+      "status": "状态",
+      "contactName": "联系人",
+      "phone": "电话",
+      "email": "邮箱",
+      "taxId": "税号",
+      "country": "国家",
+      "province": "省份",
+      "city": "城市",
+      "address": "详细地址",
+      "postalCode": "邮政编码",
+      "fullAddress": "完整地址",
+      "balance": "账户余额",
+      "creditLimit": "信用额度",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间"
+    }
+  },
+  "supplierDetail": {
+    "title": "供应商详情",
+    "back": "返回供应商列表",
+    "notExist": "供应商不存在",
+    "notExistDesc": "未找到对应的供应商信息",
+    "timestamps": "时间信息",
+    "notes": "备注",
+    "messages": {
+      "fetchError": "获取供应商信息失败"
+    },
+    "fields": {
+      "code": "供应商编码",
+      "name": "供应商名称",
+      "shortName": "简称",
+      "status": "状态",
+      "rating": "评级",
+      "contactName": "联系人",
+      "phone": "电话",
+      "email": "邮箱",
+      "taxId": "税号",
+      "country": "国家",
+      "province": "省份",
+      "city": "城市",
+      "address": "详细地址",
+      "postalCode": "邮政编码",
+      "fullAddress": "完整地址",
+      "bankName": "开户银行",
+      "bankAccount": "银行账号",
+      "bankAccountName": "账户名称",
+      "creditLimit": "信用额度",
+      "paymentTermDays": "账期天数",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间"
+    }
   }
 }

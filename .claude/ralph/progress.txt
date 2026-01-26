@@ -18088,3 +18088,68 @@ render: (price: unknown) => {
 
 ### Impact
 This fix ensures product prices are properly displayed in the product management table. The same pattern should be applied to any other component that displays decimal values from the API.
+
+
+---
+
+## P10-BUG-002: 修复伙伴管理详情页404错误 (2026-01-26)
+
+### Task
+Fix the 404 error when clicking the "View" button on the customer/supplier table.
+
+### Root Cause
+The frontend had "View" actions in the Customers.tsx and Suppliers.tsx tables that navigated to `/partner/customers/:id` and `/partner/suppliers/:id`, but these routes were not defined in routes.tsx. Only edit and balance routes existed.
+
+### Solution
+1. Created CustomerDetail.tsx and CustomerDetail.css page components
+2. Created SupplierDetail.tsx and SupplierDetail.css page components
+3. Added lazy-loaded page components in routes.tsx
+4. Added routes for `customers/:id` and `suppliers/:id` in the partner module routes
+5. Added translation keys for customerDetail and supplierDetail in zh-CN and en-US locales
+
+### Features Implemented
+
+**CustomerDetail.tsx:**
+- Display complete customer information (basic info, contact, address)
+- Display financial info (balance, credit limit)
+- Status action buttons (activate, deactivate, suspend, delete)
+- Navigate to edit page
+- Navigate to balance page
+- Responsive design
+
+**SupplierDetail.tsx:**
+- Display complete supplier information (basic info, contact, address)
+- Display bank information
+- Display payment terms (credit limit, payment term days)
+- Display supplier rating
+- Status action buttons (activate, deactivate, block, delete)
+- Navigate to edit page
+- Responsive design
+
+### Files Created
+
+| File | Description |
+|------|-------------|
+| `frontend/src/pages/partner/CustomerDetail.tsx` | Customer detail page component |
+| `frontend/src/pages/partner/CustomerDetail.css` | Customer detail styles |
+| `frontend/src/pages/partner/SupplierDetail.tsx` | Supplier detail page component |
+| `frontend/src/pages/partner/SupplierDetail.css` | Supplier detail styles |
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/router/routes.tsx` | Added CustomerDetailPage and SupplierDetailPage lazy imports and routes |
+| `frontend/src/locales/zh-CN/partner.json` | Added customerDetail and supplierDetail translations |
+| `frontend/src/locales/en-US/partner.json` | Added customerDetail and supplierDetail translations |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-002 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+- ✅ Routes properly configured for /partner/customers/:id and /partner/suppliers/:id
+
+### Notes
+- Both detail pages follow the same pattern as ProductDetail.tsx for consistency
+- API endpoints `getPartnerCustomersId` and `getPartnerSuppliersId` were already available
+- The pages support all status transitions (activate/deactivate/suspend/block) directly from the detail view

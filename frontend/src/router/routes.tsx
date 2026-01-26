@@ -34,9 +34,11 @@ const CategoriesPage = () => lazyLoad(() => import('@/pages/catalog/Categories')
 const CustomersPage = () => lazyLoad(() => import('@/pages/partner/Customers'))
 const CustomerNewPage = () => lazyLoad(() => import('@/pages/partner/CustomerNew'))
 const CustomerEditPage = () => lazyLoad(() => import('@/pages/partner/CustomerEdit'))
+const CustomerDetailPage = () => lazyLoad(() => import('@/pages/partner/CustomerDetail'))
 const SuppliersPage = () => lazyLoad(() => import('@/pages/partner/Suppliers'))
 const SupplierNewPage = () => lazyLoad(() => import('@/pages/partner/SupplierNew'))
 const SupplierEditPage = () => lazyLoad(() => import('@/pages/partner/SupplierEdit'))
+const SupplierDetailPage = () => lazyLoad(() => import('@/pages/partner/SupplierDetail'))
 const WarehousesPage = () => lazyLoad(() => import('@/pages/partner/Warehouses'))
 const WarehouseNewPage = () => lazyLoad(() => import('@/pages/partner/WarehouseNew'))
 const WarehouseEditPage = () => lazyLoad(() => import('@/pages/partner/WarehouseEdit'))
@@ -612,9 +614,11 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/partner') {
         childRoutes.push(
           { path: 'customers/new', element: CustomerNewPage() },
+          { path: 'customers/:id', element: CustomerDetailPage() },
           { path: 'customers/:id/edit', element: CustomerEditPage() },
           { path: 'customers/:id/balance', element: CustomerBalancePage() },
           { path: 'suppliers/new', element: SupplierNewPage() },
+          { path: 'suppliers/:id', element: SupplierDetailPage() },
           { path: 'suppliers/:id/edit', element: SupplierEditPage() },
           { path: 'warehouses/new', element: WarehouseNewPage() },
           { path: 'warehouses/:id/edit', element: WarehouseEditPage() }
