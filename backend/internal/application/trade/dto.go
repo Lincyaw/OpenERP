@@ -308,13 +308,15 @@ func ToReceivedItemResponses(infos []trade.ReceivedItemInfo) []ReceivedItemRespo
 
 // CreateSalesOrderRequest represents a request to create a sales order
 type CreateSalesOrderRequest struct {
-	CustomerID   uuid.UUID                   `json:"customer_id" binding:"required"`
-	CustomerName string                      `json:"customer_name" binding:"required,min=1,max=200"`
-	WarehouseID  *uuid.UUID                  `json:"warehouse_id"`
-	Items        []CreateSalesOrderItemInput `json:"items"`
-	Discount     *decimal.Decimal            `json:"discount"`
-	Remark       string                      `json:"remark"`
-	CreatedBy    *uuid.UUID                  `json:"-"` // Set from JWT context, not from request body
+	CustomerID          uuid.UUID                   `json:"customer_id" binding:"required"`
+	CustomerName        string                      `json:"customer_name" binding:"required,min=1,max=200"`
+	CustomerLevel       string                      `json:"customer_level"`         // Customer level for pricing (normal, silver, gold, platinum, vip)
+	WarehouseID         *uuid.UUID                  `json:"warehouse_id"`
+	Items               []CreateSalesOrderItemInput `json:"items"`
+	Discount            *decimal.Decimal            `json:"discount"`
+	Remark              string                      `json:"remark"`
+	PricingStrategyName string                      `json:"pricing_strategy"` // Optional: pricing strategy to use (standard, tiered, customer_level)
+	CreatedBy           *uuid.UUID                  `json:"-"`                // Set from JWT context, not from request body
 }
 
 // CreateSalesOrderItemInput represents an item in the create order request
@@ -325,8 +327,9 @@ type CreateSalesOrderItemInput struct {
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
 	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
-	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
-	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"`   // Conversion rate to base unit (1 if using base unit)
+	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`        // Final unit price (or override price)
+	BasePrice      decimal.Decimal `json:"base_price"`                           // Optional: base price before strategy calculation
 	Remark         string          `json:"remark"`
 }
 

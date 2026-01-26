@@ -4,15 +4,24 @@ import (
 	"context"
 
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
+
+// PricingStrategyProvider provides access to pricing strategies
+type PricingStrategyProvider interface {
+	GetPricingStrategy(name string) (strategy.PricingStrategy, error)
+	GetPricingStrategyOrDefault(name string) strategy.PricingStrategy
+}
 
 // SalesOrderService handles sales order business operations
 type SalesOrderService struct {
-	orderRepo      trade.SalesOrderRepository
-	eventPublisher shared.EventPublisher
+	orderRepo        trade.SalesOrderRepository
+	eventPublisher   shared.EventPublisher
+	pricingProvider  PricingStrategyProvider
 }
 
 // NewSalesOrderService creates a new SalesOrderService
@@ -25,6 +34,62 @@ func NewSalesOrderService(orderRepo trade.SalesOrderRepository) *SalesOrderServi
 // SetEventPublisher sets the event publisher for cross-context integration
 func (s *SalesOrderService) SetEventPublisher(publisher shared.EventPublisher) {
 	s.eventPublisher = publisher
+}
+
+// SetPricingProvider sets the pricing strategy provider
+func (s *SalesOrderService) SetPricingProvider(provider PricingStrategyProvider) {
+	s.pricingProvider = provider
+}
+
+// calculateItemPrice calculates the unit price for an item using the pricing strategy
+// If no strategy is configured or if UseProvidedPrice is true, it uses the provided price
+func (s *SalesOrderService) calculateItemPrice(
+	ctx context.Context,
+	tenantID uuid.UUID,
+	item CreateSalesOrderItemInput,
+	customerType string,
+	pricingStrategyName string,
+) decimal.Decimal {
+	// If no pricing provider or strategy specified, use provided price
+	if s.pricingProvider == nil || pricingStrategyName == "" {
+		return item.UnitPrice
+	}
+
+	// If UnitPrice is explicitly provided and > 0, respect it (manual override)
+	if item.UnitPrice.GreaterThan(decimal.Zero) && item.BasePrice.IsZero() {
+		return item.UnitPrice
+	}
+
+	// Get the pricing strategy
+	pricingStrategy := s.pricingProvider.GetPricingStrategyOrDefault(pricingStrategyName)
+	if pricingStrategy == nil {
+		return item.UnitPrice
+	}
+
+	// Determine base price: use BasePrice from item if provided, otherwise use UnitPrice
+	basePrice := item.UnitPrice
+	if item.BasePrice.GreaterThan(decimal.Zero) {
+		basePrice = item.BasePrice
+	}
+
+	// Build pricing context
+	pricingCtx := strategy.PricingContext{
+		TenantID:     tenantID.String(),
+		ProductID:    item.ProductID.String(),
+		CustomerType: customerType,
+		Quantity:     item.Quantity,
+		BasePrice:    basePrice,
+		Currency:     "CNY",
+	}
+
+	// Calculate price using strategy
+	result, err := pricingStrategy.CalculatePrice(ctx, pricingCtx)
+	if err != nil {
+		// Fallback to provided price on error
+		return item.UnitPrice
+	}
+
+	return result.UnitPrice
 }
 
 // Create creates a new sales order
@@ -50,7 +115,9 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 
 	// Add items
 	for _, item := range req.Items {
-		unitPrice := valueobject.NewMoneyCNY(item.UnitPrice)
+		// Calculate unit price using pricing strategy if configured
+		calculatedUnitPrice := s.calculateItemPrice(ctx, tenantID, item, req.CustomerLevel, req.PricingStrategyName)
+		unitPrice := valueobject.NewMoneyCNY(calculatedUnitPrice)
 		orderItem, err := order.AddItem(
 			item.ProductID,
 			item.ProductName,

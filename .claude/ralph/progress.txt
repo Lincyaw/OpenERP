@@ -18894,3 +18894,73 @@ Implemented domain event publication infrastructure for InventoryService and cre
 - ✅ All integration tests pass for event publication
 - ✅ Go build successful
 - ✅ Handler registered at startup, events published after inventory operations
+
+
+## 2026-01-26 - DDD-006: Pricing Strategies Integration in Trade Context
+
+### Summary
+Integrated pricing strategies into the SalesOrderService to enable flexible pricing calculations based on quantity tiers and customer levels. This allows tenants to apply automatic discounts based on order volume or customer tier.
+
+### Problem
+- SalesOrderService accepted unit prices directly from the request without any strategy-based calculation
+- No support for volume discounts (tiered pricing) or customer loyalty discounts
+- Pricing logic was hardcoded and not extensible
+
+### Solution
+
+#### New Pricing Strategy Implementations
+
+| Strategy | Description | Default Discounts |
+|----------|-------------|-------------------|
+| `standard` | Uses base price without modification | 0% |
+| `tiered` | Volume-based discounts by quantity | Configurable tiers |
+| `customer_level` | Customer tier-based discounts | normal:0%, silver:3%, gold:5%, platinum:8%, vip:10% |
+
+#### Files Created
+
+| File | Purpose |
+|------|---------|
+| `backend/internal/infrastructure/strategy/pricing/tiered.go` | TieredPricingStrategy implementation |
+| `backend/internal/infrastructure/strategy/pricing/tiered_test.go` | Unit tests (10 tests) |
+| `backend/internal/infrastructure/strategy/pricing/customer_level.go` | CustomerLevelPricingStrategy implementation |
+| `backend/internal/infrastructure/strategy/pricing/customer_level_test.go` | Unit tests (7 tests) |
+
+#### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/application/trade/sales_order_service.go` | Added PricingStrategyProvider interface and calculateItemPrice() method |
+| `backend/internal/application/trade/dto.go` | Added pricing_strategy, customer_level, base_price fields |
+| `backend/internal/infrastructure/strategy/defaults.go` | Register tiered and customer_level pricing strategies |
+| `backend/cmd/server/main.go` | Inject strategyRegistry as pricing provider |
+
+#### API Changes
+
+CreateSalesOrderRequest now supports:
+```json
+{
+  "customer_id": "...",
+  "customer_name": "...",
+  "customer_level": "gold",         // NEW: Customer level for pricing
+  "pricing_strategy": "customer_level",  // NEW: Strategy to use
+  "items": [{
+    "product_id": "...",
+    "unit_price": 100,
+    "base_price": 100,            // NEW: Base price before discount
+    ...
+  }]
+}
+```
+
+#### Usage Patterns
+
+1. **No strategy (default)**: Uses provided unit_price directly
+2. **Standard strategy**: Uses base_price without modification
+3. **Tiered strategy**: Applies volume discounts based on quantity
+4. **Customer level strategy**: Applies discounts based on customer tier
+
+### Test Results
+- ✅ TieredPricingStrategy: 10 tests pass
+- ✅ CustomerLevelPricingStrategy: 7 tests pass
+- ✅ Go build successful
+- ✅ Strategy registry registration successful

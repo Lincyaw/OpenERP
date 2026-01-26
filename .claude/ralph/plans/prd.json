@@ -3991,14 +3991,23 @@
       "Support quantity-based tiered pricing",
       "Allow tenant-configurable default pricing strategy"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 4.1 - Strategy Extensions (Pricing)",
     "affectedModules": [
       "backend/internal/application/trade/sales_order_service.go",
       "backend/internal/domain/shared/strategy/pricing.go",
       "backend/internal/infrastructure/strategy/pricing/"
     ],
-    "severity": "HIGH"
+    "severity": "HIGH",
+    "implementation_notes": [
+      "Created TieredPricingStrategy for volume-based discounts",
+      "Created CustomerLevelPricingStrategy for level-based discounts (normal/silver/gold/platinum/vip)",
+      "Added PricingStrategyProvider interface in SalesOrderService",
+      "Injected StrategyRegistry as pricing provider in main.go",
+      "Added pricing_strategy and customer_level fields to CreateSalesOrderRequest DTO",
+      "Added base_price field to CreateSalesOrderItemInput for strategy calculation",
+      "All unit tests pass (10 tests for tiered, 7 tests for customer level)"
+    ]
   },
   {
     "id": "DDD-007",

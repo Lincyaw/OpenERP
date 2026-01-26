@@ -319,6 +319,9 @@ func main() {
 	stockLockExpirationService.SetEventBus(eventBus)
 	inventoryService.SetEventPublisher(eventBus)
 
+	// Inject pricing strategy provider into sales order service
+	salesOrderService.SetPricingProvider(strategyRegistry)
+
 	// Initialize report scheduler (if enabled)
 	if cfg.Scheduler.Enabled {
 		schedulerConfig := scheduler.SchedulerConfig{

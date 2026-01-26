@@ -30,6 +30,16 @@ func NewRegistryWithDefaults() (*StrategyRegistry, error) {
 		return nil, err
 	}
 
+	tieredPricing := pricing.DefaultTieredPricingStrategy()
+	if err := r.RegisterPricingStrategy(tieredPricing); err != nil {
+		return nil, err
+	}
+
+	customerLevelPricing := pricing.DefaultCustomerLevelPricingStrategy()
+	if err := r.RegisterPricingStrategy(customerLevelPricing); err != nil {
+		return nil, err
+	}
+
 	// Register allocation strategies
 	fifoAlloc := allocation.NewFIFOAllocationStrategy()
 	if err := r.RegisterAllocationStrategy(fifoAlloc); err != nil {
