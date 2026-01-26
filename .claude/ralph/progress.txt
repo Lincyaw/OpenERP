@@ -18673,3 +18673,81 @@ outboxProcessor.Start(context.Background())
 | `/system/outbox/:id` | GET | Get single outbox entry by ID |
 | `/system/outbox/:id/retry` | POST | Retry a dead letter entry |
 | `/system/outbox/dead/retry-all` | POST | Retry all dead letter entries |
+
+## DDD-003: IndustryPlugin System Implementation (2026-01-26)
+
+### Summary
+Implemented the IndustryPlugin system to support industry-specific extensions to the ERP system. The plugin architecture allows registering industry-specific validation rules, strategies, and product attribute requirements.
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `backend/internal/domain/shared/plugin/plugin.go` | IndustryPlugin interface and AttributeDefinition struct |
+| `backend/internal/domain/shared/plugin/manager.go` | PluginManager implementation |
+| `backend/internal/domain/shared/plugin/manager_test.go` | Unit tests for PluginManager (15 tests) |
+| `backend/internal/infrastructure/plugin/agricultural.go` | AgriculturalPlugin reference implementation |
+| `backend/internal/infrastructure/plugin/adapter.go` | StrategyRegistryAdapter for plugin integration |
+| `backend/internal/infrastructure/plugin/exports.go` | Re-exports for easier usage |
+| `backend/internal/infrastructure/plugin/plugin_test.go` | Integration tests (12 tests) |
+| `backend/internal/infrastructure/plugin/agricultural_test.go` | AgriculturalProductValidator tests (9 tests) |
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/infrastructure/strategy/registry.go` | Added RegisterXxxStrategyAny() wrapper methods |
+| `backend/cmd/server/main.go` | Added plugin initialization and AgriculturalPlugin registration |
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Domain Layer                          │
+├─────────────────────────────────────────────────────────────┤
+│  IndustryPlugin (interface)                                  │
+│  ├── Name() string                                          │
+│  ├── DisplayName() string                                   │
+│  ├── RegisterStrategies(StrategyRegistrar)                  │
+│  └── GetRequiredProductAttributes() []AttributeDefinition   │
+│                                                             │
+│  PluginManager                                              │
+│  ├── Register(plugin) error                                 │
+│  ├── GetPlugin(name) (IndustryPlugin, bool)                 │
+│  ├── ListPlugins() []string                                 │
+│  └── GetRequiredAttributes() map[string][]AttributeDefinition│
+├─────────────────────────────────────────────────────────────┤
+│                    Infrastructure Layer                      │
+├─────────────────────────────────────────────────────────────┤
+│  AgriculturalPlugin (农资行业)                               │
+│  ├── Validates: registration_number (PD+8 digits)           │
+│  ├── Validates: variety_approval_number (seeds)             │
+│  ├── Validates: production_license (pesticides/fertilizers) │
+│  └── Required: manufacturer (all products)                  │
+│                                                             │
+│  StrategyRegistryAdapter                                    │
+│  └── Wraps StrategyRegistry for StrategyRegistrar interface │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### AgriculturalPlugin Validation Rules
+
+| Category | Field | Validation |
+|----------|-------|------------|
+| PESTICIDE | registration_number | Required, format: `^PD\d{8}$` |
+| PESTICIDE | validity_period | Warning if missing |
+| SEED | variety_approval_number | Warning if missing |
+| FERTILIZER | production_license | Warning if missing |
+| ALL | manufacturer | Required for all agricultural products |
+
+### Test Results
+- ✅ 36 tests passing (domain: 15, infrastructure: 21)
+- ✅ Go build successful
+- ✅ TypeScript type check passed
+
+### Startup Log Output
+```
+INFO Strategy registry initialized cost_strategies=2 allocation_strategies=1 pricing_strategies=1
+INFO Industry plugin registered plugin=agricultural display_name=农资行业 required_attributes=5
+INFO Plugin manager initialized total_plugins=1 plugins=[agricultural]
+```

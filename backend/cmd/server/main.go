@@ -23,6 +23,7 @@ import (
 	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
+	infraPlugin "github.com/erp/backend/internal/infrastructure/plugin"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
 	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/interfaces/http/handler"
@@ -154,6 +155,28 @@ func main() {
 		zap.Int("cost_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypeCost]),
 		zap.Int("allocation_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypeAllocation]),
 		zap.Int("pricing_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypePricing]),
+	)
+
+	// Initialize plugin manager for industry-specific extensions
+	pluginRegistryAdapter := infraPlugin.NewStrategyRegistryAdapter(strategyRegistry)
+	pluginManager := infraPlugin.NewPluginManager(pluginRegistryAdapter)
+
+	// Register industry plugins
+	// Agricultural plugin provides validation for pesticides, seeds, fertilizers
+	agriculturalPlugin := infraPlugin.NewAgriculturalPlugin()
+	if err := pluginManager.Register(agriculturalPlugin); err != nil {
+		log.Error("Failed to register agricultural plugin", zap.Error(err))
+	} else {
+		log.Info("Industry plugin registered",
+			zap.String("plugin", agriculturalPlugin.Name()),
+			zap.String("display_name", agriculturalPlugin.DisplayName()),
+			zap.Int("required_attributes", len(agriculturalPlugin.GetRequiredProductAttributes())),
+		)
+	}
+
+	log.Info("Plugin manager initialized",
+		zap.Int("total_plugins", pluginManager.Count()),
+		zap.Strings("plugins", pluginManager.ListPlugins()),
 	)
 
 	// Initialize application services

@@ -453,3 +453,51 @@ func (r *StrategyRegistry) Stats() map[strategy.StrategyType]int {
 		strategy.StrategyTypeValidation: len(r.validationStrategies),
 	}
 }
+
+// StrategyRegistrarWrapper provides StrategyRegistrar interface compliance
+// These methods accept any type and perform type assertion internally
+
+// RegisterCostStrategyAny registers a cost strategy from any type (for plugin interface)
+func (r *StrategyRegistry) RegisterCostStrategyAny(s any) error {
+	typed, ok := s.(strategy.CostCalculationStrategy)
+	if !ok {
+		return fmt.Errorf("%w: expected CostCalculationStrategy, got %T", shared.ErrInvalidInput, s)
+	}
+	return r.RegisterCostStrategy(typed)
+}
+
+// RegisterPricingStrategyAny registers a pricing strategy from any type (for plugin interface)
+func (r *StrategyRegistry) RegisterPricingStrategyAny(s any) error {
+	typed, ok := s.(strategy.PricingStrategy)
+	if !ok {
+		return fmt.Errorf("%w: expected PricingStrategy, got %T", shared.ErrInvalidInput, s)
+	}
+	return r.RegisterPricingStrategy(typed)
+}
+
+// RegisterAllocationStrategyAny registers an allocation strategy from any type (for plugin interface)
+func (r *StrategyRegistry) RegisterAllocationStrategyAny(s any) error {
+	typed, ok := s.(strategy.PaymentAllocationStrategy)
+	if !ok {
+		return fmt.Errorf("%w: expected PaymentAllocationStrategy, got %T", shared.ErrInvalidInput, s)
+	}
+	return r.RegisterAllocationStrategy(typed)
+}
+
+// RegisterBatchStrategyAny registers a batch strategy from any type (for plugin interface)
+func (r *StrategyRegistry) RegisterBatchStrategyAny(s any) error {
+	typed, ok := s.(strategy.BatchManagementStrategy)
+	if !ok {
+		return fmt.Errorf("%w: expected BatchManagementStrategy, got %T", shared.ErrInvalidInput, s)
+	}
+	return r.RegisterBatchStrategy(typed)
+}
+
+// RegisterValidationStrategyAny registers a validation strategy from any type (for plugin interface)
+func (r *StrategyRegistry) RegisterValidationStrategyAny(s any) error {
+	typed, ok := s.(strategy.ProductValidationStrategy)
+	if !ok {
+		return fmt.Errorf("%w: expected ProductValidationStrategy, got %T", shared.ErrInvalidInput, s)
+	}
+	return r.RegisterValidationStrategy(typed)
+}
