@@ -74,3 +74,11 @@ max_concurrent_jobs = 3
 job_timeout = "30m"
 retry_attempts = 3
 retry_delay = "5m"
+
+[stock_lock]
+# Stock lock expiration check interval
+check_interval = "5m"
+# Default lock expiration duration (24 hours as per spec)
+default_expiration = "24h"
+# Enable automatic expiration cleanup
+auto_release_enabled = true

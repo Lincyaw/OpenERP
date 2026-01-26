@@ -16,6 +16,7 @@ const (
 	EventTypeStockDecreased       = "StockDecreased"
 	EventTypeStockLocked          = "StockLocked"
 	EventTypeStockUnlocked        = "StockUnlocked"
+	EventTypeStockLockExpired     = "StockLockExpired"
 	EventTypeStockDeducted        = "StockDeducted"
 	EventTypeStockAdjusted        = "StockAdjusted"
 	EventTypeInventoryCostChanged = "InventoryCostChanged"
@@ -269,4 +270,35 @@ func NewStockBelowThresholdEvent(item *InventoryItem) *StockBelowThresholdEvent 
 // EventType returns the event type name
 func (e *StockBelowThresholdEvent) EventType() string {
 	return EventTypeStockBelowThreshold
+}
+
+// StockLockExpiredEvent is raised when a stock lock expires and is automatically released
+type StockLockExpiredEvent struct {
+	shared.BaseDomainEvent
+	InventoryItemID uuid.UUID       `json:"inventory_item_id"`
+	WarehouseID     uuid.UUID       `json:"warehouse_id"`
+	ProductID       uuid.UUID       `json:"product_id"`
+	LockID          uuid.UUID       `json:"lock_id"`
+	Quantity        decimal.Decimal `json:"quantity"`
+	SourceType      string          `json:"source_type"` // e.g., "sales_order"
+	SourceID        string          `json:"source_id"`   // ID of the source document
+}
+
+// NewStockLockExpiredEvent creates a new StockLockExpiredEvent
+func NewStockLockExpiredEvent(tenantID, inventoryItemID, warehouseID, productID, lockID uuid.UUID, quantity decimal.Decimal, sourceType, sourceID string) *StockLockExpiredEvent {
+	return &StockLockExpiredEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(EventTypeStockLockExpired, AggregateTypeInventoryItem, inventoryItemID, tenantID),
+		InventoryItemID: inventoryItemID,
+		WarehouseID:     warehouseID,
+		ProductID:       productID,
+		LockID:          lockID,
+		Quantity:        quantity,
+		SourceType:      sourceType,
+		SourceID:        sourceID,
+	}
+}
+
+// EventType returns the event type name
+func (e *StockLockExpiredEvent) EventType() string {
+	return EventTypeStockLockExpired
 }

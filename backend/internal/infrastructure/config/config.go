@@ -19,6 +19,7 @@ type Config struct {
 	Event     EventConfig
 	HTTP      HTTPConfig
 	Scheduler SchedulerConfig
+	StockLock StockLockConfig
 }
 
 // LogConfig holds logging configuration
@@ -102,6 +103,13 @@ type SchedulerConfig struct {
 	JobTimeout        time.Duration
 	RetryAttempts     int
 	RetryDelay        time.Duration
+}
+
+// StockLockConfig holds stock lock expiration configuration
+type StockLockConfig struct {
+	CheckInterval      time.Duration // How often to check for expired locks
+	DefaultExpiration  time.Duration // Default lock expiration (24h as per spec)
+	AutoReleaseEnabled bool          // Whether to auto-release expired locks
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -200,6 +208,11 @@ func Load() (*Config, error) {
 			JobTimeout:        v.GetDuration("scheduler.job_timeout"),
 			RetryAttempts:     v.GetInt("scheduler.retry_attempts"),
 			RetryDelay:        v.GetDuration("scheduler.retry_delay"),
+		},
+		StockLock: StockLockConfig{
+			CheckInterval:      v.GetDuration("stock_lock.check_interval"),
+			DefaultExpiration:  v.GetDuration("stock_lock.default_expiration"),
+			AutoReleaseEnabled: v.GetBool("stock_lock.auto_release_enabled"),
 		},
 	}
 
@@ -335,6 +348,13 @@ func applyDefaults(cfg *Config) {
 	}
 	if cfg.Scheduler.RetryDelay == 0 {
 		cfg.Scheduler.RetryDelay = 5 * time.Minute
+	}
+	// StockLock defaults
+	if cfg.StockLock.CheckInterval == 0 {
+		cfg.StockLock.CheckInterval = 5 * time.Minute
+	}
+	if cfg.StockLock.DefaultExpiration == 0 {
+		cfg.StockLock.DefaultExpiration = 24 * time.Hour // 24h as per spec
 	}
 }
 

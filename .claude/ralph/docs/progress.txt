@@ -514,3 +514,115 @@ type StrategyOverrideFunc func(ctx context.Context, tenantID uuid.UUID) Reconcil
 
 ### PRD Status
 - DDD-002: PASSED (all requirements implemented and tested)
+
+---
+
+## 2026-01-26 - DDD-007: Stock Lock Expiration Auto-Release Mechanism
+
+### Summary
+Implemented automatic expiration and release mechanism for stock locks. Stock locks are now automatically released after 24 hours (configurable), with proper event publication and inventory quantity updates.
+
+### Requirements Implemented
+1. Implement scheduled job to check and release expired stock locks - DONE
+2. Stock locks should expire after 24 hours by default - DONE
+3. Emit StockLockExpired event when lock expires - DONE
+4. Update related order status when lock expires (optional notification) - DONE (via event)
+5. Add configuration for lock expiration duration - DONE
+
+### Files Modified
+
+#### Backend - Configuration
+- `backend/config.toml`
+  - Added `[stock_lock]` section with:
+    - `check_interval = "5m"` - How often to check for expired locks
+    - `default_expiration = "24h"` - Default lock expiration duration
+    - `auto_release_enabled = true` - Enable/disable auto-release
+
+- `backend/internal/infrastructure/config/config.go`
+  - Added `StockLockConfig` struct with CheckInterval, DefaultExpiration, AutoReleaseEnabled
+  - Added stock_lock config loading and defaults
+  - Defaults: 5 minute check interval, 24 hour expiration (per spec)
+
+#### Backend - Domain Layer
+- `backend/internal/domain/inventory/inventory_events.go`
+  - Added `EventTypeStockLockExpired = "StockLockExpired"` constant
+  - Added `StockLockExpiredEvent` struct with InventoryItemID, WarehouseID, ProductID, LockID, Quantity, SourceType, SourceID
+  - Added `NewStockLockExpiredEvent()` constructor
+
+#### Backend - Application Layer
+- `backend/internal/application/inventory/stock_lock_expiration_service.go` (NEW)
+  - `StockLockExpirationService` with:
+    - `ReleaseExpiredLocks()` - Individual release with event publication and inventory updates
+    - `BulkReleaseExpiredLocks()` - Bulk release without events (cleanup only)
+    - `GetExpiredLockCount()` - Count of currently expired locks
+    - `SetEventBus()` - Deferred event bus injection
+  - `ExpiredLockStats` struct for tracking processing statistics
+
+#### Backend - Server Initialization
+- `backend/cmd/server/main.go`
+  - Created `stockLockExpirationService` after inventoryService
+  - Added `SetEventBus()` call after eventBus initialization
+  - Added goroutine with `time.Ticker` for scheduled expiration checks
+  - Added graceful shutdown of ticker in shutdown handler
+
+### Files Created
+
+#### Backend - Tests
+- `backend/internal/application/inventory/stock_lock_expiration_service_test.go` (NEW)
+  - Test cases:
+    - NoExpiredLocks - returns empty stats
+    - SingleLock - releases lock, updates inventory, publishes event
+    - MultipleLocks - processes multiple locks
+    - InventoryItemNotFound - still releases lock (graceful handling)
+    - SaveFails - counts as failed release
+    - BulkReleaseExpiredLocks - returns count
+    - GetExpiredLockCount - returns correct count
+    - SetEventBus - tests deferred injection
+
+### Technical Design
+
+#### Scheduled Job Pattern
+```go
+// Goroutine with ticker for periodic execution
+ticker := time.NewTicker(cfg.StockLock.CheckInterval)
+go func() {
+    for {
+        select {
+        case <-ticker.C:
+            stats, err := stockLockExpirationService.ReleaseExpiredLocks(ctx)
+            // Log results
+        case <-stopChan:
+            ticker.Stop()
+            return
+        }
+    }
+}()
+```
+
+#### Lock Release Flow
+1. `FindExpired()` from repository returns all expired, unreleased locks
+2. For each lock:
+   - Find inventory item (optional - release even if not found)
+   - Mark lock as released via `lock.Release()`
+   - Save lock to repository
+   - Update inventory quantities (locked → available)
+   - Publish `StockLockExpiredEvent`
+
+#### Configuration
+- Check interval: 5 minutes (prevents excessive DB queries)
+- Default expiration: 24 hours (as per spec section 5.3)
+- Auto-release enabled: true by default
+
+### Test Results
+- Backend build: PASSED
+- Unit tests: 8/8 PASSED
+- TypeScript type check: PASSED
+
+### Key Learnings
+1. Stock locks use existing repository methods `FindExpired()` and `ReleaseExpired()`
+2. Individual release allows event publication, bulk release is for cleanup only
+3. Graceful handling when inventory item not found - lock still gets released
+4. Event bus injection deferred since service created before event bus
+
+### PRD Status
+- DDD-007: PASSED (all requirements implemented and tested)

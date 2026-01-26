@@ -188,6 +188,7 @@ func main() {
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
 	balanceTransactionService := partnerapp.NewBalanceTransactionService(balanceTransactionRepo, customerRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
+	stockLockExpirationService := inventoryapp.NewStockLockExpirationService(stockLockRepo, inventoryItemRepo, nil, log) // eventBus will be set later
 	salesOrderService := tradeapp.NewSalesOrderService(salesOrderRepo)
 	purchaseOrderService := tradeapp.NewPurchaseOrderService(purchaseOrderRepo)
 	salesReturnService := tradeapp.NewSalesReturnService(salesReturnRepo, salesOrderRepo)
@@ -308,6 +309,7 @@ func main() {
 	salesOrderService.SetEventPublisher(eventBus)
 	salesReturnService.SetEventPublisher(eventBus)
 	purchaseReturnService.SetEventPublisher(eventBus)
+	stockLockExpirationService.SetEventBus(eventBus)
 
 	// Initialize report scheduler (if enabled)
 	if cfg.Scheduler.Enabled {
@@ -331,6 +333,51 @@ func main() {
 			zap.Int("max_concurrent_jobs", cfg.Scheduler.MaxConcurrentJobs),
 			zap.Duration("job_timeout", cfg.Scheduler.JobTimeout),
 		)
+	}
+
+	// Initialize stock lock expiration job (if enabled)
+	var stopStockLockExpiration context.CancelFunc
+	if cfg.StockLock.AutoReleaseEnabled {
+		stockLockCtx, cancel := context.WithCancel(context.Background())
+		stopStockLockExpiration = cancel
+		go func() {
+			ticker := time.NewTicker(cfg.StockLock.CheckInterval)
+			defer ticker.Stop()
+
+			log.Info("Stock lock expiration job started",
+				zap.Duration("check_interval", cfg.StockLock.CheckInterval),
+				zap.Duration("default_expiration", cfg.StockLock.DefaultExpiration),
+			)
+
+			// Run once immediately at startup
+			stats, err := stockLockExpirationService.ReleaseExpiredLocks(stockLockCtx)
+			if err != nil {
+				log.Error("Failed to release expired stock locks on startup", zap.Error(err))
+			} else if stats.TotalExpired > 0 {
+				log.Info("Released expired stock locks on startup",
+					zap.Int("released", stats.SuccessReleased),
+					zap.Int("failed", stats.FailedReleases),
+				)
+			}
+
+			for {
+				select {
+				case <-stockLockCtx.Done():
+					log.Info("Stock lock expiration job stopped")
+					return
+				case <-ticker.C:
+					stats, err := stockLockExpirationService.ReleaseExpiredLocks(stockLockCtx)
+					if err != nil {
+						log.Error("Failed to release expired stock locks", zap.Error(err))
+					} else if stats.TotalExpired > 0 {
+						log.Info("Released expired stock locks",
+							zap.Int("released", stats.SuccessReleased),
+							zap.Int("failed", stats.FailedReleases),
+						)
+					}
+				}
+			}
+		}()
 	}
 
 	// Initialize HTTP handlers
@@ -884,6 +931,11 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Info("Shutting down server...")
+
+	// Stop stock lock expiration job
+	if stopStockLockExpiration != nil {
+		stopStockLockExpiration()
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

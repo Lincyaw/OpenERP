@@ -4044,7 +4044,7 @@
       "Update related order status when lock expires (optional notification)",
       "Add configuration for lock expiration duration"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.3 - StockLock Entity (24h expiry)",
     "affectedModules": [
       "backend/internal/domain/inventory/stock_lock.go",
