@@ -144,6 +144,22 @@ func (m *MockSalesReturnRepository) GenerateReturnNumber(ctx context.Context, te
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockSalesReturnRepository) GetReturnedQuantityByOrderItem(ctx context.Context, tenantID, salesOrderItemID uuid.UUID) (map[uuid.UUID]decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID, salesOrderItemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]decimal.Decimal), args.Error(1)
+}
+
+func (m *MockSalesReturnRepository) GetReturnedQuantityByOrderItems(ctx context.Context, tenantID uuid.UUID, salesOrderItemIDs []uuid.UUID) (map[uuid.UUID]decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID, salesOrderItemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]decimal.Decimal), args.Error(1)
+}
+
 // Ensure mock implements the interface
 var _ trade.SalesReturnRepository = (*MockSalesReturnRepository)(nil)
 
@@ -205,15 +221,17 @@ func TestSalesReturnHandler_Create(t *testing.T) {
 		testOrder.Status = trade.OrderStatusShipped
 		testOrder.Items = []trade.SalesOrderItem{
 			{
-				ID:          salesOrderItemID,
-				OrderID:     salesOrderID,
-				ProductID:   uuid.New(),
-				ProductName: "Test Product",
-				ProductCode: "SKU-001",
-				Quantity:    decimal.NewFromInt(10),
-				UnitPrice:   decimal.NewFromFloat(99.99),
-				Amount:      decimal.NewFromFloat(999.90),
-				Unit:        "pcs",
+				ID:             salesOrderItemID,
+				OrderID:        salesOrderID,
+				ProductID:      uuid.New(),
+				ProductName:    "Test Product",
+				ProductCode:    "SKU-001",
+				Quantity:       decimal.NewFromInt(10),
+				UnitPrice:      decimal.NewFromFloat(99.99),
+				Amount:         decimal.NewFromFloat(999.90),
+				Unit:           "pcs",
+				BaseUnit:       "pcs",
+				ConversionRate: decimal.NewFromInt(1),
 			},
 		}
 
@@ -221,6 +239,9 @@ func TestSalesReturnHandler_Create(t *testing.T) {
 
 		mockOrderRepo.On("FindByIDForTenant", mock.Anything, tenantID, salesOrderID).
 			Return(testOrder, nil)
+		// Mock the new validation method - no previous returns
+		mockReturnRepo.On("GetReturnedQuantityByOrderItems", mock.Anything, tenantID, []uuid.UUID{salesOrderItemID}).
+			Return(map[uuid.UUID]decimal.Decimal{salesOrderItemID: decimal.Zero}, nil)
 		mockReturnRepo.On("GenerateReturnNumber", mock.Anything, tenantID).
 			Return("SR-2026-00001", nil)
 		mockReturnRepo.On("Save", mock.Anything, mock.AnythingOfType("*trade.SalesReturn")).
@@ -860,15 +881,17 @@ func TestSalesReturnHandler_AddItem(t *testing.T) {
 		testOrder.Status = trade.OrderStatusShipped
 		testOrder.Items = []trade.SalesOrderItem{
 			{
-				ID:          salesOrderItemID,
-				OrderID:     salesOrderID,
-				ProductID:   uuid.New(),
-				ProductName: "Test Product",
-				ProductCode: "SKU-001",
-				Quantity:    decimal.NewFromInt(10),
-				UnitPrice:   decimal.NewFromFloat(49.99),
-				Amount:      decimal.NewFromFloat(499.90),
-				Unit:        "pcs",
+				ID:             salesOrderItemID,
+				OrderID:        salesOrderID,
+				ProductID:      uuid.New(),
+				ProductName:    "Test Product",
+				ProductCode:    "SKU-001",
+				Quantity:       decimal.NewFromInt(10),
+				UnitPrice:      decimal.NewFromFloat(49.99),
+				Amount:         decimal.NewFromFloat(499.90),
+				Unit:           "pcs",
+				BaseUnit:       "pcs",
+				ConversionRate: decimal.NewFromInt(1),
 			},
 		}
 
@@ -878,6 +901,9 @@ func TestSalesReturnHandler_AddItem(t *testing.T) {
 			Return(testReturn, nil)
 		mockOrderRepo.On("FindByIDForTenant", mock.Anything, tenantID, salesOrderID).
 			Return(testOrder, nil)
+		// Mock the new validation method - no previous returns
+		mockReturnRepo.On("GetReturnedQuantityByOrderItem", mock.Anything, tenantID, salesOrderItemID).
+			Return(map[uuid.UUID]decimal.Decimal{salesOrderItemID: decimal.Zero}, nil)
 		mockReturnRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.SalesReturn")).
 			Return(nil)
 

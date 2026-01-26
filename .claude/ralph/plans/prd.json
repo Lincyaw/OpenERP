@@ -4583,7 +4583,7 @@
       "添加 SalesReturnRepository 查询已退货数量的方法",
       "防止超额退货"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "HIGH",

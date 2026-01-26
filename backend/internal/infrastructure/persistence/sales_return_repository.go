@@ -507,3 +507,54 @@ func (r *GormSalesReturnRepository) applyFilterWithoutPagination(query *gorm.DB,
 
 // Ensure GormSalesReturnRepository implements SalesReturnRepository
 var _ trade.SalesReturnRepository = (*GormSalesReturnRepository)(nil)
+
+// GetReturnedQuantityByOrderItem returns the total quantity already returned for a specific sales order item
+// This only counts returns that are not cancelled or rejected (i.e., active returns)
+func (r *GormSalesReturnRepository) GetReturnedQuantityByOrderItem(ctx context.Context, tenantID, salesOrderItemID uuid.UUID) (map[uuid.UUID]decimal.Decimal, error) {
+	return r.GetReturnedQuantityByOrderItems(ctx, tenantID, []uuid.UUID{salesOrderItemID})
+}
+
+// GetReturnedQuantityByOrderItems returns the total quantity already returned for multiple sales order items
+// This is an optimized batch version for validating multiple items at once
+// Only counts returns that are not in CANCELLED or REJECTED status
+func (r *GormSalesReturnRepository) GetReturnedQuantityByOrderItems(ctx context.Context, tenantID uuid.UUID, salesOrderItemIDs []uuid.UUID) (map[uuid.UUID]decimal.Decimal, error) {
+	result := make(map[uuid.UUID]decimal.Decimal)
+
+	if len(salesOrderItemIDs) == 0 {
+		return result, nil
+	}
+
+	// Query to sum return quantities grouped by sales_order_item_id
+	// Excludes returns that are CANCELLED or REJECTED
+	type returnedQty struct {
+		SalesOrderItemID uuid.UUID
+		TotalReturned    decimal.Decimal
+	}
+
+	var quantities []returnedQty
+	err := r.db.WithContext(ctx).
+		Table("sales_return_items").
+		Select("sales_return_items.sales_order_item_id, COALESCE(SUM(sales_return_items.return_quantity), 0) as total_returned").
+		Joins("INNER JOIN sales_returns ON sales_return_items.return_id = sales_returns.id").
+		Where("sales_returns.tenant_id = ?", tenantID).
+		Where("sales_returns.status NOT IN ?", []string{string(trade.ReturnStatusCancelled), string(trade.ReturnStatusRejected)}).
+		Where("sales_return_items.sales_order_item_id IN ?", salesOrderItemIDs).
+		Group("sales_return_items.sales_order_item_id").
+		Scan(&quantities).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize all requested IDs with zero
+	for _, id := range salesOrderItemIDs {
+		result[id] = decimal.Zero
+	}
+
+	// Set the actual returned quantities
+	for _, q := range quantities {
+		result[q.SalesOrderItemID] = q.TotalReturned
+	}
+
+	return result, nil
+}

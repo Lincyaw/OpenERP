@@ -39,6 +39,40 @@ func (s *SalesReturnService) Create(ctx context.Context, tenantID uuid.UUID, req
 		return nil, err
 	}
 
+	// Collect all sales order item IDs to query already returned quantities
+	orderItemIDs := make([]uuid.UUID, len(req.Items))
+	for i, item := range req.Items {
+		orderItemIDs[i] = item.SalesOrderItemID
+	}
+
+	// Get already returned quantities for these items
+	alreadyReturnedQty, err := s.returnRepo.GetReturnedQuantityByOrderItems(ctx, tenantID, orderItemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate each item's return quantity against original and already returned
+	for _, item := range req.Items {
+		orderItem := order.GetItem(item.SalesOrderItemID)
+		if orderItem == nil {
+			return nil, shared.NewDomainError("ITEM_NOT_FOUND", "Sales order item not found: "+item.SalesOrderItemID.String())
+		}
+
+		// Calculate remaining returnable quantity
+		alreadyReturned := alreadyReturnedQty[item.SalesOrderItemID]
+		remainingReturnable := orderItem.Quantity.Sub(alreadyReturned)
+
+		// Check if return quantity exceeds remaining returnable quantity
+		if item.ReturnQuantity.GreaterThan(remainingReturnable) {
+			return nil, shared.NewDomainError("EXCESSIVE_RETURN_QUANTITY",
+				"Return quantity exceeds remaining returnable quantity for product "+orderItem.ProductName+
+					". Original: "+orderItem.Quantity.String()+
+					", Already returned: "+alreadyReturned.String()+
+					", Remaining: "+remainingReturnable.String()+
+					", Requested: "+item.ReturnQuantity.String())
+		}
+	}
+
 	// Generate return number
 	returnNumber, err := s.returnRepo.GenerateReturnNumber(ctx, tenantID)
 	if err != nil {
@@ -291,6 +325,26 @@ func (s *SalesReturnService) AddItem(ctx context.Context, tenantID, returnID uui
 		return nil, shared.NewDomainError("ITEM_NOT_FOUND", "Sales order item not found")
 	}
 
+	// Get already returned quantity for this item
+	alreadyReturnedQty, err := s.returnRepo.GetReturnedQuantityByOrderItem(ctx, tenantID, req.SalesOrderItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate remaining returnable quantity
+	alreadyReturned := alreadyReturnedQty[req.SalesOrderItemID]
+	remainingReturnable := orderItem.Quantity.Sub(alreadyReturned)
+
+	// Check if return quantity exceeds remaining returnable quantity
+	if req.ReturnQuantity.GreaterThan(remainingReturnable) {
+		return nil, shared.NewDomainError("EXCESSIVE_RETURN_QUANTITY",
+			"Return quantity exceeds remaining returnable quantity for product "+orderItem.ProductName+
+				". Original: "+orderItem.Quantity.String()+
+				", Already returned: "+alreadyReturned.String()+
+				", Remaining: "+remainingReturnable.String()+
+				", Requested: "+req.ReturnQuantity.String())
+	}
+
 	// Add the item
 	returnItem, err := sr.AddItem(orderItem, req.ReturnQuantity)
 	if err != nil {
@@ -329,6 +383,38 @@ func (s *SalesReturnService) UpdateItem(ctx context.Context, tenantID, returnID,
 
 	// Update quantity if provided
 	if req.ReturnQuantity != nil {
+		// Get the sales order to find original quantity
+		order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, sr.SalesOrderID)
+		if err != nil {
+			return nil, err
+		}
+
+		orderItem := order.GetItem(item.SalesOrderItemID)
+		if orderItem == nil {
+			return nil, shared.NewDomainError("ITEM_NOT_FOUND", "Original sales order item not found")
+		}
+
+		// Get already returned quantity for this item
+		alreadyReturnedQty, err := s.returnRepo.GetReturnedQuantityByOrderItem(ctx, tenantID, item.SalesOrderItemID)
+		if err != nil {
+			return nil, err
+		}
+
+		// Calculate remaining returnable quantity
+		// Subtract current item's quantity from already returned since we're replacing it
+		alreadyReturned := alreadyReturnedQty[item.SalesOrderItemID].Sub(item.ReturnQuantity)
+		remainingReturnable := orderItem.Quantity.Sub(alreadyReturned)
+
+		// Check if new return quantity exceeds remaining returnable quantity
+		if req.ReturnQuantity.GreaterThan(remainingReturnable) {
+			return nil, shared.NewDomainError("EXCESSIVE_RETURN_QUANTITY",
+				"Return quantity exceeds remaining returnable quantity for product "+orderItem.ProductName+
+					". Original: "+orderItem.Quantity.String()+
+					", Already returned (other): "+alreadyReturned.String()+
+					", Remaining: "+remainingReturnable.String()+
+					", Requested: "+req.ReturnQuantity.String())
+		}
+
 		if err := sr.UpdateItemQuantity(itemID, *req.ReturnQuantity); err != nil {
 			return nil, err
 		}

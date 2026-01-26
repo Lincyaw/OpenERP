@@ -21324,3 +21324,96 @@ Example of the bug:
 === Next Steps ===
 - Consider adding similar unit conversion support to purchase return inventory operations
 - Consider adding BaseUnitPrice field to pre-calculate base unit price at item creation time
+
+2026-01-26 - Task BUG-006: Add return quantity validation against already returned amounts
+
+=== Problem Description ===
+When creating or updating sales returns, the system did not validate whether the requested
+return quantity would exceed the original order quantity minus already returned amounts.
+This allowed over-returning goods, leading to inventory discrepancies.
+
+Example scenario that was previously allowed:
+- Original order: 100 units
+- First return: 50 units (valid)
+- Second return: 60 units (should be rejected - only 50 units remaining)
+
+=== Implementation Details ===
+
+1. **Repository Interface** (backend/internal/domain/trade/repository.go):
+   - Added `GetReturnedQuantityByOrderItem` method for single item validation
+   - Added `GetReturnedQuantityByOrderItems` method for batch validation
+   - Methods return map of salesOrderItemID → total returned quantity
+   - Only count returns that are NOT cancelled or rejected
+
+2. **Repository Implementation** (backend/internal/infrastructure/persistence/sales_return_repository.go):
+   - Implemented both methods using GORM
+   - Query aggregates return quantities from sales_return_items
+   - Joins with sales_returns to filter by tenant and exclude CANCELLED/REJECTED status
+   - Returns zero for items with no previous returns
+
+3. **Service Validation** (backend/internal/application/trade/sales_return_service.go):
+   - **Create method**: Validates each item before creating return
+     - Fetches already returned quantities for all items in batch
+     - Compares: returnQuantity <= (originalQuantity - alreadyReturned)
+     - Returns EXCESSIVE_RETURN_QUANTITY error with detailed message
+   
+   - **AddItem method**: Validates when adding single item
+     - Fetches already returned quantity for the specific item
+     - Same validation logic as Create
+   
+   - **UpdateItem method**: Validates when updating quantity
+     - Fetches already returned quantity
+     - Subtracts current item's quantity (since we're replacing it)
+     - Validates new quantity against remaining returnable amount
+
+4. **Unit Tests** (backend/internal/application/trade/sales_return_service_test.go):
+   - Added comprehensive test suite for return quantity validation
+   - Test cases cover:
+     - Allowing return when no previous returns exist
+     - Allowing return when within remaining quantity
+     - Rejecting return when exceeds remaining quantity
+     - Rejecting return when all quantity already returned
+     - AddItem validation tests
+     - UpdateItem validation tests with existing items
+
+5. **Handler Test Updates** (backend/internal/interfaces/http/handler/sales_return_test.go):
+   - Added mock implementations for new repository methods
+   - Updated Create and AddItem test cases to mock validation
+   - Fixed test data to include required BaseUnit and ConversionRate fields
+
+=== Key Files Modified ===
+- backend/internal/domain/trade/repository.go (added interface methods)
+- backend/internal/infrastructure/persistence/sales_return_repository.go (implemented methods)
+- backend/internal/application/trade/sales_return_service.go (added validation)
+- backend/internal/application/trade/sales_return_service_test.go (new test file)
+- backend/internal/interfaces/http/handler/sales_return_test.go (updated mocks and tests)
+
+=== Verification ===
+- [x] All sales return unit tests pass (12 tests)
+- [x] All sales return handler tests pass
+- [x] Go build succeeds
+- [x] Go vet passes
+- [x] New validation logic tested with edge cases
+
+=== Design Decisions ===
+1. **Batch query optimization**: Used GetReturnedQuantityByOrderItems in Create to minimize
+   database queries when validating multiple items at once
+
+2. **Status exclusion**: Only active returns (not CANCELLED/REJECTED) count toward returned
+   quantity - allows customers to retry returns if previous ones were cancelled/rejected
+
+3. **Detailed error messages**: Include original quantity, already returned, remaining, and
+   requested amounts in error message for easy debugging
+
+4. **UpdateItem special handling**: When updating an existing item, subtract current item's
+   quantity from "already returned" total to get correct remaining amount
+
+=== Error Message Format ===
+```
+Return quantity exceeds remaining returnable quantity for product [ProductName].
+Original: [X], Already returned: [Y], Remaining: [Z], Requested: [W]
+```
+
+=== Next Steps ===
+- Consider adding similar validation for purchase returns
+- Consider adding frontend UX to show remaining returnable quantity when creating returns

@@ -5,6 +5,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // SalesOrderRepository defines the interface for sales order persistence
@@ -183,6 +184,16 @@ type SalesReturnRepository interface {
 
 	// GenerateReturnNumber generates a unique return number for a tenant
 	GenerateReturnNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+
+	// GetReturnedQuantityByOrderItem returns the total quantity already returned for a specific sales order item
+	// This only counts returns that are not cancelled or rejected (i.e., active returns)
+	// Used to validate that total returned quantity does not exceed original order quantity
+	GetReturnedQuantityByOrderItem(ctx context.Context, tenantID, salesOrderItemID uuid.UUID) (map[uuid.UUID]decimal.Decimal, error)
+
+	// GetReturnedQuantityByOrderItems returns the total quantity already returned for multiple sales order items
+	// This is an optimized batch version for validating multiple items at once
+	// Statuses excluded: CANCELLED, REJECTED
+	GetReturnedQuantityByOrderItems(ctx context.Context, tenantID uuid.UUID, salesOrderItemIDs []uuid.UUID) (map[uuid.UUID]decimal.Decimal, error)
 }
 
 // PurchaseReturnRepository defines the interface for purchase return persistence
