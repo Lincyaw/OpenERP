@@ -3849,7 +3849,21 @@
       "3. 调整collapsed状态下的按钮样式",
       "4. 验证Semi Design Nav在60px宽度下的表现"
     ],
-    "passes": false
+    "passes": true,
+    "fix_notes": [
+      "Root cause: Semi Design Nav footer collapse button overflows the 60px collapsed sidebar width",
+      "The default .semi-navigation-footer has padding: 16px 24px (48px horizontal padding)",
+      "When sidebar is collapsed to 60px, the content area becomes too small for the collapse button",
+      "Fix: Added CSS overrides in Sidebar.css to constrain the footer and button within the collapsed width",
+      "Changes made:",
+      "1. Added overflow: hidden to .sidebar to prevent any content overflow",
+      "2. Added overflow: hidden to .sidebar--collapsed .sidebar__nav",
+      "3. Reduced footer padding to 16px 8px in collapsed state",
+      "4. Centered the footer content with justify-content: center",
+      "5. Set collapse button width to auto with min-width: 0",
+      "6. Reduced button padding to 8px in collapsed state",
+      "Files modified: frontend/src/components/layout/Sidebar.css"
+    ]
   },
   {
     "id": "DDD-001",

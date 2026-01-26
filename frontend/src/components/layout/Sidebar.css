@@ -9,6 +9,7 @@
   transition: width 0.2s ease;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .sidebar--collapsed {
@@ -70,6 +71,26 @@
 .sidebar__nav::-webkit-scrollbar-thumb {
   background: var(--semi-color-fill-2);
   border-radius: 2px;
+}
+
+/* Fix collapse button overflow in collapsed state */
+.sidebar--collapsed .sidebar__nav {
+  overflow: hidden;
+}
+
+.sidebar--collapsed .semi-navigation-footer {
+  padding: 16px 8px;
+  justify-content: center;
+}
+
+.sidebar--collapsed .semi-navigation-footer .semi-navigation-collapse-btn {
+  width: auto;
+  min-width: 0;
+}
+
+.sidebar--collapsed .semi-navigation-footer .semi-navigation-collapse-btn .semi-button {
+  padding: 8px;
+  min-width: auto;
 }
 
 /* Responsive - hide sidebar on mobile */
