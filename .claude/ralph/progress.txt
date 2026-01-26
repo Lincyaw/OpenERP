@@ -20673,3 +20673,98 @@ Default is "weighted_average" (moving average cost).
 - Wire up TenantRepository and StrategyProvider in dependency injection
 - Update API documentation for cost method field
 - Consider exposing cost strategy selection in admin UI
+
+2026-01-26 - Task DDD-022: Frontend Types Alignment with Domain
+
+=== Implementation Details ===
+Aligned frontend TypeScript types with backend Go domain models for type safety:
+
+1. **Regenerated API Types**: Used orval to regenerate TypeScript types from OpenAPI spec
+   - All handler DTOs are auto-generated in `frontend/src/api/models/`
+   - Status enums are generated per endpoint (e.g., GetCatalogProductsStatus)
+
+2. **Created Domain Types File**: New `frontend/src/types/domain.ts` containing:
+   - Money value object interface with helper functions
+   - Currency type (ISO 4217 codes: CNY, USD, EUR, GBP, JPY, HKD)
+   - All domain status enums aligned with backend
+
+3. **Status Enums Added**:
+   - Identity: TenantStatus, UserStatus
+   - Catalog: ProductStatus, CategoryStatus
+   - Partner: CustomerStatus, SupplierStatus, WarehouseStatus
+   - Trade: SalesOrderStatus, SalesReturnStatus, PurchaseOrderStatus, PurchaseReturnStatus
+   - Finance: ReceivableStatus, PayableStatus, VoucherStatus, ExpenseStatus, PaymentStatus, IncomeStatus, ReceiptStatus, CreditMemoStatus, DebitMemoStatus, GatewayPaymentStatus, RefundStatus
+   - Inventory: StockTakingStatus
+   - Shared: OutboxStatus, TrialBalanceStatus
+
+4. **Documentation**: Created `frontend/src/types/TYPE_MAPPING.ts` with:
+   - Complete type mapping reference between backend Go and frontend TypeScript
+   - Usage examples for Money and status enums
+   - Maintenance guidelines
+   - Troubleshooting guide
+
+=== Key Files Created/Modified ===
+
+**New Files:**
+- frontend/src/types/domain.ts - Domain value objects and status enums
+- frontend/src/types/TYPE_MAPPING.ts - Type mapping documentation
+
+**Modified Files:**
+- frontend/src/types/index.ts - Added exports for domain types
+- frontend/src/api/* - Regenerated via orval (auto-generated)
+
+=== Money Value Object Design ===
+```typescript
+interface Money {
+  amount: string  // String for decimal precision
+  currency: Currency
+}
+
+// Helper functions provided:
+- zeroMoney(currency?) - Create zero value
+- createMoney(amount, currency?) - Create from number
+- parseMoney(amount, currency?) - Create from string
+- formatMoney(money, locale?) - Format for display
+- moneyEquals(a, b) - Compare equality
+- isZeroMoney(money) - Check if zero
+```
+
+=== Status Enum Pattern ===
+All status enums follow const object pattern for type safety:
+```typescript
+export const SalesOrderStatus = {
+  DRAFT: 'DRAFT',
+  CONFIRMED: 'CONFIRMED',
+  // ...
+} as const
+
+export type SalesOrderStatus = (typeof SalesOrderStatus)[keyof typeof SalesOrderStatus]
+```
+
+This allows:
+- Type-safe comparisons: `status === SalesOrderStatus.DRAFT`
+- Exhaustive switch/case checks
+- Object.values() for dropdown options
+
+=== Verification ===
+- TypeScript type check passes: `npm run type-check`
+- Frontend build succeeds: `npm run build`
+- All auto-generated API types present
+
+=== Design Decisions ===
+1. **String for Money Amount**: Used string to preserve decimal precision from backend's decimal.Decimal
+2. **Separate Domain Types**: Created domain.ts to avoid editing auto-generated files
+3. **Const Object Pattern**: Used for enums to enable both type safety and runtime value access
+4. **Documentation in Code**: TYPE_MAPPING.ts serves as living documentation within the codebase
+
+=== Status Casing Note ===
+Some status enums use lowercase (active, inactive) matching database values, while others use UPPERCASE (DRAFT, CONFIRMED) matching domain convention. Both patterns are preserved to maintain compatibility with backend.
+
+=== Future Improvements ===
+- Add status label mapping utilities for UI display
+- Consider generating domain types from OpenAPI enum definitions
+- Add validation functions for Money (e.g., validateCurrency, validateAmount)
+
+=== Next Steps ===
+- Consider using domain types in form validation schemas
+- Update existing components to import from @/types instead of inline strings

@@ -4438,7 +4438,7 @@
       "Add TypeScript types for all domain value objects",
       "Document frontend-backend type mapping"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5 - API Contract Code Generation",
     "affectedModules": [
       "frontend/src/api/",
