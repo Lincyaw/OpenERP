@@ -21927,3 +21927,103 @@ Based on DDD aggregate boundary principles:
 === Next Steps ===
 - Consider creating a dedicated BatchQueryService for dashboard/reporting batch queries
 - Consider similar refactoring for other bounded contexts if needed
+
+2025-01-26 - DDD-H03: 成本计算逻辑移入领域服务
+
+=== Implementation Details ===
+
+### Problem Analysis
+The cost calculation strategy selection logic was in the application service (InventoryService):
+- `getCostStrategyForTenant()` method handled tenant config lookup and strategy name mapping
+- `IncreaseStock()` had branching logic: use domain service if strategy available, else use legacy method
+- This violated DDD principle: application service should only orchestrate, not contain business logic
+
+### Solution Design
+Moved strategy selection and fallback logic to InventoryDomainService following DDD principles:
+
+1. **New Domain Interface: CostStrategyResolver**
+   - Interface in domain layer for strategy resolution
+   - Application layer injects concrete implementation
+   - Domain service doesn't depend on infrastructure
+
+2. **Domain Layer Enhancements (inventory_domain_service.go)**
+   - Added `CostStrategyResolver` interface
+   - Added `MapTenantConfigToStrategyName()` for tenant config mapping
+   - Added `DefaultCostStrategyName` constant ("moving_average")
+   - Added `NewInventoryDomainServiceWithResolver()` constructor
+   - Added `SetStrategyResolver()` method
+   - Added `StockInWithStrategyName()` method - main entry point for application layer
+   - `resolveStrategy()` private method handles strategy lookup and fallback
+
+3. **Application Layer Refactoring (inventory_service.go)**
+   - Added `CostStrategyResolverAdapter` to adapt existing CostStrategyProvider
+   - Added `getDomainService()` method to lazily create domain service with resolver
+   - Added `getStrategyNameForTenant()` for orchestration (tenant lookup → strategy name)
+   - Refactored `IncreaseStock()` to use `domainService.StockInWithStrategyName()`
+   - Removed branching logic - domain service handles all cost calculation
+   - Deprecated `getCostStrategyForTenant()` (kept for backward compatibility)
+
+### Key Design Decisions
+1. **Adapter Pattern**: Used adapter to bridge existing CostStrategyProvider to new CostStrategyResolver interface
+2. **Lazy Initialization**: Domain service created lazily in `getDomainService()` to maintain backward compatibility
+3. **Strategy Fallback in Domain**: Domain service handles fallback to built-in moving average when:
+   - No resolver is set
+   - Strategy name not found in resolver
+   - Resolver returns nil
+
+### Files Modified
+- `backend/internal/domain/inventory/inventory_domain_service.go`:
+  - Added CostStrategyResolver interface
+  - Added MapTenantConfigToStrategyName() function
+  - Added DefaultCostStrategyName constant
+  - Added NewInventoryDomainServiceWithResolver() constructor
+  - Added SetStrategyResolver() method
+  - Added StockInWithStrategyName() method
+  - Added resolveStrategy() private method
+
+- `backend/internal/application/inventory/inventory_service.go`:
+  - Added CostStrategyResolverAdapter struct
+  - Added getDomainService() method
+  - Added getStrategyNameForTenant() method
+  - Updated SetStrategyProvider() to initialize domain service
+  - Refactored IncreaseStock() to use domain service
+  - Added domainService field to InventoryService struct
+  - Deprecated getCostStrategyForTenant() with deprecation notice
+
+- `backend/internal/domain/inventory/inventory_domain_service_test.go`:
+  - Added MockCostStrategyResolver for testing
+  - Added TestMapTenantConfigToStrategyName - 7 cases
+  - Added TestNewInventoryDomainServiceWithResolver
+  - Added TestInventoryDomainService_StockInWithStrategyName
+  - Added TestInventoryDomainService_StockInWithStrategyName_FallbackOnUnknownStrategy
+  - Added TestInventoryDomainService_StockInWithStrategyName_EmptyStrategyNameUsesDefault
+  - Added TestInventoryDomainService_StockInWithStrategyName_NoResolverFallback
+  - Added TestInventoryDomainService_SetStrategyResolver
+
+=== Verification ===
+- go build ./... - PASSED
+- go vet ./internal/domain/inventory/... ./internal/application/inventory/... - PASSED
+- go test ./internal/domain/inventory/... - All tests PASSED (including 8 new tests)
+- go test ./internal/application/inventory/... - All tests PASSED
+
+=== DDD Compliance ===
+Before:
+- Application service had strategy selection logic (mapping tenant config → strategy)
+- Application service had conditional branching (use strategy or fallback)
+- Domain service was only called when strategy was available
+
+After:
+- Application service only orchestrates (get tenant config → get strategy name → call domain service)
+- Domain service handles all strategy-related logic internally
+- Domain service uses resolver interface (injected by application layer)
+- Domain service handles fallback to built-in moving average
+- Clean separation: infrastructure → application → domain
+
+=== Notes ===
+- Backward compatibility maintained: existing code using CostStrategyProvider continues to work
+- getCostStrategyForTenant() deprecated but kept for potential external callers
+- New code should use getStrategyNameForTenant() + domain service pattern
+
+=== Next Steps ===
+- Consider applying similar pattern to other domain services that have strategy logic in application layer
+- Consider removing deprecated getCostStrategyForTenant() in future major version

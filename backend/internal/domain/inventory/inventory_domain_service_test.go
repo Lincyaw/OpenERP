@@ -327,3 +327,236 @@ func TestInventoryDomainService_StockIn_CostChanged_EmitsEvent(t *testing.T) {
 	}
 	assert.True(t, foundCostChanged, "Should emit InventoryCostChangedEvent when cost changes")
 }
+
+// MockCostStrategyResolver implements CostStrategyResolver for testing
+type MockCostStrategyResolver struct {
+	strategies map[string]strategy.CostCalculationStrategy
+}
+
+func (m *MockCostStrategyResolver) ResolveCostStrategy(name string) strategy.CostCalculationStrategy {
+	if m.strategies == nil {
+		return nil
+	}
+	return m.strategies[name]
+}
+
+func TestMapTenantConfigToStrategyName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "weighted_average maps to moving_average",
+			input:    "weighted_average",
+			expected: "moving_average",
+		},
+		{
+			name:     "moving_average maps to moving_average",
+			input:    "moving_average",
+			expected: "moving_average",
+		},
+		{
+			name:     "fifo maps to fifo",
+			input:    "fifo",
+			expected: "fifo",
+		},
+		{
+			name:     "lifo maps to lifo",
+			input:    "lifo",
+			expected: "lifo",
+		},
+		{
+			name:     "specific maps to specific",
+			input:    "specific",
+			expected: "specific",
+		},
+		{
+			name:     "empty string uses default",
+			input:    "",
+			expected: DefaultCostStrategyName,
+		},
+		{
+			name:     "unknown value is passed through",
+			input:    "custom_strategy",
+			expected: "custom_strategy",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := MapTenantConfigToStrategyName(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestNewInventoryDomainServiceWithResolver(t *testing.T) {
+	resolver := &MockCostStrategyResolver{
+		strategies: map[string]strategy.CostCalculationStrategy{
+			"moving_average": &MockCostStrategy{method: strategy.CostMethodMovingAverage},
+		},
+	}
+
+	service := NewInventoryDomainServiceWithResolver(resolver, nil)
+
+	assert.NotNil(t, service)
+	assert.NotNil(t, service.strategyResolver)
+	assert.Nil(t, service.costStrategy) // Direct strategy not set
+}
+
+func TestInventoryDomainService_StockInWithStrategyName(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	// Create inventory item
+	item, err := NewInventoryItem(tenantID, warehouseID, productID)
+	require.NoError(t, err)
+
+	// Set up mock strategy
+	expectedCost := decimal.NewFromFloat(15.5)
+	mockStrategy := &MockCostStrategy{
+		method:            strategy.CostMethodMovingAverage,
+		calculatedAverage: expectedCost,
+	}
+
+	// Create resolver with the strategy
+	resolver := &MockCostStrategyResolver{
+		strategies: map[string]strategy.CostCalculationStrategy{
+			"moving_average": mockStrategy,
+		},
+	}
+
+	service := NewInventoryDomainServiceWithResolver(resolver, nil)
+
+	// Perform stock-in with strategy name
+	quantity := decimal.NewFromInt(100)
+	unitCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(10.0))
+
+	result, err := service.StockInWithStrategyName(ctx, item, quantity, unitCost, nil, "moving_average")
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, item, result.Item)
+	assert.Equal(t, strategy.CostMethodMovingAverage, result.CostMethod)
+	assert.Equal(t, expectedCost.Round(4), result.CostCalculated)
+}
+
+func TestInventoryDomainService_StockInWithStrategyName_FallbackOnUnknownStrategy(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	// Create inventory item
+	item, err := NewInventoryItem(tenantID, warehouseID, productID)
+	require.NoError(t, err)
+
+	// Create resolver that doesn't have the requested strategy
+	resolver := &MockCostStrategyResolver{
+		strategies: map[string]strategy.CostCalculationStrategy{
+			"fifo": &MockCostStrategy{method: strategy.CostMethodFIFO},
+		},
+	}
+
+	service := NewInventoryDomainServiceWithResolver(resolver, nil)
+
+	// Perform stock-in with unknown strategy name
+	quantity := decimal.NewFromInt(100)
+	unitCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(10.0))
+
+	result, err := service.StockInWithStrategyName(ctx, item, quantity, unitCost, nil, "unknown_strategy")
+
+	// Should succeed using built-in moving average fallback
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, strategy.CostMethodMovingAverage, result.CostMethod)
+}
+
+func TestInventoryDomainService_StockInWithStrategyName_EmptyStrategyNameUsesDefault(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	// Create inventory item
+	item, err := NewInventoryItem(tenantID, warehouseID, productID)
+	require.NoError(t, err)
+
+	// Set up mock strategy for default name
+	expectedCost := decimal.NewFromFloat(12.0)
+	mockStrategy := &MockCostStrategy{
+		method:            strategy.CostMethodMovingAverage,
+		calculatedAverage: expectedCost,
+	}
+
+	// Create resolver with strategy mapped to default name
+	resolver := &MockCostStrategyResolver{
+		strategies: map[string]strategy.CostCalculationStrategy{
+			DefaultCostStrategyName: mockStrategy, // "moving_average"
+		},
+	}
+
+	service := NewInventoryDomainServiceWithResolver(resolver, nil)
+
+	// Perform stock-in with empty strategy name
+	quantity := decimal.NewFromInt(100)
+	unitCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(10.0))
+
+	result, err := service.StockInWithStrategyName(ctx, item, quantity, unitCost, nil, "")
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	// Should use the default strategy
+	assert.Equal(t, expectedCost.Round(4), result.CostCalculated)
+}
+
+func TestInventoryDomainService_StockInWithStrategyName_NoResolverFallback(t *testing.T) {
+	ctx := context.Background()
+	tenantID := uuid.New()
+	warehouseID := uuid.New()
+	productID := uuid.New()
+
+	// Create inventory item with existing stock
+	item, err := NewInventoryItem(tenantID, warehouseID, productID)
+	require.NoError(t, err)
+
+	// Add initial stock: 100 units at $10.00
+	initialCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(10.0))
+	err = item.IncreaseStock(decimal.NewFromInt(100), initialCost, nil)
+	require.NoError(t, err)
+
+	// Service without resolver should use built-in fallback
+	service := NewInventoryDomainServiceWithResolver(nil, nil)
+
+	// Perform stock-in
+	quantity := decimal.NewFromInt(100)
+	unitCost := valueobject.NewMoneyCNY(decimal.NewFromFloat(20.0))
+
+	result, err := service.StockInWithStrategyName(ctx, item, quantity, unitCost, nil, "any_strategy")
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	// Should use built-in moving average fallback
+	assert.Equal(t, strategy.CostMethodMovingAverage, result.CostMethod)
+
+	// Expected moving average: (100 * 10 + 100 * 20) / 200 = 15.00
+	expectedCost := decimal.NewFromFloat(15.0)
+	assert.True(t, expectedCost.Equal(result.CostCalculated), "Expected %s but got %s", expectedCost, result.CostCalculated)
+}
+
+func TestInventoryDomainService_SetStrategyResolver(t *testing.T) {
+	service := NewInventoryDomainService(nil, nil)
+
+	resolver := &MockCostStrategyResolver{
+		strategies: map[string]strategy.CostCalculationStrategy{
+			"moving_average": &MockCostStrategy{method: strategy.CostMethodMovingAverage},
+		},
+	}
+
+	service.SetStrategyResolver(resolver)
+
+	assert.Equal(t, resolver, service.strategyResolver)
+}

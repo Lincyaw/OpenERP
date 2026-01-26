@@ -4721,7 +4721,7 @@
       "应用服务只做编排工作",
       "领域服务内部处理策略回退"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "HIGH",

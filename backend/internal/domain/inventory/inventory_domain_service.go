@@ -10,12 +10,51 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// CostStrategyResolver resolves cost strategies by name.
+// This interface allows the domain service to resolve strategies without depending
+// on infrastructure details. The application layer injects a resolver that knows
+// how to look up strategies from a registry.
+type CostStrategyResolver interface {
+	// ResolveCostStrategy returns a cost strategy by name.
+	// If name is empty or strategy not found, returns nil.
+	ResolveCostStrategy(name string) strategy.CostCalculationStrategy
+}
+
+// DefaultCostStrategyName is the default cost calculation method when no strategy is specified.
+const DefaultCostStrategyName = "moving_average"
+
+// MapTenantConfigToStrategyName maps tenant configuration values to strategy names.
+// This centralizes the mapping logic in the domain layer.
+func MapTenantConfigToStrategyName(configValue string) string {
+	switch configValue {
+	case "weighted_average", "moving_average":
+		return "moving_average"
+	case "fifo":
+		return "fifo"
+	case "lifo":
+		return "lifo"
+	case "specific":
+		return "specific"
+	default:
+		if configValue != "" {
+			return configValue
+		}
+		return DefaultCostStrategyName
+	}
+}
+
 // InventoryDomainService provides domain logic that requires external strategy injection.
 // This service follows DDD principles by keeping business logic in the domain layer
 // while allowing configurable behavior through strategy pattern.
+//
+// The service handles strategy selection and fallback internally:
+// - When a strategy resolver is provided, it can resolve strategies by name
+// - When no resolver is available or strategy not found, it falls back to built-in moving average
+// - The application layer only needs to provide the strategy name (not the strategy itself)
 type InventoryDomainService struct {
-	costStrategy  strategy.CostCalculationStrategy
-	batchStrategy strategy.BatchManagementStrategy
+	costStrategy     strategy.CostCalculationStrategy
+	batchStrategy    strategy.BatchManagementStrategy
+	strategyResolver CostStrategyResolver
 }
 
 // NewInventoryDomainService creates a new InventoryDomainService with injected strategies.
@@ -28,6 +67,24 @@ func NewInventoryDomainService(
 		costStrategy:  costStrategy,
 		batchStrategy: batchStrategy,
 	}
+}
+
+// NewInventoryDomainServiceWithResolver creates a new InventoryDomainService with a strategy resolver.
+// This is the preferred constructor for production use, as it allows the domain service
+// to resolve strategies by name and handle fallback internally.
+func NewInventoryDomainServiceWithResolver(
+	strategyResolver CostStrategyResolver,
+	batchStrategy strategy.BatchManagementStrategy,
+) *InventoryDomainService {
+	return &InventoryDomainService{
+		strategyResolver: strategyResolver,
+		batchStrategy:    batchStrategy,
+	}
+}
+
+// SetStrategyResolver sets the strategy resolver for runtime configuration.
+func (s *InventoryDomainService) SetStrategyResolver(resolver CostStrategyResolver) {
+	s.strategyResolver = resolver
 }
 
 // StockInResult contains the result of a stock-in operation
@@ -169,6 +226,72 @@ func (s *InventoryDomainService) calculateMovingAverageCost(
 	}
 
 	return totalValue.Div(totalQuantity).Round(4)
+}
+
+// resolveStrategy resolves a cost strategy by name using the strategy resolver.
+// It handles the fallback logic internally:
+// 1. If strategyName is empty, uses the default strategy name
+// 2. If resolver is available, tries to resolve the strategy
+// 3. Returns nil if resolution fails (caller should use built-in fallback)
+func (s *InventoryDomainService) resolveStrategy(strategyName string) strategy.CostCalculationStrategy {
+	// Use injected strategy if set directly (legacy mode)
+	if s.costStrategy != nil {
+		return s.costStrategy
+	}
+
+	// Use resolver to get strategy by name
+	if s.strategyResolver == nil {
+		return nil
+	}
+
+	// Apply default if no name provided
+	if strategyName == "" {
+		strategyName = DefaultCostStrategyName
+	}
+
+	return s.strategyResolver.ResolveCostStrategy(strategyName)
+}
+
+// StockInWithStrategyName performs a stock increase operation using a cost strategy resolved by name.
+// This is the preferred method for application layer usage, as it delegates strategy selection
+// to the domain service. The domain service handles:
+// 1. Strategy resolution by name (using injected resolver)
+// 2. Fallback to built-in moving average if strategy not found
+// 3. Cost calculation and domain event emission
+//
+// Parameters:
+//   - ctx: context for the operation
+//   - item: the inventory item to increase stock for
+//   - quantity: the quantity to add
+//   - unitCost: the unit cost of the incoming stock
+//   - batchInfo: optional batch information
+//   - strategyName: the name of the cost strategy to use (e.g., "moving_average", "fifo")
+//     If empty, defaults to "moving_average"
+//
+// The application layer should:
+// 1. Look up the tenant's configured strategy name
+// 2. Map the tenant config value to a strategy name using MapTenantConfigToStrategyName
+// 3. Pass the strategy name to this method
+func (s *InventoryDomainService) StockInWithStrategyName(
+	ctx context.Context,
+	item *InventoryItem,
+	quantity decimal.Decimal,
+	unitCost valueobject.Money,
+	batchInfo *BatchInfo,
+	strategyName string,
+) (*StockInResult, error) {
+	// Resolve strategy by name
+	resolvedStrategy := s.resolveStrategy(strategyName)
+
+	// Temporarily set the resolved strategy for this operation
+	originalStrategy := s.costStrategy
+	s.costStrategy = resolvedStrategy
+	defer func() {
+		s.costStrategy = originalStrategy
+	}()
+
+	// Delegate to StockIn which handles validation, calculation, and events
+	return s.StockIn(ctx, item, quantity, unitCost, batchInfo)
 }
 
 // GetCostStrategy returns the current cost calculation strategy

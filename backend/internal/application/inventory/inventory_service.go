@@ -21,11 +21,33 @@ const (
 )
 
 // CostStrategyProvider provides cost strategies based on tenant configuration
+//
+// Deprecated: Use inventory.CostStrategyResolver instead, which is now the preferred
+// interface for strategy resolution in the domain layer.
 type CostStrategyProvider interface {
 	// GetCostStrategy returns the cost strategy for the given name
 	GetCostStrategy(name string) (strategy.CostCalculationStrategy, error)
 	// GetCostStrategyOrDefault returns the cost strategy for the given name, or default if not found
 	GetCostStrategyOrDefault(name string) strategy.CostCalculationStrategy
+}
+
+// CostStrategyResolverAdapter adapts a CostStrategyProvider to the domain's CostStrategyResolver interface.
+// This allows existing CostStrategyProvider implementations to work with the new domain service API.
+type CostStrategyResolverAdapter struct {
+	provider CostStrategyProvider
+}
+
+// NewCostStrategyResolverAdapter creates a new adapter from a CostStrategyProvider
+func NewCostStrategyResolverAdapter(provider CostStrategyProvider) *CostStrategyResolverAdapter {
+	return &CostStrategyResolverAdapter{provider: provider}
+}
+
+// ResolveCostStrategy implements inventory.CostStrategyResolver
+func (a *CostStrategyResolverAdapter) ResolveCostStrategy(name string) strategy.CostCalculationStrategy {
+	if a.provider == nil {
+		return nil
+	}
+	return a.provider.GetCostStrategyOrDefault(name)
 }
 
 // InventoryService handles inventory-related business operations
@@ -41,6 +63,11 @@ type CostStrategyProvider interface {
 //     The lockRepo is used for cross-aggregate READ queries (e.g., FindExpired, FindBySource)
 //     and for persisting individual lock updates. However, the aggregate root MUST be the
 //     authoritative source for all lock state changes.
+//
+// Cost Strategy Delegation:
+//   - Cost calculation strategy selection is delegated to InventoryDomainService
+//   - Application service only provides the tenant's strategy name (from tenant configuration)
+//   - Domain service handles strategy resolution and fallback internally
 type InventoryService struct {
 	inventoryRepo    inventory.InventoryItemRepository
 	lockRepo         inventory.StockLockRepository
@@ -49,6 +76,7 @@ type InventoryService struct {
 	strategyProvider CostStrategyProvider
 	eventPublisher   shared.EventPublisher
 	txScope          TransactionScope
+	domainService    *inventory.InventoryDomainService
 }
 
 // NewInventoryService creates a new InventoryService
@@ -116,9 +144,15 @@ func (s *InventoryService) SetTenantRepository(repo identity.TenantRepository) {
 	s.tenantRepo = repo
 }
 
-// SetStrategyProvider sets the strategy provider (optional, for cost calculation)
+// SetStrategyProvider sets the strategy provider (optional, for cost calculation).
+// This also initializes the domain service with a strategy resolver that wraps the provider.
 func (s *InventoryService) SetStrategyProvider(provider CostStrategyProvider) {
 	s.strategyProvider = provider
+	// Initialize domain service with strategy resolver
+	if provider != nil {
+		resolver := NewCostStrategyResolverAdapter(provider)
+		s.domainService = inventory.NewInventoryDomainServiceWithResolver(resolver, nil)
+	}
 }
 
 // SetTransactionScope sets the transaction scope for multi-step operations.
@@ -128,33 +162,56 @@ func (s *InventoryService) SetTransactionScope(scope TransactionScope) {
 	s.txScope = scope
 }
 
+// getDomainService returns the inventory domain service, creating one if not already set.
+// This ensures the domain service is always available for cost calculations.
+func (s *InventoryService) getDomainService() *inventory.InventoryDomainService {
+	if s.domainService != nil {
+		return s.domainService
+	}
+	// Create a domain service without resolver (will use built-in fallback)
+	if s.strategyProvider != nil {
+		resolver := NewCostStrategyResolverAdapter(s.strategyProvider)
+		s.domainService = inventory.NewInventoryDomainServiceWithResolver(resolver, nil)
+	} else {
+		s.domainService = inventory.NewInventoryDomainService(nil, nil)
+	}
+	return s.domainService
+}
+
+// getStrategyNameForTenant returns the cost strategy name based on tenant configuration.
+// This method only performs orchestration: looking up tenant config and mapping to strategy name.
+// The actual strategy resolution and fallback is handled by the domain service.
+func (s *InventoryService) getStrategyNameForTenant(ctx context.Context, tenantID uuid.UUID) string {
+	// Default strategy name
+	strategyName := inventory.DefaultCostStrategyName
+
+	// Try to get tenant configuration
+	if s.tenantRepo != nil {
+		tenant, err := s.tenantRepo.FindByID(ctx, tenantID)
+		if err == nil && tenant != nil && tenant.Config.CostStrategy != "" {
+			// Use domain layer mapping function
+			strategyName = inventory.MapTenantConfigToStrategyName(tenant.Config.CostStrategy)
+		}
+	}
+
+	return strategyName
+}
+
 // getCostStrategyForTenant returns the cost calculation strategy based on tenant configuration.
 // It looks up the tenant's configured cost strategy (e.g., "fifo", "weighted_average")
 // and returns the corresponding strategy from the registry.
 // Returns nil if no strategy provider is configured or tenant config lookup fails.
+//
+// Deprecated: Use getStrategyNameForTenant and domain service's StockInWithStrategyName instead.
+// This method is kept for backward compatibility with existing code paths.
 func (s *InventoryService) getCostStrategyForTenant(ctx context.Context, tenantID uuid.UUID) strategy.CostCalculationStrategy {
 	// If no strategy provider, return nil to use fallback
 	if s.strategyProvider == nil {
 		return nil
 	}
 
-	// Try to get tenant configuration
-	strategyName := "moving_average" // default
-	if s.tenantRepo != nil {
-		tenant, err := s.tenantRepo.FindByID(ctx, tenantID)
-		if err == nil && tenant != nil && tenant.Config.CostStrategy != "" {
-			// Map tenant config values to strategy names
-			// Tenant config may use "weighted_average" but strategy is "moving_average"
-			switch tenant.Config.CostStrategy {
-			case "weighted_average", "moving_average":
-				strategyName = "moving_average"
-			case "fifo":
-				strategyName = "fifo"
-			default:
-				strategyName = tenant.Config.CostStrategy
-			}
-		}
-	}
+	// Get strategy name using the new method
+	strategyName := s.getStrategyNameForTenant(ctx, tenantID)
 
 	return s.strategyProvider.GetCostStrategyOrDefault(strategyName)
 }
@@ -289,6 +346,10 @@ func (s *InventoryService) GetTotalValueByWarehouse(ctx context.Context, tenantI
 }
 
 // IncreaseStock increases stock for a warehouse-product combination
+//
+// This method follows the DDD pattern where:
+// - Application service (this) handles orchestration: validation, data retrieval, persistence, events
+// - Domain service handles business logic: cost strategy resolution, cost calculation, domain events
 func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID, req IncreaseStockRequest) (*InventoryItemResponse, error) {
 	// Validate source type
 	sourceType := inventory.SourceType(req.SourceType)
@@ -302,12 +363,15 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		batchInfo = inventory.NewBatchInfo(req.BatchNumber, nil, req.ExpiryDate)
 	}
 
-	// Get cost strategy from tenant configuration
-	costStrategy := s.getCostStrategyForTenant(ctx, tenantID)
-	costMethod := string(strategy.CostMethodMovingAverage) // default
+	// Get strategy name from tenant configuration (application layer orchestration)
+	strategyName := s.getStrategyNameForTenant(ctx, tenantID)
+
+	// Get domain service (handles strategy resolution and fallback internally)
+	domainService := s.getDomainService()
 
 	var response *InventoryItemResponse
 	var domainEvents []shared.DomainEvent
+	var costMethod string
 
 	// Core operation function that can be executed within a transaction
 	executeOperation := func(invRepo inventory.InventoryItemRepository, txRepo inventory.InventoryTransactionRepository) error {
@@ -320,23 +384,14 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		// Record balance before
 		balanceBefore := item.AvailableQuantity
 
-		// Use domain service with injected strategy if available
-		if costStrategy != nil {
-			domainService := inventory.NewInventoryDomainService(costStrategy, nil)
-			unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
-
-			result, err := domainService.StockIn(ctx, item, req.Quantity, unitCostMoney, batchInfo)
-			if err != nil {
-				return err
-			}
-			costMethod = string(result.CostMethod)
-		} else {
-			// Fallback to legacy method (uses built-in moving average)
-			unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
-			if err := item.IncreaseStock(req.Quantity, unitCostMoney, batchInfo); err != nil {
-				return err
-			}
+		// Use domain service for cost calculation with strategy name
+		// Domain service handles strategy resolution and fallback internally
+		unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+		result, err := domainService.StockInWithStrategyName(ctx, item, req.Quantity, unitCostMoney, batchInfo, strategyName)
+		if err != nil {
+			return err
 		}
+		costMethod = string(result.CostMethod)
 
 		// Save with optimistic locking
 		if err := invRepo.SaveWithLock(ctx, item); err != nil {
