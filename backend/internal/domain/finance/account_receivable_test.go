@@ -797,14 +797,12 @@ func TestAccountReceivable_SetRemark(t *testing.T) {
 
 func TestPaymentRecord(t *testing.T) {
 	t.Run("creates payment record correctly", func(t *testing.T) {
-		receivableID := uuid.New()
 		voucherID := uuid.New()
 		amount := valueobject.NewMoneyCNYFromFloat(500.00)
 
-		record := NewPaymentRecord(receivableID, voucherID, amount, "Test payment")
+		record := NewPaymentRecord(voucherID, amount, "Test payment")
 
 		assert.NotEqual(t, uuid.Nil, record.ID)
-		assert.Equal(t, receivableID, record.ReceivableID)
 		assert.Equal(t, voucherID, record.ReceiptVoucherID)
 		assert.True(t, record.Amount.Equal(decimal.NewFromFloat(500.00)))
 		assert.Equal(t, "Test payment", record.Remark)
@@ -812,7 +810,7 @@ func TestPaymentRecord(t *testing.T) {
 	})
 
 	t.Run("GetAmountMoney returns correct value", func(t *testing.T) {
-		record := NewPaymentRecord(uuid.New(), uuid.New(), valueobject.NewMoneyCNYFromFloat(750.50), "")
+		record := NewPaymentRecord(uuid.New(), valueobject.NewMoneyCNYFromFloat(750.50), "")
 
 		money := record.GetAmountMoney()
 		assert.True(t, money.Amount().Equal(decimal.NewFromFloat(750.50)))
@@ -924,9 +922,64 @@ func TestTableNames(t *testing.T) {
 		ar := &AccountReceivable{}
 		assert.Equal(t, "account_receivables", ar.TableName())
 	})
+}
 
-	t.Run("PaymentRecord table name", func(t *testing.T) {
-		pr := &PaymentRecord{}
-		assert.Equal(t, "receivable_payment_records", pr.TableName())
+// ============================================
+// PaymentRecords JSONB Tests
+// ============================================
+
+func TestPaymentRecords_Scan(t *testing.T) {
+	t.Run("scans valid JSON", func(t *testing.T) {
+		jsonData := `[{"id":"550e8400-e29b-41d4-a716-446655440000","receipt_voucher_id":"550e8400-e29b-41d4-a716-446655440001","amount":"100.50","applied_at":"2024-01-15T10:30:00Z","remark":"Test payment"}]`
+		var records PaymentRecords
+		err := records.Scan([]byte(jsonData))
+		require.NoError(t, err)
+		require.Len(t, records, 1)
+		assert.True(t, records[0].Amount.Equal(decimal.NewFromFloat(100.50)))
+		assert.Equal(t, "Test payment", records[0].Remark)
+	})
+
+	t.Run("scans empty JSON array", func(t *testing.T) {
+		var records PaymentRecords
+		err := records.Scan([]byte("[]"))
+		require.NoError(t, err)
+		assert.Empty(t, records)
+	})
+
+	t.Run("scans nil value", func(t *testing.T) {
+		var records PaymentRecords
+		err := records.Scan(nil)
+		require.NoError(t, err)
+		assert.Empty(t, records)
+	})
+
+	t.Run("scans string value", func(t *testing.T) {
+		var records PaymentRecords
+		err := records.Scan("[]")
+		require.NoError(t, err)
+		assert.Empty(t, records)
+	})
+}
+
+func TestPaymentRecords_Value(t *testing.T) {
+	t.Run("returns empty array for nil", func(t *testing.T) {
+		var records PaymentRecords
+		val, err := records.Value()
+		require.NoError(t, err)
+		assert.Equal(t, "[]", val)
+	})
+
+	t.Run("returns JSON for records", func(t *testing.T) {
+		records := PaymentRecords{
+			{
+				ID:               uuid.MustParse("550e8400-e29b-41d4-a716-446655440000"),
+				ReceiptVoucherID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440001"),
+				Amount:           decimal.NewFromFloat(200.00),
+				Remark:           "Test",
+			},
+		}
+		val, err := records.Value()
+		require.NoError(t, err)
+		assert.NotNil(t, val)
 	})
 }

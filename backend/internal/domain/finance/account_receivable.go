@@ -1,6 +1,9 @@
 package finance
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -65,25 +68,55 @@ func (s SourceType) IsValid() bool {
 }
 
 // PaymentRecord represents a payment applied to the receivable
+// This is a value object within the AccountReceivable aggregate, stored as JSONB
 type PaymentRecord struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	ReceivableID     uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ReceiptVoucherID uuid.UUID       `gorm:"type:uuid;not null;index"` // Reference to the receipt voucher
-	Amount           decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AppliedAt        time.Time       `gorm:"not null"`
-	Remark           string          `gorm:"type:varchar(500)"`
+	ID               uuid.UUID       `json:"id"`
+	ReceiptVoucherID uuid.UUID       `json:"receipt_voucher_id"` // Reference to the receipt voucher
+	Amount           decimal.Decimal `json:"amount"`
+	AppliedAt        time.Time       `json:"applied_at"`
+	Remark           string          `json:"remark,omitempty"`
 }
 
-// TableName returns the table name for GORM
-func (PaymentRecord) TableName() string {
-	return "receivable_payment_records"
+// PaymentRecords is a slice of PaymentRecord that implements GORM Scanner/Valuer for JSONB storage
+type PaymentRecords []PaymentRecord
+
+// Value implements driver.Valuer interface for GORM to store as JSONB
+func (p PaymentRecords) Value() (driver.Value, error) {
+	if p == nil {
+		return "[]", nil
+	}
+	return json.Marshal(p)
+}
+
+// Scan implements sql.Scanner interface for GORM to read from JSONB
+func (p *PaymentRecords) Scan(value interface{}) error {
+	if value == nil {
+		*p = PaymentRecords{}
+		return nil
+	}
+
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return errors.New("failed to scan PaymentRecords: unsupported type")
+	}
+
+	if len(bytes) == 0 {
+		*p = PaymentRecords{}
+		return nil
+	}
+
+	return json.Unmarshal(bytes, p)
 }
 
 // NewPaymentRecord creates a new payment record
-func NewPaymentRecord(receivableID, voucherID uuid.UUID, amount valueobject.Money, remark string) *PaymentRecord {
+func NewPaymentRecord(voucherID uuid.UUID, amount valueobject.Money, remark string) *PaymentRecord {
 	return &PaymentRecord{
 		ID:               uuid.New(),
-		ReceivableID:     receivableID,
 		ReceiptVoucherID: voucherID,
 		Amount:           amount.Amount(),
 		AppliedAt:        time.Now(),
@@ -111,7 +144,7 @@ type AccountReceivable struct {
 	OutstandingAmount decimal.Decimal  `gorm:"type:decimal(18,4);not null;index"` // Remaining amount due
 	Status            ReceivableStatus `gorm:"type:varchar(20);not null;default:'PENDING';index"`
 	DueDate           *time.Time       `gorm:"index"` // When payment is expected
-	PaymentRecords    []PaymentRecord  `gorm:"foreignKey:ReceivableID;references:ID"`
+	PaymentRecords    PaymentRecords   `gorm:"type:jsonb;default:'[]'"`
 	Remark            string           `gorm:"type:text"`
 	PaidAt            *time.Time       // When fully paid
 	ReversedAt        *time.Time       // When reversed
@@ -176,7 +209,7 @@ func NewAccountReceivable(
 		OutstandingAmount:   totalAmount.Amount(),
 		Status:              ReceivableStatusPending,
 		DueDate:             dueDate,
-		PaymentRecords:      make([]PaymentRecord, 0),
+		PaymentRecords:      PaymentRecords{},
 	}
 
 	ar.AddDomainEvent(NewAccountReceivableCreatedEvent(ar))
@@ -201,7 +234,7 @@ func (ar *AccountReceivable) ApplyPayment(amount valueobject.Money, voucherID uu
 	}
 
 	// Create payment record
-	record := NewPaymentRecord(ar.ID, voucherID, amount, remark)
+	record := NewPaymentRecord(voucherID, amount, remark)
 	ar.PaymentRecords = append(ar.PaymentRecords, *record)
 
 	// Update amounts

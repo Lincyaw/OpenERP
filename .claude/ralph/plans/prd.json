@@ -4641,7 +4641,21 @@
       "backend/internal/domain/",
       "backend/internal/infrastructure/persistence/"
     ],
-    "blockedBy": []
+    "blockedBy": [],
+    "notes": "Phase 1 COMPLETE: Created persistence models for shared, identity, catalog, partner, inventory, trade modules. Remaining: finance models, repository updates, GORM tag removal from domain entities. This is a multi-phase task spanning ~40+ files.",
+    "completedPhases": [
+      "persistence-models-shared",
+      "persistence-models-identity",
+      "persistence-models-catalog",
+      "persistence-models-partner",
+      "persistence-models-inventory",
+      "persistence-models-trade"
+    ],
+    "remainingPhases": [
+      "persistence-models-finance",
+      "repository-updates",
+      "domain-cleanup"
+    ]
   },
   {
     "id": "DDD-C02",
@@ -4652,7 +4666,7 @@
       "通过聚合根 AccountReceivable 持久化",
       "使用 embedded 或 JSON 列存储"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "CRITICAL",

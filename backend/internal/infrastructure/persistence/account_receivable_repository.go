@@ -28,7 +28,6 @@ func NewGormAccountReceivableRepository(db *gorm.DB) *GormAccountReceivableRepos
 func (r *GormAccountReceivableRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.AccountReceivable, error) {
 	var receivable finance.AccountReceivable
 	if err := r.db.WithContext(ctx).
-		Preload("PaymentRecords").
 		First(&receivable, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
@@ -42,7 +41,6 @@ func (r *GormAccountReceivableRepository) FindByID(ctx context.Context, id uuid.
 func (r *GormAccountReceivableRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.AccountReceivable, error) {
 	var receivable finance.AccountReceivable
 	if err := r.db.WithContext(ctx).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND id = ?", tenantID, id).
 		First(&receivable).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,7 +55,6 @@ func (r *GormAccountReceivableRepository) FindByIDForTenant(ctx context.Context,
 func (r *GormAccountReceivableRepository) FindByReceivableNumber(ctx context.Context, tenantID uuid.UUID, receivableNumber string) (*finance.AccountReceivable, error) {
 	var receivable finance.AccountReceivable
 	if err := r.db.WithContext(ctx).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND receivable_number = ?", tenantID, receivableNumber).
 		First(&receivable).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -72,7 +69,6 @@ func (r *GormAccountReceivableRepository) FindByReceivableNumber(ctx context.Con
 func (r *GormAccountReceivableRepository) FindBySource(ctx context.Context, tenantID uuid.UUID, sourceType finance.SourceType, sourceID uuid.UUID) (*finance.AccountReceivable, error) {
 	var receivable finance.AccountReceivable
 	if err := r.db.WithContext(ctx).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND source_type = ? AND source_id = ?", tenantID, sourceType, sourceID).
 		First(&receivable).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -87,7 +83,6 @@ func (r *GormAccountReceivableRepository) FindBySource(ctx context.Context, tena
 func (r *GormAccountReceivableRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
 	var receivables []finance.AccountReceivable
 	query := r.db.WithContext(ctx).Model(&finance.AccountReceivable{}).
-		Preload("PaymentRecords").
 		Where("tenant_id = ?", tenantID)
 	query = r.applyReceivableFilter(query, filter)
 
@@ -101,7 +96,6 @@ func (r *GormAccountReceivableRepository) FindAllForTenant(ctx context.Context, 
 func (r *GormAccountReceivableRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
 	var receivables []finance.AccountReceivable
 	query := r.db.WithContext(ctx).Model(&finance.AccountReceivable{}).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID)
 	query = r.applyReceivableFilter(query, filter)
 
@@ -115,7 +109,6 @@ func (r *GormAccountReceivableRepository) FindByCustomer(ctx context.Context, te
 func (r *GormAccountReceivableRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status finance.ReceivableStatus, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
 	var receivables []finance.AccountReceivable
 	query := r.db.WithContext(ctx).Model(&finance.AccountReceivable{}).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND status = ?", tenantID, status)
 	query = r.applyReceivableFilter(query, filter)
 
@@ -129,7 +122,6 @@ func (r *GormAccountReceivableRepository) FindByStatus(ctx context.Context, tena
 func (r *GormAccountReceivableRepository) FindOutstanding(ctx context.Context, tenantID, customerID uuid.UUID) ([]finance.AccountReceivable, error) {
 	var receivables []finance.AccountReceivable
 	if err := r.db.WithContext(ctx).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND customer_id = ? AND status IN ?", tenantID, customerID,
 			[]finance.ReceivableStatus{finance.ReceivableStatusPending, finance.ReceivableStatusPartial}).
 		Order("created_at ASC").
@@ -143,7 +135,6 @@ func (r *GormAccountReceivableRepository) FindOutstanding(ctx context.Context, t
 func (r *GormAccountReceivableRepository) FindOverdue(ctx context.Context, tenantID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
 	var receivables []finance.AccountReceivable
 	query := r.db.WithContext(ctx).Model(&finance.AccountReceivable{}).
-		Preload("PaymentRecords").
 		Where("tenant_id = ? AND due_date < ? AND status IN ?", tenantID, time.Now(),
 			[]finance.ReceivableStatus{finance.ReceivableStatusPending, finance.ReceivableStatusPartial})
 	query = r.applyReceivableFilter(query, filter)

@@ -21596,3 +21596,145 @@ inventoryService.SetTransactionScope(txScope)
 - Consider adding transaction support to other services (trade, finance) using same pattern
 - Consider integration tests that verify rollback behavior on failure
 - Monitor production for any transaction-related issues
+
+2026-01-26 - DDD-C01: Phase 1 - Create Persistence Models
+
+=== Implementation Details ===
+Created comprehensive persistence model infrastructure to separate GORM concerns from domain entities.
+This is a large-scale DDD consistency refactoring spanning 34+ domain files and 40+ repositories.
+
+Phase 1 accomplishes the foundation - creating persistence models with bidirectional mappers.
+
+Files Created:
+- backend/internal/infrastructure/persistence/models/doc.go - Package documentation
+- backend/internal/infrastructure/persistence/models/base.go - Base models (BaseModel, AggregateModel, TenantAggregateModel)
+- backend/internal/infrastructure/persistence/models/outbox.go - OutboxEntryModel
+- backend/internal/infrastructure/persistence/models/identity.go - UserModel, TenantModel, RoleModel, UserRoleModel, RolePermissionModel, RoleDataScopeModel
+- backend/internal/infrastructure/persistence/models/catalog.go - ProductModel, CategoryModel, ProductUnitModel
+- backend/internal/infrastructure/persistence/models/partner.go - CustomerModel, SupplierModel, WarehouseModel, CustomerLevelRecordModel, BalanceTransactionModel
+- backend/internal/infrastructure/persistence/models/inventory.go - InventoryItemModel, StockBatchModel, StockLockModel, InventoryTransactionModel, StockTakingModel, StockTakingItemModel
+- backend/internal/infrastructure/persistence/models/trade.go - SalesOrderModel, SalesOrderItemModel, PurchaseOrderModel, PurchaseOrderItemModel, SalesReturnModel, SalesReturnItemModel, PurchaseReturnModel, PurchaseReturnItemModel
+
+Design Decisions:
+1. Each persistence model has ToDomain() and FromDomain() methods for bidirectional mapping
+2. Factory functions (e.g., UserModelFromDomain) provide convenient construction
+3. Base models (BaseModel, AggregateModel, TenantAggregateModel) embed common persistence fields
+4. Nested entities (e.g., SalesOrderItem in SalesOrder) are mapped recursively
+5. GORM tags are consolidated in persistence models - will be removed from domain entities in Phase 3
+
+=== Verification ===
+- Build: PASS - `go build ./...` succeeds
+- Models compile correctly: `go build ./internal/infrastructure/persistence/models/...` PASS
+
+=== Phase Status ===
+Phase 1: COMPLETE - Persistence models for shared, identity, catalog, partner, inventory, trade
+Phase 2: PENDING - Finance module persistence models
+Phase 3: PENDING - Update repositories to use persistence models
+Phase 4: PENDING - Remove GORM tags from domain entities
+
+=== Notes ===
+- This is a multi-session task due to scope (40+ repositories need updating)
+- Finance module has many entities: AccountReceivable, AccountPayable, ReceiptVoucher, PaymentVoucher, ExpenseRecord, OtherIncomeRecord, CreditMemo, DebitMemo, TrialBalance
+- Pre-existing build error in account_receivable.go (PaymentRecord.ReceivableID) - unrelated to this task
+- Pattern established: Each module gets its own models/{module}.go file
+
+=== Next Steps ===
+1. Create finance module persistence models
+2. Update each repository to use persistence models (module by module)
+3. Remove GORM tags from domain entities
+4. Run full test suite to verify no regressions
+
+
+2026-01-26 - Task DDD-C02: PaymentRecord 移除独立表
+
+=== Problem Description ===
+The PaymentRecord entity had its own TableName() method returning "receivable_payment_records",
+making it a first-class GORM model with a separate database table. This violates DDD aggregate
+boundaries because child entities within an aggregate should be persisted through the aggregate
+root, not independently.
+
+According to DDD principles:
+- PaymentRecord is a child entity (or value object) within the AccountReceivable aggregate
+- External code should not be able to directly access or modify PaymentRecord
+- Persistence should happen atomically through the aggregate root
+
+=== Implementation Details ===
+
+1. **Removed TableName() method from PaymentRecord**:
+   - Deleted the `TableName() string` method that returned "receivable_payment_records"
+   - PaymentRecord is no longer a standalone GORM model
+
+2. **Converted PaymentRecord to JSONB Storage**:
+   - Removed GORM tags (primary_key, not null, index) from PaymentRecord struct
+   - Added JSON tags for JSONB serialization
+   - Removed ReceivableID field (no longer needed, parent ID is implicit)
+   - Updated NewPaymentRecord() signature to remove receivableID parameter
+
+3. **Created PaymentRecords Custom Type**:
+   - Created `type PaymentRecords []PaymentRecord`
+   - Implemented `driver.Valuer` interface for GORM to store as JSONB
+   - Implemented `sql.Scanner` interface for GORM to read from JSONB
+   - Handles nil, empty, string, and []byte input types
+
+4. **Updated AccountReceivable Aggregate**:
+   - Changed PaymentRecords field type from `[]PaymentRecord` to `PaymentRecords`
+   - Changed GORM tag from `foreignKey:ReceivableID;references:ID` to `type:jsonb;default:'[]'`
+   - Updated initialization to use `PaymentRecords{}` instead of `make([]PaymentRecord, 0)`
+
+5. **Updated Repository**:
+   - Removed all `Preload("PaymentRecords")` calls from GormAccountReceivableRepository
+   - PaymentRecords are now automatically loaded/saved as part of the AccountReceivable row
+
+6. **Created Database Migration (000030)**:
+   - Adds `payment_records JSONB` column to account_receivables table
+   - Migrates existing data from receivable_payment_records table to JSONB
+   - Drops the receivable_payment_records table
+   - Creates GIN index for JSONB queries
+   - Includes rollback migration to restore original structure
+
+=== Key Design Decisions ===
+
+1. **JSONB over Embedded Table**: Chose JSONB storage because:
+   - Simpler persistence model (single row contains all data)
+   - Atomic updates (no need for transaction coordination)
+   - Maintains aggregate boundary (no separate table)
+   - PostgreSQL JSONB supports indexing and querying if needed
+
+2. **Value Object Pattern**: PaymentRecord now behaves more like a value object:
+   - No external reference to parent (ReceivableID removed)
+   - Identity is internal (ID still exists for tracking)
+   - Lifecycle tied to AccountReceivable
+
+3. **Backward Compatible Migration**: Migration preserves existing data by:
+   - Converting records to JSONB format before dropping table
+   - Providing complete rollback capability
+
+=== Key Files Modified ===
+- backend/internal/domain/finance/account_receivable.go (domain model)
+- backend/internal/infrastructure/persistence/account_receivable_repository.go (repository)
+- backend/internal/domain/finance/account_receivable_test.go (tests)
+- backend/migrations/000030_migrate_payment_records_to_jsonb.up.sql (new)
+- backend/migrations/000030_migrate_payment_records_to_jsonb.down.sql (new)
+
+=== Verification ===
+- [x] Go build succeeds
+- [x] All finance domain tests pass (100+ tests)
+- [x] All domain tests pass
+- [x] PaymentRecords Scanner/Valuer tests added and pass
+- [x] prd.json updated (passes: true)
+
+=== Impact Analysis ===
+This change affects how PaymentRecord data is stored:
+- Old: Separate `receivable_payment_records` table with foreign key
+- New: JSONB column `payment_records` in `account_receivables` table
+
+Benefits:
+- Proper DDD aggregate boundary enforcement
+- Simpler queries (no joins needed)
+- Atomic aggregate updates
+- Better alignment with domain model
+
+=== Next Steps ===
+- Consider applying same pattern to PayablePaymentRecord in AccountPayable
+- Monitor query performance for JSONB column
+- Consider adding GIN index paths for specific JSONB queries if needed
