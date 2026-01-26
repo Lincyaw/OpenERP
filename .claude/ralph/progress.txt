@@ -24876,3 +24876,108 @@ All 22 Douyin-related test functions pass with 60+ test cases covering:
 - P7-BE-014: 订单同步定时任务 - Implement order sync scheduled task that uses this adapter
 - Consider adding rate limiting handling for production use
 - Add integration tests with mock Douyin API server
+
+2027-01-27 - P7-BE-014: Order Sync Scheduled Task Implementation
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `backend/internal/infrastructure/scheduler/order_sync_scheduler.go` - Main order sync scheduler
+   - OrderSyncJob struct with status tracking (PENDING, RUNNING, SUCCESS, PARTIAL, FAILED, CANCELLED)
+   - Exponential backoff retry logic (base delay * 2^(retryCount-1), capped at 30 minutes)
+   - Job history tracking with tenant filtering
+   - Worker pool for concurrent job execution
+   - OrderSyncSchedulerConfig with validation
+
+2. `backend/internal/infrastructure/scheduler/order_sync_cron_trigger.go` - Cron trigger for scheduled syncs
+   - OrderSyncConfigProvider interface for tenant sync configurations
+   - Automatic job scheduling based on configured sync intervals
+   - Last sync time tracking to avoid duplicate scheduling
+   - Manual sync trigger support (single platform or all platforms)
+   - GetSchedulerStats() for monitoring
+
+3. `backend/internal/infrastructure/scheduler/order_sync_executor.go` - Job executor implementation
+   - Pulls orders from platform with pagination
+   - Handles rate limiting and transient errors
+   - Callback hooks (onOrderPulled, onSyncCompleted) for extensibility
+   - Order skip logic for cancelled/closed orders
+   - Updates last sync time after successful completion
+
+4. `backend/internal/infrastructure/scheduler/errors.go` - Extended with order sync errors
+   - ErrInvalidConfig, ErrOrderSyncFailed, ErrOrderSyncTimeout
+   - ErrOrderSyncPlatformUnavailable, ErrOrderSyncRateLimited
+   - ErrOrderSyncInvalidTimeRange, ErrOrderSyncNoEnabledPlatforms
+   - ErrOrderSyncConfigNotFound, ErrOrderSyncAlreadyInProgress
+
+5. `backend/internal/infrastructure/scheduler/order_sync_scheduler_test.go` - Comprehensive unit tests
+   - 25+ test functions covering all major functionality
+   - Mock executors and config providers
+   - Tests for job lifecycle, retry logic, history tracking
+   - Tests for cron trigger scheduling and manual triggers
+
+**Key Design Decisions:**
+1. **Worker Pool Pattern**: Configurable concurrent workers (default: 5) for parallel job execution
+2. **Exponential Backoff**: Retry delays double each attempt, capped at 30 minutes
+3. **Lookback Buffer**: 5-minute lookback to ensure no orders are missed between syncs
+4. **Job History**: In-memory history (100 jobs max) for monitoring and debugging
+5. **Callback Hooks**: Extensible design allowing custom order processing logic
+6. **Thread Safety**: Mutex protection for job queue, history, and config maps
+
+**Configuration Options (OrderSyncSchedulerConfig):**
+- MaxConcurrentJobs: 5 (concurrent worker count)
+- JobTimeout: 15 minutes (max job execution time)
+- RetryAttempts: 3 (max retry count)
+- RetryDelay: 1 minute (base delay for exponential backoff)
+- DefaultSyncInterval: 15 minutes
+- MinSyncInterval: 5 minutes
+- MaxSyncInterval: 60 minutes
+- LookbackDuration: 24 hours (for first-time sync)
+
+**Configuration Options (OrderSyncCronTriggerConfig):**
+- CheckInterval: 1 minute (how often to check for jobs to schedule)
+- DefaultSyncIntervalMinutes: 15 (if not configured per-tenant)
+- LookbackMinutes: 5 (buffer to avoid missing orders)
+
+**API for Consumers:**
+```go
+// Create scheduler
+scheduler, _ := NewOrderSyncScheduler(config, executor, logger)
+scheduler.Start(ctx)
+
+// Schedule manual sync
+scheduler.ScheduleSync(tenantID, platformCode, startTime, endTime)
+
+// Create cron trigger for automatic scheduling
+trigger := NewOrderSyncCronTrigger(triggerConfig, scheduler, configProvider, logger)
+trigger.Start(ctx)
+
+// Manual trigger
+trigger.TriggerManualSync(ctx, tenantID, platformCode, startTime, endTime)
+trigger.TriggerManualSyncForAllPlatforms(ctx, tenantID, startTime, endTime)
+
+// Get history
+history := scheduler.GetJobHistory(10)
+tenantHistory := scheduler.GetJobHistoryByTenant(tenantID, 10)
+```
+
+=== Verification ===
+
+- Go build: PASS
+- Go vet: PASS
+- Unit tests: 25+ tests, all PASS
+- Tests cover: job lifecycle, retry logic, cron scheduling, manual triggers, error handling
+
+=== Notes ===
+
+- This task implements the order sync scheduled task (订单同步定时任务)
+- The implementation follows the existing scheduler pattern used for report generation
+- Integrates with EcommercePlatform adapters (Taobao, Douyin) from previous tasks
+- The OrderSyncConfigProvider interface allows flexible configuration storage (database/config file)
+- Job history is in-memory for simplicity; production may want database persistence
+
+=== Next Steps ===
+
+- P7-BE-015: Implement persistent job storage (optional)
+- Future: Add HTTP handlers for manual sync trigger API
+- Future: Implement inventory sync scheduled task using same pattern
+- Future: Add metrics/monitoring integration (Prometheus)
