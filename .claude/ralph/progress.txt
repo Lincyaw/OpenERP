@@ -25219,3 +25219,95 @@ Files Modified/Created:
 - P7-BE-XXX: Implement platform product fetch integration
 - Future: Add sync history/logs view per mapping
 - Future: Add auto-matching by product code/barcode
+
+---
+
+2025-01-27 - Task P7-FE-004: 平台订单同步状态页面 (Platform Order Sync Status Page)
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `frontend/src/pages/system/PlatformSyncStatus.tsx` - Main sync status page component
+   - Tabbed interface with Overview and Sync History tabs
+   - Overview tab shows platform cards with sync status for each configured platform
+   - History tab shows paginated sync history table with filtering
+   - Support for 6 e-commerce platforms: Taobao/Tmall, Douyin, JD, PDD, WeChat, Kuaishou
+   - Sync status display (pending, running, success, failed, cancelled)
+   - Progress indicators showing items synced/total with failed count
+   - Manual sync trigger buttons with confirmation popups
+   - Sync detail modal showing full sync record information with timeline
+   - Relative time formatting (just now, X minutes ago, X hours ago)
+   - Platform-specific status cards showing last sync times and next scheduled sync
+
+2. `frontend/src/pages/system/PlatformSyncStatus.css` - Styling for the sync status page
+   - Responsive grid layout for platform cards
+   - Platform icon styling with brand colors
+   - Status tag styling
+   - Modal styles for sync detail view
+   - Mobile-responsive breakpoints at 1200px, 768px, 480px
+
+**Files Modified:**
+1. `frontend/src/router/routes.tsx` - Added route for /system/platform-sync
+   - Added lazy-loaded PlatformSyncStatusPage component
+   - Added route entry to appRoutes under System module (order: 6)
+   - Added case to getProtectedRouteElement switch statement
+   - Route requires TENANT_UPDATE permission
+
+2. `frontend/src/locales/zh-CN/system.json` - Chinese translations (syncStatus section)
+   - Added complete translation keys for all UI elements
+   - Platform name translations
+   - Status, trigger, sync type labels
+   - Confirmation dialogs and messages
+
+3. `frontend/src/locales/en-US/system.json` - English translations (syncStatus section)
+   - Mirror of Chinese translations in English
+
+**Key Design Decisions:**
+1. **Tab-based interface**: Separates overview (status cards) from history (detailed table)
+2. **Platform cards**: Each platform gets its own card showing current sync status
+3. **Manual sync confirmation**: Requires user confirmation before triggering sync
+4. **Sync history table**: Sortable, paginated table with all sync records
+5. **Detail modal**: Shows complete sync information including timeline
+6. **i18n-compliant**: All strings use translation keys, no hardcoded Chinese text
+7. **Mock data**: Currently uses mock data generators; TODO comments mark API integration points
+
+**Features Implemented:**
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 展示同步历史 (Sync history) | ✅ | Paginated table with filtering |
+| 显示同步状态 (Sync status) | ✅ | Per-platform status cards |
+| 支持手动同步 (Manual sync) | ✅ | Buttons with confirmation |
+
+=== Verification ===
+
+- TypeScript type check: PASS (tsc --noEmit)
+- ESLint: PASS (no errors or warnings)
+- Prettier formatting: PASS (auto-formatted)
+- Route configuration: Verified accessible at /system/platform-sync
+- Translations: Both zh-CN and en-US complete
+
+=== Code Review Results ===
+
+Code review performed by code-reviewer agent:
+- Fixed CRITICAL issue: Hardcoded Chinese platform names replaced with translation keys
+- Fixed proper useEffect/useCallback dependency ordering
+- All HIGH priority issues addressed
+
+=== Notes ===
+
+- Backend API integration is stubbed (TODO comments) - ready for actual API when available
+- Mock data simulates random sync statuses and histories for demo purposes
+- The page follows the project's design system with Semi Design components
+- Accessibility: ARIA labels on buttons, keyboard navigation, focus states
+- The platform codes match exactly with backend domain model
+
+=== Requirements Satisfied ===
+✅ 展示同步历史 - Paginated sync history table with all records
+✅ 显示同步状态 - Platform cards showing current sync status for each platform
+✅ 支持手动同步 - Manual sync buttons with confirmation dialogs
+
+=== Next Steps ===
+- P7-BE-XXX: Implement backend API handlers for sync history retrieval
+- P7-BE-XXX: Implement backend API handlers for triggering manual sync
+- Future: Add real-time sync status updates via WebSocket
+- Future: Add sync error details and retry functionality

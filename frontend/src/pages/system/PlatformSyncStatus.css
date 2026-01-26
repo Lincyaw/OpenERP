@@ -1,0 +1,204 @@
+/* Platform Sync Status Page Styles */
+
+.sync-status-page {
+  padding: var(--spacing-4);
+}
+
+.sync-status-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.sync-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-4);
+}
+
+.sync-status-tabs {
+  margin-top: var(--spacing-4);
+}
+
+/* Platform cards grid */
+.platform-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: var(--spacing-4);
+  padding: var(--spacing-2) 0;
+}
+
+.platform-status-card {
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+}
+
+.platform-status-card .semi-card-header {
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.platform-status-card .semi-card-body {
+  padding-top: var(--spacing-3);
+}
+
+/* Platform icon styling */
+.platform-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--semi-border-radius-small);
+  font-size: var(--semi-font-size-small);
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Sync actions section */
+.sync-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--spacing-4);
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+/* Status overview styles */
+.sync-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.sync-stat {
+  padding: var(--spacing-4);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--semi-border-radius-medium);
+  text-align: center;
+}
+
+.sync-stat-value {
+  font-size: var(--semi-font-size-header-2);
+  font-weight: 600;
+  color: var(--semi-color-text-0);
+}
+
+.sync-stat-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  margin-top: var(--spacing-1);
+}
+
+/* Modal styles */
+.error-section {
+  margin-top: var(--spacing-4);
+}
+
+.error-box {
+  padding: var(--spacing-3);
+  background: var(--semi-color-danger-light-default);
+  border-radius: var(--semi-border-radius-small);
+  border-left: 3px solid var(--semi-color-danger);
+}
+
+.timeline-section {
+  margin-top: var(--spacing-4);
+}
+
+.timeline-section .semi-timeline {
+  margin-top: var(--spacing-3);
+}
+
+/* Table styles */
+.sync-status-tabs .semi-table {
+  margin-top: var(--spacing-2);
+}
+
+/* Description styles */
+.platform-status-card .semi-descriptions-item {
+  padding: var(--spacing-2) 0;
+}
+
+.platform-status-card .semi-descriptions-item-label {
+  color: var(--semi-color-text-2);
+  min-width: 120px;
+}
+
+.platform-status-card .semi-descriptions-item-value {
+  color: var(--semi-color-text-0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .platform-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sync-status-page {
+    padding: var(--spacing-2);
+  }
+
+  .sync-status-header {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .platform-cards-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+
+  .sync-actions {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .sync-actions .semi-space {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .sync-actions .semi-btn {
+    width: 100%;
+  }
+
+  .sync-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .sync-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-icon {
+    width: 24px;
+    height: 24px;
+    font-size: var(--semi-font-size-extra-small);
+  }
+}
+
+/* Loading state */
+.sync-status-card .semi-spin-wrapper {
+  min-height: 400px;
+}
+
+/* Empty state */
+.platform-status-card .semi-empty {
+  padding: var(--spacing-6) var(--spacing-4);
+}
+
+/* Progress bar in table */
+.semi-progress-line {
+  margin-bottom: 0 !important;
+}
+
+/* Fix table action buttons */
+.sync-status-tabs .semi-table-tbody .semi-btn-borderless {
+  padding: 4px 8px;
+}

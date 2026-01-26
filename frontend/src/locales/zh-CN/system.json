@@ -483,5 +483,96 @@
       "syncIntervalMin": "同步间隔至少5分钟",
       "syncIntervalMax": "同步间隔最多60分钟"
     }
+  },
+  "syncStatus": {
+    "title": "平台订单同步状态",
+    "subtitle": "查看各电商平台的同步历史和当前状态，支持手动触发同步",
+    "platforms": {
+      "TAOBAO": "淘宝/天猫",
+      "DOUYIN": "抖音",
+      "JD": "京东",
+      "PDD": "拼多多",
+      "WECHAT": "微信小商店",
+      "KUAISHOU": "快手"
+    },
+    "tabs": {
+      "overview": "状态概览",
+      "history": "同步历史"
+    },
+    "columns": {
+      "platform": "平台",
+      "syncType": "同步类型",
+      "status": "状态",
+      "progress": "进度",
+      "triggeredBy": "触发方式",
+      "startedAt": "开始时间",
+      "duration": "耗时",
+      "actions": "操作"
+    },
+    "syncTypes": {
+      "order": "订单同步",
+      "inventory": "库存同步",
+      "product": "商品同步"
+    },
+    "status": {
+      "pending": "等待中",
+      "running": "同步中",
+      "success": "成功",
+      "failed": "失败",
+      "cancelled": "已取消",
+      "unknown": "未知"
+    },
+    "trigger": {
+      "auto": "自动",
+      "manual": "手动"
+    },
+    "fields": {
+      "lastOrderSync": "上次订单同步",
+      "lastInventorySync": "上次库存同步",
+      "lastProductSync": "上次商品同步",
+      "nextScheduledSync": "下次计划同步",
+      "pendingOrders": "待同步订单"
+    },
+    "syncOrders": "同步订单",
+    "syncInventory": "同步库存",
+    "syncProducts": "同步商品",
+    "viewDetails": "详情",
+    "failed": "失败",
+    "neverSynced": "从未同步",
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "notScheduled": "未计划",
+    "platformDisabled": "已禁用",
+    "platformNotConfigured": "该平台尚未配置，请先前往平台配置页面进行设置",
+    "autoSyncEnabled": "自动同步已启用",
+    "autoSyncDisabled": "自动同步已禁用",
+    "noHistory": "暂无同步历史记录",
+    "confirmSync": {
+      "title": "确认同步",
+      "orderContent": "确定要立即同步该平台的订单数据吗？",
+      "inventoryContent": "确定要立即同步该平台的库存数据吗？",
+      "productContent": "确定要立即同步该平台的商品数据吗？"
+    },
+    "detailModal": {
+      "title": "同步详情",
+      "completedAt": "完成时间",
+      "totalItems": "总数量",
+      "successItems": "成功数量",
+      "failedItems": "失败数量",
+      "errorMessage": "错误信息",
+      "timeline": "执行时间线"
+    },
+    "timeline": {
+      "started": "开始同步",
+      "running": "正在同步...",
+      "completed": "同步完成",
+      "failed": "同步失败"
+    },
+    "messages": {
+      "loadError": "加载同步数据失败",
+      "syncStarted": "同步任务已启动",
+      "syncError": "启动同步任务失败"
+    }
   }
 }

@@ -483,5 +483,96 @@
       "syncIntervalMin": "Sync interval must be at least 5 minutes",
       "syncIntervalMax": "Sync interval cannot exceed 60 minutes"
     }
+  },
+  "syncStatus": {
+    "title": "Platform Order Sync Status",
+    "subtitle": "View sync history and current status for all platforms, trigger manual sync",
+    "platforms": {
+      "TAOBAO": "Taobao/Tmall",
+      "DOUYIN": "Douyin",
+      "JD": "JD.com",
+      "PDD": "Pinduoduo",
+      "WECHAT": "WeChat Store",
+      "KUAISHOU": "Kuaishou"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "history": "Sync History"
+    },
+    "columns": {
+      "platform": "Platform",
+      "syncType": "Sync Type",
+      "status": "Status",
+      "progress": "Progress",
+      "triggeredBy": "Triggered By",
+      "startedAt": "Started At",
+      "duration": "Duration",
+      "actions": "Actions"
+    },
+    "syncTypes": {
+      "order": "Order Sync",
+      "inventory": "Inventory Sync",
+      "product": "Product Sync"
+    },
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "success": "Success",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "trigger": {
+      "auto": "Auto",
+      "manual": "Manual"
+    },
+    "fields": {
+      "lastOrderSync": "Last Order Sync",
+      "lastInventorySync": "Last Inventory Sync",
+      "lastProductSync": "Last Product Sync",
+      "nextScheduledSync": "Next Scheduled Sync",
+      "pendingOrders": "Pending Orders"
+    },
+    "syncOrders": "Sync Orders",
+    "syncInventory": "Sync Inventory",
+    "syncProducts": "Sync Products",
+    "viewDetails": "Details",
+    "failed": "failed",
+    "neverSynced": "Never synced",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}} hr ago",
+    "notScheduled": "Not scheduled",
+    "platformDisabled": "Disabled",
+    "platformNotConfigured": "This platform is not configured. Please go to Platform Config to set it up.",
+    "autoSyncEnabled": "Auto Sync Enabled",
+    "autoSyncDisabled": "Auto Sync Disabled",
+    "noHistory": "No sync history records",
+    "confirmSync": {
+      "title": "Confirm Sync",
+      "orderContent": "Are you sure you want to sync orders for this platform now?",
+      "inventoryContent": "Are you sure you want to sync inventory for this platform now?",
+      "productContent": "Are you sure you want to sync products for this platform now?"
+    },
+    "detailModal": {
+      "title": "Sync Details",
+      "completedAt": "Completed At",
+      "totalItems": "Total Items",
+      "successItems": "Success Count",
+      "failedItems": "Failed Count",
+      "errorMessage": "Error Message",
+      "timeline": "Execution Timeline"
+    },
+    "timeline": {
+      "started": "Sync started",
+      "running": "Syncing in progress...",
+      "completed": "Sync completed",
+      "failed": "Sync failed"
+    },
+    "messages": {
+      "loadError": "Failed to load sync data",
+      "syncStarted": "Sync task started",
+      "syncError": "Failed to start sync task"
+    }
   }
 }
