@@ -476,30 +476,62 @@ func TestAccountReceivable_Reverse(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.ClearDomainEvents()
 
-		err := ar.Reverse("Sales return processed")
+		result, err := ar.Reverse("Sales return processed")
 		require.NoError(t, err)
 
 		assert.Equal(t, ReceivableStatusReversed, ar.Status)
 		assert.NotNil(t, ar.ReversedAt)
 		assert.Equal(t, "Sales return processed", ar.ReversalReason)
+
+		// BUG-009: Check reversal result for no refund required
+		require.NotNil(t, result)
+		assert.False(t, result.RefundRequired)
+		assert.True(t, result.RefundAmount.IsZero())
+		assert.True(t, result.OutstandingWaived.Equal(decimal.NewFromFloat(1000.00)))
+		assert.Empty(t, result.PaymentRecords)
 	})
 
-	t.Run("reverses partial receivable", func(t *testing.T) {
+	t.Run("reverses partial receivable and returns refund info", func(t *testing.T) {
 		ar := createTestReceivable(t)
-		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(300.00), uuid.New(), "")
+		voucherID := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(300.00), voucherID, "Partial payment")
 		ar.ClearDomainEvents()
 
-		err := ar.Reverse("Customer dispute")
+		result, err := ar.Reverse("Customer dispute")
 		require.NoError(t, err)
 
 		assert.Equal(t, ReceivableStatusReversed, ar.Status)
+
+		// BUG-009: Check reversal result for refund required
+		require.NotNil(t, result)
+		assert.True(t, result.RefundRequired)
+		assert.True(t, result.RefundAmount.Equal(decimal.NewFromFloat(300.00)))
+		assert.True(t, result.OutstandingWaived.Equal(decimal.NewFromFloat(700.00)))
+		assert.Len(t, result.PaymentRecords, 1)
+		assert.Equal(t, voucherID, result.PaymentRecords[0].ReceiptVoucherID)
+	})
+
+	t.Run("reversal result Money helpers work correctly", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(400.00), uuid.New(), "")
+
+		result, err := ar.Reverse("Test refund")
+		require.NoError(t, err)
+
+		refundMoney := result.GetRefundAmountMoney()
+		assert.True(t, refundMoney.Amount().Equal(decimal.NewFromFloat(400.00)))
+		assert.Equal(t, valueobject.CNY, refundMoney.Currency())
+
+		waivedMoney := result.GetOutstandingWaivedMoney()
+		assert.True(t, waivedMoney.Amount().Equal(decimal.NewFromFloat(600.00)))
 	})
 
 	t.Run("publishes AccountReceivableReversed event", func(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.ClearDomainEvents()
 
-		ar.Reverse("Test reversal")
+		_, err := ar.Reverse("Test reversal")
+		require.NoError(t, err)
 
 		events := ar.GetDomainEvents()
 		require.Len(t, events, 1)
@@ -509,12 +541,89 @@ func TestAccountReceivable_Reverse(t *testing.T) {
 		require.True(t, ok)
 		assert.Equal(t, ReceivableStatusPending, event.PreviousStatus)
 		assert.Equal(t, "Test reversal", event.ReversalReason)
+		// BUG-009: Check refund info in event
+		assert.False(t, event.RefundRequired)
+		assert.True(t, event.RefundAmount.IsZero())
+	})
+
+	t.Run("event includes refund info when partial payment exists", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(500.00), uuid.New(), "")
+		ar.ClearDomainEvents()
+
+		_, err := ar.Reverse("Return with refund")
+		require.NoError(t, err)
+
+		events := ar.GetDomainEvents()
+		require.Len(t, events, 1)
+
+		event, ok := events[0].(*AccountReceivableReversedEvent)
+		require.True(t, ok)
+		// BUG-009: Event should indicate refund required
+		assert.True(t, event.RefundRequired)
+		assert.True(t, event.RefundAmount.Equal(decimal.NewFromFloat(500.00)))
+		assert.Equal(t, ReceivableStatusPartial, event.PreviousStatus)
+		// BUG-010: Event should include reversed payment count
+		assert.Equal(t, 1, event.ReversedPaymentCount)
+		assert.Len(t, event.ReversedPayments, 1)
+	})
+
+	t.Run("marks payment records as reversed with BUG-010 tracking", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID1 := uuid.New()
+		voucherID2 := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(300.00), voucherID1, "Payment 1")
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(200.00), voucherID2, "Payment 2")
+
+		result, err := ar.Reverse("Sales return with payments")
+		require.NoError(t, err)
+
+		// BUG-010: Verify reversal result tracking
+		require.NotNil(t, result)
+		assert.Equal(t, 2, result.ReversedPaymentCount)
+		assert.Len(t, result.CompensationRecordIDs, 2)
+		for _, compID := range result.CompensationRecordIDs {
+			assert.NotEqual(t, uuid.Nil, compID)
+		}
+
+		// Verify actual payment records are marked as reversed
+		require.Len(t, ar.PaymentRecords, 2)
+		assert.True(t, ar.PaymentRecords[0].IsReversed())
+		assert.True(t, ar.PaymentRecords[1].IsReversed())
+		assert.NotNil(t, ar.PaymentRecords[0].ReversedAt)
+		assert.NotNil(t, ar.PaymentRecords[1].ReversedAt)
+		assert.Equal(t, "Sales return with payments", ar.PaymentRecords[0].ReversalReason)
+		assert.Equal(t, "Sales return with payments", ar.PaymentRecords[1].ReversalReason)
+	})
+
+	t.Run("event includes detailed reversed payment info for audit trail", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(400.00), voucherID, "Test payment")
+		ar.ClearDomainEvents()
+
+		_, err := ar.Reverse("Audit test")
+		require.NoError(t, err)
+
+		events := ar.GetDomainEvents()
+		require.Len(t, events, 1)
+
+		event, ok := events[0].(*AccountReceivableReversedEvent)
+		require.True(t, ok)
+
+		// BUG-010: Verify detailed payment audit trail
+		require.Len(t, event.ReversedPayments, 1)
+		reversedPayment := event.ReversedPayments[0]
+		assert.Equal(t, voucherID, reversedPayment.ReceiptVoucherID)
+		assert.True(t, reversedPayment.Amount.Equal(decimal.NewFromFloat(400.00)))
+		assert.NotEqual(t, uuid.Nil, reversedPayment.CompensationID)
+		assert.False(t, reversedPayment.ReversedAt.IsZero())
 	})
 
 	t.Run("fails without reason", func(t *testing.T) {
 		ar := createTestReceivable(t)
 
-		err := ar.Reverse("")
+		_, err := ar.Reverse("")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "Reversal reason is required")
 	})
@@ -523,7 +632,7 @@ func TestAccountReceivable_Reverse(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(1000.00), uuid.New(), "")
 
-		err := ar.Reverse("Try to reverse")
+		_, err := ar.Reverse("Try to reverse")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "PAID status")
 	})
@@ -532,7 +641,7 @@ func TestAccountReceivable_Reverse(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.Reverse("First reversal")
 
-		err := ar.Reverse("Second reversal")
+		_, err := ar.Reverse("Second reversal")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "REVERSED status")
 	})
@@ -541,7 +650,7 @@ func TestAccountReceivable_Reverse(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.Cancel("Cancelled")
 
-		err := ar.Reverse("Try to reverse")
+		_, err := ar.Reverse("Try to reverse")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "CANCELLED status")
 	})
@@ -881,7 +990,8 @@ func TestAccountReceivableEvents(t *testing.T) {
 		ar := createTestReceivable(t)
 		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(300.00), uuid.New(), "")
 		ar.ClearDomainEvents()
-		ar.Reverse("Return processed")
+		_, err := ar.Reverse("Return processed")
+		require.NoError(t, err)
 
 		events := ar.GetDomainEvents()
 		require.Len(t, events, 1)
@@ -894,6 +1004,9 @@ func TestAccountReceivableEvents(t *testing.T) {
 		assert.True(t, event.PaidAmount.Equal(decimal.NewFromFloat(300.00)))
 		// After reversal, outstanding amount is 0 (debt is written off)
 		assert.True(t, event.OutstandingAmount.Equal(decimal.Zero))
+		// BUG-009: Event should include refund info
+		assert.True(t, event.RefundRequired)
+		assert.True(t, event.RefundAmount.Equal(decimal.NewFromFloat(300.00)))
 	})
 
 	t.Run("AccountReceivableCancelledEvent has correct fields", func(t *testing.T) {
@@ -971,5 +1084,262 @@ func TestPaymentRecords_Value(t *testing.T) {
 		val, err := records.Value()
 		require.NoError(t, err)
 		assert.NotNil(t, val)
+	})
+}
+
+// ============================================
+// BUG-010: PaymentRecordStatus Tests
+// ============================================
+
+func TestPaymentRecordStatus_IsValid(t *testing.T) {
+	tests := []struct {
+		status  PaymentRecordStatus
+		isValid bool
+	}{
+		{PaymentRecordStatusActive, true},
+		{PaymentRecordStatusReversed, true},
+		{PaymentRecordStatus("INVALID"), false},
+		{PaymentRecordStatus(""), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			assert.Equal(t, tt.isValid, tt.status.IsValid())
+		})
+	}
+}
+
+func TestPaymentRecord_StatusMethods(t *testing.T) {
+	t.Run("new payment record is active by default", func(t *testing.T) {
+		voucherID := uuid.New()
+		amount := valueobject.NewMoneyCNYFromFloat(500.00)
+
+		record := NewPaymentRecord(voucherID, amount, "Test payment")
+
+		assert.Equal(t, PaymentRecordStatusActive, record.Status)
+		assert.True(t, record.IsActive())
+		assert.False(t, record.IsReversed())
+		assert.Nil(t, record.ReversedAt)
+		assert.Empty(t, record.ReversalReason)
+	})
+
+	t.Run("MarkReversed sets status and timestamps", func(t *testing.T) {
+		voucherID := uuid.New()
+		amount := valueobject.NewMoneyCNYFromFloat(500.00)
+		record := NewPaymentRecord(voucherID, amount, "Test payment")
+
+		record.MarkReversed("Sales return")
+
+		assert.Equal(t, PaymentRecordStatusReversed, record.Status)
+		assert.False(t, record.IsActive())
+		assert.True(t, record.IsReversed())
+		assert.NotNil(t, record.ReversedAt)
+		assert.Equal(t, "Sales return", record.ReversalReason)
+	})
+
+	t.Run("MarkReversed can be called multiple times", func(t *testing.T) {
+		record := NewPaymentRecord(uuid.New(), valueobject.NewMoneyCNYFromFloat(100.00), "")
+		firstReversedAt := time.Now()
+		record.MarkReversed("First reason")
+		firstTime := *record.ReversedAt
+
+		// Simulate time passing
+		time.Sleep(1 * time.Millisecond)
+		record.MarkReversed("Second reason")
+
+		// Should update with new reason and time
+		assert.Equal(t, "Second reason", record.ReversalReason)
+		assert.True(t, record.ReversedAt.After(firstTime) || record.ReversedAt.Equal(firstReversedAt))
+	})
+}
+
+// ============================================
+// BUG-010: Reversal with Payment Records Tests
+// ============================================
+
+func TestAccountReceivable_Reverse_PaymentRecordTracking(t *testing.T) {
+	t.Run("reversal with no payments has zero reversed count", func(t *testing.T) {
+		ar := createTestReceivable(t)
+
+		result, err := ar.Reverse("No payments to reverse")
+		require.NoError(t, err)
+
+		assert.Equal(t, 0, result.ReversedPaymentCount)
+		assert.Empty(t, result.CompensationRecordIDs)
+		assert.Empty(t, result.PaymentRecords)
+	})
+
+	t.Run("reversal with single payment tracks correctly", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(500.00), voucherID, "Single payment")
+
+		result, err := ar.Reverse("Single payment reversal")
+		require.NoError(t, err)
+
+		assert.Equal(t, 1, result.ReversedPaymentCount)
+		assert.Len(t, result.CompensationRecordIDs, 1)
+		assert.NotEqual(t, uuid.Nil, result.CompensationRecordIDs[0])
+
+		// Verify the payment record in result is marked reversed
+		require.Len(t, result.PaymentRecords, 1)
+		assert.True(t, result.PaymentRecords[0].IsReversed())
+		assert.Equal(t, voucherID, result.PaymentRecords[0].ReceiptVoucherID)
+	})
+
+	t.Run("reversal with multiple payments tracks all correctly", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID1 := uuid.New()
+		voucherID2 := uuid.New()
+		voucherID3 := uuid.New()
+
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(200.00), voucherID1, "Payment 1")
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(300.00), voucherID2, "Payment 2")
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(100.00), voucherID3, "Payment 3")
+
+		result, err := ar.Reverse("Multiple payment reversal")
+		require.NoError(t, err)
+
+		assert.Equal(t, 3, result.ReversedPaymentCount)
+		assert.Len(t, result.CompensationRecordIDs, 3)
+
+		// Verify all compensation IDs are unique
+		compIDSet := make(map[uuid.UUID]bool)
+		for _, compID := range result.CompensationRecordIDs {
+			assert.NotEqual(t, uuid.Nil, compID)
+			assert.False(t, compIDSet[compID], "Compensation IDs should be unique")
+			compIDSet[compID] = true
+		}
+
+		// Verify all payment records are marked reversed
+		for i, pr := range result.PaymentRecords {
+			assert.True(t, pr.IsReversed(), "Payment record %d should be reversed", i)
+			assert.Equal(t, "Multiple payment reversal", pr.ReversalReason)
+		}
+	})
+
+	t.Run("reversal preserves original payment record data", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID := uuid.New()
+		paymentTime := time.Now()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(750.00), voucherID, "Important payment")
+
+		// Wait a bit to ensure reversal time is different
+		time.Sleep(1 * time.Millisecond)
+
+		result, err := ar.Reverse("Test preservation")
+		require.NoError(t, err)
+
+		require.Len(t, result.PaymentRecords, 1)
+		pr := result.PaymentRecords[0]
+
+		// Original data should be preserved
+		assert.Equal(t, voucherID, pr.ReceiptVoucherID)
+		assert.True(t, pr.Amount.Equal(decimal.NewFromFloat(750.00)))
+		assert.Equal(t, "Important payment", pr.Remark)
+		assert.True(t, pr.AppliedAt.After(paymentTime.Add(-time.Second)) || pr.AppliedAt.Equal(paymentTime))
+
+		// Reversal data should be added
+		assert.True(t, pr.IsReversed())
+		assert.NotNil(t, pr.ReversedAt)
+		assert.True(t, pr.ReversedAt.After(pr.AppliedAt))
+		assert.Equal(t, "Test preservation", pr.ReversalReason)
+	})
+
+	t.Run("aggregate payment records are updated in place", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(400.00), uuid.New(), "")
+
+		// Verify payment is active before reversal
+		require.Len(t, ar.PaymentRecords, 1)
+		assert.True(t, ar.PaymentRecords[0].IsActive())
+
+		_, err := ar.Reverse("Update in place test")
+		require.NoError(t, err)
+
+		// Verify the actual aggregate's payment records are updated
+		require.Len(t, ar.PaymentRecords, 1)
+		assert.True(t, ar.PaymentRecords[0].IsReversed())
+		assert.NotNil(t, ar.PaymentRecords[0].ReversedAt)
+	})
+}
+
+// ============================================
+// BUG-010: Reversed Event Audit Trail Tests
+// ============================================
+
+func TestAccountReceivableReversedEvent_AuditTrail(t *testing.T) {
+	t.Run("event has no reversed payments when none exist", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		ar.ClearDomainEvents()
+
+		_, err := ar.Reverse("No payments")
+		require.NoError(t, err)
+
+		events := ar.GetDomainEvents()
+		require.Len(t, events, 1)
+
+		event, ok := events[0].(*AccountReceivableReversedEvent)
+		require.True(t, ok)
+
+		assert.Equal(t, 0, event.ReversedPaymentCount)
+		assert.Empty(t, event.ReversedPayments)
+	})
+
+	t.Run("event includes complete audit trail for reversed payments", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(600.00), voucherID, "Payment for audit")
+		ar.ClearDomainEvents()
+
+		_, err := ar.Reverse("Audit trail test")
+		require.NoError(t, err)
+
+		events := ar.GetDomainEvents()
+		require.Len(t, events, 1)
+
+		event, ok := events[0].(*AccountReceivableReversedEvent)
+		require.True(t, ok)
+
+		// Verify event has audit trail
+		assert.Equal(t, 1, event.ReversedPaymentCount)
+		require.Len(t, event.ReversedPayments, 1)
+
+		reversedPayment := event.ReversedPayments[0]
+		assert.Equal(t, voucherID, reversedPayment.ReceiptVoucherID)
+		assert.True(t, reversedPayment.Amount.Equal(decimal.NewFromFloat(600.00)))
+		assert.NotEqual(t, uuid.Nil, reversedPayment.PaymentRecordID)
+		assert.NotEqual(t, uuid.Nil, reversedPayment.CompensationID)
+		assert.False(t, reversedPayment.AppliedAt.IsZero())
+		assert.False(t, reversedPayment.ReversedAt.IsZero())
+	})
+
+	t.Run("event includes all payments in audit trail", func(t *testing.T) {
+		ar := createTestReceivable(t)
+		voucherID1 := uuid.New()
+		voucherID2 := uuid.New()
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(400.00), voucherID1, "First")
+		ar.ApplyPayment(valueobject.NewMoneyCNYFromFloat(200.00), voucherID2, "Second")
+		ar.ClearDomainEvents()
+
+		_, err := ar.Reverse("Multiple audit")
+		require.NoError(t, err)
+
+		events := ar.GetDomainEvents()
+		require.Len(t, events, 1)
+
+		event, ok := events[0].(*AccountReceivableReversedEvent)
+		require.True(t, ok)
+
+		assert.Equal(t, 2, event.ReversedPaymentCount)
+		require.Len(t, event.ReversedPayments, 2)
+
+		// Verify both payments are in the audit trail
+		voucherIDs := make(map[uuid.UUID]bool)
+		for _, rp := range event.ReversedPayments {
+			voucherIDs[rp.ReceiptVoucherID] = true
+		}
+		assert.True(t, voucherIDs[voucherID1])
+		assert.True(t, voucherIDs[voucherID2])
 	})
 }

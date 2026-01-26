@@ -67,14 +67,30 @@ func (s SourceType) IsValid() bool {
 	return false
 }
 
+// PaymentRecordStatus represents the status of a payment record
+type PaymentRecordStatus string
+
+const (
+	PaymentRecordStatusActive   PaymentRecordStatus = "ACTIVE"   // Normal payment record
+	PaymentRecordStatusReversed PaymentRecordStatus = "REVERSED" // Payment has been reversed/voided
+)
+
+// IsValid checks if the payment record status is valid
+func (s PaymentRecordStatus) IsValid() bool {
+	return s == PaymentRecordStatusActive || s == PaymentRecordStatusReversed
+}
+
 // PaymentRecord represents a payment applied to the receivable
 // This is a value object within the AccountReceivable aggregate, stored as JSONB
 type PaymentRecord struct {
-	ID               uuid.UUID       `json:"id"`
-	ReceiptVoucherID uuid.UUID       `json:"receipt_voucher_id"` // Reference to the receipt voucher
-	Amount           decimal.Decimal `json:"amount"`
-	AppliedAt        time.Time       `json:"applied_at"`
-	Remark           string          `json:"remark,omitempty"`
+	ID               uuid.UUID           `json:"id"`
+	ReceiptVoucherID uuid.UUID           `json:"receipt_voucher_id"` // Reference to the receipt voucher
+	Amount           decimal.Decimal     `json:"amount"`
+	AppliedAt        time.Time           `json:"applied_at"`
+	Remark           string              `json:"remark,omitempty"`
+	Status           PaymentRecordStatus `json:"status"`                    // BUG-010: Track payment record status
+	ReversedAt       *time.Time          `json:"reversed_at"`               // BUG-010: When the payment was reversed
+	ReversalReason   string              `json:"reversal_reason,omitempty"` // BUG-010: Reason for reversal
 }
 
 // PaymentRecords is a slice of PaymentRecord that implements GORM Scanner/Valuer for JSONB storage
@@ -121,12 +137,32 @@ func NewPaymentRecord(voucherID uuid.UUID, amount valueobject.Money, remark stri
 		Amount:           amount.Amount(),
 		AppliedAt:        time.Now(),
 		Remark:           remark,
+		Status:           PaymentRecordStatusActive,
 	}
 }
 
 // GetAmountMoney returns the amount as Money value object
 func (p *PaymentRecord) GetAmountMoney() valueobject.Money {
 	return valueobject.NewMoneyCNY(p.Amount)
+}
+
+// IsActive returns true if the payment record is still active (not reversed)
+// For backward compatibility, legacy records without status are considered active
+func (p *PaymentRecord) IsActive() bool {
+	return p.Status == PaymentRecordStatusActive || p.Status == ""
+}
+
+// IsReversed returns true if the payment record has been reversed
+func (p *PaymentRecord) IsReversed() bool {
+	return p.Status == PaymentRecordStatusReversed
+}
+
+// MarkReversed marks the payment record as reversed with the given reason
+func (p *PaymentRecord) MarkReversed(reason string) {
+	now := time.Now()
+	p.Status = PaymentRecordStatusReversed
+	p.ReversedAt = &now
+	p.ReversalReason = reason
 }
 
 // AccountReceivable represents an account receivable aggregate root
@@ -253,18 +289,58 @@ func (ar *AccountReceivable) ApplyPayment(amount valueobject.Money, voucherID uu
 	return nil
 }
 
+// ReversalResult contains the result of a receivable reversal operation
+// It indicates what actions need to be taken for the paid amount
+type ReversalResult struct {
+	RefundRequired        bool            // True if a refund or credit is needed
+	RefundAmount          decimal.Decimal // Amount to be refunded (the paid amount)
+	OutstandingWaived     decimal.Decimal // Outstanding amount that was waived (not requiring refund)
+	PaymentRecords        PaymentRecords  // Copy of payment records for reference (marked as reversed)
+	ReversedPaymentCount  int             // BUG-010: Number of payments that were reversed
+	CompensationRecordIDs []uuid.UUID     // BUG-010: IDs for compensation records (for external processing)
+}
+
 // Reverse reverses the receivable (e.g., due to sales return)
 // This creates a credit/negative adjustment
-func (ar *AccountReceivable) Reverse(reason string) error {
+// Returns ReversalResult indicating if a refund is needed for already paid amounts
+// BUG-010: Now marks all associated PaymentRecords as reversed and generates compensation record IDs
+func (ar *AccountReceivable) Reverse(reason string) (*ReversalResult, error) {
 	if ar.Status.IsTerminal() {
-		return shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot reverse receivable in %s status", ar.Status))
+		return nil, shared.NewDomainError("INVALID_STATE", fmt.Sprintf("Cannot reverse receivable in %s status", ar.Status))
 	}
 	if reason == "" {
-		return shared.NewDomainError("INVALID_REASON", "Reversal reason is required")
+		return nil, shared.NewDomainError("INVALID_REASON", "Reversal reason is required")
 	}
 
 	now := time.Now()
 	previousStatus := ar.Status
+
+	// BUG-010: Mark all payment records as reversed and count them
+	reversedCount := 0
+	compensationIDs := make([]uuid.UUID, 0, len(ar.PaymentRecords))
+
+	for i := range ar.PaymentRecords {
+		if ar.PaymentRecords[i].IsActive() {
+			ar.PaymentRecords[i].MarkReversed(reason)
+			reversedCount++
+			// Generate a compensation record ID for each reversed payment
+			// This allows external systems to create actual compensation/refund records
+			compensationIDs = append(compensationIDs, uuid.New())
+		}
+	}
+
+	// Calculate the reversal result after marking payments
+	result := &ReversalResult{
+		RefundRequired:        ar.PaidAmount.GreaterThan(decimal.Zero),
+		RefundAmount:          ar.PaidAmount,
+		OutstandingWaived:     ar.OutstandingAmount,
+		PaymentRecords:        make(PaymentRecords, len(ar.PaymentRecords)),
+		ReversedPaymentCount:  reversedCount,
+		CompensationRecordIDs: compensationIDs,
+	}
+	// Make a copy of payment records for reference (now marked as reversed)
+	copy(result.PaymentRecords, ar.PaymentRecords)
+
 	ar.Status = ReceivableStatusReversed
 	ar.ReversedAt = &now
 	ar.ReversalReason = reason
@@ -272,9 +348,19 @@ func (ar *AccountReceivable) Reverse(reason string) error {
 	ar.UpdatedAt = now
 	ar.IncrementVersion()
 
-	ar.AddDomainEvent(NewAccountReceivableReversedEvent(ar, previousStatus))
+	ar.AddDomainEvent(NewAccountReceivableReversedEvent(ar, previousStatus, result))
 
-	return nil
+	return result, nil
+}
+
+// GetRefundAmountMoney returns the refund amount as Money
+func (r *ReversalResult) GetRefundAmountMoney() valueobject.Money {
+	return valueobject.NewMoneyCNY(r.RefundAmount)
+}
+
+// GetOutstandingWaivedMoney returns the outstanding waived amount as Money
+func (r *ReversalResult) GetOutstandingWaivedMoney() valueobject.Money {
+	return valueobject.NewMoneyCNY(r.OutstandingWaived)
 }
 
 // Cancel cancels the receivable (only if no payments have been applied)

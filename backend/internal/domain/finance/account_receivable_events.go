@@ -112,6 +112,17 @@ func NewAccountReceivablePartiallyPaidEvent(ar *AccountReceivable, paymentAmount
 	}
 }
 
+// ReversedPaymentInfo contains information about a payment record that was reversed
+// BUG-010: Provides complete audit trail for reversed payments
+type ReversedPaymentInfo struct {
+	PaymentRecordID  uuid.UUID       `json:"payment_record_id"`  // Original payment record ID
+	ReceiptVoucherID uuid.UUID       `json:"receipt_voucher_id"` // Receipt voucher that recorded the payment
+	Amount           decimal.Decimal `json:"amount"`             // Amount of the payment
+	AppliedAt        time.Time       `json:"applied_at"`         // When the payment was originally applied
+	ReversedAt       time.Time       `json:"reversed_at"`        // When the payment was reversed
+	CompensationID   uuid.UUID       `json:"compensation_id"`    // ID for compensation/refund record
+}
+
 // AccountReceivableReversedEvent is raised when a receivable is reversed
 type AccountReceivableReversedEvent struct {
 	shared.BaseDomainEvent
@@ -125,6 +136,12 @@ type AccountReceivableReversedEvent struct {
 	PreviousStatus    ReceivableStatus `json:"previous_status"`
 	ReversalReason    string           `json:"reversal_reason"`
 	ReversedAt        time.Time        `json:"reversed_at"`
+	// Refund-related fields (BUG-009 fix)
+	RefundRequired bool            `json:"refund_required"` // True if a refund needs to be processed
+	RefundAmount   decimal.Decimal `json:"refund_amount"`   // Amount that was paid and needs refund
+	// BUG-010: Payment record audit trail
+	ReversedPaymentCount int                   `json:"reversed_payment_count"` // Number of payments reversed
+	ReversedPayments     []ReversedPaymentInfo `json:"reversed_payments"`      // Detailed info for each reversed payment
 }
 
 // EventType returns the event type name
@@ -133,23 +150,46 @@ func (e *AccountReceivableReversedEvent) EventType() string {
 }
 
 // NewAccountReceivableReversedEvent creates a new AccountReceivableReversedEvent
-func NewAccountReceivableReversedEvent(ar *AccountReceivable, previousStatus ReceivableStatus) *AccountReceivableReversedEvent {
+// BUG-010: Now accepts ReversalResult to include detailed payment reversal information
+func NewAccountReceivableReversedEvent(ar *AccountReceivable, previousStatus ReceivableStatus, result *ReversalResult) *AccountReceivableReversedEvent {
 	reversedAt := time.Now()
 	if ar.ReversedAt != nil {
 		reversedAt = *ar.ReversedAt
 	}
+	// BUG-009 fix: Include refund information in the event
+	refundRequired := ar.PaidAmount.GreaterThan(decimal.Zero)
+
+	// BUG-010: Build reversed payment details for audit trail
+	reversedPayments := make([]ReversedPaymentInfo, 0, result.ReversedPaymentCount)
+	for i, pr := range result.PaymentRecords {
+		if pr.IsReversed() && i < len(result.CompensationRecordIDs) {
+			reversedPayments = append(reversedPayments, ReversedPaymentInfo{
+				PaymentRecordID:  pr.ID,
+				ReceiptVoucherID: pr.ReceiptVoucherID,
+				Amount:           pr.Amount,
+				AppliedAt:        pr.AppliedAt,
+				ReversedAt:       *pr.ReversedAt,
+				CompensationID:   result.CompensationRecordIDs[i],
+			})
+		}
+	}
+
 	return &AccountReceivableReversedEvent{
-		BaseDomainEvent:   shared.NewBaseDomainEvent("AccountReceivableReversed", "AccountReceivable", ar.ID, ar.TenantID),
-		ReceivableID:      ar.ID,
-		ReceivableNumber:  ar.ReceivableNumber,
-		CustomerID:        ar.CustomerID,
-		CustomerName:      ar.CustomerName,
-		TotalAmount:       ar.TotalAmount,
-		PaidAmount:        ar.PaidAmount,
-		OutstandingAmount: ar.OutstandingAmount,
-		PreviousStatus:    previousStatus,
-		ReversalReason:    ar.ReversalReason,
-		ReversedAt:        reversedAt,
+		BaseDomainEvent:      shared.NewBaseDomainEvent("AccountReceivableReversed", "AccountReceivable", ar.ID, ar.TenantID),
+		ReceivableID:         ar.ID,
+		ReceivableNumber:     ar.ReceivableNumber,
+		CustomerID:           ar.CustomerID,
+		CustomerName:         ar.CustomerName,
+		TotalAmount:          ar.TotalAmount,
+		PaidAmount:           ar.PaidAmount,
+		OutstandingAmount:    ar.OutstandingAmount,
+		PreviousStatus:       previousStatus,
+		ReversalReason:       ar.ReversalReason,
+		ReversedAt:           reversedAt,
+		RefundRequired:       refundRequired,
+		RefundAmount:         ar.PaidAmount,
+		ReversedPaymentCount: result.ReversedPaymentCount,
+		ReversedPayments:     reversedPayments,
 	}
 }
 

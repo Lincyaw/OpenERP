@@ -4597,7 +4597,7 @@
       "已付金额需要退款或生成贷项",
       "更新支付记录状态"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "MEDIUM",

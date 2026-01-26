@@ -127,11 +127,11 @@ func TestFinance_SalesOrderShipped_CreatesReceivable(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:       orderID,
-			OrderNumber:   orderNumber,
-			CustomerID:    setup.CustomerID,
-			CustomerName:  "Test Customer",
-			WarehouseID:   setup.WarehouseID,
+			OrderID:      orderID,
+			OrderNumber:  orderNumber,
+			CustomerID:   setup.CustomerID,
+			CustomerName: "Test Customer",
+			WarehouseID:  setup.WarehouseID,
 			Items: []trade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -181,11 +181,11 @@ func TestFinance_SalesOrderShipped_CreatesReceivable(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:       orderID,
-			OrderNumber:   orderNumber,
-			CustomerID:    setup.CustomerID,
-			CustomerName:  "Test Customer",
-			WarehouseID:   setup.WarehouseID,
+			OrderID:      orderID,
+			OrderNumber:  orderNumber,
+			CustomerID:   setup.CustomerID,
+			CustomerName: "Test Customer",
+			WarehouseID:  setup.WarehouseID,
 			Items: []trade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -231,11 +231,11 @@ func TestFinance_SalesOrderShipped_CreatesReceivable(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:       orderID,
-			OrderNumber:   orderNumber,
-			CustomerID:    setup.CustomerID,
-			CustomerName:  "Test Customer",
-			WarehouseID:   setup.WarehouseID,
+			OrderID:      orderID,
+			OrderNumber:  orderNumber,
+			CustomerID:   setup.CustomerID,
+			CustomerName: "Test Customer",
+			WarehouseID:  setup.WarehouseID,
 			Items: []trade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -967,11 +967,11 @@ func TestFinance_RedLetterReducesOutstandingBalance(t *testing.T) {
 				orderID,
 				setup.TenantID,
 			),
-			OrderID:       orderID,
-			OrderNumber:   "SO-2024-RED-001",
-			CustomerID:    setup.CustomerID,
-			CustomerName:  "Test Customer",
-			WarehouseID:   setup.WarehouseID,
+			OrderID:      orderID,
+			OrderNumber:  "SO-2024-RED-001",
+			CustomerID:   setup.CustomerID,
+			CustomerName: "Test Customer",
+			WarehouseID:  setup.WarehouseID,
 			Items: []trade.SalesOrderItemInfo{
 				{
 					ItemID:      uuid.New(),
@@ -1111,8 +1111,9 @@ func TestFinance_ReceivableCancellation(t *testing.T) {
 		setup.ReceivableRepo.Save(ctx, receivable)
 
 		// Reverse
-		err := receivable.Reverse("Sales return processed")
+		result, err := receivable.Reverse("Sales return processed")
 		require.NoError(t, err)
+		require.NotNil(t, result)
 
 		err = setup.ReceivableRepo.Save(ctx, receivable)
 		require.NoError(t, err)

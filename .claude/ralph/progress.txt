@@ -22702,3 +22702,121 @@ Added three missing security headers to the Secure() middleware to strengthen th
 - Consider enabling HSTS in production configuration after HTTPS is verified
 - May need to customize CSP for specific frontend requirements
 - Consider adding CSP violation reporting endpoint
+
+---
+
+2025-01-26 - BUG-009: 应收账款冲红处理已付金额 (Account Receivable Reversal Handling for Paid Amounts)
+
+=== Implementation Details ===
+
+Fixed the `Reverse()` method in `AccountReceivable` to properly handle cases where payments have already been made.
+
+**Problem**: When reversing an AccountReceivable that had partial or full payment, the existing code only changed the status to REVERSED but did not:
+1. Indicate that a refund was needed for the already paid amount
+2. Track the payment records that needed to be reversed
+3. Provide information for creating credit memos or refunds
+
+**Solution**: 
+
+1. **Added `ReversalResult` struct** to return comprehensive reversal information:
+   - `RefundRequired` (bool) - Indicates if refund processing is needed
+   - `RefundAmount` (decimal) - The amount already paid that needs refund
+   - `OutstandingWaived` (decimal) - Outstanding balance that was written off
+   - `PaymentRecords` (PaymentRecords) - Copy of reversed payment records
+   - `ReversedPaymentCount` (int) - Count of payments reversed
+   - `CompensationRecordIDs` ([]uuid.UUID) - IDs for external refund/credit processing
+
+2. **Added `PaymentRecordStatus` enum** with `ACTIVE` and `REVERSED` states
+
+3. **Enhanced `PaymentRecord` value object** with:
+   - `Status` field to track payment state
+   - `ReversedAt` timestamp
+   - `ReversalReason` field
+   - `IsActive()`, `IsReversed()`, `MarkReversed()` methods
+
+4. **Updated `AccountReceivableReversedEvent`** to include:
+   - `RefundRequired` and `RefundAmount` for BUG-009
+   - `ReversedPaymentCount` and `ReversedPayments` audit trail for BUG-010
+   - `ReversedPaymentInfo` struct for detailed audit trail per payment
+
+5. **Modified `Reverse()` method** to:
+   - Mark all payment records as reversed with reason
+   - Generate compensation record IDs for external processing
+   - Return `ReversalResult` with complete reversal information
+   - Emit enhanced event with full audit trail
+
+=== Key Files Modified ===
+
+1. `backend/internal/domain/finance/account_receivable.go`
+   - Added `PaymentRecordStatus` enum with ACTIVE/REVERSED
+   - Added status fields to `PaymentRecord`
+   - Added `ReversalResult` struct
+   - Modified `Reverse()` return type from `error` to `(*ReversalResult, error)`
+   - Payment records now marked as reversed during reversal
+
+2. `backend/internal/domain/finance/account_receivable_events.go`
+   - Added `ReversedPaymentInfo` struct for audit trail
+   - Enhanced `AccountReceivableReversedEvent` with refund and audit fields
+   - Updated `NewAccountReceivableReversedEvent` to accept `ReversalResult`
+
+3. `backend/internal/domain/finance/account_receivable_test.go`
+   - Updated existing Reverse tests for new signature
+   - Added comprehensive tests for:
+     - Reversal result with no payments
+     - Reversal result with partial/multiple payments
+     - Payment record status tracking
+     - Event audit trail verification
+
+4. `backend/tests/integration/finance_test.go`
+   - Updated integration test to handle new Reverse signature
+
+=== Design Decisions ===
+
+1. **Immutable Reversal Result**: The result contains a copy of payment records at the time of reversal, preserving the original state for audit purposes.
+
+2. **Compensation Record IDs**: Instead of creating actual refund/credit records in the domain layer, we generate unique IDs that application layer can use to create external compensation records. This keeps the domain focused on its aggregate boundaries.
+
+3. **Payment Record Status**: Added status tracking at the payment record level (not just receivable level) for granular audit trail and potential future use cases (e.g., partial payment reversals).
+
+4. **Event Enrichment**: The event now contains complete audit trail so event consumers can:
+   - Create credit memos
+   - Process refunds
+   - Update external systems
+   - Maintain complete audit history
+
+=== Spec Alignment ===
+
+Per spec.md (财务冲销规则):
+- ✅ 应收未收 → 红冲应收账款 (RefundRequired: false, OutstandingWaived > 0)
+- ✅ 部分已收 → 红冲应收 + 退款或转预收 (RefundRequired: true, RefundAmount = PaidAmount)
+- ✅ 全部已收 → 全额退款或转客户余额 (Now properly returns refund info)
+
+=== Verification ===
+
+- All finance domain tests pass (33/33)
+- All Reverse-specific tests pass (12/12)
+- Go build successful
+- Integration tests compile successfully
+
+Test coverage for reversal scenarios:
+- Reversing pending receivable (no payments)
+- Reversing partial receivable with refund info
+- Reversal result Money helpers
+- Event with refund info when partial payment exists
+- Payment records marked as reversed
+- Event includes detailed audit trail
+- Error cases (no reason, already paid/reversed/cancelled)
+
+=== Notes ===
+
+- This fix also addresses BUG-010 (payment record status tracking) which was added during implementation
+- The application layer is responsible for:
+  - Creating actual credit memos when `RefundRequired` is true
+  - Processing refunds using `CompensationRecordIDs`
+  - Notifying downstream systems via event handlers
+
+=== Next Steps ===
+
+- Consider adding application service to automate credit memo creation on reversal
+- May need to implement refund processing integration
+- Consider adding `ReverseSinglePayment()` method for granular reversal in future
