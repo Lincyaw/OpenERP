@@ -887,9 +887,17 @@ func main() {
 
 	// Register system routes with swagger-documented handlers
 	systemHandler := handler.NewSystemHandler()
+	strategyHandler := handler.NewStrategyHandler(strategyRegistry)
 	systemRoutes := router.NewDomainGroup("system", "/system")
 	systemRoutes.GET("/info", systemHandler.GetSystemInfo)
 	systemRoutes.GET("/ping", systemHandler.Ping)
+
+	// Strategy routes (list available strategies)
+	systemRoutes.GET("/strategies", strategyHandler.ListStrategies)
+	systemRoutes.GET("/strategies/batch", strategyHandler.GetBatchStrategies)
+	systemRoutes.GET("/strategies/cost", strategyHandler.GetCostStrategies)
+	systemRoutes.GET("/strategies/pricing", strategyHandler.GetPricingStrategies)
+	systemRoutes.GET("/strategies/allocation", strategyHandler.GetAllocationStrategies)
 
 	// Outbox management routes (for operators)
 	systemRoutes.GET("/outbox/stats", outboxHandler.GetStats)

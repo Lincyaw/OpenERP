@@ -18751,3 +18751,70 @@ INFO Strategy registry initialized cost_strategies=2 allocation_strategies=1 pri
 INFO Industry plugin registered plugin=agricultural display_name=农资行业 required_attributes=5
 INFO Plugin manager initialized total_plugins=1 plugins=[agricultural]
 ```
+
+## 2026-01-26 - DDD-008 & DDD-009: FIFO/FEFO Batch Strategies & Strategy Registry API
+
+### Summary
+Implemented FIFO and FEFO batch selection strategies and REST API to list all available strategies. This completes the batch management strategy pattern per spec Section 4.1.
+
+### DDD-008: FIFO/FEFO Batch Strategies
+
+#### Files Created
+
+| File | Purpose |
+|------|---------|
+| `backend/internal/infrastructure/strategy/batch/fifo.go` | FIFOBatchStrategy - selects oldest batches by manufacture date |
+| `backend/internal/infrastructure/strategy/batch/fefo.go` | FEFOBatchStrategy - selects earliest expiring batches first |
+| `backend/internal/infrastructure/strategy/batch/fifo_test.go` | 10 unit tests for FIFO strategy |
+| `backend/internal/infrastructure/strategy/batch/fefo_test.go` | 12 unit tests for FEFO strategy |
+| `backend/internal/interfaces/http/handler/strategy.go` | REST API handler for listing strategies |
+
+#### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/infrastructure/strategy/defaults.go` | Register FIFO and FEFO batch strategies |
+| `backend/cmd/server/main.go` | Add StrategyHandler and /system/strategies routes |
+
+#### Strategy Features
+
+**FIFOBatchStrategy (fifo):**
+- Selects batches by manufacture date (oldest first)
+- Falls back to received date when manufacture date is not set
+- Supports preferred batch override
+- Filters by product and warehouse
+
+**FEFOBatchStrategy (fefo):**
+- Selects batches by expiry date (earliest expiring first)
+- Excludes already expired batches
+- Batches without expiry date are selected last
+- Falls back to manufacture date when all batches lack expiry
+- Ideal for perishables, pharmaceuticals, food products
+
+### DDD-009: Strategy Registry API
+
+#### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/system/strategies` | GET | List all strategies by type |
+| `/api/v1/system/strategies/batch` | GET | List batch management strategies |
+| `/api/v1/system/strategies/cost` | GET | List cost calculation strategies |
+| `/api/v1/system/strategies/pricing` | GET | List pricing strategies |
+| `/api/v1/system/strategies/allocation` | GET | List payment allocation strategies |
+
+#### Currently Registered Strategies
+
+| Type | Strategies | Default |
+|------|-----------|---------|
+| Cost | moving_average, fifo | moving_average |
+| Pricing | standard | standard |
+| Allocation | fifo | fifo |
+| Batch | standard, fifo, fefo | standard |
+| Validation | standard | standard |
+
+### Verification
+- ✅ Go build passes (`go build ./...`)
+- ✅ All 22 batch strategy unit tests pass
+- ✅ TypeScript type check passes
+

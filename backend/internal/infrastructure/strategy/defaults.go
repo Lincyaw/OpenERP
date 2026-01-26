@@ -42,6 +42,16 @@ func NewRegistryWithDefaults() (*StrategyRegistry, error) {
 		return nil, err
 	}
 
+	fifoBatch := batch.NewFIFOBatchStrategy()
+	if err := r.RegisterBatchStrategy(fifoBatch); err != nil {
+		return nil, err
+	}
+
+	fefoBatch := batch.NewFEFOBatchStrategy()
+	if err := r.RegisterBatchStrategy(fefoBatch); err != nil {
+		return nil, err
+	}
+
 	// Register validation strategies
 	standardValidator := validation.NewStandardProductValidator()
 	if err := r.RegisterValidationStrategy(standardValidator); err != nil {
