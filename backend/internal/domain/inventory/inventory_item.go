@@ -12,6 +12,23 @@ import (
 // InventoryItem represents inventory at a specific warehouse for a specific product.
 // It is the aggregate root for inventory operations.
 // The composite identifier is WarehouseID + ProductID.
+//
+// DDD Aggregate Boundary:
+// InventoryItem is the aggregate root that manages:
+// - Stock quantities (available, locked)
+// - Unit cost calculations
+// - Stock thresholds (min, max)
+// - Child entities: StockBatch and StockLock
+//
+// All modifications to inventory state, including batches and locks, MUST go through
+// this aggregate root's methods. External code should NEVER directly modify the
+// Batches or Locks slices - use the provided methods instead:
+// - IncreaseStock() - adds stock and optionally creates a batch
+// - LockStock() - creates a lock and moves quantity from available to locked
+// - UnlockStock() - releases a lock and moves quantity from locked to available
+// - DeductStock() - consumes a lock and decreases locked quantity
+// - DecreaseStock() - directly decreases available stock (for returns)
+// - AdjustStock() - adjusts stock to match actual count
 type InventoryItem struct {
 	shared.TenantAggregateRoot
 	WarehouseID       uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:idx_inventory_item_warehouse_product,priority:2"`

@@ -29,9 +29,20 @@ type CostStrategyProvider interface {
 }
 
 // InventoryService handles inventory-related business operations
+//
+// DDD Aggregate Boundary Notes:
+//   - InventoryItem is the aggregate root for inventory operations
+//   - StockBatch is a child entity within the InventoryItem aggregate. Batches are created
+//     and modified ONLY through the aggregate root methods (e.g., IncreaseStock). There is
+//     NO direct repository access for batches in this service - all batch persistence happens
+//     automatically when the aggregate root is saved via GORM's association handling.
+//   - StockLock is also a child entity within the InventoryItem aggregate. Locks are created
+//     and modified through the aggregate root methods (LockStock, UnlockStock, DeductStock).
+//     The lockRepo is used for cross-aggregate READ queries (e.g., FindExpired, FindBySource)
+//     and for persisting individual lock updates. However, the aggregate root MUST be the
+//     authoritative source for all lock state changes.
 type InventoryService struct {
 	inventoryRepo    inventory.InventoryItemRepository
-	batchRepo        inventory.StockBatchRepository
 	lockRepo         inventory.StockLockRepository
 	transactionRepo  inventory.InventoryTransactionRepository
 	tenantRepo       identity.TenantRepository
@@ -41,24 +52,46 @@ type InventoryService struct {
 }
 
 // NewInventoryService creates a new InventoryService
+//
+// Deprecated: Use NewInventoryServiceWithLockRepo instead for explicit DDD compliance.
+// This constructor will be removed in a future version.
 func NewInventoryService(
 	inventoryRepo inventory.InventoryItemRepository,
-	batchRepo inventory.StockBatchRepository,
+	_ inventory.StockBatchRepository, // Deprecated: batchRepo is no longer used; batches are persisted via aggregate root
 	lockRepo inventory.StockLockRepository,
 	transactionRepo inventory.InventoryTransactionRepository,
 ) *InventoryService {
 	return &InventoryService{
 		inventoryRepo:   inventoryRepo,
-		batchRepo:       batchRepo,
+		lockRepo:        lockRepo,
+		transactionRepo: transactionRepo,
+	}
+}
+
+// NewInventoryServiceWithLockRepo creates a new InventoryService with explicit repository dependencies.
+// This is the preferred constructor that clearly shows the DDD aggregate boundary:
+// - inventoryRepo: Repository for the InventoryItem aggregate root
+// - lockRepo: Read-only repository for cross-aggregate lock queries (FindExpired, FindBySource)
+// - transactionRepo: Repository for inventory transaction records
+func NewInventoryServiceWithLockRepo(
+	inventoryRepo inventory.InventoryItemRepository,
+	lockRepo inventory.StockLockRepository,
+	transactionRepo inventory.InventoryTransactionRepository,
+) *InventoryService {
+	return &InventoryService{
+		inventoryRepo:   inventoryRepo,
 		lockRepo:        lockRepo,
 		transactionRepo: transactionRepo,
 	}
 }
 
 // NewInventoryServiceWithStrategies creates a new InventoryService with strategy support
+//
+// Deprecated: Use NewInventoryServiceWithLockRepo and SetStrategies methods instead.
+// The batchRepo parameter is no longer used - batches are persisted via aggregate root.
 func NewInventoryServiceWithStrategies(
 	inventoryRepo inventory.InventoryItemRepository,
-	batchRepo inventory.StockBatchRepository,
+	_ inventory.StockBatchRepository, // Deprecated: batchRepo is no longer used; batches are persisted via aggregate root
 	lockRepo inventory.StockLockRepository,
 	transactionRepo inventory.InventoryTransactionRepository,
 	tenantRepo identity.TenantRepository,
@@ -66,7 +99,6 @@ func NewInventoryServiceWithStrategies(
 ) *InventoryService {
 	return &InventoryService{
 		inventoryRepo:    inventoryRepo,
-		batchRepo:        batchRepo,
 		lockRepo:         lockRepo,
 		transactionRepo:  transactionRepo,
 		tenantRepo:       tenantRepo,

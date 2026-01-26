@@ -21857,3 +21857,73 @@ Each model includes:
 - This is a multi-session task due to the large scope (34 domain files, 29+ repositories)
 - Checkpoint commits should be made at logical boundaries
 - Pre-existing error in account_receivable.go (PaymentRecord.ReceivableID undefined) is unrelated to this task
+
+2025-01-26 - DDD-H01: StockBatch/StockLock 通过聚合根访问
+
+=== Implementation Details ===
+
+### Analysis Phase
+- Analyzed StockBatchRepository and StockLockRepository usage across the codebase
+- Found that StockBatchRepository was injected into InventoryService but NEVER used
+- Batches are created through aggregate root methods (IncreaseStock) and stored in item.Batches
+- StockLockRepository IS actively used for cross-aggregate queries (FindExpired, FindBySource)
+  and individual lock persistence after aggregate root state changes
+
+### Design Decision
+Based on DDD aggregate boundary principles:
+
+1. **StockBatch**: Child entity within InventoryItem aggregate
+   - Removed batchRepo field from InventoryService struct
+   - Deprecated batchRepo parameter in constructors (kept for backward compatibility)
+   - Removed BatchRepo() from TransactionalRepositories interface
+   - Batches persist automatically via GORM's association handling when aggregate root is saved
+   - StockBatchRepository interface retained for read-only cross-aggregate queries (e.g., FindExpiringSoon for dashboard alerts)
+
+2. **StockLock**: Child entity with separate storage for query performance
+   - Keeps lockRepo for cross-aggregate READ queries (FindExpired, FindBySource)
+   - All lock state modifications MUST go through aggregate root methods
+   - Lock persistence syncs with aggregate root state changes
+
+### Files Modified
+- `backend/internal/application/inventory/inventory_service.go`:
+  - Added comprehensive DDD documentation to InventoryService struct
+  - Removed batchRepo field from struct
+  - Deprecated batchRepo parameter in NewInventoryService() (kept for backward compatibility)
+  - Added NewInventoryServiceWithLockRepo() as new preferred constructor
+  - Updated NewInventoryServiceWithStrategies() to deprecate batchRepo parameter
+
+- `backend/internal/application/inventory/transaction_scope.go`:
+  - Added DDD documentation to TransactionalRepositories interface
+  - Removed BatchRepo() method from interface
+  - Updated NoOpTransactionScope to remove batchRepo field
+  - Updated NewNoOpTransactionScope() constructor
+
+- `backend/internal/infrastructure/persistence/inventory_transaction_scope.go`:
+  - Added DDD documentation to gormTransactionalRepositories
+  - Removed BatchRepo() method implementation
+
+- `backend/internal/domain/inventory/repository.go`:
+  - Added comprehensive DDD documentation to StockBatchRepository interface
+  - Marked Save, SaveBatch, Delete methods as deprecated
+  - Added comprehensive DDD documentation to StockLockRepository interface
+
+- `backend/internal/domain/inventory/inventory_item.go`:
+  - Added comprehensive DDD aggregate boundary documentation
+
+=== Verification ===
+- go build ./... - PASSED
+- go vet ./... - PASSED
+- go test ./internal/domain/inventory/... - All tests PASSED
+- go test ./internal/application/inventory/... - All tests PASSED
+- go test ./internal/infrastructure/persistence/... - All tests PASSED
+- go test ./internal/interfaces/http/handler/... - All tests PASSED
+
+=== Notes ===
+- Constructor backward compatibility maintained: Old constructors accept batchRepo but ignore it
+- StockBatchRepository interface retained for read-only queries (dashboards, reporting)
+- StockLockRepository retained for cross-aggregate queries required by business logic
+- All modification write paths now go through aggregate root methods
+
+=== Next Steps ===
+- Consider creating a dedicated BatchQueryService for dashboard/reporting batch queries
+- Consider similar refactoring for other bounded contexts if needed

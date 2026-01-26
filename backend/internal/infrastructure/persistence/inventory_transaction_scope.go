@@ -30,6 +30,14 @@ func (s *GormTransactionScope) Execute(ctx context.Context, fn func(repos appinv
 }
 
 // gormTransactionalRepositories provides access to all repositories within a transaction.
+//
+// DDD Aggregate Boundary Notes:
+// - InventoryRepo: Repository for the InventoryItem aggregate root
+// - LockRepo: Used for cross-aggregate lock queries and persistence
+// - TransactionRepo: Append-only repository for inventory transactions
+//
+// Note: StockBatch is a child entity within InventoryItem and does not have
+// independent repository access in this transactional context.
 type gormTransactionalRepositories struct {
 	tx *gorm.DB
 }
@@ -47,11 +55,6 @@ func (r *gormTransactionalRepositories) LockRepo() inventory.StockLockRepository
 // TransactionRepo returns the inventory transaction repository scoped to the current transaction.
 func (r *gormTransactionalRepositories) TransactionRepo() inventory.InventoryTransactionRepository {
 	return NewGormInventoryTransactionRepository(r.tx)
-}
-
-// BatchRepo returns the stock batch repository scoped to the current transaction.
-func (r *gormTransactionalRepositories) BatchRepo() inventory.StockBatchRepository {
-	return NewGormStockBatchRepository(r.tx)
 }
 
 // Ensure GormTransactionScope implements TransactionScope

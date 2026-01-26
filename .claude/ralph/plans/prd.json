@@ -4684,7 +4684,7 @@
       "通过 InventoryItemRepository 访问批次和锁",
       "或将其提升为独立聚合（如有独立生命周期）"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "HIGH",

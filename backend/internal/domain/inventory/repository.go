@@ -72,7 +72,19 @@ type InventoryItemRepository interface {
 	GetOrCreate(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (*InventoryItem, error)
 }
 
-// StockBatchRepository defines the interface for stock batch persistence
+// StockBatchRepository defines the interface for stock batch persistence.
+//
+// DDD Aggregate Boundary Notes:
+// StockBatch is a child entity within the InventoryItem aggregate. According to DDD principles,
+// child entities should be accessed and modified through the aggregate root.
+//
+// IMPORTANT: This repository should ONLY be used for READ operations that span multiple
+// aggregates (e.g., dashboard queries for expiring batches, reporting). All batch modifications
+// (create, update, delete) MUST go through the InventoryItem aggregate root methods.
+//
+// The application layer (InventoryService) does NOT use this repository for modifications.
+// Batches are automatically persisted when the InventoryItem aggregate is saved via GORM's
+// association handling.
 type StockBatchRepository interface {
 	// FindByID finds a stock batch by its ID
 	FindByID(ctx context.Context, id uuid.UUID) (*StockBatch, error)
@@ -93,19 +105,44 @@ type StockBatchRepository interface {
 	FindByBatchNumber(ctx context.Context, inventoryItemID uuid.UUID, batchNumber string) (*StockBatch, error)
 
 	// Save creates or updates a stock batch
+	// Deprecated: Use InventoryItemRepository.Save() instead. Batches should be modified
+	// through the aggregate root.
 	Save(ctx context.Context, batch *StockBatch) error
 
 	// SaveBatch creates or updates multiple stock batches
+	// Deprecated: Use InventoryItemRepository.Save() instead. Batches should be modified
+	// through the aggregate root.
 	SaveBatch(ctx context.Context, batches []StockBatch) error
 
 	// Delete deletes a stock batch
+	// Deprecated: Use InventoryItemRepository.Save() instead. Batches should be modified
+	// through the aggregate root.
 	Delete(ctx context.Context, id uuid.UUID) error
 
 	// CountByInventoryItem counts batches for an inventory item
 	CountByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID) (int64, error)
 }
 
-// StockLockRepository defines the interface for stock lock persistence
+// StockLockRepository defines the interface for stock lock persistence.
+//
+// DDD Aggregate Boundary Notes:
+// StockLock is a child entity within the InventoryItem aggregate. According to DDD principles,
+// child entities should be accessed and modified through the aggregate root.
+//
+// This repository is used for:
+//  1. Cross-aggregate READ queries (FindExpired, FindBySource) - needed for business operations
+//     that span multiple inventory items (e.g., releasing all locks for a cancelled order)
+//  2. Persisting individual lock state changes - locks are stored in a separate table for
+//     query performance, but state changes MUST originate from InventoryItem domain methods
+//
+// The application layer (InventoryService) uses this repository to:
+// - Find locks by ID, source, or expiry status (READ operations)
+// - Save lock state changes AFTER the aggregate root has processed them (persistence sync)
+//
+// All lock state transitions (create, release, consume) MUST go through InventoryItem methods:
+// - LockStock() creates a lock
+// - UnlockStock() releases a lock
+// - DeductStock() consumes a lock
 type StockLockRepository interface {
 	// FindByID finds a stock lock by its ID
 	FindByID(ctx context.Context, id uuid.UUID) (*StockLock, error)
