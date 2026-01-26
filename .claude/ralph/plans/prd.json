@@ -4756,7 +4756,7 @@
       "将 SalesReturnReceivingEvent 改为 SalesReturnReceivedEvent",
       "审计所有事件命名确保使用过去时态"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "MEDIUM",

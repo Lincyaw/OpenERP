@@ -14,7 +14,7 @@ const (
 	EventTypeSalesReturnCreated   = "SalesReturnCreated"
 	EventTypeSalesReturnSubmitted = "SalesReturnSubmitted"
 	EventTypeSalesReturnApproved  = "SalesReturnApproved"
-	EventTypeSalesReturnReceiving = "SalesReturnReceiving"
+	EventTypeSalesReturnReceived  = "SalesReturnReceived"
 	EventTypeSalesReturnRejected  = "SalesReturnRejected"
 	EventTypeSalesReturnCompleted = "SalesReturnCompleted"
 	EventTypeSalesReturnCancelled = "SalesReturnCancelled"
@@ -181,9 +181,9 @@ func (e *SalesReturnApprovedEvent) EventType() string {
 	return EventTypeSalesReturnApproved
 }
 
-// SalesReturnReceivingEvent is raised when a sales return starts receiving process
+// SalesReturnReceivedEvent is raised when a sales return starts receiving process
 // This event triggers stock restoration in the inventory context
-type SalesReturnReceivingEvent struct {
+type SalesReturnReceivedEvent struct {
 	shared.BaseDomainEvent
 	ReturnID         uuid.UUID             `json:"return_id"`
 	ReturnNumber     string                `json:"return_number"`
@@ -196,8 +196,8 @@ type SalesReturnReceivingEvent struct {
 	TotalRefund      decimal.Decimal       `json:"total_refund"`
 }
 
-// NewSalesReturnReceivingEvent creates a new SalesReturnReceivingEvent
-func NewSalesReturnReceivingEvent(sr *SalesReturn) *SalesReturnReceivingEvent {
+// NewSalesReturnReceivedEvent creates a new SalesReturnReceivedEvent
+func NewSalesReturnReceivedEvent(sr *SalesReturn) *SalesReturnReceivedEvent {
 	items := make([]SalesReturnItemInfo, len(sr.Items))
 	for i, item := range sr.Items {
 		items[i] = SalesReturnItemInfo{
@@ -221,8 +221,8 @@ func NewSalesReturnReceivingEvent(sr *SalesReturn) *SalesReturnReceivingEvent {
 		warehouseID = *sr.WarehouseID
 	}
 
-	return &SalesReturnReceivingEvent{
-		BaseDomainEvent:  shared.NewBaseDomainEvent(EventTypeSalesReturnReceiving, AggregateTypeSalesReturn, sr.ID, sr.TenantID),
+	return &SalesReturnReceivedEvent{
+		BaseDomainEvent:  shared.NewBaseDomainEvent(EventTypeSalesReturnReceived, AggregateTypeSalesReturn, sr.ID, sr.TenantID),
 		ReturnID:         sr.ID,
 		ReturnNumber:     sr.ReturnNumber,
 		SalesOrderID:     sr.SalesOrderID,
@@ -236,8 +236,8 @@ func NewSalesReturnReceivingEvent(sr *SalesReturn) *SalesReturnReceivingEvent {
 }
 
 // EventType returns the event type name
-func (e *SalesReturnReceivingEvent) EventType() string {
-	return EventTypeSalesReturnReceiving
+func (e *SalesReturnReceivedEvent) EventType() string {
+	return EventTypeSalesReturnReceived
 }
 
 // SalesReturnRejectedEvent is raised when a sales return is rejected

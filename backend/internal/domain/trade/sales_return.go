@@ -480,7 +480,7 @@ func (r *SalesReturn) Receive() error {
 	r.UpdatedAt = now
 	r.IncrementVersion()
 
-	r.AddDomainEvent(NewSalesReturnReceivingEvent(r))
+	r.AddDomainEvent(NewSalesReturnReceivedEvent(r))
 
 	return nil
 }

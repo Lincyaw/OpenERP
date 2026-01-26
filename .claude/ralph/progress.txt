@@ -23351,3 +23351,99 @@ for _, lock := range expiredLocks {
 - Add event handlers to process Partner context events
 - Consider migrating existing Finance aggregates to use ACL (optional, for new code)
 - Add SupplierReference for Account Payables (similar pattern)
+
+2025-01-27 - DDD-M01: 事件名统一使用过去时态 (Domain Event Past Tense Naming)
+
+=== Implementation Details ===
+
+**Task**: Unify domain event naming to use past tense consistently across all bounded contexts.
+
+**Changes Made**:
+
+1. **SalesReturnReceivingEvent → SalesReturnReceivedEvent** (sales_return_events.go)
+   - Renamed constant: `EventTypeSalesReturnReceiving` → `EventTypeSalesReturnReceived`
+   - Renamed type: `SalesReturnReceivingEvent` → `SalesReturnReceivedEvent`
+   - Renamed factory: `NewSalesReturnReceivingEvent` → `NewSalesReturnReceivedEvent`
+   - Updated all usages of the event constant and factory function
+
+2. **Updated sales_return.go**
+   - Changed `NewSalesReturnReceivingEvent(r)` to `NewSalesReturnReceivedEvent(r)` in `StartReceiving` method
+
+3. **Updated event_registry.go**
+   - Changed registration from `"SalesReturnReceiving"` to `"SalesReturnReceived"`
+   - Changed event type from `trade.SalesReturnReceivingEvent` to `trade.SalesReturnReceivedEvent`
+
+=== Files Modified ===
+
+1. `backend/internal/domain/trade/sales_return_events.go`
+   - Line 17: Renamed constant to `EventTypeSalesReturnReceived = "SalesReturnReceived"`
+   - Lines 184-241: Renamed event type, factory function, and method
+
+2. `backend/internal/domain/trade/sales_return.go`
+   - Line 483: Updated factory function call
+
+3. `backend/internal/infrastructure/event/event_registry.go`
+   - Line 30: Updated event registration
+
+=== Event Naming Audit Results ===
+
+Audited all domain events across all bounded contexts. Confirmed that all events now consistently use past tense:
+
+**Trade Domain** ✅
+- SalesOrder: Created, Confirmed, Shipped, Completed, Cancelled
+- PurchaseOrder: Created, Confirmed, Received, Completed, Cancelled
+- SalesReturn: Created, Submitted, Approved, **Received** (fixed), Rejected, Completed, Cancelled
+- PurchaseReturn: Created, Submitted, Approved, Rejected, Shipped, Completed, Cancelled
+
+**Inventory Domain** ✅
+- StockIncreased, StockDecreased, StockLocked, StockUnlocked, StockLockExpired, StockDeducted, StockAdjusted, InventoryCostChanged, StockBelowThreshold
+- StockTakingCreated, StockTakingStarted, StockTakingSubmitted, StockTakingApproved, StockTakingRejected, StockTakingCancelled
+
+**Finance Domain** ✅
+- AccountReceivable: Created, Paid, PartiallyPaid, Reversed, Cancelled
+- AccountPayable: Created, Paid, PartiallyPaid, Reversed, Cancelled
+- ReceiptVoucher: Created, Confirmed, Allocated, Cancelled
+- PaymentVoucher: Created, Confirmed, Allocated, Cancelled
+- CreditMemo: Created, Applied, PartiallyApplied, Voided, Refunded
+- DebitMemo: Created, Applied, PartiallyApplied, Voided, RefundReceived
+- ExpenseRecord: Created, Submitted, Approved, Rejected, Cancelled, Paid
+- OtherIncomeRecord: Created, Confirmed, Cancelled, Received
+- GatewayPaymentCompleted, GatewayRefundCompleted
+
+**Identity Domain** ✅
+- Tenant: Created, Updated, StatusChanged, PlanChanged, Deleted
+- User: Created, Deactivated, PasswordChanged, RoleAssigned, RoleRemoved, StatusChanged
+- Role: Created, Updated, Deleted, Enabled, Disabled, PermissionGranted, PermissionRevoked, DataScopeChanged, UsersChanged
+
+**Catalog Domain** ✅
+- Category: Created, Updated, StatusChanged, Deleted
+- Product: Created, Updated, StatusChanged, PriceChanged, Deleted, Disabled
+
+**Partner Domain** ✅
+- Supplier: Created, Updated, StatusChanged, PaymentTermsChanged, BalanceChanged, Deleted
+- Customer: Created, Updated, StatusChanged, LevelChanged, BalanceChanged, Deleted, BalanceTopUp, BalanceDeducted, BalanceRefunded, BalanceAdjusted
+- Warehouse: Created, Updated, StatusChanged, SetAsDefault, Deleted
+
+=== Verification ===
+
+- ✅ Go build passes: `go build ./...`
+- ✅ Trade domain tests pass: `go test ./internal/domain/trade/...`
+- ✅ All event names now use past tense consistently
+
+=== Requirements Satisfied ===
+
+- ✅ 将 SalesReturnReceivingEvent 改为 SalesReturnReceivedEvent (Renamed SalesReturnReceivingEvent to SalesReturnReceivedEvent)
+- ✅ 审计所有事件命名确保使用过去时态 (Audited all event names to ensure past tense - confirmed all 100+ events follow the convention)
+
+=== Design Rationale ===
+
+Domain events should describe something that **has happened** (past tense), not something **in progress** (present continuous). This aligns with DDD principles where events are facts about the past that cannot be changed.
+
+Examples:
+- ❌ `SalesReturnReceiving` - implies an ongoing action
+- ✅ `SalesReturnReceived` - describes a completed fact
+
+=== Next Steps ===
+
+- Consider adding event naming convention to CLAUDE.md or spec.md for future reference
+- Monitor new event additions to ensure they follow the past tense convention

@@ -27,7 +27,7 @@ func RegisterAllEvents(serializer *EventSerializer) {
 	serializer.Register("SalesReturnCreated", &trade.SalesReturnCreatedEvent{})
 	serializer.Register("SalesReturnSubmitted", &trade.SalesReturnSubmittedEvent{})
 	serializer.Register("SalesReturnApproved", &trade.SalesReturnApprovedEvent{})
-	serializer.Register("SalesReturnReceiving", &trade.SalesReturnReceivingEvent{})
+	serializer.Register("SalesReturnReceived", &trade.SalesReturnReceivedEvent{})
 	serializer.Register("SalesReturnRejected", &trade.SalesReturnRejectedEvent{})
 	serializer.Register("SalesReturnCompleted", &trade.SalesReturnCompletedEvent{})
 	serializer.Register("SalesReturnCancelled", &trade.SalesReturnCancelledEvent{})
