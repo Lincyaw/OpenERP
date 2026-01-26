@@ -4359,7 +4359,7 @@
       "Return success for duplicate events without reprocessing",
       "Add metrics for duplicate event detection"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 7.3 - Event Idempotency",
     "affectedModules": [
       "backend/internal/application/trade/sales_order_event_handlers.go",

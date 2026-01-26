@@ -20303,3 +20303,94 @@ New files:
 === Next Steps ===
 - Frontend integration for customer balance recharge form
 - E2E testing for complete recharge flow
+
+2026-01-26 - Task DDD-018: Event Handler Idempotency Keys
+
+=== Implementation Details ===
+- Implemented comprehensive idempotency infrastructure for event handlers per spec.md Section 7.3
+- Created IdempotencyStore interface in domain/shared/idempotency.go with:
+  - MarkProcessed(ctx, eventID, ttl) - Atomic mark-if-not-exists operation
+  - IsProcessed(ctx, eventID) - Check if event was already processed
+  - Close() - Clean up resources
+- Implemented two store backends:
+  1. InMemoryIdempotencyStore - For single-instance deployments and testing
+     - Thread-safe with sync.RWMutex
+     - Automatic expired entry cleanup via background goroutine
+     - sync.Once for safe multiple Close() calls
+  2. RedisIdempotencyStore - For distributed deployments
+     - Uses SETNX for atomic check-and-set
+     - Key prefix "event:idempotency:" for Redis key namespace
+     - TTL-based automatic expiration
+- Created IdempotentHandler wrapper that:
+  - Wraps any EventHandler with idempotency checking
+  - Tracks metrics: EventsProcessed, EventsDuplicate, EventsFailed
+  - Supports configurable TTL (default 24 hours)
+  - Falls through to process on store errors (availability over correctness)
+  - Returns success for duplicate events (idempotent response)
+- Added IdempotencyStoreFactory with:
+  - Logger injection for operational visibility
+  - Configurable in-memory fallback (allowInMemoryFallback option)
+  - Warning logs when falling back to in-memory store
+
+=== Key Files Created ===
+- backend/internal/domain/shared/idempotency.go - Interface and config
+- backend/internal/infrastructure/cache/inmemory_idempotency_store.go - In-memory impl
+- backend/internal/infrastructure/cache/redis_idempotency_store.go - Redis impl
+- backend/internal/infrastructure/cache/factory.go - Store factory
+- backend/internal/infrastructure/event/idempotent_handler.go - Handler wrapper
+- backend/internal/infrastructure/cache/inmemory_idempotency_store_test.go - Tests
+- backend/internal/infrastructure/event/idempotent_handler_test.go - Tests
+
+=== Dependencies Added ===
+- github.com/redis/go-redis/v9 v9.17.3
+
+=== Usage Example ===
+```go
+// Create idempotency store
+factory := cache.NewIdempotencyStoreFactory(cfg.Redis,
+    cache.WithLogger(logger),
+    cache.WithInMemoryFallback(true),
+)
+store, err := factory.CreateStore()
+defer store.Close()
+
+// Wrap handler with idempotency
+handler := event.NewIdempotentHandler(
+    myEventHandler,
+    store,
+    logger,
+    event.WithIdempotencyMetrics(event.GlobalIdempotencyMetrics),
+)
+
+// Or wrap multiple handlers at once
+handlers := event.WrapHandlersWithIdempotency(
+    []shared.EventHandler{handler1, handler2},
+    store,
+    logger,
+)
+```
+
+=== Verification ===
+- All unit tests pass (go test ./internal/infrastructure/cache/... ./internal/infrastructure/event/...)
+- Build succeeds (go build ./...)
+- Code review completed - addressed fallback warnings and documentation
+
+=== Design Decisions ===
+1. **Fail-open on store errors**: If idempotency store is unavailable, process the event anyway
+   (better to risk duplicate processing than to drop events)
+2. **No key removal on handler failure**: Failed events cannot be immediately retried
+   (prevents rapid retry storms; TTL provides natural cooldown)
+3. **Global metrics variable**: Provided for convenience in single-application deployments
+   (can inject custom metrics for multi-tenant scenarios)
+
+=== Future Improvements (from code review) ===
+- Add integration tests for Redis store with testcontainers
+- Make cleanup interval configurable for in-memory store
+- Add configurable retry window shorter than TTL for failed events
+- Add context cancellation handling in store operations
+- Add Redis TLS support for secure connections
+
+=== Next Steps ===
+- Integration test for idempotency in real event flow
+- Consider adding idempotency key prefix per handler type
+- Add Prometheus/metrics endpoint for idempotency stats
