@@ -4282,9 +4282,14 @@
       "",
       "验证:",
       "- 在所有带操作列的表格页面测试三个点菜单",
-      "- 确认无JS错误且菜单正确弹出"
+      "- 确认无JS错误且菜单正确弹出",
+      "",
+      "=== 2026-01-26 已修复 ===",
+      "✅ 在TableActions.tsx中添加getPopupContainer={() => document.body}",
+      "✅ TypeScript类型检查通过",
+      "✅ 前端build成功"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P10-BUG-011",

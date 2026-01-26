@@ -17939,3 +17939,66 @@ result := tx.Model(...).Where("id = ? AND version = ?", order.ID, currentVersion
 ### Note
 Also fixed pre-existing test issues where status assertions expected uppercase (SHIPPED) but DTO returns lowercase (shipped).
 
+
+---
+
+## P10-BUG-010: 修复表格操作下拉菜单getBoundingClientRect报错 (2026-01-26)
+
+### Task
+Fix the "Uncaught TypeError: n.getBoundingClientRect is not a function" error that occurred when clicking the three-dot action menu in table rows.
+
+### Root Cause Analysis
+When the TableActions Dropdown component is rendered inside a fixed-position table column, the dropdown positioning calculation fails because it cannot correctly compute the bounding rectangle of the trigger element within the fixed column context.
+
+### Solution
+Added `getPopupContainer={() => document.body}` prop to the Dropdown component in TableActions.tsx. This mounts the dropdown menu directly to document.body, bypassing the fixed column positioning issues.
+
+This pattern is already used successfully in other components:
+- `LanguageSwitcher.tsx` (line 63)
+- `Header.tsx` (line 165)
+- `TenantSwitcher.tsx` (line 196)
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/components/common/table/TableActions.tsx` | Added `getPopupContainer={() => document.body}` to Dropdown component |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-010 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+
+### Fix Details
+```tsx
+// Before: No getPopupContainer
+<Dropdown
+  trigger="click"
+  position="bottomRight"
+  clickToHide
+  menu={dropdownMenu}
+  className="table-actions-dropdown"
+>
+
+// After: Added getPopupContainer
+<Dropdown
+  trigger="click"
+  position="bottomRight"
+  clickToHide
+  menu={dropdownMenu}
+  className="table-actions-dropdown"
+  getPopupContainer={() => document.body}
+>
+```
+
+### Impact
+This fix affects all table pages that use the TableActions component for row-level operations, including:
+- Product list
+- Customer list
+- Supplier list
+- Sales orders
+- Purchase orders
+- Inventory items
+- Stock taking
+- And all other tables with action columns
+

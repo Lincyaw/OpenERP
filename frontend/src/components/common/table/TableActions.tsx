@@ -196,6 +196,7 @@ export function TableActions<T>({
             clickToHide
             menu={dropdownMenu}
             className="table-actions-dropdown"
+            getPopupContainer={() => document.body}
           >
             <Button
               size={size}
