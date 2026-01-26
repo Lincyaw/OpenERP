@@ -22528,3 +22528,94 @@ Frontend:
 - Add CSP header for additional XSS protection
 - Monitor production for any cookie-related issues
 
+
+2026-01-26 - Task SEC-005: CORS 配置安全加固
+
+=== Implementation Details ===
+
+Fixed 3 security issues in CORS configuration:
+
+1. **Max-Age Header Bug Fix** (CRITICAL)
+   - **Issue**: `string(rune(int(cfg.MaxAge.Seconds())))` was converting seconds to Unicode character
+   - **Example**: 43200 seconds (12 hours) produced Unicode U+A8C0 instead of "43200"
+   - **Fix**: Changed to `strconv.Itoa(int(cfg.MaxAge.Seconds()))` for proper decimal string conversion
+
+2. **Empty Whitelist Default** (HIGH)
+   - **Issue**: `DefaultCORSConfig()` used `AllowOrigins: []string{"*"}` (allow all origins)
+   - **Fix**: Changed to `AllowOrigins: []string{}` (empty - deny all cross-origin by default)
+   - This follows "secure by default" principle - explicit configuration required
+
+3. **Config Default Removal** (MEDIUM)
+   - **Issue**: `applyDefaults()` in config.go fell back to `"*"` for empty CORS origins
+   - **Fix**: Removed the fallback, added documentation explaining secure default
+   - Production validation already rejects `"*"` wildcard
+
+=== Files Modified ===
+
+1. `backend/internal/interfaces/http/middleware/common.go`:
+   - Added `strconv` import
+   - Changed `DefaultCORSConfig()` to use empty AllowOrigins
+   - Refactored `CORSWithConfig()` to properly handle empty whitelist
+   - Fixed Max-Age header to use `strconv.Itoa()` instead of `string(rune())`
+   - Extracted `setCORSHeaders()` helper function
+
+2. `backend/internal/infrastructure/config/config.go`:
+   - Removed `cfg.HTTP.CORSAllowOrigins = []string{"*"}` default fallback
+   - Added documentation explaining secure default behavior
+
+3. `backend/internal/interfaces/http/middleware/common_test.go`:
+   - Updated `TestCORS` to test empty whitelist default behavior
+   - Added `TestCORSWithConfig/empty_whitelist_rejects_all_cross_origin_requests`
+   - Added `TestCORSWithConfig/credentials_not_set_with_wildcard_origin_even_if_configured`
+   - Added `TestMaxAgeHeaderFormat` with multiple duration test cases
+   - Updated `TestDefaultCORSConfig` to verify empty AllowOrigins
+
+=== Key Design Decisions ===
+
+1. **Secure by Default**: Empty whitelist means no CORS headers are set, blocking all cross-origin requests until explicitly configured. This is more secure than allowing all by default.
+
+2. **Defense in Depth**: Multiple layers of protection:
+   - Empty default in middleware
+   - No fallback to `"*"` in config
+   - Production validation rejects wildcard
+   - Credentials not sent with wildcard origin
+
+3. **OPTIONS Handling**: Preflight OPTIONS requests always return 204, but CORS headers only set for allowed origins. Browsers reject requests when headers are missing.
+
+4. **Backward Compatibility**: `config.toml` provides working development defaults (`["http://localhost:3000", "http://127.0.0.1:3000"]`), so development workflow is not broken.
+
+=== Verification ===
+
+- TypeScript/Go build: PASSED
+- Unit tests: 14 CORS test cases all PASS
+- Security review: APPROVED (no issues found)
+  - Empty whitelist default verified
+  - Max-Age fix verified
+  - Production validation verified
+  - Wildcard + credentials protection verified
+
+=== Security Review Summary ===
+
+- 0 Critical issues
+- 0 High issues  
+- 0 Medium issues
+- 0 Low issues
+- Risk Level: LOW (GREEN)
+
+All OWASP CORS best practices followed:
+- [x] Explicit origin whitelist
+- [x] No wildcard with credentials
+- [x] Proper Max-Age format
+- [x] Production environment validation
+
+=== Notes ===
+
+- The config.toml already had explicit origins for development
+- Production environments MUST configure `cors_allow_origins` explicitly
+- The `"*"` wildcard is still allowed for non-production environments
+- Browsers will reject requests when CORS headers are missing (secure fail mode)
+
+=== Next Steps ===
+
+- Review other SEC-* tasks for remaining security issues
+- Consider adding CORS origin validation for URL format

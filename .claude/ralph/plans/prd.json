@@ -4415,7 +4415,7 @@
       "修复 Max-Age header 的 string(rune()) bug",
       "确保生产环境使用明确配置的域名"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "HIGH",
@@ -4433,7 +4433,7 @@
       "添加 Strict-Transport-Security header",
       "添加 Permissions-Policy header"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "HIGH",
