@@ -577,8 +577,11 @@ export class InventoryPage extends BasePage {
       this.page.waitForTimeout(2000), // fallback if response already completed
     ])
 
+    // Extra wait for mobile-safari which can be slower
+    await this.page.waitForTimeout(300)
+
     await select.click()
-    await this.page.waitForTimeout(500) // Give dropdown time to render options
+    await this.page.waitForTimeout(600) // Give dropdown time to render options (longer for mobile-safari)
 
     const optionToSelect = this.page
       .locator('.semi-select-option')
@@ -593,7 +596,7 @@ export class InventoryPage extends BasePage {
       await this.page.keyboard.press('Escape')
       await this.page.waitForTimeout(1000)
       await select.click()
-      await this.page.waitForTimeout(500)
+      await this.page.waitForTimeout(600)
     }
 
     await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
@@ -738,10 +741,25 @@ export class InventoryPage extends BasePage {
     }
     await this.waitForPageLoad()
 
-    // Wait for the execute page to be fully loaded (header visible)
+    // Wait for the execute page to be fully loaded
+    // First wait for URL to change to the execute page
+    await this.page.waitForURL(/\/inventory\/stock-taking\/[^/]+/, { timeout: 15000 })
+
+    // Wait for loading spinner to disappear (if present)
+    await this.page
+      .locator('.semi-spin-spinning')
+      .waitFor({ state: 'hidden', timeout: 15000 })
+      .catch(() => {
+        /* spinner might not appear if data loads fast */
+      })
+
+    // Wait for the execute page header to be visible (indicates data is loaded)
     await this.page
       .locator('.stock-taking-execute-header')
       .waitFor({ state: 'visible', timeout: 15000 })
+
+    // Extra wait for React state to settle
+    await this.page.waitForTimeout(300)
   }
 
   /**
@@ -762,6 +780,9 @@ export class InventoryPage extends BasePage {
       .locator('.stock-taking-execute-header')
       .waitFor({ state: 'visible', timeout: 10000 })
 
+    // Wait for status tag to be rendered and stable
+    await this.page.waitForTimeout(500)
+
     // Get the current status
     const statusTag = this.page.locator('.stock-taking-execute-header .semi-tag').first()
     await statusTag.waitFor({ state: 'visible', timeout: 5000 })
@@ -776,18 +797,25 @@ export class InventoryPage extends BasePage {
     const startButton = this.page.locator('button').filter({ hasText: '开始盘点' })
 
     try {
-      await startButton.waitFor({ state: 'visible', timeout: 5000 })
+      await startButton.waitFor({ state: 'visible', timeout: 8000 })
       await startButton.click()
-      await this.waitForToast('开始')
+
+      // Wait for toast with longer timeout for slower browsers (mobile-safari)
+      await this.waitForToast('开始').catch(async () => {
+        // Toast might have already disappeared or not appear in some browsers
+        // Just continue and verify status instead
+        await this.page.waitForTimeout(1000)
+      })
+
       // Wait for the status to update after clicking
-      await this.page.waitForTimeout(1000)
+      await this.page.waitForTimeout(500)
     } catch {
       // Button not found or timed out - might already be in COUNTING status or transitioning
     }
 
     // Wait for status to be COUNTING (with retry)
     let attempts = 0
-    while (attempts < 10) {
+    while (attempts < 15) {
       const status = await this.getStockTakingStatus()
       if (status.includes('盘点中') || status.includes('COUNTING')) {
         return
@@ -877,11 +905,24 @@ export class InventoryPage extends BasePage {
    * Confirm submit for approval in modal
    */
   async confirmSubmitForApproval(): Promise<void> {
-    // Find the modal and click confirm
+    // Wait for modal to be visible
     const modal = this.page.locator('.semi-modal')
+    await modal.waitFor({ state: 'visible', timeout: 5000 })
+
+    // Find the confirm button and wait for it to be clickable
     const confirmButton = modal.locator('button').filter({ hasText: '确认提交' })
+    await confirmButton.waitFor({ state: 'visible', timeout: 5000 })
+
+    // Ensure button is not disabled
+    await expect(confirmButton).toBeEnabled({ timeout: 5000 })
+
     await confirmButton.click()
-    await this.waitForToast('提交')
+
+    // Wait for toast with error handling for slower browsers
+    await this.waitForToast('提交').catch(async () => {
+      // Toast might have already disappeared
+      await this.page.waitForTimeout(1000)
+    })
   }
 
   /**

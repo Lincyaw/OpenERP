@@ -17538,3 +17538,58 @@ Updated `frontend/tests/e2e/pages/InventoryPage.ts`:
 
 ### Verification
 - TypeScript check: PASS
+
+---
+
+## 2026-01-26 - P9-FIX-001: Stock Taking E2E Test Timing Improvements (Continued)
+
+### Completed
+- **P9-FIX-001**: Further improved stock-taking E2E test timing for mobile-safari compatibility
+
+### What was done
+Enhanced timing and wait strategies in InventoryPage.ts E2E page object methods to improve test stability across all browsers, especially mobile-safari.
+
+#### Changes Made
+
+1. **clickStockTakingExecute()** - Enhanced wait strategy
+   - Added wait for URL change to execute page
+   - Added explicit wait for loading spinner to disappear
+   - Added wait for header visibility
+   - Added extra 300ms wait for React state to settle
+
+2. **clickStartCounting()** - Enhanced mobile-safari compatibility
+   - Added 500ms wait after page load for status tag stability
+   - Increased button wait timeout from 5s to 8s
+   - Added error handling for Toast wait (slower browsers may miss toast)
+   - Reduced wait after button click from 1000ms to 500ms
+   - Increased retry attempts from 10 to 15 for status verification
+
+3. **selectStockTakingWarehouse()** - Enhanced dropdown interaction
+   - Added 300ms extra wait after API response
+   - Increased dropdown render wait from 500ms to 600ms for mobile-safari
+
+4. **confirmSubmitForApproval()** - Enhanced modal interaction
+   - Added explicit wait for modal visibility
+   - Added wait and assertion for confirm button enabled state
+   - Added error handling for Toast wait
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `frontend/tests/e2e/pages/InventoryPage.ts` | Enhanced timing for 4 methods |
+| `.claude/ralph/plans/prd.json` | Updated P9-FIX-001 requirements |
+
+### Verification
+- TypeScript check: PASS
+
+### Technical Notes
+- mobile-safari has slower JavaScript execution and rendering
+- Semi Design dropdowns need extra time to render options after API calls
+- Toast notifications may appear and disappear quickly in faster browsers
+- The fixes use catch blocks for Toast waits to avoid test failures when toast timing varies
+
+### Next Steps
+- Run E2E tests in Docker to verify fixes: `make e2e ARGS="tests/e2e/inventory/stock-taking.spec.ts"`
+- If all tests pass, mark P9-FIX-001 as passes: true
+- Then proceed to P2-INT-002 completion
+
