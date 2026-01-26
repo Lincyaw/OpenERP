@@ -176,10 +176,16 @@ export function useNumberFormatter() {
 
   /**
    * Format a number with locale-specific formatting
+   * Handles both number and string values (API may return decimal as string)
    */
   const formatNumber = useCallback(
-    (value: number, options: NumberFormatOptions = {}): string => {
-      if (typeof value !== 'number' || isNaN(value)) return ''
+    (value: number | string | undefined | null, options: NumberFormatOptions = {}): string => {
+      if (value === undefined || value === null) return ''
+
+      // Convert string to number if needed (API returns decimal as string)
+      const numValue = typeof value === 'string' ? parseFloat(value) : value
+
+      if (typeof numValue !== 'number' || isNaN(numValue)) return ''
 
       const {
         style = 'decimal',
@@ -195,16 +201,17 @@ export function useNumberFormatter() {
         minimumFractionDigits,
         maximumFractionDigits,
         useGrouping,
-      }).format(value)
+      }).format(numValue)
     },
     [language, defaultCurrency]
   )
 
   /**
    * Format as currency
+   * Handles both number and string values (API may return decimal as string)
    */
   const formatCurrency = useCallback(
-    (value: number, currency?: string): string => {
+    (value: number | string | undefined | null, currency?: string): string => {
       return formatNumber(value, {
         style: 'currency',
         currency: currency || defaultCurrency,
@@ -217,9 +224,10 @@ export function useNumberFormatter() {
 
   /**
    * Format as percentage
+   * Handles both number and string values
    */
   const formatPercent = useCallback(
-    (value: number, decimals: number = 2): string => {
+    (value: number | string | undefined | null, decimals: number = 2): string => {
       return formatNumber(value, {
         style: 'percent',
         minimumFractionDigits: decimals,
@@ -231,25 +239,35 @@ export function useNumberFormatter() {
 
   /**
    * Format as compact number (e.g., 1.2K, 3.4M)
+   * Handles both number and string values
    */
   const formatCompact = useCallback(
-    (value: number): string => {
-      if (typeof value !== 'number' || isNaN(value)) return ''
+    (value: number | string | undefined | null): string => {
+      if (value === undefined || value === null) return ''
+
+      const numValue = typeof value === 'string' ? parseFloat(value) : value
+      if (typeof numValue !== 'number' || isNaN(numValue)) return ''
 
       return new Intl.NumberFormat(language, {
         notation: 'compact',
         compactDisplay: 'short',
-      }).format(value)
+      }).format(numValue)
     },
     [language]
   )
 
   /**
    * Format as integer (no decimals)
+   * Handles both number and string values
    */
   const formatInteger = useCallback(
-    (value: number): string => {
-      return formatNumber(Math.round(value), {
+    (value: number | string | undefined | null): string => {
+      if (value === undefined || value === null) return ''
+
+      const numValue = typeof value === 'string' ? parseFloat(value) : value
+      if (typeof numValue !== 'number' || isNaN(numValue)) return ''
+
+      return formatNumber(Math.round(numValue), {
         maximumFractionDigits: 0,
       })
     },

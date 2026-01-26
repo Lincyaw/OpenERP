@@ -67,7 +67,8 @@ export default function StockListPage() {
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
-    (value?: number): string => (value !== undefined ? formatCurrencyBase(value) : '-'),
+    (value?: number | string | null): string =>
+      value !== undefined && value !== null ? formatCurrencyBase(value) : '-',
     [formatCurrencyBase]
   )
   const formatDate = useCallback(
@@ -378,7 +379,7 @@ export default function StockListPage() {
         width: 100,
         align: 'right',
         sortable: true,
-        render: (cost: unknown) => formatCurrency(cost as number | undefined),
+        render: (cost: unknown) => formatCurrency(cost as number | string | undefined),
       },
       {
         title: t('stock.columns.totalValue'),
@@ -386,7 +387,7 @@ export default function StockListPage() {
         width: 110,
         align: 'right',
         sortable: true,
-        render: (value: unknown) => formatCurrency(value as number | undefined),
+        render: (value: unknown) => formatCurrency(value as number | string | undefined),
       },
       {
         title: t('stock.columns.status'),

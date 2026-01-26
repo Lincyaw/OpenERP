@@ -18227,3 +18227,52 @@ Added the missing `admin` action translation to both locale files:
 ### Notes
 - The admin action is used for super permissions in the role-permission system (see 000021_create_roles.up.sql)
 - All permission actions from the database migration are now covered in translations
+
+---
+
+## P10-BUG-004: 修复库存查询成本和总值不显示 (2026-01-26)
+
+### Problem
+The inventory list table was not displaying unit_cost and total_value columns - they showed as empty.
+
+### Root Cause Analysis
+1. Backend uses `shopspring/decimal` type for monetary values
+2. Go's JSON marshaling serializes decimal.Decimal as strings (e.g., "7000" instead of 7000)
+3. Frontend's `formatCurrency` function checked `typeof value !== 'number'` and returned empty string for strings
+
+API Response sample:
+```json
+{
+  "unit_cost": "7000",        // String instead of number
+  "total_value": "385000"     // String instead of number
+}
+```
+
+### Solution
+Updated frontend formatters to handle both number and string values:
+
+**frontend/src/hooks/useFormatters.ts:**
+- `formatNumber`: Added string type support with parseFloat conversion
+- `formatCurrency`: Updated type signature to `number | string | undefined | null`
+- `formatPercent`, `formatCompact`, `formatInteger`: Also updated for consistency
+
+**frontend/src/pages/inventory/StockList.tsx:**
+- Updated local `formatCurrency` wrapper function type to support string values
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/hooks/useFormatters.ts` | Added string value parsing to all number formatters |
+| `frontend/src/pages/inventory/StockList.tsx` | Updated formatCurrency wrapper type |
+| `.claude/ralph/plans/prd.json` | Marked P10-BUG-004 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+- ✅ API confirmed returning unit_cost and total_value fields correctly
+
+### Notes
+- This is a common issue when backend uses decimal libraries that serialize to strings
+- The fix is generalized and will work for any other fields using decimal serialization
+- Affects all inventory displays using formatCurrency/formatNumber functions

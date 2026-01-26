@@ -3657,9 +3657,28 @@
       "修复步骤:",
       "1. 检查后端InventoryItemResponse是否填充unit_cost和total_value",
       "2. 验证库存计算逻辑是否正确计算成本和总值",
-      "3. 必要时增加scroll.x值确保列可见"
+      "3. 必要时增加scroll.x值确保列可见",
+      "",
+      "=== 2026-01-26 修复 ===",
+      "根本原因分析:",
+      "- 后端使用shopspring/decimal类型,JSON序列化时返回字符串而非数字",
+      "- API响应: { \"unit_cost\": \"7000\", \"total_value\": \"385000\" }",
+      "- 前端formatCurrency函数检查typeof value !== 'number'时返回空字符串",
+      "",
+      "修复内容:",
+      "1. frontend/src/hooks/useFormatters.ts:",
+      "   - formatNumber: 添加string类型支持,使用parseFloat转换",
+      "   - formatCurrency: 更新类型签名为number | string | undefined | null",
+      "   - formatPercent/formatCompact/formatInteger: 同步更新支持string",
+      "2. frontend/src/pages/inventory/StockList.tsx:",
+      "   - 更新本地formatCurrency包装函数类型以支持string",
+      "",
+      "验证结果:",
+      "- ✅ TypeScript类型检查通过",
+      "- ✅ npm run build成功",
+      "- ✅ API返回unit_cost和total_value已正确显示"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P10-BUG-005",
