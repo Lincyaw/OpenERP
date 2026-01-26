@@ -24780,3 +24780,99 @@ All data loaded successfully via `make db-reset`.
 - Future: Implement JD, PDD adapters following the same pattern
 - Future: Create HTTP handlers to expose platform integration APIs
 - Future: Implement order sync scheduler for automatic order pulling
+
+2026-01-27 - Task P7-BE-013: 抖音 Adapter (可选)
+
+=== Implementation Details ===
+
+Implemented Douyin (TikTok Shop) e-commerce platform adapter following the existing Taobao adapter pattern.
+
+**New Files Created:**
+1. `backend/internal/infrastructure/ecommerce/douyin_config.go` - Configuration management
+   - DouyinConfig struct with AppKey, AppSecret, AccessToken, ShopID fields
+   - Production and Sandbox API URL constants
+   - HMAC-SHA256 signature generation methods (Sign, SignV2)
+   - Configuration validation
+
+2. `backend/internal/infrastructure/ecommerce/douyin_types.go` - API response types
+   - DouyinResponse base response type
+   - DouyinOrder, DouyinOrderListResponse, DouyinOrderDetailResponse
+   - DouyinProduct, DouyinProductDetailResponse
+   - DouyinSkuOrder, DouyinPostReceiver, DouyinLogisticsInfo
+   - Order status constants (pending, paid, shipped, completed, cancelled, refunding, refunded)
+
+3. `backend/internal/infrastructure/ecommerce/douyin_adapter.go` - Main adapter implementation
+   - Implements EcommercePlatform interface from domain/integration
+   - PullOrders: Retrieves orders from Douyin API with pagination and status filtering
+   - GetOrder: Retrieves single order details
+   - UpdateOrderStatus: Updates order status (shipping info for shipped orders)
+   - SyncInventory: Updates SKU stock levels
+   - SyncProducts: Product sync (placeholder for full implementation)
+   - GetProduct: Retrieves product details with SKU information
+   - Thread-safe tenant config management with sync.RWMutex
+   - Response body size limiting (10MB max) for security
+   - Division-by-zero protection in unit price calculation
+
+4. `backend/internal/infrastructure/ecommerce/douyin_adapter_test.go` - Comprehensive unit tests
+   - Config validation tests
+   - Signature generation tests
+   - Adapter creation and tenant config tests
+   - Order pulling tests (success, validation error, API error)
+   - Order retrieval tests (success, not found)
+   - Order status update tests (shipping, validation)
+   - Inventory sync tests (success, partial failure)
+   - Product operations tests (success, not found, invalid ID)
+   - Status mapping tests (Douyin <-> Platform status)
+   - Shipping company code mapping tests
+
+**Key Features:**
+- Full implementation of EcommercePlatform interface
+- Order pulling with time range, pagination, and status filtering
+- Inventory synchronization at SKU level
+- Shipping information updates via logistics API
+- Status mapping between Douyin and internal platform statuses
+- Support for Chinese shipping companies (顺丰, 圆通, 中通, 申通, 韵达, 京东, 极兔, etc.)
+- Thread-safe tenant configuration management
+- Security measures: response size limiting, input validation
+
+=== Verification ===
+
+- All unit tests pass (22 test functions, 60+ test cases)
+- Go build succeeds with no errors
+- Code review completed - critical issues addressed:
+  - Added sync.RWMutex for thread-safe map access
+  - Added response body size limit (10MB)
+  - Added input validation for GetOrder
+  - Fixed documentation comment (md5 -> HMAC-SHA256)
+  - Added division-by-zero protection
+  - Added centsPerYuan constant for magic numbers
+
+=== Design Decisions ===
+
+1. **Followed Taobao Adapter Pattern**: Kept consistent architecture with existing Taobao adapter for maintainability
+2. **Thread Safety**: Added mutex protection for tenant config map (critical fix from code review)
+3. **Security**: Added response body size limiting to prevent memory exhaustion attacks
+4. **Constants**: Defined centsPerYuan constant to clarify currency conversion
+5. **Validation**: Added empty string validation for order IDs before API calls
+6. **Product Sync**: Left as placeholder since full product editing requires complex API calls
+
+=== Test Results ===
+
+```
+ok      github.com/erp/backend/internal/infrastructure/ecommerce        0.028s
+```
+
+All 22 Douyin-related test functions pass with 60+ test cases covering:
+- Configuration validation and defaults
+- Signature generation (deterministic, correct length)
+- Adapter lifecycle (creation, tenant config, enable status)
+- Order operations (pull, get, status update)
+- Inventory synchronization (success, partial failure)
+- Product retrieval
+- Status and shipping company mappings
+
+=== Next Steps ===
+
+- P7-BE-014: 订单同步定时任务 - Implement order sync scheduled task that uses this adapter
+- Consider adding rate limiting handling for production use
+- Add integration tests with mock Douyin API server
