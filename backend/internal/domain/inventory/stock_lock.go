@@ -11,19 +11,14 @@ import (
 // StockLock represents a reservation of stock for a pending order or operation
 type StockLock struct {
 	shared.BaseEntity
-	InventoryItemID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	Quantity        decimal.Decimal `gorm:"type:decimal(18,4);not null"`                   // Locked quantity
-	SourceType      string          `gorm:"type:varchar(50);not null;index:idx_lock_src"`  // e.g., "sales_order", "transfer"
-	SourceID        string          `gorm:"type:varchar(100);not null;index:idx_lock_src"` // ID of the source document
-	ExpireAt        time.Time       `gorm:"not null;index"`                                // When the lock expires
-	Released        bool            `gorm:"not null;default:false"`                        // Whether the lock was released (cancelled)
-	Consumed        bool            `gorm:"not null;default:false"`                        // Whether the lock was consumed (fulfilled)
-	ReleasedAt      *time.Time      `gorm:"type:timestamp"`                                // When the lock was released/consumed
-}
-
-// TableName returns the table name for GORM
-func (StockLock) TableName() string {
-	return "stock_locks"
+	InventoryItemID uuid.UUID
+	Quantity        decimal.Decimal // Locked quantity
+	SourceType      string          // e.g., "sales_order", "transfer"
+	SourceID        string          // ID of the source document
+	ExpireAt        time.Time       // When the lock expires
+	Released        bool            // Whether the lock was released (cancelled)
+	Consumed        bool            // Whether the lock was consumed (fulfilled)
+	ReleasedAt      *time.Time      // When the lock was released/consumed
 }
 
 // NewStockLock creates a new stock lock

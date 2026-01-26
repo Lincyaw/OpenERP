@@ -15,9 +15,9 @@ type Entity interface {
 
 // BaseEntity provides common fields for all entities
 type BaseEntity struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key"`
-	CreatedAt time.Time `gorm:"not null"`
-	UpdatedAt time.Time `gorm:"not null"`
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // GetID returns the entity ID

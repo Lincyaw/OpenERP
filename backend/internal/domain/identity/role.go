@@ -23,10 +23,10 @@ const (
 // Permission represents a functional permission (resource:action pattern)
 // It is a value object
 type Permission struct {
-	Code        string `gorm:"type:varchar(100);not null"` // e.g., "product:create"
-	Resource    string `gorm:"type:varchar(50);not null"`  // e.g., "product"
-	Action      string `gorm:"type:varchar(50);not null"`  // e.g., "create"
-	Description string `gorm:"type:varchar(200)"`          // Optional description
+	Code        string // e.g., "product:create"
+	Resource    string // e.g., "product"
+	Action      string // e.g., "create"
+	Description string // Optional description
 }
 
 // NewPermission creates a new Permission value object
@@ -80,11 +80,11 @@ func (p Permission) IsEmpty() bool {
 // DataScope represents a data-level permission scope
 // It is a value object
 type DataScope struct {
-	Resource    string        `gorm:"type:varchar(50);not null"` // e.g., "sales_order"
-	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"` // Type of scope
-	ScopeField  string        `gorm:"type:varchar(50)"`          // Field to filter on (e.g., "warehouse_id", "region_id")
-	ScopeValues []string      `gorm:"-"`                         // For custom scope: specific IDs or conditions
-	Description string        `gorm:"type:varchar(200)"`         // Optional description
+	Resource    string        // e.g., "sales_order"
+	ScopeType   DataScopeType // Type of scope
+	ScopeField  string        // Field to filter on (e.g., "warehouse_id", "region_id")
+	ScopeValues []string      // For custom scope: specific IDs or conditions
+	Description string        // Optional description
 }
 
 // NewDataScope creates a new DataScope value object
@@ -188,52 +188,37 @@ func (ds DataScope) IsEmpty() bool {
 // It is the aggregate root for role-related operations
 type Role struct {
 	shared.TenantAggregateRoot
-	Code         string       `gorm:"type:varchar(50);not null"`
-	Name         string       `gorm:"type:varchar(100);not null"`
-	Description  string       `gorm:"type:text"`
-	IsSystemRole bool         `gorm:"not null;default:false"` // System roles cannot be deleted
-	IsEnabled    bool         `gorm:"not null;default:true"`
-	SortOrder    int          `gorm:"not null;default:0"` // For display ordering
-	Permissions  []Permission `gorm:"-"`                  // Stored in separate table
-	DataScopes   []DataScope  `gorm:"-"`                  // Stored in separate table
+	Code         string
+	Name         string
+	Description  string
+	IsSystemRole bool // System roles cannot be deleted
+	IsEnabled    bool
+	SortOrder    int          // For display ordering
+	Permissions  []Permission // Stored in separate table
+	DataScopes   []DataScope  // Stored in separate table
 }
 
 // RolePermission represents the many-to-many relationship between roles and permissions
 type RolePermission struct {
-	RoleID      uuid.UUID `gorm:"type:uuid;primaryKey"`
-	TenantID    uuid.UUID `gorm:"type:uuid;not null;index"`
-	Code        string    `gorm:"type:varchar(100);primaryKey"`
-	Resource    string    `gorm:"type:varchar(50);not null;index"`
-	Action      string    `gorm:"type:varchar(50);not null"`
-	Description string    `gorm:"type:varchar(200)"`
-	CreatedAt   time.Time `gorm:"not null"`
+	RoleID      uuid.UUID
+	TenantID    uuid.UUID
+	Code        string
+	Resource    string
+	Action      string
+	Description string
+	CreatedAt   time.Time
 }
 
 // RoleDataScope represents the data scope configuration for a role
 type RoleDataScope struct {
-	RoleID      uuid.UUID     `gorm:"type:uuid;primaryKey"`
-	TenantID    uuid.UUID     `gorm:"type:uuid;not null;index"`
-	Resource    string        `gorm:"type:varchar(50);primaryKey"`
-	ScopeType   DataScopeType `gorm:"type:varchar(20);not null"`
-	ScopeField  string        `gorm:"type:varchar(50)"` // Field to filter on (e.g., "warehouse_id")
-	ScopeValues string        `gorm:"type:text"`        // JSON array for custom scopes
-	Description string        `gorm:"type:varchar(200)"`
-	CreatedAt   time.Time     `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (Role) TableName() string {
-	return "roles"
-}
-
-// TableName returns the table name for GORM
-func (RolePermission) TableName() string {
-	return "role_permissions"
-}
-
-// TableName returns the table name for GORM
-func (RoleDataScope) TableName() string {
-	return "role_data_scopes"
+	RoleID      uuid.UUID
+	TenantID    uuid.UUID
+	Resource    string
+	ScopeType   DataScopeType
+	ScopeField  string // Field to filter on (e.g., "warehouse_id")
+	ScopeValues string // JSON array for custom scopes
+	Description string
+	CreatedAt   time.Time
 }
 
 // NewRole creates a new role with required fields

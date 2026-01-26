@@ -31,22 +31,17 @@ import (
 // - AdjustStock() - adjusts stock to match actual count
 type InventoryItem struct {
 	shared.TenantAggregateRoot
-	WarehouseID       uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:idx_inventory_item_warehouse_product,priority:2"`
-	ProductID         uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:idx_inventory_item_warehouse_product,priority:3"`
-	AvailableQuantity decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Available for sale/use
-	LockedQuantity    decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Reserved for pending orders
-	UnitCost          decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Moving weighted average cost
-	MinQuantity       decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Minimum stock threshold for alerts
-	MaxQuantity       decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Maximum stock threshold
+	WarehouseID       uuid.UUID
+	ProductID         uuid.UUID
+	AvailableQuantity decimal.Decimal // Available for sale/use
+	LockedQuantity    decimal.Decimal // Reserved for pending orders
+	UnitCost          decimal.Decimal // Moving weighted average cost
+	MinQuantity       decimal.Decimal // Minimum stock threshold for alerts
+	MaxQuantity       decimal.Decimal // Maximum stock threshold
 
 	// Associations - loaded lazily
-	Batches []StockBatch `gorm:"foreignKey:InventoryItemID;references:ID"`
-	Locks   []StockLock  `gorm:"foreignKey:InventoryItemID;references:ID"`
-}
-
-// TableName returns the table name for GORM
-func (InventoryItem) TableName() string {
-	return "inventory_items"
+	Batches []StockBatch
+	Locks   []StockLock
 }
 
 // NewInventoryItem creates a new inventory item for a warehouse-product combination

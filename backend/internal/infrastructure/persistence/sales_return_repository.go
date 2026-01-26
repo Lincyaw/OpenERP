@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/trade"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -26,101 +27,117 @@ func NewGormSalesReturnRepository(db *gorm.DB) *GormSalesReturnRepository {
 
 // FindByID finds a sales return by its ID
 func (r *GormSalesReturnRepository) FindByID(ctx context.Context, id uuid.UUID) (*trade.SalesReturn, error) {
-	var sr trade.SalesReturn
+	var model models.SalesReturnModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
-		First(&sr, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &sr, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a sales return by ID within a tenant
 func (r *GormSalesReturnRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*trade.SalesReturn, error) {
-	var sr trade.SalesReturn
+	var model models.SalesReturnModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&sr).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &sr, nil
+	return model.ToDomain(), nil
 }
 
 // FindByReturnNumber finds a sales return by return number for a tenant
 func (r *GormSalesReturnRepository) FindByReturnNumber(ctx context.Context, tenantID uuid.UUID, returnNumber string) (*trade.SalesReturn, error) {
-	var sr trade.SalesReturn
+	var model models.SalesReturnModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND return_number = ?", tenantID, returnNumber).
-		First(&sr).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &sr, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all sales returns for a tenant with filtering
 func (r *GormSalesReturnRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.SalesReturn, error) {
-	var returns []trade.SalesReturn
+	var returnModels []models.SalesReturnModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesReturn{}).Where("tenant_id = ?", tenantID),
+		r.db.WithContext(ctx).Model(&models.SalesReturnModel{}).Where("tenant_id = ?", tenantID),
 		filter,
 	)
 
-	if err := query.Find(&returns).Error; err != nil {
+	if err := query.Find(&returnModels).Error; err != nil {
 		return nil, err
+	}
+	returns := make([]trade.SalesReturn, len(returnModels))
+	for i, model := range returnModels {
+		returns[i] = *model.ToDomain()
 	}
 	return returns, nil
 }
 
 // FindByCustomer finds sales returns for a customer
 func (r *GormSalesReturnRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter shared.Filter) ([]trade.SalesReturn, error) {
-	var returns []trade.SalesReturn
+	var returnModels []models.SalesReturnModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesReturn{}).
+		r.db.WithContext(ctx).Model(&models.SalesReturnModel{}).
 			Where("tenant_id = ? AND customer_id = ?", tenantID, customerID),
 		filter,
 	)
 
-	if err := query.Find(&returns).Error; err != nil {
+	if err := query.Find(&returnModels).Error; err != nil {
 		return nil, err
+	}
+	returns := make([]trade.SalesReturn, len(returnModels))
+	for i, model := range returnModels {
+		returns[i] = *model.ToDomain()
 	}
 	return returns, nil
 }
 
 // FindBySalesOrder finds sales returns for a sales order
 func (r *GormSalesReturnRepository) FindBySalesOrder(ctx context.Context, tenantID, salesOrderID uuid.UUID) ([]trade.SalesReturn, error) {
-	var returns []trade.SalesReturn
+	var returnModels []models.SalesReturnModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND sales_order_id = ?", tenantID, salesOrderID).
 		Order("created_at DESC").
-		Find(&returns).Error; err != nil {
+		Find(&returnModels).Error; err != nil {
 		return nil, err
+	}
+	returns := make([]trade.SalesReturn, len(returnModels))
+	for i, model := range returnModels {
+		returns[i] = *model.ToDomain()
 	}
 	return returns, nil
 }
 
 // FindByStatus finds sales returns by status for a tenant
 func (r *GormSalesReturnRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.ReturnStatus, filter shared.Filter) ([]trade.SalesReturn, error) {
-	var returns []trade.SalesReturn
+	var returnModels []models.SalesReturnModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesReturn{}).
+		r.db.WithContext(ctx).Model(&models.SalesReturnModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, status),
 		filter,
 	)
 
-	if err := query.Find(&returns).Error; err != nil {
+	if err := query.Find(&returnModels).Error; err != nil {
 		return nil, err
+	}
+	returns := make([]trade.SalesReturn, len(returnModels))
+	for i, model := range returnModels {
+		returns[i] = *model.ToDomain()
 	}
 	return returns, nil
 }
@@ -133,8 +150,11 @@ func (r *GormSalesReturnRepository) FindPendingApproval(ctx context.Context, ten
 // Save creates or updates a sales return
 func (r *GormSalesReturnRepository) Save(ctx context.Context, sr *trade.SalesReturn) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Convert to persistence model
+		model := models.SalesReturnModelFromDomain(sr)
+
 		// Save the return without auto-saving associations
-		if err := tx.Omit("Items").Save(sr).Error; err != nil {
+		if err := tx.Omit("Items").Save(model).Error; err != nil {
 			return err
 		}
 
@@ -149,13 +169,13 @@ func (r *GormSalesReturnRepository) Save(ctx context.Context, sr *trade.SalesRet
 			// Delete items not in the current list
 			if len(currentItemIDs) > 0 {
 				if err := tx.Where("return_id = ? AND id NOT IN ?", sr.ID, currentItemIDs).
-					Delete(&trade.SalesReturnItem{}).Error; err != nil {
+					Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 					return err
 				}
 			} else {
 				// Delete all items if no items remain
 				if err := tx.Where("return_id = ?", sr.ID).
-					Delete(&trade.SalesReturnItem{}).Error; err != nil {
+					Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 					return err
 				}
 			}
@@ -163,7 +183,8 @@ func (r *GormSalesReturnRepository) Save(ctx context.Context, sr *trade.SalesRet
 			// Save/update remaining items
 			for i := range sr.Items {
 				sr.Items[i].ReturnID = sr.ID
-				if err := tx.Save(&sr.Items[i]).Error; err != nil {
+				itemModel := models.SalesReturnItemModelFromDomain(&sr.Items[i])
+				if err := tx.Save(itemModel).Error; err != nil {
 					return err
 				}
 			}
@@ -178,7 +199,7 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version from database
 		var currentVersion int
-		if err := tx.Model(&trade.SalesReturn{}).
+		if err := tx.Model(&models.SalesReturnModel{}).
 			Where("id = ?", sr.ID).
 			Select("version").
 			Scan(&currentVersion).Error; err != nil {
@@ -198,7 +219,7 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 		sr.UpdatedAt = time.Now()
 
 		// Update return with version check
-		result := tx.Model(&trade.SalesReturn{}).
+		result := tx.Model(&models.SalesReturnModel{}).
 			Where("id = ? AND version = ?", sr.ID, currentVersion).
 			Updates(map[string]any{
 				"sales_order_id":     sr.SalesOrderID,
@@ -241,12 +262,12 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 		// Delete items not in the current list
 		if len(currentItemIDs) > 0 {
 			if err := tx.Where("return_id = ? AND id NOT IN ?", sr.ID, currentItemIDs).
-				Delete(&trade.SalesReturnItem{}).Error; err != nil {
+				Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 				return err
 			}
 		} else {
 			if err := tx.Where("return_id = ?", sr.ID).
-				Delete(&trade.SalesReturnItem{}).Error; err != nil {
+				Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 				return err
 			}
 		}
@@ -254,7 +275,8 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 		// Save/update remaining items
 		for i := range sr.Items {
 			sr.Items[i].ReturnID = sr.ID
-			if err := tx.Save(&sr.Items[i]).Error; err != nil {
+			itemModel := models.SalesReturnItemModelFromDomain(&sr.Items[i])
+			if err := tx.Save(itemModel).Error; err != nil {
 				return err
 			}
 		}
@@ -267,12 +289,12 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 func (r *GormSalesReturnRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete items first
-		if err := tx.Where("return_id = ?", id).Delete(&trade.SalesReturnItem{}).Error; err != nil {
+		if err := tx.Where("return_id = ?", id).Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete return
-		result := tx.Delete(&trade.SalesReturn{}, "id = ?", id)
+		result := tx.Delete(&models.SalesReturnModel{}, "id = ?", id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -287,8 +309,8 @@ func (r *GormSalesReturnRepository) Delete(ctx context.Context, id uuid.UUID) er
 func (r *GormSalesReturnRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Find the return first
-		var sr trade.SalesReturn
-		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&sr).Error; err != nil {
+		var model models.SalesReturnModel
+		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&model).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return shared.ErrNotFound
 			}
@@ -296,12 +318,12 @@ func (r *GormSalesReturnRepository) DeleteForTenant(ctx context.Context, tenantI
 		}
 
 		// Delete items
-		if err := tx.Where("return_id = ?", id).Delete(&trade.SalesReturnItem{}).Error; err != nil {
+		if err := tx.Where("return_id = ?", id).Delete(&models.SalesReturnItemModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete return
-		result := tx.Delete(&trade.SalesReturn{}, "tenant_id = ? AND id = ?", tenantID, id)
+		result := tx.Delete(&models.SalesReturnModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -315,7 +337,7 @@ func (r *GormSalesReturnRepository) DeleteForTenant(ctx context.Context, tenantI
 // CountForTenant counts sales returns for a tenant with optional filters
 func (r *GormSalesReturnRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&trade.SalesReturn{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.SalesReturnModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -328,7 +350,7 @@ func (r *GormSalesReturnRepository) CountForTenant(ctx context.Context, tenantID
 func (r *GormSalesReturnRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.ReturnStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesReturn{}).
+		Model(&models.SalesReturnModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -340,7 +362,7 @@ func (r *GormSalesReturnRepository) CountByStatus(ctx context.Context, tenantID 
 func (r *GormSalesReturnRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesReturn{}).
+		Model(&models.SalesReturnModel{}).
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -352,7 +374,7 @@ func (r *GormSalesReturnRepository) CountByCustomer(ctx context.Context, tenantI
 func (r *GormSalesReturnRepository) CountBySalesOrder(ctx context.Context, tenantID, salesOrderID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesReturn{}).
+		Model(&models.SalesReturnModel{}).
 		Where("tenant_id = ? AND sales_order_id = ?", tenantID, salesOrderID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -369,7 +391,7 @@ func (r *GormSalesReturnRepository) CountPendingApproval(ctx context.Context, te
 func (r *GormSalesReturnRepository) ExistsByReturnNumber(ctx context.Context, tenantID uuid.UUID, returnNumber string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesReturn{}).
+		Model(&models.SalesReturnModel{}).
 		Where("tenant_id = ? AND return_number = ?", tenantID, returnNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -384,9 +406,9 @@ func (r *GormSalesReturnRepository) GenerateReturnNumber(ctx context.Context, te
 	prefix := fmt.Sprintf("SR-%d-", year)
 
 	// Get the highest return number for this year
-	var lastReturn trade.SalesReturn
+	var lastReturn models.SalesReturnModel
 	err := r.db.WithContext(ctx).
-		Model(&trade.SalesReturn{}).
+		Model(&models.SalesReturnModel{}).
 		Where("tenant_id = ? AND return_number LIKE ?", tenantID, prefix+"%").
 		Order("return_number DESC").
 		First(&lastReturn).Error

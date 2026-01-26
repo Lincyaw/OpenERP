@@ -52,26 +52,21 @@ func (s OrderStatus) CanTransitionTo(target OrderStatus) bool {
 
 // SalesOrderItem represents a line item in a sales order
 type SalesOrderItem struct {
-	ID             uuid.UUID       `gorm:"type:uuid;primary_key"`
-	OrderID        uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ProductID      uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName    string          `gorm:"type:varchar(200);not null"`
-	ProductCode    string          `gorm:"type:varchar(50);not null"`
-	Quantity       decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity in the order unit
-	UnitPrice      decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Price per unit
-	Amount         decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity * UnitPrice
-	Unit           string          `gorm:"type:varchar(20);not null"`             // Unit of measure (may be auxiliary unit)
-	ConversionRate decimal.Decimal `gorm:"type:decimal(18,6);not null;default:1"` // Conversion rate to base unit
-	BaseQuantity   decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity in base units (for inventory)
-	BaseUnit       string          `gorm:"type:varchar(20);not null"`             // Base unit code
-	Remark         string          `gorm:"type:varchar(500)"`
-	CreatedAt      time.Time       `gorm:"not null"`
-	UpdatedAt      time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (SalesOrderItem) TableName() string {
-	return "sales_order_items"
+	ID             uuid.UUID
+	OrderID        uuid.UUID
+	ProductID      uuid.UUID
+	ProductName    string
+	ProductCode    string
+	Quantity       decimal.Decimal // Quantity in the order unit
+	UnitPrice      decimal.Decimal // Price per unit
+	Amount         decimal.Decimal // Quantity * UnitPrice
+	Unit           string          // Unit of measure (may be auxiliary unit)
+	ConversionRate decimal.Decimal // Conversion rate to base unit
+	BaseQuantity   decimal.Decimal // Quantity in base units (for inventory)
+	BaseUnit       string          // Base unit code
+	Remark         string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 // NewSalesOrderItem creates a new sales order item
@@ -177,26 +172,21 @@ func (i *SalesOrderItem) GetUnitPriceMoney() valueobject.Money {
 // It manages the lifecycle of a customer order from creation to completion
 type SalesOrder struct {
 	shared.TenantAggregateRoot
-	OrderNumber    string           `gorm:"type:varchar(50);not null;uniqueIndex:idx_sales_order_tenant_number,priority:2"`
-	CustomerID     uuid.UUID        `gorm:"type:uuid;not null;index"`
-	CustomerName   string           `gorm:"type:varchar(200);not null"`
-	WarehouseID    *uuid.UUID       `gorm:"type:uuid;index"` // Warehouse for shipment (set on confirm/ship)
-	Items          []SalesOrderItem `gorm:"foreignKey:OrderID;references:ID"`
-	TotalAmount    decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
-	DiscountAmount decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
-	PayableAmount  decimal.Decimal  `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
-	Status         OrderStatus      `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Remark         string           `gorm:"type:text"`
-	ConfirmedAt    *time.Time       `gorm:"index"`
-	ShippedAt      *time.Time       `gorm:"index"`
+	OrderNumber    string
+	CustomerID     uuid.UUID
+	CustomerName   string
+	WarehouseID    *uuid.UUID // Warehouse for shipment (set on confirm/ship)
+	Items          []SalesOrderItem
+	TotalAmount    decimal.Decimal // Sum of all items
+	DiscountAmount decimal.Decimal // Order-level discount
+	PayableAmount  decimal.Decimal // TotalAmount - DiscountAmount
+	Status         OrderStatus
+	Remark         string
+	ConfirmedAt    *time.Time
+	ShippedAt      *time.Time
 	CompletedAt    *time.Time
 	CancelledAt    *time.Time
-	CancelReason   string `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (SalesOrder) TableName() string {
-	return "sales_orders"
+	CancelReason   string
 }
 
 // NewSalesOrder creates a new sales order

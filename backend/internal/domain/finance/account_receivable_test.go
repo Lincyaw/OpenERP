@@ -914,16 +914,6 @@ func TestAccountReceivableEvents(t *testing.T) {
 }
 
 // ============================================
-// Table Names Tests
-// ============================================
-
-func TestTableNames(t *testing.T) {
-	t.Run("AccountReceivable table name", func(t *testing.T) {
-		ar := &AccountReceivable{}
-		assert.Equal(t, "account_receivables", ar.TableName())
-	})
-}
-
 // ============================================
 // PaymentRecords JSONB Tests
 // ============================================

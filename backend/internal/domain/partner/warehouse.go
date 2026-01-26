@@ -31,29 +31,24 @@ const (
 // It is the aggregate root for warehouse-related operations
 type Warehouse struct {
 	shared.TenantAggregateRoot
-	Code        string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_warehouse_tenant_code,priority:2"`
-	Name        string          `gorm:"type:varchar(200);not null"`
-	ShortName   string          `gorm:"type:varchar(100)"` // Abbreviated name
-	Type        WarehouseType   `gorm:"type:varchar(20);not null;default:'physical'"`
-	Status      WarehouseStatus `gorm:"type:varchar(20);not null;default:'active'"`
-	ContactName string          `gorm:"type:varchar(100)"` // Warehouse manager/contact
-	Phone       string          `gorm:"type:varchar(50);index"`
-	Email       string          `gorm:"type:varchar(200)"`
-	Address     string          `gorm:"type:text"` // Full address
-	City        string          `gorm:"type:varchar(100)"`
-	Province    string          `gorm:"type:varchar(100)"`
-	PostalCode  string          `gorm:"type:varchar(20)"`
-	Country     string          `gorm:"type:varchar(100);default:'中国'"`
-	IsDefault   bool            `gorm:"not null;default:false"` // Default warehouse for operations
-	Capacity    int             `gorm:"not null;default:0"`     // Storage capacity (in units)
-	Notes       string          `gorm:"type:text"`
-	SortOrder   int             `gorm:"not null;default:0"`
-	Attributes  string          `gorm:"type:jsonb"` // Custom attributes
-}
-
-// TableName returns the table name for GORM
-func (Warehouse) TableName() string {
-	return "warehouses"
+	Code        string
+	Name        string
+	ShortName   string // Abbreviated name
+	Type        WarehouseType
+	Status      WarehouseStatus
+	ContactName string // Warehouse manager/contact
+	Phone       string
+	Email       string
+	Address     string // Full address
+	City        string
+	Province    string
+	PostalCode  string
+	Country     string
+	IsDefault   bool // Default warehouse for operations
+	Capacity    int  // Storage capacity (in units)
+	Notes       string
+	SortOrder   int
+	Attributes  string // Custom attributes
 }
 
 // NewWarehouse creates a new warehouse with required fields

@@ -132,33 +132,28 @@ const (
 // It tracks non-trade expenses like rent, utilities, salary, etc.
 type ExpenseRecord struct {
 	shared.TenantAggregateRoot
-	ExpenseNumber   string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_expense_tenant_number,priority:2"`
-	Category        ExpenseCategory `gorm:"type:varchar(30);not null;index"`
-	Amount          decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	Description     string          `gorm:"type:varchar(500);not null"`
-	IncurredAt      time.Time       `gorm:"not null;index"` // When the expense was incurred
-	Status          ExpenseStatus   `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	PaymentStatus   PaymentStatus   `gorm:"type:varchar(20);not null;default:'UNPAID';index"`
-	PaymentMethod   *PaymentMethod  `gorm:"type:varchar(30)"`
-	PaidAt          *time.Time      // When the expense was paid
-	Remark          string          `gorm:"type:text"`
-	AttachmentURLs  string          `gorm:"type:text"` // JSON array of attachment URLs
-	SubmittedAt     *time.Time      // When submitted for approval
-	SubmittedBy     *uuid.UUID      `gorm:"type:uuid"` // User who submitted
-	ApprovedAt      *time.Time      // When approved
-	ApprovedBy      *uuid.UUID      `gorm:"type:uuid"` // User who approved
-	ApprovalRemark  string          `gorm:"type:varchar(500)"`
-	RejectedAt      *time.Time      // When rejected
-	RejectedBy      *uuid.UUID      `gorm:"type:uuid"` // User who rejected
-	RejectionReason string          `gorm:"type:varchar(500)"`
-	CancelledAt     *time.Time      // When cancelled
-	CancelledBy     *uuid.UUID      `gorm:"type:uuid"` // User who cancelled
-	CancelReason    string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (ExpenseRecord) TableName() string {
-	return "expense_records"
+	ExpenseNumber   string          `json:"expense_number"`
+	Category        ExpenseCategory `json:"category"`
+	Amount          decimal.Decimal `json:"amount"`
+	Description     string          `json:"description"`
+	IncurredAt      time.Time       `json:"incurred_at"` // When the expense was incurred
+	Status          ExpenseStatus   `json:"status"`
+	PaymentStatus   PaymentStatus   `json:"payment_status"`
+	PaymentMethod   *PaymentMethod  `json:"payment_method"`
+	PaidAt          *time.Time      `json:"paid_at"` // When the expense was paid
+	Remark          string          `json:"remark"`
+	AttachmentURLs  string          `json:"attachment_urls"` // JSON array of attachment URLs
+	SubmittedAt     *time.Time      `json:"submitted_at"`    // When submitted for approval
+	SubmittedBy     *uuid.UUID      `json:"submitted_by"`    // User who submitted
+	ApprovedAt      *time.Time      `json:"approved_at"`     // When approved
+	ApprovedBy      *uuid.UUID      `json:"approved_by"`     // User who approved
+	ApprovalRemark  string          `json:"approval_remark"`
+	RejectedAt      *time.Time      `json:"rejected_at"` // When rejected
+	RejectedBy      *uuid.UUID      `json:"rejected_by"` // User who rejected
+	RejectionReason string          `json:"rejection_reason"`
+	CancelledAt     *time.Time      `json:"cancelled_at"` // When cancelled
+	CancelledBy     *uuid.UUID      `json:"cancelled_by"` // User who cancelled
+	CancelReason    string          `json:"cancel_reason"`
 }
 
 // NewExpenseRecord creates a new expense record

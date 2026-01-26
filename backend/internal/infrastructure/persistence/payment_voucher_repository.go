@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/erp/backend/internal/domain/finance"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -23,49 +24,49 @@ func NewGormPaymentVoucherRepository(db *gorm.DB) *GormPaymentVoucherRepository 
 
 // FindByID finds a payment voucher by ID
 func (r *GormPaymentVoucherRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.PaymentVoucher, error) {
-	var voucher finance.PaymentVoucher
+	var model models.PaymentVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a payment voucher by ID for a specific tenant
 func (r *GormPaymentVoucherRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.PaymentVoucher, error) {
-	var voucher finance.PaymentVoucher
+	var model models.PaymentVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "id = ? AND tenant_id = ?", id, tenantID).Error; err != nil {
+		First(&model, "id = ? AND tenant_id = ?", id, tenantID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindByVoucherNumber finds by voucher number for a tenant
 func (r *GormPaymentVoucherRepository) FindByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (*finance.PaymentVoucher, error) {
-	var voucher finance.PaymentVoucher
+	var model models.PaymentVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "voucher_number = ? AND tenant_id = ?", voucherNumber, tenantID).Error; err != nil {
+		First(&model, "voucher_number = ? AND tenant_id = ?", voucherNumber, tenantID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all payment vouchers for a tenant with filtering
 func (r *GormPaymentVoucherRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.PaymentVoucherFilter) ([]finance.PaymentVoucher, error) {
-	var vouchers []finance.PaymentVoucher
+	var voucherModels []models.PaymentVoucherModel
 	query := r.db.WithContext(ctx).Where("tenant_id = ?", tenantID)
 
 	// Apply filters
@@ -102,8 +103,12 @@ func (r *GormPaymentVoucherRepository) FindAllForTenant(ctx context.Context, ten
 		}
 	}
 
-	if err := query.Preload("Allocations").Find(&vouchers).Error; err != nil {
+	if err := query.Preload("Allocations").Find(&voucherModels).Error; err != nil {
 		return nil, err
+	}
+	vouchers := make([]finance.PaymentVoucher, len(voucherModels))
+	for i, model := range voucherModels {
+		vouchers[i] = *model.ToDomain()
 	}
 	return vouchers, nil
 }
@@ -122,27 +127,33 @@ func (r *GormPaymentVoucherRepository) FindByStatus(ctx context.Context, tenantI
 
 // FindWithUnallocatedAmount finds vouchers that have unallocated amount
 func (r *GormPaymentVoucherRepository) FindWithUnallocatedAmount(ctx context.Context, tenantID, supplierID uuid.UUID) ([]finance.PaymentVoucher, error) {
-	var vouchers []finance.PaymentVoucher
+	var voucherModels []models.PaymentVoucherModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND supplier_id = ? AND unallocated_amount > 0", tenantID, supplierID).
 		Preload("Allocations").
-		Find(&vouchers).Error; err != nil {
+		Find(&voucherModels).Error; err != nil {
 		return nil, err
+	}
+	vouchers := make([]finance.PaymentVoucher, len(voucherModels))
+	for i, model := range voucherModels {
+		vouchers[i] = *model.ToDomain()
 	}
 	return vouchers, nil
 }
 
 // Save creates or updates a payment voucher
 func (r *GormPaymentVoucherRepository) Save(ctx context.Context, voucher *finance.PaymentVoucher) error {
-	return r.db.WithContext(ctx).Save(voucher).Error
+	model := models.PaymentVoucherModelFromDomain(voucher)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithLock saves with optimistic locking (version check)
 func (r *GormPaymentVoucherRepository) SaveWithLock(ctx context.Context, voucher *finance.PaymentVoucher) error {
+	model := models.PaymentVoucherModelFromDomain(voucher)
 	result := r.db.WithContext(ctx).
-		Model(voucher).
+		Model(model).
 		Where("id = ? AND version = ?", voucher.ID, voucher.Version-1).
-		Updates(voucher)
+		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
@@ -155,18 +166,18 @@ func (r *GormPaymentVoucherRepository) SaveWithLock(ctx context.Context, voucher
 
 // Delete soft deletes a payment voucher
 func (r *GormPaymentVoucherRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&finance.PaymentVoucher{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Delete(&models.PaymentVoucherModel{}, "id = ?", id).Error
 }
 
 // DeleteForTenant soft deletes a payment voucher for a tenant
 func (r *GormPaymentVoucherRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&finance.PaymentVoucher{}, "id = ? AND tenant_id = ?", id, tenantID).Error
+	return r.db.WithContext(ctx).Delete(&models.PaymentVoucherModel{}, "id = ? AND tenant_id = ?", id, tenantID).Error
 }
 
 // CountForTenant counts payment vouchers for a tenant with optional filters
 func (r *GormPaymentVoucherRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.PaymentVoucherFilter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&finance.PaymentVoucher{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.PaymentVoucherModel{}).Where("tenant_id = ?", tenantID)
 
 	if filter.SupplierID != nil {
 		query = query.Where("supplier_id = ?", *filter.SupplierID)
@@ -185,7 +196,7 @@ func (r *GormPaymentVoucherRepository) CountForTenant(ctx context.Context, tenan
 func (r *GormPaymentVoucherRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status finance.VoucherStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -197,7 +208,7 @@ func (r *GormPaymentVoucherRepository) CountByStatus(ctx context.Context, tenant
 func (r *GormPaymentVoucherRepository) CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -209,7 +220,7 @@ func (r *GormPaymentVoucherRepository) CountBySupplier(ctx context.Context, tena
 func (r *GormPaymentVoucherRepository) SumBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID).
 		Scan(&sum).Error; err != nil {
@@ -222,7 +233,7 @@ func (r *GormPaymentVoucherRepository) SumBySupplier(ctx context.Context, tenant
 func (r *GormPaymentVoucherRepository) SumForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ?", tenantID).
 		Scan(&sum).Error; err != nil {
@@ -235,7 +246,7 @@ func (r *GormPaymentVoucherRepository) SumForTenant(ctx context.Context, tenantI
 func (r *GormPaymentVoucherRepository) SumUnallocatedBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Select("COALESCE(SUM(unallocated_amount), 0)").
 		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID).
 		Scan(&sum).Error; err != nil {
@@ -248,7 +259,7 @@ func (r *GormPaymentVoucherRepository) SumUnallocatedBySupplier(ctx context.Cont
 func (r *GormPaymentVoucherRepository) ExistsByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Where("tenant_id = ? AND voucher_number = ?", tenantID, voucherNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -260,7 +271,7 @@ func (r *GormPaymentVoucherRepository) ExistsByVoucherNumber(ctx context.Context
 func (r *GormPaymentVoucherRepository) GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
 	var maxNumber string
 	if err := r.db.WithContext(ctx).
-		Model(&finance.PaymentVoucher{}).
+		Model(&models.PaymentVoucherModel{}).
 		Select("voucher_number").
 		Where("tenant_id = ?", tenantID).
 		Order("voucher_number DESC").

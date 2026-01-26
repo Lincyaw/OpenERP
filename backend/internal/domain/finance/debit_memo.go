@@ -48,17 +48,12 @@ func (s DebitMemoStatus) CanApply() bool {
 
 // DebitMemoApplication represents an application of debit to a payable
 type DebitMemoApplication struct {
-	ID          uuid.UUID       `gorm:"type:uuid;primary_key"`
-	DebitMemoID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PayableID   uuid.UUID       `gorm:"type:uuid;not null;index"` // Reference to the payable
-	Amount      decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AppliedAt   time.Time       `gorm:"not null"`
-	Remark      string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (DebitMemoApplication) TableName() string {
-	return "debit_memo_applications"
+	ID          uuid.UUID       `json:"id"`
+	DebitMemoID uuid.UUID       `json:"debit_memo_id"`
+	PayableID   uuid.UUID       `json:"payable_id"` // Reference to the payable
+	Amount      decimal.Decimal `json:"amount"`
+	AppliedAt   time.Time       `json:"applied_at"`
+	Remark      string          `json:"remark"`
 }
 
 // NewDebitMemoApplication creates a new debit memo application
@@ -80,24 +75,19 @@ func (a *DebitMemoApplication) GetAmountMoney() valueobject.Money {
 
 // DebitMemoItem represents a line item in the debit memo
 type DebitMemoItem struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	DebitMemoID      uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PurchaseReturnID uuid.UUID       `gorm:"type:uuid;not null"` // Reference to purchase return
-	ReturnItemID     uuid.UUID       `gorm:"type:uuid;not null"` // Reference to return item
-	ProductID        uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName      string          `gorm:"type:varchar(200);not null"`
-	ProductCode      string          `gorm:"type:varchar(50);not null"`
-	ReturnQuantity   decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	UnitCost         decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	DebitAmount      decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitCost
-	Unit             string          `gorm:"type:varchar(20);not null"`
-	Reason           string          `gorm:"type:varchar(500)"`
-	CreatedAt        time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (DebitMemoItem) TableName() string {
-	return "debit_memo_items"
+	ID               uuid.UUID       `json:"id"`
+	DebitMemoID      uuid.UUID       `json:"debit_memo_id"`
+	PurchaseReturnID uuid.UUID       `json:"purchase_return_id"` // Reference to purchase return
+	ReturnItemID     uuid.UUID       `json:"return_item_id"`     // Reference to return item
+	ProductID        uuid.UUID       `json:"product_id"`
+	ProductName      string          `json:"product_name"`
+	ProductCode      string          `json:"product_code"`
+	ReturnQuantity   decimal.Decimal `json:"return_quantity"`
+	UnitCost         decimal.Decimal `json:"unit_cost"`
+	DebitAmount      decimal.Decimal `json:"debit_amount"` // ReturnQuantity * UnitCost
+	Unit             string          `json:"unit"`
+	Reason           string          `json:"reason"`
+	CreatedAt        time.Time       `json:"created_at"`
 }
 
 // GetDebitAmountMoney returns the debit amount as Money value object
@@ -114,32 +104,27 @@ func (i *DebitMemoItem) GetUnitCostMoney() valueobject.Money {
 // It is created when a purchase return is completed to offset accounts payable
 type DebitMemo struct {
 	shared.TenantAggregateRoot
-	MemoNumber             string                 `gorm:"type:varchar(50);not null;uniqueIndex:idx_debit_memo_tenant_number,priority:2"`
-	PurchaseReturnID       uuid.UUID              `gorm:"type:uuid;not null;index"` // Reference to the purchase return
-	PurchaseReturnNumber   string                 `gorm:"type:varchar(50);not null"`
-	PurchaseOrderID        uuid.UUID              `gorm:"type:uuid;not null;index"` // Original purchase order
-	PurchaseOrderNumber    string                 `gorm:"type:varchar(50);not null"`
-	SupplierID             uuid.UUID              `gorm:"type:uuid;not null;index"`
-	SupplierName           string                 `gorm:"type:varchar(200);not null"`
-	OriginalPayableID      *uuid.UUID             `gorm:"type:uuid;index"` // Original AP being offset
-	Items                  []DebitMemoItem        `gorm:"foreignKey:DebitMemoID;references:ID"`
-	TotalDebit             decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Total debit amount
-	AppliedAmount          decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Amount applied to payables
-	RemainingAmount        decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Remaining debit to apply
-	Status                 DebitMemoStatus        `gorm:"type:varchar(20);not null;default:'PENDING'"`
-	Applications           []DebitMemoApplication `gorm:"foreignKey:DebitMemoID;references:ID"`
-	Reason                 string                 `gorm:"type:text"` // Return reason
-	Remark                 string                 `gorm:"type:text"`
-	AppliedAt              *time.Time             // When fully applied
-	VoidedAt               *time.Time
-	VoidReason             string     `gorm:"type:varchar(500)"`
-	RefundReceivedAt       *time.Time // When refund received from supplier
-	RefundMethod           string     `gorm:"type:varchar(50)"` // How the refund was received
-}
-
-// TableName returns the table name for GORM
-func (DebitMemo) TableName() string {
-	return "debit_memos"
+	MemoNumber           string                 `json:"memo_number"`
+	PurchaseReturnID     uuid.UUID              `json:"purchase_return_id"` // Reference to the purchase return
+	PurchaseReturnNumber string                 `json:"purchase_return_number"`
+	PurchaseOrderID      uuid.UUID              `json:"purchase_order_id"` // Original purchase order
+	PurchaseOrderNumber  string                 `json:"purchase_order_number"`
+	SupplierID           uuid.UUID              `json:"supplier_id"`
+	SupplierName         string                 `json:"supplier_name"`
+	OriginalPayableID    *uuid.UUID             `json:"original_payable_id"` // Original AP being offset
+	Items                []DebitMemoItem        `json:"items"`
+	TotalDebit           decimal.Decimal        `json:"total_debit"`      // Total debit amount
+	AppliedAmount        decimal.Decimal        `json:"applied_amount"`   // Amount applied to payables
+	RemainingAmount      decimal.Decimal        `json:"remaining_amount"` // Remaining debit to apply
+	Status               DebitMemoStatus        `json:"status"`
+	Applications         []DebitMemoApplication `json:"applications"`
+	Reason               string                 `json:"reason"` // Return reason
+	Remark               string                 `json:"remark"`
+	AppliedAt            *time.Time             `json:"applied_at"` // When fully applied
+	VoidedAt             *time.Time             `json:"voided_at"`
+	VoidReason           string                 `json:"void_reason"`
+	RefundReceivedAt     *time.Time             `json:"refund_received_at"` // When refund received from supplier
+	RefundMethod         string                 `json:"refund_method"`      // How the refund was received
 }
 
 // NewDebitMemo creates a new debit memo from a purchase return

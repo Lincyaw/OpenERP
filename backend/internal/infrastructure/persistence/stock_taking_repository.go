@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -25,104 +26,120 @@ func NewGormStockTakingRepository(db *gorm.DB) *GormStockTakingRepository {
 
 // FindByID finds a stock taking by its ID
 func (r *GormStockTakingRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.StockTaking, error) {
-	var st inventory.StockTaking
+	var model models.StockTakingModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
-		First(&st, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &st, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a stock taking by ID within a tenant
 func (r *GormStockTakingRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*inventory.StockTaking, error) {
-	var st inventory.StockTaking
+	var model models.StockTakingModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&st).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &st, nil
+	return model.ToDomain(), nil
 }
 
 // FindByTakingNumber finds a stock taking by its number
 func (r *GormStockTakingRepository) FindByTakingNumber(ctx context.Context, tenantID uuid.UUID, takingNumber string) (*inventory.StockTaking, error) {
-	var st inventory.StockTaking
+	var model models.StockTakingModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND taking_number = ?", tenantID, takingNumber).
-		First(&st).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &st, nil
+	return model.ToDomain(), nil
 }
 
 // FindByWarehouse finds all stock takings for a warehouse
 func (r *GormStockTakingRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]inventory.StockTaking, error) {
-	var sts []inventory.StockTaking
+	var stModels []models.StockTakingModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+		r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 			Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID),
 		filter,
 	)
 
-	if err := query.Find(&sts).Error; err != nil {
+	if err := query.Find(&stModels).Error; err != nil {
 		return nil, err
+	}
+	sts := make([]inventory.StockTaking, len(stModels))
+	for i, model := range stModels {
+		sts[i] = *model.ToDomain()
 	}
 	return sts, nil
 }
 
 // FindByStatus finds all stock takings with a specific status
 func (r *GormStockTakingRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status inventory.StockTakingStatus, filter shared.Filter) ([]inventory.StockTaking, error) {
-	var sts []inventory.StockTaking
+	var stModels []models.StockTakingModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+		r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, status),
 		filter,
 	)
 
-	if err := query.Find(&sts).Error; err != nil {
+	if err := query.Find(&stModels).Error; err != nil {
 		return nil, err
+	}
+	sts := make([]inventory.StockTaking, len(stModels))
+	for i, model := range stModels {
+		sts[i] = *model.ToDomain()
 	}
 	return sts, nil
 }
 
 // FindAllForTenant finds all stock takings for a tenant
 func (r *GormStockTakingRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.StockTaking, error) {
-	var sts []inventory.StockTaking
+	var stModels []models.StockTakingModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+		r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 			Where("tenant_id = ?", tenantID),
 		filter,
 	)
 
-	if err := query.Find(&sts).Error; err != nil {
+	if err := query.Find(&stModels).Error; err != nil {
 		return nil, err
+	}
+	sts := make([]inventory.StockTaking, len(stModels))
+	for i, model := range stModels {
+		sts[i] = *model.ToDomain()
 	}
 	return sts, nil
 }
 
 // FindByDateRange finds stock takings within a date range
 func (r *GormStockTakingRepository) FindByDateRange(ctx context.Context, tenantID uuid.UUID, start, end time.Time, filter shared.Filter) ([]inventory.StockTaking, error) {
-	var sts []inventory.StockTaking
+	var stModels []models.StockTakingModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+		r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 			Where("tenant_id = ? AND taking_date >= ? AND taking_date <= ?", tenantID, start, end),
 		filter,
 	)
 
-	if err := query.Find(&sts).Error; err != nil {
+	if err := query.Find(&stModels).Error; err != nil {
 		return nil, err
+	}
+	sts := make([]inventory.StockTaking, len(stModels))
+	for i, model := range stModels {
+		sts[i] = *model.ToDomain()
 	}
 	return sts, nil
 }
@@ -134,14 +151,16 @@ func (r *GormStockTakingRepository) FindPendingApproval(ctx context.Context, ten
 
 // Save creates or updates a stock taking (without items)
 func (r *GormStockTakingRepository) Save(ctx context.Context, st *inventory.StockTaking) error {
-	return r.db.WithContext(ctx).Save(st).Error
+	model := models.StockTakingModelFromDomain(st)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithItems saves a stock taking with its items in a transaction
 func (r *GormStockTakingRepository) SaveWithItems(ctx context.Context, st *inventory.StockTaking) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Save the stock taking
-		if err := tx.Save(st).Error; err != nil {
+		model := models.StockTakingModelFromDomain(st)
+		if err := tx.Save(model).Error; err != nil {
 			return err
 		}
 
@@ -153,13 +172,13 @@ func (r *GormStockTakingRepository) SaveWithItems(ctx context.Context, st *inven
 
 		if len(existingItemIDs) > 0 {
 			if err := tx.Where("stock_taking_id = ? AND id NOT IN ?", st.ID, existingItemIDs).
-				Delete(&inventory.StockTakingItem{}).Error; err != nil {
+				Delete(&models.StockTakingItemModel{}).Error; err != nil {
 				return err
 			}
 		} else {
 			// Delete all items if none remain
 			if err := tx.Where("stock_taking_id = ?", st.ID).
-				Delete(&inventory.StockTakingItem{}).Error; err != nil {
+				Delete(&models.StockTakingItemModel{}).Error; err != nil {
 				return err
 			}
 		}
@@ -167,7 +186,8 @@ func (r *GormStockTakingRepository) SaveWithItems(ctx context.Context, st *inven
 		// Save/update all items
 		for i := range st.Items {
 			st.Items[i].StockTakingID = st.ID
-			if err := tx.Save(&st.Items[i]).Error; err != nil {
+			itemModel := models.StockTakingItemModelFromDomain(&st.Items[i])
+			if err := tx.Save(itemModel).Error; err != nil {
 				return err
 			}
 		}
@@ -180,11 +200,11 @@ func (r *GormStockTakingRepository) SaveWithItems(ctx context.Context, st *inven
 func (r *GormStockTakingRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete items first
-		if err := tx.Where("stock_taking_id = ?", id).Delete(&inventory.StockTakingItem{}).Error; err != nil {
+		if err := tx.Where("stock_taking_id = ?", id).Delete(&models.StockTakingItemModel{}).Error; err != nil {
 			return err
 		}
 		// Delete the stock taking
-		result := tx.Delete(&inventory.StockTaking{}, "id = ?", id)
+		result := tx.Delete(&models.StockTakingModel{}, "id = ?", id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -199,8 +219,8 @@ func (r *GormStockTakingRepository) Delete(ctx context.Context, id uuid.UUID) er
 func (r *GormStockTakingRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Verify the stock taking belongs to the tenant
-		var st inventory.StockTaking
-		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&st).Error; err != nil {
+		var model models.StockTakingModel
+		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&model).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return shared.ErrNotFound
 			}
@@ -208,19 +228,19 @@ func (r *GormStockTakingRepository) DeleteForTenant(ctx context.Context, tenantI
 		}
 
 		// Delete items first
-		if err := tx.Where("stock_taking_id = ?", id).Delete(&inventory.StockTakingItem{}).Error; err != nil {
+		if err := tx.Where("stock_taking_id = ?", id).Delete(&models.StockTakingItemModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete the stock taking
-		return tx.Delete(&st).Error
+		return tx.Delete(&model).Error
 	})
 }
 
 // CountForTenant counts stock takings matching the filter
 func (r *GormStockTakingRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+	query := r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 		Where("tenant_id = ?", tenantID)
 
 	// Apply search filter
@@ -239,7 +259,7 @@ func (r *GormStockTakingRepository) CountForTenant(ctx context.Context, tenantID
 // CountByStatus counts stock takings by status
 func (r *GormStockTakingRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status inventory.StockTakingStatus) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+	if err := r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -250,7 +270,7 @@ func (r *GormStockTakingRepository) CountByStatus(ctx context.Context, tenantID 
 // ExistsByTakingNumber checks if a stock taking number exists
 func (r *GormStockTakingRepository) ExistsByTakingNumber(ctx context.Context, tenantID uuid.UUID, takingNumber string) (bool, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+	if err := r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 		Where("tenant_id = ? AND taking_number = ?", tenantID, takingNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -266,7 +286,7 @@ func (r *GormStockTakingRepository) GenerateTakingNumber(ctx context.Context, te
 
 	// Find the max sequence number for today
 	var maxNumber string
-	err := r.db.WithContext(ctx).Model(&inventory.StockTaking{}).
+	err := r.db.WithContext(ctx).Model(&models.StockTakingModel{}).
 		Select("taking_number").
 		Where("tenant_id = ? AND taking_number LIKE ?", tenantID, prefix+"%").
 		Order("taking_number DESC").
@@ -336,3 +356,6 @@ func (r *GormStockTakingRepository) applyFilter(query *gorm.DB, filter shared.Fi
 
 	return query
 }
+
+// Ensure GormStockTakingRepository implements StockTakingRepository
+var _ inventory.StockTakingRepository = (*GormStockTakingRepository)(nil)

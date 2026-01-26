@@ -584,16 +584,6 @@ func TestPayableAllocation_GetAmountMoney(t *testing.T) {
 	assert.True(t, decimal.NewFromFloat(750.50).Equal(money.Amount()))
 }
 
-func TestPayableAllocation_TableName(t *testing.T) {
-	allocation := PayableAllocation{}
-	assert.Equal(t, "payable_allocations", allocation.TableName())
-}
-
-func TestPaymentVoucher_TableName(t *testing.T) {
-	pv := PaymentVoucher{}
-	assert.Equal(t, "payment_vouchers", pv.TableName())
-}
-
 // ============================================
 // Domain Events Tests
 // ============================================

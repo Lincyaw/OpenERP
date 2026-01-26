@@ -779,16 +779,6 @@ func TestAccountPayable_PaidPercentage(t *testing.T) {
 	assert.True(t, ap.PaidPercentage().Equal(decimal.NewFromInt(100)))
 }
 
-func TestAccountPayable_TableName(t *testing.T) {
-	ap := &AccountPayable{}
-	assert.Equal(t, "account_payables", ap.TableName())
-}
-
-func TestPayablePaymentRecord_TableName(t *testing.T) {
-	record := &PayablePaymentRecord{}
-	assert.Equal(t, "payable_payment_records", record.TableName())
-}
-
 // Helper functions
 
 func createTestPayable(t *testing.T, amount float64) *AccountPayable {

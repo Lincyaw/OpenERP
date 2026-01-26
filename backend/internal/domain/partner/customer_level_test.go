@@ -397,9 +397,4 @@ func TestCustomerLevelRecord(t *testing.T) {
 		assert.Equal(t, "normal", records[0].Code)
 		assert.Equal(t, "vip", records[4].Code)
 	})
-
-	t.Run("TableName returns correct table name", func(t *testing.T) {
-		record := CustomerLevelRecord{}
-		assert.Equal(t, "customer_levels", record.TableName())
-	})
 }

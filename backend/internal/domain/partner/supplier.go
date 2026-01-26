@@ -33,34 +33,29 @@ const (
 // It is the aggregate root for supplier-related operations
 type Supplier struct {
 	shared.TenantAggregateRoot
-	Code        string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_supplier_tenant_code,priority:2"`
-	Name        string          `gorm:"type:varchar(200);not null"`
-	ShortName   string          `gorm:"type:varchar(100)"` // Abbreviated name
-	Type        SupplierType    `gorm:"type:varchar(20);not null;default:'distributor'"`
-	Status      SupplierStatus  `gorm:"type:varchar(20);not null;default:'active'"`
-	ContactName string          `gorm:"type:varchar(100)"` // Primary contact person
-	Phone       string          `gorm:"type:varchar(50);index"`
-	Email       string          `gorm:"type:varchar(200);index"`
-	Address     string          `gorm:"type:text"` // Full address
-	City        string          `gorm:"type:varchar(100)"`
-	Province    string          `gorm:"type:varchar(100)"`
-	PostalCode  string          `gorm:"type:varchar(20)"`
-	Country     string          `gorm:"type:varchar(100);default:'中国'"`
-	TaxID       string          `gorm:"type:varchar(50)"` // Tax identification number
-	BankName    string          `gorm:"type:varchar(200)"`
-	BankAccount string          `gorm:"type:varchar(100)"`
-	CreditDays  int             `gorm:"not null;default:0"`                    // Payment terms: days until payment due
-	CreditLimit decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Maximum credit allowed
-	Balance     decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Current accounts payable balance
-	Rating      int             `gorm:"not null;default:0;check:rating >= 0"`  // Supplier rating (0-5)
-	Notes       string          `gorm:"type:text"`
-	SortOrder   int             `gorm:"not null;default:0"`
-	Attributes  string          `gorm:"type:jsonb"` // Custom attributes
-}
-
-// TableName returns the table name for GORM
-func (Supplier) TableName() string {
-	return "suppliers"
+	Code        string
+	Name        string
+	ShortName   string // Abbreviated name
+	Type        SupplierType
+	Status      SupplierStatus
+	ContactName string // Primary contact person
+	Phone       string
+	Email       string
+	Address     string // Full address
+	City        string
+	Province    string
+	PostalCode  string
+	Country     string
+	TaxID       string // Tax identification number
+	BankName    string
+	BankAccount string
+	CreditDays  int             // Payment terms: days until payment due
+	CreditLimit decimal.Decimal // Maximum credit allowed
+	Balance     decimal.Decimal // Current accounts payable balance
+	Rating      int             // Supplier rating (0-5)
+	Notes       string
+	SortOrder   int
+	Attributes  string // Custom attributes
 }
 
 // NewSupplier creates a new supplier with required fields

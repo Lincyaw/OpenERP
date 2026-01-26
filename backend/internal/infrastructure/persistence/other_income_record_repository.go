@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -26,123 +27,142 @@ func NewGormOtherIncomeRecordRepository(db *gorm.DB) *GormOtherIncomeRecordRepos
 
 // FindByID finds an income record by its ID
 func (r *GormOtherIncomeRecordRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.OtherIncomeRecord, error) {
-	var income finance.OtherIncomeRecord
-	if err := r.db.WithContext(ctx).First(&income, "id = ?", id).Error; err != nil {
+	var model models.OtherIncomeRecordModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &income, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds an income record by ID for a specific tenant
 func (r *GormOtherIncomeRecordRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.OtherIncomeRecord, error) {
-	var income finance.OtherIncomeRecord
+	var model models.OtherIncomeRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&income).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &income, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIncomeNumber finds by income number for a tenant
 func (r *GormOtherIncomeRecordRepository) FindByIncomeNumber(ctx context.Context, tenantID uuid.UUID, incomeNumber string) (*finance.OtherIncomeRecord, error) {
-	var income finance.OtherIncomeRecord
+	var model models.OtherIncomeRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND income_number = ?", tenantID, incomeNumber).
-		First(&income).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &income, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all income records for a tenant with filtering
 func (r *GormOtherIncomeRecordRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.OtherIncomeRecordFilter) ([]finance.OtherIncomeRecord, error) {
-	var incomes []finance.OtherIncomeRecord
-	query := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	var incomeModels []models.OtherIncomeRecordModel
+	query := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ?", tenantID)
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&incomes).Error; err != nil {
+	if err := query.Find(&incomeModels).Error; err != nil {
 		return nil, err
+	}
+	incomes := make([]finance.OtherIncomeRecord, len(incomeModels))
+	for i, model := range incomeModels {
+		incomes[i] = *model.ToDomain()
 	}
 	return incomes, nil
 }
 
 // FindByCategory finds income records by category for a tenant
 func (r *GormOtherIncomeRecordRepository) FindByCategory(ctx context.Context, tenantID uuid.UUID, category finance.IncomeCategory, filter finance.OtherIncomeRecordFilter) ([]finance.OtherIncomeRecord, error) {
-	var incomes []finance.OtherIncomeRecord
-	query := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	var incomeModels []models.OtherIncomeRecordModel
+	query := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND category = ?", tenantID, category)
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&incomes).Error; err != nil {
+	if err := query.Find(&incomeModels).Error; err != nil {
 		return nil, err
+	}
+	incomes := make([]finance.OtherIncomeRecord, len(incomeModels))
+	for i, model := range incomeModels {
+		incomes[i] = *model.ToDomain()
 	}
 	return incomes, nil
 }
 
 // FindByStatus finds income records by status for a tenant
 func (r *GormOtherIncomeRecordRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status finance.IncomeStatus, filter finance.OtherIncomeRecordFilter) ([]finance.OtherIncomeRecord, error) {
-	var incomes []finance.OtherIncomeRecord
-	query := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	var incomeModels []models.OtherIncomeRecordModel
+	query := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status)
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&incomes).Error; err != nil {
+	if err := query.Find(&incomeModels).Error; err != nil {
 		return nil, err
+	}
+	incomes := make([]finance.OtherIncomeRecord, len(incomeModels))
+	for i, model := range incomeModels {
+		incomes[i] = *model.ToDomain()
 	}
 	return incomes, nil
 }
 
 // FindDraft finds all draft income records for a tenant
 func (r *GormOtherIncomeRecordRepository) FindDraft(ctx context.Context, tenantID uuid.UUID) ([]finance.OtherIncomeRecord, error) {
-	var incomes []finance.OtherIncomeRecord
+	var incomeModels []models.OtherIncomeRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND status = ?", tenantID, finance.IncomeStatusDraft).
 		Order("created_at DESC").
-		Find(&incomes).Error; err != nil {
+		Find(&incomeModels).Error; err != nil {
 		return nil, err
+	}
+	incomes := make([]finance.OtherIncomeRecord, len(incomeModels))
+	for i, model := range incomeModels {
+		incomes[i] = *model.ToDomain()
 	}
 	return incomes, nil
 }
 
 // Save creates or updates an income record
 func (r *GormOtherIncomeRecordRepository) Save(ctx context.Context, income *finance.OtherIncomeRecord) error {
-	return r.db.WithContext(ctx).Save(income).Error
+	model := models.OtherIncomeRecordModelFromDomain(income)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithLock saves the income record with optimistic locking
 func (r *GormOtherIncomeRecordRepository) SaveWithLock(ctx context.Context, income *finance.OtherIncomeRecord) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version
-		var current finance.OtherIncomeRecord
+		var current models.OtherIncomeRecordModel
 		if err := tx.Select("version").Where("id = ?", income.GetID()).First(&current).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				// New record, just save
-				return tx.Create(income).Error
+				model := models.OtherIncomeRecordModelFromDomain(income)
+				return tx.Create(model).Error
 			}
 			return err
 		}
 
 		// Check version matches (domain model already incremented version)
 		expectedVersion := income.GetVersion() - 1
-		if current.GetVersion() != expectedVersion {
+		if current.Version != expectedVersion {
 			return shared.NewDomainError("VERSION_CONFLICT", "Income record has been modified by another user")
 		}
 
 		// Update with version check
-		result := tx.Model(income).
+		model := models.OtherIncomeRecordModelFromDomain(income)
+		result := tx.Model(model).
 			Where("id = ? AND version = ?", income.GetID(), expectedVersion).
-			Save(income)
+			Save(model)
 
 		if result.Error != nil {
 			return result.Error
@@ -161,7 +181,7 @@ func (r *GormOtherIncomeRecordRepository) GenerateIncomeNumber(ctx context.Conte
 	yearMonth := today.Format("200601")
 
 	// Count incomes this month
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND income_number LIKE ?", tenantID, fmt.Sprintf("INC-%s-%%", yearMonth)).
 		Count(&count).Error; err != nil {
 		return "", err
@@ -173,7 +193,7 @@ func (r *GormOtherIncomeRecordRepository) GenerateIncomeNumber(ctx context.Conte
 // CountForTenant counts income records for a tenant with filtering
 func (r *GormOtherIncomeRecordRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.OtherIncomeRecordFilter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	query := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
@@ -254,7 +274,7 @@ func (r *GormOtherIncomeRecordRepository) applyFilterWithoutPagination(query *go
 
 // Delete soft deletes an income record
 func (r *GormOtherIncomeRecordRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&finance.OtherIncomeRecord{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.OtherIncomeRecordModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -266,7 +286,7 @@ func (r *GormOtherIncomeRecordRepository) Delete(ctx context.Context, id uuid.UU
 
 // DeleteForTenant soft deletes an income record for a tenant
 func (r *GormOtherIncomeRecordRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&finance.OtherIncomeRecord{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.OtherIncomeRecordModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -279,7 +299,7 @@ func (r *GormOtherIncomeRecordRepository) DeleteForTenant(ctx context.Context, t
 // CountByStatus counts income records by status for a tenant
 func (r *GormOtherIncomeRecordRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status finance.IncomeStatus) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -290,7 +310,7 @@ func (r *GormOtherIncomeRecordRepository) CountByStatus(ctx context.Context, ten
 // CountByCategory counts income records by category for a tenant
 func (r *GormOtherIncomeRecordRepository) CountByCategory(ctx context.Context, tenantID uuid.UUID, category finance.IncomeCategory) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND category = ?", tenantID, category).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -303,7 +323,7 @@ func (r *GormOtherIncomeRecordRepository) SumByCategory(ctx context.Context, ten
 	var result struct {
 		Total decimal.Decimal
 	}
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Select("COALESCE(SUM(amount), 0) as total").
 		Where("tenant_id = ? AND category = ? AND received_at >= ? AND received_at <= ?", tenantID, category, from, to).
 		Scan(&result).Error; err != nil {
@@ -317,7 +337,7 @@ func (r *GormOtherIncomeRecordRepository) SumForTenant(ctx context.Context, tena
 	var result struct {
 		Total decimal.Decimal
 	}
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Select("COALESCE(SUM(amount), 0) as total").
 		Where("tenant_id = ? AND received_at >= ? AND received_at <= ?", tenantID, from, to).
 		Scan(&result).Error; err != nil {
@@ -331,7 +351,7 @@ func (r *GormOtherIncomeRecordRepository) SumConfirmedForTenant(ctx context.Cont
 	var result struct {
 		Total decimal.Decimal
 	}
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Select("COALESCE(SUM(amount), 0) as total").
 		Where("tenant_id = ? AND status = ? AND received_at >= ? AND received_at <= ?", tenantID, finance.IncomeStatusConfirmed, from, to).
 		Scan(&result).Error; err != nil {
@@ -343,7 +363,7 @@ func (r *GormOtherIncomeRecordRepository) SumConfirmedForTenant(ctx context.Cont
 // ExistsByIncomeNumber checks if an income number exists for a tenant
 func (r *GormOtherIncomeRecordRepository) ExistsByIncomeNumber(ctx context.Context, tenantID uuid.UUID, incomeNumber string) (bool, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&finance.OtherIncomeRecord{}).
+	if err := r.db.WithContext(ctx).Model(&models.OtherIncomeRecordModel{}).
 		Where("tenant_id = ? AND income_number = ?", tenantID, incomeNumber).
 		Count(&count).Error; err != nil {
 		return false, err

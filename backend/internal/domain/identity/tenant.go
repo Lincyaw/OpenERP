@@ -60,26 +60,21 @@ func DefaultTenantConfig() TenantConfig {
 // It is the aggregate root for tenant-related operations
 type Tenant struct {
 	shared.BaseAggregateRoot
-	Code         string       `gorm:"type:varchar(50);not null;uniqueIndex"`
-	Name         string       `gorm:"type:varchar(200);not null"`
-	ShortName    string       `gorm:"type:varchar(100)"`
-	Status       TenantStatus `gorm:"type:varchar(20);not null;default:'active'"`
-	Plan         TenantPlan   `gorm:"type:varchar(20);not null;default:'free'"`
-	ContactName  string       `gorm:"type:varchar(100)"`
-	ContactPhone string       `gorm:"type:varchar(50)"`
-	ContactEmail string       `gorm:"type:varchar(200)"`
-	Address      string       `gorm:"type:text"`
-	LogoURL      string       `gorm:"type:varchar(500)"`
-	Domain       string       `gorm:"type:varchar(200);uniqueIndex"` // Custom subdomain
-	ExpiresAt    *time.Time   `gorm:"index"`                         // Subscription expiry date
-	TrialEndsAt  *time.Time   // Trial period end date
-	Config       TenantConfig `gorm:"embedded;embeddedPrefix:config_"`
-	Notes        string       `gorm:"type:text"`
-}
-
-// TableName returns the table name for GORM
-func (Tenant) TableName() string {
-	return "tenants"
+	Code         string
+	Name         string
+	ShortName    string
+	Status       TenantStatus
+	Plan         TenantPlan
+	ContactName  string
+	ContactPhone string
+	ContactEmail string
+	Address      string
+	LogoURL      string
+	Domain       string // Custom subdomain
+	ExpiresAt    *time.Time
+	TrialEndsAt  *time.Time // Trial period end date
+	Config       TenantConfig
+	Notes        string
 }
 
 // NewTenant creates a new tenant with required fields

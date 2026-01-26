@@ -27,26 +27,21 @@ const (
 
 // OutboxEntry represents an event stored in the outbox for reliable delivery
 type OutboxEntry struct {
-	ID            uuid.UUID    `gorm:"type:uuid;primaryKey"`
-	TenantID      uuid.UUID    `gorm:"type:uuid;not null;index:idx_outbox_tenant_status,priority:1"`
-	EventID       uuid.UUID    `gorm:"type:uuid;not null;uniqueIndex"`
-	EventType     string       `gorm:"type:varchar(255);not null"`
-	AggregateID   uuid.UUID    `gorm:"type:uuid;not null"`
-	AggregateType string       `gorm:"type:varchar(255);not null"`
-	Payload       []byte       `gorm:"type:jsonb;not null"`
-	Status        OutboxStatus `gorm:"type:varchar(20);default:PENDING;index:idx_outbox_tenant_status,priority:2;index:idx_outbox_status_created,priority:1"`
-	RetryCount    int          `gorm:"default:0"`
-	MaxRetries    int          `gorm:"default:5"`
-	LastError     string       `gorm:"type:text"`
-	NextRetryAt   *time.Time   `gorm:"index:idx_outbox_next_retry"`
+	ID            uuid.UUID
+	TenantID      uuid.UUID
+	EventID       uuid.UUID
+	EventType     string
+	AggregateID   uuid.UUID
+	AggregateType string
+	Payload       []byte
+	Status        OutboxStatus
+	RetryCount    int
+	MaxRetries    int
+	LastError     string
+	NextRetryAt   *time.Time
 	ProcessedAt   *time.Time
-	CreatedAt     time.Time `gorm:"not null;default:now();index:idx_outbox_status_created,priority:2"`
-	UpdatedAt     time.Time `gorm:"not null;default:now()"`
-}
-
-// TableName returns the table name for GORM
-func (OutboxEntry) TableName() string {
-	return "outbox_events"
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // NewOutboxEntry creates a new outbox entry for a domain event

@@ -344,15 +344,15 @@ func (a *Address) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// AddressDTO is a data transfer object for GORM operations
+// AddressDTO is a data transfer object for database operations
 // This allows Address to be stored as a JSON column
 type AddressDTO struct {
-	Province   string `gorm:"column:address_province;type:varchar(100)" json:"province"`
-	City       string `gorm:"column:address_city;type:varchar(100)" json:"city"`
-	District   string `gorm:"column:address_district;type:varchar(100)" json:"district"`
-	Detail     string `gorm:"column:address_detail;type:text" json:"detail"`
-	PostalCode string `gorm:"column:address_postal_code;type:varchar(20)" json:"postalCode,omitempty"`
-	Country    string `gorm:"column:address_country;type:varchar(100);default:'中国'" json:"country,omitempty"`
+	Province   string `json:"province"`
+	City       string `json:"city"`
+	District   string `json:"district"`
+	Detail     string `json:"detail"`
+	PostalCode string `json:"postalCode,omitempty"`
+	Country    string `json:"country,omitempty"`
 }
 
 // ToDTO converts Address to AddressDTO for database storage

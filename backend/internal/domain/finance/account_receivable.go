@@ -133,29 +133,24 @@ func (p *PaymentRecord) GetAmountMoney() valueobject.Money {
 // It tracks money owed by a customer for goods/services provided
 type AccountReceivable struct {
 	shared.TenantAggregateRoot
-	ReceivableNumber  string           `gorm:"type:varchar(50);not null;uniqueIndex:idx_receivable_tenant_number,priority:2"`
-	CustomerID        uuid.UUID        `gorm:"type:uuid;not null;index"`
-	CustomerName      string           `gorm:"type:varchar(200);not null"`
-	SourceType        SourceType       `gorm:"type:varchar(30);not null;index"`
-	SourceID          uuid.UUID        `gorm:"type:uuid;not null;index"`          // ID of the source document (e.g., SalesOrder)
-	SourceNumber      string           `gorm:"type:varchar(50);not null"`         // Number of the source document
-	TotalAmount       decimal.Decimal  `gorm:"type:decimal(18,4);not null"`       // Original amount due
-	PaidAmount        decimal.Decimal  `gorm:"type:decimal(18,4);not null"`       // Amount already paid
-	OutstandingAmount decimal.Decimal  `gorm:"type:decimal(18,4);not null;index"` // Remaining amount due
-	Status            ReceivableStatus `gorm:"type:varchar(20);not null;default:'PENDING';index"`
-	DueDate           *time.Time       `gorm:"index"` // When payment is expected
-	PaymentRecords    PaymentRecords   `gorm:"type:jsonb;default:'[]'"`
-	Remark            string           `gorm:"type:text"`
-	PaidAt            *time.Time       // When fully paid
-	ReversedAt        *time.Time       // When reversed
-	ReversalReason    string           `gorm:"type:varchar(500)"` // Reason for reversal
-	CancelledAt       *time.Time       // When cancelled
-	CancelReason      string           `gorm:"type:varchar(500)"` // Reason for cancellation
-}
-
-// TableName returns the table name for GORM
-func (AccountReceivable) TableName() string {
-	return "account_receivables"
+	ReceivableNumber  string           `json:"receivable_number"`
+	CustomerID        uuid.UUID        `json:"customer_id"`
+	CustomerName      string           `json:"customer_name"`
+	SourceType        SourceType       `json:"source_type"`
+	SourceID          uuid.UUID        `json:"source_id"`          // ID of the source document (e.g., SalesOrder)
+	SourceNumber      string           `json:"source_number"`      // Number of the source document
+	TotalAmount       decimal.Decimal  `json:"total_amount"`       // Original amount due
+	PaidAmount        decimal.Decimal  `json:"paid_amount"`        // Amount already paid
+	OutstandingAmount decimal.Decimal  `json:"outstanding_amount"` // Remaining amount due
+	Status            ReceivableStatus `json:"status"`
+	DueDate           *time.Time       `json:"due_date"` // When payment is expected
+	PaymentRecords    PaymentRecords   `json:"payment_records"`
+	Remark            string           `json:"remark"`
+	PaidAt            *time.Time       `json:"paid_at"`         // When fully paid
+	ReversedAt        *time.Time       `json:"reversed_at"`     // When reversed
+	ReversalReason    string           `json:"reversal_reason"` // Reason for reversal
+	CancelledAt       *time.Time       `json:"cancelled_at"`    // When cancelled
+	CancelReason      string           `json:"cancel_reason"`   // Reason for cancellation
 }
 
 // NewAccountReceivable creates a new account receivable

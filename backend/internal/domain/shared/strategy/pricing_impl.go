@@ -31,7 +31,7 @@ type PriceTier struct {
 // CustomerPrice represents a customer-specific price
 type CustomerPrice struct {
 	CustomerID    string
-	CustomerType  string          // Customer type (e.g., "vip", "wholesale", "retail")
+	CustomerType  string // Customer type (e.g., "vip", "wholesale", "retail")
 	ProductID     string
 	UnitPrice     decimal.Decimal
 	MinQuantity   decimal.Decimal // Minimum quantity required for this price
@@ -163,8 +163,8 @@ func (s *TieredPricingStrategy) SupportsTieredPricing() bool {
 // CustomerSpecificPricingStrategy applies customer-specific prices
 type CustomerSpecificPricingStrategy struct {
 	BaseStrategy
-	CustomerPrices   []CustomerPrice        // Customer-specific prices
-	FallbackStrategy PricingStrategy        // Fallback strategy if no customer price found
+	CustomerPrices   []CustomerPrice // Customer-specific prices
+	FallbackStrategy PricingStrategy // Fallback strategy if no customer price found
 }
 
 // NewCustomerSpecificPricingStrategy creates a new customer-specific pricing strategy
@@ -276,8 +276,8 @@ func (s *CustomerSpecificPricingStrategy) SupportsTieredPricing() bool {
 // CombinedPricingStrategy combines multiple pricing strategies and applies the best price
 type CombinedPricingStrategy struct {
 	BaseStrategy
-	Strategies   []PricingStrategy
-	SelectBest   bool // If true, select the best (lowest) price; if false, apply all sequentially
+	Strategies []PricingStrategy
+	SelectBest bool // If true, select the best (lowest) price; if false, apply all sequentially
 }
 
 // NewCombinedPricingStrategy creates a new combined pricing strategy

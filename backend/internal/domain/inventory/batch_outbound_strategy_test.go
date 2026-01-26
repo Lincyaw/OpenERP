@@ -466,10 +466,10 @@ func TestGetBatchesByExpiryWindow(t *testing.T) {
 
 	t.Run("Returns batches expiring within window", func(t *testing.T) {
 		batches := []StockBatch{
-			createTestBatch("B001", 50, 10, nil, timePtr(now.Add(5 * 24 * time.Hour))),   // 5 days
-			createTestBatch("B002", 50, 10, nil, timePtr(now.Add(15 * 24 * time.Hour))),  // 15 days
-			createTestBatch("B003", 50, 10, nil, timePtr(now.Add(45 * 24 * time.Hour))),  // 45 days
-			createTestBatch("B004", 50, 10, nil, nil),                                      // No expiry
+			createTestBatch("B001", 50, 10, nil, timePtr(now.Add(5*24*time.Hour))),  // 5 days
+			createTestBatch("B002", 50, 10, nil, timePtr(now.Add(15*24*time.Hour))), // 15 days
+			createTestBatch("B003", 50, 10, nil, timePtr(now.Add(45*24*time.Hour))), // 45 days
+			createTestBatch("B004", 50, 10, nil, nil),                               // No expiry
 		}
 
 		// Get batches expiring within 30 days
@@ -481,8 +481,8 @@ func TestGetBatchesByExpiryWindow(t *testing.T) {
 
 	t.Run("Returns empty for no expiring batches", func(t *testing.T) {
 		batches := []StockBatch{
-			createTestBatch("B001", 50, 10, nil, timePtr(now.Add(60 * 24 * time.Hour))), // 60 days
-			createTestBatch("B002", 50, 10, nil, nil),                                     // No expiry
+			createTestBatch("B001", 50, 10, nil, timePtr(now.Add(60*24*time.Hour))), // 60 days
+			createTestBatch("B002", 50, 10, nil, nil),                               // No expiry
 		}
 
 		expiring := GetBatchesByExpiryWindow(batches, 30*24*time.Hour)
@@ -490,9 +490,9 @@ func TestGetBatchesByExpiryWindow(t *testing.T) {
 	})
 
 	t.Run("Excludes unavailable batches", func(t *testing.T) {
-		consumedBatch := createTestBatch("B001", 50, 10, nil, timePtr(now.Add(5 * 24 * time.Hour)))
+		consumedBatch := createTestBatch("B001", 50, 10, nil, timePtr(now.Add(5*24*time.Hour)))
 		consumedBatch.Consumed = true
-		validBatch := createTestBatch("B002", 50, 10, nil, timePtr(now.Add(10 * 24 * time.Hour)))
+		validBatch := createTestBatch("B002", 50, 10, nil, timePtr(now.Add(10*24*time.Hour)))
 
 		batches := []StockBatch{consumedBatch, validBatch}
 		expiring := GetBatchesByExpiryWindow(batches, 30*24*time.Hour)

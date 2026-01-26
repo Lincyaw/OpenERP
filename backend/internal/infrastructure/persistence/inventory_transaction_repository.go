@@ -8,6 +8,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -30,121 +31,150 @@ func (r *GormInventoryTransactionRepository) WithTx(tx *gorm.DB) *GormInventoryT
 
 // FindByID finds a transaction by its ID
 func (r *GormInventoryTransactionRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.InventoryTransaction, error) {
-	var tx inventory.InventoryTransaction
-	if err := r.db.WithContext(ctx).First(&tx, "id = ?", id).Error; err != nil {
+	var model models.InventoryTransactionModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &tx, nil
+	return model.ToDomain(), nil
 }
 
 // FindByInventoryItem finds transactions for an inventory item
 func (r *GormInventoryTransactionRepository) FindByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("inventory_item_id = ?", inventoryItemID),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindByWarehouse finds transactions for a warehouse
 func (r *GormInventoryTransactionRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindByProduct finds transactions for a product
 func (r *GormInventoryTransactionRepository) FindByProduct(ctx context.Context, tenantID, productID uuid.UUID, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("tenant_id = ? AND product_id = ?", tenantID, productID),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindBySource finds transactions by source document
 func (r *GormInventoryTransactionRepository) FindBySource(ctx context.Context, sourceType inventory.SourceType, sourceID string) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	if err := r.db.WithContext(ctx).
 		Where("source_type = ? AND source_id = ?", sourceType, sourceID).
 		Order("transaction_date ASC").
-		Find(&txs).Error; err != nil {
+		Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindByDateRange finds transactions within a date range
 func (r *GormInventoryTransactionRepository) FindByDateRange(ctx context.Context, tenantID uuid.UUID, start, end time.Time, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("tenant_id = ? AND transaction_date >= ? AND transaction_date <= ?", tenantID, start, end),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindByType finds transactions by type
 func (r *GormInventoryTransactionRepository) FindByType(ctx context.Context, tenantID uuid.UUID, txType inventory.TransactionType, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("tenant_id = ? AND transaction_type = ?", tenantID, txType),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // FindForTenant finds all transactions for a tenant
 func (r *GormInventoryTransactionRepository) FindForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryTransaction, error) {
-	var txs []inventory.InventoryTransaction
+	var txModels []models.InventoryTransactionModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).
+		r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).
 			Where("tenant_id = ?", tenantID),
 		filter,
 	)
 
-	if err := query.Find(&txs).Error; err != nil {
+	if err := query.Find(&txModels).Error; err != nil {
 		return nil, err
+	}
+	txs := make([]inventory.InventoryTransaction, len(txModels))
+	for i, model := range txModels {
+		txs[i] = *model.ToDomain()
 	}
 	return txs, nil
 }
 
 // Create creates a new transaction (append-only, no update allowed)
 func (r *GormInventoryTransactionRepository) Create(ctx context.Context, tx *inventory.InventoryTransaction) error {
-	return r.db.WithContext(ctx).Create(tx).Error
+	model := models.InventoryTransactionModelFromDomain(tx)
+	return r.db.WithContext(ctx).Create(model).Error
 }
 
 // CreateBatch creates multiple transactions
@@ -152,13 +182,17 @@ func (r *GormInventoryTransactionRepository) CreateBatch(ctx context.Context, tx
 	if len(txs) == 0 {
 		return nil
 	}
-	return r.db.WithContext(ctx).Create(&txs).Error
+	txModels := make([]*models.InventoryTransactionModel, len(txs))
+	for i, tx := range txs {
+		txModels[i] = models.InventoryTransactionModelFromDomain(tx)
+	}
+	return r.db.WithContext(ctx).Create(&txModels).Error
 }
 
 // CountForTenant counts transactions for a tenant
 func (r *GormInventoryTransactionRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryTransaction{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.InventoryTransactionModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -171,7 +205,7 @@ func (r *GormInventoryTransactionRepository) CountForTenant(ctx context.Context,
 func (r *GormInventoryTransactionRepository) CountByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryTransaction{}).
+		Model(&models.InventoryTransactionModel{}).
 		Where("inventory_item_id = ?", inventoryItemID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -185,7 +219,7 @@ func (r *GormInventoryTransactionRepository) SumQuantityByTypeAndDateRange(ctx c
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryTransaction{}).
+		Model(&models.InventoryTransactionModel{}).
 		Select("COALESCE(SUM(quantity), 0) as total").
 		Where("tenant_id = ? AND transaction_type = ? AND transaction_date >= ? AND transaction_date <= ?",
 			tenantID, txType, start, end).

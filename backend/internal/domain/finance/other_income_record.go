@@ -114,27 +114,22 @@ const (
 // It tracks non-trade income like investment returns, subsidies, interest, etc.
 type OtherIncomeRecord struct {
 	shared.TenantAggregateRoot
-	IncomeNumber   string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_income_tenant_number,priority:2"`
-	Category       IncomeCategory  `gorm:"type:varchar(30);not null;index"`
-	Amount         decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	Description    string          `gorm:"type:varchar(500);not null"`
-	ReceivedAt     time.Time       `gorm:"not null;index"` // When the income was received
-	Status         IncomeStatus    `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	ReceiptStatus  ReceiptStatus   `gorm:"type:varchar(20);not null;default:'PENDING';index"`
-	PaymentMethod  *PaymentMethod  `gorm:"type:varchar(30)"` // How the income was received
-	ActualReceived *time.Time      // When the income was actually received
-	Remark         string          `gorm:"type:text"`
-	AttachmentURLs string          `gorm:"type:text"` // JSON array of attachment URLs
-	ConfirmedAt    *time.Time      // When confirmed
-	ConfirmedBy    *uuid.UUID      `gorm:"type:uuid"` // User who confirmed
-	CancelledAt    *time.Time      // When cancelled
-	CancelledBy    *uuid.UUID      `gorm:"type:uuid"` // User who cancelled
-	CancelReason   string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (OtherIncomeRecord) TableName() string {
-	return "other_income_records"
+	IncomeNumber   string          `json:"income_number"`
+	Category       IncomeCategory  `json:"category"`
+	Amount         decimal.Decimal `json:"amount"`
+	Description    string          `json:"description"`
+	ReceivedAt     time.Time       `json:"received_at"` // When the income was received
+	Status         IncomeStatus    `json:"status"`
+	ReceiptStatus  ReceiptStatus   `json:"receipt_status"`
+	PaymentMethod  *PaymentMethod  `json:"payment_method"`  // How the income was received
+	ActualReceived *time.Time      `json:"actual_received"` // When the income was actually received
+	Remark         string          `json:"remark"`
+	AttachmentURLs string          `json:"attachment_urls"` // JSON array of attachment URLs
+	ConfirmedAt    *time.Time      `json:"confirmed_at"`    // When confirmed
+	ConfirmedBy    *uuid.UUID      `json:"confirmed_by"`    // User who confirmed
+	CancelledAt    *time.Time      `json:"cancelled_at"`    // When cancelled
+	CancelledBy    *uuid.UUID      `json:"cancelled_by"`    // User who cancelled
+	CancelReason   string          `json:"cancel_reason"`
 }
 
 // NewOtherIncomeRecord creates a new other income record

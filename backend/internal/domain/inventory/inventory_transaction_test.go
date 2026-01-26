@@ -531,11 +531,6 @@ func TestInventoryTransaction_QuantityChange(t *testing.T) {
 	}
 }
 
-func TestInventoryTransaction_TableName(t *testing.T) {
-	tx := InventoryTransaction{}
-	assert.Equal(t, "inventory_transactions", tx.TableName())
-}
-
 func TestTransactionBuilder_Success(t *testing.T) {
 	tenantID := uuid.New()
 	inventoryItemID := uuid.New()

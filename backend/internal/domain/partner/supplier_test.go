@@ -708,11 +708,6 @@ func TestSupplierAddressVO(t *testing.T) {
 	})
 }
 
-func TestSupplier_TableName(t *testing.T) {
-	supplier := &Supplier{}
-	assert.Equal(t, "suppliers", supplier.TableName())
-}
-
 // Helper function to create a test supplier
 func createTestSupplier(t *testing.T) *Supplier {
 	t.Helper()

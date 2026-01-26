@@ -48,17 +48,12 @@ func (s CreditMemoStatus) CanApply() bool {
 
 // CreditMemoApplication represents an application of credit to a receivable
 type CreditMemoApplication struct {
-	ID           uuid.UUID       `gorm:"type:uuid;primary_key"`
-	CreditMemoID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ReceivableID uuid.UUID       `gorm:"type:uuid;not null;index"` // Reference to the receivable
-	Amount       decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AppliedAt    time.Time       `gorm:"not null"`
-	Remark       string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (CreditMemoApplication) TableName() string {
-	return "credit_memo_applications"
+	ID           uuid.UUID       `json:"id"`
+	CreditMemoID uuid.UUID       `json:"credit_memo_id"`
+	ReceivableID uuid.UUID       `json:"receivable_id"` // Reference to the receivable
+	Amount       decimal.Decimal `json:"amount"`
+	AppliedAt    time.Time       `json:"applied_at"`
+	Remark       string          `json:"remark"`
 }
 
 // NewCreditMemoApplication creates a new credit memo application
@@ -80,24 +75,19 @@ func (a *CreditMemoApplication) GetAmountMoney() valueobject.Money {
 
 // CreditMemoItem represents a line item in the credit memo
 type CreditMemoItem struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	CreditMemoID     uuid.UUID       `gorm:"type:uuid;not null;index"`
-	SalesReturnID    uuid.UUID       `gorm:"type:uuid;not null"` // Reference to sales return
-	ReturnItemID     uuid.UUID       `gorm:"type:uuid;not null"` // Reference to return item
-	ProductID        uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName      string          `gorm:"type:varchar(200);not null"`
-	ProductCode      string          `gorm:"type:varchar(50);not null"`
-	ReturnQuantity   decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	UnitPrice        decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	CreditAmount     decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitPrice
-	Unit             string          `gorm:"type:varchar(20);not null"`
-	Reason           string          `gorm:"type:varchar(500)"`
-	CreatedAt        time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (CreditMemoItem) TableName() string {
-	return "credit_memo_items"
+	ID             uuid.UUID       `json:"id"`
+	CreditMemoID   uuid.UUID       `json:"credit_memo_id"`
+	SalesReturnID  uuid.UUID       `json:"sales_return_id"` // Reference to sales return
+	ReturnItemID   uuid.UUID       `json:"return_item_id"`  // Reference to return item
+	ProductID      uuid.UUID       `json:"product_id"`
+	ProductName    string          `json:"product_name"`
+	ProductCode    string          `json:"product_code"`
+	ReturnQuantity decimal.Decimal `json:"return_quantity"`
+	UnitPrice      decimal.Decimal `json:"unit_price"`
+	CreditAmount   decimal.Decimal `json:"credit_amount"` // ReturnQuantity * UnitPrice
+	Unit           string          `json:"unit"`
+	Reason         string          `json:"reason"`
+	CreatedAt      time.Time       `json:"created_at"`
 }
 
 // GetCreditAmountMoney returns the credit amount as Money value object
@@ -114,32 +104,27 @@ func (i *CreditMemoItem) GetUnitPriceMoney() valueobject.Money {
 // It is created when a sales return is completed to offset accounts receivable
 type CreditMemo struct {
 	shared.TenantAggregateRoot
-	MemoNumber           string                  `gorm:"type:varchar(50);not null;uniqueIndex:idx_credit_memo_tenant_number,priority:2"`
-	SalesReturnID        uuid.UUID               `gorm:"type:uuid;not null;index"` // Reference to the sales return
-	SalesReturnNumber    string                  `gorm:"type:varchar(50);not null"`
-	SalesOrderID         uuid.UUID               `gorm:"type:uuid;not null;index"` // Original sales order
-	SalesOrderNumber     string                  `gorm:"type:varchar(50);not null"`
-	CustomerID           uuid.UUID               `gorm:"type:uuid;not null;index"`
-	CustomerName         string                  `gorm:"type:varchar(200);not null"`
-	OriginalReceivableID *uuid.UUID              `gorm:"type:uuid;index"` // Original AR being offset
-	Items                []CreditMemoItem        `gorm:"foreignKey:CreditMemoID;references:ID"`
-	TotalCredit          decimal.Decimal         `gorm:"type:decimal(18,4);not null"` // Total credit amount
-	AppliedAmount        decimal.Decimal         `gorm:"type:decimal(18,4);not null"` // Amount applied to receivables
-	RemainingAmount      decimal.Decimal         `gorm:"type:decimal(18,4);not null"` // Remaining credit to apply
-	Status               CreditMemoStatus        `gorm:"type:varchar(20);not null;default:'PENDING'"`
-	Applications         []CreditMemoApplication `gorm:"foreignKey:CreditMemoID;references:ID"`
-	Reason               string                  `gorm:"type:text"` // Return reason
-	Remark               string                  `gorm:"type:text"`
-	AppliedAt            *time.Time              // When fully applied
-	VoidedAt             *time.Time
-	VoidReason           string     `gorm:"type:varchar(500)"`
-	RefundedAt           *time.Time // When refunded to customer
-	RefundMethod         string     `gorm:"type:varchar(50)"` // How the refund was made
-}
-
-// TableName returns the table name for GORM
-func (CreditMemo) TableName() string {
-	return "credit_memos"
+	MemoNumber           string                  `json:"memo_number"`
+	SalesReturnID        uuid.UUID               `json:"sales_return_id"` // Reference to the sales return
+	SalesReturnNumber    string                  `json:"sales_return_number"`
+	SalesOrderID         uuid.UUID               `json:"sales_order_id"` // Original sales order
+	SalesOrderNumber     string                  `json:"sales_order_number"`
+	CustomerID           uuid.UUID               `json:"customer_id"`
+	CustomerName         string                  `json:"customer_name"`
+	OriginalReceivableID *uuid.UUID              `json:"original_receivable_id"` // Original AR being offset
+	Items                []CreditMemoItem        `json:"items"`
+	TotalCredit          decimal.Decimal         `json:"total_credit"`     // Total credit amount
+	AppliedAmount        decimal.Decimal         `json:"applied_amount"`   // Amount applied to receivables
+	RemainingAmount      decimal.Decimal         `json:"remaining_amount"` // Remaining credit to apply
+	Status               CreditMemoStatus        `json:"status"`
+	Applications         []CreditMemoApplication `json:"applications"`
+	Reason               string                  `json:"reason"` // Return reason
+	Remark               string                  `json:"remark"`
+	AppliedAt            *time.Time              `json:"applied_at"` // When fully applied
+	VoidedAt             *time.Time              `json:"voided_at"`
+	VoidReason           string                  `json:"void_reason"`
+	RefundedAt           *time.Time              `json:"refunded_at"`   // When refunded to customer
+	RefundMethod         string                  `json:"refund_method"` // How the refund was made
 }
 
 // NewCreditMemo creates a new credit memo from a sales return

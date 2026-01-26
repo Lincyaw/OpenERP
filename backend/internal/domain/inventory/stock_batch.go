@@ -12,18 +12,13 @@ import (
 // (production date, expiry date, batch number, etc.)
 type StockBatch struct {
 	shared.BaseEntity
-	InventoryItemID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	BatchNumber     string          `gorm:"type:varchar(50);not null;index"` // Batch/lot number
-	ProductionDate  *time.Time      `gorm:"type:date"`                       // Date of production (optional)
-	ExpiryDate      *time.Time      `gorm:"type:date;index"`                 // Expiry date (optional)
-	Quantity        decimal.Decimal `gorm:"type:decimal(18,4);not null"`     // Quantity in this batch
-	UnitCost        decimal.Decimal `gorm:"type:decimal(18,4);not null"`     // Cost per unit for this batch
-	Consumed        bool            `gorm:"not null;default:false"`          // Whether this batch is fully consumed
-}
-
-// TableName returns the table name for GORM
-func (StockBatch) TableName() string {
-	return "stock_batches"
+	InventoryItemID uuid.UUID
+	BatchNumber     string          // Batch/lot number
+	ProductionDate  *time.Time      // Date of production (optional)
+	ExpiryDate      *time.Time      // Expiry date (optional)
+	Quantity        decimal.Decimal // Quantity in this batch
+	UnitCost        decimal.Decimal // Cost per unit for this batch
+	Consumed        bool            // Whether this batch is fully consumed
 }
 
 // NewStockBatch creates a new stock batch

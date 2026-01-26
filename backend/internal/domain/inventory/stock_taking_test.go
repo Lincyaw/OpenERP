@@ -388,8 +388,8 @@ func TestStockTaking_GetItemsWithDifference(t *testing.T) {
 	_ = st.AddItem(productID1, "P1", "PRD-001", "个", decimal.NewFromInt(100), decimal.NewFromFloat(10))
 	_ = st.AddItem(productID2, "P2", "PRD-002", "个", decimal.NewFromInt(50), decimal.NewFromFloat(20))
 	_ = st.StartCounting()
-	_ = st.RecordItemCount(productID1, decimal.NewFromInt(95), "")  // Difference: -5
-	_ = st.RecordItemCount(productID2, decimal.NewFromInt(50), "")  // No difference
+	_ = st.RecordItemCount(productID1, decimal.NewFromInt(95), "") // Difference: -5
+	_ = st.RecordItemCount(productID2, decimal.NewFromInt(50), "") // No difference
 
 	items := st.GetItemsWithDifference()
 

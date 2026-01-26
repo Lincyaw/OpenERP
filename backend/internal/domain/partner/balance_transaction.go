@@ -98,23 +98,18 @@ func (s BalanceTransactionSourceType) IsValid() bool {
 // Once created, transactions cannot be modified - corrections must be made with new transactions.
 type BalanceTransaction struct {
 	shared.BaseEntity
-	TenantID        uuid.UUID                    `gorm:"type:uuid;not null;index:idx_bal_tx_tenant_time,priority:1"`
-	CustomerID      uuid.UUID                    `gorm:"type:uuid;not null;index:idx_bal_tx_customer"`
-	TransactionType BalanceTransactionType       `gorm:"type:varchar(30);not null;index:idx_bal_tx_type"`
-	Amount          decimal.Decimal              `gorm:"type:decimal(18,4);not null"` // Always positive, direction determined by type
-	BalanceBefore   decimal.Decimal              `gorm:"type:decimal(18,4);not null"` // Balance before transaction
-	BalanceAfter    decimal.Decimal              `gorm:"type:decimal(18,4);not null"` // Balance after transaction
-	SourceType      BalanceTransactionSourceType `gorm:"type:varchar(30);not null;index:idx_bal_tx_source"`
-	SourceID        *string                      `gorm:"type:varchar(50);index:idx_bal_tx_source"` // ID of source document (optional)
-	Reference       string                       `gorm:"type:varchar(100)"`                        // Reference number/code
-	Remark          string                       `gorm:"type:varchar(500)"`                        // Remark/notes
-	OperatorID      *uuid.UUID                   `gorm:"type:uuid"`                                // User who performed the operation
-	TransactionDate time.Time                    `gorm:"type:timestamptz;not null;index:idx_bal_tx_tenant_time,priority:2"`
-}
-
-// TableName returns the table name for GORM
-func (BalanceTransaction) TableName() string {
-	return "balance_transactions"
+	TenantID        uuid.UUID // Always positive, direction determined by type
+	CustomerID      uuid.UUID
+	TransactionType BalanceTransactionType
+	Amount          decimal.Decimal // Always positive, direction determined by type
+	BalanceBefore   decimal.Decimal // Balance before transaction
+	BalanceAfter    decimal.Decimal // Balance after transaction
+	SourceType      BalanceTransactionSourceType
+	SourceID        *string    // ID of source document (optional)
+	Reference       string     // Reference number/code
+	Remark          string     // Remark/notes
+	OperatorID      *uuid.UUID // User who performed the operation
+	TransactionDate time.Time
 }
 
 // NewBalanceTransaction creates a new balance transaction

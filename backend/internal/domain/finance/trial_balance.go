@@ -294,28 +294,23 @@ func DefaultTrialBalanceCheckOptions() TrialBalanceCheckOptions {
 
 // TrialBalanceAuditLog represents an audit log entry for trial balance checks
 type TrialBalanceAuditLog struct {
-	ID               uuid.UUID          `json:"id" gorm:"type:uuid;primary_key"`
-	TenantID         uuid.UUID          `json:"tenant_id" gorm:"type:uuid;not null;index"`
-	CheckedAt        time.Time          `json:"checked_at" gorm:"not null;index"`
-	CheckedBy        uuid.UUID          `json:"checked_by" gorm:"type:uuid;not null;index"`
-	Status           TrialBalanceStatus `json:"status" gorm:"type:varchar(20);not null;index"`
-	TotalDebits      decimal.Decimal    `json:"total_debits" gorm:"type:decimal(18,4);not null"`
-	TotalCredits     decimal.Decimal    `json:"total_credits" gorm:"type:decimal(18,4);not null"`
-	NetBalance       decimal.Decimal    `json:"net_balance" gorm:"type:decimal(18,4);not null"`
-	DiscrepancyCount int                `json:"discrepancy_count" gorm:"not null"`
-	CriticalCount    int                `json:"critical_count" gorm:"not null"`
-	WarningCount     int                `json:"warning_count" gorm:"not null"`
-	DurationMs       int64              `json:"duration_ms" gorm:"not null"`
-	PeriodStart      *time.Time         `json:"period_start" gorm:"index"`
-	PeriodEnd        *time.Time         `json:"period_end" gorm:"index"`
-	Notes            string             `json:"notes" gorm:"type:text"`
-	DetailsJSON      string             `json:"details_json" gorm:"type:text"` // JSON of discrepancies for audit
-	CreatedAt        time.Time          `json:"created_at" gorm:"autoCreateTime"`
-}
-
-// TableName returns the table name for GORM
-func (TrialBalanceAuditLog) TableName() string {
-	return "trial_balance_audit_logs"
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	CheckedAt        time.Time          `json:"checked_at"`
+	CheckedBy        uuid.UUID          `json:"checked_by"`
+	Status           TrialBalanceStatus `json:"status"`
+	TotalDebits      decimal.Decimal    `json:"total_debits"`
+	TotalCredits     decimal.Decimal    `json:"total_credits"`
+	NetBalance       decimal.Decimal    `json:"net_balance"`
+	DiscrepancyCount int                `json:"discrepancy_count"`
+	CriticalCount    int                `json:"critical_count"`
+	WarningCount     int                `json:"warning_count"`
+	DurationMs       int64              `json:"duration_ms"`
+	PeriodStart      *time.Time         `json:"period_start"`
+	PeriodEnd        *time.Time         `json:"period_end"`
+	Notes            string             `json:"notes"`
+	DetailsJSON      string             `json:"details_json"` // JSON of discrepancies for audit
+	CreatedAt        time.Time          `json:"created_at"`
 }
 
 // NewTrialBalanceAuditLog creates a new audit log entry from a trial balance result

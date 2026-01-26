@@ -57,29 +57,24 @@ func (s ReturnStatus) CanTransitionTo(target ReturnStatus) bool {
 
 // SalesReturnItem represents a line item in a sales return
 type SalesReturnItem struct {
-	ID                uuid.UUID       `gorm:"type:uuid;primary_key"`
-	ReturnID          uuid.UUID       `gorm:"type:uuid;not null;index"`
-	SalesOrderItemID  uuid.UUID       `gorm:"type:uuid;not null"` // Reference to original order item
-	ProductID         uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName       string          `gorm:"type:varchar(200);not null"`
-	ProductCode       string          `gorm:"type:varchar(50);not null"`
-	OriginalQuantity  decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity in original order
-	ReturnQuantity    decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity being returned
-	UnitPrice         decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Price per unit (from original order)
-	RefundAmount      decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitPrice
-	Unit              string          `gorm:"type:varchar(20);not null"`
-	ConversionRate    decimal.Decimal `gorm:"type:decimal(18,6);not null;default:1"` // Conversion rate to base unit
-	BaseQuantity      decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Return quantity in base units (for inventory)
-	BaseUnit          string          `gorm:"type:varchar(20);not null"`             // Base unit code
-	Reason            string          `gorm:"type:varchar(500)"`
-	ConditionOnReturn string          `gorm:"type:varchar(100)"` // e.g., "damaged", "defective", "wrong_item"
-	CreatedAt         time.Time       `gorm:"not null"`
-	UpdatedAt         time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (SalesReturnItem) TableName() string {
-	return "sales_return_items"
+	ID                uuid.UUID
+	ReturnID          uuid.UUID
+	SalesOrderItemID  uuid.UUID // Reference to original order item
+	ProductID         uuid.UUID
+	ProductName       string
+	ProductCode       string
+	OriginalQuantity  decimal.Decimal // Quantity in original order
+	ReturnQuantity    decimal.Decimal // Quantity being returned
+	UnitPrice         decimal.Decimal // Price per unit (from original order)
+	RefundAmount      decimal.Decimal // ReturnQuantity * UnitPrice
+	Unit              string
+	ConversionRate    decimal.Decimal // Conversion rate to base unit
+	BaseQuantity      decimal.Decimal // Return quantity in base units (for inventory)
+	BaseUnit          string          // Base unit code
+	Reason            string
+	ConditionOnReturn string // e.g., "damaged", "defective", "wrong_item"
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 // NewSalesReturnItem creates a new sales return item
@@ -195,33 +190,28 @@ func (i *SalesReturnItem) GetUnitPriceMoney() valueobject.Money {
 // It manages the return of goods from a customer for a previous sales order
 type SalesReturn struct {
 	shared.TenantAggregateRoot
-	ReturnNumber     string            `gorm:"type:varchar(50);not null;uniqueIndex:idx_sales_return_tenant_number,priority:2"`
-	SalesOrderID     uuid.UUID         `gorm:"type:uuid;not null;index"` // Reference to original sales order
-	SalesOrderNumber string            `gorm:"type:varchar(50);not null"`
-	CustomerID       uuid.UUID         `gorm:"type:uuid;not null;index"`
-	CustomerName     string            `gorm:"type:varchar(200);not null"`
-	WarehouseID      *uuid.UUID        `gorm:"type:uuid;index"` // Warehouse where returned goods will be stored
-	Items            []SalesReturnItem `gorm:"foreignKey:ReturnID;references:ID"`
-	TotalRefund      decimal.Decimal   `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all item refunds
-	Status           ReturnStatus      `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Reason           string            `gorm:"type:text"` // Overall return reason
-	Remark           string            `gorm:"type:text"`
-	SubmittedAt      *time.Time        `gorm:"index"` // When submitted for approval
-	ApprovedAt       *time.Time        `gorm:"index"`
-	ApprovedBy       *uuid.UUID        `gorm:"type:uuid"`
-	ApprovalNote     string            `gorm:"type:varchar(500)"`
+	ReturnNumber     string
+	SalesOrderID     uuid.UUID // Reference to original sales order
+	SalesOrderNumber string
+	CustomerID       uuid.UUID
+	CustomerName     string
+	WarehouseID      *uuid.UUID // Warehouse where returned goods will be stored
+	Items            []SalesReturnItem
+	TotalRefund      decimal.Decimal // Sum of all item refunds
+	Status           ReturnStatus
+	Reason           string // Overall return reason
+	Remark           string
+	SubmittedAt      *time.Time // When submitted for approval
+	ApprovedAt       *time.Time
+	ApprovedBy       *uuid.UUID
+	ApprovalNote     string
 	RejectedAt       *time.Time
-	RejectedBy       *uuid.UUID `gorm:"type:uuid"`
-	RejectionReason  string     `gorm:"type:varchar(500)"`
+	RejectedBy       *uuid.UUID
+	RejectionReason  string
 	ReceivedAt       *time.Time // When receiving process started
 	CompletedAt      *time.Time
 	CancelledAt      *time.Time
-	CancelReason     string `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (SalesReturn) TableName() string {
-	return "sales_returns"
+	CancelReason     string
 }
 
 // NewSalesReturn creates a new sales return

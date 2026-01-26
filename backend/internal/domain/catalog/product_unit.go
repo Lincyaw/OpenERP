@@ -11,24 +11,19 @@ import (
 // ProductUnit represents an alternate unit for a product with conversion rate
 // It defines how different units relate to the base unit (e.g., 1 box = 24 pcs)
 type ProductUnit struct {
-	ID                    uuid.UUID       `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
-	TenantID              uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ProductID             uuid.UUID       `gorm:"type:uuid;not null;index;uniqueIndex:idx_product_unit_code,priority:2"`
-	UnitCode              string          `gorm:"type:varchar(20);not null;uniqueIndex:idx_product_unit_code,priority:3"`
-	UnitName              string          `gorm:"type:varchar(50);not null"`
-	ConversionRate        decimal.Decimal `gorm:"type:decimal(18,6);not null"` // Rate to convert to base unit
-	DefaultPurchasePrice  decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`
-	DefaultSellingPrice   decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`
-	IsDefaultPurchaseUnit bool            `gorm:"not null;default:false"`
-	IsDefaultSalesUnit    bool            `gorm:"not null;default:false"`
-	SortOrder             int             `gorm:"not null;default:0"`
-	CreatedAt             time.Time       `gorm:"not null;autoCreateTime"`
-	UpdatedAt             time.Time       `gorm:"not null;autoUpdateTime"`
-}
-
-// TableName returns the table name for GORM
-func (ProductUnit) TableName() string {
-	return "product_units"
+	ID                    uuid.UUID       // Primary key
+	TenantID              uuid.UUID       // Tenant ID reference
+	ProductID             uuid.UUID       // Product ID reference
+	UnitCode              string          // Unit code (e.g., "box", "case")
+	UnitName              string          // Unit display name
+	ConversionRate        decimal.Decimal // Rate to convert to base unit
+	DefaultPurchasePrice  decimal.Decimal // Default purchase price for this unit
+	DefaultSellingPrice   decimal.Decimal // Default selling price for this unit
+	IsDefaultPurchaseUnit bool            // Whether this is the default purchase unit
+	IsDefaultSalesUnit    bool            // Whether this is the default sales unit
+	SortOrder             int             // Display order
+	CreatedAt             time.Time       // Creation timestamp
+	UpdatedAt             time.Time       // Last update timestamp
 }
 
 // NewProductUnit creates a new product unit

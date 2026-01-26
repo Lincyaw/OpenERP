@@ -549,13 +549,3 @@ func TestUser_GetDisplayNameOrUsername(t *testing.T) {
 		assert.Equal(t, "testuser", user.GetDisplayNameOrUsername())
 	})
 }
-
-func TestUserRole_TableName(t *testing.T) {
-	ur := UserRole{}
-	assert.Equal(t, "user_roles", ur.TableName())
-}
-
-func TestUser_TableName(t *testing.T) {
-	u := User{}
-	assert.Equal(t, "users", u.TableName())
-}

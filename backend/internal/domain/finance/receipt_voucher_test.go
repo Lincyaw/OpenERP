@@ -720,13 +720,3 @@ func TestReceivableAllocation_GetAmountMoney(t *testing.T) {
 	money := allocation.GetAmountMoney()
 	assert.True(t, decimal.NewFromFloat(750.50).Equal(money.Amount()))
 }
-
-func TestReceivableAllocation_TableName(t *testing.T) {
-	allocation := ReceivableAllocation{}
-	assert.Equal(t, "receivable_allocations", allocation.TableName())
-}
-
-func TestReceiptVoucher_TableName(t *testing.T) {
-	rv := ReceiptVoucher{}
-	assert.Equal(t, "receipt_vouchers", rv.TableName())
-}

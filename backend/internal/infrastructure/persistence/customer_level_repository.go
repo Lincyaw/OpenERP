@@ -6,6 +6,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -22,80 +23,88 @@ func NewGormCustomerLevelRepository(db *gorm.DB) *GormCustomerLevelRepository {
 
 // FindByID finds a customer level by its ID
 func (r *GormCustomerLevelRepository) FindByID(ctx context.Context, id uuid.UUID) (*partner.CustomerLevelRecord, error) {
-	var record partner.CustomerLevelRecord
-	if err := r.db.WithContext(ctx).First(&record, "id = ?", id).Error; err != nil {
+	var model models.CustomerLevelRecordModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &record, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a customer level by ID within a tenant
 func (r *GormCustomerLevelRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*partner.CustomerLevelRecord, error) {
-	var record partner.CustomerLevelRecord
+	var model models.CustomerLevelRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&record).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &record, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a customer level by its code within a tenant
 func (r *GormCustomerLevelRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*partner.CustomerLevelRecord, error) {
-	var record partner.CustomerLevelRecord
+	var model models.CustomerLevelRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, code).
-		First(&record).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &record, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all customer levels for a tenant (sorted by sort_order)
 func (r *GormCustomerLevelRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID) ([]*partner.CustomerLevelRecord, error) {
-	var records []*partner.CustomerLevelRecord
+	var levelModels []models.CustomerLevelRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ?", tenantID).
 		Order("sort_order ASC, name ASC").
-		Find(&records).Error; err != nil {
+		Find(&levelModels).Error; err != nil {
 		return nil, err
+	}
+	records := make([]*partner.CustomerLevelRecord, len(levelModels))
+	for i, model := range levelModels {
+		records[i] = model.ToDomain()
 	}
 	return records, nil
 }
 
 // FindActiveForTenant finds all active customer levels for a tenant
 func (r *GormCustomerLevelRepository) FindActiveForTenant(ctx context.Context, tenantID uuid.UUID) ([]*partner.CustomerLevelRecord, error) {
-	var records []*partner.CustomerLevelRecord
+	var levelModels []models.CustomerLevelRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND is_active = ?", tenantID, true).
 		Order("sort_order ASC, name ASC").
-		Find(&records).Error; err != nil {
+		Find(&levelModels).Error; err != nil {
 		return nil, err
+	}
+	records := make([]*partner.CustomerLevelRecord, len(levelModels))
+	for i, model := range levelModels {
+		records[i] = model.ToDomain()
 	}
 	return records, nil
 }
 
 // FindDefaultForTenant finds the default customer level for a tenant
 func (r *GormCustomerLevelRepository) FindDefaultForTenant(ctx context.Context, tenantID uuid.UUID) (*partner.CustomerLevelRecord, error) {
-	var record partner.CustomerLevelRecord
+	var model models.CustomerLevelRecordModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND is_default = ? AND is_active = ?", tenantID, true, true).
-		First(&record).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// If no default level found, try to get the first active level
 			if err := r.db.WithContext(ctx).
 				Where("tenant_id = ? AND is_active = ?", tenantID, true).
 				Order("sort_order ASC").
-				First(&record).Error; err != nil {
+				First(&model).Error; err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, shared.ErrNotFound
 				}
@@ -105,17 +114,18 @@ func (r *GormCustomerLevelRepository) FindDefaultForTenant(ctx context.Context, 
 			return nil, err
 		}
 	}
-	return &record, nil
+	return model.ToDomain(), nil
 }
 
 // Save creates or updates a customer level
 func (r *GormCustomerLevelRepository) Save(ctx context.Context, record *partner.CustomerLevelRecord) error {
-	return r.db.WithContext(ctx).Save(record).Error
+	model := models.CustomerLevelRecordModelFromDomain(record)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // Delete deletes a customer level by ID
 func (r *GormCustomerLevelRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.CustomerLevelRecord{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.CustomerLevelRecordModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -127,7 +137,7 @@ func (r *GormCustomerLevelRepository) Delete(ctx context.Context, id uuid.UUID) 
 
 // DeleteForTenant deletes a customer level within a tenant
 func (r *GormCustomerLevelRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.CustomerLevelRecord{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.CustomerLevelRecordModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -141,7 +151,7 @@ func (r *GormCustomerLevelRepository) DeleteForTenant(ctx context.Context, tenan
 func (r *GormCustomerLevelRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.CustomerLevelRecord{}).
+		Model(&models.CustomerLevelRecordModel{}).
 		Where("tenant_id = ? AND code = ?", tenantID, code).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -153,7 +163,7 @@ func (r *GormCustomerLevelRepository) ExistsByCode(ctx context.Context, tenantID
 func (r *GormCustomerLevelRepository) CountCustomersWithLevel(ctx context.Context, tenantID uuid.UUID, levelCode string) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND level = ?", tenantID, levelCode).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -174,7 +184,7 @@ func (r *GormCustomerLevelRepository) CountCustomersByLevelCodes(ctx context.Con
 	var results []levelCount
 
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Select("level, count(*) as count").
 		Where("tenant_id = ? AND level IN ?", tenantID, codes).
 		Group("level").
@@ -195,7 +205,7 @@ func (r *GormCustomerLevelRepository) InitializeDefaultLevels(ctx context.Contex
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Check if tenant already has levels (within transaction for consistency)
 		var count int64
-		if err := tx.Model(&partner.CustomerLevelRecord{}).
+		if err := tx.Model(&models.CustomerLevelRecordModel{}).
 			Where("tenant_id = ?", tenantID).
 			Count(&count).Error; err != nil {
 			return err
@@ -209,7 +219,8 @@ func (r *GormCustomerLevelRepository) InitializeDefaultLevels(ctx context.Contex
 		// Create default levels
 		records := partner.DefaultCustomerLevelRecords(tenantID)
 		for _, record := range records {
-			if err := tx.Create(record).Error; err != nil {
+			model := models.CustomerLevelRecordModelFromDomain(record)
+			if err := tx.Create(model).Error; err != nil {
 				return err
 			}
 		}

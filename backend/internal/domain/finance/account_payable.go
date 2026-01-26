@@ -66,17 +66,12 @@ func (s PayableSourceType) IsValid() bool {
 
 // PayablePaymentRecord represents a payment made for the payable
 type PayablePaymentRecord struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	PayableID        uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PaymentVoucherID uuid.UUID       `gorm:"type:uuid;not null;index"` // Reference to the payment voucher
-	Amount           decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AppliedAt        time.Time       `gorm:"not null"`
-	Remark           string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (PayablePaymentRecord) TableName() string {
-	return "payable_payment_records"
+	ID               uuid.UUID       `json:"id"`
+	PayableID        uuid.UUID       `json:"payable_id"`
+	PaymentVoucherID uuid.UUID       `json:"payment_voucher_id"` // Reference to the payment voucher
+	Amount           decimal.Decimal `json:"amount"`
+	AppliedAt        time.Time       `json:"applied_at"`
+	Remark           string          `json:"remark"`
 }
 
 // NewPayablePaymentRecord creates a new payment record
@@ -100,29 +95,24 @@ func (p *PayablePaymentRecord) GetAmountMoney() valueobject.Money {
 // It tracks money owed to a supplier for goods/services received
 type AccountPayable struct {
 	shared.TenantAggregateRoot
-	PayableNumber     string                 `gorm:"type:varchar(50);not null;uniqueIndex:idx_payable_tenant_number,priority:2"`
-	SupplierID        uuid.UUID              `gorm:"type:uuid;not null;index"`
-	SupplierName      string                 `gorm:"type:varchar(200);not null"`
-	SourceType        PayableSourceType      `gorm:"type:varchar(30);not null;index"`
-	SourceID          uuid.UUID              `gorm:"type:uuid;not null;index"`          // ID of the source document (e.g., PurchaseOrder)
-	SourceNumber      string                 `gorm:"type:varchar(50);not null"`         // Number of the source document
-	TotalAmount       decimal.Decimal        `gorm:"type:decimal(18,4);not null"`       // Original amount due
-	PaidAmount        decimal.Decimal        `gorm:"type:decimal(18,4);not null"`       // Amount already paid
-	OutstandingAmount decimal.Decimal        `gorm:"type:decimal(18,4);not null;index"` // Remaining amount due
-	Status            PayableStatus          `gorm:"type:varchar(20);not null;default:'PENDING';index"`
-	DueDate           *time.Time             `gorm:"index"` // When payment is expected
-	PaymentRecords    []PayablePaymentRecord `gorm:"foreignKey:PayableID;references:ID"`
-	Remark            string                 `gorm:"type:text"`
-	PaidAt            *time.Time             // When fully paid
-	ReversedAt        *time.Time             // When reversed
-	ReversalReason    string                 `gorm:"type:varchar(500)"` // Reason for reversal
-	CancelledAt       *time.Time             // When cancelled
-	CancelReason      string                 `gorm:"type:varchar(500)"` // Reason for cancellation
-}
-
-// TableName returns the table name for GORM
-func (AccountPayable) TableName() string {
-	return "account_payables"
+	PayableNumber     string                 `json:"payable_number"`
+	SupplierID        uuid.UUID              `json:"supplier_id"`
+	SupplierName      string                 `json:"supplier_name"`
+	SourceType        PayableSourceType      `json:"source_type"`
+	SourceID          uuid.UUID              `json:"source_id"`          // ID of the source document (e.g., PurchaseOrder)
+	SourceNumber      string                 `json:"source_number"`      // Number of the source document
+	TotalAmount       decimal.Decimal        `json:"total_amount"`       // Original amount due
+	PaidAmount        decimal.Decimal        `json:"paid_amount"`        // Amount already paid
+	OutstandingAmount decimal.Decimal        `json:"outstanding_amount"` // Remaining amount due
+	Status            PayableStatus          `json:"status"`
+	DueDate           *time.Time             `json:"due_date"` // When payment is expected
+	PaymentRecords    []PayablePaymentRecord `json:"payment_records"`
+	Remark            string                 `json:"remark"`
+	PaidAt            *time.Time             `json:"paid_at"`         // When fully paid
+	ReversedAt        *time.Time             `json:"reversed_at"`     // When reversed
+	ReversalReason    string                 `json:"reversal_reason"` // Reason for reversal
+	CancelledAt       *time.Time             `json:"cancelled_at"`    // When cancelled
+	CancelReason      string                 `json:"cancel_reason"`   // Reason for cancellation
 }
 
 // NewAccountPayable creates a new account payable

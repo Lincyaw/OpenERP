@@ -58,27 +58,22 @@ func (s PurchaseOrderStatus) CanReceive() bool {
 
 // PurchaseOrderItem represents a line item in a purchase order
 type PurchaseOrderItem struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	OrderID          uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ProductID        uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName      string          `gorm:"type:varchar(200);not null"`
-	ProductCode      string          `gorm:"type:varchar(50);not null"`
-	OrderedQuantity  decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity ordered (in order unit)
-	ReceivedQuantity decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Quantity already received (in order unit)
-	UnitCost         decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Cost per unit
-	Amount           decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // OrderedQuantity * UnitCost
-	Unit             string          `gorm:"type:varchar(20);not null"`             // Unit of measure (may be auxiliary unit)
-	ConversionRate   decimal.Decimal `gorm:"type:decimal(18,6);not null;default:1"` // Conversion rate to base unit
-	BaseQuantity     decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Ordered quantity in base units (for inventory)
-	BaseUnit         string          `gorm:"type:varchar(20);not null"`             // Base unit code
-	Remark           string          `gorm:"type:varchar(500)"`
-	CreatedAt        time.Time       `gorm:"not null"`
-	UpdatedAt        time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (PurchaseOrderItem) TableName() string {
-	return "purchase_order_items"
+	ID               uuid.UUID
+	OrderID          uuid.UUID
+	ProductID        uuid.UUID
+	ProductName      string
+	ProductCode      string
+	OrderedQuantity  decimal.Decimal // Quantity ordered (in order unit)
+	ReceivedQuantity decimal.Decimal // Quantity already received (in order unit)
+	UnitCost         decimal.Decimal // Cost per unit
+	Amount           decimal.Decimal // OrderedQuantity * UnitCost
+	Unit             string          // Unit of measure (may be auxiliary unit)
+	ConversionRate   decimal.Decimal // Conversion rate to base unit
+	BaseQuantity     decimal.Decimal // Ordered quantity in base units (for inventory)
+	BaseUnit         string          // Base unit code
+	Remark           string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // NewPurchaseOrderItem creates a new purchase order item
@@ -233,25 +228,20 @@ type ReceiveItem struct {
 // It manages the lifecycle of a supplier order from creation to completion
 type PurchaseOrder struct {
 	shared.TenantAggregateRoot
-	OrderNumber    string              `gorm:"type:varchar(50);not null;uniqueIndex:idx_purchase_order_tenant_number,priority:2"`
-	SupplierID     uuid.UUID           `gorm:"type:uuid;not null;index"`
-	SupplierName   string              `gorm:"type:varchar(200);not null"`
-	WarehouseID    *uuid.UUID          `gorm:"type:uuid;index"` // Target warehouse for receiving
-	Items          []PurchaseOrderItem `gorm:"foreignKey:OrderID;references:ID"`
-	TotalAmount    decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all items
-	DiscountAmount decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // Order-level discount
-	PayableAmount  decimal.Decimal     `gorm:"type:decimal(18,4);not null;default:0"` // TotalAmount - DiscountAmount
-	Status         PurchaseOrderStatus `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Remark         string              `gorm:"type:text"`
-	ConfirmedAt    *time.Time          `gorm:"index"`
+	OrderNumber    string
+	SupplierID     uuid.UUID
+	SupplierName   string
+	WarehouseID    *uuid.UUID // Target warehouse for receiving
+	Items          []PurchaseOrderItem
+	TotalAmount    decimal.Decimal // Sum of all items
+	DiscountAmount decimal.Decimal // Order-level discount
+	PayableAmount  decimal.Decimal // TotalAmount - DiscountAmount
+	Status         PurchaseOrderStatus
+	Remark         string
+	ConfirmedAt    *time.Time
 	CompletedAt    *time.Time
 	CancelledAt    *time.Time
-	CancelReason   string `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (PurchaseOrder) TableName() string {
-	return "purchase_orders"
+	CancelReason   string
 }
 
 // NewPurchaseOrder creates a new purchase order

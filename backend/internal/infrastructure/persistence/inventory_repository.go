@@ -8,6 +8,7 @@ import (
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/infrastructure/persistence/datascope"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -31,49 +32,49 @@ func (r *GormInventoryItemRepository) WithTx(tx *gorm.DB) *GormInventoryItemRepo
 
 // FindByID finds an inventory item by its ID
 func (r *GormInventoryItemRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.InventoryItem, error) {
-	var item inventory.InventoryItem
-	if err := r.db.WithContext(ctx).First(&item, "id = ?", id).Error; err != nil {
+	var model models.InventoryItemModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &item, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds an inventory item by ID within a tenant
 func (r *GormInventoryItemRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*inventory.InventoryItem, error) {
-	var item inventory.InventoryItem
+	var model models.InventoryItemModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&item).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &item, nil
+	return model.ToDomain(), nil
 }
 
 // FindByWarehouseAndProduct finds inventory by warehouse-product combination
 func (r *GormInventoryItemRepository) FindByWarehouseAndProduct(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (*inventory.InventoryItem, error) {
-	var item inventory.InventoryItem
+	var model models.InventoryItemModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND warehouse_id = ? AND product_id = ?", tenantID, warehouseID, productID).
-		First(&item).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &item, nil
+	return model.ToDomain(), nil
 }
 
 // FindByWarehouse finds all inventory items in a warehouse with data scope filtering
 func (r *GormInventoryItemRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
 
 	// Apply data scope filtering
@@ -82,17 +83,21 @@ func (r *GormInventoryItemRepository) FindByWarehouse(ctx context.Context, tenan
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
 
 // FindByProduct finds all inventory items for a product (across warehouses) with data scope filtering
 func (r *GormInventoryItemRepository) FindByProduct(ctx context.Context, tenantID, productID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND product_id = ?", tenantID, productID)
 
 	// Apply data scope filtering - warehouse users only see their warehouse's inventory
@@ -101,17 +106,21 @@ func (r *GormInventoryItemRepository) FindByProduct(ctx context.Context, tenantI
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
 
 // FindAllForTenant finds all inventory items for a tenant with data scope filtering
 func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ?", tenantID)
 
 	// Apply data scope filtering - warehouse users only see their warehouse's inventory
@@ -120,17 +129,21 @@ func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tena
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
 
 // FindBelowMinimum finds items below their minimum threshold with data scope filtering
 func (r *GormInventoryItemRepository) FindBelowMinimum(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND min_quantity > 0 AND (available_quantity + locked_quantity) < min_quantity", tenantID)
 
 	// Apply data scope filtering
@@ -139,17 +152,21 @@ func (r *GormInventoryItemRepository) FindBelowMinimum(ctx context.Context, tena
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
 
 // FindWithAvailableStock finds items that have available stock with data scope filtering
 func (r *GormInventoryItemRepository) FindWithAvailableStock(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND available_quantity > 0", tenantID)
 
 	// Apply data scope filtering
@@ -158,8 +175,12 @@ func (r *GormInventoryItemRepository) FindWithAvailableStock(ctx context.Context
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
@@ -170,24 +191,30 @@ func (r *GormInventoryItemRepository) FindByIDs(ctx context.Context, tenantID uu
 		return []inventory.InventoryItem{}, nil
 	}
 
-	var items []inventory.InventoryItem
+	var itemModels []models.InventoryItemModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id IN ?", tenantID, ids).
-		Find(&items).Error; err != nil {
+		Find(&itemModels).Error; err != nil {
 		return nil, err
+	}
+	items := make([]inventory.InventoryItem, len(itemModels))
+	for i, model := range itemModels {
+		items[i] = *model.ToDomain()
 	}
 	return items, nil
 }
 
 // Save creates or updates an inventory item
 func (r *GormInventoryItemRepository) Save(ctx context.Context, item *inventory.InventoryItem) error {
-	return r.db.WithContext(ctx).Save(item).Error
+	model := models.InventoryItemModelFromDomain(item)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithLock saves with optimistic locking (checks version)
 func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *inventory.InventoryItem) error {
+	model := models.InventoryItemModelFromDomain(item)
 	result := r.db.WithContext(ctx).
-		Model(item).
+		Model(model).
 		Where("id = ? AND version = ?", item.ID, item.Version-1).
 		Updates(map[string]interface{}{
 			"available_quantity": item.AvailableQuantity,
@@ -210,7 +237,7 @@ func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *in
 
 // Delete deletes an inventory item
 func (r *GormInventoryItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&inventory.InventoryItem{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.InventoryItemModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -222,7 +249,7 @@ func (r *GormInventoryItemRepository) Delete(ctx context.Context, id uuid.UUID) 
 
 // DeleteForTenant deletes an inventory item within a tenant
 func (r *GormInventoryItemRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&inventory.InventoryItem{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.InventoryItemModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -235,7 +262,7 @@ func (r *GormInventoryItemRepository) DeleteForTenant(ctx context.Context, tenan
 // CountForTenant counts inventory items for a tenant with data scope filtering
 func (r *GormInventoryItemRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).Where("tenant_id = ?", tenantID)
 
 	// Apply data scope filtering
 	dsFilter := datascope.NewFilterFromContext(ctx)
@@ -252,7 +279,7 @@ func (r *GormInventoryItemRepository) CountForTenant(ctx context.Context, tenant
 // CountByWarehouse counts inventory items in a warehouse with data scope
 func (r *GormInventoryItemRepository) CountByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
 
 	// Apply data scope filtering
@@ -268,7 +295,7 @@ func (r *GormInventoryItemRepository) CountByWarehouse(ctx context.Context, tena
 // CountByProduct counts inventory items for a product with data scope
 func (r *GormInventoryItemRepository) CountByProduct(ctx context.Context, tenantID, productID uuid.UUID) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND product_id = ?", tenantID, productID)
 
 	// Apply data scope filtering
@@ -287,7 +314,7 @@ func (r *GormInventoryItemRepository) SumQuantityByProduct(ctx context.Context, 
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryItem{}).
+		Model(&models.InventoryItemModel{}).
 		Select("COALESCE(SUM(available_quantity + locked_quantity), 0) as total").
 		Where("tenant_id = ? AND product_id = ?", tenantID, productID).
 		Scan(&result).Error; err != nil {
@@ -302,7 +329,7 @@ func (r *GormInventoryItemRepository) SumValueByWarehouse(ctx context.Context, t
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryItem{}).
+		Model(&models.InventoryItemModel{}).
 		Select("COALESCE(SUM((available_quantity + locked_quantity) * unit_cost), 0) as total").
 		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID).
 		Scan(&result).Error; err != nil {
@@ -315,7 +342,7 @@ func (r *GormInventoryItemRepository) SumValueByWarehouse(ctx context.Context, t
 func (r *GormInventoryItemRepository) ExistsByWarehouseAndProduct(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryItem{}).
+		Model(&models.InventoryItemModel{}).
 		Where("tenant_id = ? AND warehouse_id = ? AND product_id = ?", tenantID, warehouseID, productID).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -341,21 +368,22 @@ func (r *GormInventoryItemRepository) GetOrCreate(ctx context.Context, tenantID,
 	}
 
 	// Use ON CONFLICT to handle race conditions
+	model := models.InventoryItemModelFromDomain(item)
 	if err := r.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "tenant_id"}, {Name: "warehouse_id"}, {Name: "product_id"}},
 			DoNothing: true,
 		}).
-		Create(item).Error; err != nil {
+		Create(model).Error; err != nil {
 		return nil, err
 	}
 
 	// If the row wasn't created (conflict), fetch the existing one
-	if item.ID == uuid.Nil {
+	if model.ID == uuid.Nil {
 		return r.FindByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
 	}
 
-	return item, nil
+	return model.ToDomain(), nil
 }
 
 // applyFilter applies filter options to the query

@@ -204,10 +204,10 @@ func TestCustomerSpecificPricingStrategy(t *testing.T) {
 			PriorityOrder: 2,
 		},
 		{
-			CustomerID:   "",
-			CustomerType: "vip",
-			ProductID:    "",
-			DiscountRate: decimal.NewFromFloat(10.00),
+			CustomerID:    "",
+			CustomerType:  "vip",
+			ProductID:     "",
+			DiscountRate:  decimal.NewFromFloat(10.00),
 			PriorityOrder: 3,
 		},
 	}

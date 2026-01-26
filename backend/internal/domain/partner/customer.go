@@ -32,31 +32,26 @@ const (
 // It is the aggregate root for customer-related operations
 type Customer struct {
 	shared.TenantAggregateRoot
-	Code        string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_customer_tenant_code,priority:2"`
-	Name        string          `gorm:"type:varchar(200);not null"`
-	ShortName   string          `gorm:"type:varchar(100)"`                              // Abbreviated name
-	Type        CustomerType    `gorm:"type:varchar(20);not null;default:'individual'"` // individual or organization
-	Level       CustomerLevel   `gorm:"type:varchar(20);not null;default:'normal'"`     // Customer tier (stored as code)
-	Status      CustomerStatus  `gorm:"type:varchar(20);not null;default:'active'"`
-	ContactName string          `gorm:"type:varchar(100)"` // Primary contact person
-	Phone       string          `gorm:"type:varchar(50);index"`
-	Email       string          `gorm:"type:varchar(200);index"`
-	Address     string          `gorm:"type:text"` // Full address
-	City        string          `gorm:"type:varchar(100)"`
-	Province    string          `gorm:"type:varchar(100)"`
-	PostalCode  string          `gorm:"type:varchar(20)"`
-	Country     string          `gorm:"type:varchar(100);default:'中国'"`
-	TaxID       string          `gorm:"type:varchar(50)"` // Tax identification number
-	CreditLimit decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`
-	Balance     decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Prepaid balance
-	Notes       string          `gorm:"type:text"`
-	SortOrder   int             `gorm:"not null;default:0"`
-	Attributes  string          `gorm:"type:jsonb"` // Custom attributes
-}
-
-// TableName returns the table name for GORM
-func (Customer) TableName() string {
-	return "customers"
+	Code        string
+	Name        string
+	ShortName   string        // Abbreviated name
+	Type        CustomerType  // individual or organization
+	Level       CustomerLevel // Customer tier (stored as code)
+	Status      CustomerStatus
+	ContactName string // Primary contact person
+	Phone       string
+	Email       string
+	Address     string // Full address
+	City        string
+	Province    string
+	PostalCode  string
+	Country     string
+	TaxID       string // Tax identification number
+	CreditLimit decimal.Decimal
+	Balance     decimal.Decimal // Prepaid balance
+	Notes       string
+	SortOrder   int
+	Attributes  string // Custom attributes
 }
 
 // NewCustomer creates a new customer with required fields

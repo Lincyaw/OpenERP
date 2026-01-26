@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -26,145 +27,167 @@ func NewGormAccountPayableRepository(db *gorm.DB) *GormAccountPayableRepository 
 
 // FindByID finds an account payable by its ID
 func (r *GormAccountPayableRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.AccountPayable, error) {
-	var payable finance.AccountPayable
+	var model models.AccountPayableModel
 	if err := r.db.WithContext(ctx).
 		Preload("PaymentRecords").
-		First(&payable, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &payable, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds an account payable by ID for a specific tenant
 func (r *GormAccountPayableRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.AccountPayable, error) {
-	var payable finance.AccountPayable
+	var model models.AccountPayableModel
 	if err := r.db.WithContext(ctx).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&payable).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &payable, nil
+	return model.ToDomain(), nil
 }
 
 // FindByPayableNumber finds by payable number for a tenant
 func (r *GormAccountPayableRepository) FindByPayableNumber(ctx context.Context, tenantID uuid.UUID, payableNumber string) (*finance.AccountPayable, error) {
-	var payable finance.AccountPayable
+	var model models.AccountPayableModel
 	if err := r.db.WithContext(ctx).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND payable_number = ?", tenantID, payableNumber).
-		First(&payable).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &payable, nil
+	return model.ToDomain(), nil
 }
 
 // FindBySource finds by source document
 func (r *GormAccountPayableRepository) FindBySource(ctx context.Context, tenantID uuid.UUID, sourceType finance.PayableSourceType, sourceID uuid.UUID) (*finance.AccountPayable, error) {
-	var payable finance.AccountPayable
+	var model models.AccountPayableModel
 	if err := r.db.WithContext(ctx).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND source_type = ? AND source_id = ?", tenantID, sourceType, sourceID).
-		First(&payable).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &payable, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all account payables for a tenant with filtering
 func (r *GormAccountPayableRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.AccountPayableFilter) ([]finance.AccountPayable, error) {
-	var payables []finance.AccountPayable
-	query := r.db.WithContext(ctx).Model(&finance.AccountPayable{}).
+	var payableModels []models.AccountPayableModel
+	query := r.db.WithContext(ctx).Model(&models.AccountPayableModel{}).
 		Preload("PaymentRecords").
 		Where("tenant_id = ?", tenantID)
 	query = r.applyPayableFilter(query, filter)
 
-	if err := query.Find(&payables).Error; err != nil {
+	if err := query.Find(&payableModels).Error; err != nil {
 		return nil, err
+	}
+	payables := make([]finance.AccountPayable, len(payableModels))
+	for i, model := range payableModels {
+		payables[i] = *model.ToDomain()
 	}
 	return payables, nil
 }
 
 // FindBySupplier finds account payables for a supplier
 func (r *GormAccountPayableRepository) FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter finance.AccountPayableFilter) ([]finance.AccountPayable, error) {
-	var payables []finance.AccountPayable
-	query := r.db.WithContext(ctx).Model(&finance.AccountPayable{}).
+	var payableModels []models.AccountPayableModel
+	query := r.db.WithContext(ctx).Model(&models.AccountPayableModel{}).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID)
 	query = r.applyPayableFilter(query, filter)
 
-	if err := query.Find(&payables).Error; err != nil {
+	if err := query.Find(&payableModels).Error; err != nil {
 		return nil, err
+	}
+	payables := make([]finance.AccountPayable, len(payableModels))
+	for i, model := range payableModels {
+		payables[i] = *model.ToDomain()
 	}
 	return payables, nil
 }
 
 // FindByStatus finds account payables by status for a tenant
 func (r *GormAccountPayableRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status finance.PayableStatus, filter finance.AccountPayableFilter) ([]finance.AccountPayable, error) {
-	var payables []finance.AccountPayable
-	query := r.db.WithContext(ctx).Model(&finance.AccountPayable{}).
+	var payableModels []models.AccountPayableModel
+	query := r.db.WithContext(ctx).Model(&models.AccountPayableModel{}).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND status = ?", tenantID, status)
 	query = r.applyPayableFilter(query, filter)
 
-	if err := query.Find(&payables).Error; err != nil {
+	if err := query.Find(&payableModels).Error; err != nil {
 		return nil, err
+	}
+	payables := make([]finance.AccountPayable, len(payableModels))
+	for i, model := range payableModels {
+		payables[i] = *model.ToDomain()
 	}
 	return payables, nil
 }
 
 // FindOutstanding finds all outstanding payables for a supplier
 func (r *GormAccountPayableRepository) FindOutstanding(ctx context.Context, tenantID, supplierID uuid.UUID) ([]finance.AccountPayable, error) {
-	var payables []finance.AccountPayable
+	var payableModels []models.AccountPayableModel
 	if err := r.db.WithContext(ctx).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND supplier_id = ? AND status IN ?", tenantID, supplierID,
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
 		Order("created_at ASC").
-		Find(&payables).Error; err != nil {
+		Find(&payableModels).Error; err != nil {
 		return nil, err
+	}
+	payables := make([]finance.AccountPayable, len(payableModels))
+	for i, model := range payableModels {
+		payables[i] = *model.ToDomain()
 	}
 	return payables, nil
 }
 
 // FindOverdue finds all overdue payables for a tenant
 func (r *GormAccountPayableRepository) FindOverdue(ctx context.Context, tenantID uuid.UUID, filter finance.AccountPayableFilter) ([]finance.AccountPayable, error) {
-	var payables []finance.AccountPayable
-	query := r.db.WithContext(ctx).Model(&finance.AccountPayable{}).
+	var payableModels []models.AccountPayableModel
+	query := r.db.WithContext(ctx).Model(&models.AccountPayableModel{}).
 		Preload("PaymentRecords").
 		Where("tenant_id = ? AND due_date < ? AND status IN ?", tenantID, time.Now(),
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial})
 	query = r.applyPayableFilter(query, filter)
 
-	if err := query.Find(&payables).Error; err != nil {
+	if err := query.Find(&payableModels).Error; err != nil {
 		return nil, err
+	}
+	payables := make([]finance.AccountPayable, len(payableModels))
+	for i, model := range payableModels {
+		payables[i] = *model.ToDomain()
 	}
 	return payables, nil
 }
 
 // Save creates or updates an account payable
 func (r *GormAccountPayableRepository) Save(ctx context.Context, payable *finance.AccountPayable) error {
-	return r.db.WithContext(ctx).Save(payable).Error
+	model := models.AccountPayableModelFromDomain(payable)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithLock saves with optimistic locking
 func (r *GormAccountPayableRepository) SaveWithLock(ctx context.Context, payable *finance.AccountPayable) error {
+	model := models.AccountPayableModelFromDomain(payable)
 	result := r.db.WithContext(ctx).
-		Model(payable).
+		Model(model).
 		Where("id = ? AND version = ?", payable.ID, payable.Version-1).
-		Updates(payable)
+		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
@@ -177,7 +200,7 @@ func (r *GormAccountPayableRepository) SaveWithLock(ctx context.Context, payable
 
 // Delete soft deletes an account payable
 func (r *GormAccountPayableRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&finance.AccountPayable{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.AccountPayableModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -189,7 +212,7 @@ func (r *GormAccountPayableRepository) Delete(ctx context.Context, id uuid.UUID)
 
 // DeleteForTenant soft deletes an account payable for a tenant
 func (r *GormAccountPayableRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&finance.AccountPayable{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.AccountPayableModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -202,7 +225,7 @@ func (r *GormAccountPayableRepository) DeleteForTenant(ctx context.Context, tena
 // CountForTenant counts account payables for a tenant
 func (r *GormAccountPayableRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.AccountPayableFilter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&finance.AccountPayable{}).
+	query := r.db.WithContext(ctx).Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ?", tenantID)
 	query = r.applyPayableFilterWithoutPagination(query, filter)
 
@@ -216,7 +239,7 @@ func (r *GormAccountPayableRepository) CountForTenant(ctx context.Context, tenan
 func (r *GormAccountPayableRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status finance.PayableStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -228,7 +251,7 @@ func (r *GormAccountPayableRepository) CountByStatus(ctx context.Context, tenant
 func (r *GormAccountPayableRepository) CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -240,7 +263,7 @@ func (r *GormAccountPayableRepository) CountBySupplier(ctx context.Context, tena
 func (r *GormAccountPayableRepository) CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ? AND due_date < ? AND status IN ?", tenantID, time.Now(),
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
 		Count(&count).Error; err != nil {
@@ -255,7 +278,7 @@ func (r *GormAccountPayableRepository) SumOutstandingBySupplier(ctx context.Cont
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Select("COALESCE(SUM(outstanding_amount), 0) as total").
 		Where("tenant_id = ? AND supplier_id = ? AND status IN ?", tenantID, supplierID,
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
@@ -271,7 +294,7 @@ func (r *GormAccountPayableRepository) SumOutstandingForTenant(ctx context.Conte
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Select("COALESCE(SUM(outstanding_amount), 0) as total").
 		Where("tenant_id = ? AND status IN ?", tenantID,
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
@@ -287,7 +310,7 @@ func (r *GormAccountPayableRepository) SumOverdueForTenant(ctx context.Context, 
 		Total decimal.Decimal
 	}
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Select("COALESCE(SUM(outstanding_amount), 0) as total").
 		Where("tenant_id = ? AND due_date < ? AND status IN ?", tenantID, time.Now(),
 			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
@@ -301,7 +324,7 @@ func (r *GormAccountPayableRepository) SumOverdueForTenant(ctx context.Context, 
 func (r *GormAccountPayableRepository) ExistsByPayableNumber(ctx context.Context, tenantID uuid.UUID, payableNumber string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ? AND payable_number = ?", tenantID, payableNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -313,7 +336,7 @@ func (r *GormAccountPayableRepository) ExistsByPayableNumber(ctx context.Context
 func (r *GormAccountPayableRepository) ExistsBySource(ctx context.Context, tenantID uuid.UUID, sourceType finance.PayableSourceType, sourceID uuid.UUID) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Where("tenant_id = ? AND source_type = ? AND source_id = ?", tenantID, sourceType, sourceID).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -330,7 +353,7 @@ func (r *GormAccountPayableRepository) GeneratePayableNumber(ctx context.Context
 	// Find the highest number for today
 	var maxNumber string
 	if err := r.db.WithContext(ctx).
-		Model(&finance.AccountPayable{}).
+		Model(&models.AccountPayableModel{}).
 		Select("payable_number").
 		Where("tenant_id = ? AND payable_number LIKE ?", tenantID, prefix+"%").
 		Order("payable_number DESC").

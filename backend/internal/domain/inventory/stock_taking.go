@@ -53,26 +53,21 @@ func (s StockTakingStatus) CanTransitionTo(target StockTakingStatus) bool {
 
 // StockTakingItem represents a line item in a stock taking document
 type StockTakingItem struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	StockTakingID    uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ProductID        uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName      string          `gorm:"type:varchar(200);not null"`
-	ProductCode      string          `gorm:"type:varchar(50);not null"`
-	Unit             string          `gorm:"type:varchar(20);not null"`
-	SystemQuantity   decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity in system
-	ActualQuantity   decimal.Decimal `gorm:"type:decimal(18,4)"`          // Quantity from physical count (nullable until counted)
-	DifferenceQty    decimal.Decimal `gorm:"type:decimal(18,4)"`          // Actual - System
-	UnitCost         decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Cost per unit at count time
-	DifferenceAmount decimal.Decimal `gorm:"type:decimal(18,4)"`          // Difference * UnitCost
-	Counted          bool            `gorm:"not null;default:false"`      // Whether item has been counted
-	Remark           string          `gorm:"type:varchar(500)"`
-	CreatedAt        time.Time       `gorm:"not null"`
-	UpdatedAt        time.Time       `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (StockTakingItem) TableName() string {
-	return "stock_taking_items"
+	ID               uuid.UUID
+	StockTakingID    uuid.UUID
+	ProductID        uuid.UUID
+	ProductName      string
+	ProductCode      string
+	Unit             string
+	SystemQuantity   decimal.Decimal // Quantity in system
+	ActualQuantity   decimal.Decimal // Quantity from physical count (nullable until counted)
+	DifferenceQty    decimal.Decimal // Actual - System
+	UnitCost         decimal.Decimal // Cost per unit at count time
+	DifferenceAmount decimal.Decimal // Difference * UnitCost
+	Counted          bool            // Whether item has been counted
+	Remark           string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // NewStockTakingItem creates a new stock taking item
@@ -118,30 +113,25 @@ func (i *StockTakingItem) HasDifference() bool {
 // It is the aggregate root for stock taking operations
 type StockTaking struct {
 	shared.TenantAggregateRoot
-	TakingNumber      string            `gorm:"type:varchar(50);not null;uniqueIndex:idx_stock_taking_number_tenant,priority:2"`
-	WarehouseID       uuid.UUID         `gorm:"type:uuid;not null;index"`
-	WarehouseName     string            `gorm:"type:varchar(100);not null"`
-	Status            StockTakingStatus `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	TakingDate        time.Time         `gorm:"not null"`          // Date of stock taking
-	StartedAt         *time.Time        `gorm:""`                  // When counting started
-	CompletedAt       *time.Time        `gorm:""`                  // When counting completed
-	ApprovedAt        *time.Time        `gorm:""`                  // When approved/rejected
-	ApprovedByID      *uuid.UUID        `gorm:"type:uuid"`         // User who approved
-	ApprovedByName    string            `gorm:"type:varchar(100)"` // Name of approver
-	CreatedByID       uuid.UUID         `gorm:"type:uuid;not null"`
-	CreatedByName     string            `gorm:"type:varchar(100);not null"`
-	TotalItems        int               `gorm:"not null;default:0"`                    // Total number of items
-	CountedItems      int               `gorm:"not null;default:0"`                    // Number of items counted
-	DifferenceItems   int               `gorm:"not null;default:0"`                    // Number of items with difference
-	TotalDifference   decimal.Decimal   `gorm:"type:decimal(18,4);not null;default:0"` // Total difference amount
-	ApprovalNote      string            `gorm:"type:varchar(500)"`                     // Approval/rejection note
-	Remark            string            `gorm:"type:varchar(500)"`
-	Items             []StockTakingItem `gorm:"foreignKey:StockTakingID;references:ID"`
-}
-
-// TableName returns the table name for GORM
-func (StockTaking) TableName() string {
-	return "stock_takings"
+	TakingNumber    string
+	WarehouseID     uuid.UUID
+	WarehouseName   string
+	Status          StockTakingStatus
+	TakingDate      time.Time  // Date of stock taking
+	StartedAt       *time.Time // When counting started
+	CompletedAt     *time.Time // When counting completed
+	ApprovedAt      *time.Time // When approved/rejected
+	ApprovedByID    *uuid.UUID // User who approved
+	ApprovedByName  string     // Name of approver
+	CreatedByID     uuid.UUID
+	CreatedByName   string
+	TotalItems      int             // Total number of items
+	CountedItems    int             // Number of items counted
+	DifferenceItems int             // Number of items with difference
+	TotalDifference decimal.Decimal // Total difference amount
+	ApprovalNote    string          // Approval/rejection note
+	Remark          string
+	Items           []StockTakingItem
 }
 
 // NewStockTaking creates a new stock taking document

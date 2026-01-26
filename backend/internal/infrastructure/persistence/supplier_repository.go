@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -24,42 +25,42 @@ func NewGormSupplierRepository(db *gorm.DB) *GormSupplierRepository {
 
 // FindByID finds a supplier by its ID
 func (r *GormSupplierRepository) FindByID(ctx context.Context, id uuid.UUID) (*partner.Supplier, error) {
-	var supplier partner.Supplier
-	if err := r.db.WithContext(ctx).First(&supplier, "id = ?", id).Error; err != nil {
+	var model models.SupplierModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &supplier, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a supplier by ID within a tenant
 func (r *GormSupplierRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*partner.Supplier, error) {
-	var supplier partner.Supplier
+	var model models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&supplier).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &supplier, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a supplier by its code within a tenant
 func (r *GormSupplierRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*partner.Supplier, error) {
-	var supplier partner.Supplier
+	var model models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
-		First(&supplier).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &supplier, nil
+	return model.ToDomain(), nil
 }
 
 // FindByPhone finds a supplier by phone number within a tenant
@@ -67,16 +68,16 @@ func (r *GormSupplierRepository) FindByPhone(ctx context.Context, tenantID uuid.
 	if phone == "" {
 		return nil, shared.NewDomainError("INVALID_PHONE", "Phone cannot be empty")
 	}
-	var supplier partner.Supplier
+	var model models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND phone = ?", tenantID, phone).
-		First(&supplier).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &supplier, nil
+	return model.ToDomain(), nil
 }
 
 // FindByEmail finds a supplier by email within a tenant
@@ -84,66 +85,86 @@ func (r *GormSupplierRepository) FindByEmail(ctx context.Context, tenantID uuid.
 	if email == "" {
 		return nil, shared.NewDomainError("INVALID_EMAIL", "Email cannot be empty")
 	}
-	var supplier partner.Supplier
+	var model models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND email = ?", tenantID, strings.ToLower(email)).
-		First(&supplier).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &supplier, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all suppliers matching the filter
 func (r *GormSupplierRepository) FindAll(ctx context.Context, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&partner.Supplier{}), filter)
+	var supplierModels []models.SupplierModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.SupplierModel{}), filter)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // FindAllForTenant finds all suppliers for a tenant
 func (r *GormSupplierRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&partner.Supplier{}).Where("tenant_id = ?", tenantID), filter)
+	var supplierModels []models.SupplierModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.SupplierModel{}).Where("tenant_id = ?", tenantID), filter)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // FindByType finds suppliers by type (manufacturer/distributor/retailer/service)
 func (r *GormSupplierRepository) FindByType(ctx context.Context, tenantID uuid.UUID, supplierType partner.SupplierType, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Supplier{}).
+		r.db.WithContext(ctx).Model(&models.SupplierModel{}).
 			Where("tenant_id = ? AND type = ?", tenantID, supplierType),
 		filter,
 	)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // FindByStatus finds suppliers by status for a tenant
 func (r *GormSupplierRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status partner.SupplierStatus, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Supplier{}).
+		r.db.WithContext(ctx).Model(&models.SupplierModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, status),
 		filter,
 	)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
@@ -159,11 +180,16 @@ func (r *GormSupplierRepository) FindByIDs(ctx context.Context, tenantID uuid.UU
 		return []partner.Supplier{}, nil
 	}
 
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id IN ?", tenantID, ids).
-		Find(&suppliers).Error; err != nil {
+		Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
@@ -179,48 +205,64 @@ func (r *GormSupplierRepository) FindByCodes(ctx context.Context, tenantID uuid.
 		upperCodes[i] = strings.ToUpper(code)
 	}
 
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code IN ?", tenantID, upperCodes).
-		Find(&suppliers).Error; err != nil {
+		Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // FindWithOutstandingBalance finds suppliers with accounts payable balance > 0
 func (r *GormSupplierRepository) FindWithOutstandingBalance(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Supplier{}).
+		r.db.WithContext(ctx).Model(&models.SupplierModel{}).
 			Where("tenant_id = ? AND balance > ?", tenantID, decimal.Zero),
 		filter,
 	)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // FindOverCreditLimit finds suppliers whose balance exceeds their credit limit
 func (r *GormSupplierRepository) FindOverCreditLimit(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]partner.Supplier, error) {
-	var suppliers []partner.Supplier
+	var supplierModels []models.SupplierModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Supplier{}).
+		r.db.WithContext(ctx).Model(&models.SupplierModel{}).
 			Where("tenant_id = ? AND credit_limit > 0 AND balance > credit_limit", tenantID),
 		filter,
 	)
 
-	if err := query.Find(&suppliers).Error; err != nil {
+	if err := query.Find(&supplierModels).Error; err != nil {
 		return nil, err
+	}
+
+	suppliers := make([]partner.Supplier, len(supplierModels))
+	for i, model := range supplierModels {
+		suppliers[i] = *model.ToDomain()
 	}
 	return suppliers, nil
 }
 
 // Save creates or updates a supplier
 func (r *GormSupplierRepository) Save(ctx context.Context, supplier *partner.Supplier) error {
-	return r.db.WithContext(ctx).Save(supplier).Error
+	model := models.SupplierModelFromDomain(supplier)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveBatch creates or updates multiple suppliers
@@ -228,12 +270,16 @@ func (r *GormSupplierRepository) SaveBatch(ctx context.Context, suppliers []*par
 	if len(suppliers) == 0 {
 		return nil
 	}
-	return r.db.WithContext(ctx).Save(suppliers).Error
+	supplierModels := make([]*models.SupplierModel, len(suppliers))
+	for i, s := range suppliers {
+		supplierModels[i] = models.SupplierModelFromDomain(s)
+	}
+	return r.db.WithContext(ctx).Save(supplierModels).Error
 }
 
 // Delete deletes a supplier
 func (r *GormSupplierRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.Supplier{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.SupplierModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -245,7 +291,7 @@ func (r *GormSupplierRepository) Delete(ctx context.Context, id uuid.UUID) error
 
 // DeleteForTenant deletes a supplier within a tenant
 func (r *GormSupplierRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.Supplier{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.SupplierModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -258,7 +304,7 @@ func (r *GormSupplierRepository) DeleteForTenant(ctx context.Context, tenantID, 
 // Count counts suppliers matching the filter
 func (r *GormSupplierRepository) Count(ctx context.Context, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&partner.Supplier{})
+	query := r.db.WithContext(ctx).Model(&models.SupplierModel{})
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -270,7 +316,7 @@ func (r *GormSupplierRepository) Count(ctx context.Context, filter shared.Filter
 // CountForTenant counts suppliers for a tenant
 func (r *GormSupplierRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&partner.Supplier{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.SupplierModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -283,7 +329,7 @@ func (r *GormSupplierRepository) CountForTenant(ctx context.Context, tenantID uu
 func (r *GormSupplierRepository) CountByType(ctx context.Context, tenantID uuid.UUID, supplierType partner.SupplierType) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Supplier{}).
+		Model(&models.SupplierModel{}).
 		Where("tenant_id = ? AND type = ?", tenantID, supplierType).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -295,7 +341,7 @@ func (r *GormSupplierRepository) CountByType(ctx context.Context, tenantID uuid.
 func (r *GormSupplierRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status partner.SupplierStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Supplier{}).
+		Model(&models.SupplierModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -307,7 +353,7 @@ func (r *GormSupplierRepository) CountByStatus(ctx context.Context, tenantID uui
 func (r *GormSupplierRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Supplier{}).
+		Model(&models.SupplierModel{}).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -322,7 +368,7 @@ func (r *GormSupplierRepository) ExistsByPhone(ctx context.Context, tenantID uui
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Supplier{}).
+		Model(&models.SupplierModel{}).
 		Where("tenant_id = ? AND phone = ?", tenantID, phone).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -337,7 +383,7 @@ func (r *GormSupplierRepository) ExistsByEmail(ctx context.Context, tenantID uui
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Supplier{}).
+		Model(&models.SupplierModel{}).
 		Where("tenant_id = ? AND email = ?", tenantID, strings.ToLower(email)).
 		Count(&count).Error; err != nil {
 		return false, err

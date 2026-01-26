@@ -326,22 +326,17 @@ func (cl CustomerLevel) WithDetails(name string, discountRate decimal.Decimal) C
 // CustomerLevelRecord represents a row in the customer_levels database table
 // This is used for GORM persistence of customer level definitions
 type CustomerLevelRecord struct {
-	ID           uuid.UUID       `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	TenantID     uuid.UUID       `gorm:"type:uuid;not null;index"`
-	Code         string          `gorm:"type:varchar(50);not null"`
-	Name         string          `gorm:"type:varchar(100);not null"`
-	DiscountRate decimal.Decimal `gorm:"type:decimal(5,4);not null;default:0"`
-	SortOrder    int             `gorm:"not null;default:0"`
-	IsDefault    bool            `gorm:"not null;default:false"`
-	IsActive     bool            `gorm:"not null;default:true"`
-	Description  string          `gorm:"type:text"`
-	CreatedAt    time.Time       `gorm:"not null;default:CURRENT_TIMESTAMP"`
-	UpdatedAt    time.Time       `gorm:"not null;default:CURRENT_TIMESTAMP"`
-}
-
-// TableName returns the table name for GORM
-func (CustomerLevelRecord) TableName() string {
-	return "customer_levels"
+	ID           uuid.UUID
+	TenantID     uuid.UUID
+	Code         string
+	Name         string
+	DiscountRate decimal.Decimal
+	SortOrder    int
+	IsDefault    bool
+	IsActive     bool
+	Description  string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // ToCustomerLevel converts a database record to a CustomerLevel value object

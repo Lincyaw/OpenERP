@@ -53,13 +53,13 @@ type BatchDeductionRequest struct {
 
 // BatchDeductionResult represents the result of deducting from a single batch
 type BatchDeductionResult struct {
-	BatchID        uuid.UUID       // ID of the batch
-	BatchNumber    string          // Batch number for display
-	DeductedAmount decimal.Decimal // Amount actually deducted
-	UnitCost       decimal.Decimal // Unit cost of this batch (for cost calculation)
-	TotalCost      decimal.Decimal // Total cost (DeductedAmount * UnitCost)
+	BatchID          uuid.UUID       // ID of the batch
+	BatchNumber      string          // Batch number for display
+	DeductedAmount   decimal.Decimal // Amount actually deducted
+	UnitCost         decimal.Decimal // Unit cost of this batch (for cost calculation)
+	TotalCost        decimal.Decimal // Total cost (DeductedAmount * UnitCost)
 	RemainingInBatch decimal.Decimal // Remaining quantity in batch after deduction
-	FullyConsumed  bool            // True if batch is now fully consumed
+	FullyConsumed    bool            // True if batch is now fully consumed
 }
 
 // BatchOutboundResult represents the complete result of a batch outbound operation

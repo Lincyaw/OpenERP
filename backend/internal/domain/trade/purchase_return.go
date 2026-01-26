@@ -58,31 +58,26 @@ func (s PurchaseReturnStatus) CanTransitionTo(target PurchaseReturnStatus) bool 
 
 // PurchaseReturnItem represents a line item in a purchase return
 type PurchaseReturnItem struct {
-	ID                   uuid.UUID       `gorm:"type:uuid;primary_key"`
-	ReturnID             uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PurchaseOrderItemID  uuid.UUID       `gorm:"type:uuid;not null"` // Reference to original order item
-	ProductID            uuid.UUID       `gorm:"type:uuid;not null"`
-	ProductName          string          `gorm:"type:varchar(200);not null"`
-	ProductCode          string          `gorm:"type:varchar(50);not null"`
-	OriginalQuantity     decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity in original order (received)
-	ReturnQuantity       decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Quantity being returned
-	UnitCost             decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Cost per unit (from original order)
-	RefundAmount         decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitCost
-	Unit                 string          `gorm:"type:varchar(20);not null"`
-	Reason               string          `gorm:"type:varchar(500)"`
-	ConditionOnReturn    string          `gorm:"type:varchar(100)"` // e.g., "defective", "wrong_item", "excess"
-	BatchNumber          string          `gorm:"type:varchar(50)"`  // Batch being returned
-	ShippedQuantity      decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"`
-	ShippedAt            *time.Time
-	SupplierReceivedQty  decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Quantity confirmed by supplier
-	SupplierReceivedAt   *time.Time
-	CreatedAt            time.Time `gorm:"not null"`
-	UpdatedAt            time.Time `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (PurchaseReturnItem) TableName() string {
-	return "purchase_return_items"
+	ID                  uuid.UUID
+	ReturnID            uuid.UUID
+	PurchaseOrderItemID uuid.UUID // Reference to original order item
+	ProductID           uuid.UUID
+	ProductName         string
+	ProductCode         string
+	OriginalQuantity    decimal.Decimal // Quantity in original order (received)
+	ReturnQuantity      decimal.Decimal // Quantity being returned
+	UnitCost            decimal.Decimal // Cost per unit (from original order)
+	RefundAmount        decimal.Decimal // ReturnQuantity * UnitCost
+	Unit                string
+	Reason              string
+	ConditionOnReturn   string // e.g., "defective", "wrong_item", "excess"
+	BatchNumber         string // Batch being returned
+	ShippedQuantity     decimal.Decimal
+	ShippedAt           *time.Time
+	SupplierReceivedQty decimal.Decimal // Quantity confirmed by supplier
+	SupplierReceivedAt  *time.Time
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }
 
 // NewPurchaseReturnItem creates a new purchase return item
@@ -227,36 +222,31 @@ func (i *PurchaseReturnItem) IsFullyReceived() bool {
 // It manages the return of goods to a supplier for a previous purchase order
 type PurchaseReturn struct {
 	shared.TenantAggregateRoot
-	ReturnNumber        string               `gorm:"type:varchar(50);not null;uniqueIndex:idx_purchase_return_tenant_number,priority:2"`
-	PurchaseOrderID     uuid.UUID            `gorm:"type:uuid;not null;index"` // Reference to original purchase order
-	PurchaseOrderNumber string               `gorm:"type:varchar(50);not null"`
-	SupplierID          uuid.UUID            `gorm:"type:uuid;not null;index"`
-	SupplierName        string               `gorm:"type:varchar(200);not null"`
-	WarehouseID         *uuid.UUID           `gorm:"type:uuid;index"` // Warehouse where goods are shipped from
-	Items               []PurchaseReturnItem `gorm:"foreignKey:ReturnID;references:ID"`
-	TotalRefund         decimal.Decimal      `gorm:"type:decimal(18,4);not null;default:0"` // Sum of all item refunds
-	Status              PurchaseReturnStatus `gorm:"type:varchar(20);not null;default:'DRAFT'"`
-	Reason              string               `gorm:"type:text"` // Overall return reason
-	Remark              string               `gorm:"type:text"`
-	SubmittedAt         *time.Time           `gorm:"index"` // When submitted for approval
-	ApprovedAt          *time.Time           `gorm:"index"`
-	ApprovedBy          *uuid.UUID           `gorm:"type:uuid"`
-	ApprovalNote        string               `gorm:"type:varchar(500)"`
+	ReturnNumber        string
+	PurchaseOrderID     uuid.UUID // Reference to original purchase order
+	PurchaseOrderNumber string
+	SupplierID          uuid.UUID
+	SupplierName        string
+	WarehouseID         *uuid.UUID // Warehouse where goods are shipped from
+	Items               []PurchaseReturnItem
+	TotalRefund         decimal.Decimal // Sum of all item refunds
+	Status              PurchaseReturnStatus
+	Reason              string // Overall return reason
+	Remark              string
+	SubmittedAt         *time.Time // When submitted for approval
+	ApprovedAt          *time.Time
+	ApprovedBy          *uuid.UUID
+	ApprovalNote        string
 	RejectedAt          *time.Time
-	RejectedBy          *uuid.UUID `gorm:"type:uuid"`
-	RejectionReason     string     `gorm:"type:varchar(500)"`
-	ShippedAt           *time.Time `gorm:"index"`
-	ShippedBy           *uuid.UUID `gorm:"type:uuid"`
-	ShippingNote        string     `gorm:"type:varchar(500)"`
-	TrackingNumber      string     `gorm:"type:varchar(100)"`
+	RejectedBy          *uuid.UUID
+	RejectionReason     string
+	ShippedAt           *time.Time
+	ShippedBy           *uuid.UUID
+	ShippingNote        string
+	TrackingNumber      string
 	CompletedAt         *time.Time
 	CancelledAt         *time.Time
-	CancelReason        string `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (PurchaseReturn) TableName() string {
-	return "purchase_returns"
+	CancelReason        string
 }
 
 // NewPurchaseReturn creates a new purchase return

@@ -24,19 +24,14 @@ const (
 // It supports tree structure with parent-child relationships
 type Category struct {
 	shared.TenantAggregateRoot
-	Code        string         `gorm:"type:varchar(50);not null;uniqueIndex:idx_category_tenant_code,priority:2"`
-	Name        string         `gorm:"type:varchar(100);not null"`
-	Description string         `gorm:"type:text"`
-	ParentID    *uuid.UUID     `gorm:"type:uuid;index"`
-	Path        string         `gorm:"type:varchar(500);not null;index"` // Materialized path for tree queries
-	Level       int            `gorm:"not null;default:0"`
-	SortOrder   int            `gorm:"not null;default:0"`
-	Status      CategoryStatus `gorm:"type:varchar(20);not null;default:'active'"`
-}
-
-// TableName returns the table name for GORM
-func (Category) TableName() string {
-	return "categories"
+	Code        string         // Category code
+	Name        string         // Category name
+	Description string         // Category description
+	ParentID    *uuid.UUID     // Parent category ID reference
+	Path        string         // Materialized path for tree queries
+	Level       int            // Depth level in the tree
+	SortOrder   int            // Display order
+	Status      CategoryStatus // Category status
 }
 
 // NewCategory creates a new root category

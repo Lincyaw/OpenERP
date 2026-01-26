@@ -17,8 +17,8 @@ type AggregateRoot interface {
 // BaseAggregateRoot provides common fields for aggregate roots
 type BaseAggregateRoot struct {
 	BaseEntity
-	Version      int           `gorm:"not null;default:1"`
-	domainEvents []DomainEvent `gorm:"-"`
+	Version      int
+	domainEvents []DomainEvent
 }
 
 // GetVersion returns the aggregate version for optimistic locking
@@ -58,8 +58,8 @@ func NewBaseAggregateRoot() BaseAggregateRoot {
 // TenantAggregateRoot extends BaseAggregateRoot with multi-tenant support
 type TenantAggregateRoot struct {
 	BaseAggregateRoot
-	TenantID  uuid.UUID  `gorm:"type:uuid;not null;index"`
-	CreatedBy *uuid.UUID `gorm:"type:uuid;index"` // User who created this record (for data scope filtering)
+	TenantID  uuid.UUID
+	CreatedBy *uuid.UUID // User who created this record (for data scope filtering)
 }
 
 // NewTenantAggregateRoot creates a new tenant-scoped aggregate root

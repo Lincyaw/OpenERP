@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -24,42 +25,42 @@ func NewGormCustomerRepository(db *gorm.DB) *GormCustomerRepository {
 
 // FindByID finds a customer by its ID
 func (r *GormCustomerRepository) FindByID(ctx context.Context, id uuid.UUID) (*partner.Customer, error) {
-	var customer partner.Customer
-	if err := r.db.WithContext(ctx).First(&customer, "id = ?", id).Error; err != nil {
+	var model models.CustomerModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &customer, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a customer by ID within a tenant
 func (r *GormCustomerRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*partner.Customer, error) {
-	var customer partner.Customer
+	var model models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&customer).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &customer, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a customer by its code within a tenant
 func (r *GormCustomerRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*partner.Customer, error) {
-	var customer partner.Customer
+	var model models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
-		First(&customer).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &customer, nil
+	return model.ToDomain(), nil
 }
 
 // FindByPhone finds a customer by phone number within a tenant
@@ -67,16 +68,16 @@ func (r *GormCustomerRepository) FindByPhone(ctx context.Context, tenantID uuid.
 	if phone == "" {
 		return nil, shared.NewDomainError("INVALID_PHONE", "Phone cannot be empty")
 	}
-	var customer partner.Customer
+	var model models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND phone = ?", tenantID, phone).
-		First(&customer).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &customer, nil
+	return model.ToDomain(), nil
 }
 
 // FindByEmail finds a customer by email within a tenant
@@ -84,81 +85,106 @@ func (r *GormCustomerRepository) FindByEmail(ctx context.Context, tenantID uuid.
 	if email == "" {
 		return nil, shared.NewDomainError("INVALID_EMAIL", "Email cannot be empty")
 	}
-	var customer partner.Customer
+	var model models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND email = ?", tenantID, strings.ToLower(email)).
-		First(&customer).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &customer, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all customers matching the filter
 func (r *GormCustomerRepository) FindAll(ctx context.Context, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&partner.Customer{}), filter)
+	var customerModels []models.CustomerModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.CustomerModel{}), filter)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // FindAllForTenant finds all customers for a tenant
 func (r *GormCustomerRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&partner.Customer{}).Where("tenant_id = ?", tenantID), filter)
+	var customerModels []models.CustomerModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.CustomerModel{}).Where("tenant_id = ?", tenantID), filter)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // FindByType finds customers by type (individual/organization)
 func (r *GormCustomerRepository) FindByType(ctx context.Context, tenantID uuid.UUID, customerType partner.CustomerType, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Customer{}).
+		r.db.WithContext(ctx).Model(&models.CustomerModel{}).
 			Where("tenant_id = ? AND type = ?", tenantID, customerType),
 		filter,
 	)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // FindByLevel finds customers by tier level
 func (r *GormCustomerRepository) FindByLevel(ctx context.Context, tenantID uuid.UUID, level partner.CustomerLevel, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Customer{}).
+		r.db.WithContext(ctx).Model(&models.CustomerModel{}).
 			Where("tenant_id = ? AND level = ?", tenantID, level),
 		filter,
 	)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // FindByStatus finds customers by status for a tenant
 func (r *GormCustomerRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status partner.CustomerStatus, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Customer{}).
+		r.db.WithContext(ctx).Model(&models.CustomerModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, status),
 		filter,
 	)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
@@ -174,11 +200,16 @@ func (r *GormCustomerRepository) FindByIDs(ctx context.Context, tenantID uuid.UU
 		return []partner.Customer{}, nil
 	}
 
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id IN ?", tenantID, ids).
-		Find(&customers).Error; err != nil {
+		Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
@@ -194,33 +225,44 @@ func (r *GormCustomerRepository) FindByCodes(ctx context.Context, tenantID uuid.
 		upperCodes[i] = strings.ToUpper(code)
 	}
 
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code IN ?", tenantID, upperCodes).
-		Find(&customers).Error; err != nil {
+		Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // FindWithPositiveBalance finds customers with prepaid balance > 0
 func (r *GormCustomerRepository) FindWithPositiveBalance(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]partner.Customer, error) {
-	var customers []partner.Customer
+	var customerModels []models.CustomerModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&partner.Customer{}).
+		r.db.WithContext(ctx).Model(&models.CustomerModel{}).
 			Where("tenant_id = ? AND balance > ?", tenantID, decimal.Zero),
 		filter,
 	)
 
-	if err := query.Find(&customers).Error; err != nil {
+	if err := query.Find(&customerModels).Error; err != nil {
 		return nil, err
+	}
+
+	customers := make([]partner.Customer, len(customerModels))
+	for i, model := range customerModels {
+		customers[i] = *model.ToDomain()
 	}
 	return customers, nil
 }
 
 // Save creates or updates a customer
 func (r *GormCustomerRepository) Save(ctx context.Context, customer *partner.Customer) error {
-	return r.db.WithContext(ctx).Save(customer).Error
+	model := models.CustomerModelFromDomain(customer)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveBatch creates or updates multiple customers
@@ -228,12 +270,16 @@ func (r *GormCustomerRepository) SaveBatch(ctx context.Context, customers []*par
 	if len(customers) == 0 {
 		return nil
 	}
-	return r.db.WithContext(ctx).Save(customers).Error
+	customerModels := make([]*models.CustomerModel, len(customers))
+	for i, c := range customers {
+		customerModels[i] = models.CustomerModelFromDomain(c)
+	}
+	return r.db.WithContext(ctx).Save(customerModels).Error
 }
 
 // Delete deletes a customer
 func (r *GormCustomerRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.Customer{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.CustomerModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -245,7 +291,7 @@ func (r *GormCustomerRepository) Delete(ctx context.Context, id uuid.UUID) error
 
 // DeleteForTenant deletes a customer within a tenant
 func (r *GormCustomerRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&partner.Customer{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.CustomerModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -258,7 +304,7 @@ func (r *GormCustomerRepository) DeleteForTenant(ctx context.Context, tenantID, 
 // Count counts customers matching the filter
 func (r *GormCustomerRepository) Count(ctx context.Context, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&partner.Customer{})
+	query := r.db.WithContext(ctx).Model(&models.CustomerModel{})
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -270,7 +316,7 @@ func (r *GormCustomerRepository) Count(ctx context.Context, filter shared.Filter
 // CountForTenant counts customers for a tenant
 func (r *GormCustomerRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&partner.Customer{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.CustomerModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -283,7 +329,7 @@ func (r *GormCustomerRepository) CountForTenant(ctx context.Context, tenantID uu
 func (r *GormCustomerRepository) CountByType(ctx context.Context, tenantID uuid.UUID, customerType partner.CustomerType) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND type = ?", tenantID, customerType).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -295,7 +341,7 @@ func (r *GormCustomerRepository) CountByType(ctx context.Context, tenantID uuid.
 func (r *GormCustomerRepository) CountByLevel(ctx context.Context, tenantID uuid.UUID, level partner.CustomerLevel) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND level = ?", tenantID, level).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -307,7 +353,7 @@ func (r *GormCustomerRepository) CountByLevel(ctx context.Context, tenantID uuid
 func (r *GormCustomerRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status partner.CustomerStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -319,7 +365,7 @@ func (r *GormCustomerRepository) CountByStatus(ctx context.Context, tenantID uui
 func (r *GormCustomerRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -334,7 +380,7 @@ func (r *GormCustomerRepository) ExistsByPhone(ctx context.Context, tenantID uui
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND phone = ?", tenantID, phone).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -349,7 +395,7 @@ func (r *GormCustomerRepository) ExistsByEmail(ctx context.Context, tenantID uui
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&partner.Customer{}).
+		Model(&models.CustomerModel{}).
 		Where("tenant_id = ? AND email = ?", tenantID, strings.ToLower(email)).
 		Count(&count).Error; err != nil {
 		return false, err

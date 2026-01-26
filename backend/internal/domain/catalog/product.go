@@ -23,23 +23,18 @@ const (
 // It is the aggregate root for product-related operations
 type Product struct {
 	shared.TenantAggregateRoot
-	Code          string          `gorm:"type:varchar(50);not null;uniqueIndex:idx_product_tenant_code,priority:2"`
-	Name          string          `gorm:"type:varchar(200);not null"`
-	Description   string          `gorm:"type:text"`
-	Barcode       string          `gorm:"type:varchar(50);index"`
-	CategoryID    *uuid.UUID      `gorm:"type:uuid;index"`
-	Unit          string          `gorm:"type:varchar(20);not null"`             // Base unit (e.g., "pcs", "kg", "box")
-	PurchasePrice decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Cost price
-	SellingPrice  decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Selling price
-	MinStock      decimal.Decimal `gorm:"type:decimal(18,4);not null;default:0"` // Minimum stock level for alerts
-	Status        ProductStatus   `gorm:"type:varchar(20);not null;default:'active'"`
-	SortOrder     int             `gorm:"not null;default:0"`
-	Attributes    string          `gorm:"type:jsonb"` // JSON storage for custom attributes
-}
-
-// TableName returns the table name for GORM
-func (Product) TableName() string {
-	return "products"
+	Code          string          // Product code/SKU
+	Name          string          // Product name
+	Description   string          // Product description
+	Barcode       string          // Barcode
+	CategoryID    *uuid.UUID      // Category ID reference
+	Unit          string          // Base unit (e.g., "pcs", "kg", "box")
+	PurchasePrice decimal.Decimal // Cost price
+	SellingPrice  decimal.Decimal // Selling price
+	MinStock      decimal.Decimal // Minimum stock level for alerts
+	Status        ProductStatus   // Product status
+	SortOrder     int             // Display order
+	Attributes    string          // JSON storage for custom attributes
 }
 
 // NewProduct creates a new product

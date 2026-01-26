@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -28,73 +29,90 @@ func (r *GormStockLockRepository) WithTx(tx *gorm.DB) *GormStockLockRepository {
 
 // FindByID finds a stock lock by its ID
 func (r *GormStockLockRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.StockLock, error) {
-	var lock inventory.StockLock
-	if err := r.db.WithContext(ctx).First(&lock, "id = ?", id).Error; err != nil {
+	var model models.StockLockModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &lock, nil
+	return model.ToDomain(), nil
 }
 
 // FindByInventoryItem finds all locks for an inventory item
 func (r *GormStockLockRepository) FindByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID) ([]inventory.StockLock, error) {
-	var locks []inventory.StockLock
+	var lockModels []models.StockLockModel
 	if err := r.db.WithContext(ctx).
 		Where("inventory_item_id = ?", inventoryItemID).
 		Order("created_at DESC").
-		Find(&locks).Error; err != nil {
+		Find(&lockModels).Error; err != nil {
 		return nil, err
+	}
+	locks := make([]inventory.StockLock, len(lockModels))
+	for i, model := range lockModels {
+		locks[i] = *model.ToDomain()
 	}
 	return locks, nil
 }
 
 // FindActive finds active (non-released, non-consumed) locks
 func (r *GormStockLockRepository) FindActive(ctx context.Context, inventoryItemID uuid.UUID) ([]inventory.StockLock, error) {
-	var locks []inventory.StockLock
+	var lockModels []models.StockLockModel
 	if err := r.db.WithContext(ctx).
 		Where("inventory_item_id = ? AND released = FALSE AND consumed = FALSE", inventoryItemID).
 		Order("created_at ASC").
-		Find(&locks).Error; err != nil {
+		Find(&lockModels).Error; err != nil {
 		return nil, err
+	}
+	locks := make([]inventory.StockLock, len(lockModels))
+	for i, model := range lockModels {
+		locks[i] = *model.ToDomain()
 	}
 	return locks, nil
 }
 
 // FindExpired finds expired but not released locks
 func (r *GormStockLockRepository) FindExpired(ctx context.Context) ([]inventory.StockLock, error) {
-	var locks []inventory.StockLock
+	var lockModels []models.StockLockModel
 	now := time.Now()
 	if err := r.db.WithContext(ctx).
 		Where("released = FALSE AND consumed = FALSE AND expire_at < ?", now).
 		Order("expire_at ASC").
-		Find(&locks).Error; err != nil {
+		Find(&lockModels).Error; err != nil {
 		return nil, err
+	}
+	locks := make([]inventory.StockLock, len(lockModels))
+	for i, model := range lockModels {
+		locks[i] = *model.ToDomain()
 	}
 	return locks, nil
 }
 
 // FindBySource finds locks by source type and ID
 func (r *GormStockLockRepository) FindBySource(ctx context.Context, sourceType, sourceID string) ([]inventory.StockLock, error) {
-	var locks []inventory.StockLock
+	var lockModels []models.StockLockModel
 	if err := r.db.WithContext(ctx).
 		Where("source_type = ? AND source_id = ?", sourceType, sourceID).
 		Order("created_at ASC").
-		Find(&locks).Error; err != nil {
+		Find(&lockModels).Error; err != nil {
 		return nil, err
+	}
+	locks := make([]inventory.StockLock, len(lockModels))
+	for i, model := range lockModels {
+		locks[i] = *model.ToDomain()
 	}
 	return locks, nil
 }
 
 // Save creates or updates a stock lock
 func (r *GormStockLockRepository) Save(ctx context.Context, lock *inventory.StockLock) error {
-	return r.db.WithContext(ctx).Save(lock).Error
+	model := models.StockLockModelFromDomain(lock)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // Delete deletes a stock lock
 func (r *GormStockLockRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&inventory.StockLock{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.StockLockModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -108,7 +126,7 @@ func (r *GormStockLockRepository) Delete(ctx context.Context, id uuid.UUID) erro
 func (r *GormStockLockRepository) ReleaseExpired(ctx context.Context) (int, error) {
 	now := time.Now()
 	result := r.db.WithContext(ctx).
-		Model(&inventory.StockLock{}).
+		Model(&models.StockLockModel{}).
 		Where("released = FALSE AND consumed = FALSE AND expire_at < ?", now).
 		Updates(map[string]any{
 			"released":    true,

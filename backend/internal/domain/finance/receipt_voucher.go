@@ -84,18 +84,13 @@ func (m PaymentMethod) String() string {
 
 // ReceivableAllocation represents the allocation of a receipt voucher to a receivable
 type ReceivableAllocation struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	ReceiptVoucherID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ReceivableID     uuid.UUID       `gorm:"type:uuid;not null;index"`
-	ReceivableNumber string          `gorm:"type:varchar(50);not null"` // Denormalized for display
-	Amount           decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AllocatedAt      time.Time       `gorm:"not null"`
-	Remark           string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (ReceivableAllocation) TableName() string {
-	return "receivable_allocations"
+	ID               uuid.UUID       `json:"id"`
+	ReceiptVoucherID uuid.UUID       `json:"receipt_voucher_id"`
+	ReceivableID     uuid.UUID       `json:"receivable_id"`
+	ReceivableNumber string          `json:"receivable_number"` // Denormalized for display
+	Amount           decimal.Decimal `json:"amount"`
+	AllocatedAt      time.Time       `json:"allocated_at"`
+	Remark           string          `json:"remark"`
 }
 
 // NewReceivableAllocation creates a new receivable allocation
@@ -120,28 +115,23 @@ func (a *ReceivableAllocation) GetAmountMoney() valueobject.Money {
 // It records a payment received from a customer
 type ReceiptVoucher struct {
 	shared.TenantAggregateRoot
-	VoucherNumber     string                 `gorm:"type:varchar(50);not null;uniqueIndex:idx_receipt_tenant_number,priority:2"`
-	CustomerID        uuid.UUID              `gorm:"type:uuid;not null;index"`
-	CustomerName      string                 `gorm:"type:varchar(200);not null"`
-	Amount            decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Total receipt amount
-	AllocatedAmount   decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Amount allocated to receivables
-	UnallocatedAmount decimal.Decimal        `gorm:"type:decimal(18,4);not null"` // Remaining unallocated amount
-	PaymentMethod     PaymentMethod          `gorm:"type:varchar(30);not null"`   // Payment method
-	PaymentReference  string                 `gorm:"type:varchar(100)"`           // Reference (bank txn, check #)
-	Status            VoucherStatus          `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	ReceiptDate       time.Time              `gorm:"not null"` // When payment was received
-	Allocations       []ReceivableAllocation `gorm:"foreignKey:ReceiptVoucherID;references:ID"`
-	Remark            string                 `gorm:"type:text"`
-	ConfirmedAt       *time.Time             // When confirmed
-	ConfirmedBy       *uuid.UUID             `gorm:"type:uuid"` // User who confirmed
-	CancelledAt       *time.Time             // When cancelled
-	CancelledBy       *uuid.UUID             `gorm:"type:uuid"` // User who cancelled
-	CancelReason      string                 `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (ReceiptVoucher) TableName() string {
-	return "receipt_vouchers"
+	VoucherNumber     string                 `json:"voucher_number"`
+	CustomerID        uuid.UUID              `json:"customer_id"`
+	CustomerName      string                 `json:"customer_name"`
+	Amount            decimal.Decimal        `json:"amount"`             // Total receipt amount
+	AllocatedAmount   decimal.Decimal        `json:"allocated_amount"`   // Amount allocated to receivables
+	UnallocatedAmount decimal.Decimal        `json:"unallocated_amount"` // Remaining unallocated amount
+	PaymentMethod     PaymentMethod          `json:"payment_method"`     // Payment method
+	PaymentReference  string                 `json:"payment_reference"`  // Reference (bank txn, check #)
+	Status            VoucherStatus          `json:"status"`
+	ReceiptDate       time.Time              `json:"receipt_date"` // When payment was received
+	Allocations       []ReceivableAllocation `json:"allocations"`
+	Remark            string                 `json:"remark"`
+	ConfirmedAt       *time.Time             `json:"confirmed_at"` // When confirmed
+	ConfirmedBy       *uuid.UUID             `json:"confirmed_by"` // User who confirmed
+	CancelledAt       *time.Time             `json:"cancelled_at"` // When cancelled
+	CancelledBy       *uuid.UUID             `json:"cancelled_by"` // User who cancelled
+	CancelReason      string                 `json:"cancel_reason"`
 }
 
 // NewReceiptVoucher creates a new receipt voucher

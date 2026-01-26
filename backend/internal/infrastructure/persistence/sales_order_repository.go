@@ -10,6 +10,7 @@ import (
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/trade"
 	"github.com/erp/backend/internal/infrastructure/persistence/datascope"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -33,54 +34,54 @@ func (r *GormSalesOrderRepository) SetOutboxEventSaver(saver shared.OutboxEventS
 
 // FindByID finds a sales order by its ID
 func (r *GormSalesOrderRepository) FindByID(ctx context.Context, id uuid.UUID) (*trade.SalesOrder, error) {
-	var order trade.SalesOrder
+	var model models.SalesOrderModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
-		First(&order, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &order, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a sales order by ID within a tenant
 func (r *GormSalesOrderRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*trade.SalesOrder, error) {
-	var order trade.SalesOrder
+	var model models.SalesOrderModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&order).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &order, nil
+	return model.ToDomain(), nil
 }
 
 // FindByOrderNumber finds a sales order by order number for a tenant
 func (r *GormSalesOrderRepository) FindByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (*trade.SalesOrder, error) {
-	var order trade.SalesOrder
+	var model models.SalesOrderModel
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
 		Where("tenant_id = ? AND order_number = ?", tenantID, orderNumber).
-		First(&order).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &order, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all sales orders for a tenant with filtering and data scope
 func (r *GormSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
-	var orders []trade.SalesOrder
+	var orderModels []models.SalesOrderModel
 
 	// Start with tenant filter
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).Where("tenant_id = ?", tenantID)
 
 	// Apply data scope filtering from context
 	dsFilter := datascope.NewFilterFromContext(ctx)
@@ -89,17 +90,21 @@ func (r *GormSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantI
 	// Apply additional filters
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&orders).Error; err != nil {
+	if err := query.Find(&orderModels).Error; err != nil {
 		return nil, err
+	}
+	orders := make([]trade.SalesOrder, len(orderModels))
+	for i, model := range orderModels {
+		orders[i] = *model.ToDomain()
 	}
 	return orders, nil
 }
 
 // FindByCustomer finds sales orders for a customer with data scope filtering
 func (r *GormSalesOrderRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
-	var orders []trade.SalesOrder
+	var orderModels []models.SalesOrderModel
 
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID)
 
 	// Apply data scope filtering
@@ -108,17 +113,21 @@ func (r *GormSalesOrderRepository) FindByCustomer(ctx context.Context, tenantID,
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&orders).Error; err != nil {
+	if err := query.Find(&orderModels).Error; err != nil {
 		return nil, err
+	}
+	orders := make([]trade.SalesOrder, len(orderModels))
+	for i, model := range orderModels {
+		orders[i] = *model.ToDomain()
 	}
 	return orders, nil
 }
 
 // FindByStatus finds sales orders by status for a tenant with data scope filtering
 func (r *GormSalesOrderRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus, filter shared.Filter) ([]trade.SalesOrder, error) {
-	var orders []trade.SalesOrder
+	var orderModels []models.SalesOrderModel
 
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status)
 
 	// Apply data scope filtering
@@ -127,17 +136,21 @@ func (r *GormSalesOrderRepository) FindByStatus(ctx context.Context, tenantID uu
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&orders).Error; err != nil {
+	if err := query.Find(&orderModels).Error; err != nil {
 		return nil, err
+	}
+	orders := make([]trade.SalesOrder, len(orderModels))
+	for i, model := range orderModels {
+		orders[i] = *model.ToDomain()
 	}
 	return orders, nil
 }
 
 // FindByWarehouse finds sales orders for a warehouse with data scope filtering
 func (r *GormSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
-	var orders []trade.SalesOrder
+	var orderModels []models.SalesOrderModel
 
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
 
 	// Apply data scope filtering
@@ -146,8 +159,12 @@ func (r *GormSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&orders).Error; err != nil {
+	if err := query.Find(&orderModels).Error; err != nil {
 		return nil, err
+	}
+	orders := make([]trade.SalesOrder, len(orderModels))
+	for i, model := range orderModels {
+		orders[i] = *model.ToDomain()
 	}
 	return orders, nil
 }
@@ -155,8 +172,11 @@ func (r *GormSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID
 // Save creates or updates a sales order
 func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesOrder) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Convert to persistence model
+		model := models.SalesOrderModelFromDomain(order)
+
 		// Save the order without auto-saving associations
-		if err := tx.Omit("Items").Save(order).Error; err != nil {
+		if err := tx.Omit("Items").Save(model).Error; err != nil {
 			return err
 		}
 
@@ -171,13 +191,13 @@ func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesO
 			// Delete items not in the current list
 			if len(currentItemIDs) > 0 {
 				if err := tx.Where("order_id = ? AND id NOT IN ?", order.ID, currentItemIDs).
-					Delete(&trade.SalesOrderItem{}).Error; err != nil {
+					Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 					return err
 				}
 			} else {
 				// Delete all items if no items remain
 				if err := tx.Where("order_id = ?", order.ID).
-					Delete(&trade.SalesOrderItem{}).Error; err != nil {
+					Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 					return err
 				}
 			}
@@ -185,7 +205,8 @@ func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesO
 			// Save/update remaining items
 			for i := range order.Items {
 				order.Items[i].OrderID = order.ID
-				if err := tx.Save(&order.Items[i]).Error; err != nil {
+				itemModel := models.SalesOrderItemModelFromDomain(&order.Items[i])
+				if err := tx.Save(itemModel).Error; err != nil {
 					return err
 				}
 			}
@@ -203,7 +224,7 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version from database
 		var currentVersion int
-		if err := tx.Model(&trade.SalesOrder{}).
+		if err := tx.Model(&models.SalesOrderModel{}).
 			Where("id = ?", order.ID).
 			Select("version").
 			Scan(&currentVersion).Error; err != nil {
@@ -222,7 +243,7 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 		order.UpdatedAt = time.Now()
 
 		// Update order with version check using the actual DB version (not assumed -1)
-		result := tx.Model(&trade.SalesOrder{}).
+		result := tx.Model(&models.SalesOrderModel{}).
 			Where("id = ? AND version = ?", order.ID, currentVersion).
 			Updates(map[string]interface{}{
 				"customer_id":     order.CustomerID,
@@ -259,12 +280,12 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 		// Delete items not in the current list
 		if len(currentItemIDs) > 0 {
 			if err := tx.Where("order_id = ? AND id NOT IN ?", order.ID, currentItemIDs).
-				Delete(&trade.SalesOrderItem{}).Error; err != nil {
+				Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 				return err
 			}
 		} else {
 			if err := tx.Where("order_id = ?", order.ID).
-				Delete(&trade.SalesOrderItem{}).Error; err != nil {
+				Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 				return err
 			}
 		}
@@ -272,7 +293,8 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 		// Save/update remaining items
 		for i := range order.Items {
 			order.Items[i].OrderID = order.ID
-			if err := tx.Save(&order.Items[i]).Error; err != nil {
+			itemModel := models.SalesOrderItemModelFromDomain(&order.Items[i])
+			if err := tx.Save(itemModel).Error; err != nil {
 				return err
 			}
 		}
@@ -288,7 +310,7 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version from database
 		var currentVersion int
-		if err := tx.Model(&trade.SalesOrder{}).
+		if err := tx.Model(&models.SalesOrderModel{}).
 			Where("id = ?", order.ID).
 			Select("version").
 			Scan(&currentVersion).Error; err != nil {
@@ -306,7 +328,7 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 		order.UpdatedAt = time.Now()
 
 		// Update order with version check
-		result := tx.Model(&trade.SalesOrder{}).
+		result := tx.Model(&models.SalesOrderModel{}).
 			Where("id = ? AND version = ?", order.ID, currentVersion).
 			Updates(map[string]interface{}{
 				"customer_id":     order.CustomerID,
@@ -343,12 +365,12 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 		// Delete items not in the current list
 		if len(currentItemIDs) > 0 {
 			if err := tx.Where("order_id = ? AND id NOT IN ?", order.ID, currentItemIDs).
-				Delete(&trade.SalesOrderItem{}).Error; err != nil {
+				Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 				return err
 			}
 		} else {
 			if err := tx.Where("order_id = ?", order.ID).
-				Delete(&trade.SalesOrderItem{}).Error; err != nil {
+				Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 				return err
 			}
 		}
@@ -356,7 +378,8 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 		// Save/update remaining items
 		for i := range order.Items {
 			order.Items[i].OrderID = order.ID
-			if err := tx.Save(&order.Items[i]).Error; err != nil {
+			itemModel := models.SalesOrderItemModelFromDomain(&order.Items[i])
+			if err := tx.Save(itemModel).Error; err != nil {
 				return err
 			}
 		}
@@ -376,12 +399,12 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 func (r *GormSalesOrderRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete items first
-		if err := tx.Where("order_id = ?", id).Delete(&trade.SalesOrderItem{}).Error; err != nil {
+		if err := tx.Where("order_id = ?", id).Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete order
-		result := tx.Delete(&trade.SalesOrder{}, "id = ?", id)
+		result := tx.Delete(&models.SalesOrderModel{}, "id = ?", id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -396,8 +419,8 @@ func (r *GormSalesOrderRepository) Delete(ctx context.Context, id uuid.UUID) err
 func (r *GormSalesOrderRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Find the order first
-		var order trade.SalesOrder
-		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&order).Error; err != nil {
+		var model models.SalesOrderModel
+		if err := tx.Where("tenant_id = ? AND id = ?", tenantID, id).First(&model).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return shared.ErrNotFound
 			}
@@ -405,12 +428,12 @@ func (r *GormSalesOrderRepository) DeleteForTenant(ctx context.Context, tenantID
 		}
 
 		// Delete items
-		if err := tx.Where("order_id = ?", id).Delete(&trade.SalesOrderItem{}).Error; err != nil {
+		if err := tx.Where("order_id = ?", id).Delete(&models.SalesOrderItemModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete order
-		result := tx.Delete(&trade.SalesOrder{}, "tenant_id = ? AND id = ?", tenantID, id)
+		result := tx.Delete(&models.SalesOrderModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -424,7 +447,7 @@ func (r *GormSalesOrderRepository) DeleteForTenant(ctx context.Context, tenantID
 // CountForTenant counts sales orders for a tenant with optional filters and data scope
 func (r *GormSalesOrderRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).Where("tenant_id = ?", tenantID)
 
 	// Apply data scope filtering
 	dsFilter := datascope.NewFilterFromContext(ctx)
@@ -441,7 +464,7 @@ func (r *GormSalesOrderRepository) CountForTenant(ctx context.Context, tenantID 
 // CountByStatus counts sales orders by status for a tenant with data scope
 func (r *GormSalesOrderRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status)
 
 	// Apply data scope filtering
@@ -457,7 +480,7 @@ func (r *GormSalesOrderRepository) CountByStatus(ctx context.Context, tenantID u
 // CountByCustomer counts sales orders for a customer with data scope
 func (r *GormSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+	query := r.db.WithContext(ctx).Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID)
 
 	// Apply data scope filtering
@@ -474,7 +497,7 @@ func (r *GormSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID
 func (r *GormSalesOrderRepository) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesOrder{}).
+		Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND order_number = ?", tenantID, orderNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -489,9 +512,9 @@ func (r *GormSalesOrderRepository) GenerateOrderNumber(ctx context.Context, tena
 	prefix := fmt.Sprintf("SO-%d-", year)
 
 	// Get the highest order number for this year
-	var lastOrder trade.SalesOrder
+	var lastOrder models.SalesOrderModel
 	err := r.db.WithContext(ctx).
-		Model(&trade.SalesOrder{}).
+		Model(&models.SalesOrderModel{}).
 		Where("tenant_id = ? AND order_number LIKE ?", tenantID, prefix+"%").
 		Order("order_number DESC").
 		First(&lastOrder).Error

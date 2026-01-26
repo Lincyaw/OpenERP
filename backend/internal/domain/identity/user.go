@@ -27,39 +27,29 @@ const bcryptCost = 12
 // It is the aggregate root for user-related operations
 type User struct {
 	shared.TenantAggregateRoot
-	Username           string      `gorm:"type:varchar(100);not null"`
-	Email              string      `gorm:"type:varchar(200)"`
-	Phone              string      `gorm:"type:varchar(50)"`
-	PasswordHash       string      `gorm:"type:varchar(255);not null"`
-	DisplayName        string      `gorm:"type:varchar(200)"`
-	Avatar             string      `gorm:"type:varchar(500)"`
-	Status             UserStatus  `gorm:"type:varchar(20);not null;default:'pending'"`
-	RoleIDs            []uuid.UUID `gorm:"-"` // Stored in separate table, loaded by repository
-	LastLoginAt        *time.Time  `gorm:"index"`
-	LastLoginIP        string      `gorm:"type:varchar(45)"` // IPv6 max length
-	FailedAttempts     int         `gorm:"not null;default:0"`
+	Username           string
+	Email              string
+	Phone              string
+	PasswordHash       string
+	DisplayName        string
+	Avatar             string
+	Status             UserStatus
+	RoleIDs            []uuid.UUID // Stored in separate table, loaded by repository
+	LastLoginAt        *time.Time
+	LastLoginIP        string // IPv6 max length
+	FailedAttempts     int
 	LockedUntil        *time.Time
 	PasswordChangedAt  *time.Time
-	MustChangePassword bool   `gorm:"not null;default:false"`
-	Notes              string `gorm:"type:text"`
+	MustChangePassword bool
+	Notes              string
 }
 
 // UserRole represents the many-to-many relationship between users and roles
 type UserRole struct {
-	UserID    uuid.UUID `gorm:"type:uuid;primaryKey"`
-	RoleID    uuid.UUID `gorm:"type:uuid;primaryKey"`
-	TenantID  uuid.UUID `gorm:"type:uuid;not null;index"`
-	CreatedAt time.Time `gorm:"not null"`
-}
-
-// TableName returns the table name for GORM
-func (User) TableName() string {
-	return "users"
-}
-
-// TableName returns the table name for GORM
-func (UserRole) TableName() string {
-	return "user_roles"
+	UserID    uuid.UUID
+	RoleID    uuid.UUID
+	TenantID  uuid.UUID
+	CreatedAt time.Time
 }
 
 // NewUser creates a new user with required fields

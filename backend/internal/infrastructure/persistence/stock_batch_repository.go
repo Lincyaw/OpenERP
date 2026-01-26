@@ -8,6 +8,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -29,54 +30,62 @@ func (r *GormStockBatchRepository) WithTx(tx *gorm.DB) *GormStockBatchRepository
 
 // FindByID finds a stock batch by its ID
 func (r *GormStockBatchRepository) FindByID(ctx context.Context, id uuid.UUID) (*inventory.StockBatch, error) {
-	var batch inventory.StockBatch
-	if err := r.db.WithContext(ctx).First(&batch, "id = ?", id).Error; err != nil {
+	var model models.StockBatchModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &batch, nil
+	return model.ToDomain(), nil
 }
 
 // FindByInventoryItem finds all batches for an inventory item
 func (r *GormStockBatchRepository) FindByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID, filter shared.Filter) ([]inventory.StockBatch, error) {
-	var batches []inventory.StockBatch
+	var batchModels []models.StockBatchModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockBatch{}).
+		r.db.WithContext(ctx).Model(&models.StockBatchModel{}).
 			Where("inventory_item_id = ?", inventoryItemID),
 		filter,
 	)
 
-	if err := query.Find(&batches).Error; err != nil {
+	if err := query.Find(&batchModels).Error; err != nil {
 		return nil, err
+	}
+	batches := make([]inventory.StockBatch, len(batchModels))
+	for i, model := range batchModels {
+		batches[i] = *model.ToDomain()
 	}
 	return batches, nil
 }
 
 // FindAvailable finds available (non-consumed, non-expired) batches
 func (r *GormStockBatchRepository) FindAvailable(ctx context.Context, inventoryItemID uuid.UUID) ([]inventory.StockBatch, error) {
-	var batches []inventory.StockBatch
+	var batchModels []models.StockBatchModel
 	now := time.Now()
 
 	if err := r.db.WithContext(ctx).
 		Where("inventory_item_id = ? AND consumed = FALSE AND quantity > 0", inventoryItemID).
 		Where("expiry_date IS NULL OR expiry_date > ?", now).
 		Order("COALESCE(expiry_date, '9999-12-31') ASC, created_at ASC"). // FEFO (First Expired, First Out)
-		Find(&batches).Error; err != nil {
+		Find(&batchModels).Error; err != nil {
 		return nil, err
+	}
+	batches := make([]inventory.StockBatch, len(batchModels))
+	for i, model := range batchModels {
+		batches[i] = *model.ToDomain()
 	}
 	return batches, nil
 }
 
 // FindExpiringSoon finds batches expiring within a duration
 func (r *GormStockBatchRepository) FindExpiringSoon(ctx context.Context, tenantID uuid.UUID, withinDays int, filter shared.Filter) ([]inventory.StockBatch, error) {
-	var batches []inventory.StockBatch
+	var batchModels []models.StockBatchModel
 	now := time.Now()
 	expiryThreshold := now.AddDate(0, 0, withinDays)
 
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockBatch{}).
+		r.db.WithContext(ctx).Model(&models.StockBatchModel{}).
 			Joins("JOIN inventory_items ON inventory_items.id = stock_batches.inventory_item_id").
 			Where("inventory_items.tenant_id = ?", tenantID).
 			Where("stock_batches.consumed = FALSE AND stock_batches.quantity > 0").
@@ -85,19 +94,23 @@ func (r *GormStockBatchRepository) FindExpiringSoon(ctx context.Context, tenantI
 		filter,
 	)
 
-	if err := query.Find(&batches).Error; err != nil {
+	if err := query.Find(&batchModels).Error; err != nil {
 		return nil, err
+	}
+	batches := make([]inventory.StockBatch, len(batchModels))
+	for i, model := range batchModels {
+		batches[i] = *model.ToDomain()
 	}
 	return batches, nil
 }
 
 // FindExpired finds expired batches that still have stock
 func (r *GormStockBatchRepository) FindExpired(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.StockBatch, error) {
-	var batches []inventory.StockBatch
+	var batchModels []models.StockBatchModel
 	now := time.Now()
 
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.StockBatch{}).
+		r.db.WithContext(ctx).Model(&models.StockBatchModel{}).
 			Joins("JOIN inventory_items ON inventory_items.id = stock_batches.inventory_item_id").
 			Where("inventory_items.tenant_id = ?", tenantID).
 			Where("stock_batches.consumed = FALSE AND stock_batches.quantity > 0").
@@ -105,29 +118,34 @@ func (r *GormStockBatchRepository) FindExpired(ctx context.Context, tenantID uui
 		filter,
 	)
 
-	if err := query.Find(&batches).Error; err != nil {
+	if err := query.Find(&batchModels).Error; err != nil {
 		return nil, err
+	}
+	batches := make([]inventory.StockBatch, len(batchModels))
+	for i, model := range batchModels {
+		batches[i] = *model.ToDomain()
 	}
 	return batches, nil
 }
 
 // FindByBatchNumber finds batches by batch number
 func (r *GormStockBatchRepository) FindByBatchNumber(ctx context.Context, inventoryItemID uuid.UUID, batchNumber string) (*inventory.StockBatch, error) {
-	var batch inventory.StockBatch
+	var model models.StockBatchModel
 	if err := r.db.WithContext(ctx).
 		Where("inventory_item_id = ? AND batch_number = ?", inventoryItemID, batchNumber).
-		First(&batch).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &batch, nil
+	return model.ToDomain(), nil
 }
 
 // Save creates or updates a stock batch
 func (r *GormStockBatchRepository) Save(ctx context.Context, batch *inventory.StockBatch) error {
-	return r.db.WithContext(ctx).Save(batch).Error
+	model := models.StockBatchModelFromDomain(batch)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveBatch creates or updates multiple stock batches
@@ -135,12 +153,16 @@ func (r *GormStockBatchRepository) SaveBatch(ctx context.Context, batches []inve
 	if len(batches) == 0 {
 		return nil
 	}
-	return r.db.WithContext(ctx).Save(&batches).Error
+	batchModels := make([]*models.StockBatchModel, len(batches))
+	for i := range batches {
+		batchModels[i] = models.StockBatchModelFromDomain(&batches[i])
+	}
+	return r.db.WithContext(ctx).Save(&batchModels).Error
 }
 
 // Delete deletes a stock batch
 func (r *GormStockBatchRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&inventory.StockBatch{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.StockBatchModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -154,7 +176,7 @@ func (r *GormStockBatchRepository) Delete(ctx context.Context, id uuid.UUID) err
 func (r *GormStockBatchRepository) CountByInventoryItem(ctx context.Context, inventoryItemID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&inventory.StockBatch{}).
+		Model(&models.StockBatchModel{}).
 		Where("inventory_item_id = ?", inventoryItemID).
 		Count(&count).Error; err != nil {
 		return 0, err

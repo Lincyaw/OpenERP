@@ -12,18 +12,13 @@ import (
 
 // PayableAllocation represents the allocation of a payment voucher to a payable
 type PayableAllocation struct {
-	ID               uuid.UUID       `gorm:"type:uuid;primary_key"`
-	PaymentVoucherID uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PayableID        uuid.UUID       `gorm:"type:uuid;not null;index"`
-	PayableNumber    string          `gorm:"type:varchar(50);not null"` // Denormalized for display
-	Amount           decimal.Decimal `gorm:"type:decimal(18,4);not null"`
-	AllocatedAt      time.Time       `gorm:"not null"`
-	Remark           string          `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (PayableAllocation) TableName() string {
-	return "payable_allocations"
+	ID               uuid.UUID       `json:"id"`
+	PaymentVoucherID uuid.UUID       `json:"payment_voucher_id"`
+	PayableID        uuid.UUID       `json:"payable_id"`
+	PayableNumber    string          `json:"payable_number"` // Denormalized for display
+	Amount           decimal.Decimal `json:"amount"`
+	AllocatedAt      time.Time       `json:"allocated_at"`
+	Remark           string          `json:"remark"`
 }
 
 // NewPayableAllocation creates a new payable allocation
@@ -48,28 +43,23 @@ func (a *PayableAllocation) GetAmountMoney() valueobject.Money {
 // It records a payment made to a supplier
 type PaymentVoucher struct {
 	shared.TenantAggregateRoot
-	VoucherNumber     string              `gorm:"type:varchar(50);not null;uniqueIndex:idx_payment_tenant_number,priority:2"`
-	SupplierID        uuid.UUID           `gorm:"type:uuid;not null;index"`
-	SupplierName      string              `gorm:"type:varchar(200);not null"`
-	Amount            decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Total payment amount
-	AllocatedAmount   decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Amount allocated to payables
-	UnallocatedAmount decimal.Decimal     `gorm:"type:decimal(18,4);not null"` // Remaining unallocated amount
-	PaymentMethod     PaymentMethod       `gorm:"type:varchar(30);not null"`   // Payment method
-	PaymentReference  string              `gorm:"type:varchar(100)"`           // Reference (bank txn, check #)
-	Status            VoucherStatus       `gorm:"type:varchar(20);not null;default:'DRAFT';index"`
-	PaymentDate       time.Time           `gorm:"not null"` // When payment was made
-	Allocations       []PayableAllocation `gorm:"foreignKey:PaymentVoucherID;references:ID"`
-	Remark            string              `gorm:"type:text"`
-	ConfirmedAt       *time.Time          // When confirmed
-	ConfirmedBy       *uuid.UUID          `gorm:"type:uuid"` // User who confirmed
-	CancelledAt       *time.Time          // When cancelled
-	CancelledBy       *uuid.UUID          `gorm:"type:uuid"` // User who cancelled
-	CancelReason      string              `gorm:"type:varchar(500)"`
-}
-
-// TableName returns the table name for GORM
-func (PaymentVoucher) TableName() string {
-	return "payment_vouchers"
+	VoucherNumber     string              `json:"voucher_number"`
+	SupplierID        uuid.UUID           `json:"supplier_id"`
+	SupplierName      string              `json:"supplier_name"`
+	Amount            decimal.Decimal     `json:"amount"`             // Total payment amount
+	AllocatedAmount   decimal.Decimal     `json:"allocated_amount"`   // Amount allocated to payables
+	UnallocatedAmount decimal.Decimal     `json:"unallocated_amount"` // Remaining unallocated amount
+	PaymentMethod     PaymentMethod       `json:"payment_method"`     // Payment method
+	PaymentReference  string              `json:"payment_reference"`  // Reference (bank txn, check #)
+	Status            VoucherStatus       `json:"status"`
+	PaymentDate       time.Time           `json:"payment_date"` // When payment was made
+	Allocations       []PayableAllocation `json:"allocations"`
+	Remark            string              `json:"remark"`
+	ConfirmedAt       *time.Time          `json:"confirmed_at"` // When confirmed
+	ConfirmedBy       *uuid.UUID          `json:"confirmed_by"` // User who confirmed
+	CancelledAt       *time.Time          `json:"cancelled_at"` // When cancelled
+	CancelledBy       *uuid.UUID          `json:"cancelled_by"` // User who cancelled
+	CancelReason      string              `json:"cancel_reason"`
 }
 
 // NewPaymentVoucher creates a new payment voucher

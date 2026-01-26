@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/erp/backend/internal/domain/finance"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -23,49 +24,49 @@ func NewGormReceiptVoucherRepository(db *gorm.DB) *GormReceiptVoucherRepository 
 
 // FindByID finds a receipt voucher by ID
 func (r *GormReceiptVoucherRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.ReceiptVoucher, error) {
-	var voucher finance.ReceiptVoucher
+	var model models.ReceiptVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "id = ?", id).Error; err != nil {
+		First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a receipt voucher by ID for a specific tenant
 func (r *GormReceiptVoucherRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.ReceiptVoucher, error) {
-	var voucher finance.ReceiptVoucher
+	var model models.ReceiptVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "id = ? AND tenant_id = ?", id, tenantID).Error; err != nil {
+		First(&model, "id = ? AND tenant_id = ?", id, tenantID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindByVoucherNumber finds by voucher number for a tenant
 func (r *GormReceiptVoucherRepository) FindByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (*finance.ReceiptVoucher, error) {
-	var voucher finance.ReceiptVoucher
+	var model models.ReceiptVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "voucher_number = ? AND tenant_id = ?", voucherNumber, tenantID).Error; err != nil {
+		First(&model, "voucher_number = ? AND tenant_id = ?", voucherNumber, tenantID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // FindAllForTenant finds all receipt vouchers for a tenant with filtering
 func (r *GormReceiptVoucherRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.ReceiptVoucherFilter) ([]finance.ReceiptVoucher, error) {
-	var vouchers []finance.ReceiptVoucher
+	var voucherModels []models.ReceiptVoucherModel
 	query := r.db.WithContext(ctx).Where("tenant_id = ?", tenantID)
 
 	// Apply filters
@@ -102,8 +103,12 @@ func (r *GormReceiptVoucherRepository) FindAllForTenant(ctx context.Context, ten
 		}
 	}
 
-	if err := query.Preload("Allocations").Find(&vouchers).Error; err != nil {
+	if err := query.Preload("Allocations").Find(&voucherModels).Error; err != nil {
 		return nil, err
+	}
+	vouchers := make([]finance.ReceiptVoucher, len(voucherModels))
+	for i, model := range voucherModels {
+		vouchers[i] = *model.ToDomain()
 	}
 	return vouchers, nil
 }
@@ -122,27 +127,33 @@ func (r *GormReceiptVoucherRepository) FindByStatus(ctx context.Context, tenantI
 
 // FindWithUnallocatedAmount finds vouchers that have unallocated amount
 func (r *GormReceiptVoucherRepository) FindWithUnallocatedAmount(ctx context.Context, tenantID, customerID uuid.UUID) ([]finance.ReceiptVoucher, error) {
-	var vouchers []finance.ReceiptVoucher
+	var voucherModels []models.ReceiptVoucherModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND customer_id = ? AND unallocated_amount > 0", tenantID, customerID).
 		Preload("Allocations").
-		Find(&vouchers).Error; err != nil {
+		Find(&voucherModels).Error; err != nil {
 		return nil, err
+	}
+	vouchers := make([]finance.ReceiptVoucher, len(voucherModels))
+	for i, model := range voucherModels {
+		vouchers[i] = *model.ToDomain()
 	}
 	return vouchers, nil
 }
 
 // Save creates or updates a receipt voucher
 func (r *GormReceiptVoucherRepository) Save(ctx context.Context, voucher *finance.ReceiptVoucher) error {
-	return r.db.WithContext(ctx).Save(voucher).Error
+	model := models.ReceiptVoucherModelFromDomain(voucher)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveWithLock saves with optimistic locking (version check)
 func (r *GormReceiptVoucherRepository) SaveWithLock(ctx context.Context, voucher *finance.ReceiptVoucher) error {
+	model := models.ReceiptVoucherModelFromDomain(voucher)
 	result := r.db.WithContext(ctx).
-		Model(voucher).
+		Model(model).
 		Where("id = ? AND version = ?", voucher.ID, voucher.Version-1).
-		Updates(voucher)
+		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
@@ -155,18 +166,18 @@ func (r *GormReceiptVoucherRepository) SaveWithLock(ctx context.Context, voucher
 
 // Delete soft deletes a receipt voucher
 func (r *GormReceiptVoucherRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&finance.ReceiptVoucher{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Delete(&models.ReceiptVoucherModel{}, "id = ?", id).Error
 }
 
 // DeleteForTenant soft deletes a receipt voucher for a tenant
 func (r *GormReceiptVoucherRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&finance.ReceiptVoucher{}, "id = ? AND tenant_id = ?", id, tenantID).Error
+	return r.db.WithContext(ctx).Delete(&models.ReceiptVoucherModel{}, "id = ? AND tenant_id = ?", id, tenantID).Error
 }
 
 // CountForTenant counts receipt vouchers for a tenant with optional filters
 func (r *GormReceiptVoucherRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.ReceiptVoucherFilter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&finance.ReceiptVoucher{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.ReceiptVoucherModel{}).Where("tenant_id = ?", tenantID)
 
 	if filter.CustomerID != nil {
 		query = query.Where("customer_id = ?", *filter.CustomerID)
@@ -185,7 +196,7 @@ func (r *GormReceiptVoucherRepository) CountForTenant(ctx context.Context, tenan
 func (r *GormReceiptVoucherRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status finance.VoucherStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -197,7 +208,7 @@ func (r *GormReceiptVoucherRepository) CountByStatus(ctx context.Context, tenant
 func (r *GormReceiptVoucherRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -209,7 +220,7 @@ func (r *GormReceiptVoucherRepository) CountByCustomer(ctx context.Context, tena
 func (r *GormReceiptVoucherRepository) SumByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID).
 		Scan(&sum).Error; err != nil {
@@ -222,7 +233,7 @@ func (r *GormReceiptVoucherRepository) SumByCustomer(ctx context.Context, tenant
 func (r *GormReceiptVoucherRepository) SumForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ?", tenantID).
 		Scan(&sum).Error; err != nil {
@@ -235,7 +246,7 @@ func (r *GormReceiptVoucherRepository) SumForTenant(ctx context.Context, tenantI
 func (r *GormReceiptVoucherRepository) SumUnallocatedByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error) {
 	var sum decimal.Decimal
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Select("COALESCE(SUM(unallocated_amount), 0)").
 		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID).
 		Scan(&sum).Error; err != nil {
@@ -248,7 +259,7 @@ func (r *GormReceiptVoucherRepository) SumUnallocatedByCustomer(ctx context.Cont
 func (r *GormReceiptVoucherRepository) ExistsByVoucherNumber(ctx context.Context, tenantID uuid.UUID, voucherNumber string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Where("tenant_id = ? AND voucher_number = ?", tenantID, voucherNumber).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -260,7 +271,7 @@ func (r *GormReceiptVoucherRepository) ExistsByVoucherNumber(ctx context.Context
 func (r *GormReceiptVoucherRepository) GenerateVoucherNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
 	var maxNumber string
 	if err := r.db.WithContext(ctx).
-		Model(&finance.ReceiptVoucher{}).
+		Model(&models.ReceiptVoucherModel{}).
 		Select("voucher_number").
 		Where("tenant_id = ?", tenantID).
 		Order("voucher_number DESC").
@@ -285,16 +296,16 @@ func (r *GormReceiptVoucherRepository) GenerateVoucherNumber(ctx context.Context
 
 // FindByPaymentReference finds a receipt voucher by payment reference (e.g., gateway order number)
 func (r *GormReceiptVoucherRepository) FindByPaymentReference(ctx context.Context, paymentReference string) (*finance.ReceiptVoucher, error) {
-	var voucher finance.ReceiptVoucher
+	var model models.ReceiptVoucherModel
 	if err := r.db.WithContext(ctx).
 		Preload("Allocations").
-		First(&voucher, "payment_reference = ?", paymentReference).Error; err != nil {
+		First(&model, "payment_reference = ?", paymentReference).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &voucher, nil
+	return model.ToDomain(), nil
 }
 
 // Ensure GormReceiptVoucherRepository implements the interface

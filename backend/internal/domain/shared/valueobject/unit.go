@@ -275,11 +275,11 @@ func (u *Unit) Scan(value any) error {
 	return nil
 }
 
-// UnitDTO is a data transfer object for Unit (for database operations).
+// UnitDTO is a data transfer object for Unit (for serialization/deserialization).
 type UnitDTO struct {
-	Code           string          `json:"code" gorm:"column:unit_code;type:varchar(20)"`
-	Name           string          `json:"name" gorm:"column:unit_name;type:varchar(50)"`
-	ConversionRate decimal.Decimal `json:"conversionRate" gorm:"column:conversion_rate;type:decimal(18,6)"`
+	Code           string          `json:"code"`
+	Name           string          `json:"name"`
+	ConversionRate decimal.Decimal `json:"conversionRate"`
 }
 
 // ToUnit converts UnitDTO to Unit value object.
