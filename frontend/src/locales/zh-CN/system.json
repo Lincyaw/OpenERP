@@ -321,5 +321,167 @@
       "switchSuccess": "已切换至 {{name}}",
       "switchError": "切换租户失败"
     }
+  },
+  "paymentSettings": {
+    "title": "支付方式配置",
+    "subtitle": "配置微信支付、支付宝等支付渠道",
+    "securityWarning": "支付配置涉及敏感信息，请妥善保管密钥和证书。建议在安全的网络环境下进行配置。",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "testConnection": "测试连接",
+    "environment": "环境设置",
+    "status": {
+      "notConfigured": "未配置",
+      "configured": "已配置",
+      "connected": "连接正常",
+      "failed": "连接失败",
+      "disabled": "已禁用"
+    },
+    "messages": {
+      "saveSuccess": "配置保存成功",
+      "saveError": "配置保存失败",
+      "testSuccess": "连接测试成功",
+      "testFailed": "连接测试失败",
+      "testError": "测试连接时发生错误"
+    },
+    "wechat": {
+      "title": "微信支付",
+      "basicInfo": "基本信息",
+      "certificates": "证书配置",
+      "callbacks": "回调配置",
+      "mchId": "商户号",
+      "mchIdPlaceholder": "请输入微信支付商户号",
+      "appId": "应用ID",
+      "appIdPlaceholder": "请输入微信应用ID (AppID)",
+      "apiKey": "API密钥",
+      "apiKeyPlaceholder": "请输入API v3密钥 (32位)",
+      "apiKeyHint": "API v3密钥必须为32个字符",
+      "serialNo": "证书序列号",
+      "serialNoPlaceholder": "请输入商户API证书序列号",
+      "privateKey": "商户私钥",
+      "privateKeyPlaceholder": "请粘贴PEM格式的商户私钥",
+      "privateKeyHint": "用于签名请求，请妥善保管",
+      "wechatCert": "平台证书",
+      "wechatCertPlaceholder": "请粘贴PEM格式的微信支付平台证书",
+      "wechatCertSerialNo": "平台证书序列号",
+      "wechatCertSerialNoPlaceholder": "请输入微信支付平台证书序列号",
+      "notifyUrl": "支付回调地址",
+      "notifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/wechat",
+      "refundNotifyUrl": "退款回调地址",
+      "refundNotifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/wechat/refund",
+      "sandbox": "沙箱环境",
+      "sandboxHint": "启用后将使用微信支付沙箱环境进行测试",
+      "errors": {
+        "mchIdRequired": "请输入商户号",
+        "appIdRequired": "请输入应用ID",
+        "apiKeyRequired": "请输入API密钥",
+        "apiKeyInvalid": "API密钥必须为32个字符",
+        "serialNoRequired": "请输入证书序列号",
+        "privateKeyRequired": "请输入商户私钥",
+        "notifyUrlRequired": "请输入支付回调地址"
+      }
+    },
+    "alipay": {
+      "title": "支付宝",
+      "basicInfo": "基本信息",
+      "keys": "密钥配置",
+      "callbacks": "回调配置",
+      "appId": "应用ID",
+      "appIdPlaceholder": "请输入支付宝应用ID (AppID)",
+      "signType": "签名类型",
+      "privateKey": "应用私钥",
+      "privateKeyPlaceholder": "请粘贴PEM格式的应用私钥",
+      "privateKeyHint": "用于签名请求，请妥善保管",
+      "alipayPublicKey": "支付宝公钥",
+      "alipayPublicKeyPlaceholder": "请粘贴PEM格式的支付宝公钥",
+      "alipayPublicKeyHint": "用于验证支付宝响应和回调",
+      "notifyUrl": "支付回调地址",
+      "notifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/alipay",
+      "returnUrl": "支付返回地址",
+      "returnUrlPlaceholder": "https://your-domain.com/payment/success",
+      "sandbox": "沙箱环境",
+      "sandboxHint": "启用后将使用支付宝沙箱环境进行测试",
+      "errors": {
+        "appIdRequired": "请输入应用ID",
+        "privateKeyRequired": "请输入应用私钥",
+        "publicKeyRequired": "请输入支付宝公钥",
+        "notifyUrlRequired": "请输入支付回调地址"
+      }
+    }
+  },
+  "platformConfig": {
+    "title": "电商平台配置",
+    "subtitle": "配置淘宝、抖音、京东等电商平台的授权和同步参数",
+    "securityWarning": "平台配置涉及敏感信息，请妥善保管AppKey和AppSecret。建议在安全的网络环境下进行配置。",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "testConnection": "测试连接",
+    "sections": {
+      "authorization": "平台授权",
+      "tokens": "访问令牌",
+      "syncSettings": "同步设置",
+      "callbacks": "回调配置",
+      "environment": "环境设置",
+      "status": "状态信息"
+    },
+    "status": {
+      "notConfigured": "未配置",
+      "configured": "已配置",
+      "connected": "连接正常",
+      "failed": "连接失败",
+      "disabled": "已禁用",
+      "lastTested": "最后测试时间",
+      "result": "测试结果",
+      "lastSync": "最后同步时间"
+    },
+    "fields": {
+      "appKey": "应用Key (App Key)",
+      "appSecret": "应用密钥 (App Secret)",
+      "shopId": "店铺ID",
+      "shopName": "店铺名称",
+      "accessToken": "访问令牌 (Access Token)",
+      "refreshToken": "刷新令牌 (Refresh Token)",
+      "syncEnabled": "启用自动同步",
+      "syncInterval": "同步间隔",
+      "inventorySync": "库存同步",
+      "orderAutoImport": "订单自动导入",
+      "notifyUrl": "回调地址",
+      "sandbox": "沙箱环境"
+    },
+    "placeholders": {
+      "appKey": "请输入平台分配的App Key",
+      "appSecret": "请输入平台分配的App Secret",
+      "shopId": "请输入店铺ID",
+      "shopName": "请输入店铺名称（可选）",
+      "accessToken": "请粘贴OAuth授权获取的Access Token",
+      "refreshToken": "请粘贴OAuth授权获取的Refresh Token",
+      "notifyUrl": "https://your-domain.com/api/v1/webhook/platform"
+    },
+    "hints": {
+      "syncEnabled": "启用后将按设定的间隔自动同步订单和库存",
+      "syncInterval": "建议设置为15-30分钟，避免频繁请求触发限流",
+      "inventorySync": "启用后将自动同步本地库存到平台",
+      "orderAutoImport": "启用后将自动导入平台订单到本地系统",
+      "notifyUrl": "用于接收平台的推送通知（订单状态变更等）",
+      "sandbox": "启用后将连接平台沙箱环境进行测试"
+    },
+    "tokenHint": "访问令牌通常通过OAuth授权流程获取。如果令牌已过期，请重新进行授权。",
+    "units": {
+      "minutes": "分钟"
+    },
+    "messages": {
+      "loadError": "加载配置失败",
+      "saveSuccess": "配置保存成功",
+      "saveError": "配置保存失败",
+      "testSuccess": "连接测试成功",
+      "testFailed": "连接测试失败",
+      "testError": "测试连接时发生错误"
+    },
+    "errors": {
+      "appKeyRequired": "请输入App Key",
+      "appSecretRequired": "请输入App Secret",
+      "syncIntervalMin": "同步间隔至少5分钟",
+      "syncIntervalMax": "同步间隔最多60分钟"
+    }
   }
 }

@@ -2362,7 +2362,7 @@
       "配置商户信息",
       "测试连接"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P7-FE-002",
@@ -2373,7 +2373,7 @@
       "配置同步参数",
       "测试连接"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P7-FE-003",

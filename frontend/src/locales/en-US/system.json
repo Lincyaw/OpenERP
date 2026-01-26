@@ -321,5 +321,167 @@
       "switchSuccess": "Switched to {{name}}",
       "switchError": "Failed to switch tenant"
     }
+  },
+  "paymentSettings": {
+    "title": "Payment Settings",
+    "subtitle": "Configure payment gateways like WeChat Pay and Alipay",
+    "securityWarning": "Payment configuration involves sensitive information. Please keep your keys and certificates secure. It is recommended to configure in a secure network environment.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "testConnection": "Test Connection",
+    "environment": "Environment",
+    "status": {
+      "notConfigured": "Not Configured",
+      "configured": "Configured",
+      "connected": "Connected",
+      "failed": "Connection Failed",
+      "disabled": "Disabled"
+    },
+    "messages": {
+      "saveSuccess": "Configuration saved successfully",
+      "saveError": "Failed to save configuration",
+      "testSuccess": "Connection test successful",
+      "testFailed": "Connection test failed",
+      "testError": "Error occurred during connection test"
+    },
+    "wechat": {
+      "title": "WeChat Pay",
+      "basicInfo": "Basic Information",
+      "certificates": "Certificates",
+      "callbacks": "Callbacks",
+      "mchId": "Merchant ID",
+      "mchIdPlaceholder": "Enter WeChat Pay Merchant ID",
+      "appId": "App ID",
+      "appIdPlaceholder": "Enter WeChat App ID",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter API v3 Key (32 characters)",
+      "apiKeyHint": "API v3 key must be 32 characters",
+      "serialNo": "Certificate Serial No",
+      "serialNoPlaceholder": "Enter merchant API certificate serial number",
+      "privateKey": "Merchant Private Key",
+      "privateKeyPlaceholder": "Paste PEM format merchant private key",
+      "privateKeyHint": "Used for signing requests, keep it secure",
+      "wechatCert": "Platform Certificate",
+      "wechatCertPlaceholder": "Paste PEM format WeChat Pay platform certificate",
+      "wechatCertSerialNo": "Platform Cert Serial No",
+      "wechatCertSerialNoPlaceholder": "Enter WeChat Pay platform certificate serial number",
+      "notifyUrl": "Payment Callback URL",
+      "notifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/wechat",
+      "refundNotifyUrl": "Refund Callback URL",
+      "refundNotifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/wechat/refund",
+      "sandbox": "Sandbox Mode",
+      "sandboxHint": "Enable to use WeChat Pay sandbox environment for testing",
+      "errors": {
+        "mchIdRequired": "Merchant ID is required",
+        "appIdRequired": "App ID is required",
+        "apiKeyRequired": "API Key is required",
+        "apiKeyInvalid": "API Key must be 32 characters",
+        "serialNoRequired": "Certificate serial number is required",
+        "privateKeyRequired": "Private key is required",
+        "notifyUrlRequired": "Payment callback URL is required"
+      }
+    },
+    "alipay": {
+      "title": "Alipay",
+      "basicInfo": "Basic Information",
+      "keys": "Keys Configuration",
+      "callbacks": "Callbacks",
+      "appId": "App ID",
+      "appIdPlaceholder": "Enter Alipay App ID",
+      "signType": "Signature Type",
+      "privateKey": "App Private Key",
+      "privateKeyPlaceholder": "Paste PEM format application private key",
+      "privateKeyHint": "Used for signing requests, keep it secure",
+      "alipayPublicKey": "Alipay Public Key",
+      "alipayPublicKeyPlaceholder": "Paste PEM format Alipay public key",
+      "alipayPublicKeyHint": "Used for verifying Alipay responses and callbacks",
+      "notifyUrl": "Payment Callback URL",
+      "notifyUrlPlaceholder": "https://your-domain.com/api/v1/payment-callback/alipay",
+      "returnUrl": "Return URL",
+      "returnUrlPlaceholder": "https://your-domain.com/payment/success",
+      "sandbox": "Sandbox Mode",
+      "sandboxHint": "Enable to use Alipay sandbox environment for testing",
+      "errors": {
+        "appIdRequired": "App ID is required",
+        "privateKeyRequired": "Private key is required",
+        "publicKeyRequired": "Alipay public key is required",
+        "notifyUrlRequired": "Payment callback URL is required"
+      }
+    }
+  },
+  "platformConfig": {
+    "title": "E-commerce Platform Configuration",
+    "subtitle": "Configure authorization and sync parameters for Taobao, Douyin, JD and other platforms",
+    "securityWarning": "Platform configuration involves sensitive information. Please keep your AppKey and AppSecret secure. Configure in a secure network environment.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "testConnection": "Test Connection",
+    "sections": {
+      "authorization": "Platform Authorization",
+      "tokens": "Access Tokens",
+      "syncSettings": "Sync Settings",
+      "callbacks": "Callback Configuration",
+      "environment": "Environment",
+      "status": "Status Information"
+    },
+    "status": {
+      "notConfigured": "Not Configured",
+      "configured": "Configured",
+      "connected": "Connected",
+      "failed": "Connection Failed",
+      "disabled": "Disabled",
+      "lastTested": "Last Tested",
+      "result": "Test Result",
+      "lastSync": "Last Sync"
+    },
+    "fields": {
+      "appKey": "App Key",
+      "appSecret": "App Secret",
+      "shopId": "Shop ID",
+      "shopName": "Shop Name",
+      "accessToken": "Access Token",
+      "refreshToken": "Refresh Token",
+      "syncEnabled": "Enable Auto Sync",
+      "syncInterval": "Sync Interval",
+      "inventorySync": "Inventory Sync",
+      "orderAutoImport": "Auto Import Orders",
+      "notifyUrl": "Callback URL",
+      "sandbox": "Sandbox Mode"
+    },
+    "placeholders": {
+      "appKey": "Enter the App Key from platform",
+      "appSecret": "Enter the App Secret from platform",
+      "shopId": "Enter your shop ID",
+      "shopName": "Enter your shop name (optional)",
+      "accessToken": "Paste the Access Token from OAuth authorization",
+      "refreshToken": "Paste the Refresh Token from OAuth authorization",
+      "notifyUrl": "https://your-domain.com/api/v1/webhook/platform"
+    },
+    "hints": {
+      "syncEnabled": "When enabled, orders and inventory will sync automatically at the set interval",
+      "syncInterval": "Recommended 15-30 minutes to avoid rate limiting",
+      "inventorySync": "When enabled, local inventory will be synced to the platform",
+      "orderAutoImport": "When enabled, platform orders will be automatically imported to local system",
+      "notifyUrl": "Used to receive platform push notifications (order status changes, etc.)",
+      "sandbox": "When enabled, connects to platform sandbox environment for testing"
+    },
+    "tokenHint": "Access tokens are typically obtained through OAuth authorization flow. If the token has expired, please re-authorize.",
+    "units": {
+      "minutes": "minutes"
+    },
+    "messages": {
+      "loadError": "Failed to load configuration",
+      "saveSuccess": "Configuration saved successfully",
+      "saveError": "Failed to save configuration",
+      "testSuccess": "Connection test successful",
+      "testFailed": "Connection test failed",
+      "testError": "Error occurred during connection test"
+    },
+    "errors": {
+      "appKeyRequired": "App Key is required",
+      "appSecretRequired": "App Secret is required",
+      "syncIntervalMin": "Sync interval must be at least 5 minutes",
+      "syncIntervalMax": "Sync interval cannot exceed 60 minutes"
+    }
   }
 }

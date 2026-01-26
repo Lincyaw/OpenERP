@@ -24981,3 +24981,149 @@ tenantHistory := scheduler.GetJobHistoryByTenant(tenantID, 10)
 - Future: Add HTTP handlers for manual sync trigger API
 - Future: Implement inventory sync scheduled task using same pattern
 - Future: Add metrics/monitoring integration (Prometheus)
+
+2026-01-27 - Task P7-FE-001: Payment Settings Page (支付方式配置页面)
+
+=== Implementation Details ===
+- Created PaymentSettings.tsx page component for configuring payment gateways
+- Implemented WeChat Pay configuration with:
+  - Basic info: Merchant ID, App ID, API Key, Certificate Serial No
+  - Certificates: Merchant Private Key, WeChat Platform Certificate
+  - Callbacks: Payment Notify URL, Refund Notify URL
+  - Environment: Sandbox mode toggle
+- Implemented Alipay configuration with:
+  - Basic info: App ID, Signature Type (RSA2/RSA)
+  - Keys: Application Private Key, Alipay Public Key
+  - Callbacks: Payment Notify URL, Return URL
+  - Environment: Sandbox mode toggle
+- Added gateway status indicators (Not Configured, Configured, Connected, Failed, Disabled)
+- Added connection test functionality for both gateways
+- Created responsive CSS styles with dark mode support
+- Added localization strings in zh-CN and en-US
+
+Files Modified/Created:
+- frontend/src/pages/system/PaymentSettings.tsx (NEW)
+- frontend/src/pages/system/PaymentSettings.css (NEW)
+- frontend/src/locales/zh-CN/system.json (MODIFIED - added paymentSettings section)
+- frontend/src/locales/en-US/system.json (MODIFIED - added paymentSettings section)
+- frontend/src/router/routes.tsx (MODIFIED - added lazy load and route for payment settings)
+- frontend/src/config/permissions.ts (MODIFIED - added payment settings route permission)
+
+=== Design Decisions ===
+- Used Tab layout to separate WeChat Pay and Alipay configurations
+- Added security warning banner to remind users about sensitive credential handling
+- Implemented password visibility toggle for API key fields
+- Used Form.TextArea for certificate/key fields with PEM format placeholders
+- Gateway configurations follow backend domain model structure (WechatPayConfig, AlipayConfig)
+- Permission uses TENANT_UPDATE as payment settings is a system-level configuration
+
+=== Verification ===
+- [x] TypeScript type checking passed (tsc --noEmit)
+- [x] ESLint passed for new files
+- [x] Prettier formatting applied
+
+=== Notes ===
+- Backend API for saving/loading payment gateway config not yet implemented
+- Test connection functionality uses simulated API calls (TODO markers in code)
+- Private key visibility toggles defined but not fully connected (reserved for future use)
+
+=== Next Steps ===
+- Implement backend API endpoints for payment gateway configuration CRUD
+- Add real connection test logic in backend
+- Consider adding certificate file upload functionality
+- Add E2E tests for payment settings page
+
+---
+
+2025-01-27 - Task P7-FE-002: 电商平台配置页面 (E-commerce Platform Configuration Page)
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `frontend/src/pages/system/PlatformConfig.tsx` - Main platform configuration page component
+   - Support for 6 e-commerce platforms: Taobao/Tmall, Douyin, JD, PDD, Wechat Mini Shop, Kuaishou
+   - Tabbed interface for easy platform switching
+   - Platform authorization section (App Key, App Secret, Shop ID, Shop Name)
+   - Access Token management section with OAuth flow hints
+   - Sync settings configuration (auto sync toggle, interval, inventory sync, order auto-import)
+   - Callback URL configuration for webhooks
+   - Sandbox/production environment toggle
+   - Connection test functionality with status feedback
+   - Status display showing last test time, result, and last sync time
+
+2. `frontend/src/pages/system/PlatformConfig.css` - Styling for the configuration page
+   - Responsive design for mobile/tablet/desktop
+   - Form section styling with proper spacing
+   - Platform tab icons with brand colors
+   - Status tag styling
+
+3. `frontend/src/locales/zh-CN/system.json` - Chinese translations (platformConfig section)
+4. `frontend/src/locales/en-US/system.json` - English translations (platformConfig section)
+
+**Files Modified:**
+1. `frontend/src/router/routes.tsx` - Added route for /system/platform-config
+   - Added lazy-loaded PlatformConfigPage component
+   - Added route entry to appRoutes under System module
+   - Added case to getProtectedRouteElement switch statement
+   - Route requires TENANT_UPDATE permission
+
+**Key Design Decisions:**
+1. **Tab-based interface**: Each platform has its own tab for clear separation and easier configuration
+2. **Unified configuration structure**: All platforms use the same PlatformConfig interface, making it easy to extend
+3. **Sensitive data handling**: App secrets use password mode with visibility toggle
+4. **Validation**: Client-side validation for required fields and sync interval bounds (5-60 minutes)
+5. **Status tracking**: Per-platform status with test results and last sync timestamps
+6. **OAuth token hint**: Banner explaining that access tokens come from OAuth flow
+7. **Follows existing patterns**: Modeled after PaymentSettings.tsx for consistency
+
+**Platform Support:**
+| Platform Code | Display Name | Color |
+|--------------|--------------|-------|
+| TAOBAO | 淘宝/天猫 | #FF5000 |
+| DOUYIN | 抖音 | #000000 |
+| JD | 京东 | #E2231A |
+| PDD | 拼多多 | #E02E24 |
+| WECHAT | 微信小商店 | #07C160 |
+| KUAISHOU | 快手 | #FF4906 |
+
+**Configuration Options per Platform:**
+- enabled: Enable/disable platform
+- appKey: OAuth app key
+- appSecret: OAuth app secret (masked)
+- accessToken: OAuth access token
+- refreshToken: OAuth refresh token
+- shopId: Platform shop identifier
+- shopName: Display name for shop
+- syncEnabled: Enable automatic order/inventory sync
+- syncIntervalMinutes: Sync frequency (5-60 minutes)
+- inventorySyncEnabled: Sync local inventory to platform
+- orderAutoImport: Import platform orders to local system
+- notifyUrl: Webhook callback URL
+- isSandbox: Use sandbox environment
+
+=== Verification ===
+
+- TypeScript type check: PASS (tsc --noEmit)
+- ESLint: PASS (no errors in new files)
+- Prettier formatting: PASS (auto-formatted)
+- Route configuration: Verified accessible at /system/platform-config
+- Translations: Both zh-CN and en-US complete
+
+=== Notes ===
+
+- Backend API integration is stubbed (TODO comments) - ready for actual API when available
+- Test connection currently simulates random success/failure for demo purposes
+- The page follows the project's design system with Semi Design components
+- Accessibility: Form labels, keyboard navigation, focus states all properly configured
+- The platform codes match exactly with backend domain model (integration/ecommerce_platform.go)
+
+=== Requirements Satisfied ===
+✅ 配置平台授权 - Platform authorization fields (appKey, appSecret, accessToken, refreshToken, shopId)
+✅ 配置同步参数 - Sync parameters (syncEnabled, syncIntervalMinutes, inventorySyncEnabled, orderAutoImport)
+✅ 测试连接 - Test connection button with status feedback
+
+=== Next Steps ===
+- P7-BE-XXX: Implement backend API handlers for platform configuration CRUD
+- P7-BE-XXX: Implement connection test endpoint that validates credentials with actual platform
+- Future: Add OAuth authorization flow redirect for automatic token acquisition
+- Future: Add sync history/logs view

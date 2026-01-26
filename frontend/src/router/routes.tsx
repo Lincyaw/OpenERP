@@ -94,6 +94,8 @@ const CashFlowReportPage = () => lazyLoad(() => import('@/pages/report/CashFlowR
 const UsersPage = () => lazyLoad(() => import('@/pages/system/Users'))
 const RolesPage = () => lazyLoad(() => import('@/pages/system/Roles'))
 const PermissionsPage = () => lazyLoad(() => import('@/pages/system/Permissions'))
+const PaymentSettingsPage = () => lazyLoad(() => import('@/pages/system/PaymentSettings'))
+const PlatformConfigPage = () => lazyLoad(() => import('@/pages/system/PlatformConfig'))
 
 /**
  * Application routes with metadata
@@ -466,6 +468,24 @@ export const appRoutes: AppRoute[] = [
           permissions: [Permissions.ROLE_READ],
         },
       },
+      {
+        path: '/system/payment-settings',
+        meta: {
+          title: 'Payment Settings',
+          icon: 'IconCreditCard',
+          order: 4,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
+      {
+        path: '/system/platform-config',
+        meta: {
+          title: 'Platform Config',
+          icon: 'IconLink',
+          order: 5,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
     ],
   },
 ]
@@ -531,6 +551,10 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return RolesPage()
     case '/system/permissions':
       return PermissionsPage()
+    case '/system/payment-settings':
+      return PaymentSettingsPage()
+    case '/system/platform-config':
+      return PlatformConfigPage()
     default:
       return null
   }
