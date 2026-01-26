@@ -107,6 +107,39 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 	return nil
 }
 
+// IncreaseStockWithCost increases the stock quantity with a pre-calculated unit cost.
+// This method is used by InventoryDomainService which calculates the cost using
+// an injected strategy (e.g., moving average, FIFO).
+// Unlike IncreaseStock, this method does NOT recalculate the cost internally
+// and does NOT emit InventoryCostChangedEvent (caller is responsible for that).
+func (i *InventoryItem) IncreaseStockWithCost(quantity decimal.Decimal, newUnitCost decimal.Decimal, batch *BatchInfo) error {
+	if quantity.LessThanOrEqual(decimal.Zero) {
+		return shared.NewDomainError("INVALID_QUANTITY", "Quantity must be positive")
+	}
+	if newUnitCost.IsNegative() {
+		return shared.NewDomainError("INVALID_COST", "Unit cost cannot be negative")
+	}
+
+	// Set the new unit cost (pre-calculated by domain service using strategy)
+	i.UnitCost = newUnitCost
+
+	// Increase available quantity
+	i.AvailableQuantity = i.AvailableQuantity.Add(quantity)
+	i.UpdatedAt = time.Now()
+	i.IncrementVersion()
+
+	// Create batch if batch info is provided
+	if batch != nil {
+		stockBatch := NewStockBatch(i.ID, batch.BatchNumber, batch.ProductionDate, batch.ExpiryDate, quantity, newUnitCost)
+		i.Batches = append(i.Batches, *stockBatch)
+	}
+
+	// Emit stock increased event only (cost change event handled by caller)
+	i.AddDomainEvent(NewStockIncreasedEvent(i, quantity, newUnitCost, batch))
+
+	return nil
+}
+
 // DecreaseStock directly decreases available stock (without requiring a prior lock)
 // This is used for operations like purchase returns where goods are shipped back to supplier
 // Different from DeductStock which works with locked stock

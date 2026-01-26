@@ -559,6 +559,33 @@ func TestInventoryService_IncreaseStock(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, response)
 	})
+
+	t.Run("records cost method in transaction", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
+		var capturedTx *inventory.InventoryTransaction
+
+		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Run(func(args mock.Arguments) {
+			capturedTx = args.Get(1).(*inventory.InventoryTransaction)
+		}).Return(nil).Once()
+
+		req := IncreaseStockRequest{
+			WarehouseID: warehouseID,
+			ProductID:   productID,
+			Quantity:    decimal.NewFromInt(50),
+			UnitCost:    decimal.NewFromFloat(15.0),
+			SourceType:  "PURCHASE_ORDER",
+			SourceID:    "PO-002",
+		}
+
+		response, err := service.IncreaseStock(ctx, tenantID, req)
+
+		require.NoError(t, err)
+		assert.NotNil(t, response)
+		// Without strategy provider, should use default moving_average
+		assert.Equal(t, "moving_average", capturedTx.CostMethod)
+	})
 }
 
 func TestInventoryService_LockStock(t *testing.T) {

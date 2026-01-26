@@ -4418,7 +4418,7 @@
       "Allow tenant-level cost strategy configuration",
       "Record cost calculation method in inventory transaction"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 4.4 - Domain Service Using Strategy",
     "affectedModules": [
       "backend/internal/domain/inventory/inventory_item.go",

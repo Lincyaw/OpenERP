@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -18,13 +20,23 @@ const (
 	DefaultLockExpiry = 30 * time.Minute
 )
 
+// CostStrategyProvider provides cost strategies based on tenant configuration
+type CostStrategyProvider interface {
+	// GetCostStrategy returns the cost strategy for the given name
+	GetCostStrategy(name string) (strategy.CostCalculationStrategy, error)
+	// GetCostStrategyOrDefault returns the cost strategy for the given name, or default if not found
+	GetCostStrategyOrDefault(name string) strategy.CostCalculationStrategy
+}
+
 // InventoryService handles inventory-related business operations
 type InventoryService struct {
-	inventoryRepo   inventory.InventoryItemRepository
-	batchRepo       inventory.StockBatchRepository
-	lockRepo        inventory.StockLockRepository
-	transactionRepo inventory.InventoryTransactionRepository
-	eventPublisher  shared.EventPublisher
+	inventoryRepo    inventory.InventoryItemRepository
+	batchRepo        inventory.StockBatchRepository
+	lockRepo         inventory.StockLockRepository
+	transactionRepo  inventory.InventoryTransactionRepository
+	tenantRepo       identity.TenantRepository
+	strategyProvider CostStrategyProvider
+	eventPublisher   shared.EventPublisher
 }
 
 // NewInventoryService creates a new InventoryService
@@ -42,9 +54,69 @@ func NewInventoryService(
 	}
 }
 
+// NewInventoryServiceWithStrategies creates a new InventoryService with strategy support
+func NewInventoryServiceWithStrategies(
+	inventoryRepo inventory.InventoryItemRepository,
+	batchRepo inventory.StockBatchRepository,
+	lockRepo inventory.StockLockRepository,
+	transactionRepo inventory.InventoryTransactionRepository,
+	tenantRepo identity.TenantRepository,
+	strategyProvider CostStrategyProvider,
+) *InventoryService {
+	return &InventoryService{
+		inventoryRepo:    inventoryRepo,
+		batchRepo:        batchRepo,
+		lockRepo:         lockRepo,
+		transactionRepo:  transactionRepo,
+		tenantRepo:       tenantRepo,
+		strategyProvider: strategyProvider,
+	}
+}
+
 // SetEventPublisher sets the event publisher for publishing domain events
 func (s *InventoryService) SetEventPublisher(publisher shared.EventPublisher) {
 	s.eventPublisher = publisher
+}
+
+// SetTenantRepository sets the tenant repository (optional, for strategy lookup)
+func (s *InventoryService) SetTenantRepository(repo identity.TenantRepository) {
+	s.tenantRepo = repo
+}
+
+// SetStrategyProvider sets the strategy provider (optional, for cost calculation)
+func (s *InventoryService) SetStrategyProvider(provider CostStrategyProvider) {
+	s.strategyProvider = provider
+}
+
+// getCostStrategyForTenant returns the cost calculation strategy based on tenant configuration.
+// It looks up the tenant's configured cost strategy (e.g., "fifo", "weighted_average")
+// and returns the corresponding strategy from the registry.
+// Returns nil if no strategy provider is configured or tenant config lookup fails.
+func (s *InventoryService) getCostStrategyForTenant(ctx context.Context, tenantID uuid.UUID) strategy.CostCalculationStrategy {
+	// If no strategy provider, return nil to use fallback
+	if s.strategyProvider == nil {
+		return nil
+	}
+
+	// Try to get tenant configuration
+	strategyName := "moving_average" // default
+	if s.tenantRepo != nil {
+		tenant, err := s.tenantRepo.FindByID(ctx, tenantID)
+		if err == nil && tenant != nil && tenant.Config.CostStrategy != "" {
+			// Map tenant config values to strategy names
+			// Tenant config may use "weighted_average" but strategy is "moving_average"
+			switch tenant.Config.CostStrategy {
+			case "weighted_average", "moving_average":
+				strategyName = "moving_average"
+			case "fifo":
+				strategyName = "fifo"
+			default:
+				strategyName = tenant.Config.CostStrategy
+			}
+		}
+	}
+
+	return s.strategyProvider.GetCostStrategyOrDefault(strategyName)
 }
 
 // publishDomainEvents publishes all domain events from the inventory item
@@ -199,10 +271,26 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		batchInfo = inventory.NewBatchInfo(req.BatchNumber, nil, req.ExpiryDate)
 	}
 
-	// Increase stock (this also recalculates unit cost)
-	unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
-	if err := item.IncreaseStock(req.Quantity, unitCostMoney, batchInfo); err != nil {
-		return nil, err
+	// Get cost strategy from tenant configuration
+	costStrategy := s.getCostStrategyForTenant(ctx, tenantID)
+	costMethod := string(strategy.CostMethodMovingAverage) // default
+
+	// Use domain service with injected strategy if available
+	if costStrategy != nil {
+		domainService := inventory.NewInventoryDomainService(costStrategy, nil)
+		unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+
+		result, err := domainService.StockIn(ctx, item, req.Quantity, unitCostMoney, batchInfo)
+		if err != nil {
+			return nil, err
+		}
+		costMethod = string(result.CostMethod)
+	} else {
+		// Fallback to legacy method (uses built-in moving average)
+		unitCostMoney := valueobject.NewMoneyCNY(req.UnitCost)
+		if err := item.IncreaseStock(req.Quantity, unitCostMoney, batchInfo); err != nil {
+			return nil, err
+		}
 	}
 
 	// Save with optimistic locking
@@ -220,7 +308,7 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		req.WarehouseID,
 		req.ProductID,
 		req.Quantity,
-		req.UnitCost,
+		item.UnitCost, // Use the calculated unit cost
 		balanceBefore,
 		item.AvailableQuantity,
 		sourceType,
@@ -240,6 +328,9 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 	if req.OperatorID != nil {
 		tx.WithOperatorID(*req.OperatorID)
 	}
+
+	// Record the cost calculation method used
+	tx.WithCostMethod(costMethod)
 
 	if err := s.transactionRepo.Create(ctx, tx); err != nil {
 		// Log error but don't fail the operation - transaction is for audit only

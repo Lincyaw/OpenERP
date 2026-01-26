@@ -20575,3 +20575,101 @@ if filter.HasWarehouseAccess("inventory", someWarehouseID) {
 - Use warehouse scoping when creating WAREHOUSE role users
 - Ensure middleware populates warehouse IDs in context during authentication
 - Document warehouse assignment process in admin UI
+
+2026-01-26 - Task DDD-021: Cost Calculation Using Injected Strategy
+
+=== Implementation Details ===
+Implemented cost calculation using strategy pattern per spec.md Section 4.4:
+- Created InventoryDomainService that injects CostCalculationStrategy
+- Domain service calculates unit cost during stock increase using configured strategy
+- Application service retrieves cost strategy based on tenant configuration
+- Transaction records the cost calculation method used for audit purposes
+
+=== Key Files Created/Modified ===
+
+**New Files:**
+- backend/internal/domain/inventory/inventory_domain_service.go:
+  - InventoryDomainService with strategy injection
+  - StockIn method using injected CostCalculationStrategy
+  - Fallback to moving average when no strategy provided
+  - Returns StockInResult with cost method and calculated cost
+
+- backend/internal/domain/inventory/inventory_domain_service_test.go:
+  - 13 test cases for domain service
+  - Tests for strategy injection, FIFO, moving average
+  - Tests for event emission and batch creation
+
+- backend/migrations/000027_add_cost_method_to_inventory_transactions.up.sql:
+  - Adds cost_method column to inventory_transactions table
+
+- backend/migrations/000027_add_cost_method_to_inventory_transactions.down.sql:
+  - Rollback migration
+
+**Modified Files:**
+- backend/internal/domain/inventory/inventory_item.go:
+  - Added IncreaseStockWithCost() method for pre-calculated costs
+  - Method used by domain service after strategy calculation
+
+- backend/internal/domain/inventory/inventory_transaction.go:
+  - Added CostMethod field (VARCHAR(30))
+  - Added WithCostMethod() fluent method
+  - TransactionBuilder also updated
+
+- backend/internal/application/inventory/inventory_service.go:
+  - Added CostStrategyProvider interface
+  - Added NewInventoryServiceWithStrategies constructor
+  - Added getCostStrategyForTenant() helper method
+  - Updated IncreaseStock to use domain service with strategy
+  - Transaction now records cost method
+
+- backend/internal/application/inventory/inventory_service_test.go:
+  - Added test case for cost method recording
+
+=== Cost Strategy Flow ===
+1. Application service receives stock-in request
+2. getCostStrategyForTenant() looks up tenant config
+3. Tenant config maps to strategy name (weighted_average -> moving_average)
+4. Strategy provider returns appropriate strategy
+5. Domain service uses strategy to calculate new unit cost
+6. Transaction records the cost method used
+
+=== Tenant Cost Strategy Configuration ===
+The tenant's TenantConfig.CostStrategy field configures cost calculation:
+- "weighted_average" / "moving_average" -> MovingAverageCostStrategy
+- "fifo" -> FIFOCostStrategy
+
+Default is "weighted_average" (moving average cost).
+
+=== Verification ===
+- All domain inventory tests pass (13 new + existing)
+- All application inventory tests pass
+- Build succeeds (go build ./...)
+- Code review completed with no critical issues
+
+=== Design Decisions ===
+1. **Domain Service Pattern**: Created dedicated InventoryDomainService rather than adding strategy to aggregate
+   - Follows DDD principle: domain services for operations requiring external dependencies
+   - Keeps aggregate pure and focused on invariants
+
+2. **Dual Methods on InventoryItem**: IncreaseStock (self-contained) + IncreaseStockWithCost (for external calculation)
+   - Backward compatible - existing code using IncreaseStock still works
+   - IncreaseStockWithCost used by domain service after strategy calculation
+
+3. **Optional Dependencies**: TenantRepository and StrategyProvider are optional
+   - Service degrades gracefully to default moving average
+   - Enables incremental adoption
+
+4. **Cost Method Recording**: Added to transaction for audit trail
+   - Allows reporting on which cost method was used
+   - Enables verification of cost calculations
+
+=== Future Improvements ===
+- Add caching for tenant configuration to reduce DB queries
+- Add logging when tenant lookup fails (currently silent fallback)
+- Consider adding cost method index for reporting queries
+- Add more comprehensive application service tests with strategy mocking
+
+=== Next Steps ===
+- Wire up TenantRepository and StrategyProvider in dependency injection
+- Update API documentation for cost method field
+- Consider exposing cost strategy selection in admin UI

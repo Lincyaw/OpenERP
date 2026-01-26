@@ -143,6 +143,7 @@ type InventoryTransaction struct {
 	LockID          *uuid.UUID      `gorm:"type:uuid;index"`                                                   // Related lock (optional)
 	Reference       string          `gorm:"type:varchar(100)"`                                                 // Reference number/code
 	Reason          string          `gorm:"type:varchar(255)"`                                                 // Reason for transaction
+	CostMethod      string          `gorm:"type:varchar(30)"`                                                  // Cost calculation method used (e.g., "moving_average", "fifo")
 	OperatorID      *uuid.UUID      `gorm:"type:uuid"`                                                         // User who performed the operation
 	TransactionDate time.Time       `gorm:"type:timestamptz;not null;index:idx_inv_tx_tenant_time,priority:2"` // When the transaction occurred
 }
@@ -255,6 +256,12 @@ func (t *InventoryTransaction) WithOperatorID(operatorID uuid.UUID) *InventoryTr
 // WithTransactionDate sets the transaction date
 func (t *InventoryTransaction) WithTransactionDate(date time.Time) *InventoryTransaction {
 	t.TransactionDate = date
+	return t
+}
+
+// WithCostMethod sets the cost calculation method used for this transaction
+func (t *InventoryTransaction) WithCostMethod(method string) *InventoryTransaction {
+	t.CostMethod = method
 	return t
 }
 
@@ -386,6 +393,15 @@ func (b *TransactionBuilder) WithTransactionDate(date time.Time) *TransactionBui
 		return b
 	}
 	b.tx.WithTransactionDate(date)
+	return b
+}
+
+// WithCostMethod sets the cost calculation method
+func (b *TransactionBuilder) WithCostMethod(method string) *TransactionBuilder {
+	if b.err != nil || b.tx == nil {
+		return b
+	}
+	b.tx.WithCostMethod(method)
 	return b
 }
 
