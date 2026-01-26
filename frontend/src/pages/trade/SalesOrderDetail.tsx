@@ -21,6 +21,7 @@ import type { HandlerSalesOrderResponse, HandlerSalesOrderItemResponse } from '@
 import { ShipOrderModal } from './components'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
+import { safeToFixed, toNumber } from '@/utils'
 import './SalesOrderDetail.css'
 
 const { Title, Text } = Typography
@@ -209,7 +210,7 @@ export default function SalesOrderDetailPage() {
         dataIndex: 'quantity',
         width: 100,
         align: 'right' as const,
-        render: (qty: number) => qty?.toFixed(2) || '-',
+        render: (qty: number) => safeToFixed(qty, 2, '-'),
       },
       {
         title: t('orderDetail.items.columns.unitPrice'),
@@ -310,7 +311,7 @@ export default function SalesOrderDetailPage() {
       },
       {
         key: t('orderDetail.basicInfo.totalQuantity'),
-        value: order.total_quantity?.toFixed(2) || '0.00',
+        value: safeToFixed(order.total_quantity, 2, '0.00'),
       },
       {
         key: t('orderDetail.basicInfo.createdAt'),
@@ -332,7 +333,7 @@ export default function SalesOrderDetailPage() {
 
     const discountPercent =
       order.discount_amount && order.total_amount
-        ? ((order.discount_amount / (order.total_amount + order.discount_amount)) * 100).toFixed(1)
+        ? safeToFixed((toNumber(order.discount_amount) / (toNumber(order.total_amount) + toNumber(order.discount_amount))) * 100, 1, '0')
         : '0'
 
     return (

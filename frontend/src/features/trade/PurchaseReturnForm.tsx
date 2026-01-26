@@ -27,6 +27,7 @@ import type {
   HandlerPurchaseOrderListResponse,
 } from '@/api/models'
 import './PurchaseReturnForm.css'
+import { safeToFixed, safeFormatCurrency } from '@/utils'
 
 const { Title, Text } = Typography
 
@@ -107,9 +108,8 @@ const ORDER_STATUS_COLORS: Record<
 /**
  * Format price for display
  */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '¥0.00'
-  return `¥${price.toFixed(2)}`
+function formatPrice(price?: number | string): string {
+  return safeFormatCurrency(price, '¥', 2, '¥0.00')
 }
 
 /**
@@ -794,7 +794,7 @@ export function PurchaseReturnForm() {
               </div>
               <div className="summary-item">
                 <Text type="tertiary">退货总数量：</Text>
-                <Text>{calculations.totalQuantity.toFixed(2)}</Text>
+                <Text>{safeToFixed(calculations.totalQuantity)}</Text>
               </div>
               <div className="summary-item total">
                 <Text strong>退款总额：</Text>

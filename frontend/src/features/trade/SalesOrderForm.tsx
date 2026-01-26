@@ -28,6 +28,7 @@ import type {
   HandlerCreateSalesOrderItemInput,
 } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
+import { safeToFixed } from '@/utils'
 import './SalesOrderForm.css'
 
 const { Title, Text } = Typography
@@ -614,7 +615,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         align: 'right' as const,
         render: (amount: number) => (
           <Text strong className="item-amount">
-            ¥{amount.toFixed(2)}
+            ¥{safeToFixed(amount)}
           </Text>
         ),
       },
@@ -772,20 +773,20 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               </div>
               <div className="summary-item">
                 <Text type="tertiary">{t('orderForm.summary.subtotal')}</Text>
-                <Text>¥{calculations.subtotal.toFixed(2)}</Text>
+                <Text>¥{safeToFixed(calculations.subtotal)}</Text>
               </div>
               {formData.discount > 0 && (
                 <div className="summary-item">
                   <Text type="tertiary">
                     {t('orderForm.summary.discount')} ({formData.discount}%):
                   </Text>
-                  <Text type="danger">-¥{calculations.discountAmount.toFixed(2)}</Text>
+                  <Text type="danger">-¥{safeToFixed(calculations.discountAmount)}</Text>
                 </div>
               )}
               <div className="summary-item total">
                 <Text strong>{t('orderForm.summary.payableAmount')}</Text>
                 <Text strong className="total-amount">
-                  ¥{calculations.total.toFixed(2)}
+                  ¥{safeToFixed(calculations.total)}
                 </Text>
               </div>
             </div>

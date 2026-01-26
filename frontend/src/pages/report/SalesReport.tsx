@@ -41,6 +41,7 @@ import type {
   CustomerSalesRanking,
 } from '@/api/reports'
 import './SalesReport.css'
+import { safeToFixed, toNumber } from '@/utils'
 
 // Register ECharts components
 echarts.use([
@@ -91,9 +92,9 @@ function formatNumber(num?: number): string {
 /**
  * Format percentage
  */
-function formatPercent(value?: number): string {
+function formatPercent(value?: number | string): string {
   if (value === undefined || value === null) return '0%'
-  return `${(value * 100).toFixed(1)}%`
+  return `${safeToFixed(toNumber(value) * 100, 1, '0')}%`
 }
 
 /**
@@ -368,7 +369,7 @@ export default function SalesReportPage() {
           axisLabel: {
             color: '#86909C',
             formatter: (value: number) => {
-              if (value >= 10000) return `${(value / 10000).toFixed(0)}万`
+              if (value >= 10000) return `${safeToFixed(value / 10000, 0)}万`
               return value.toString()
             },
           },
@@ -441,7 +442,7 @@ export default function SalesReportPage() {
       tooltip: {
         trigger: 'item',
         formatter: (params: { name: string; value: number; percent: number }) =>
-          `${params.name}<br/>销售额: ${formatCurrency(params.value)}<br/>占比: ${params.percent.toFixed(1)}%`,
+          `${params.name}<br/>销售额: ${formatCurrency(params.value)}<br/>占比: ${safeToFixed(params.percent, 1)}%`,
       },
       legend: {
         orient: 'vertical',

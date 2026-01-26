@@ -39,6 +39,7 @@ import type {
   InventoryValueByWarehouse,
 } from '@/api/reports'
 import './InventoryTurnover.css'
+import { safeToFixed, toNumber } from '@/utils'
 
 // Register ECharts components
 echarts.use([
@@ -86,9 +87,9 @@ function formatNumber(num?: number): string {
 /**
  * Format turnover rate for display
  */
-function formatTurnoverRate(rate?: number): string {
+function formatTurnoverRate(rate?: number | string): string {
   if (rate === undefined || rate === null) return '0.00'
-  return rate.toFixed(2)
+  return safeToFixed(rate)
 }
 
 /**
@@ -373,7 +374,7 @@ export default function InventoryTurnoverPage() {
         type: 'value',
         axisLabel: {
           formatter: (value: number) =>
-            value >= 10000 ? `${(value / 10000).toFixed(0)}万` : value.toString(),
+            value >= 10000 ? `${safeToFixed(value / 10000, 0)}万` : value.toString(),
         },
       },
       yAxis: {
@@ -706,7 +707,7 @@ export default function InventoryTurnoverPage() {
                       style={{ marginTop: 8 }}
                     />
                     <Text type="tertiary" size="small">
-                      占比 {(wh.percentage * 100).toFixed(1)}%
+                      占比 {safeToFixed(toNumber(wh.percentage) * 100, 1)}%
                     </Text>
                   </div>
                 ))}

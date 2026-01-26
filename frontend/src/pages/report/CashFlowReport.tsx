@@ -39,6 +39,7 @@ import { Container, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
 import type { CashFlowStatement, CashFlowItem } from '@/api/reports'
 import './CashFlowReport.css'
+import { safeToFixed, toNumber } from '@/utils'
 
 // Register ECharts components
 echarts.use([
@@ -313,7 +314,7 @@ export default function CashFlowReportPage() {
     }
     const change = ((current - previous) / Math.abs(previous)) * 100
     return {
-      value: `${Math.abs(change).toFixed(1)}%`,
+      value: `${safeToFixed(Math.abs(change), 1)}%`,
       trend: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
     }
   }
@@ -393,7 +394,7 @@ export default function CashFlowReportPage() {
         axisLabel: {
           color: '#86909C',
           formatter: (value: number) => {
-            if (Math.abs(value) >= 10000) return `${(value / 10000).toFixed(0)}万`
+            if (Math.abs(value) >= 10000) return `${safeToFixed(value / 10000, 0)}万`
             return value.toString()
           },
         },
@@ -529,15 +530,15 @@ export default function CashFlowReportPage() {
     // Build CSV content
     const headers = ['项目', '金额']
     const rows = [
-      ['期初现金余额', statement.beginning_cash.toFixed(2)],
+      ['期初现金余额', safeToFixed(statement.beginning_cash)],
       ['经营活动现金流', ''],
-      ['  客户收款', statement.receipts_from_customers.toFixed(2)],
-      ['  供应商付款', (-statement.payments_to_suppliers).toFixed(2)],
-      ['  其他收入', statement.other_income.toFixed(2)],
-      ['  费用支出', (-statement.expense_payments).toFixed(2)],
-      ['经营活动现金流净额', statement.net_operating_cash_flow.toFixed(2)],
-      ['现金净增加额', statement.net_cash_flow.toFixed(2)],
-      ['期末现金余额', statement.ending_cash.toFixed(2)],
+      ['  客户收款', safeToFixed(statement.receipts_from_customers)],
+      ['  供应商付款', safeToFixed(-toNumber(statement.payments_to_suppliers))],
+      ['  其他收入', safeToFixed(statement.other_income)],
+      ['  费用支出', safeToFixed(-toNumber(statement.expense_payments))],
+      ['经营活动现金流净额', safeToFixed(statement.net_operating_cash_flow)],
+      ['现金净增加额', safeToFixed(statement.net_cash_flow)],
+      ['期末现金余额', safeToFixed(statement.ending_cash)],
     ]
 
     const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')

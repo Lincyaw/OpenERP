@@ -248,3 +248,95 @@ Fixed timing issues in stock-taking E2E tests that were causing the "Video Recor
 3. Dropdown interactions need retry mechanisms for async data loading
 4. Progress-dependent buttons need explicit progress verification before assertion
 
+---
+
+## 2026-01-26 - P9-UI-001-GLOBAL toFixed Runtime Crash Prevention
+
+### Summary
+Fixed all risky `toFixed()` calls across the frontend codebase that could cause runtime crashes when API responses return numbers as strings. Created a centralized safe formatting utility module and applied it to Trade and Report modules.
+
+### Problem
+- API responses sometimes return numeric values as strings (e.g., `"123.45"` instead of `123.45`)
+- Direct `value.toFixed(2)` calls crash when `value` is a string: `TypeError: value.toFixed is not a function`
+- 65 risky `toFixed()` calls identified across Trade, Report, and other modules
+- Affects order forms, detail pages, report charts, and CSV exports
+
+### Solution
+Created centralized safe formatting utilities with type coercion that handles all input types gracefully.
+
+### Files Created
+
+#### Frontend Utilities
+- `frontend/src/utils/format.ts`
+  - `toNumber(value: unknown): number` - Safe type conversion handling string/number/null/undefined
+  - `safeToFixed(value: unknown, decimals = 2, fallback?: string): string` - Safe toFixed wrapper
+  - `safeFormatCurrency(value: unknown, prefix = '¥', decimals = 2, fallback = '-'): string` - Safe currency formatting
+  - `safeFormatQuantity(value: unknown, decimals = 2, fallback = '-'): string` - Safe quantity formatting
+  - `safeFormatSignedQuantity(value: unknown, decimals = 2): string` - Quantity with +/- sign
+  - `safeFormatPercent(value: unknown, decimals = 1, fallback = '-'): string` - Percentage formatting
+
+### Files Modified
+
+#### Frontend Utilities Export
+- `frontend/src/utils/index.ts`
+  - Added exports for all new format utilities
+
+#### Trade Module (8 files)
+- `frontend/src/features/trade/SalesReturnForm.tsx`
+  - Replaced `formatPrice` with `safeFormatCurrency`
+  - Fixed `toFixed()` calls in subtotal calculations
+
+- `frontend/src/features/trade/PurchaseOrderForm.tsx`
+  - Fixed 4 `toFixed()` calls in table columns and calculations
+
+- `frontend/src/features/trade/SalesOrderForm.tsx`
+  - Fixed 4 `toFixed()` calls in table columns and calculations
+
+- `frontend/src/features/trade/PurchaseReturnForm.tsx`
+  - Replaced `formatPrice` and `totalQuantity.toFixed()`
+
+- `frontend/src/pages/trade/PurchaseOrderReceive.tsx`
+  - Fixed 4 `toFixed()` calls in table columns
+
+- `frontend/src/features/trade/ShipOrderModal.tsx`
+  - Replaced `formatPrice` and `total_quantity.toFixed()`
+
+- `frontend/src/pages/trade/SalesReturnApproval.tsx`
+  - Fixed 4 `toFixed()` calls
+
+- `frontend/src/pages/trade/SalesOrderDetail.tsx`
+  - Fixed 3 `toFixed()` calls including complex calculation
+
+#### Report Module (4 files)
+- `frontend/src/pages/report/SalesReport.tsx`
+  - Replaced `formatPercent` function
+  - Fixed ECharts tooltip formatters
+
+- `frontend/src/pages/report/ProfitLoss.tsx`
+  - Replaced `formatPercent` function
+  - Fixed 11 CSV export `toFixed()` calls
+
+- `frontend/src/pages/report/CashFlowReport.tsx`
+  - Replaced change calculation and 9 CSV export `toFixed()` calls
+
+- `frontend/src/pages/report/InventoryTurnover.tsx`
+  - Replaced `formatTurnoverRate` and percentage calculations
+
+### Test Results
+- TypeScript type check: PASSED
+- All files compile without errors
+
+### Technical Pattern
+```typescript
+// Before (risky - crashes if value is string)
+const formatted = value.toFixed(2)
+
+// After (safe - handles any input type)
+import { safeToFixed } from '@/utils'
+const formatted = safeToFixed(value)
+```
+
+### Scope Notes
+- toFixed() fixes: COMPLETED (65 locations fixed)
+- Empty catch blocks: SKIPPED (178 locations, optional/low priority for future batch processing)
+

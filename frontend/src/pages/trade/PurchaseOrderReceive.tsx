@@ -28,6 +28,7 @@ import type {
 } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
+import { safeToFixed } from '@/utils'
 import './PurchaseOrderReceive.css'
 
 const { Title, Text } = Typography
@@ -342,14 +343,14 @@ export default function PurchaseOrderReceivePage() {
         dataIndex: 'ordered_quantity',
         width: 100,
         align: 'right' as const,
-        render: (value: number) => value.toFixed(2),
+        render: (value: number) => safeToFixed(value),
       },
       {
         title: t('receive.columns.receivedQuantity'),
         dataIndex: 'received_quantity',
         width: 100,
         align: 'right' as const,
-        render: (value: number) => value.toFixed(2),
+        render: (value: number) => safeToFixed(value),
       },
       {
         title: t('receive.columns.remainingQuantity'),
@@ -358,7 +359,7 @@ export default function PurchaseOrderReceivePage() {
         align: 'right' as const,
         render: (value: number) => (
           <Text strong type="warning">
-            {value.toFixed(2)}
+            {safeToFixed(value)}
           </Text>
         ),
       },
@@ -549,7 +550,7 @@ export default function PurchaseOrderReceivePage() {
             <Text type="secondary">
               {t('receive.summary', {
                 items: receivingStats.totalItems,
-                quantity: receivingStats.totalQuantity.toFixed(2),
+                quantity: safeToFixed(receivingStats.totalQuantity),
                 amount: formatCurrency(receivingStats.totalAmount),
               })}
             </Text>

@@ -3,6 +3,7 @@ import { Modal, Select, Toast, Typography, Descriptions, Spin, Empty } from '@do
 import { useTranslation } from 'react-i18next'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'
+import { safeToFixed, safeFormatCurrency } from '@/utils'
 import './ShipOrderModal.css'
 
 const { Text } = Typography
@@ -28,9 +29,8 @@ interface ShipOrderModalProps {
 /**
  * Format price for display
  */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
+function formatPrice(price?: number | string): string {
+  return safeFormatCurrency(price, '¥', 2, '-')
 }
 
 /**
@@ -150,7 +150,7 @@ export default function ShipOrderModal({
         key: t('shipModal.itemCount'),
         value: `${order.item_count || 0} ${t('shipModal.itemsUnit')}`,
       },
-      { key: t('shipModal.totalQuantity'), value: order.total_quantity?.toFixed(2) || '0.00' },
+      { key: t('shipModal.totalQuantity'), value: safeToFixed(order.total_quantity, 2, '0.00') },
       { key: t('shipModal.payableAmount'), value: formatPrice(order.payable_amount) },
     ]
   }, [order, t])

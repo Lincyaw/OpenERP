@@ -36,6 +36,7 @@ import { Container, Grid } from '@/components/common/layout'
 import { getReports } from '@/api/reports'
 import type { ProfitLossStatement, MonthlyProfitTrend, ProfitByProduct } from '@/api/reports'
 import './ProfitLoss.css'
+import { safeToFixed, toNumber } from '@/utils'
 
 // Register ECharts components
 echarts.use([
@@ -77,9 +78,9 @@ function formatCurrency(amount?: number): string {
 /**
  * Format percentage
  */
-function formatPercent(value?: number): string {
+function formatPercent(value?: number | string): string {
   if (value === undefined || value === null) return '0%'
-  return `${(value * 100).toFixed(1)}%`
+  return `${safeToFixed(toNumber(value) * 100, 1, '0')}%`
 }
 
 /**
@@ -262,7 +263,7 @@ export default function ProfitLossPage() {
           let result = `${params[0].axisValue}<br/>`
           params.forEach((param) => {
             const isPercent = param.seriesName.includes('率')
-            const value = isPercent ? `${param.value.toFixed(1)}%` : formatCurrency(param.value)
+            const value = isPercent ? `${safeToFixed(param.value, 1)}%` : formatCurrency(param.value)
             result += `${param.seriesName}: ${value}<br/>`
           })
           return result
@@ -297,7 +298,7 @@ export default function ProfitLossPage() {
           axisLabel: {
             color: '#86909C',
             formatter: (value: number) => {
-              if (value >= 10000) return `${(value / 10000).toFixed(0)}万`
+              if (value >= 10000) return `${safeToFixed(value / 10000, 0)}万`
               return value.toString()
             },
           },
@@ -447,17 +448,17 @@ export default function ProfitLossPage() {
     // Build CSV content
     const headers = ['项目', '金额']
     const rows = [
-      ['销售收入', statement.sales_revenue.toFixed(2)],
-      ['销售退货', statement.sales_returns.toFixed(2)],
-      ['净销售收入', statement.net_sales_revenue.toFixed(2)],
-      ['销售成本', statement.cogs.toFixed(2)],
-      ['毛利润', statement.gross_profit.toFixed(2)],
-      ['毛利率', (statement.gross_margin * 100).toFixed(2) + '%'],
-      ['其他收入', statement.other_income.toFixed(2)],
-      ['总收入', statement.total_income.toFixed(2)],
-      ['费用支出', statement.expenses.toFixed(2)],
-      ['净利润', statement.net_profit.toFixed(2)],
-      ['净利率', (statement.net_margin * 100).toFixed(2) + '%'],
+      ['销售收入', safeToFixed(statement.sales_revenue)],
+      ['销售退货', safeToFixed(statement.sales_returns)],
+      ['净销售收入', safeToFixed(statement.net_sales_revenue)],
+      ['销售成本', safeToFixed(statement.cogs)],
+      ['毛利润', safeToFixed(statement.gross_profit)],
+      ['毛利率', safeToFixed(toNumber(statement.gross_margin) * 100) + '%'],
+      ['其他收入', safeToFixed(statement.other_income)],
+      ['总收入', safeToFixed(statement.total_income)],
+      ['费用支出', safeToFixed(statement.expenses)],
+      ['净利润', safeToFixed(statement.net_profit)],
+      ['净利率', safeToFixed(toNumber(statement.net_margin) * 100) + '%'],
     ]
 
     const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')

@@ -29,6 +29,7 @@ import type {
   GetTradeSalesReturnsParams,
 } from '@/api/models'
 import './SalesReturnApproval.css'
+import { safeToFixed, safeFormatCurrency } from '@/utils'
 
 const { Title, Text } = Typography
 
@@ -73,9 +74,8 @@ interface CustomerOption {
 /**
  * Format price for display
  */
-function formatPrice(price?: number): string {
-  if (price === undefined || price === null) return '-'
-  return `¥${price.toFixed(2)}`
+function formatPrice(price?: number | string): string {
+  return safeFormatCurrency(price, '¥', 2, '-')
 }
 
 /**
@@ -361,14 +361,14 @@ export default function SalesReturnApprovalPage() {
         dataIndex: 'original_quantity',
         width: 100,
         align: 'right' as const,
-        render: (qty: number) => qty?.toFixed(2) || '-',
+        render: (qty: number) => safeToFixed(qty, 2, '-'),
       },
       {
         title: '退货数量',
         dataIndex: 'return_quantity',
         width: 100,
         align: 'right' as const,
-        render: (qty: number) => <Text className="return-quantity">{qty?.toFixed(2) || '-'}</Text>,
+        render: (qty: number) => <Text className="return-quantity">{safeToFixed(qty, 2, '-')}</Text>,
       },
       {
         title: '单价',
@@ -521,7 +521,7 @@ export default function SalesReturnApprovalPage() {
         ),
       },
       { key: '商品数量', value: `${selectedReturn.item_count || 0} 件` },
-      { key: '总退货数量', value: selectedReturn.total_quantity?.toFixed(2) || '0.00' },
+      { key: '总退货数量', value: safeToFixed(selectedReturn.total_quantity, 2, '0.00') },
       { key: '提交时间', value: formatDateTime(selectedReturn.submitted_at) },
       { key: '退货原因', value: selectedReturn.reason || '-' },
       { key: '备注', value: selectedReturn.remark || '-' },
