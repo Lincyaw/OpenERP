@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { z } from 'zod'
 import { Card, Typography, Button, Input, Select, Toast, Space } from '@douyinfe/semi-ui-19'
 import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
@@ -132,6 +132,9 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const [supplierSearch, setSupplierSearch] = useState('')
   const [productSearch, setProductSearch] = useState('')
 
+  // Track if default warehouse has been set (to avoid re-setting on every render)
+  const hasSetDefaultWarehouse = useRef(false)
+
   // Fetch suppliers
   const fetchSuppliers = useCallback(
     async (search?: string, signal?: AbortSignal) => {
@@ -191,9 +194,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         )
         if (response.success && response.data) {
           setWarehouses(response.data)
-          if (!isEditMode && !formData.warehouse_id) {
+          // Set default warehouse only once on initial load (not edit mode)
+          if (!isEditMode && !hasSetDefaultWarehouse.current) {
             const defaultWarehouse = response.data.find((w) => w.is_default)
             if (defaultWarehouse?.id) {
+              hasSetDefaultWarehouse.current = true
               setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
             }
           }
@@ -207,7 +212,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         setWarehousesLoading(false)
       }
     },
-    [warehouseApi, isEditMode, formData.warehouse_id, setFormData]
+    [warehouseApi, isEditMode, setFormData]
   )
 
   // Initial data loading

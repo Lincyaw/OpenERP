@@ -6,3 +6,6 @@ export * from './layout'
 
 // Table components
 export * from './table'
+
+// Order components
+export * from './order'
