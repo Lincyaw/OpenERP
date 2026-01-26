@@ -18187,3 +18187,43 @@ The frontend had "View" actions in the Customers.tsx and Suppliers.tsx tables th
 注意事项:
 - 修改swagger DTO后必须重新运行swag init和orval
 - 确保handler swagger注释中的类型与service实际返回类型一致
+
+---
+
+## P10-BUG-012: 修复权限名称显示英文key问题 (2026-01-26)
+
+### Task
+Fix the issue where permission action names display as English keys (e.g., "permissions.actions.admin") instead of translated text.
+
+### Root Cause
+- The permissions page extracts the action portion from permission codes (e.g., "product:admin" → "admin")
+- It then looks up the translation key `permissions.actions.${action}`
+- The `admin` action was missing from both zh-CN and en-US translation files
+- This caused the raw key to be displayed instead of the translated text
+
+### Solution
+Added the missing `admin` action translation to both locale files:
+
+**zh-CN/system.json:**
+- Added `"admin": "管理"` to `permissions.actions`
+- Added `"admin": "允许执行所有管理操作"` to `permissions.actionDescriptions`
+
+**en-US/system.json:**
+- Added `"admin": "Admin"` to `permissions.actions`
+- Added `"admin": "Allow performing all administrative operations"` to `permissions.actionDescriptions`
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/locales/zh-CN/system.json` | Added admin action translation |
+| `frontend/src/locales/en-US/system.json` | Added admin action translation |
+| `.claude/ralph/plans/prd.json` | Updated P10-BUG-012 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+
+### Notes
+- The admin action is used for super permissions in the role-permission system (see 000021_create_roles.up.sql)
+- All permission actions from the database migration are now covered in translations
