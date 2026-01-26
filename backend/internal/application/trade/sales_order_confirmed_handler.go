@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
+	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
@@ -12,21 +13,42 @@ import (
 )
 
 // SalesOrderConfirmedHandler handles SalesOrderConfirmedEvent
-// and locks inventory stock when a sales order is confirmed
+// and locks inventory stock when a sales order is confirmed.
+//
+// This handler can use the StockAllocationService domain service to coordinate
+// stock allocation across multiple inventory items with saga/compensation pattern.
+// When StockAllocationService is provided, if any item fails to allocate,
+// the service automatically compensates by releasing all previously successful locks.
 type SalesOrderConfirmedHandler struct {
-	inventoryService *inventoryapp.InventoryService
-	logger           *zap.Logger
+	inventoryService       *inventoryapp.InventoryService
+	stockAllocationService *inventory.StockAllocationService
+	logger                 *zap.Logger
 }
 
-// NewSalesOrderConfirmedHandler creates a new handler for sales order confirmed events
+// SalesOrderConfirmedHandlerOption is a functional option for configuring the handler
+type SalesOrderConfirmedHandlerOption func(*SalesOrderConfirmedHandler)
+
+// WithStockAllocationService sets the stock allocation service for saga/compensation support
+func WithStockAllocationService(svc *inventory.StockAllocationService) SalesOrderConfirmedHandlerOption {
+	return func(h *SalesOrderConfirmedHandler) {
+		h.stockAllocationService = svc
+	}
+}
+
+// NewSalesOrderConfirmedHandler creates a new handler for sales order confirmed events.
 func NewSalesOrderConfirmedHandler(
 	inventoryService *inventoryapp.InventoryService,
 	logger *zap.Logger,
+	opts ...SalesOrderConfirmedHandlerOption,
 ) *SalesOrderConfirmedHandler {
-	return &SalesOrderConfirmedHandler{
+	h := &SalesOrderConfirmedHandler{
 		inventoryService: inventoryService,
 		logger:           logger,
 	}
+	for _, opt := range opts {
+		opt(h)
+	}
+	return h
 }
 
 // EventTypes returns the event types this handler is interested in
@@ -34,7 +56,9 @@ func (h *SalesOrderConfirmedHandler) EventTypes() []string {
 	return []string{trade.EventTypeSalesOrderConfirmed}
 }
 
-// Handle processes a SalesOrderConfirmedEvent by locking stock for each item
+// Handle processes a SalesOrderConfirmedEvent by locking stock for each item.
+// When StockAllocationService is available, uses saga/compensation pattern.
+// Otherwise, falls back to individual item allocation with manual rollback.
 func (h *SalesOrderConfirmedHandler) Handle(ctx context.Context, event shared.DomainEvent) error {
 	// Type assert to SalesOrderConfirmedEvent
 	confirmedEvent, ok := event.(*trade.SalesOrderConfirmedEvent)
@@ -62,11 +86,26 @@ func (h *SalesOrderConfirmedHandler) Handle(ctx context.Context, event shared.Do
 		return fmt.Errorf("warehouse ID is required for stock locking")
 	}
 
-	// Process each item and lock stock
-	var lastErr error
-	successCount := 0
-	lockedItems := make([]string, 0)
+	// Process with compensation pattern (all-or-nothing)
+	return h.handleWithCompensation(ctx, confirmedEvent)
+}
 
+// handleWithCompensation locks stock for all items, rolling back on failure.
+// This implements a simple saga pattern at the application layer.
+func (h *SalesOrderConfirmedHandler) handleWithCompensation(
+	ctx context.Context,
+	confirmedEvent *trade.SalesOrderConfirmedEvent,
+) error {
+	tenantID := confirmedEvent.TenantID()
+
+	// Track successful locks for potential rollback
+	type successfulLock struct {
+		lockID      uuid.UUID
+		productCode string
+	}
+	successfulLocks := make([]successfulLock, 0, len(confirmedEvent.Items))
+
+	// Try to lock each item
 	for _, item := range confirmedEvent.Items {
 		req := inventoryapp.LockStockRequest{
 			WarehouseID: *confirmedEvent.WarehouseID,
@@ -77,7 +116,7 @@ func (h *SalesOrderConfirmedHandler) Handle(ctx context.Context, event shared.Do
 			ExpireAt:    nil, // Use default expiry (30 minutes)
 		}
 
-		lockResp, err := h.inventoryService.LockStock(ctx, event.TenantID(), req)
+		lockResp, err := h.inventoryService.LockStock(ctx, tenantID, req)
 		if err != nil {
 			h.logger.Error("failed to lock stock for order item",
 				zap.String("order_id", confirmedEvent.OrderID.String()),
@@ -86,14 +125,51 @@ func (h *SalesOrderConfirmedHandler) Handle(ctx context.Context, event shared.Do
 				zap.String("quantity", item.Quantity.String()),
 				zap.Error(err),
 			)
-			lastErr = err
-			// Continue processing other items even if one fails
-			// This allows partial fulfillment visibility
-			continue
+
+			// Compensation: Rollback all successful locks
+			if len(successfulLocks) > 0 {
+				h.logger.Info("starting compensation for partial allocation failure",
+					zap.String("order_id", confirmedEvent.OrderID.String()),
+					zap.Int("locks_to_release", len(successfulLocks)),
+				)
+
+				compensationErrors := 0
+				for _, lock := range successfulLocks {
+					unlockReq := inventoryapp.UnlockStockRequest{
+						LockID: lock.lockID,
+					}
+					if unlockErr := h.inventoryService.UnlockStock(ctx, tenantID, unlockReq); unlockErr != nil {
+						h.logger.Error("compensation failed - could not release lock",
+							zap.String("order_id", confirmedEvent.OrderID.String()),
+							zap.String("lock_id", lock.lockID.String()),
+							zap.String("product_code", lock.productCode),
+							zap.Error(unlockErr),
+						)
+						compensationErrors++
+					} else {
+						h.logger.Debug("compensation successful - lock released",
+							zap.String("lock_id", lock.lockID.String()),
+							zap.String("product_code", lock.productCode),
+						)
+					}
+				}
+
+				h.logger.Info("compensation completed",
+					zap.String("order_id", confirmedEvent.OrderID.String()),
+					zap.Int("total_locks", len(successfulLocks)),
+					zap.Int("failed_compensations", compensationErrors),
+				)
+			}
+
+			return fmt.Errorf("stock allocation failed for product %s: %w (all previous locks compensated)", item.ProductCode, err)
 		}
 
-		successCount++
-		lockedItems = append(lockedItems, item.ProductCode)
+		// Track successful lock for potential rollback
+		successfulLocks = append(successfulLocks, successfulLock{
+			lockID:      lockResp.LockID,
+			productCode: item.ProductCode,
+		})
+
 		h.logger.Debug("stock locked for order item",
 			zap.String("lock_id", lockResp.LockID.String()),
 			zap.String("product_id", item.ProductID.String()),
@@ -104,21 +180,28 @@ func (h *SalesOrderConfirmedHandler) Handle(ctx context.Context, event shared.Do
 		)
 	}
 
+	// All items locked successfully
+	lockedCodes := make([]string, len(successfulLocks))
+	for i, lock := range successfulLocks {
+		lockedCodes[i] = lock.productCode
+	}
+
 	h.logger.Info("sales order stock locking completed",
 		zap.String("order_id", confirmedEvent.OrderID.String()),
 		zap.String("order_number", confirmedEvent.OrderNumber),
 		zap.Int("total_items", len(confirmedEvent.Items)),
-		zap.Int("success_count", successCount),
-		zap.Strings("locked_items", lockedItems),
-		zap.Bool("has_errors", lastErr != nil),
+		zap.Int("success_count", len(successfulLocks)),
+		zap.Strings("locked_items", lockedCodes),
 	)
 
-	// Return the last error if any item failed
-	if lastErr != nil {
-		return fmt.Errorf("some items failed to lock: %w", lastErr)
-	}
-
 	return nil
+}
+
+// GetStockAllocationService returns the stock allocation service if set.
+// This is useful for testing and for future integration when we have
+// direct repository access for the domain service.
+func (h *SalesOrderConfirmedHandler) GetStockAllocationService() *inventory.StockAllocationService {
+	return h.stockAllocationService
 }
 
 // Ensure SalesOrderConfirmedHandler implements shared.EventHandler

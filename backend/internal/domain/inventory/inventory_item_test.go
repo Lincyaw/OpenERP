@@ -48,12 +48,12 @@ func TestNewInventoryItem(t *testing.T) {
 
 func TestInventoryItem_TotalQuantity(t *testing.T) {
 	item := createTestInventoryItem(t)
-	item.AvailableQuantity = decimal.NewFromInt(100)
-	item.LockedQuantity = decimal.NewFromInt(20)
+	item.AvailableQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
+	item.LockedQuantity = MustNewInventoryQuantity(decimal.NewFromInt(20))
 
 	total := item.TotalQuantity()
 
-	assert.Equal(t, decimal.NewFromInt(120), total)
+	assert.Equal(t, decimal.NewFromInt(120), total.Amount())
 }
 
 func TestInventoryItem_IncreaseStock(t *testing.T) {
@@ -68,7 +68,7 @@ func TestInventoryItem_IncreaseStock(t *testing.T) {
 		)
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(100), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(100), item.AvailableQuantity.Amount())
 		assert.Equal(t, "10", item.UnitCost.String())
 
 		// Second increase: 100 units at 20.00
@@ -80,7 +80,7 @@ func TestInventoryItem_IncreaseStock(t *testing.T) {
 		)
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(200), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(200), item.AvailableQuantity.Amount())
 		assert.Equal(t, "15", item.UnitCost.String())
 	})
 
@@ -102,7 +102,7 @@ func TestInventoryItem_IncreaseStock(t *testing.T) {
 
 	t.Run("emits InventoryCostChanged event when cost changes", func(t *testing.T) {
 		item := createTestInventoryItem(t)
-		item.AvailableQuantity = decimal.NewFromInt(100)
+		item.AvailableQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
 		item.UnitCost = decimal.NewFromFloat(10.00)
 
 		err := item.IncreaseStock(
@@ -229,8 +229,8 @@ func TestInventoryItem_LockStock(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.NotNil(t, lock)
-		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity)
-		assert.Equal(t, decimal.NewFromInt(30), item.LockedQuantity)
+		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity.Amount())
+		assert.Equal(t, decimal.NewFromInt(30), item.LockedQuantity.Amount())
 		assert.Equal(t, "sales_order", lock.SourceType)
 		assert.Equal(t, "SO-001", lock.SourceID)
 	})
@@ -293,7 +293,7 @@ func TestInventoryItem_UnlockStock(t *testing.T) {
 		err := item.UnlockStock(lock.ID)
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(100), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(100), item.AvailableQuantity.Amount())
 		assert.True(t, item.LockedQuantity.IsZero())
 	})
 
@@ -340,9 +340,9 @@ func TestInventoryItem_DeductStock(t *testing.T) {
 		err := item.DeductStock(lock.ID)
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity.Amount())
 		assert.True(t, item.LockedQuantity.IsZero())
-		assert.Equal(t, decimal.NewFromInt(70), item.TotalQuantity())
+		assert.Equal(t, decimal.NewFromInt(70), item.TotalQuantity().Amount())
 	})
 
 	t.Run("emits StockDeducted event", func(t *testing.T) {
@@ -360,7 +360,7 @@ func TestInventoryItem_DeductStock(t *testing.T) {
 
 	t.Run("emits StockBelowThreshold when below minimum", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 100)
-		item.MinQuantity = decimal.NewFromInt(80) // Set minimum threshold
+		item.MinQuantity = MustNewInventoryQuantity(decimal.NewFromInt(80)) // Set minimum threshold
 		lock, _ := item.LockStock(decimal.NewFromInt(30), "sales_order", "SO-001", time.Now().Add(time.Hour))
 		item.ClearDomainEvents()
 
@@ -391,7 +391,7 @@ func TestInventoryItem_DecreaseStock(t *testing.T) {
 		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "PR-001", "Purchase return")
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(70), item.AvailableQuantity.Amount())
 		assert.True(t, item.LockedQuantity.IsZero())
 	})
 
@@ -409,7 +409,7 @@ func TestInventoryItem_DecreaseStock(t *testing.T) {
 
 	t.Run("emits StockBelowThreshold when below minimum", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 100)
-		item.MinQuantity = decimal.NewFromInt(80) // Set minimum threshold
+		item.MinQuantity = MustNewInventoryQuantity(decimal.NewFromInt(80)) // Set minimum threshold
 		item.ClearDomainEvents()
 
 		err := item.DecreaseStock(decimal.NewFromInt(30), "PURCHASE_RETURN", "PR-001", "Purchase return")
@@ -485,7 +485,7 @@ func TestInventoryItem_AdjustStock(t *testing.T) {
 		err := item.AdjustStock(decimal.NewFromInt(120), "Stock taking - found extra units")
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(120), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(120), item.AvailableQuantity.Amount())
 	})
 
 	t.Run("adjusts stock successfully (decrease)", func(t *testing.T) {
@@ -495,7 +495,7 @@ func TestInventoryItem_AdjustStock(t *testing.T) {
 		err := item.AdjustStock(decimal.NewFromInt(80), "Stock taking - missing units")
 
 		require.NoError(t, err)
-		assert.Equal(t, decimal.NewFromInt(80), item.AvailableQuantity)
+		assert.Equal(t, decimal.NewFromInt(80), item.AvailableQuantity.Amount())
 	})
 
 	t.Run("emits StockAdjusted event", func(t *testing.T) {
@@ -542,14 +542,14 @@ func TestInventoryItem_AdjustStock(t *testing.T) {
 func TestInventoryItem_ThresholdChecks(t *testing.T) {
 	t.Run("IsBelowMinimum returns true when below threshold", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 50)
-		item.MinQuantity = decimal.NewFromInt(100)
+		item.MinQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		assert.True(t, item.IsBelowMinimum())
 	})
 
 	t.Run("IsBelowMinimum returns false when at or above threshold", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 100)
-		item.MinQuantity = decimal.NewFromInt(100)
+		item.MinQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		assert.False(t, item.IsBelowMinimum())
 	})
@@ -562,14 +562,14 @@ func TestInventoryItem_ThresholdChecks(t *testing.T) {
 
 	t.Run("IsAboveMaximum returns true when above threshold", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 150)
-		item.MaxQuantity = decimal.NewFromInt(100)
+		item.MaxQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		assert.True(t, item.IsAboveMaximum())
 	})
 
 	t.Run("IsAboveMaximum returns false when at or below threshold", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(t, 100)
-		item.MaxQuantity = decimal.NewFromInt(100)
+		item.MaxQuantity = MustNewInventoryQuantity(decimal.NewFromInt(100))
 
 		assert.False(t, item.IsAboveMaximum())
 	})
@@ -796,15 +796,15 @@ func TestInventoryItem_ReleaseExpiredLocksAt(t *testing.T) {
 		)
 
 		// Should have 50 available, 50 locked
-		assert.True(t, decimal.NewFromInt(50).Equal(item.AvailableQuantity))
-		assert.True(t, decimal.NewFromInt(50).Equal(item.LockedQuantity))
+		assert.True(t, decimal.NewFromInt(50).Equal(item.AvailableQuantity.Amount()))
+		assert.True(t, decimal.NewFromInt(50).Equal(item.LockedQuantity.Amount()))
 
 		// Release expired locks
 		count := item.ReleaseExpiredLocks()
 
 		assert.Equal(t, 1, count)
 		// Should have 100 available, 0 locked
-		assert.True(t, decimal.NewFromInt(100).Equal(item.AvailableQuantity))
+		assert.True(t, decimal.NewFromInt(100).Equal(item.AvailableQuantity.Amount()))
 		assert.True(t, item.LockedQuantity.IsZero())
 	})
 
@@ -841,7 +841,7 @@ func TestInventoryItem_ReleaseExpiredLocksAt(t *testing.T) {
 func TestInventoryItem_GetTotalValue(t *testing.T) {
 	item := createTestInventoryItemWithStock(t, 100)
 	item.UnitCost = decimal.NewFromFloat(25.50)
-	item.LockedQuantity = decimal.NewFromInt(20)
+	item.LockedQuantity = MustNewInventoryQuantity(decimal.NewFromInt(20))
 
 	value := item.GetTotalValue()
 

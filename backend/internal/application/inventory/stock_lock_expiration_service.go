@@ -6,7 +6,6 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -124,12 +123,24 @@ func (s *StockLockExpirationService) releaseExpiredLock(ctx context.Context, loc
 	}
 
 	// Update inventory item quantities directly
-	// Move quantity from locked back to available
-	item.LockedQuantity = item.LockedQuantity.Sub(lockQuantity)
-	if item.LockedQuantity.LessThan(decimal.Zero) {
-		item.LockedQuantity = decimal.Zero
+	// Move quantity from locked back to available using type-safe Quantity operations
+	qtyToRelease, err := inventory.NewInventoryQuantity(lockQuantity)
+	if err != nil {
+		return err
 	}
-	item.AvailableQuantity = item.AvailableQuantity.Add(lockQuantity)
+
+	newLocked, err := item.LockedQuantity.Subtract(qtyToRelease)
+	if err != nil {
+		// If subtraction fails (would be negative), set to zero
+		newLocked = inventory.ZeroInventoryQuantity()
+	}
+	item.LockedQuantity = newLocked
+
+	newAvailable, err := item.AvailableQuantity.Add(qtyToRelease)
+	if err != nil {
+		return err
+	}
+	item.AvailableQuantity = newAvailable
 	item.IncrementVersion()
 
 	if err := s.inventoryRepo.Save(ctx, item); err != nil {

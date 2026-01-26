@@ -382,7 +382,7 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		}
 
 		// Record balance before
-		balanceBefore := item.AvailableQuantity
+		balanceBefore := item.AvailableQuantity.Amount()
 
 		// Use domain service for cost calculation with strategy name
 		// Domain service handles strategy resolution and fallback internally
@@ -411,7 +411,7 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 			req.Quantity,
 			item.UnitCost, // Use the calculated unit cost
 			balanceBefore,
-			item.AvailableQuantity,
+			item.AvailableQuantity.Amount(),
 			sourceType,
 			req.SourceID,
 		)
@@ -487,7 +487,7 @@ func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, re
 		}
 
 		// Record balance before
-		balanceBefore := item.AvailableQuantity
+		balanceBefore := item.AvailableQuantity.Amount()
 
 		// Lock stock
 		lock, err := item.LockStock(req.Quantity, req.SourceType, req.SourceID, expireAt)
@@ -519,7 +519,7 @@ func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, re
 			req.Quantity,
 			item.UnitCost,
 			balanceBefore,
-			item.AvailableQuantity,
+			item.AvailableQuantity.Amount(),
 			inventory.SourceType(req.SourceType),
 			req.SourceID,
 		)
@@ -593,7 +593,7 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 		item.Locks = append(item.Locks, *lock)
 
 		// Record balance before
-		balanceBefore := item.AvailableQuantity
+		balanceBefore := item.AvailableQuantity.Amount()
 
 		// Unlock stock
 		if err := item.UnlockStock(req.LockID); err != nil {
@@ -635,7 +635,7 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 			lock.Quantity,
 			item.UnitCost,
 			balanceBefore,
-			item.AvailableQuantity,
+			item.AvailableQuantity.Amount(),
 			inventory.SourceType(lock.SourceType),
 			lock.SourceID,
 		)
@@ -705,7 +705,7 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		item.Locks = append(item.Locks, *lock)
 
 		// Record locked quantity before (deduct affects locked, not available)
-		lockedBefore := item.LockedQuantity
+		lockedBefore := item.LockedQuantity.Amount()
 
 		// Deduct stock
 		if err := item.DeductStock(req.LockID); err != nil {
@@ -746,7 +746,7 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 			lock.Quantity,
 			item.UnitCost,
 			lockedBefore,
-			item.LockedQuantity,
+			item.LockedQuantity.Amount(),
 			sourceType,
 			req.SourceID,
 		)
@@ -808,7 +808,7 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 		}
 
 		// Record balance before
-		balanceBefore := item.AvailableQuantity
+		balanceBefore := item.AvailableQuantity.Amount()
 
 		// Decrease stock
 		if err := item.DecreaseStock(req.Quantity, req.SourceType, req.SourceID, req.Reason); err != nil {
@@ -833,7 +833,7 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 			req.Quantity,
 			item.UnitCost,
 			balanceBefore,
-			item.AvailableQuantity,
+			item.AvailableQuantity.Amount(),
 			sourceType,
 			req.SourceID,
 		)
@@ -904,7 +904,7 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 		}
 
 		// Record balance before
-		balanceBefore := item.AvailableQuantity
+		balanceBefore := item.AvailableQuantity.Amount()
 
 		// Adjust stock
 		if err := item.AdjustStock(req.ActualQuantity, req.Reason); err != nil {
@@ -932,7 +932,7 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 				adjustmentQty,
 				item.UnitCost,
 				balanceBefore,
-				item.AvailableQuantity,
+				item.AvailableQuantity.Amount(),
 				sourceType,
 				sourceID,
 				req.Reason,
@@ -1229,7 +1229,7 @@ func (s *InventoryService) CheckAvailability(ctx context.Context, tenantID, ware
 	}
 
 	available := item.CanFulfill(quantity)
-	return available, item.AvailableQuantity, nil
+	return available, item.AvailableQuantity.Amount(), nil
 }
 
 // GetLocksBySource retrieves all locks for a specific source (e.g., sales order)

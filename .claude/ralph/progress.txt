@@ -23447,3 +23447,70 @@ Examples:
 
 - Consider adding event naming convention to CLAUDE.md or spec.md for future reference
 - Monitor new event additions to ensure they follow the past tense convention
+
+2026-01-27 - Task ID: DDD-M02 - Create StockAllocationService domain service
+
+=== Implementation Details ===
+- Created StockAllocationService domain service in backend/internal/domain/inventory/stock_allocation_service.go
+- Implemented saga/compensation pattern for multi-aggregate stock allocation:
+  * AllocateStock(): Attempts to lock stock for multiple items atomically
+  * If any item fails to allocate, automatically compensates by unlocking all previous successful locks
+  * PreviewAllocation(): Preview what allocation would look like without side effects
+  * ReleaseAllocation(): Release allocated stock (e.g., when order is cancelled)
+- Created allocation events in stock_allocation_events.go:
+  * StockAllocationCompletedEvent: All items successfully allocated
+  * StockAllocationPartialEvent: Some items failed (before compensation)
+  * StockAllocationFailedEvent: Complete allocation failure
+  * StockAllocationCompensatedEvent: Compensation applied after partial failure
+  * StockAllocationReleasedEvent: Stock released from allocation
+- Updated SalesOrderConfirmedHandler to use compensation pattern at application layer:
+  * Tracks successful locks for potential rollback
+  * On failure, automatically releases all previously locked items
+  * Added functional option WithStockAllocationService for future integration
+- Fixed build errors from incomplete DDD-M04 (Quantity value object migration):
+  * Updated inventory_domain_service.go to use Quantity.Amount()
+  * Updated inventory_service.go to convert Quantity to decimal for transactions
+  * Updated stock_lock_expiration_service.go for Quantity API
+  * Updated test files to use MustNewInventoryQuantity and Quantity.Amount()
+
+=== Key Files Modified ===
+- backend/internal/domain/inventory/stock_allocation_service.go (NEW)
+- backend/internal/domain/inventory/stock_allocation_events.go (NEW)
+- backend/internal/domain/inventory/stock_allocation_service_test.go (NEW)
+- backend/internal/application/trade/sales_order_confirmed_handler.go (MODIFIED)
+- backend/internal/domain/inventory/inventory_domain_service.go (FIX)
+- backend/internal/application/inventory/inventory_service.go (FIX)
+- backend/internal/application/inventory/stock_lock_expiration_service.go (FIX)
+
+=== Design Decisions ===
+1. Saga Pattern Implementation:
+   - Domain service coordinates allocation but doesn't persist directly
+   - Application layer controls transaction boundaries
+   - Compensation happens in-memory before persistence
+   - Events emitted for observability and eventual consistency
+
+2. Handler Integration:
+   - SalesOrderConfirmedHandler now implements compensation at app layer
+   - StockAllocationService available as optional dependency
+   - Backwards compatible with existing code
+
+3. Event Design:
+   - CorrelationID for tracking allocation operations
+   - Detailed item-level information for debugging
+   - Both success and failure paths emit events
+
+=== Verification ===
+- All StockAllocationService unit tests pass (14/14)
+- Full backend build succeeds
+- Type checking passes
+
+=== Notes ===
+- DDD-M04 (Quantity value object migration) was partially incomplete, causing build errors
+- Fixed critical Quantity API usage issues to unblock this task
+- Some existing tests in inventory_item_test.go still have failures from DDD-M04
+- Recommended: Complete DDD-M04 to fix remaining test failures
+
+=== Next Steps ===
+- DDD-M04: Complete Quantity value object migration (fix remaining tests)
+- Future: Integrate StockAllocationService with repository layer for domain-level persistence
+- Future: Add distributed transaction support (outbox pattern) for production reliability

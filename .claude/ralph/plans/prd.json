@@ -4774,7 +4774,7 @@
       "实现 saga/compensation 模式处理部分失败",
       "考虑使用最终一致性和补偿事件"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "MEDIUM",

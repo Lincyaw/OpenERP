@@ -165,7 +165,7 @@ func (s *InventoryDomainService) calculateStockInCost(
 	}
 
 	// Build existing stock entries from the inventory item
-	currentStock := item.TotalQuantity()
+	currentStock := item.TotalQuantity().Amount() // Get decimal amount from Quantity
 
 	// Create stock entries for the strategy
 	entries := make([]strategy.StockEntry, 0)
@@ -211,7 +211,7 @@ func (s *InventoryDomainService) calculateMovingAverageCost(
 	incomingQuantity decimal.Decimal,
 	incomingCost decimal.Decimal,
 ) decimal.Decimal {
-	currentStock := item.TotalQuantity()
+	currentStock := item.TotalQuantity().Amount() // Get decimal amount from Quantity
 	currentCost := item.UnitCost
 
 	if currentStock.IsZero() {
