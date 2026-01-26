@@ -20394,3 +20394,86 @@ handlers := event.WrapHandlersWithIdempotency(
 - Integration test for idempotency in real event flow
 - Consider adding idempotency key prefix per handler type
 - Add Prometheus/metrics endpoint for idempotency stats
+
+2026-01-26 - Task DDD-019: Event Versioning Support
+
+=== Implementation Details ===
+- Implemented comprehensive event versioning system per spec.md Section 7.3
+- Added Version field to BaseDomainEvent struct in domain/shared/event.go
+  - Default version is 1 for backward compatibility
+  - SchemaVersion() method returns version (defaults to 1 if unset)
+- Created VersionedEvent interface for events that need version tracking
+- Added NewVersionedBaseDomainEvent() constructor for explicit version specification
+  - Validates version >= 1, defaults to 1 for invalid inputs
+
+=== Key Files Created/Modified ===
+- backend/internal/domain/shared/event.go - Added Version field, VersionedEvent interface
+- backend/internal/infrastructure/event/versioning.go - Core versioning infrastructure:
+  - EventUpgrader interface for version transformations
+  - VersionRegistry for managing event versions and upgrader chains
+  - BaseEventUpgrader helper for creating JSON-based upgraders
+  - ExtractVersion() utility for reading version from JSON payloads
+- backend/internal/infrastructure/event/versioned_serializer.go:
+  - VersionedSerializer with automatic version upgrade during deserialization
+  - Backward compatible Register() method for simple events
+  - RegisterVersioned() for events with migration support
+  - DeserializeToVersion() for targeting specific versions
+- backend/internal/infrastructure/event/migration.go - Migration utilities:
+  - EventMigrator for batch payload migrations
+  - MigrationResult/FailedMigration for tracking migration outcomes
+  - EventVersionAnalysis for understanding version distribution
+  - MigrationPlan for planning upgrade steps
+  - CommonUpgraders factory with helpers: AddField, RemoveField, RenameField,
+    TransformField, SplitField, MergeFields, SetFieldType, WrapInObject, UnwrapFromObject
+  - MigrationStats for tracking migration metrics
+- backend/internal/infrastructure/event/versioning_doc.go - Comprehensive documentation
+- backend/internal/infrastructure/event/versioning_test.go - 30+ test cases
+
+=== Usage Example ===
+```go
+// Simple event registration (backward compatible)
+serializer.Register("OrderCreated", &OrderCreatedEvent{})
+
+// Versioned event with upgraders
+v1ToV2 := NewBaseEventUpgrader(1, 2, func(data map[string]any) (map[string]any, error) {
+    data["new_field"] = "default"
+    return data, nil
+})
+
+serializer.RegisterVersioned(
+    "OrderCreated",
+    2, // current version
+    map[int]shared.DomainEvent{
+        1: &OrderCreatedV1{},
+        2: &OrderCreatedV2{},
+    },
+    v1ToV2,
+)
+
+// Old v1 events automatically upgraded to v2 during deserialization
+event, _ := serializer.Deserialize("OrderCreated", oldPayload)
+```
+
+=== Verification ===
+- All unit tests pass (30+ test cases covering registration, upgrade chain,
+  deserialization, migration utilities, common upgraders, statistics)
+- Build succeeds (go build ./...)
+- Code review completed - addressed HIGH priority issue (removed unused mutex)
+
+=== Design Decisions ===
+1. **Backward compatibility**: Version defaults to 1 when not present in JSON
+2. **Sequential upgrades**: Upgraders must be v1->v2, v2->v3, not v1->v3 (predictable chain)
+3. **Fail-fast validation**: RegisterVersionedEvent validates complete upgrader chain
+4. **Immutable upgrades**: Original payloads preserved, upgraded copies returned
+5. **Type-safe deserialization**: Events deserialized to correct version struct
+
+=== Future Improvements (from code review) ===
+- Add Prometheus metrics integration for production monitoring
+- Add batch size limit to MigratePayloads for large migrations
+- Consider adding verbose logging during upgrade steps
+- Add upgrader execution timing for performance analysis
+
+=== Next Steps ===
+- Use versioning when evolving existing event schemas
+- Consider adding versioning to heavily-used events proactively
+- Document specific upgrade strategies for complex schema changes

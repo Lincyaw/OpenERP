@@ -16,6 +16,16 @@ type DomainEvent interface {
 	TenantID() uuid.UUID
 }
 
+// VersionedEvent extends DomainEvent with schema versioning support
+// Events should implement this interface when they need backward-compatible
+// schema evolution (adding/removing fields, changing field types, etc.)
+type VersionedEvent interface {
+	DomainEvent
+	// SchemaVersion returns the version of the event schema (e.g., 1, 2, 3)
+	// Default should be 1 for events that don't explicitly set a version
+	SchemaVersion() int
+}
+
 // BaseDomainEvent provides common fields for all domain events
 type BaseDomainEvent struct {
 	ID            uuid.UUID `json:"id"`
@@ -24,6 +34,7 @@ type BaseDomainEvent struct {
 	AggID         uuid.UUID `json:"aggregate_id"`
 	AggType       string    `json:"aggregate_type"`
 	TenantIDValue uuid.UUID `json:"tenant_id"`
+	Version       int       `json:"schema_version,omitempty"` // Event schema version for backward compatibility
 }
 
 // EventID returns the unique event identifier
@@ -56,7 +67,16 @@ func (e *BaseDomainEvent) TenantID() uuid.UUID {
 	return e.TenantIDValue
 }
 
-// NewBaseDomainEvent creates a new base domain event
+// SchemaVersion returns the schema version of the event
+// Returns 1 if no version is set (backward compatibility with unversioned events)
+func (e *BaseDomainEvent) SchemaVersion() int {
+	if e.Version == 0 {
+		return 1
+	}
+	return e.Version
+}
+
+// NewBaseDomainEvent creates a new base domain event with default schema version 1
 func NewBaseDomainEvent(eventType, aggType string, aggID, tenantID uuid.UUID) BaseDomainEvent {
 	return BaseDomainEvent{
 		ID:            uuid.New(),
@@ -65,5 +85,23 @@ func NewBaseDomainEvent(eventType, aggType string, aggID, tenantID uuid.UUID) Ba
 		AggID:         aggID,
 		AggType:       aggType,
 		TenantIDValue: tenantID,
+		Version:       1,
+	}
+}
+
+// NewVersionedBaseDomainEvent creates a new base domain event with explicit schema version
+// If schemaVersion is less than 1, it defaults to 1 for safety
+func NewVersionedBaseDomainEvent(eventType, aggType string, aggID, tenantID uuid.UUID, schemaVersion int) BaseDomainEvent {
+	if schemaVersion < 1 {
+		schemaVersion = 1
+	}
+	return BaseDomainEvent{
+		ID:            uuid.New(),
+		Type:          eventType,
+		Timestamp:     time.Now(),
+		AggID:         aggID,
+		AggType:       aggType,
+		TenantIDValue: tenantID,
+		Version:       schemaVersion,
 	}
 }
