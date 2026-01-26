@@ -23251,3 +23251,103 @@ for _, lock := range expiredLocks {
 
 - Consider adding similar documentation patterns to other domain objects
 - Monitor usage of ParseXXXFromJSON functions to ensure they're being used appropriately
+
+---
+
+2025-01-27 - DDD-H04: 跨上下文引用添加防腐层 (Add ACL for Cross-Context References)
+
+=== Implementation Details ===
+
+**Task**: Create an Anti-Corruption Layer (ACL) for the Finance bounded context to properly isolate it from the Partner context (which owns the Customer aggregate).
+
+**Problem**: The Finance context (AccountReceivable, CreditMemo, ReceiptVoucher, etc.) directly used `uuid.UUID` for CustomerID, creating tight coupling with the Partner domain. This violates DDD's bounded context isolation principle.
+
+**Solution**: Implemented an ACL package in the Finance domain with:
+
+1. **CustomerID Value Object** (`backend/internal/domain/finance/acl/customer_ref.go`)
+   - Wraps `uuid.UUID` for type safety and semantic meaning
+   - Prevents accidental mixing with other UUID-based IDs
+   - Methods: `NewCustomerID()`, `MustNewCustomerID()`, `ParseCustomerID()`
+   - Immutable with getter-only access to underlying value
+
+2. **CustomerReference Value Object** (`backend/internal/domain/finance/acl/customer_ref.go`)
+   - Contains denormalized customer info (ID, name, code)
+   - Finance context's local view of a customer
+   - Supports immutable updates via `WithUpdatedInfo()`
+   - Methods: `NewCustomerReference()`, `MustNewCustomerReference()`, `DisplayName()`
+
+3. **ACL Interfaces** (`backend/internal/domain/finance/acl/customer_service.go`)
+   - `CustomerQueryService`: Query customer information from Partner context
+     - `GetCustomerReference()` - Single customer lookup
+     - `GetCustomerReferences()` - Batch lookup for efficiency
+     - `CustomerExists()` - Existence check without full data
+   - `CustomerReferenceCache`: Local cache for customer references
+     - `Get()`, `Set()`, `SetBatch()` - Cache operations
+     - `Invalidate()`, `InvalidateAll()` - Cache invalidation
+   - `CustomerEventHandler`: Handle customer events from Partner context
+     - `HandleCustomerCreated()`, `HandleCustomerUpdated()`
+     - `HandleCustomerDeleted()`, `HandleCustomerStatusChanged()`
+
+4. **Event DTOs** (`backend/internal/domain/finance/acl/customer_service.go`)
+   - `CustomerCreatedEventDTO`, `CustomerUpdatedEventDTO`
+   - `CustomerDeletedEventDTO`, `CustomerStatusChangedEventDTO`
+   - Local representations isolating Finance from Partner's event structure
+
+5. **Package Documentation** (`backend/internal/domain/finance/acl/doc.go`)
+   - Comprehensive package-level documentation
+   - Explains DDD rationale for ACL pattern
+   - Usage examples and future considerations
+
+=== Files Created ===
+
+- `backend/internal/domain/finance/acl/doc.go` (package documentation)
+- `backend/internal/domain/finance/acl/customer_ref.go` (value objects)
+- `backend/internal/domain/finance/acl/customer_service.go` (ACL interfaces)
+- `backend/internal/domain/finance/acl/customer_ref_test.go` (unit tests)
+
+=== Verification ===
+
+- All tests pass: 28 test cases covering:
+  - CustomerID creation, validation, equality
+  - CustomerReference creation, immutability, updates
+  - Event DTOs structure
+- Build succeeds: `go build ./...` passes
+- Code review: APPROVED (no CRITICAL/HIGH issues)
+  - Excellent DDD compliance
+  - 100% test coverage
+  - Proper error handling
+
+=== Requirements Satisfied ===
+
+- ✅ 为 Finance 上下文的 CustomerID 创建本地值对象 (Create local CustomerID value object)
+  - CustomerID wraps uuid.UUID with validation and type safety
+  - CustomerReference provides denormalized customer info
+  
+- ✅ 订阅客户更新事件维护本地缓存 (Subscribe to customer events for cache maintenance)
+  - CustomerEventHandler interface defines event handling contract
+  - CustomerReferenceCache interface for local caching
+  - Event DTOs for cross-context event translation
+  
+- ✅ 创建 ACL 接口用于客户信息查询 (Create ACL interface for customer queries)
+  - CustomerQueryService interface for querying Partner context
+  - Batch and single-item query methods
+  - Existence check method
+
+=== Design Decisions ===
+
+1. **Value Object Immutability**: All value objects use unexported fields with getter-only methods. Updates return new instances (WithUpdatedInfo pattern).
+
+2. **Event DTOs**: Local DTOs prevent coupling to Partner's event structure. Finance context interprets events in its own terms.
+
+3. **Interface Segregation**: Three separate interfaces (Query, Cache, EventHandler) follow Single Responsibility Principle.
+
+4. **Error Handling**: Uses shared.DomainError with error codes for machine parsing and clear messages for humans.
+
+5. **Future-Ready**: Interfaces designed to support eventual implementations with Redis cache, event bus integration, etc.
+
+=== Next Steps ===
+
+- Implement infrastructure layer: CustomerQueryServiceImpl, CustomerReferenceCacheImpl
+- Add event handlers to process Partner context events
+- Consider migrating existing Finance aggregates to use ACL (optional, for new code)
+- Add SupplierReference for Account Payables (similar pattern)

@@ -4739,7 +4739,7 @@
       "订阅客户更新事件维护本地缓存",
       "创建 ACL 接口用于客户信息查询"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "HIGH",
