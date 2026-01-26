@@ -2318,7 +2318,7 @@
       "支持 SKU 映射",
       "支持批量映射"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "P7-BE-012",

@@ -24502,3 +24502,73 @@ Service interface:
 - P7-BE-011: Implement ProductMapping repository and service
 - Future: Implement platform adapters (Taobao, JD, etc.) in infrastructure layer
 - Future: Implement OrderSyncService application service
+
+2025-01-27 - P7-BE-011: ProductMapping Implementation
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `backend/internal/infrastructure/persistence/models/integration.go` - GORM model for ProductMapping
+   - ProductMappingModel with JSON serialization for SKU mappings
+   - ToDomain/FromDomain conversion methods
+   - Proper table name and indexes
+
+2. `backend/internal/infrastructure/persistence/product_mapping_repository.go` - Repository implementation
+   - Full ProductMappingRepository interface implementation
+   - ProductMappingReader: FindByID, FindByIDForTenant, FindByLocalProduct, FindByLocalProductAndPlatform, FindByPlatformProduct, FindByPlatformSku
+   - ProductMappingFinder: FindAll, FindActiveForPlatform, FindSyncEnabled, Count, ExistsByLocalProductAndPlatform, ExistsByPlatformProduct
+   - ProductMappingWriter: Save, SaveBatch, Delete, DeleteByLocalProduct, DeleteByLocalProductAndPlatform
+   - Additional helpers: FindByLocalProductIDs, UpdateSyncStatus, GetMappingStats
+   - SQL injection protection using json.Marshal for JSONB queries
+   - LIKE pattern escaping for search queries
+
+3. `backend/internal/application/integration/product_mapping_service.go` - Application service
+   - CRUD operations: CreateMapping, UpdateMapping, DeleteMapping, GetMapping, ListMappings
+   - SKU mapping operations: AddSKUMapping, RemoveSKUMapping
+   - Lookup operations: GetLocalProductID, GetLocalSKUID, GetPlatformProductID
+   - Sync operations: EnableSync, DisableSync, GetMappingsForSync
+   - Batch operations: CreateBatchMappings, UpdateBatchSyncStatus, ActivateMappings, DeactivateMappings
+   - Tenant isolation validation on all operations
+
+4. `backend/internal/application/integration/dto.go` - DTOs for API responses
+   - ProductMappingResponse, ProductMappingListResponse
+   - Request DTOs: CreateProductMappingRequest, UpdateProductMappingRequest, AddSKUMappingRequest
+   - Batch DTOs: BatchCreateMappingRequest, BatchMappingIDsRequest
+   - Filter DTOs: ProductMappingListFilter
+   - Conversion functions: ToProductMappingResponse, ToProductMappingListResponse, ToDomainFilter
+
+5. `backend/internal/application/integration/product_mapping_service_test.go` - Unit tests
+   - 27 test cases covering all major functionality
+   - Mock repository implementation
+   - Tests for success paths and error paths
+   - Tests for tenant isolation verification
+
+**Key Design Decisions:**
+1. Tenant isolation enforced at service layer (GetMapping, DeleteMapping, AddSKUMapping, etc.)
+2. Added FindByIDForTenant for safer multi-tenant queries
+3. Used json.Marshal for JSONB query parameters to prevent SQL injection
+4. LIKE pattern special characters escaped for search queries
+5. Batch operations support for CreateBatchMappings, ActivateMappings, DeactivateMappings
+6. SKU mappings stored as JSONB for flexibility
+
+=== Verification ===
+
+- Go build: PASS
+- Go vet: PASS
+- Unit tests: 27 tests, all PASS
+- Domain integration tests: 22 tests, all PASS
+- Code review: PASS after fixing CRITICAL issues (SQL injection, tenant isolation)
+
+=== Notes ===
+
+- The domain entity and interfaces were already defined in P7-BE-010
+- This task implemented the repository (GORM) and application service layers
+- Security review identified and fixed SQL injection vulnerability in FindByPlatformSku
+- Added LIKE pattern escaping for search functionality
+- Test coverage estimated at ~85%
+
+=== Next Steps ===
+
+- P7-BE-012: Implement Taobao Adapter (optional)
+- Future: Create HTTP handlers for ProductMapping API endpoints
+- Future: Add database migration for product_mappings table
