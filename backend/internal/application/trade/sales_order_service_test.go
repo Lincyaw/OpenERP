@@ -85,6 +85,11 @@ func (m *MockSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 	return args.Error(0)
 }
 
+func (m *MockSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, order *trade.SalesOrder, events []shared.DomainEvent) error {
+	args := m.Called(ctx, order, events)
+	return args.Error(0)
+}
+
 func (m *MockSalesOrderRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)

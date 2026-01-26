@@ -16,12 +16,18 @@ import (
 
 // GormPurchaseOrderRepository implements PurchaseOrderRepository using GORM
 type GormPurchaseOrderRepository struct {
-	db *gorm.DB
+	db          *gorm.DB
+	outboxSaver shared.OutboxEventSaver // optional, for transactional outbox pattern
 }
 
 // NewGormPurchaseOrderRepository creates a new GormPurchaseOrderRepository
 func NewGormPurchaseOrderRepository(db *gorm.DB) *GormPurchaseOrderRepository {
 	return &GormPurchaseOrderRepository{db: db}
+}
+
+// SetOutboxEventSaver sets the outbox event saver for transactional event publishing
+func (r *GormPurchaseOrderRepository) SetOutboxEventSaver(saver shared.OutboxEventSaver) {
+	r.outboxSaver = saver
 }
 
 // FindByID finds a purchase order by its ID
@@ -264,6 +270,98 @@ func (r *GormPurchaseOrderRepository) SaveWithLock(ctx context.Context, order *t
 			order.Items[i].OrderID = order.ID
 			if err := tx.Save(&order.Items[i]).Error; err != nil {
 				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+// SaveWithLockAndEvents saves with optimistic locking and persists domain events atomically
+// This implements the transactional outbox pattern - events are saved to the outbox table
+// in the same transaction as the aggregate, ensuring guaranteed event delivery
+func (r *GormPurchaseOrderRepository) SaveWithLockAndEvents(ctx context.Context, order *trade.PurchaseOrder, events []shared.DomainEvent) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Get current version from database
+		var currentVersion int
+		if err := tx.Model(&trade.PurchaseOrder{}).
+			Where("id = ?", order.ID).
+			Select("version").
+			Scan(&currentVersion).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return shared.ErrNotFound
+			}
+			return err
+		}
+
+		// Check version matches
+		if currentVersion != order.Version {
+			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The order has been modified by another user")
+		}
+
+		// Increment version
+		order.Version++
+		order.UpdatedAt = time.Now()
+
+		// Update order with version check
+		result := tx.Model(&trade.PurchaseOrder{}).
+			Where("id = ? AND version = ?", order.ID, currentVersion).
+			Updates(map[string]interface{}{
+				"supplier_id":     order.SupplierID,
+				"supplier_name":   order.SupplierName,
+				"warehouse_id":    order.WarehouseID,
+				"total_amount":    order.TotalAmount,
+				"discount_amount": order.DiscountAmount,
+				"payable_amount":  order.PayableAmount,
+				"status":          order.Status,
+				"remark":          order.Remark,
+				"confirmed_at":    order.ConfirmedAt,
+				"completed_at":    order.CompletedAt,
+				"cancelled_at":    order.CancelledAt,
+				"cancel_reason":   order.CancelReason,
+				"version":         order.Version,
+				"updated_at":      order.UpdatedAt,
+			})
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if result.RowsAffected == 0 {
+			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The order has been modified by another user")
+		}
+
+		// Handle items
+		currentItemIDs := make([]uuid.UUID, len(order.Items))
+		for i, item := range order.Items {
+			currentItemIDs[i] = item.ID
+		}
+
+		// Delete items not in the current list
+		if len(currentItemIDs) > 0 {
+			if err := tx.Where("order_id = ? AND id NOT IN ?", order.ID, currentItemIDs).
+				Delete(&trade.PurchaseOrderItem{}).Error; err != nil {
+				return err
+			}
+		} else {
+			if err := tx.Where("order_id = ?", order.ID).
+				Delete(&trade.PurchaseOrderItem{}).Error; err != nil {
+				return err
+			}
+		}
+
+		// Save/update remaining items
+		for i := range order.Items {
+			order.Items[i].OrderID = order.ID
+			if err := tx.Save(&order.Items[i]).Error; err != nil {
+				return err
+			}
+		}
+
+		// Save events to outbox within the same transaction
+		if r.outboxSaver != nil && len(events) > 0 {
+			if err := r.outboxSaver.SaveEvents(ctx, tx, events...); err != nil {
+				return fmt.Errorf("failed to save events to outbox: %w", err)
 			}
 		}
 

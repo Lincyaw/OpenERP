@@ -18489,3 +18489,112 @@ Added CSS overrides in `Sidebar.css` to properly constrain elements in collapsed
 - The fix uses CSS specificity to override Semi Design's default styles only in collapsed state
 - The collapse button now properly fits within the 60px sidebar width
 - The button remains centered and clickable in both expanded and collapsed states
+
+---
+
+## DDD-001: Outbox Pattern Complete Integration (2026-01-26)
+
+### Problem
+Domain events were being published directly to an in-memory event bus instead of using the transactional outbox pattern. This violated guaranteed event delivery semantics - if the application crashed after committing the aggregate change but before publishing events, events would be lost.
+
+### Root Cause Analysis
+1. Complete outbox infrastructure existed (outbox_events table, OutboxEntry model, OutboxRepository, OutboxPublisher, OutboxProcessor)
+2. However, services were calling `SaveWithLock()` and then separately publishing events
+3. Events were never actually saved to the outbox_events table
+4. No transactional consistency between aggregate persistence and event recording
+
+### Solution
+Implemented the transactional outbox pattern by saving domain events to the outbox table within the same database transaction as the aggregate changes.
+
+**Key Changes:**
+
+1. **Created event_registry.go** - Registers all ~60 domain event types with EventSerializer for proper deserialization:
+```go
+func RegisterAllEvents(serializer *EventSerializer) {
+    serializer.Register("SalesOrderCreated", &trade.SalesOrderCreatedEvent{})
+    serializer.Register("SalesOrderConfirmed", &trade.SalesOrderConfirmedEvent{})
+    // ... all domain events
+}
+```
+
+2. **Added OutboxEventSaver interface** to `shared/eventbus.go`:
+```go
+type OutboxEventSaver interface {
+    SaveEvents(ctx context.Context, txProvider interface{}, events ...DomainEvent) error
+}
+```
+
+3. **Implemented SaveEvents in OutboxPublisher** for interface compliance:
+```go
+func (p *OutboxPublisher) SaveEvents(ctx context.Context, txProvider interface{}, events ...DomainEvent) error {
+    tx, ok := txProvider.(*gorm.DB)
+    if !ok {
+        return fmt.Errorf("txProvider must be a *gorm.DB, got %T", txProvider)
+    }
+    return p.PublishWithTx(ctx, tx, events...)
+}
+```
+
+4. **Added SaveWithLockAndEvents to repository interfaces** (SalesOrderRepository, PurchaseOrderRepository):
+```go
+SaveWithLockAndEvents(ctx context.Context, order *SalesOrder, events []shared.DomainEvent) error
+```
+
+5. **Implemented SaveWithLockAndEvents in GORM repositories** with transactional outbox:
+```go
+func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, order *trade.SalesOrder, events []shared.DomainEvent) error {
+    return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+        // ... optimistic locking and save logic ...
+        if r.outboxSaver != nil && len(events) > 0 {
+            if err := r.outboxSaver.SaveEvents(ctx, tx, events...); err != nil {
+                return fmt.Errorf("failed to save events to outbox: %w", err)
+            }
+        }
+        return nil
+    })
+}
+```
+
+6. **Updated services to use SaveWithLockAndEvents**:
+   - SalesOrderService: Confirm, Ship, Cancel
+   - PurchaseOrderService: Receive
+
+7. **Wired OutboxProcessor in main.go** with background polling:
+```go
+eventSerializer := event.NewEventSerializer()
+event.RegisterAllEvents(eventSerializer)
+outboxPublisher := event.NewOutboxPublisher(eventSerializer)
+salesOrderRepo.SetOutboxEventSaver(outboxPublisher)
+purchaseOrderRepo.SetOutboxEventSaver(outboxPublisher)
+
+outboxProcessor := event.NewOutboxProcessor(outboxRepo, eventBus, eventSerializer, config, log)
+outboxProcessor.Start(context.Background())
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/infrastructure/event/event_registry.go` | NEW - Registers all domain event types with serializer |
+| `backend/internal/domain/shared/eventbus.go` | Added OutboxEventSaver interface |
+| `backend/internal/infrastructure/event/outbox_publisher.go` | Implemented OutboxEventSaver interface |
+| `backend/internal/domain/trade/repository.go` | Added SaveWithLockAndEvents to interfaces |
+| `backend/internal/infrastructure/persistence/sales_order_repository.go` | Implemented SaveWithLockAndEvents with transactional outbox |
+| `backend/internal/infrastructure/persistence/purchase_order_repository.go` | Implemented SaveWithLockAndEvents with transactional outbox |
+| `backend/internal/application/trade/sales_order_service.go` | Updated Confirm, Ship, Cancel to use SaveWithLockAndEvents |
+| `backend/internal/application/trade/purchase_order_service.go` | Updated Receive to use SaveWithLockAndEvents |
+| `backend/cmd/server/main.go` | Wired OutboxPublisher, injected into repositories, started OutboxProcessor |
+| `backend/internal/application/trade/sales_order_service_test.go` | Added SaveWithLockAndEvents to mock |
+| `backend/internal/application/trade/purchase_order_service_test.go` | Added SaveWithLockAndEvents to mock |
+| `backend/internal/interfaces/http/handler/sales_order_test.go` | Added SaveWithLockAndEvents to mock |
+| `.claude/ralph/plans/prd.json` | Marked DDD-001 as passes: true |
+
+### Verification
+- ✅ Go build passes (`go build ./...`)
+- ✅ All mock repositories implement updated interface
+
+### Architecture Notes
+- Events are now atomically saved with aggregate changes (ACID guarantees)
+- OutboxProcessor polls outbox_events table and publishes to in-memory bus
+- Failed events are retried with configurable retry policy
+- Pattern ensures guaranteed event delivery even on application crashes

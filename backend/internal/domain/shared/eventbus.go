@@ -35,3 +35,11 @@ type EventBus interface {
 	// Stop gracefully stops the event bus
 	Stop(ctx context.Context) error
 }
+
+// OutboxEventSaver saves domain events to the outbox table within a transaction
+// This interface is used by repositories to implement the transactional outbox pattern
+type OutboxEventSaver interface {
+	// SaveEvents saves domain events to the outbox table within the current transaction
+	// The txProvider should be a *gorm.DB transaction
+	SaveEvents(ctx context.Context, txProvider interface{}, events ...DomainEvent) error
+}

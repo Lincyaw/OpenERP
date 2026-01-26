@@ -434,19 +434,13 @@ func (s *PurchaseOrderService) Receive(ctx context.Context, tenantID, orderID uu
 		return nil, err
 	}
 
-	// Save with optimistic locking
-	if err := s.orderRepo.SaveWithLock(ctx, order); err != nil {
-		return nil, err
-	}
+	// Collect domain events before save
+	events := order.GetDomainEvents()
+	order.ClearDomainEvents()
 
-	// Publish domain events for inventory integration
-	if s.eventPublisher != nil && len(order.GetDomainEvents()) > 0 {
-		if err := s.eventPublisher.Publish(ctx, order.GetDomainEvents()...); err != nil {
-			// Log error but don't fail the operation - events can be processed later
-			// In production, this would be handled by the outbox pattern
-			_ = err
-		}
-		order.ClearDomainEvents()
+	// Save with optimistic locking and events atomically (transactional outbox pattern)
+	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		return nil, err
 	}
 
 	orderResponse := ToPurchaseOrderResponse(order)

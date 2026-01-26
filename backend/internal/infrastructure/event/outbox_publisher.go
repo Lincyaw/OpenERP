@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/erp/backend/internal/domain/shared"
 	"gorm.io/gorm"
@@ -40,3 +41,21 @@ func (p *OutboxPublisher) PublishWithTx(ctx context.Context, tx *gorm.DB, events
 	repo := NewGormOutboxRepository(tx)
 	return repo.Save(ctx, entries...)
 }
+
+// SaveEvents implements the shared.OutboxEventSaver interface
+// It saves domain events to the outbox table within a transaction
+func (p *OutboxPublisher) SaveEvents(ctx context.Context, txProvider interface{}, events ...shared.DomainEvent) error {
+	if len(events) == 0 {
+		return nil
+	}
+
+	tx, ok := txProvider.(*gorm.DB)
+	if !ok {
+		return fmt.Errorf("txProvider must be a *gorm.DB, got %T", txProvider)
+	}
+
+	return p.PublishWithTx(ctx, tx, events...)
+}
+
+// Ensure OutboxPublisher implements OutboxEventSaver
+var _ shared.OutboxEventSaver = (*OutboxPublisher)(nil)

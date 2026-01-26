@@ -128,6 +128,18 @@ func main() {
 	accountPayableRepo := persistence.NewGormAccountPayableRepository(db.DB)
 	expenseRecordRepo := persistence.NewGormExpenseRecordRepository(db.DB)
 	otherIncomeRecordRepo := persistence.NewGormOtherIncomeRecordRepository(db.DB)
+	outboxRepo := event.NewGormOutboxRepository(db.DB)
+
+	// Initialize event serializer and register all event types
+	eventSerializer := event.NewEventSerializer()
+	event.RegisterAllEvents(eventSerializer)
+
+	// Create outbox publisher for transactional event saving
+	outboxPublisher := event.NewOutboxPublisher(eventSerializer)
+
+	// Inject outbox publisher into repositories that need transactional event publishing
+	salesOrderRepo.SetOutboxEventSaver(outboxPublisher)
+	purchaseOrderRepo.SetOutboxEventSaver(outboxPublisher)
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
@@ -224,6 +236,23 @@ func main() {
 			log.Error("Error stopping event bus", zap.Error(err))
 		}
 	}()
+
+	// Initialize and start outbox processor for guaranteed event delivery
+	// The outbox processor reads events from the outbox_events table and publishes them to the event bus
+	outboxProcessorConfig := event.DefaultOutboxProcessorConfig()
+	outboxProcessor := event.NewOutboxProcessor(outboxRepo, eventBus, eventSerializer, outboxProcessorConfig, log)
+	if err := outboxProcessor.Start(context.Background()); err != nil {
+		log.Fatal("Failed to start outbox processor", zap.Error(err))
+	}
+	defer func() {
+		if err := outboxProcessor.Stop(context.Background()); err != nil {
+			log.Error("Error stopping outbox processor", zap.Error(err))
+		}
+	}()
+	log.Info("Outbox processor started",
+		zap.Int("batch_size", outboxProcessorConfig.BatchSize),
+		zap.Duration("poll_interval", outboxProcessorConfig.PollInterval),
+	)
 
 	// Inject event bus into services that publish events
 	purchaseOrderService.SetEventPublisher(eventBus)

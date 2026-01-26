@@ -350,21 +350,13 @@ func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.
 		return nil, err
 	}
 
-	// Save with optimistic locking
-	if err := s.orderRepo.SaveWithLock(ctx, order); err != nil {
-		return nil, err
-	}
+	// Collect domain events before save
+	events := order.GetDomainEvents()
+	order.ClearDomainEvents()
 
-	// Publish domain events for cross-context integration (stock locking)
-	if s.eventPublisher != nil {
-		events := order.GetDomainEvents()
-		for _, event := range events {
-			if err := s.eventPublisher.Publish(ctx, event); err != nil {
-				// Log error but don't fail the operation - event handling is async
-				// TODO: Consider outbox pattern for guaranteed delivery
-			}
-		}
-		order.ClearDomainEvents()
+	// Save with optimistic locking and events atomically (transactional outbox pattern)
+	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		return nil, err
 	}
 
 	response := ToSalesOrderResponse(order)
@@ -391,20 +383,13 @@ func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUI
 		return nil, err
 	}
 
-	// Save with optimistic locking
-	if err := s.orderRepo.SaveWithLock(ctx, order); err != nil {
-		return nil, err
-	}
+	// Collect domain events before save
+	events := order.GetDomainEvents()
+	order.ClearDomainEvents()
 
-	// Publish domain events for cross-context integration (stock deduction)
-	if s.eventPublisher != nil {
-		events := order.GetDomainEvents()
-		for _, event := range events {
-			if err := s.eventPublisher.Publish(ctx, event); err != nil {
-				// Log error but don't fail the operation
-			}
-		}
-		order.ClearDomainEvents()
+	// Save with optimistic locking and events atomically (transactional outbox pattern)
+	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		return nil, err
 	}
 
 	response := ToSalesOrderResponse(order)
@@ -443,21 +428,14 @@ func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.U
 		return nil, err
 	}
 
-	// Save with optimistic locking
-	if err := s.orderRepo.SaveWithLock(ctx, order); err != nil {
-		return nil, err
-	}
-
-	// Publish domain events for cross-context integration (stock unlocking)
+	// Collect domain events before save
 	// The CancelledEvent includes WasConfirmed flag to indicate if locks need release
-	if s.eventPublisher != nil {
-		events := order.GetDomainEvents()
-		for _, event := range events {
-			if err := s.eventPublisher.Publish(ctx, event); err != nil {
-				// Log error but don't fail the operation
-			}
-		}
-		order.ClearDomainEvents()
+	events := order.GetDomainEvents()
+	order.ClearDomainEvents()
+
+	// Save with optimistic locking and events atomically (transactional outbox pattern)
+	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		return nil, err
 	}
 
 	response := ToSalesOrderResponse(order)

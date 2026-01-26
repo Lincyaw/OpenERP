@@ -12,6 +12,11 @@ type SalesOrderRepository interface {
 	// FindByID finds a sales order by ID
 	FindByID(ctx context.Context, id uuid.UUID) (*SalesOrder, error)
 
+	// SaveWithLockAndEvents saves with optimistic locking and persists domain events atomically
+	// This implements the transactional outbox pattern - events are saved to the outbox table
+	// in the same transaction as the aggregate, ensuring guaranteed event delivery
+	SaveWithLockAndEvents(ctx context.Context, order *SalesOrder, events []shared.DomainEvent) error
+
 	// FindByIDForTenant finds a sales order by ID for a specific tenant
 	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*SalesOrder, error)
 
@@ -89,6 +94,11 @@ type PurchaseOrderRepository interface {
 
 	// SaveWithLock saves with optimistic locking (version check)
 	SaveWithLock(ctx context.Context, order *PurchaseOrder) error
+
+	// SaveWithLockAndEvents saves with optimistic locking and persists domain events atomically
+	// This implements the transactional outbox pattern - events are saved to the outbox table
+	// in the same transaction as the aggregate, ensuring guaranteed event delivery
+	SaveWithLockAndEvents(ctx context.Context, order *PurchaseOrder, events []shared.DomainEvent) error
 
 	// Delete deletes a purchase order (soft delete)
 	Delete(ctx context.Context, id uuid.UUID) error
