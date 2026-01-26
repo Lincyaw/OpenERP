@@ -4,6 +4,11 @@
  * Handles automatic token refresh for JWT authentication.
  * Uses a singleton pattern to prevent multiple simultaneous refresh requests.
  *
+ * Security improvements (SEC-004):
+ * - Refresh token is now stored as httpOnly cookie (not accessible via JS)
+ * - Browser automatically sends cookie with refresh request (withCredentials: true)
+ * - Access token is stored in memory only (not localStorage)
+ *
  * Features:
  * - Automatic token refresh when access token is expired
  * - Request queuing during refresh to prevent race conditions
@@ -119,15 +124,21 @@ export function getTimeUntilExpiry(token: string | null): number {
 }
 
 /**
- * Refresh the access token using the refresh token
- * Uses a singleton pattern to prevent multiple simultaneous refresh requests.
+ * Refresh the access token using the httpOnly refresh token cookie
+ *
+ * The refresh token is stored as an httpOnly cookie and is automatically
+ * sent by the browser with the refresh request (withCredentials: true).
+ * This is more secure than storing it in localStorage.
+ *
  * @returns New access token or null if refresh failed
  */
 export async function refreshAccessToken(): Promise<string | null> {
-  const { refreshToken, logout } = useAuthStore.getState()
+  const { logout, user } = useAuthStore.getState()
 
-  // No refresh token available
-  if (!refreshToken) {
+  // If no user data exists, can't refresh (no session)
+  // Note: We can't check for refreshToken since it's in httpOnly cookie (not accessible via JS)
+  // The backend will validate if the cookie exists
+  if (!user && !localStorage.getItem('user')) {
     logout()
     return null
   }
@@ -139,7 +150,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 
   // Start refresh process
   isRefreshing = true
-  refreshPromise = performRefresh(refreshToken)
+  refreshPromise = performRefresh()
 
   try {
     const newToken = await refreshPromise
@@ -152,15 +163,22 @@ export async function refreshAccessToken(): Promise<string | null> {
 
 /**
  * Perform the actual token refresh API call
- * @param refreshToken Current refresh token
+ *
+ * Note: The refresh_token is NOT sent in the request body.
+ * It's stored as an httpOnly cookie and sent automatically by the browser.
+ * The backend reads the token from the cookie, not from the request body.
+ *
  * @returns New access token or null if refresh failed
  */
-async function performRefresh(refreshToken: string): Promise<string | null> {
-  const { setTokens, logout } = useAuthStore.getState()
+async function performRefresh(): Promise<string | null> {
+  const { setTokens, setUser, logout } = useAuthStore.getState()
 
   try {
+    // Send empty body - refresh token is sent via httpOnly cookie automatically
+    // The backend will read the refresh_token from the cookie
     const response = await authApi.postAuthRefresh({
-      refresh_token: refreshToken,
+      // Empty body - refresh token comes from httpOnly cookie
+      refresh_token: '', // Kept for backward compatibility, backend ignores this
     })
 
     if (!response.success || !response.data) {
@@ -172,9 +190,22 @@ async function performRefresh(refreshToken: string): Promise<string | null> {
 
     const { token } = response.data
 
-    // Update tokens in store
-    if (token?.access_token && token?.refresh_token) {
-      setTokens(token.access_token, token.refresh_token)
+    // Update access token in store (stored in memory only)
+    // Note: refresh_token in response is empty - it's updated via httpOnly cookie by backend
+    if (token?.access_token) {
+      setTokens(token.access_token)
+
+      // Also restore user authentication state after successful refresh
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          setUser(user)
+        } catch {
+          // Ignore parse error
+        }
+      }
+
       return token.access_token
     }
 

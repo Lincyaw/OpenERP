@@ -50,14 +50,22 @@ func NewAuthTestServer(t *testing.T) *AuthTestServer {
 
 	// Initialize JWT service with test config
 	jwtConfig := config.JWTConfig{
-		Secret:                "test-secret-key-for-auth-testing-1234567890",
-		RefreshSecret:         "test-refresh-secret-key-for-auth-testing",
-		AccessTokenExpiration: 15 * time.Minute,
+		Secret:                 "test-secret-key-for-auth-testing-1234567890",
+		RefreshSecret:          "test-refresh-secret-key-for-auth-testing",
+		AccessTokenExpiration:  15 * time.Minute,
 		RefreshTokenExpiration: 7 * 24 * time.Hour,
-		Issuer:                "erp-test",
-		MaxRefreshCount:       10,
+		Issuer:                 "erp-test",
+		MaxRefreshCount:        10,
 	}
 	jwtService := auth.NewJWTService(jwtConfig)
+
+	// Cookie config for secure httpOnly cookies
+	cookieConfig := config.CookieConfig{
+		Domain:   "",
+		Path:     "/",
+		Secure:   false,
+		SameSite: "lax",
+	}
 
 	// Initialize auth service
 	authConfig := identityapp.AuthServiceConfig{
@@ -68,7 +76,7 @@ func NewAuthTestServer(t *testing.T) *AuthTestServer {
 	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, authConfig, logger)
 
 	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, cookieConfig, jwtConfig)
 
 	// Setup engine with middleware
 	engine := gin.New()

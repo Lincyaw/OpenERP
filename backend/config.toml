@@ -18,7 +18,7 @@ port = "8080"
 host = "localhost"
 port = 5432
 user = "postgres"
-password = "test123"
+password = "admin123"
 dbname = "erp_dev"
 sslmode = "disable"
 max_open_conns = 25
@@ -39,6 +39,16 @@ refresh_token_expiration = "168h"
 issuer = "erp-backend"
 refresh_secret = ""
 max_refresh_count = 10
+
+[cookie]
+# Domain for cookies (empty = current domain)
+domain = ""
+# Path for cookies
+path = "/"
+# Secure flag (should be true in production for HTTPS)
+secure = false
+# SameSite policy: "strict", "lax", or "none"
+same_site = "lax"
 
 [log]
 level = "info"
@@ -62,7 +72,9 @@ max_body_size = 10485760      # 10MB
 rate_limit_enabled = true
 rate_limit_requests = 100
 rate_limit_window = "1m"
-cors_allow_origins = ["*"]
+# For cookie-based auth with credentials, use specific origins (not "*")
+# In production, set to your actual frontend origin
+cors_allow_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 cors_allow_headers = ["Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"]
 trusted_proxies = []

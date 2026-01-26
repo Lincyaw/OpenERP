@@ -4395,7 +4395,7 @@
       "后端实现 Cookie 设置逻辑",
       "前端适配新的认证流程"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "HIGH",

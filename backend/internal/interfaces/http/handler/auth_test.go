@@ -22,6 +22,27 @@ import (
 	"go.uber.org/zap"
 )
 
+// testCookieConfig returns a default cookie config for tests
+func testCookieConfig() config.CookieConfig {
+	return config.CookieConfig{
+		Domain:   "",
+		Path:     "/",
+		Secure:   false,
+		SameSite: "lax",
+	}
+}
+
+// testJWTConfig returns a default JWT config for tests
+func testJWTConfig() config.JWTConfig {
+	return config.JWTConfig{
+		Secret:                 "test-secret-key-32-characters-long",
+		AccessTokenExpiration:  15 * time.Minute,
+		RefreshTokenExpiration: 7 * 24 * time.Hour,
+		Issuer:                 "test-issuer",
+		MaxRefreshCount:        10,
+	}
+}
+
 // MockUserRepository is a mock implementation of identity.UserRepository
 type MockUserRepository struct {
 	mock.Mock
@@ -294,7 +315,7 @@ func TestAuthHandler_Login_Success(t *testing.T) {
 	jwtService := auth.NewJWTService(jwtCfg)
 
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	reqBody := LoginRequest{
@@ -319,8 +340,22 @@ func TestAuthHandler_Login_Success(t *testing.T) {
 	data := response["data"].(map[string]interface{})
 	token := data["token"].(map[string]interface{})
 	assert.NotEmpty(t, token["access_token"])
-	assert.NotEmpty(t, token["refresh_token"])
+	// Refresh token is now in httpOnly cookie, not in response body (SEC-004)
+	assert.Empty(t, token["refresh_token"], "refresh_token should be empty in response body (stored in httpOnly cookie)")
 	assert.Equal(t, "Bearer", token["token_type"])
+
+	// Verify refresh token is set as httpOnly cookie
+	cookies := w.Result().Cookies()
+	var refreshTokenCookie *http.Cookie
+	for _, c := range cookies {
+		if c.Name == "refresh_token" {
+			refreshTokenCookie = c
+			break
+		}
+	}
+	require.NotNil(t, refreshTokenCookie, "refresh_token cookie should be set")
+	assert.NotEmpty(t, refreshTokenCookie.Value)
+	assert.True(t, refreshTokenCookie.HttpOnly, "cookie should be httpOnly")
 
 	userData := data["user"].(map[string]interface{})
 	assert.Equal(t, "testuser", userData["username"])
@@ -339,7 +374,7 @@ func TestAuthHandler_Login_InvalidRequestBody(t *testing.T) {
 	userRepo := new(MockUserRepository)
 	roleRepo := new(MockRoleRepository)
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", bytes.NewReader([]byte("invalid json")))
@@ -377,7 +412,7 @@ func TestAuthHandler_RefreshToken_Success(t *testing.T) {
 	jwtService := auth.NewJWTService(jwtCfg)
 
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	// First login
@@ -392,19 +427,20 @@ func TestAuthHandler_RefreshToken_Success(t *testing.T) {
 	router.ServeHTTP(loginW, loginHttpReq)
 	require.Equal(t, http.StatusOK, loginW.Code)
 
-	var loginResponse map[string]interface{}
-	json.Unmarshal(loginW.Body.Bytes(), &loginResponse)
-	loginData := loginResponse["data"].(map[string]interface{})
-	loginToken := loginData["token"].(map[string]interface{})
-	refreshToken := loginToken["refresh_token"].(string)
-
-	// Now refresh
-	refreshReq := RefreshTokenRequest{
-		RefreshToken: refreshToken,
+	// Get refresh token from httpOnly cookie (SEC-004)
+	var refreshTokenCookie *http.Cookie
+	for _, c := range loginW.Result().Cookies() {
+		if c.Name == "refresh_token" {
+			refreshTokenCookie = c
+			break
+		}
 	}
-	refreshBody, _ := json.Marshal(refreshReq)
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/refresh", bytes.NewReader(refreshBody))
+	require.NotNil(t, refreshTokenCookie, "refresh_token cookie should be set after login")
+
+	// Now refresh - send cookie with the request (SEC-004)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/refresh", nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(refreshTokenCookie) // Send refresh token via cookie
 
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -419,7 +455,19 @@ func TestAuthHandler_RefreshToken_Success(t *testing.T) {
 	data := response["data"].(map[string]interface{})
 	token := data["token"].(map[string]interface{})
 	assert.NotEmpty(t, token["access_token"])
-	assert.NotEmpty(t, token["refresh_token"])
+	// Refresh token is now in httpOnly cookie, not in response body
+	assert.Empty(t, token["refresh_token"], "refresh_token should be empty in response body")
+
+	// Verify new refresh token cookie is set
+	var newRefreshTokenCookie *http.Cookie
+	for _, c := range w.Result().Cookies() {
+		if c.Name == "refresh_token" {
+			newRefreshTokenCookie = c
+			break
+		}
+	}
+	require.NotNil(t, newRefreshTokenCookie, "new refresh_token cookie should be set")
+	assert.NotEmpty(t, newRefreshTokenCookie.Value)
 }
 
 func TestAuthHandler_Logout_Success(t *testing.T) {
@@ -447,7 +495,7 @@ func TestAuthHandler_Logout_Success(t *testing.T) {
 	jwtService := auth.NewJWTService(jwtCfg)
 
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	// First login
@@ -499,7 +547,7 @@ func TestAuthHandler_Logout_Unauthorized(t *testing.T) {
 	userRepo := new(MockUserRepository)
 	roleRepo := new(MockRoleRepository)
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/logout", nil)
@@ -536,7 +584,7 @@ func TestAuthHandler_GetCurrentUser_Success(t *testing.T) {
 	jwtService := auth.NewJWTService(jwtCfg)
 
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	// First login
@@ -602,7 +650,7 @@ func TestAuthHandler_ChangePassword_Success(t *testing.T) {
 	jwtService := auth.NewJWTService(jwtCfg)
 
 	authService := createAuthServiceForHandler(userRepo, roleRepo, jwtService)
-	handler := NewAuthHandler(authService)
+	handler := NewAuthHandler(authService, testCookieConfig(), testJWTConfig())
 	router := setupAuthRouter(handler, jwtService)
 
 	// First login

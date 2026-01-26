@@ -79,6 +79,14 @@ func NewPenetrationTestServer(t *testing.T) *PenetrationTestServer {
 	}
 	jwtService := auth.NewJWTService(jwtConfig)
 
+	// Cookie config for secure httpOnly cookies
+	cookieConfig := config.CookieConfig{
+		Domain:   "",
+		Path:     "/",
+		Secure:   false,
+		SameSite: "lax",
+	}
+
 	// Initialize auth service with strict settings
 	authConfig := identityapp.AuthServiceConfig{
 		MaxLoginAttempts: 5,
@@ -88,7 +96,7 @@ func NewPenetrationTestServer(t *testing.T) *PenetrationTestServer {
 	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, authConfig, logger)
 
 	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, cookieConfig, jwtConfig)
 
 	// Setup engine with security middleware
 	engine := gin.New()
@@ -914,12 +922,12 @@ func TestPenetration_InputValidation(t *testing.T) {
 			name    string
 			payload string
 		}{
-			{"semicolon_ls", "%3B%20ls%20-la"},      // ; ls -la
+			{"semicolon_ls", "%3B%20ls%20-la"},       // ; ls -la
 			{"pipe_cat", "%7C%20cat%20etc%20passwd"}, // | cat etc passwd (no slashes to avoid routing issues)
-			{"backtick_whoami", "%60whoami%60"},     // `whoami`
-			{"dollar_id", "%24(id)"},               // $(id)
-			{"ampersand_ls", "%26%20ls"},           // & ls
-			{"crlf_ls", "%0a%0dls"},                // CRLF injection
+			{"backtick_whoami", "%60whoami%60"},      // `whoami`
+			{"dollar_id", "%24(id)"},                 // $(id)
+			{"ampersand_ls", "%26%20ls"},             // & ls
+			{"crlf_ls", "%0a%0dls"},                  // CRLF injection
 		}
 
 		for _, tc := range injectionPayloads {
@@ -991,9 +999,9 @@ func TestPenetration_InputValidation(t *testing.T) {
 
 	t.Run("header_injection_blocked", func(t *testing.T) {
 		injectionHeaders := map[string]string{
-			"X-Forwarded-For":   "127.0.0.1\r\nX-Injected: malicious",
-			"X-Custom":          "value\r\nSet-Cookie: session=hijacked",
-			"User-Agent":        "Mozilla\r\nX-Evil: header",
+			"X-Forwarded-For": "127.0.0.1\r\nX-Injected: malicious",
+			"X-Custom":        "value\r\nSet-Cookie: session=hijacked",
+			"User-Agent":      "Mozilla\r\nX-Evil: header",
 		}
 
 		for headerName, headerValue := range injectionHeaders {
@@ -1011,10 +1019,10 @@ func TestPenetration_InputValidation(t *testing.T) {
 
 	t.Run("unicode_normalization_attacks_handled", func(t *testing.T) {
 		unicodePayloads := []string{
-			"adm\u0069n",           // Unicode homoglyph
-			"admin\u200B",          // Zero-width space
-			"\u0041\u0064min",      // Unicode A
-			"adm\uFF49n",           // Fullwidth i
+			"adm\u0069n",      // Unicode homoglyph
+			"admin\u200B",     // Zero-width space
+			"\u0041\u0064min", // Unicode A
+			"adm\uFF49n",      // Fullwidth i
 		}
 
 		for _, payload := range unicodePayloads {

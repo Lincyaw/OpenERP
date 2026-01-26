@@ -413,7 +413,7 @@ func main() {
 	salesReturnHandler := handler.NewSalesReturnHandler(salesReturnService)
 	purchaseReturnHandler := handler.NewPurchaseReturnHandler(purchaseReturnService)
 	stockTakingHandler := handler.NewStockTakingHandler(stockTakingService)
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, cfg.Cookie, cfg.JWT)
 	userHandler := handler.NewUserHandler(userService)
 	roleHandler := handler.NewRoleHandler(roleService)
 	tenantHandler := handler.NewTenantHandler(tenantService)

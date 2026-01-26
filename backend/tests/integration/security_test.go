@@ -60,6 +60,14 @@ func NewSecurityTestServer(t *testing.T) *SecurityTestServer {
 	}
 	jwtService := auth.NewJWTService(jwtConfig)
 
+	// Cookie config for secure httpOnly cookies
+	cookieConfig := config.CookieConfig{
+		Domain:   "",
+		Path:     "/",
+		Secure:   false,
+		SameSite: "lax",
+	}
+
 	// Initialize auth service
 	authConfig := identityapp.AuthServiceConfig{
 		MaxLoginAttempts: 5,
@@ -69,13 +77,13 @@ func NewSecurityTestServer(t *testing.T) *SecurityTestServer {
 	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, authConfig, logger)
 
 	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, cookieConfig, jwtConfig)
 
 	// Setup engine with security middleware
 	engine := gin.New()
-	engine.Use(middleware.Secure())         // Security headers
-	engine.Use(middleware.RequestID())      // Request ID generation
-	engine.Use(middleware.BodyLimit(1024*1024)) // 1MB body limit
+	engine.Use(middleware.Secure())               // Security headers
+	engine.Use(middleware.RequestID())            // Request ID generation
+	engine.Use(middleware.BodyLimit(1024 * 1024)) // 1MB body limit
 
 	// Setup routes
 	api := engine.Group("/api/v1")

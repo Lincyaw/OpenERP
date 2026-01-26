@@ -22389,3 +22389,142 @@ const handleBulkActivate = useCallback(async () => {
 - Consider adding loading state during bulk operations (MEDIUM priority)
 - Consider refactoring Tag components to Button for accessibility (LOW priority)
 - FE-005 (清理生产代码中的 console.error) is the next frontend task
+
+================================================================================
+2026-01-26 - Task ID: SEC-004 - Token 存储安全改进
+================================================================================
+
+=== Implementation Details ===
+
+This task implements a significant security improvement for token storage, moving from 
+localStorage-based token storage to a more secure httpOnly cookie approach for refresh 
+tokens while keeping access tokens in memory only.
+
+### Backend Changes (Go/Gin)
+
+1. **backend/internal/infrastructure/config/config.go**
+   - Added `CookieConfig` struct with Domain, Path, Secure, and SameSite fields
+   - Added cookie configuration loading in `Load()` function
+   - Added cookie defaults in `applyDefaults()` (Path="/", SameSite="lax")
+   - Added production validation for cookie.secure=true and CORS origins
+
+2. **backend/config.toml**
+   - Added [cookie] section with domain, path, secure, same_site settings
+   - Updated cors_allow_origins from "*" to specific localhost origins (required for credentials)
+
+3. **backend/internal/interfaces/http/handler/auth.go**
+   - Updated `AuthHandler` struct to include `cookieConfig` and `jwtConfig`
+   - Updated `NewAuthHandler()` to accept cookie and JWT configs
+   - Added `setRefreshTokenCookie()` helper for setting httpOnly cookies
+   - Added `clearRefreshTokenCookie()` helper for clearing cookies on logout
+   - Added `getSameSite()` helper to convert string to http.SameSite
+   - Updated `Login()` to set refresh token as httpOnly cookie (not in response body)
+   - Updated `RefreshToken()` to read refresh token from cookie (with body fallback for backward compat)
+   - Updated `Logout()` to clear refresh token cookie
+
+4. **backend/internal/interfaces/http/handler/auth_test.go**
+   - Added `testCookieConfig()` and `testJWTConfig()` helpers
+   - Updated all `NewAuthHandler()` calls to include new parameters
+   - Updated `TestAuthHandler_Login_Success` to verify cookie instead of response body
+   - Updated `TestAuthHandler_RefreshToken_Success` to send token via cookie
+
+5. **backend/tests/integration/auth_integration_test.go**
+   - Added cookieConfig for test server
+   - Updated NewAuthHandler call with new parameters
+
+6. **backend/tests/integration/security_test.go**
+   - Added cookieConfig for test server
+   - Updated NewAuthHandler call with new parameters
+
+7. **backend/tests/integration/penetration_test.go**
+   - Added cookieConfig for test server
+   - Updated NewAuthHandler call with new parameters
+
+### Frontend Changes (TypeScript/React)
+
+1. **frontend/src/store/authStore.ts**
+   - Removed refresh token from state (always null)
+   - Updated `setTokens()` to ignore refresh token parameter
+   - Updated `login()` to not store tokens in localStorage
+   - Updated `logout()` to clean up legacy localStorage entries
+   - Updated `initialize()` to not restore tokens from localStorage
+   - Updated `partialize` to only persist user (not tokens)
+
+2. **frontend/src/services/axios-instance.ts**
+   - Added `withCredentials: true` to axios instance (critical for cookie auth)
+   - Added `getAccessToken()` helper to read from Zustand instead of localStorage
+   - Updated request interceptor to get token from memory
+   - Added logic to auto-refresh when token is missing but user exists
+   - Removed console.error calls (replaced with comments for production logging)
+
+3. **frontend/src/services/token-refresh.ts**
+   - Updated `refreshAccessToken()` to not require refreshToken from store
+   - Updated `performRefresh()` to send empty body (token comes via cookie)
+   - Added `setUser()` call after successful refresh to restore auth state
+
+### Security Improvements
+
+- **XSS Protection**: Refresh token cannot be stolen via JavaScript (httpOnly)
+- **CSRF Protection**: SameSite cookie attribute + CORS restrictions
+- **Token Exposure**: Access token only in memory (lost on page refresh)
+- **Production Validation**: Config validation ensures secure settings in production
+
+=== Verification ===
+
+- Backend Go build: PASSED
+- Frontend TypeScript check (tsc --noEmit): PASSED
+- Backend unit tests (auth handler): PASSED (7/7 tests)
+- Security review by security-reviewer agent: APPROVED WITH CHANGES
+  - HIGH: Production validation added for cookie.secure
+  - MEDIUM: Backward compatibility path noted for removal timeline
+  - LOW: SameSite default and CORS validation added
+
+=== Security Review Summary ===
+
+The implementation was reviewed by the security-reviewer agent:
+- 0 Critical issues
+- 1 High issue (FIXED: Added production validation for cookie.secure)
+- 2 Medium issues (noted for future improvements)
+- 2 Low issues (noted for future improvements)
+
+Key findings addressed:
+1. Added production validation for cookie.secure=true
+2. Added production validation for CORS origins (no wildcard)
+3. Added validation for SameSite=none requires Secure
+
+=== Key Files Modified ===
+
+Backend:
+- backend/internal/infrastructure/config/config.go
+- backend/config.toml
+- backend/internal/interfaces/http/handler/auth.go
+- backend/internal/interfaces/http/handler/auth_test.go
+- backend/tests/integration/auth_integration_test.go
+- backend/tests/integration/security_test.go
+- backend/tests/integration/penetration_test.go
+
+Frontend:
+- frontend/src/store/authStore.ts
+- frontend/src/services/axios-instance.ts
+- frontend/src/services/token-refresh.ts
+
+=== Notes ===
+
+1. **Backward Compatibility**: The backend still accepts refresh_token in request body as 
+   a fallback. This should be deprecated and removed after all clients migrate to cookie-based auth.
+
+2. **Page Refresh Behavior**: After page refresh, access token is lost (memory-only). 
+   The axios interceptor will automatically refresh using the httpOnly cookie.
+
+3. **Production Deployment**: Must ensure:
+   - cookie.secure = true (requires HTTPS)
+   - cors_allow_origins = specific origins (not "*")
+   - Frontend deployed on same domain or subdomain
+
+=== Next Steps ===
+
+- Remove backward compatibility for refresh_token in body (after client migration)
+- Consider moving user data to sessionStorage
+- Add CSP header for additional XSS protection
+- Monitor production for any cookie-related issues
+

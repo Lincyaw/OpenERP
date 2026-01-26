@@ -15,6 +15,7 @@ type Config struct {
 	Database  DatabaseConfig
 	Redis     RedisConfig
 	JWT       JWTConfig
+	Cookie    CookieConfig
 	Log       LogConfig
 	Event     EventConfig
 	HTTP      HTTPConfig
@@ -67,6 +68,14 @@ type JWTConfig struct {
 	RefreshSecret          string
 	MaxRefreshCount        int
 	ExpirationHours        int // Deprecated: use AccessTokenExpiration instead
+}
+
+// CookieConfig holds cookie settings for refresh token
+type CookieConfig struct {
+	Domain   string // Domain for cookies (empty = current domain)
+	Path     string // Path for cookies
+	Secure   bool   // Secure flag (should be true in production for HTTPS)
+	SameSite string // SameSite policy: "strict", "lax", or "none"
 }
 
 // EventConfig holds event processing configuration
@@ -173,6 +182,12 @@ func Load() (*Config, error) {
 			RefreshSecret:          v.GetString("jwt.refresh_secret"),
 			MaxRefreshCount:        v.GetInt("jwt.max_refresh_count"),
 			ExpirationHours:        v.GetInt("jwt.expiration_hours"),
+		},
+		Cookie: CookieConfig{
+			Domain:   v.GetString("cookie.domain"),
+			Path:     v.GetString("cookie.path"),
+			Secure:   v.GetBool("cookie.secure"),
+			SameSite: v.GetString("cookie.same_site"),
 		},
 		Log: LogConfig{
 			Level:  v.GetString("log.level"),
@@ -283,6 +298,13 @@ func applyDefaults(cfg *Config) {
 	if cfg.JWT.MaxRefreshCount == 0 {
 		cfg.JWT.MaxRefreshCount = 10
 	}
+	// Cookie defaults
+	if cfg.Cookie.Path == "" {
+		cfg.Cookie.Path = "/"
+	}
+	if cfg.Cookie.SameSite == "" {
+		cfg.Cookie.SameSite = "lax"
+	}
 	if cfg.Log.Level == "" {
 		cfg.Log.Level = "info"
 	}
@@ -325,9 +347,10 @@ func applyDefaults(cfg *Config) {
 	if cfg.HTTP.RateLimitWindow == 0 {
 		cfg.HTTP.RateLimitWindow = time.Minute
 	}
-	if len(cfg.HTTP.CORSAllowOrigins) == 0 {
-		cfg.HTTP.CORSAllowOrigins = []string{"*"}
-	}
+	// NOTE: CORS origins are intentionally not given a default fallback to "*".
+	// An empty list means no cross-origin requests are allowed until explicitly configured.
+	// This is a secure default - applications MUST configure allowed origins explicitly.
+	// In development, use config.toml to set specific origins like ["http://localhost:3000"]
 	if len(cfg.HTTP.CORSAllowMethods) == 0 {
 		cfg.HTTP.CORSAllowMethods = []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}
 	}
@@ -385,6 +408,20 @@ func (c *Config) validate() error {
 		}
 		if c.Database.SSLMode == "disable" {
 			return fmt.Errorf("database.sslmode cannot be 'disable' in production")
+		}
+		// Cookie security for refresh token (SEC-004)
+		if !c.Cookie.Secure {
+			return fmt.Errorf("cookie.secure must be true in production (HTTPS required for secure cookies)")
+		}
+		// SameSite=None requires Secure flag
+		if c.Cookie.SameSite == "none" && !c.Cookie.Secure {
+			return fmt.Errorf("cookie.same_site=none requires cookie.secure=true")
+		}
+		// CORS must not use wildcard with credentials
+		for _, origin := range c.HTTP.CORSAllowOrigins {
+			if origin == "*" {
+				return fmt.Errorf("cors_allow_origins cannot be '*' in production (use specific origins)")
+			}
 		}
 	}
 

@@ -4,16 +4,19 @@ import type { AuthState, AuthActions, User } from './types'
 
 const STORAGE_KEY = 'erp-auth'
 const TOKEN_KEY = 'access_token'
-const REFRESH_TOKEN_KEY = 'refresh_token'
 const USER_KEY = 'user'
 
 /**
  * Initial auth state
+ *
+ * Note: refreshToken is no longer stored in frontend state.
+ * It is now stored as an httpOnly cookie for security.
+ * The frontend only keeps the access token in memory.
  */
 const initialState: AuthState = {
   user: null,
   accessToken: null,
-  refreshToken: null,
+  refreshToken: null, // Kept for type compatibility but always null
   isLoading: true,
   isAuthenticated: false,
 }
@@ -22,9 +25,16 @@ const initialState: AuthState = {
  * Auth store for managing authentication state
  *
  * Features:
- * - Persistent storage with localStorage
+ * - Access token stored in memory only (not localStorage) for XSS protection
+ * - Refresh token stored as httpOnly cookie (handled by browser, not accessible via JS)
+ * - User data persisted for display purposes
  * - Permission checking utilities
  * - Devtools integration for debugging
+ *
+ * Security improvements (SEC-004):
+ * - Access token is NOT persisted to localStorage
+ * - Refresh token is stored as httpOnly cookie by the backend
+ * - This prevents XSS attacks from stealing tokens
  *
  * @example
  * ```tsx
@@ -49,45 +59,42 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
         setUser: (user: User) => {
           set({ user, isAuthenticated: true }, false, 'auth/setUser')
-          // Also store in localStorage for backward compatibility with guards
+          // Store user in localStorage for guards (user data is not sensitive)
           localStorage.setItem(USER_KEY, JSON.stringify(user))
         },
 
-        setTokens: (accessToken: string, refreshToken?: string) => {
+        setTokens: (accessToken: string, _refreshToken?: string) => {
+          // Only store access token in memory (not localStorage)
+          // refreshToken parameter is ignored - it's handled via httpOnly cookie
           set(
             {
               accessToken,
-              refreshToken: refreshToken ?? get().refreshToken,
+              refreshToken: null, // Always null - stored in httpOnly cookie
               isAuthenticated: true,
             },
             false,
             'auth/setTokens'
           )
-          // Also store in localStorage for backward compatibility with guards
-          localStorage.setItem(TOKEN_KEY, accessToken)
-          if (refreshToken) {
-            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-          }
+          // SECURITY: Do NOT store access token in localStorage
+          // It's kept in memory only to prevent XSS token theft
         },
 
-        login: (user: User, accessToken: string, refreshToken?: string) => {
+        login: (user: User, accessToken: string, _refreshToken?: string) => {
+          // refreshToken parameter is ignored - it's handled via httpOnly cookie
           set(
             {
               user,
               accessToken,
-              refreshToken: refreshToken ?? null,
+              refreshToken: null, // Always null - stored in httpOnly cookie
               isAuthenticated: true,
               isLoading: false,
             },
             false,
             'auth/login'
           )
-          // Store in localStorage for backward compatibility
-          localStorage.setItem(TOKEN_KEY, accessToken)
+          // Store user in localStorage (not sensitive)
           localStorage.setItem(USER_KEY, JSON.stringify(user))
-          if (refreshToken) {
-            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-          }
+          // SECURITY: Do NOT store tokens in localStorage
         },
 
         logout: () => {
@@ -103,9 +110,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             'auth/logout'
           )
           // Clear localStorage
-          localStorage.removeItem(TOKEN_KEY)
-          localStorage.removeItem(REFRESH_TOKEN_KEY)
+          localStorage.removeItem(TOKEN_KEY) // Clean up legacy storage
+          localStorage.removeItem('refresh_token') // Clean up legacy storage
           localStorage.removeItem(USER_KEY)
+          // Note: httpOnly cookie is cleared by the backend on logout
         },
 
         updateUser: (updates: Partial<User>) => {
@@ -139,29 +147,34 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         },
 
         initialize: () => {
-          // Try to restore auth state from localStorage
-          const token = localStorage.getItem(TOKEN_KEY)
-          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+          // Try to restore user from localStorage
+          // Note: Access token is NOT restored - it's only kept in memory
+          // If page is refreshed, user will need to re-authenticate via refresh token cookie
           const userStr = localStorage.getItem(USER_KEY)
 
-          if (token && userStr) {
+          if (userStr) {
             try {
               const user = JSON.parse(userStr) as User
+              // User exists but no access token - will need to refresh
+              // The axios interceptor will handle token refresh automatically
               set(
                 {
                   user,
-                  accessToken: token,
-                  refreshToken,
-                  isAuthenticated: true,
-                  isLoading: false,
+                  accessToken: null, // Will be refreshed via httpOnly cookie
+                  refreshToken: null,
+                  isAuthenticated: false, // Not authenticated until token refresh succeeds
+                  isLoading: true, // Keep loading until refresh completes
                 },
                 false,
                 'auth/initialize'
               )
+              // Clean up any legacy token storage
+              localStorage.removeItem(TOKEN_KEY)
+              localStorage.removeItem('refresh_token')
             } catch {
               // Invalid stored data, clear it
               localStorage.removeItem(TOKEN_KEY)
-              localStorage.removeItem(REFRESH_TOKEN_KEY)
+              localStorage.removeItem('refresh_token')
               localStorage.removeItem(USER_KEY)
               set({ ...initialState, isLoading: false }, false, 'auth/initialize')
             }
@@ -172,12 +185,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       }),
       {
         name: STORAGE_KEY,
-        // Only persist these fields
+        // Only persist user (not tokens - they're memory-only or httpOnly cookie)
         partialize: (state) => ({
           user: state.user,
-          accessToken: state.accessToken,
-          refreshToken: state.refreshToken,
-          isAuthenticated: state.isAuthenticated,
+          // Do NOT persist accessToken or refreshToken
         }),
       }
     ),

@@ -2,30 +2,79 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/erp/backend/internal/application/identity"
+	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/interfaces/http/dto"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+// RefreshTokenCookieName is the name of the httpOnly cookie for refresh token
+const RefreshTokenCookieName = "refresh_token"
+
 // AuthHandler handles authentication-related HTTP requests
 type AuthHandler struct {
 	BaseHandler
-	authService *identity.AuthService
+	authService  *identity.AuthService
+	cookieConfig config.CookieConfig
+	jwtConfig    config.JWTConfig
 }
 
 // NewAuthHandler creates a new auth handler
-func NewAuthHandler(authService *identity.AuthService) *AuthHandler {
+func NewAuthHandler(authService *identity.AuthService, cookieConfig config.CookieConfig, jwtConfig config.JWTConfig) *AuthHandler {
 	return &AuthHandler{
-		authService: authService,
+		authService:  authService,
+		cookieConfig: cookieConfig,
+		jwtConfig:    jwtConfig,
 	}
+}
+
+// getSameSite converts string to http.SameSite
+func getSameSite(sameSite string) http.SameSite {
+	switch strings.ToLower(sameSite) {
+	case "strict":
+		return http.SameSiteStrictMode
+	case "none":
+		return http.SameSiteNoneMode
+	default:
+		return http.SameSiteLaxMode
+	}
+}
+
+// setRefreshTokenCookie sets the refresh token as an httpOnly cookie
+func (h *AuthHandler) setRefreshTokenCookie(c *gin.Context, refreshToken string, maxAge int) {
+	c.SetSameSite(getSameSite(h.cookieConfig.SameSite))
+	c.SetCookie(
+		RefreshTokenCookieName,
+		refreshToken,
+		maxAge,
+		h.cookieConfig.Path,
+		h.cookieConfig.Domain,
+		h.cookieConfig.Secure,
+		true, // httpOnly = true (critical for security)
+	)
+}
+
+// clearRefreshTokenCookie clears the refresh token cookie
+func (h *AuthHandler) clearRefreshTokenCookie(c *gin.Context) {
+	c.SetSameSite(getSameSite(h.cookieConfig.SameSite))
+	c.SetCookie(
+		RefreshTokenCookieName,
+		"",
+		-1, // Expire immediately
+		h.cookieConfig.Path,
+		h.cookieConfig.Domain,
+		h.cookieConfig.Secure,
+		true, // httpOnly = true
+	)
 }
 
 // Login godoc
 // @Summary      User login
-// @Description  Authenticate user with username and password
+// @Description  Authenticate user with username and password. Returns access token in response body and sets refresh token as httpOnly cookie.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -62,10 +111,17 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		roleIDStrings[i] = rid.String()
 	}
 
+	// Set refresh token as httpOnly cookie
+	// Calculate max age in seconds from refresh token expiration
+	maxAge := int(h.jwtConfig.RefreshTokenExpiration.Seconds())
+	h.setRefreshTokenCookie(c, result.RefreshToken, maxAge)
+
+	// Response includes access token (stored in memory on frontend)
+	// Refresh token is NOT included in response body - it's in httpOnly cookie
 	response := LoginResponse{
 		Token: TokenResponse{
 			AccessToken:           result.AccessToken,
-			RefreshToken:          result.RefreshToken,
+			RefreshToken:          "", // Empty - sent via httpOnly cookie
 			AccessTokenExpiresAt:  result.AccessTokenExpiresAt,
 			RefreshTokenExpiresAt: result.RefreshTokenExpiresAt,
 			TokenType:             result.TokenType,
@@ -88,36 +144,57 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 // RefreshToken godoc
 // @Summary      Refresh access token
-// @Description  Get new access token using refresh token
+// @Description  Get new access token using refresh token from httpOnly cookie. Falls back to request body for backward compatibility.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        request body RefreshTokenRequest true "Refresh token"
+// @Param        request body RefreshTokenRequest false "Refresh token (optional, prefer cookie)"
 // @Success      200 {object} dto.Response{data=RefreshTokenResponse}
 // @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
 // @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	var req RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		h.BadRequest(c, "Invalid request body")
+	var refreshToken string
+
+	// Try to get refresh token from httpOnly cookie first (preferred, secure method)
+	cookieToken, err := c.Cookie(RefreshTokenCookieName)
+	if err == nil && cookieToken != "" {
+		refreshToken = cookieToken
+	} else {
+		// Fallback: try to get from request body (for backward compatibility)
+		var req RefreshTokenRequest
+		if err := c.ShouldBindJSON(&req); err == nil && req.RefreshToken != "" {
+			refreshToken = req.RefreshToken
+		}
+	}
+
+	// No refresh token found in either source
+	if refreshToken == "" {
+		h.Unauthorized(c, "Refresh token required")
 		return
 	}
 
 	// The auth service extracts user info from the refresh token itself
 	result, err := h.authService.RefreshToken(c.Request.Context(), identity.RefreshTokenInput{
-		RefreshToken: req.RefreshToken,
+		RefreshToken: refreshToken,
 	})
 	if err != nil {
+		// Clear invalid cookie on refresh failure
+		h.clearRefreshTokenCookie(c)
 		h.HandleError(c, err)
 		return
 	}
 
+	// Update refresh token cookie with new token
+	maxAge := int(h.jwtConfig.RefreshTokenExpiration.Seconds())
+	h.setRefreshTokenCookie(c, result.RefreshToken, maxAge)
+
+	// Response includes only access token - refresh token is in httpOnly cookie
 	response := RefreshTokenResponse{
 		Token: TokenResponse{
 			AccessToken:           result.AccessToken,
-			RefreshToken:          result.RefreshToken,
+			RefreshToken:          "", // Empty - sent via httpOnly cookie
 			AccessTokenExpiresAt:  result.AccessTokenExpiresAt,
 			RefreshTokenExpiresAt: result.RefreshTokenExpiresAt,
 			TokenType:             result.TokenType,
@@ -129,7 +206,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 // Logout godoc
 // @Summary      User logout
-// @Description  Logout and invalidate the current session
+// @Description  Logout and invalidate the current session. Clears refresh token cookie.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
@@ -166,6 +243,9 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		h.HandleError(c, err)
 		return
 	}
+
+	// Clear refresh token cookie
+	h.clearRefreshTokenCookie(c)
 
 	h.Success(c, LogoutResponse{
 		Message: "Logged out successfully",
