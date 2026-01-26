@@ -111,83 +111,95 @@ export default function SalesOrdersPage() {
   )
 
   // Fetch customers for filter dropdown
-  const fetchCustomers = useCallback(async () => {
-    setCustomersLoading(true)
-    try {
-      const response = await customerApi.getPartnerCustomers({ page_size: 100 })
-      if (response.success && response.data) {
-        const options: CustomerOption[] = response.data.map(
-          (customer: HandlerCustomerListResponse) => ({
-            label: customer.name || customer.code || '',
-            value: customer.id || '',
-          })
-        )
-        setCustomerOptions([{ label: t('salesOrder.allCustomers'), value: '' }, ...options])
+  const fetchCustomers = useCallback(
+    async (signal?: AbortSignal) => {
+      setCustomersLoading(true)
+      try {
+        const response = await customerApi.getPartnerCustomers({ page_size: 100 }, { signal })
+        if (response.success && response.data) {
+          const options: CustomerOption[] = response.data.map(
+            (customer: HandlerCustomerListResponse) => ({
+              label: customer.name || customer.code || '',
+              value: customer.id || '',
+            })
+          )
+          setCustomerOptions([{ label: t('salesOrder.allCustomers'), value: '' }, ...options])
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        // Silently fail - customer filter just won't be available
+      } finally {
+        setCustomersLoading(false)
       }
-    } catch {
-      // Silently fail - customer filter just won't be available
-    } finally {
-      setCustomersLoading(false)
-    }
-  }, [customerApi])
+    },
+    [customerApi]
+  )
 
   // Fetch customers on mount
   useEffect(() => {
-    fetchCustomers()
+    const abortController = new AbortController()
+    fetchCustomers(abortController.signal)
+    return () => abortController.abort()
   }, [fetchCustomers])
 
   // Fetch sales orders
-  const fetchOrders = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params: GetTradeSalesOrdersParams = {
-        page: state.pagination.page,
-        page_size: state.pagination.pageSize,
-        search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetTradeSalesOrdersStatus | undefined,
-        customer_id: customerFilter || undefined,
-        order_by: state.sort.field || 'created_at',
-        order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
-      }
-
-      // Add date range filter
-      if (dateRange && dateRange[0] && dateRange[1]) {
-        params.start_date = dateRange[0].toISOString()
-        params.end_date = dateRange[1].toISOString()
-      }
-
-      const response = await salesOrderApi.getTradeSalesOrders(params)
-
-      if (response.success && response.data) {
-        setOrderList(response.data as SalesOrder[])
-        if (response.meta) {
-          setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
-          })
+  const fetchOrders = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true)
+      try {
+        const params: GetTradeSalesOrdersParams = {
+          page: state.pagination.page,
+          page_size: state.pagination.pageSize,
+          search: searchKeyword || undefined,
+          status: (statusFilter || undefined) as GetTradeSalesOrdersStatus | undefined,
+          customer_id: customerFilter || undefined,
+          order_by: state.sort.field || 'created_at',
+          order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
         }
+
+        // Add date range filter
+        if (dateRange && dateRange[0] && dateRange[1]) {
+          params.start_date = dateRange[0].toISOString()
+          params.end_date = dateRange[1].toISOString()
+        }
+
+        const response = await salesOrderApi.getTradeSalesOrders(params, { signal })
+
+        if (response.success && response.data) {
+          setOrderList(response.data as SalesOrder[])
+          if (response.meta) {
+            setPaginationMeta({
+              page: response.meta.page || 1,
+              page_size: response.meta.page_size || 20,
+              total: response.meta.total || 0,
+              total_pages: response.meta.total_pages || 1,
+            })
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        Toast.error(t('salesOrder.messages.fetchError'))
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      Toast.error(t('salesOrder.messages.fetchError'))
-    } finally {
-      setLoading(false)
-    }
-  }, [
-    salesOrderApi,
-    state.pagination.page,
-    state.pagination.pageSize,
-    state.sort,
-    searchKeyword,
-    statusFilter,
-    customerFilter,
-    dateRange,
-  ])
+    },
+    [
+      salesOrderApi,
+      state.pagination.page,
+      state.pagination.pageSize,
+      state.sort,
+      searchKeyword,
+      statusFilter,
+      customerFilter,
+      dateRange,
+    ]
+  )
 
   // Fetch on mount and when state changes
   useEffect(() => {
-    fetchOrders()
+    const abortController = new AbortController()
+    fetchOrders(abortController.signal)
+    return () => abortController.abort()
   }, [fetchOrders])
 
   // Handle search

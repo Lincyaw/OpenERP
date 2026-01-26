@@ -162,20 +162,24 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
 
   // Fetch suppliers
   const fetchSuppliers = useCallback(
-    async (search?: string) => {
+    async (search?: string, signal?: AbortSignal) => {
       setSuppliersLoading(true)
       try {
-        const response = await supplierApi.getPartnerSuppliers({
-          page_size: 50,
-          search: search || undefined,
-          status: 'active',
-        })
+        const response = await supplierApi.getPartnerSuppliers(
+          {
+            page_size: 50,
+            search: search || undefined,
+            status: 'active',
+          },
+          { signal }
+        )
         if (response.success && response.data) {
           setSuppliers(response.data)
         } else if (!response.success) {
           console.error('Failed to fetch suppliers:', response.error)
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
         console.error('Error fetching suppliers:', error)
       } finally {
         setSuppliersLoading(false)
@@ -186,20 +190,24 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
 
   // Fetch products
   const fetchProducts = useCallback(
-    async (search?: string) => {
+    async (search?: string, signal?: AbortSignal) => {
       setProductsLoading(true)
       try {
-        const response = await productApi.getCatalogProducts({
-          page_size: 50,
-          search: search || undefined,
-          status: 'active',
-        })
+        const response = await productApi.getCatalogProducts(
+          {
+            page_size: 50,
+            search: search || undefined,
+            status: 'active',
+          },
+          { signal }
+        )
         if (response.success && response.data) {
           setProducts(response.data)
         } else if (!response.success) {
           console.error('Failed to fetch products:', response.error)
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
         console.error('Error fetching products:', error)
       } finally {
         setProductsLoading(false)
@@ -209,57 +217,72 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   )
 
   // Fetch warehouses
-  const fetchWarehouses = useCallback(async () => {
-    setWarehousesLoading(true)
-    try {
-      const response = await warehouseApi.getPartnerWarehouses({
-        page_size: 100,
-        status: 'enabled',
-      })
-      if (response.success && response.data) {
-        setWarehouses(response.data)
-        // Set default warehouse if available and not in edit mode
-        if (!isEditMode && !formData.warehouse_id) {
-          const defaultWarehouse = response.data.find((w) => w.is_default)
-          if (defaultWarehouse?.id) {
-            setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
+  const fetchWarehouses = useCallback(
+    async (signal?: AbortSignal) => {
+      setWarehousesLoading(true)
+      try {
+        const response = await warehouseApi.getPartnerWarehouses(
+          {
+            page_size: 100,
+            status: 'enabled',
+          },
+          { signal }
+        )
+        if (response.success && response.data) {
+          setWarehouses(response.data)
+          // Set default warehouse if available and not in edit mode
+          if (!isEditMode && !formData.warehouse_id) {
+            const defaultWarehouse = response.data.find((w) => w.is_default)
+            if (defaultWarehouse?.id) {
+              setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
+            }
           }
+        } else if (!response.success) {
+          console.error('Failed to fetch warehouses:', response.error)
         }
-      } else if (!response.success) {
-        console.error('Failed to fetch warehouses:', response.error)
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        console.error('Error fetching warehouses:', error)
+      } finally {
+        setWarehousesLoading(false)
       }
-    } catch (error) {
-      console.error('Error fetching warehouses:', error)
-    } finally {
-      setWarehousesLoading(false)
-    }
-  }, [warehouseApi, isEditMode, formData.warehouse_id])
+    },
+    [warehouseApi, isEditMode, formData.warehouse_id]
+  )
 
   // Initial data loading
   useEffect(() => {
-    fetchSuppliers()
-    fetchProducts()
-    fetchWarehouses()
+    const abortController = new AbortController()
+    fetchSuppliers(undefined, abortController.signal)
+    fetchProducts(undefined, abortController.signal)
+    fetchWarehouses(abortController.signal)
+    return () => abortController.abort()
   }, [fetchSuppliers, fetchProducts, fetchWarehouses])
 
   // Debounced supplier search
   useEffect(() => {
+    if (!supplierSearch) return
+    const abortController = new AbortController()
     const timer = setTimeout(() => {
-      if (supplierSearch) {
-        fetchSuppliers(supplierSearch)
-      }
+      fetchSuppliers(supplierSearch, abortController.signal)
     }, 300)
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      abortController.abort()
+    }
   }, [supplierSearch, fetchSuppliers])
 
   // Debounced product search
   useEffect(() => {
+    if (!productSearch) return
+    const abortController = new AbortController()
     const timer = setTimeout(() => {
-      if (productSearch) {
-        fetchProducts(productSearch)
-      }
+      fetchProducts(productSearch, abortController.signal)
     }, 300)
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      abortController.abort()
+    }
   }, [productSearch, fetchProducts])
 
   // Load initial data for edit mode

@@ -100,116 +100,138 @@ export default function StockListPage() {
   })
 
   // Fetch warehouses for filter dropdown
-  const fetchWarehouses = useCallback(async () => {
-    try {
-      const response = await warehousesApi.getPartnerWarehouses({
-        page: 1,
-        page_size: 100,
-        status: 'enabled',
-      })
-      if (response.success && response.data) {
-        const warehouses = response.data as HandlerWarehouseListResponse[]
-        const options: WarehouseOption[] = [
-          { label: t('stock.allWarehouses'), value: '' },
-          ...warehouses.map((w) => ({
-            label: w.name || w.code || '',
-            value: w.id || '',
-          })),
-        ]
-        setWarehouseOptions(options)
+  const fetchWarehouses = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await warehousesApi.getPartnerWarehouses(
+          {
+            page: 1,
+            page_size: 100,
+            status: 'enabled',
+          },
+          { signal }
+        )
+        if (response.success && response.data) {
+          const warehouses = response.data as HandlerWarehouseListResponse[]
+          const options: WarehouseOption[] = [
+            { label: t('stock.allWarehouses'), value: '' },
+            ...warehouses.map((w) => ({
+              label: w.name || w.code || '',
+              value: w.id || '',
+            })),
+          ]
+          setWarehouseOptions(options)
 
-        // Build warehouse map for display
-        const map = new Map<string, string>()
-        warehouses.forEach((w) => {
-          if (w.id) {
-            map.set(w.id, w.name || w.code || w.id)
-          }
-        })
-        setWarehouseMap(map)
+          // Build warehouse map for display
+          const map = new Map<string, string>()
+          warehouses.forEach((w) => {
+            if (w.id) {
+              map.set(w.id, w.name || w.code || w.id)
+            }
+          })
+          setWarehouseMap(map)
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        console.error('Failed to fetch warehouses')
       }
-    } catch {
-      console.error('Failed to fetch warehouses')
-    }
-  }, [warehousesApi, t])
+    },
+    [warehousesApi, t]
+  )
 
   // Fetch products for display names
-  const fetchProducts = useCallback(async () => {
-    try {
-      const response = await productsApi.getCatalogProducts({ page: 1, page_size: 100 })
-      if (response.success && response.data) {
-        const products = response.data as HandlerProductListResponse[]
-        const map = new Map<string, string>()
-        products.forEach((p) => {
-          if (p.id) {
-            map.set(p.id, p.name || p.code || p.id)
-          }
-        })
-        setProductMap(map)
+  const fetchProducts = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await productsApi.getCatalogProducts(
+          { page: 1, page_size: 100 },
+          { signal }
+        )
+        if (response.success && response.data) {
+          const products = response.data as HandlerProductListResponse[]
+          const map = new Map<string, string>()
+          products.forEach((p) => {
+            if (p.id) {
+              map.set(p.id, p.name || p.code || p.id)
+            }
+          })
+          setProductMap(map)
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        console.error('Failed to fetch products')
       }
-    } catch {
-      console.error('Failed to fetch products')
-    }
-  }, [productsApi])
+    },
+    [productsApi]
+  )
 
   // Fetch inventory items
-  const fetchInventory = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params: GetInventoryItemsParams = {
-        page: state.pagination.page,
-        page_size: state.pagination.pageSize,
-        search: searchKeyword || undefined,
-        warehouse_id: warehouseFilter || undefined,
-        order_by: state.sort.field || 'updated_at',
-        order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as GetInventoryItemsOrderDir,
-      }
-
-      // Apply stock status filter
-      if (stockStatusFilter === 'has_stock') {
-        params.has_stock = true
-      } else if (stockStatusFilter === 'below_minimum') {
-        params.below_minimum = true
-      } else if (stockStatusFilter === 'no_stock') {
-        params.has_stock = false
-      }
-
-      const response = await inventoryApi.getInventoryItems(params)
-
-      if (response.success && response.data) {
-        setInventoryList(response.data as InventoryItem[])
-        if (response.meta) {
-          setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
-          })
+  const fetchInventory = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true)
+      try {
+        const params: GetInventoryItemsParams = {
+          page: state.pagination.page,
+          page_size: state.pagination.pageSize,
+          search: searchKeyword || undefined,
+          warehouse_id: warehouseFilter || undefined,
+          order_by: state.sort.field || 'updated_at',
+          order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as GetInventoryItemsOrderDir,
         }
+
+        // Apply stock status filter
+        if (stockStatusFilter === 'has_stock') {
+          params.has_stock = true
+        } else if (stockStatusFilter === 'below_minimum') {
+          params.below_minimum = true
+        } else if (stockStatusFilter === 'no_stock') {
+          params.has_stock = false
+        }
+
+        const response = await inventoryApi.getInventoryItems(params, { signal })
+
+        if (response.success && response.data) {
+          setInventoryList(response.data as InventoryItem[])
+          if (response.meta) {
+            setPaginationMeta({
+              page: response.meta.page || 1,
+              page_size: response.meta.page_size || 20,
+              total: response.meta.total || 0,
+              total_pages: response.meta.total_pages || 1,
+            })
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'CanceledError') return
+        Toast.error(t('stock.messages.fetchError'))
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      Toast.error(t('stock.messages.fetchError'))
-    } finally {
-      setLoading(false)
-    }
-  }, [
-    inventoryApi,
-    state.pagination.page,
-    state.pagination.pageSize,
-    state.sort,
-    searchKeyword,
-    warehouseFilter,
-    stockStatusFilter,
-  ])
+    },
+    [
+      inventoryApi,
+      state.pagination.page,
+      state.pagination.pageSize,
+      state.sort,
+      searchKeyword,
+      warehouseFilter,
+      stockStatusFilter,
+    ]
+  )
 
   // Fetch warehouses and products on mount
   useEffect(() => {
-    fetchWarehouses()
-    fetchProducts()
+    const abortController = new AbortController()
+    fetchWarehouses(abortController.signal)
+    fetchProducts(abortController.signal)
+    return () => abortController.abort()
   }, [fetchWarehouses, fetchProducts])
 
   // Fetch inventory on mount and when state changes
   useEffect(() => {
-    fetchInventory()
+    const abortController = new AbortController()
+    fetchInventory(abortController.signal)
+    return () => abortController.abort()
   }, [fetchInventory])
 
   // Handle search

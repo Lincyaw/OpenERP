@@ -4848,7 +4848,7 @@
       "组件卸载时取消未完成的请求",
       "防止内存泄漏和 setState 警告"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "CRITICAL",

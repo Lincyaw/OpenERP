@@ -214,6 +214,17 @@ export const customInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
+  // Use AbortController signal if provided, otherwise use CancelToken for backwards compatibility
+  if (options?.signal) {
+    const promise = axiosInstance({
+      ...config,
+      ...options,
+    }).then(({ data }) => data)
+
+    return promise
+  }
+
+  // Legacy CancelToken support for backwards compatibility
   const source = axios.CancelToken.source()
 
   const promise = axiosInstance({
