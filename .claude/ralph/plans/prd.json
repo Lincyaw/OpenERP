@@ -3498,5 +3498,37 @@
       "✅ CLAUDE.md文档密码错误修复 (test123 → admin123)"
     ],
     "passes": true
+  },
+  {
+    "id": "P9-FIX-003",
+    "story": "修复退货单仓库设置状态限制问题",
+    "priority": "high",
+    "requirements": [
+      "问题描述: 退货单Complete/Ship时需要设置仓库,但SetWarehouse只允许DRAFT/PENDING状态",
+      "影响: 已审批的退货单无法设置仓库,导致无法完成流程",
+      "",
+      "修复SalesReturn.SetWarehouse:",
+      "- 允许在DRAFT, PENDING, APPROVED状态下设置仓库",
+      "- 因为Complete()需要仓库,但调用发生在APPROVED状态之后",
+      "",
+      "修复PurchaseReturn.SetWarehouse:",
+      "- 允许在DRAFT, PENDING, APPROVED状态下设置仓库",
+      "- 因为Ship()需要仓库,但调用发生在APPROVED状态之后",
+      "",
+      "更新测试:",
+      "- purchase_return_test.go: 更新SetWarehouse测试",
+      "- 添加'sets warehouse in approved status'测试 (应成功)",
+      "- 修改'fails in approved status'为'fails in shipped status' (真正不允许的状态)",
+      "",
+      "文件修改:",
+      "- backend/internal/domain/trade/sales_return.go",
+      "- backend/internal/domain/trade/purchase_return.go",
+      "- backend/internal/domain/trade/purchase_return_test.go",
+      "",
+      "✅ go build 成功",
+      "✅ domain/trade 单元测试通过",
+      "✅ TypeScript 类型检查通过"
+    ],
+    "passes": true
   }
 ]

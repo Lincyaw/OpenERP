@@ -402,9 +402,9 @@ func (r *PurchaseReturn) SetRemark(remark string) {
 }
 
 // SetWarehouse sets the warehouse from which goods will be shipped
-// Only allowed in DRAFT or PENDING status
+// Allowed in DRAFT, PENDING, or APPROVED status (before shipping)
 func (r *PurchaseReturn) SetWarehouse(warehouseID uuid.UUID) error {
-	if r.Status != PurchaseReturnStatusDraft && r.Status != PurchaseReturnStatusPending {
+	if r.Status != PurchaseReturnStatusDraft && r.Status != PurchaseReturnStatusPending && r.Status != PurchaseReturnStatusApproved {
 		return shared.NewDomainError("INVALID_STATE", "Cannot set warehouse for return in current status")
 	}
 	if warehouseID == uuid.Nil {

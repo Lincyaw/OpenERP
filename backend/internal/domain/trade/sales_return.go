@@ -331,9 +331,9 @@ func (r *SalesReturn) SetRemark(remark string) {
 }
 
 // SetWarehouse sets the warehouse for returned goods
-// Only allowed in DRAFT or PENDING status
+// Allowed in DRAFT, PENDING, or APPROVED status (before completion)
 func (r *SalesReturn) SetWarehouse(warehouseID uuid.UUID) error {
-	if r.Status != ReturnStatusDraft && r.Status != ReturnStatusPending {
+	if r.Status != ReturnStatusDraft && r.Status != ReturnStatusPending && r.Status != ReturnStatusApproved {
 		return shared.NewDomainError("INVALID_STATE", "Cannot set warehouse for return in current status")
 	}
 	if warehouseID == uuid.Nil {

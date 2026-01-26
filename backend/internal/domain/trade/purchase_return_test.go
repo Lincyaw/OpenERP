@@ -748,12 +748,27 @@ func TestPurchaseReturn_SetWarehouse(t *testing.T) {
 		assert.Equal(t, &warehouseID, pr.WarehouseID)
 	})
 
-	t.Run("fails in approved status", func(t *testing.T) {
+	t.Run("sets warehouse in approved status", func(t *testing.T) {
 		order := createTestPurchaseOrderForReturn(t)
 		pr, _ := NewPurchaseReturn(order.TenantID, "PR-001", order)
 		pr.AddItem(&order.Items[0], decimal.NewFromInt(3))
 		pr.Submit()
 		pr.Approve(uuid.New(), "")
+
+		warehouseID := uuid.New()
+		err := pr.SetWarehouse(warehouseID)
+		require.NoError(t, err)
+		assert.Equal(t, &warehouseID, pr.WarehouseID)
+	})
+
+	t.Run("fails in shipped status", func(t *testing.T) {
+		order := createTestPurchaseOrderForReturn(t)
+		pr, _ := NewPurchaseReturn(order.TenantID, "PR-001", order)
+		pr.AddItem(&order.Items[0], decimal.NewFromInt(3))
+		pr.SetWarehouse(uuid.New())
+		pr.Submit()
+		pr.Approve(uuid.New(), "")
+		pr.Ship(uuid.New(), "", "")
 
 		err := pr.SetWarehouse(uuid.New())
 		assert.Error(t, err)

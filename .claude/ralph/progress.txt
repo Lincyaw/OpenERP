@@ -17704,3 +17704,72 @@ Fixed 3 skipped E2E tests in the inventory module. The tests were skipped due to
 ### Next Steps
 - Run E2E tests in Docker to verify: `make e2e ARGS="tests/e2e/inventory/inventory.spec.ts --project=chromium"`
 - If verified, the concurrent adjustment and data dependency tests can be addressed in a future task
+
+
+---
+
+## 2026-01-26 - P9-FIX-003: 修复退货单仓库设置状态限制问题
+
+### Summary
+Fixed a critical bug where return orders (Sales Return and Purchase Return) could not set the warehouse in APPROVED status, but warehouse was required for completing/shipping the return.
+
+### Problem Analysis
+The `SetWarehouse` method in both `SalesReturn` and `PurchaseReturn` domain models only allowed warehouse to be set in DRAFT or PENDING status. However:
+
+1. **SalesReturn flow**: DRAFT → PENDING → APPROVED → Complete
+   - `Complete()` requires warehouse to be set
+   - But `SetWarehouse` didn't allow APPROVED status
+   - Result: Returns approved without warehouse could never be completed
+
+2. **PurchaseReturn flow**: DRAFT → PENDING → APPROVED → Ship → Complete
+   - `Ship()` requires warehouse to be set
+   - But `SetWarehouse` didn't allow APPROVED status
+   - Result: Returns approved without warehouse could never be shipped
+
+### Fix Applied
+
+**File: backend/internal/domain/trade/sales_return.go**
+```go
+// Before:
+func (r *SalesReturn) SetWarehouse(warehouseID uuid.UUID) error {
+    if r.Status != ReturnStatusDraft && r.Status != ReturnStatusPending {
+        return shared.NewDomainError("INVALID_STATE", ...)
+    }
+}
+
+// After:
+func (r *SalesReturn) SetWarehouse(warehouseID uuid.UUID) error {
+    if r.Status != ReturnStatusDraft && r.Status != ReturnStatusPending && r.Status != ReturnStatusApproved {
+        return shared.NewDomainError("INVALID_STATE", ...)
+    }
+}
+```
+
+**File: backend/internal/domain/trade/purchase_return.go**
+- Same fix applied to PurchaseReturn.SetWarehouse
+
+**File: backend/internal/domain/trade/purchase_return_test.go**
+- Updated test "fails in approved status" → "sets warehouse in approved status" (should succeed)
+- Added new test "fails in shipped status" (actual terminal state where it should fail)
+
+### Verification
+- ✅ go build ./... - successful
+- ✅ go test ./internal/domain/trade/... - all tests pass
+- ✅ TypeScript type check - passes
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `backend/internal/domain/trade/sales_return.go` | Allow SetWarehouse in APPROVED status |
+| `backend/internal/domain/trade/purchase_return.go` | Allow SetWarehouse in APPROVED status |
+| `backend/internal/domain/trade/purchase_return_test.go` | Updated tests for new behavior |
+| `.claude/ralph/plans/prd.json` | Added P9-FIX-003 entry |
+
+### Technical Notes
+- The fix allows warehouse to be set in states where it's logically needed (before Complete/Ship)
+- Terminal states (SHIPPED, COMPLETED, CANCELLED, REJECTED) still properly reject warehouse changes
+- This enables the complete return workflow to function properly
+
+### Next Steps
+- Run E2E tests for return flows (P3-INT-003, P3-INT-004) to verify full workflow
+- Consider adding E2E test for this specific scenario
