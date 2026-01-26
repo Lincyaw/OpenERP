@@ -1,5 +1,83 @@
 [
   {
+    "id": "P0-SEED-001",
+    "story": "创建全面的 Seed Data，确保所有数据实体互相关联且前端可操作查看",
+    "priority": "critical",
+    "requirements": [
+      "=== 设计原则 ===",
+      "1. 数据顺序：按外键依赖顺序插入，确保引用完整性",
+      "2. 数据关联：确保实体间通过外键正确关联（如订单关联客户、商品、仓库）",
+      "3. 数据量充足：每个模块至少有 5-10 条记录，支持前端分页和筛选测试",
+      "4. 业务逻辑一致：数据符合业务规则（如订单需先有客户和产品）",
+      "5. 状态覆盖：每种状态至少有一条记录（如订单的 DRAFT/CONFIRMED/SHIPPED/COMPLETED）",
+      "6. 金额一致：财务数据金额要与订单/库存数据保持逻辑一致",
+      "",
+      "=== 第一层：基础数据（无外键依赖）===",
+      "- tenants (3条): 默认租户 + 2个测试租户（alpha, beta）",
+      "- categories (10条): 4个根分类 + 6个子分类，形成树形结构",
+      "",
+      "=== 第二层：主数据 ===",
+      "- customer_levels (15条): 每租户5个等级（普通/银卡/金卡/白金/VIP）",
+      "- products (15条): 各分类商品，包含不同价格区间",
+      "- customers (10条): 5个企业客户 + 5个个人客户，分布不同等级",
+      "- suppliers (8条): 不同类型供应商（制造商/分销商/批发商）",
+      "- warehouses (5条): 3个实体仓库 + 1个虚拟仓 + 1个退货仓",
+      "",
+      "=== 第三层：用户权限 ===",
+      "- roles (7条): ADMIN/MANAGER/SALES/PURCHASER/WAREHOUSE/CASHIER/ACCOUNTANT",
+      "- users (6条): admin + 各角色测试用户",
+      "- user_roles: 用户角色关联",
+      "- role_permissions: 各角色权限配置",
+      "- role_data_scopes: 数据权限范围",
+      "",
+      "=== 第四层：商品扩展 ===",
+      "- product_units (10条): 为3-5个商品配置多单位（箱/件/个等）",
+      "",
+      "=== 第五层：库存数据 ===",
+      "- inventory_items (20条): 商品在各仓库的库存记录",
+      "- stock_batches (10条): 需要批次管理的商品批次",
+      "- stock_locks (5条): 已锁定的库存（关联待发货订单）",
+      "- inventory_transactions (15条): 入库/出库/调整流水记录",
+      "",
+      "=== 第六层：交易数据 ===",
+      "- sales_orders (10条): 各状态订单（DRAFT 2/CONFIRMED 2/SHIPPED 3/COMPLETED 2/CANCELLED 1）",
+      "- sales_order_items (25条): 订单明细，每单2-4个商品",
+      "- purchase_orders (8条): 各状态采购订单",
+      "- purchase_order_items (20条): 采购明细",
+      "- sales_returns (4条): 销售退货单（审批中/已完成各2条）",
+      "- sales_return_items (8条): 退货明细",
+      "- purchase_returns (3条): 采购退货单",
+      "- purchase_return_items (6条): 采购退货明细",
+      "",
+      "=== 第七层：财务数据 ===",
+      "- account_receivables (8条): 应收账款（关联已发货销售订单）",
+      "- account_payables (6条): 应付账款（关联已收货采购订单）",
+      "- receipt_vouchers (5条): 收款单（现金/微信/支付宝/银行转账）",
+      "- payment_vouchers (4条): 付款单",
+      "- receivable_payment_records: 收款核销记录",
+      "- payable_payment_records: 付款核销记录",
+      "- expense_records (6条): 费用记录（房租/水电/工资/运费/其他）",
+      "- other_income_records (4条): 其他收入（服务费/利息/补贴）",
+      "- balance_transactions (10条): 客户余额充值/消费/退款流水",
+      "",
+      "=== 数据一致性校验 ===",
+      "- 销售订单金额 = SUM(订单明细金额)",
+      "- 应收账款金额 = 对应销售订单应收金额",
+      "- 库存锁定数量 = 已确认未发货订单的商品数量",
+      "- 客户余额 = SUM(充值) - SUM(消费) + SUM(退款)",
+      "- 收款核销金额 <= 应收账款金额",
+      "",
+      "=== 前端展示验证 ===",
+      "- 商品列表：能显示各分类商品，支持筛选和分页",
+      "- 客户列表：显示不同等级客户，余额信息正确",
+      "- 库存列表：显示各仓库库存，可用/锁定数量分开",
+      "- 订单列表：各状态订单都能正确展示和筛选",
+      "- 财务报表：应收/应付/收支汇总数据正确",
+      "- Dashboard：销售趋势、库存预警、待办事项有数据"
+    ],
+    "passes": false
+  },
+  {
     "id": "P0-BE-001",
     "story": "项目脚手架搭建 (Go Module, 目录结构)",
     "priority": "high",
@@ -3034,7 +3112,7 @@
       "✅ Frontend build成功",
       "",
       "附加修复:",
-      "✅ CLAUDE.md文档密码错误修复 (test123 → admin123)"
+      "✅ CLAUDE.md文档密码错误修复 (admin123 → admin123)"
     ],
     "passes": true
   },
@@ -4212,11 +4290,12 @@
       "Add foreign key constraint (optional, can use code reference)",
       "Verify data integrity after migration"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 5.2 - CustomerLevel Value Object",
     "parentTask": "DDD-013",
     "affectedModules": [
-      "backend/migrations/000XXX_migrate_customer_levels.up.sql"
+      "backend/migrations/000028_migrate_customer_levels_data.up.sql",
+      "backend/migrations/000028_migrate_customer_levels_data.down.sql"
     ],
     "severity": "MEDIUM",
     "blockedBy": [
@@ -4246,5 +4325,763 @@
     "blockedBy": [
       "impl-CustomerLevel-002"
     ]
+  }
+,
+  {
+    "id": "SEC-001",
+    "story": "修复 SQL 注入漏洞 - ORDER BY 子句未验证",
+    "priority": "critical",
+    "requirements": [
+      "在所有 Repository 中实现 ORDER BY 字段白名单验证",
+      "创建 validateSortField() 工具函数",
+      "对 sortOrder 只允许 ASC/DESC",
+      "覆盖所有 16+ 个受影响的 Repository 文件"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/user_repository.go",
+      "backend/internal/infrastructure/persistence/product_repository.go",
+      "backend/internal/infrastructure/persistence/customer_repository.go",
+      "backend/internal/infrastructure/persistence/sales_order_repository.go",
+      "backend/internal/infrastructure/persistence/inventory_repository.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-002",
+    "story": "移除财务操作中的硬编码 User ID",
+    "priority": "critical",
+    "requirements": [
+      "从 JWT context 中正确提取 userID",
+      "移除 finance.go:673,720 处的硬编码 UUID",
+      "确保所有财务操作有正确的审计追踪"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/interfaces/http/handler/finance.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-003",
+    "story": "移除开发环境认证绕过",
+    "priority": "critical",
+    "requirements": [
+      "移除 base.go 中的 X-Tenant-ID 和 X-User-ID header 回退",
+      "移除默认开发租户 UUID",
+      "强制所有请求通过 JWT 认证获取租户和用户信息"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/interfaces/http/handler/base.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-004",
+    "story": "Token 存储安全改进",
+    "priority": "high",
+    "requirements": [
+      "Access Token 改为仅存内存",
+      "Refresh Token 改用 httpOnly Cookie",
+      "后端实现 Cookie 设置逻辑",
+      "前端适配新的认证流程"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "HIGH",
+    "affectedModules": [
+      "frontend/src/store/authStore.ts",
+      "frontend/src/services/axios-instance.ts",
+      "backend/internal/interfaces/http/handler/auth.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-005",
+    "story": "CORS 配置安全加固",
+    "priority": "high",
+    "requirements": [
+      "修改 DefaultCORSConfig 默认值为空白名单",
+      "修复 Max-Age header 的 string(rune()) bug",
+      "确保生产环境使用明确配置的域名"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/interfaces/http/middleware/common.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-006",
+    "story": "添加缺失的安全 Headers",
+    "priority": "high",
+    "requirements": [
+      "添加 Content-Security-Policy header",
+      "添加 Strict-Transport-Security header",
+      "添加 Permissions-Policy header"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/interfaces/http/middleware/common.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-001",
+    "story": "修复 GetOrCreate 竞态条件",
+    "priority": "critical",
+    "requirements": [
+      "修复 inventory_repository.go:349 的 TOCTOU 竞态",
+      "使用 RETURNING 子句或检查 RowsAffected",
+      "添加并发测试验证修复"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/inventory_repository.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-002",
+    "story": "修复余额支付缺少乐观锁",
+    "priority": "critical",
+    "requirements": [
+      "在 balance_payment_service.go 中使用 SaveWithLock",
+      "为 Customer 实体添加版本号检查",
+      "防止并发支付导致余额透支"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/application/finance/balance_payment_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-003",
+    "story": "修复过期锁无法释放问题",
+    "priority": "high",
+    "requirements": [
+      "修复 inventory_service.go:773 - item.Locks 未填充问题",
+      "在调用 UnlockStock 前添加 lock 到 item.Locks",
+      "修复 :786 保存错误对象问题"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/application/inventory/inventory_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-004",
+    "story": "修复 Lock 索引假设错误",
+    "priority": "high",
+    "requirements": [
+      "修复 inventory_service.go:456,527,1002 处假设 Locks[0]",
+      "在修改前保存 lock 引用或按 ID 查找",
+      "添加空切片防护"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/application/inventory/inventory_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-005",
+    "story": "销售退货添加单位换算支持",
+    "priority": "high",
+    "requirements": [
+      "为 SalesReturnItem 添加 ConversionRate/BaseQuantity/BaseUnit 字段",
+      "创建退货时计算基本单位数量",
+      "确保库存回滚使用正确的基本单位数量"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/domain/trade/sales_return.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-006",
+    "story": "退货数量校验已退总量",
+    "priority": "high",
+    "requirements": [
+      "创建退货时校验: returnQuantity + alreadyReturned <= originalQuantity",
+      "添加 SalesReturnRepository 查询已退货数量的方法",
+      "防止超额退货"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/domain/trade/sales_return.go",
+      "backend/internal/application/trade/sales_return_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-007",
+    "story": "退货取消时回滚库存",
+    "priority": "high",
+    "requirements": [
+      "为 SalesReturnCancelledEvent 添加事件处理器",
+      "如果退货已部分收货，需扣减已恢复的库存",
+      "确保取消后库存数据一致"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/application/trade/sales_return_service.go",
+      "backend/internal/application/trade/sales_return_cancelled_handler.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-008",
+    "story": "多步操作添加事务包装",
+    "priority": "high",
+    "requirements": [
+      "为 IncreaseStock 添加数据库事务",
+      "为 LockStock 添加数据库事务",
+      "确保部分失败时回滚所有变更"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/application/inventory/inventory_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-009",
+    "story": "应收账款冲红处理已付金额",
+    "priority": "medium",
+    "requirements": [
+      "冲红时检查是否有已付金额",
+      "已付金额需要退款或生成贷项",
+      "更新支付记录状态"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/finance/account_receivable.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-010",
+    "story": "应收冲红时更新支付记录",
+    "priority": "medium",
+    "requirements": [
+      "冲红时标记关联的 PaymentRecord",
+      "确保审计追踪完整",
+      "添加冲红补偿记录"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/finance/account_receivable.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-C01",
+    "story": "领域实体移除 GORM 标签",
+    "priority": "high",
+    "requirements": [
+      "创建独立的持久化模型 infrastructure/persistence/models/",
+      "保持领域实体纯净无 ORM 依赖",
+      "添加领域模型与持久化模型的映射器"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/domain/",
+      "backend/internal/infrastructure/persistence/"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-C02",
+    "story": "PaymentRecord 移除独立表",
+    "priority": "high",
+    "requirements": [
+      "移除 PaymentRecord 的 TableName() 方法",
+      "通过聚合根 AccountReceivable 持久化",
+      "使用 embedded 或 JSON 列存储"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "backend/internal/domain/finance/account_receivable.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-H01",
+    "story": "StockBatch/StockLock 通过聚合根访问",
+    "priority": "high",
+    "requirements": [
+      "移除 StockBatchRepository 和 StockLockRepository 的直接使用",
+      "通过 InventoryItemRepository 访问批次和锁",
+      "或将其提升为独立聚合（如有独立生命周期）"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/domain/inventory/repository.go",
+      "backend/internal/application/inventory/inventory_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-H02",
+    "story": "Value Objects 不可变性文档化",
+    "priority": "medium",
+    "requirements": [
+      "为 Address UnmarshalJSON 添加文档说明仅用于反序列化",
+      "考虑添加 ParseAddressFromJSON 工厂函数",
+      "审计其他值对象的不可变性"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/domain/shared/valueobject/address.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-H03",
+    "story": "成本计算逻辑移入领域服务",
+    "priority": "high",
+    "requirements": [
+      "将策略选择逻辑从应用服务移入 InventoryDomainService",
+      "应用服务只做编排工作",
+      "领域服务内部处理策略回退"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/application/inventory/inventory_service.go",
+      "backend/internal/domain/inventory/inventory_domain_service.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-H04",
+    "story": "跨上下文引用添加防腐层",
+    "priority": "medium",
+    "requirements": [
+      "为 Finance 上下文的 CustomerID 创建本地值对象",
+      "订阅客户更新事件维护本地缓存",
+      "创建 ACL 接口用于客户信息查询"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "HIGH",
+    "affectedModules": [
+      "backend/internal/domain/finance/account_receivable.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-M01",
+    "story": "事件名统一使用过去时态",
+    "priority": "medium",
+    "requirements": [
+      "将 SalesReturnReceivingEvent 改为 SalesReturnReceivedEvent",
+      "审计所有事件命名确保使用过去时态"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/trade/events.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-M02",
+    "story": "创建库存分配领域服务",
+    "priority": "medium",
+    "requirements": [
+      "创建 StockAllocationService 协调多聚合操作",
+      "实现 saga/compensation 模式处理部分失败",
+      "考虑使用最终一致性和补偿事件"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/inventory/stock_allocation_service.go",
+      "backend/internal/application/trade/sales_order_confirmed_handler.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-M03",
+    "story": "Product 状态变更方法语义澄清",
+    "priority": "low",
+    "requirements": [
+      "澄清 Deactivate() 和 Disable() 的区别",
+      "考虑合并为单一方法带参数",
+      "或重命名以明确语义"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/catalog/product.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-M04",
+    "story": "InventoryItem 使用 Quantity 值对象",
+    "priority": "medium",
+    "requirements": [
+      "将 AvailableQuantity/LockedQuantity 改为 Quantity 值对象",
+      "统一使用值对象而非 decimal.Decimal",
+      "确保类型安全的数量操作"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/inventory/inventory_item.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "DDD-M05",
+    "story": "拆分 ProductRepository 接口",
+    "priority": "low",
+    "requirements": [
+      "将 22 个方法的大接口拆分为 ProductReader/ProductWriter/ProductFinder",
+      "按需组合接口",
+      "提高可测试性"
+    ],
+    "passes": false,
+    "specRef": "DDD Consistency Review",
+    "category": "ddd",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/catalog/product_repository.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-001",
+    "story": "前端 API 调用添加 AbortController",
+    "priority": "high",
+    "requirements": [
+      "所有 useEffect 中的 API 调用添加 AbortController",
+      "组件卸载时取消未完成的请求",
+      "防止内存泄漏和 setState 警告"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesOrderForm.tsx",
+      "frontend/src/features/trade/PurchaseOrderForm.tsx",
+      "frontend/src/pages/trade/SalesOrders.tsx",
+      "frontend/src/pages/inventory/StockList.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-002",
+    "story": "Modal 确认添加防重复点击",
+    "priority": "high",
+    "requirements": [
+      "Modal.confirm 添加 confirmLoading 状态",
+      "异步操作期间禁用 OK 按钮",
+      "防止重复提交"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "CRITICAL",
+    "affectedModules": [
+      "frontend/src/pages/trade/SalesOrders.tsx",
+      "frontend/src/pages/trade/SalesOrderDetail.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-003",
+    "story": "InputNumber 类型转换安全处理",
+    "priority": "high",
+    "requirements": [
+      "InputNumber onChange 处理 undefined 情况",
+      "使用 typeof 检查而非直接类型断言",
+      "防止 NaN 问题"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "HIGH",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesOrderForm.tsx",
+      "frontend/src/features/trade/PurchaseOrderForm.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-004",
+    "story": "批量操作使用 Promise.allSettled",
+    "priority": "high",
+    "requirements": [
+      "将 Promise.all 改为 Promise.allSettled",
+      "分别统计成功和失败数量",
+      "显示部分成功的提示信息"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "HIGH",
+    "affectedModules": [
+      "frontend/src/pages/catalog/Products.tsx",
+      "frontend/src/pages/partner/Customers.tsx",
+      "frontend/src/pages/partner/Suppliers.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-005",
+    "story": "清理生产代码中的 console.error",
+    "priority": "medium",
+    "requirements": [
+      "移除或替换 29 处 console.error",
+      "考虑使用 logger 服务统一管理",
+      "生产环境可配置关闭"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesOrderForm.tsx",
+      "frontend/src/features/trade/PurchaseOrderForm.tsx",
+      "frontend/src/services/axios-instance.ts"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-006",
+    "story": "修复硬编码中文文本",
+    "priority": "medium",
+    "requirements": [
+      "SalesReturnForm.tsx:800 的取消按钮使用 i18n",
+      "检查其他可能遗漏的硬编码文本"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesReturnForm.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-007",
+    "story": "拆分大型订单表单组件",
+    "priority": "medium",
+    "requirements": [
+      "SalesOrderForm 和 PurchaseOrderForm 拆分到 800 行以下",
+      "提取 useOrderForm/useOrderCalculations hooks",
+      "提取 OrderItemsTable/OrderSummary 共享组件"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesOrderForm.tsx",
+      "frontend/src/features/trade/PurchaseOrderForm.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "FE-008",
+    "story": "表单提交后重置状态",
+    "priority": "medium",
+    "requirements": [
+      "创建订单成功后重置表单状态",
+      "导航失败时不会残留旧数据"
+    ],
+    "passes": false,
+    "specRef": "Frontend Code Review",
+    "category": "frontend",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "frontend/src/features/trade/SalesOrderForm.tsx",
+      "frontend/src/features/trade/PurchaseOrderForm.tsx"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-007",
+    "story": "Swagger 文档生产环境保护",
+    "priority": "medium",
+    "requirements": [
+      "生产环境禁用或保护 Swagger 端点",
+      "或添加认证保护",
+      "或限制 IP 访问"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/cmd/server/main.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "SEC-008",
+    "story": "认证端点添加更严格的限流",
+    "priority": "low",
+    "requirements": [
+      "为 /auth 路由添加独立的限流器",
+      "限制为每分钟 5 次尝试",
+      "防止暴力破解"
+    ],
+    "passes": false,
+    "specRef": "Security Review",
+    "category": "security",
+    "severity": "LOW",
+    "affectedModules": [
+      "backend/cmd/server/main.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-011",
+    "story": "修复移动加权平均除零保护",
+    "priority": "medium",
+    "requirements": [
+      "inventory_item.go:84-85 添加 totalQuantity 零值检查",
+      "返回明确错误而非 panic"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/inventory/inventory_item.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-012",
+    "story": "修复乐观锁版本耦合问题",
+    "priority": "medium",
+    "requirements": [
+      "SaveWithLock 使用传入的期望版本而非 item.Version-1",
+      "或使用 GORM 内置乐观锁",
+      "处理新实体（Version=1）的边界情况"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/inventory_repository.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-013",
+    "story": "修复锁过期检查非原子问题",
+    "priority": "medium",
+    "requirements": [
+      "在数据库查询中使用时间戳比较而非内存检查",
+      "防止检查和操作之间的竞态"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "MEDIUM",
+    "affectedModules": [
+      "backend/internal/domain/inventory/stock_lock.go"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "BUG-014",
+    "story": "默认阶梯定价策略实际生效",
+    "priority": "low",
+    "requirements": [
+      "DefaultTieredPricingStrategy 提供实际默认阶梯",
+      "或清晰文档说明其为透传行为"
+    ],
+    "passes": false,
+    "specRef": "Code Review",
+    "category": "bug",
+    "severity": "LOW",
+    "affectedModules": [
+      "backend/internal/infrastructure/strategy/pricing/tiered.go"
+    ],
+    "blockedBy": []
   }
 ]

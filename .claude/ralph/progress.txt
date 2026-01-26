@@ -17077,7 +17077,7 @@ Added `omitempty` to all Page/PageSize binding tags in backend DTOs:
    - StockTakingListFilter (lines 83-84)
 
 ### Additional Fixes
-- Fixed CLAUDE.md incorrect password documentation (test123 → admin123)
+- Fixed CLAUDE.md incorrect password documentation (admin123 → admin123)
 
 ### Verification
 - Go build: `go build ./...` - Success
@@ -20926,3 +20926,77 @@ strategyRegistry, err := strategy.NewRegistryWithProvider(customerLevelProvider)
 - Wire CustomerLevelProvider in application main.go for production use
 - Consider caching frequently accessed customer levels
 - Add metrics/logging for provider lookup failures
+
+2026-01-26 - Task impl-CustomerLevel-004: CustomerLevel Data Migration
+
+=== Implementation Details ===
+Created comprehensive data migration (000028) to complete the CustomerLevel integration:
+
+1. **Migration 000028_migrate_customer_levels_data.up.sql**:
+   - Drops hardcoded `chk_customer_level` CHECK constraint from customers table
+   - Ensures all tenants have default customer levels (normal, silver, gold, platinum, vip)
+   - Updates all customers to have valid level_id referencing customer_levels
+   - Creates sync trigger to keep customers.level in sync with customer_levels.code
+   - Handles edge cases: new tenants, orphan customers, missing level codes
+
+2. **Migration 000028_migrate_customer_levels_data.down.sql**:
+   - Removes sync trigger
+   - Restores CHECK constraint (after normalizing non-standard levels to 'normal')
+
+3. **Sync Trigger (sync_customer_level_code)**:
+   - Automatically updates customers.level when level_id changes
+   - Maintains denormalized level column for backward compatibility and performance
+   - Ensures data consistency between FK reference and string code
+
+=== Key Files Created ===
+- backend/migrations/000028_migrate_customer_levels_data.up.sql
+- backend/migrations/000028_migrate_customer_levels_data.down.sql
+
+=== Verification ===
+- [x] Migration up runs successfully
+- [x] Migration down runs successfully and restores state
+- [x] All customers have level_id set (5/5 customers)
+- [x] All level codes match between customers.level and customer_levels.code
+- [x] CHECK constraint (chk_customer_level) removed
+- [x] FK constraint (customers_level_id_fkey) exists
+- [x] Sync trigger (sync_customer_level_code_trigger) active
+- [x] All partner domain tests pass
+- [x] All pricing strategy tests pass
+- [x] Build succeeds
+
+=== Data Integrity Results ===
+- Total customer_levels: 15 (3 tenants × 5 levels)
+- Active customer_levels: 15
+- Total customers: 5
+- Customers with level_id: 5 (100%)
+- Customers without level_id: 0
+
+=== Design Decisions ===
+1. **Denormalized level column kept**: Retained customers.level as denormalized field for:
+   - Backward compatibility with existing code
+   - Query performance (avoid JOIN for simple level displays)
+   - Sync trigger ensures consistency
+
+2. **Sync trigger approach**: Used BEFORE trigger to update level code when level_id changes
+   - More robust than application-level sync
+   - Ensures consistency regardless of how data is updated
+
+3. **Graceful fallback for orphan customers**:
+   - First attempts to match by level code
+   - Falls back to tenant's default level
+   - Creates 'normal' level if needed and assigns to remaining customers
+
+4. **Multi-tenant support**: Migration handles all tenants, not just default tenant
+   - Inserts default levels for any tenant missing them
+   - Tenant-scoped updates maintain data isolation
+
+=== Related Previous Work ===
+- 000026_create_customer_levels.up.sql - Created customer_levels table and level_id column
+- impl-CustomerLevel-001 - Created CustomerLevel value object in domain layer
+- impl-CustomerLevel-002 - Created repository and persistence layer
+- impl-CustomerLevel-003 - Integrated with pricing strategy
+
+=== Next Steps ===
+- impl-CustomerLevel-005: Add REST API endpoints for CustomerLevel CRUD
+- Consider adding cache for frequently accessed customer levels
+- Optional: Add audit logging for level changes
