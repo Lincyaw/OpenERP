@@ -22908,3 +22908,66 @@ Test coverage for reversal scenarios:
 - Application service should handle actual refund/credit memo creation using CompensationRecordIDs
 - Event handlers can subscribe to AccountReceivableReversedEvent for automated processing
 - Consider database migration if JSONB storage causes performance issues with many payments
+
+---
+
+2025-01-27 - BUG-011: 修复移动加权平均除零保护 (Fix Moving Weighted Average Division by Zero Protection)
+
+=== Implementation Details ===
+
+**Problem**: The `IncreaseStock()` method in `inventory_item.go` performed a division by `totalQuantity` at line 97 without an explicit zero-check. While mathematically the code path was protected (quantity validation ensures quantity > 0, and the if-else ensures oldQuantity is non-zero in the else branch), defensive programming requires explicit protection against edge cases and potential race conditions.
+
+**Solution**: Added an explicit zero-check for `totalQuantity` before the division operation in the `IncreaseStock()` method. If triggered, returns a clear domain error `DIVISION_BY_ZERO` instead of allowing a potential panic.
+
+=== Key Changes ===
+
+1. **inventory_item.go (lines 99-101)**
+   - Added defensive check: `if totalQuantity.IsZero() { return shared.NewDomainError(...) }`
+   - Includes comment explaining this is defensive programming against edge cases
+
+2. **inventory_item_test.go (lines 178-220)**
+   - Added test `"prevents division by zero through quantity validation"` - documents that early validation prevents the edge case
+   - Added test `"handles weighted average calculation with large numbers"` - verifies no overflow/precision issues with large values
+
+=== Files Modified ===
+
+1. `backend/internal/domain/inventory/inventory_item.go`
+   - Added defensive zero-check before division at lines 99-101
+   - Added explanatory comment referencing BUG-011
+
+2. `backend/internal/domain/inventory/inventory_item_test.go`
+   - Added 2 new test cases for documentation and edge case coverage
+
+=== Verification ===
+
+- All inventory domain tests pass (17 test functions)
+- Build compiles successfully (`go build ./...`)
+- Code review: APPROVED with minor suggestion
+- Code review findings:
+  - No security vulnerabilities
+  - Proper domain error handling
+  - The defensive check is mathematically unreachable but kept for extreme safety
+  - Test coverage comprehensive for all reachable code paths
+
+=== Design Decisions ===
+
+1. **Defensive Programming**: The zero-check is mathematically unreachable in normal operation because:
+   - `quantity > 0` is validated at line 80
+   - `oldQuantity` is either zero (caught at line 92) or positive
+   - Therefore: `totalQuantity = oldQuantity + quantity > 0` always
+   However, we keep the check for:
+   - Protection against potential decimal.Decimal edge cases
+   - Protection against race conditions in concurrent scenarios
+   - Future-proofing against refactors that might change validation order
+
+2. **Error Type**: Used `shared.NewDomainError("DIVISION_BY_ZERO", ...)` to maintain domain-driven design principles and provide actionable error codes for downstream error handling.
+
+=== Requirements Satisfied ===
+
+- ✅ inventory_item.go:84-85 添加 totalQuantity 零值检查 (Added totalQuantity zero-check)
+- ✅ 返回明确错误而非 panic (Return explicit error instead of panic)
+
+=== Next Steps ===
+
+- Consider adding similar defensive checks to other division operations in the codebase
+- The batch_outbound_strategy.go and inventory_domain_service.go already have proper zero-checks

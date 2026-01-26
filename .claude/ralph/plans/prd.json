@@ -5035,7 +5035,7 @@
       "inventory_item.go:84-85 添加 totalQuantity 零值检查",
       "返回明确错误而非 panic"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "MEDIUM",

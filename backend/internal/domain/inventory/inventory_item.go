@@ -94,6 +94,11 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 	} else {
 		totalValue := oldQuantity.Mul(oldCost).Add(quantity.Mul(unitCost.Amount()))
 		totalQuantity := oldQuantity.Add(quantity)
+		// BUG-011: Defensive check for division by zero (should never happen due to quantity > 0 check above,
+		// but provides explicit protection against potential edge cases or race conditions)
+		if totalQuantity.IsZero() {
+			return shared.NewDomainError("DIVISION_BY_ZERO", "Cannot calculate weighted average cost: total quantity is zero")
+		}
 		i.UnitCost = totalValue.Div(totalQuantity).Round(4)
 	}
 

@@ -174,6 +174,50 @@ func TestInventoryItem_IncreaseStock(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "negative")
 	})
+
+	// BUG-011: Test that documents the zero-division protection
+	// Note: Under normal operation, totalQuantity can never be zero because:
+	// 1. If oldQuantity.IsZero() is true, we skip the division entirely
+	// 2. quantity must be > 0 (validated above), so oldQuantity + quantity > 0
+	// This test verifies the early validation prevents the edge case
+	t.Run("prevents division by zero through quantity validation", func(t *testing.T) {
+		item := createTestInventoryItem(t)
+		// With an empty item (oldQuantity = 0) and zero quantity,
+		// the validation at the start prevents any division by zero
+		err := item.IncreaseStock(
+			decimal.Zero,
+			valueobject.NewMoneyCNYFromFloat(10.00),
+			nil,
+		)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "positive")
+
+		// Verify item state was not modified
+		assert.True(t, item.AvailableQuantity.IsZero())
+		assert.True(t, item.UnitCost.IsZero())
+	})
+
+	t.Run("handles weighted average calculation with large numbers", func(t *testing.T) {
+		item := createTestInventoryItem(t)
+
+		// First increase: large quantity at a specific cost
+		err := item.IncreaseStock(
+			decimal.NewFromInt(1000000),
+			valueobject.NewMoneyCNYFromFloat(100.0),
+			nil,
+		)
+		require.NoError(t, err)
+
+		// Second increase: verify no overflow/precision issues in division
+		err = item.IncreaseStock(
+			decimal.NewFromInt(1000000),
+			valueobject.NewMoneyCNYFromFloat(200.0),
+			nil,
+		)
+		require.NoError(t, err)
+		// Expected: (1000000 * 100 + 1000000 * 200) / 2000000 = 150
+		assert.Equal(t, "150", item.UnitCost.String())
+	})
 }
 
 func TestInventoryItem_LockStock(t *testing.T) {
