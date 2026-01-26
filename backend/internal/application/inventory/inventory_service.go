@@ -762,19 +762,26 @@ func (s *InventoryService) ReleaseExpiredLocks(ctx context.Context) (int, error)
 	}
 
 	count := 0
-	for _, lock := range expiredLocks {
+	for i := range expiredLocks {
+		lock := &expiredLocks[i]
+
 		// Get inventory item
 		item, err := s.inventoryRepo.FindByID(ctx, lock.InventoryItemID)
 		if err != nil {
+			// Item may have been deleted; skip this lock
 			continue
 		}
 
-		// Unlock
+		// Add lock to item.Locks so UnlockStock can find it
+		// (FindByID does not preload locks association)
+		item.Locks = append(item.Locks, *lock)
+
+		// Unlock - this will find the lock in item.Locks and mark it as released
 		if err := item.UnlockStock(lock.ID); err != nil {
 			continue
 		}
 
-		// Save
+		// Save inventory item with updated quantities
 		if err := s.inventoryRepo.SaveWithLock(ctx, item); err != nil {
 			continue
 		}
@@ -782,8 +789,18 @@ func (s *InventoryService) ReleaseExpiredLocks(ctx context.Context) (int, error)
 		// Publish domain events
 		s.publishDomainEvents(ctx, item)
 
-		// Update lock
-		if err := s.lockRepo.Save(ctx, &lock); err != nil {
+		// Find the updated lock by ID (safer than assuming position)
+		var releasedLock *inventory.StockLock
+		for idx := range item.Locks {
+			if item.Locks[idx].ID == lock.ID {
+				releasedLock = &item.Locks[idx]
+				break
+			}
+		}
+		if releasedLock == nil {
+			continue
+		}
+		if err := s.lockRepo.Save(ctx, releasedLock); err != nil {
 			continue
 		}
 

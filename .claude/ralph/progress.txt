@@ -1,5 +1,125 @@
 # ERP Development Progress
 
+## 2026-01-26 - P0-SEED-001: Seed Data 需求设计完成
+
+### Task ID: P0-SEED-001
+### Status: Design Complete (待实现)
+
+### 设计方法
+
+#### 1. 数据模型深度调研
+分析了以下文件以理解完整的数据模型：
+- `.claude/ralph/docs/spec.md` - DDD 设计规范
+- `backend/migrations/*.sql` - 28 个数据库迁移文件
+- `docker/seed-data.sql` - 现有 seed data
+
+#### 2. 数据实体关联分析
+
+**数据层级结构（按外键依赖顺序）:**
+
+| 层级 | 实体 | 依赖 |
+|------|------|------|
+| 1 | tenants, categories | 无 |
+| 2 | products, customers, suppliers, warehouses, customer_levels | tenants, categories |
+| 3 | users, roles, user_roles, role_permissions | tenants |
+| 4 | product_units | products |
+| 5 | inventory_items, stock_batches, stock_locks | products, warehouses |
+| 6 | sales_orders, purchase_orders, returns | customers, suppliers, warehouses, products |
+| 7 | account_receivables, account_payables, vouchers, expenses | orders, customers, suppliers |
+
+#### 3. 现有 Seed Data 差距分析
+
+**已有数据:**
+- tenants: 3 条
+- categories: 9 条 (4 root + 5 sub)
+- products: 10 条
+- customers: 5 条
+- suppliers: 5 条
+- warehouses: 4 条
+- inventory_items: 10 条
+- stock_batches: 4 条
+- stock_locks: 2 条 (引用不存在的订单)
+- account_receivables: 4 条
+- account_payables: 3 条
+- receipt_vouchers: 3 条
+- payment_vouchers: 2 条
+- expense_records: 4 条
+- other_income_records: 2 条
+- balance_transactions: 5 条
+- users: 4 条 (admin + 3 role users)
+- roles: 7 条
+
+**缺失数据:**
+- sales_orders / sales_order_items (有表但无 seed)
+- purchase_orders / purchase_order_items (有表但无 seed)
+- sales_returns / sales_return_items (有表但无 seed)
+- purchase_returns / purchase_return_items (有表但无 seed)
+- 更多的 inventory_transactions
+- receivable_payment_records / payable_payment_records
+
+**数据一致性问题:**
+- stock_locks 引用的 source_id (订单 ID) 不存在
+- 应收/应付的 source_id 使用 dummy UUID
+- 缺少订单与财务数据的真实关联
+
+### Trade-Offs
+
+**Pros:**
+- 全面覆盖所有业务模块
+- 数据间正确关联，符合 DDD 设计
+- 支持前端各页面数据展示测试
+- 涵盖各种业务状态场景
+
+**Cons:**
+- seed data 数据量较大，首次加载时间增加
+- 需要维护数据一致性（订单金额 = 明细合计等）
+- 测试数据可能需要定期清理
+
+**Risk Level:** LOW
+
+### 实现方案
+
+1. **扩展 docker/seed-data.sql:**
+   - 添加 sales_orders + items (10 订单, 25 明细)
+   - 添加 purchase_orders + items (8 订单, 20 明细)
+   - 添加 returns (7 退货单, 14 明细)
+   - 修复 stock_locks 关联到真实订单 ID
+   - 修复 account_receivables/payables 关联到真实订单
+   - 添加 receivable/payable_payment_records
+
+2. **数据验证脚本:**
+   - 创建 SQL 脚本验证外键完整性
+   - 验证金额一致性（订单金额 = 明细合计）
+   - 验证库存锁定数量与订单状态一致
+
+### Acceptance Criteria
+
+- [ ] 所有表都有 seed data
+- [ ] 外键约束无违反
+- [ ] 金额计算一致（订单金额 = 明细合计）
+- [ ] 库存数据与订单数据逻辑一致
+- [ ] 前端各页面都能正常显示数据
+- [ ] E2E 测试能基于 seed data 运行
+
+### Red Flags Checked
+
+- [x] No God Objects
+- [x] No tight coupling (数据按层级插入)
+- [x] Clear structure (分层依赖明确)
+- [x] No premature optimization
+- [x] No magic/undocumented behavior
+
+### Next Steps
+
+1. 实现 sales_orders 和 sales_order_items seed data
+2. 实现 purchase_orders 和 purchase_order_items seed data
+3. 实现 returns 相关 seed data
+4. 修复现有 seed data 的关联问题
+5. 添加数据验证脚本
+6. 运行 E2E 测试验证
+
+---
+
 ## 2026-01-23 - P0-BE-001: Backend Scaffolding Complete
 
 ### Completed
@@ -21000,3 +21120,57 @@ Created comprehensive data migration (000028) to complete the CustomerLevel inte
 - impl-CustomerLevel-005: Add REST API endpoints for CustomerLevel CRUD
 - Consider adding cache for frequently accessed customer levels
 - Optional: Add audit logging for level changes
+
+2026-01-26 - Task BUG-003: Fix expired lock release issue
+
+=== Problem Description ===
+The `ReleaseExpiredLocks` function in `inventory_service.go` had two bugs:
+1. `item.Locks` was not populated when loading from repository via `FindByID`, causing `UnlockStock` to fail with "LOCK_NOT_FOUND" error
+2. Line 786 was saving `&lock` which is a pointer to the loop variable copy, not the actual modified lock
+
+=== Root Cause Analysis ===
+- `FindByID` performs a lazy load and does not preload the `Locks` association
+- `UnlockStock` method searches `item.Locks` slice to find the lock by ID
+- Since `item.Locks` was empty, the lock could never be found
+- The loop variable copy issue meant the modified lock state (Released=true) was never persisted
+
+=== Implementation Details ===
+Fixed in `backend/internal/application/inventory/inventory_service.go`:
+
+1. **Use pointer to loop variable**: Changed from `for _, lock := range` to `for i := range` with `lock := &expiredLocks[i]`
+
+2. **Populate item.Locks before UnlockStock**: Added `item.Locks = append(item.Locks, *lock)` before calling `item.UnlockStock(lock.ID)`
+
+3. **Find lock by ID after modification**: Instead of assuming lock position, search for the modified lock by ID:
+   ```go
+   var releasedLock *inventory.StockLock
+   for idx := range item.Locks {
+       if item.Locks[idx].ID == lock.ID {
+           releasedLock = &item.Locks[idx]
+           break
+       }
+   }
+   ```
+
+=== Key Files Modified ===
+- backend/internal/application/inventory/inventory_service.go (lines 756-809)
+
+=== Verification ===
+- [x] All inventory service tests pass
+- [x] All stock lock expiration service tests pass
+- [x] All domain inventory tests pass
+- [x] Go build succeeds
+- [x] Go vet passes
+- [x] Code review completed (addressed CRITICAL issue about lock position assumption)
+
+=== Design Decisions ===
+1. **Find by ID over position assumption**: The code review identified that assuming the lock is at the last position in `item.Locks` is fragile. Changed to search by ID which is more robust.
+
+2. **Maintained consistency with domain model**: Kept using `UnlockStock` method to leverage domain logic and event publishing, rather than directly manipulating quantities like `StockLockExpirationService` does.
+
+=== Related Work ===
+- Note: BUG-004 covers similar `Locks[0]` assumptions at lines 456, 529, 1021 - separate fix required
+- `StockLockExpirationService` has its own implementation that works around this issue differently
+
+=== Next Steps ===
+- BUG-004: Fix other Locks[0] index assumptions in inventory_service.go

@@ -4488,7 +4488,7 @@
       "在调用 UnlockStock 前添加 lock 到 item.Locks",
       "修复 :786 保存错误对象问题"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "HIGH",
