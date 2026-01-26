@@ -364,7 +364,7 @@ func TestVersionIncrement(t *testing.T) {
 
 // TestGetOrCreate_RaceCondition tests that GetOrCreate handles race conditions
 func TestGetOrCreate_RaceCondition(t *testing.T) {
-	t.Run("handles concurrent creation with ON CONFLICT", func(t *testing.T) {
+	t.Run("handles concurrent creation with ON CONFLICT - new record created", func(t *testing.T) {
 		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
 		defer mockDB.Close()
 
@@ -376,7 +376,7 @@ func TestGetOrCreate_RaceCondition(t *testing.T) {
 		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
 			WillReturnError(gorm.ErrRecordNotFound)
 
-		// Then insert with ON CONFLICT DO NOTHING
+		// Then insert with ON CONFLICT DO NOTHING - returns RowsAffected=1 (new row created)
 		mock.ExpectExec(`INSERT INTO "inventory_items"`).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
@@ -386,6 +386,150 @@ func TestGetOrCreate_RaceCondition(t *testing.T) {
 		assert.NotNil(t, item)
 		assert.Equal(t, warehouseID, item.WarehouseID)
 		assert.Equal(t, productID, item.ProductID)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("handles concurrent creation with ON CONFLICT - conflict detected via RowsAffected=0", func(t *testing.T) {
+		// This test verifies the fix for BUG-001: TOCTOU race condition
+		// When another transaction creates the same row between our SELECT and INSERT,
+		// ON CONFLICT DO NOTHING triggers and RowsAffected=0.
+		// The fix correctly detects this using RowsAffected instead of checking model.ID == uuid.Nil.
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		tenantID := uuid.New()
+		warehouseID := uuid.New()
+		productID := uuid.New()
+		existingID := uuid.New()
+
+		// First, the find returns not found (item didn't exist at check time)
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		// Insert with ON CONFLICT DO NOTHING - returns RowsAffected=0 (conflict occurred)
+		// This happens when another transaction created the row between our SELECT and INSERT
+		mock.ExpectExec(`INSERT INTO "inventory_items"`).
+			WillReturnResult(sqlmock.NewResult(0, 0)) // KEY: RowsAffected=0 indicates conflict
+
+		// After detecting conflict (RowsAffected=0), we re-fetch the existing record
+		existingRows := sqlmock.NewRows([]string{
+			"id", "tenant_id", "warehouse_id", "product_id",
+			"available_quantity", "locked_quantity", "unit_cost",
+			"min_quantity", "max_quantity", "version", "created_at", "updated_at",
+		}).AddRow(
+			existingID, tenantID, warehouseID, productID,
+			decimal.NewFromInt(100), decimal.Zero, decimal.NewFromFloat(10.0),
+			decimal.Zero, decimal.Zero, 1, time.Now(), time.Now(),
+		)
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnRows(existingRows)
+
+		item, err := repo.GetOrCreate(context.Background(), tenantID, warehouseID, productID)
+
+		require.NoError(t, err)
+		assert.NotNil(t, item)
+		// Should return the existing item created by the concurrent transaction
+		assert.Equal(t, existingID, item.ID, "should return the existing item ID, not a new one")
+		assert.Equal(t, warehouseID, item.WarehouseID)
+		assert.Equal(t, productID, item.ProductID)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("returns existing item when found", func(t *testing.T) {
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		tenantID := uuid.New()
+		warehouseID := uuid.New()
+		productID := uuid.New()
+		existingID := uuid.New()
+
+		// Find returns existing item - no insert needed
+		existingRows := sqlmock.NewRows([]string{
+			"id", "tenant_id", "warehouse_id", "product_id",
+			"available_quantity", "locked_quantity", "unit_cost",
+			"min_quantity", "max_quantity", "version", "created_at", "updated_at",
+		}).AddRow(
+			existingID, tenantID, warehouseID, productID,
+			decimal.NewFromInt(50), decimal.NewFromInt(10), decimal.NewFromFloat(15.0),
+			decimal.Zero, decimal.Zero, 3, time.Now(), time.Now(),
+		)
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnRows(existingRows)
+
+		item, err := repo.GetOrCreate(context.Background(), tenantID, warehouseID, productID)
+
+		require.NoError(t, err)
+		assert.NotNil(t, item)
+		assert.Equal(t, existingID, item.ID)
+		assert.Equal(t, 3, item.Version, "should preserve existing version")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("handles database error on insert", func(t *testing.T) {
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		tenantID := uuid.New()
+		warehouseID := uuid.New()
+		productID := uuid.New()
+
+		// First, the find returns not found
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		// Insert fails with database error
+		mock.ExpectExec(`INSERT INTO "inventory_items"`).
+			WillReturnError(assert.AnError)
+
+		_, err := repo.GetOrCreate(context.Background(), tenantID, warehouseID, productID)
+
+		require.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("handles database error on initial find", func(t *testing.T) {
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		tenantID := uuid.New()
+		warehouseID := uuid.New()
+		productID := uuid.New()
+
+		// Find fails with database error (not ErrRecordNotFound)
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnError(assert.AnError)
+
+		_, err := repo.GetOrCreate(context.Background(), tenantID, warehouseID, productID)
+
+		require.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("handles database error on re-fetch after conflict", func(t *testing.T) {
+		// Edge case: conflict detected, but re-fetch fails (e.g., row deleted between conflict and re-fetch)
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		tenantID := uuid.New()
+		warehouseID := uuid.New()
+		productID := uuid.New()
+
+		// First, the find returns not found
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnError(gorm.ErrRecordNotFound)
+
+		// Insert with ON CONFLICT DO NOTHING - returns RowsAffected=0 (conflict occurred)
+		mock.ExpectExec(`INSERT INTO "inventory_items"`).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+
+		// Re-fetch fails (rare case: row was deleted between conflict and re-fetch)
+		mock.ExpectQuery(`SELECT \* FROM "inventory_items" WHERE tenant_id`).
+			WillReturnError(assert.AnError)
+
+		_, err := repo.GetOrCreate(context.Background(), tenantID, warehouseID, productID)
+
+		require.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

@@ -383,7 +383,10 @@ func (r *GormInventoryItemRepository) ExistsByWarehouseAndProduct(ctx context.Co
 	return count > 0, nil
 }
 
-// GetOrCreate gets existing inventory item or creates a new one
+// GetOrCreate gets existing inventory item or creates a new one.
+// This method handles concurrent access safely using PostgreSQL's ON CONFLICT.
+// When multiple goroutines call this simultaneously for the same warehouse-product
+// combination, exactly one will create the record and all will receive the correct item.
 func (r *GormInventoryItemRepository) GetOrCreate(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (*inventory.InventoryItem, error) {
 	// Try to find existing
 	item, err := r.FindByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
@@ -400,19 +403,25 @@ func (r *GormInventoryItemRepository) GetOrCreate(ctx context.Context, tenantID,
 		return nil, err
 	}
 
-	// Use ON CONFLICT to handle race conditions
+	// Use ON CONFLICT DO NOTHING to handle race conditions atomically.
+	// When a conflict occurs (another transaction created the same record),
+	// PostgreSQL returns RowsAffected=0 without error.
 	model := models.InventoryItemModelFromDomain(item)
-	if err := r.db.WithContext(ctx).
+	result := r.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "tenant_id"}, {Name: "warehouse_id"}, {Name: "product_id"}},
 			DoNothing: true,
 		}).
-		Create(model).Error; err != nil {
-		return nil, err
+		Create(model)
+
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
-	// If the row wasn't created (conflict), fetch the existing one
-	if model.ID == uuid.Nil {
+	// If RowsAffected == 0, the ON CONFLICT was triggered (row already exists).
+	// This is the correct check - the model.ID remains unchanged (not uuid.Nil)
+	// when ON CONFLICT DO NOTHING fires, so we must check RowsAffected instead.
+	if result.RowsAffected == 0 {
 		return r.FindByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
 	}
 
