@@ -4072,12 +4072,14 @@
       "Add alerting when events move to dead letter queue",
       "Implement manual retry endpoint for operators"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 7.3 - Event Retry Mechanism",
     "affectedModules": [
       "backend/internal/domain/shared/outbox.go",
       "backend/internal/infrastructure/event/outbox_processor.go",
-      "backend/internal/interfaces/http/handler/admin.go"
+      "backend/internal/infrastructure/event/outbox_repository.go",
+      "backend/internal/application/event/outbox_service.go",
+      "backend/internal/interfaces/http/handler/outbox.go"
     ],
     "severity": "HIGH"
   },

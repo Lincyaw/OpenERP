@@ -175,6 +175,16 @@ func (p *OutboxProcessor) processEntry(ctx context.Context, entry *shared.Outbox
 			zap.Error(err),
 		)
 		entry.MarkFailed(err.Error())
+		if entry.IsDead() {
+			p.logger.Warn("event moved to dead letter queue",
+				zap.String("event_id", entry.EventID.String()),
+				zap.String("event_type", entry.EventType),
+				zap.String("aggregate_type", entry.AggregateType),
+				zap.String("aggregate_id", entry.AggregateID.String()),
+				zap.Int("retry_count", entry.RetryCount),
+				zap.String("last_error", entry.LastError),
+			)
+		}
 		if updateErr := p.repo.Update(ctx, entry); updateErr != nil {
 			p.logger.Error("failed to update entry", zap.Error(updateErr))
 		}
@@ -189,6 +199,16 @@ func (p *OutboxProcessor) processEntry(ctx context.Context, entry *shared.Outbox
 			zap.Error(err),
 		)
 		entry.MarkFailed(err.Error())
+		if entry.IsDead() {
+			p.logger.Warn("event moved to dead letter queue",
+				zap.String("event_id", entry.EventID.String()),
+				zap.String("event_type", entry.EventType),
+				zap.String("aggregate_type", entry.AggregateType),
+				zap.String("aggregate_id", entry.AggregateID.String()),
+				zap.Int("retry_count", entry.RetryCount),
+				zap.String("last_error", entry.LastError),
+			)
+		}
 		if updateErr := p.repo.Update(ctx, entry); updateErr != nil {
 			p.logger.Error("failed to update entry", zap.Error(updateErr))
 		}

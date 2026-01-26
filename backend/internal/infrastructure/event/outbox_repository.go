@@ -125,5 +125,66 @@ func (r *GormOutboxRepository) DeleteOlderThan(ctx context.Context, before time.
 	return result.RowsAffected, result.Error
 }
 
+// FindDead retrieves dead letter entries with pagination
+func (r *GormOutboxRepository) FindDead(ctx context.Context, page, pageSize int) ([]*shared.OutboxEntry, int64, error) {
+	var entries []*shared.OutboxEntry
+	var total int64
+
+	// Get total count
+	if err := r.db.WithContext(ctx).
+		Model(&shared.OutboxEntry{}).
+		Where("status = ?", shared.OutboxStatusDead).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated entries
+	offset := (page - 1) * pageSize
+	if err := r.db.WithContext(ctx).
+		Where("status = ?", shared.OutboxStatusDead).
+		Order("updated_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&entries).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return entries, total, nil
+}
+
+// FindByID retrieves a single outbox entry by ID
+func (r *GormOutboxRepository) FindByID(ctx context.Context, id uuid.UUID) (*shared.OutboxEntry, error) {
+	var entry shared.OutboxEntry
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&entry).Error
+	if err != nil {
+		return nil, err
+	}
+	return &entry, nil
+}
+
+// CountByStatus returns count of entries for each status
+func (r *GormOutboxRepository) CountByStatus(ctx context.Context) (map[shared.OutboxStatus]int64, error) {
+	type statusCount struct {
+		Status shared.OutboxStatus
+		Count  int64
+	}
+
+	var results []statusCount
+	err := r.db.WithContext(ctx).
+		Model(&shared.OutboxEntry{}).
+		Select("status, count(*) as count").
+		Group("status").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	counts := make(map[shared.OutboxStatus]int64)
+	for _, r := range results {
+		counts[r.Status] = r.Count
+	}
+	return counts, nil
+}
+
 // Ensure GormOutboxRepository implements OutboxRepository
 var _ shared.OutboxRepository = (*GormOutboxRepository)(nil)

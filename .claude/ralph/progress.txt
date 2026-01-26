@@ -18598,3 +18598,78 @@ outboxProcessor.Start(context.Background())
 - OutboxProcessor polls outbox_events table and publishes to in-memory bus
 - Failed events are retried with configurable retry policy
 - Pattern ensures guaranteed event delivery even on application crashes
+
+## 2026-01-26 - DDD-010: Event Retry Mechanism with Dead Letter Queue
+
+### Completed
+- **DDD-010**: Event Retry Mechanism with Dead Letter Queue
+
+### What was done
+1. Extended OutboxRepository interface with dead letter queue methods:
+   - `FindDead(ctx, page, pageSize)` - paginated query of dead letter entries
+   - `FindByID(ctx, id)` - find single entry by ID
+   - `CountByStatus(ctx)` - count entries by status for statistics
+
+2. Added helper methods to OutboxEntry model:
+   - `ResetForRetry()` - resets dead entry to pending status for retry
+   - `IsDead()` - checks if entry is in dead letter queue
+
+3. Implemented repository methods in GormOutboxRepository:
+   - Paginated query with total count for dead entries
+   - Status-based counting for statistics dashboard
+
+4. Created OutboxService in application layer:
+   - `GetDeadLetterEntries()` - list dead letter entries with pagination
+   - `GetEntry()` - get single entry by ID
+   - `RetryDeadEntry()` - retry a single dead letter entry
+   - `RetryAllDeadEntries()` - bulk retry all dead letter entries
+   - `GetStats()` - get outbox statistics by status
+
+5. Created OutboxHandler with REST API endpoints:
+   - `GET /system/outbox/stats` - get outbox statistics
+   - `GET /system/outbox/dead` - list dead letter entries
+   - `GET /system/outbox/:id` - get single entry
+   - `POST /system/outbox/:id/retry` - retry single entry
+   - `POST /system/outbox/dead/retry-all` - retry all dead entries
+
+6. Added logging when events move to dead letter queue:
+   - Warning log with event details (event_id, event_type, aggregate info, retry_count, last_error)
+
+7. Wired service and routes in main.go:
+   - Created OutboxService instance
+   - Created OutboxHandler
+   - Registered routes under system group
+
+8. Created unit tests:
+   - `outbox_test.go` - tests for ResetForRetry, IsDead, MarkFailed methods
+   - `outbox_service_test.go` - tests for service methods
+
+### Files Modified/Created
+
+| File | Change |
+|------|--------|
+| `backend/internal/domain/shared/outbox.go` | Added FindDead, FindByID, CountByStatus to interface; Added ResetForRetry, IsDead methods |
+| `backend/internal/infrastructure/event/outbox_repository.go` | Implemented FindDead, FindByID, CountByStatus |
+| `backend/internal/infrastructure/event/outbox_processor.go` | Added warning log for dead letter events |
+| `backend/internal/infrastructure/event/outbox_processor_test.go` | Updated mock with new interface methods |
+| `backend/internal/application/event/outbox_service.go` | NEW - Application service for dead letter queue management |
+| `backend/internal/interfaces/http/handler/outbox.go` | NEW - REST API handler with Swagger annotations |
+| `backend/internal/domain/shared/outbox_test.go` | NEW - Unit tests for OutboxEntry methods |
+| `backend/internal/application/event/outbox_service_test.go` | NEW - Unit tests for OutboxService |
+| `backend/cmd/server/main.go` | Wired OutboxService and registered routes |
+| `.claude/ralph/plans/prd.json` | Marked DDD-010 as passes: true |
+
+### Verification
+- ✅ Go build passes (`go build ./...`)
+- ✅ Unit tests pass (10 tests in outbox_service_test.go, 4 tests in outbox_test.go)
+- ✅ All interface implementations complete
+
+### API Endpoints Summary
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/system/outbox/stats` | GET | Get outbox statistics (pending, processing, sent, failed, dead counts) |
+| `/system/outbox/dead` | GET | List dead letter entries with pagination |
+| `/system/outbox/:id` | GET | Get single outbox entry by ID |
+| `/system/outbox/:id/retry` | POST | Retry a dead letter entry |
+| `/system/outbox/dead/retry-all` | POST | Retry all dead letter entries |

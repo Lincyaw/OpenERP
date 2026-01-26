@@ -107,6 +107,24 @@ func (e *OutboxEntry) MarkFailed(errMsg string) {
 	}
 }
 
+// ResetForRetry resets a dead letter entry for retry
+func (e *OutboxEntry) ResetForRetry() error {
+	if e.Status != OutboxStatusDead {
+		return errors.New("can only retry dead letter entries")
+	}
+	e.Status = OutboxStatusPending
+	e.RetryCount = 0
+	e.LastError = ""
+	e.NextRetryAt = nil
+	e.UpdatedAt = time.Now()
+	return nil
+}
+
+// IsDead returns true if the entry is in dead letter status
+func (e *OutboxEntry) IsDead() bool {
+	return e.Status == OutboxStatusDead
+}
+
 // OutboxRepository defines the interface for outbox persistence
 type OutboxRepository interface {
 	// Save persists one or more outbox entries
@@ -115,10 +133,16 @@ type OutboxRepository interface {
 	FindPending(ctx context.Context, limit int) ([]*OutboxEntry, error)
 	// FindRetryable retrieves failed entries that are due for retry
 	FindRetryable(ctx context.Context, before time.Time, limit int) ([]*OutboxEntry, error)
+	// FindDead retrieves dead letter entries with pagination
+	FindDead(ctx context.Context, page, pageSize int) ([]*OutboxEntry, int64, error)
+	// FindByID retrieves a single outbox entry by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*OutboxEntry, error)
 	// MarkProcessing atomically marks entries as processing and returns them
 	MarkProcessing(ctx context.Context, ids []uuid.UUID) ([]*OutboxEntry, error)
 	// Update updates an existing outbox entry
 	Update(ctx context.Context, entry *OutboxEntry) error
 	// DeleteOlderThan deletes entries older than the specified time
 	DeleteOlderThan(ctx context.Context, before time.Time) (int64, error)
+	// CountByStatus returns count of entries for each status
+	CountByStatus(ctx context.Context) (map[OutboxStatus]int64, error)
 }

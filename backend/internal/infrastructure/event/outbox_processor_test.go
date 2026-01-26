@@ -97,6 +97,37 @@ func (r *mockOutboxRepository) DeleteOlderThan(ctx context.Context, before time.
 	return 0, nil
 }
 
+func (r *mockOutboxRepository) FindDead(ctx context.Context, page, pageSize int) ([]*shared.OutboxEntry, int64, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var result []*shared.OutboxEntry
+	for _, e := range r.entries {
+		if e.Status == shared.OutboxStatusDead {
+			result = append(result, e)
+		}
+	}
+	return result, int64(len(result)), nil
+}
+
+func (r *mockOutboxRepository) FindByID(ctx context.Context, id uuid.UUID) (*shared.OutboxEntry, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if e, ok := r.entries[id]; ok {
+		return e, nil
+	}
+	return nil, nil
+}
+
+func (r *mockOutboxRepository) CountByStatus(ctx context.Context) (map[shared.OutboxStatus]int64, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	counts := make(map[shared.OutboxStatus]int64)
+	for _, e := range r.entries {
+		counts[e.Status]++
+	}
+	return counts, nil
+}
+
 func TestOutboxProcessor_ProcessesPendingEntries(t *testing.T) {
 	logger := zap.NewNop()
 	serializer := NewEventSerializer()

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
+	eventapp "github.com/erp/backend/internal/application/event"
 	financeapp "github.com/erp/backend/internal/application/finance"
 	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
@@ -254,6 +255,9 @@ func main() {
 		zap.Duration("poll_interval", outboxProcessorConfig.PollInterval),
 	)
 
+	// Initialize outbox service for dead letter queue management
+	outboxService := eventapp.NewOutboxService(outboxRepo, log)
+
 	// Inject event bus into services that publish events
 	purchaseOrderService.SetEventPublisher(eventBus)
 	salesOrderService.SetEventPublisher(eventBus)
@@ -307,6 +311,7 @@ func main() {
 	paymentCallbackHandler := handler.NewPaymentCallbackHandler(paymentCallbackService)
 	expenseIncomeHandler := handler.NewExpenseIncomeHandler(expenseIncomeService)
 	financeHandler := handler.NewFinanceHandler(financeService)
+	outboxHandler := handler.NewOutboxHandler(outboxService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -793,6 +798,14 @@ func main() {
 	systemRoutes := router.NewDomainGroup("system", "/system")
 	systemRoutes.GET("/info", systemHandler.GetSystemInfo)
 	systemRoutes.GET("/ping", systemHandler.Ping)
+
+	// Outbox management routes (for operators)
+	systemRoutes.GET("/outbox/stats", outboxHandler.GetStats)
+	systemRoutes.GET("/outbox/dead", outboxHandler.GetDeadLetterEntries)
+	systemRoutes.GET("/outbox/:id", outboxHandler.GetEntry)
+	systemRoutes.POST("/outbox/:id/retry", outboxHandler.RetryDeadEntry)
+	systemRoutes.POST("/outbox/dead/retry-all", outboxHandler.RetryAllDeadEntries)
+
 	r.Register(systemRoutes)
 
 	// Setup routes
