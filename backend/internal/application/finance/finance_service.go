@@ -20,20 +20,62 @@ type FinanceService struct {
 	reconciliationSvc  *finance.ReconciliationService
 }
 
+// FinanceServiceOption is a functional option for configuring FinanceService
+type FinanceServiceOption func(*FinanceService)
+
+// WithReconciliationStrategy sets the default reconciliation strategy type
+func WithReconciliationStrategy(strategyType finance.ReconciliationStrategyType) FinanceServiceOption {
+	return func(s *FinanceService) {
+		// Recreate the reconciliation service with the new default strategy
+		s.reconciliationSvc = finance.NewReconciliationService(
+			finance.WithDefaultStrategy(strategyType),
+		)
+	}
+}
+
+// WithReconciliationStrategyOverride sets a function to determine strategy based on context
+func WithReconciliationStrategyOverride(fn finance.StrategyOverrideFunc) FinanceServiceOption {
+	return func(s *FinanceService) {
+		// Recreate the reconciliation service with the override function
+		currentDefault := s.reconciliationSvc.GetDefaultStrategy()
+		s.reconciliationSvc = finance.NewReconciliationService(
+			finance.WithDefaultStrategy(currentDefault),
+			finance.WithStrategyOverride(fn),
+		)
+	}
+}
+
+// WithReconciliationService allows injecting a custom ReconciliationService
+func WithReconciliationService(svc *finance.ReconciliationService) FinanceServiceOption {
+	return func(s *FinanceService) {
+		s.reconciliationSvc = svc
+	}
+}
+
 // NewFinanceService creates a new FinanceService
 func NewFinanceService(
 	receivableRepo finance.AccountReceivableRepository,
 	payableRepo finance.AccountPayableRepository,
 	receiptVoucherRepo finance.ReceiptVoucherRepository,
 	paymentVoucherRepo finance.PaymentVoucherRepository,
+	opts ...FinanceServiceOption,
 ) *FinanceService {
-	return &FinanceService{
+	s := &FinanceService{
 		receivableRepo:     receivableRepo,
 		payableRepo:        payableRepo,
 		receiptVoucherRepo: receiptVoucherRepo,
 		paymentVoucherRepo: paymentVoucherRepo,
 		reconciliationSvc:  finance.NewReconciliationService(),
 	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// GetReconciliationService returns the underlying reconciliation service for inspection
+func (s *FinanceService) GetReconciliationService() *finance.ReconciliationService {
+	return s.reconciliationSvc
 }
 
 // ===================== Account Receivable Operations =====================
@@ -753,6 +795,10 @@ func (s *FinanceService) ReconcileReceipt(ctx context.Context, tenantID uuid.UUI
 	}
 
 	strategyType := finance.ReconciliationStrategyType(req.StrategyType)
+	// If no strategy specified or invalid, use the effective strategy from the service
+	if !strategyType.IsValid() {
+		strategyType = s.reconciliationSvc.GetEffectiveStrategy(ctx, tenantID)
+	}
 
 	// Convert manual allocations if provided
 	var manualAllocs []finance.ManualAllocationRequest
@@ -833,6 +879,10 @@ func (s *FinanceService) ReconcilePayment(ctx context.Context, tenantID uuid.UUI
 	}
 
 	strategyType := finance.ReconciliationStrategyType(req.StrategyType)
+	// If no strategy specified or invalid, use the effective strategy from the service
+	if !strategyType.IsValid() {
+		strategyType = s.reconciliationSvc.GetEffectiveStrategy(ctx, tenantID)
+	}
 
 	// Convert manual allocations if provided
 	var manualAllocs []finance.ManualAllocationRequest

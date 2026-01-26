@@ -16,12 +16,15 @@ import (
 	partnerapp "github.com/erp/backend/internal/application/partner"
 	reportapp "github.com/erp/backend/internal/application/report"
 	tradeapp "github.com/erp/backend/internal/application/trade"
+	financedomain "github.com/erp/backend/internal/domain/finance"
+	domainStrategy "github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/infrastructure/auth"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
+	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/erp/backend/internal/interfaces/http/router"
@@ -142,6 +145,17 @@ func main() {
 	salesOrderRepo.SetOutboxEventSaver(outboxPublisher)
 	purchaseOrderRepo.SetOutboxEventSaver(outboxPublisher)
 
+	// Initialize strategy registry with default strategies
+	strategyRegistry, err := infraStrategy.NewRegistryWithDefaults()
+	if err != nil {
+		log.Fatal("Failed to initialize strategy registry", zap.Error(err))
+	}
+	log.Info("Strategy registry initialized",
+		zap.Int("cost_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypeCost]),
+		zap.Int("allocation_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypeAllocation]),
+		zap.Int("pricing_strategies", strategyRegistry.Stats()[domainStrategy.StrategyTypePricing]),
+	)
+
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo)
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
@@ -184,12 +198,20 @@ func main() {
 	expenseIncomeService := financeapp.NewExpenseIncomeService(expenseRecordRepo, otherIncomeRecordRepo)
 
 	// Finance core service (receivables, payables, vouchers)
+	// Configure with FIFO as default reconciliation strategy (injected from strategy registry)
 	financeService := financeapp.NewFinanceService(
 		accountReceivableRepo,
 		accountPayableRepo,
 		receiptVoucherRepo,
 		paymentVoucherRepo,
+		financeapp.WithReconciliationStrategy(financedomain.ReconciliationStrategyTypeFIFO),
 	)
+	// Log strategy configuration
+	log.Info("Finance service configured",
+		zap.String("default_reconciliation_strategy", financeService.GetReconciliationService().GetDefaultStrategy().String()),
+	)
+	// Keep reference to strategy registry for potential future use (tenant-specific strategies)
+	_ = strategyRegistry
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)

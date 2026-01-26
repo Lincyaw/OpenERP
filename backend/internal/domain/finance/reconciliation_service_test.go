@@ -16,6 +16,62 @@ func TestNewReconciliationService(t *testing.T) {
 	service := NewReconciliationService()
 	assert.NotNil(t, service)
 	assert.NotNil(t, service.strategyFactory)
+	assert.Equal(t, ReconciliationStrategyTypeFIFO, service.defaultStrategyType)
+}
+
+func TestReconciliationServiceWithOptions(t *testing.T) {
+	t.Run("WithDefaultStrategy sets custom default", func(t *testing.T) {
+		service := NewReconciliationService(
+			WithDefaultStrategy(ReconciliationStrategyTypeManual),
+		)
+		assert.Equal(t, ReconciliationStrategyTypeManual, service.GetDefaultStrategy())
+	})
+
+	t.Run("WithDefaultStrategy ignores invalid strategy", func(t *testing.T) {
+		service := NewReconciliationService(
+			WithDefaultStrategy("INVALID"),
+		)
+		// Should keep the default FIFO
+		assert.Equal(t, ReconciliationStrategyTypeFIFO, service.GetDefaultStrategy())
+	})
+
+	t.Run("WithStrategyOverride allows context-based strategy selection", func(t *testing.T) {
+		tenantID := uuid.New()
+		overrideFunc := func(ctx context.Context, tid uuid.UUID) ReconciliationStrategyType {
+			if tid == tenantID {
+				return ReconciliationStrategyTypeManual
+			}
+			return ""
+		}
+
+		service := NewReconciliationService(
+			WithStrategyOverride(overrideFunc),
+		)
+
+		// For matching tenant, should return override
+		effective := service.GetEffectiveStrategy(context.Background(), tenantID)
+		assert.Equal(t, ReconciliationStrategyTypeManual, effective)
+
+		// For other tenant, should return default
+		otherTenant := uuid.New()
+		effective = service.GetEffectiveStrategy(context.Background(), otherTenant)
+		assert.Equal(t, ReconciliationStrategyTypeFIFO, effective)
+	})
+
+	t.Run("Multiple options can be chained", func(t *testing.T) {
+		tenantID := uuid.New()
+		overrideFunc := func(ctx context.Context, tid uuid.UUID) ReconciliationStrategyType {
+			return ReconciliationStrategyTypeManual
+		}
+
+		service := NewReconciliationService(
+			WithDefaultStrategy(ReconciliationStrategyTypeFIFO),
+			WithStrategyOverride(overrideFunc),
+		)
+
+		assert.Equal(t, ReconciliationStrategyTypeFIFO, service.GetDefaultStrategy())
+		assert.Equal(t, ReconciliationStrategyTypeManual, service.GetEffectiveStrategy(context.Background(), tenantID))
+	})
 }
 
 // Helper functions for creating test data with custom parameters

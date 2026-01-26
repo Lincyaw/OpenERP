@@ -16,15 +16,64 @@ import (
 // 1. Vouchers are confirmed before allocation
 // 2. Allocations don't exceed outstanding amounts
 // 3. Both voucher and receivable/payable states are updated consistently
+//
+// The service supports dependency injection of reconciliation strategies, allowing
+// for configurable allocation behavior per tenant or use case.
 type ReconciliationService struct {
-	strategyFactory *ReconciliationStrategyFactory
+	strategyFactory      *ReconciliationStrategyFactory
+	defaultStrategyType  ReconciliationStrategyType
+	strategyOverrideFunc StrategyOverrideFunc
 }
 
-// NewReconciliationService creates a new reconciliation service
-func NewReconciliationService() *ReconciliationService {
-	return &ReconciliationService{
-		strategyFactory: NewReconciliationStrategyFactory(),
+// StrategyOverrideFunc is a function that can override the strategy type based on context.
+// This allows for tenant-specific or context-specific strategy selection.
+type StrategyOverrideFunc func(ctx context.Context, tenantID uuid.UUID) ReconciliationStrategyType
+
+// ReconciliationServiceOption is a functional option for configuring ReconciliationService
+type ReconciliationServiceOption func(*ReconciliationService)
+
+// WithDefaultStrategy sets the default reconciliation strategy type
+func WithDefaultStrategy(strategyType ReconciliationStrategyType) ReconciliationServiceOption {
+	return func(s *ReconciliationService) {
+		if strategyType.IsValid() {
+			s.defaultStrategyType = strategyType
+		}
 	}
+}
+
+// WithStrategyOverride sets a function that can override strategy selection based on context
+func WithStrategyOverride(fn StrategyOverrideFunc) ReconciliationServiceOption {
+	return func(s *ReconciliationService) {
+		s.strategyOverrideFunc = fn
+	}
+}
+
+// NewReconciliationService creates a new reconciliation service with optional configuration
+func NewReconciliationService(opts ...ReconciliationServiceOption) *ReconciliationService {
+	s := &ReconciliationService{
+		strategyFactory:     NewReconciliationStrategyFactory(),
+		defaultStrategyType: ReconciliationStrategyTypeFIFO, // Default to FIFO
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+// GetDefaultStrategy returns the default strategy type
+func (s *ReconciliationService) GetDefaultStrategy() ReconciliationStrategyType {
+	return s.defaultStrategyType
+}
+
+// GetEffectiveStrategy returns the effective strategy type for a given context and tenant
+func (s *ReconciliationService) GetEffectiveStrategy(ctx context.Context, tenantID uuid.UUID) ReconciliationStrategyType {
+	if s.strategyOverrideFunc != nil {
+		override := s.strategyOverrideFunc(ctx, tenantID)
+		if override.IsValid() {
+			return override
+		}
+	}
+	return s.defaultStrategyType
 }
 
 // ReconcileReceiptRequest represents a request to reconcile a receipt voucher

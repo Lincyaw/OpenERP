@@ -429,3 +429,88 @@ DRAFT -> PENDING -> APPROVED -> RECEIVING -> COMPLETED
 
 ### PRD Status
 - DDD-011: PASSED (implementation complete, E2E test pending P3-INT-003)
+
+---
+
+## 2026-01-26 - DDD-002: PaymentAllocationStrategy Integration in ReconciliationService
+
+### Summary
+Integrated PaymentAllocationStrategy pattern into ReconciliationService using functional options pattern for dependency injection. The implementation supports configurable allocation strategies per tenant while maintaining backward compatibility with existing tests.
+
+### Requirements Implemented
+1. Create ReconciliationService domain service using PaymentAllocationStrategy - DONE
+2. Inject PaymentAllocationStrategy into finance receipt processing - DONE
+3. Implement FIFO allocation strategy for reconciling receivables - DONE
+4. Support configurable allocation strategy per tenant - DONE
+5. Add unit tests for allocation strategy integration - DONE
+
+### Files Modified
+
+#### Backend - Domain Layer
+- `backend/internal/domain/finance/reconciliation_service.go`
+  - Added `StrategyOverrideFunc` type for tenant-specific strategy selection
+  - Added `ReconciliationServiceOption` functional option type
+  - Added `WithDefaultStrategy()` option to set default strategy type
+  - Added `WithStrategyOverride()` option for context-based strategy selection
+  - Updated `NewReconciliationService()` to accept variadic options
+  - Added `GetDefaultStrategy()` method
+  - Added `GetEffectiveStrategy()` method for tenant-aware strategy resolution
+
+#### Backend - Application Layer
+- `backend/internal/application/finance/finance_service.go`
+  - Added `FinanceServiceOption` functional option type
+  - Added `WithReconciliationStrategy()` option
+  - Added `WithReconciliationStrategyOverride()` option
+  - Added `WithReconciliationService()` option for full service injection
+  - Updated `NewFinanceService()` to accept variadic options
+  - Updated `ReconcileReceipt()` to use effective strategy when none specified
+  - Updated `ReconcilePayment()` to use effective strategy when none specified
+
+#### Backend - Infrastructure Layer
+- `backend/cmd/server/main.go`
+  - Added strategy registry initialization with `NewRegistryWithDefaults()`
+  - Added logging for strategy registry stats
+  - Wired FinanceService with FIFO reconciliation strategy option
+
+#### Backend - Tests
+- `backend/internal/domain/finance/reconciliation_service_test.go`
+  - Added `TestReconciliationServiceWithOptions` test suite:
+    - Test: WithDefaultStrategy sets custom default
+    - Test: WithDefaultStrategy ignores invalid strategy
+    - Test: WithStrategyOverride allows context-based strategy selection
+    - Test: Multiple options can be chained
+
+### Technical Design
+
+#### Strategy Injection Pattern
+```go
+// Functional options pattern for dependency injection
+type ReconciliationServiceOption func(*ReconciliationService)
+
+func WithDefaultStrategy(strategyType ReconciliationStrategyType) ReconciliationServiceOption
+func WithStrategyOverride(fn StrategyOverrideFunc) ReconciliationServiceOption
+
+// Tenant-specific strategy selection
+type StrategyOverrideFunc func(ctx context.Context, tenantID uuid.UUID) ReconciliationStrategyType
+```
+
+#### Strategy Resolution Flow
+1. Application service calls `ReconcileReceipt()` or `ReconcilePayment()`
+2. If no strategy type specified in request, call `GetEffectiveStrategy(ctx, tenantID)`
+3. GetEffectiveStrategy checks override function first, falls back to default
+4. Strategy factory creates concrete strategy instance
+5. Strategy calculates allocations, service applies them
+
+### Test Results
+- All 30+ existing reconciliation tests: PASSED
+- New option configuration tests: PASSED
+- TypeScript type check: PASSED
+
+### Key Learnings
+1. Functional options pattern provides clean dependency injection in Go
+2. Strategy override function allows tenant-level customization without modifying domain logic
+3. Registry-based strategy management enables runtime configuration
+4. Backward compatibility maintained by defaulting to FIFO strategy
+
+### PRD Status
+- DDD-002: PASSED (all requirements implemented and tested)
