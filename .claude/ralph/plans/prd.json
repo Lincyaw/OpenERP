@@ -4451,7 +4451,7 @@
       "使用 RETURNING 子句或检查 RowsAffected",
       "添加并发测试验证修复"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "CRITICAL",
