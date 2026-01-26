@@ -17834,3 +17834,51 @@ async getInventoryItem(warehouseName: string, productName: string): Promise<{
 - Add shipped sales order to seed data to enable workflow tests
 - Run E2E tests in Docker environment to verify
 - Enable skipped tests as seed data becomes available
+
+---
+
+## P3-INT-003: Sales Return Detail Page (2026-01-26)
+
+### Task
+Created the missing SalesReturnDetail.tsx page component to enable viewing sales return details.
+
+### Issue
+The sales return list page had a "View" action that navigated to `/trade/sales-returns/:id`, but the route and component didn't exist. This blocked the E2E tests from testing the full return workflow.
+
+### Solution
+Created a complete SalesReturnDetail page following the pattern of SalesOrderDetail.tsx.
+
+### Files Created/Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/pages/trade/SalesReturnDetail.tsx` | NEW - Sales return detail page component |
+| `frontend/src/pages/trade/SalesReturnDetail.css` | NEW - Styling for detail page |
+| `frontend/src/router/routes.tsx` | Added route `/trade/sales-returns/:id` and lazy-loaded component |
+| `frontend/src/locales/zh-CN/trade.json` | Added `salesReturnDetail` translations |
+| `frontend/src/locales/en-US/trade.json` | Added `salesReturnDetail` translations |
+| `.claude/ralph/plans/prd.json` | Updated P3-INT-003 implementation notes |
+
+### Implementation Details
+
+**SalesReturnDetail.tsx** features:
+- Display basic return info (return number, original order, customer, status, item count, etc.)
+- Return items table with columns: index, product code/name, unit, original quantity, return quantity, unit price, refund amount, reason
+- Amount summary showing total refund
+- Status timeline showing workflow history (created, submitted, approved/rejected, completed/cancelled)
+- Action buttons based on current status:
+  - DRAFT: Edit, Submit for Approval, Cancel
+  - PENDING: Approve, Reject, Cancel
+  - APPROVED: Complete, Cancel
+- Modals for entering approval note, reject reason, and cancel reason
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+- ✅ Routes correctly registered in routes.tsx
+
+### Next Steps
+- Run E2E tests to verify the detail page works correctly
+- Enable workflow tests in sales-return.spec.ts that depend on detail page
+- Add shipped sales order seed data to enable full workflow testing
+

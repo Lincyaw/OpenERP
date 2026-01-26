@@ -1716,7 +1716,21 @@
       "- Added getInventoryItem() method to InventoryPage.ts for inventory verification",
       "- TypeScript compilation passes",
       "- Basic list/form tests are enabled and ready to run",
-      "- Workflow tests are skipped pending shipped sales order seed data"
+      "- Workflow tests are skipped pending shipped sales order seed data",
+      "",
+      "### SalesReturnDetail Page Created (2026-01-26)",
+      "- Created SalesReturnDetail.tsx page component for viewing sales return details",
+      "- Created SalesReturnDetail.css for styling",
+      "- Added route /trade/sales-returns/:id in routes.tsx",
+      "- Added zh-CN/en-US translations for salesReturnDetail namespace",
+      "- Features implemented:",
+      "  - Basic return info display (return number, order number, customer, status)",
+      "  - Return items table with quantities and amounts",
+      "  - Amount summary showing total refund",
+      "  - Status timeline showing workflow history",
+      "  - Action buttons based on status (Submit, Approve, Reject, Complete, Cancel)",
+      "  - Modals for approval note, reject reason, and cancel reason",
+      "- TypeScript/build verification passes"
     ],
     "passes": false
   },
@@ -2505,7 +2519,7 @@
   {
     "id": "P6-INT-001",
     "story": "多租户隔离联调 (E2E Docker)",
-    "priority": "high",
+    "priority": "medium",
     "requirements": [
       "Docker 环境: seed 数据包含 3 个租户",
       "E2E: 不同租户用户登录，验证只能看到本租户数据",
@@ -2789,7 +2803,7 @@
   {
     "id": "P8-004",
     "story": "UAT 用户验收测试 (E2E Docker Full Suite)",
-    "priority": "high",
+    "priority": "medium",
     "requirements": [
       "Docker 环境: 完整测试环境 + 全量 seed 数据",
       "E2E 核心流程: 销售全流程（开单→发货→收款→核销）",
@@ -2814,7 +2828,7 @@
   {
     "id": "P8-005",
     "story": "问题修复与回归测试 (E2E Docker CI)",
-    "priority": "high",
+    "priority": "medium",
     "requirements": [
       "Docker 环境: CI/CD 集成 E2E 测试",
       "每个 Bug 创建对应 E2E 测试用例",
@@ -3551,5 +3565,742 @@
       "✅ TypeScript 类型检查通过"
     ],
     "passes": true
+  },
+  {
+    "id": "P10-BUG-001",
+    "story": "修复商品管理表格进价售价不显示",
+    "priority": "high",
+    "requirements": [
+      "问题: 商品列表表格中进价(purchase_price)和售价(selling_price)不渲染",
+      "文件: frontend/src/pages/catalog/Products.tsx (L298-320)",
+      "",
+      "调查结果:",
+      "- 前端表格列定义正确，使用了purchase_price和selling_price字段",
+      "- render函数中使用formatCurrency格式化",
+      "- 问题可能是API返回值为null/undefined",
+      "",
+      "修复步骤:",
+      "1. 检查后端ProductListResponse是否正确填充价格字段",
+      "2. 验证数据库中商品记录是否有价格数据",
+      "3. 确认formatCurrency函数对0值的处理",
+      "4. 必要时修改render函数的null判断逻辑"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-002",
+    "story": "修复伙伴管理详情页404错误",
+    "priority": "high",
+    "requirements": [
+      "问题: 点击客户/供应商表格的'查看'按钮跳转到404页面",
+      "文件: frontend/src/router/routes.tsx (L610-621)",
+      "",
+      "调查结果:",
+      "- 导航路径: /partner/customers/:id 和 /partner/suppliers/:id",
+      "- 现有路由只有: customers/:id/edit, customers/:id/balance, suppliers/:id/edit",
+      "- 缺失: customers/:id (详情页) 和 suppliers/:id (详情页)",
+      "",
+      "修复步骤:",
+      "1. 创建 CustomerDetail.tsx 页面组件(参考ProductDetail.tsx)",
+      "2. 创建 SupplierDetail.tsx 页面组件",
+      "3. 在routes.tsx中添加路由:",
+      "   - { path: 'customers/:id', element: CustomerDetailPage() }",
+      "   - { path: 'suppliers/:id', element: SupplierDetailPage() }",
+      "4. 添加API调用获取单个客户/供应商详情"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-003",
+    "story": "修复供应商表格账期字段不显示",
+    "priority": "medium",
+    "requirements": [
+      "问题: 供应商列表表格中账期(payment_term_days)不显示",
+      "文件: frontend/src/pages/partner/Suppliers.tsx (L355-366)",
+      "",
+      "调查结果:",
+      "- 前端列定义正确，dataIndex为payment_term_days",
+      "- 后端DTO正确定义了PaymentTermDays字段",
+      "- 问题可能是API返回值为null或数据库无数据",
+      "",
+      "修复步骤:",
+      "1. 检查后端SupplierListResponse是否正确填充payment_term_days",
+      "2. 验证种子数据中供应商是否有账期值",
+      "3. 确认数据库查询是否包含该字段"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-004",
+    "story": "修复库存查询成本和总值不显示",
+    "priority": "medium",
+    "requirements": [
+      "问题: 库存列表表格中单位成本(unit_cost)和总值(total_value)不显示",
+      "文件: frontend/src/pages/inventory/StockList.tsx (L375-390)",
+      "",
+      "调查结果:",
+      "- 列定义正确，render函数使用formatCurrency",
+      "- 可能原因: API未返回这两个字段或值为null",
+      "- 表格scroll配置可能导致列被截断",
+      "",
+      "修复步骤:",
+      "1. 检查后端InventoryItemResponse是否填充unit_cost和total_value",
+      "2. 验证库存计算逻辑是否正确计算成本和总值",
+      "3. 必要时增加scroll.x值确保列可见"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-005",
+    "story": "修复库存查询操作按钮溢出",
+    "priority": "medium",
+    "requirements": [
+      "问题: 库存列表操作列的3个按钮超出表格范围",
+      "文件: frontend/src/components/common/table/DataTable.tsx (L282-294)",
+      "",
+      "调查结果:",
+      "- calculateActionsWidth()计算3个按钮宽度为200px",
+      "- 实际3个带文字的按钮需要更大空间",
+      "- StockList定义了3个操作: viewDetail, viewTransactions, adjustStock",
+      "",
+      "修复步骤:",
+      "1. 增加calculateActionsWidth()的返回值(3按钮从200px增至280px)",
+      "2. 或调整TableActions组件的maxVisible为2，多余放入下拉菜单",
+      "3. 或在StockList中自定义操作列宽度"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-006",
+    "story": "修复库存盘点差异金额不显示",
+    "priority": "medium",
+    "requirements": [
+      "问题: 库存盘点列表中差异金额(total_difference)不显示",
+      "文件: frontend/src/pages/inventory/StockTakingList.tsx (L295-312)",
+      "",
+      "调查结果:",
+      "- 列定义正确，dataIndex为total_difference",
+      "- render函数正确使用formatCurrency",
+      "- 问题可能是API未返回该字段",
+      "",
+      "修复步骤:",
+      "1. 检查后端StockTakingListResponse是否计算并返回total_difference",
+      "2. 验证盘点差异计算逻辑",
+      "3. 确认盘点完成后是否正确汇总差异金额"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-007",
+    "story": "修复销售订单发货500错误",
+    "priority": "critical",
+    "requirements": [
+      "问题: 销售订单发货操作返回500 Internal Server Error",
+      "文件:",
+      "- frontend/src/pages/trade/components/ShipOrderModal.tsx",
+      "- backend/internal/application/trade/sales_order_service.go (L376-413)",
+      "",
+      "调查结果:",
+      "- Ship方法调用链: Handler -> Service.Ship() -> order.Ship() -> SaveWithLock()",
+      "- 可能失败点:",
+      "  1. SetWarehouse()状态校验失败(已在P9-FIX-003修复)",
+      "  2. order.Ship()状态转换失败(需要CONFIRMED状态)",
+      "  3. 乐观锁冲突(版本不匹配)",
+      "  4. 仓库ID无效或权限问题",
+      "  5. 领域事件发布失败",
+      "",
+      "修复步骤:",
+      "1. 添加详细错误日志定位具体失败点",
+      "2. 检查订单状态流转是否正确",
+      "3. 验证仓库ID有效性",
+      "4. 检查库存扣减逻辑"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-008",
+    "story": "修复报表页面加载失败",
+    "priority": "high",
+    "requirements": [
+      "问题: 所有报表页面都加载失败",
+      "文件:",
+      "- frontend/src/pages/report/*.tsx (SalesReport, CashFlowReport, ProfitLoss等)",
+      "- backend/internal/interfaces/http/handler/report.go",
+      "",
+      "调查结果:",
+      "- 后端已实现所有报表API endpoints",
+      "- 可能失败原因:",
+      "  1. 报表数据表无数据",
+      "  2. 报表聚合调度器未运行",
+      "  3. 日期参数解析错误",
+      "  4. 租户ID/权限问题",
+      "",
+      "修复步骤:",
+      "1. 检查报表相关数据表是否有数据",
+      "2. 验证报表聚合服务是否正常运行",
+      "3. 检查前端日期参数格式(需要YYYY-MM-DD)",
+      "4. 添加错误日志定位具体API失败原因"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-009",
+    "story": "修复侧边栏按钮溢出问题",
+    "priority": "medium",
+    "requirements": [
+      "问题: 侧边栏中的按钮超出sidebar边界",
+      "文件: frontend/src/components/layout/Sidebar.tsx (L273-276)",
+      "",
+      "调查结果:",
+      "- Semi Design Nav组件的footer collapseButton在collapsed状态下超出60px宽度",
+      "- overflow-x: hidden未完全隐藏超出内容",
+      "",
+      "修复步骤:",
+      "1. 为Sider组件添加overflow: hidden样式",
+      "2. 或为footer按钮区域设置max-width约束",
+      "3. 调整collapsed状态下的按钮样式",
+      "4. 验证Semi Design Nav在60px宽度下的表现"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DDD-001",
+    "story": "Outbox Pattern Complete Integration - Events Not Using Outbox",
+    "priority": "critical",
+    "requirements": [
+      "Ensure all domain events are saved to outbox_events table before publishing",
+      "Implement transactional outbox pattern in SalesOrderService.ConfirmOrder",
+      "Implement transactional outbox pattern in PurchaseOrderService.Confirm",
+      "Implement transactional outbox pattern in InventoryService.IncreaseStock",
+      "Add integration tests verifying outbox-based event delivery",
+      "Events should be persisted in the same transaction as the domain operation"
+    ],
+    "passes": false,
+    "specRef": "Section 7.3 - Outbox Pattern",
+    "affectedModules": [
+      "backend/internal/application/trade/sales_order_service.go",
+      "backend/internal/application/trade/purchase_order_service.go",
+      "backend/internal/application/inventory/inventory_service.go",
+      "backend/internal/infrastructure/event/outbox_publisher.go"
+    ],
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "DDD-002",
+    "story": "PaymentAllocationStrategy Integration in ReconciliationService",
+    "priority": "critical",
+    "requirements": [
+      "Create ReconciliationService domain service using PaymentAllocationStrategy",
+      "Inject PaymentAllocationStrategy into finance receipt processing",
+      "Implement FIFO allocation strategy for reconciling receivables",
+      "Support configurable allocation strategy per tenant",
+      "Add unit tests for allocation strategy integration"
+    ],
+    "passes": false,
+    "specRef": "Section 5.5 - Finance Context ReconciliationService",
+    "affectedModules": [
+      "backend/internal/domain/finance/",
+      "backend/internal/application/finance/",
+      "backend/internal/infrastructure/strategy/allocation/"
+    ],
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "DDD-003",
+    "story": "IndustryPlugin System Implementation",
+    "priority": "critical",
+    "requirements": [
+      "Define IndustryPlugin interface with Name, DisplayName, RegisterStrategies, GetRequiredProductAttributes",
+      "Implement PluginManager for plugin registration and retrieval",
+      "Create AgriculturalPlugin as reference implementation (农资行业)",
+      "Integrate PluginManager with StrategyRegistry",
+      "Support industry-specific product attribute validation via plugin",
+      "Add plugin discovery and initialization at application startup"
+    ],
+    "passes": false,
+    "specRef": "Section 4.3 - Industry Plugin Mechanism",
+    "affectedModules": [
+      "backend/internal/domain/shared/plugin/",
+      "backend/internal/infrastructure/plugin/",
+      "backend/cmd/server/main.go"
+    ],
+    "severity": "CRITICAL"
+  },
+  {
+    "id": "DDD-004",
+    "story": "StockBelowThreshold Event Publication to External Handlers",
+    "priority": "high",
+    "requirements": [
+      "Verify StockBelowThreshold event is published via event bus (not just added to aggregate)",
+      "Create notification handler to process StockBelowThreshold events",
+      "Support configurable notification channels (in-app, email, etc.)",
+      "Add threshold configuration per inventory item",
+      "Test event publication in integration tests"
+    ],
+    "passes": false,
+    "specRef": "Section 5.3 - Inventory Context Domain Events",
+    "affectedModules": [
+      "backend/internal/domain/inventory/inventory_item.go",
+      "backend/internal/application/inventory/inventory_service.go",
+      "backend/internal/application/inventory/event_handlers.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-005",
+    "story": "DataScope Full Integration in Repository Queries",
+    "priority": "high",
+    "requirements": [
+      "Apply DataScope filter in SalesOrderRepository queries",
+      "Apply DataScope filter in PurchaseOrderRepository queries",
+      "Apply DataScope filter in InventoryRepository queries",
+      "Implement warehouse-level data scoping for WAREHOUSE role",
+      "Add CUSTOM scope support for region-based filtering",
+      "Test data isolation between different scope types"
+    ],
+    "passes": false,
+    "specRef": "Section 13.3 - Data Permissions Model",
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/datascope/filter.go",
+      "backend/internal/infrastructure/persistence/sales_order_repository.go",
+      "backend/internal/infrastructure/persistence/purchase_order_repository.go",
+      "backend/internal/infrastructure/persistence/inventory_repository.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-006",
+    "story": "Pricing Strategies Integration in Trade Context",
+    "priority": "high",
+    "requirements": [
+      "Inject PricingStrategy into SalesOrderService",
+      "Use PricingStrategy.CalculatePrice when creating sales order items",
+      "Support customer-level discounts via pricing strategy",
+      "Support quantity-based tiered pricing",
+      "Allow tenant-configurable default pricing strategy"
+    ],
+    "passes": false,
+    "specRef": "Section 4.1 - Strategy Extensions (Pricing)",
+    "affectedModules": [
+      "backend/internal/application/trade/sales_order_service.go",
+      "backend/internal/domain/shared/strategy/pricing.go",
+      "backend/internal/infrastructure/strategy/pricing/"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-007",
+    "story": "Stock Lock Expiration Auto-Release Mechanism",
+    "priority": "high",
+    "requirements": [
+      "Implement scheduled job to check and release expired stock locks",
+      "Stock locks should expire after 24 hours by default",
+      "Emit StockUnlocked event when lock expires",
+      "Update related order status when lock expires (optional notification)",
+      "Add configuration for lock expiration duration"
+    ],
+    "passes": false,
+    "specRef": "Section 5.3 - StockLock Entity (24h expiry)",
+    "affectedModules": [
+      "backend/internal/domain/inventory/stock_lock.go",
+      "backend/internal/application/inventory/inventory_service.go",
+      "backend/internal/infrastructure/persistence/stock_lock_repository.go",
+      "backend/cmd/server/main.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-008",
+    "story": "FIFO Batch Selection Strategy Implementation",
+    "priority": "high",
+    "requirements": [
+      "Implement FIFOBatchStrategy that selects oldest batches first",
+      "Implement FEFOBatchStrategy (First Expired First Out) for perishables",
+      "Integrate batch strategy in InventoryDomainService.StockOut",
+      "Support batch selection based on manufacture date",
+      "Return BatchSelection result with selected batches and quantities"
+    ],
+    "passes": false,
+    "specRef": "Section 4.1 - BatchManagementStrategy (FIFO/FEFO)",
+    "affectedModules": [
+      "backend/internal/domain/shared/strategy/batch.go",
+      "backend/internal/infrastructure/strategy/batch/",
+      "backend/internal/domain/inventory/inventory_item.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-009",
+    "story": "Strategy Registry Complete Implementation",
+    "priority": "high",
+    "requirements": [
+      "Register all default strategies at application startup",
+      "Implement GetProductValidator method in registry",
+      "Support hot-reload of strategies (optional)",
+      "Provide REST API to list available strategies per type",
+      "Document strategy extension points for plugin developers"
+    ],
+    "passes": false,
+    "specRef": "Section 4.2 - Strategy Registration and Usage",
+    "affectedModules": [
+      "backend/internal/infrastructure/strategy/registry.go",
+      "backend/internal/infrastructure/strategy/defaults.go",
+      "backend/cmd/server/main.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-010",
+    "story": "Event Retry Mechanism with Dead Letter Queue",
+    "priority": "high",
+    "requirements": [
+      "Implement exponential backoff for failed event processing",
+      "Move events to DEAD status after max retries exceeded",
+      "Provide API to view and retry dead letter events",
+      "Add alerting when events move to dead letter queue",
+      "Implement manual retry endpoint for operators"
+    ],
+    "passes": false,
+    "specRef": "Section 7.3 - Event Retry Mechanism",
+    "affectedModules": [
+      "backend/internal/domain/shared/outbox.go",
+      "backend/internal/infrastructure/event/outbox_processor.go",
+      "backend/internal/interfaces/http/handler/admin.go"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-011",
+    "story": "Return Order Status Machine - Add RECEIVING Status",
+    "priority": "high",
+    "requirements": [
+      "Add RECEIVING status to ReturnStatus enum",
+      "Update status transition: APPROVED -> RECEIVING -> COMPLETED",
+      "Implement receive() method on SalesReturn aggregate",
+      "Update frontend return order workflow to support RECEIVING",
+      "Add E2E test for full return order lifecycle"
+    ],
+    "passes": false,
+    "specRef": "Section 14.2 - SalesReturn Status Flow",
+    "affectedModules": [
+      "backend/internal/domain/trade/sales_return.go",
+      "backend/internal/application/trade/sales_return_service.go",
+      "frontend/src/pages/trade/returns/"
+    ],
+    "severity": "HIGH"
+  },
+  {
+    "id": "DDD-012",
+    "story": "Product Custom Attributes Strategy Validation",
+    "priority": "medium",
+    "requirements": [
+      "Use ProductValidationStrategy to validate custom attributes",
+      "Support industry-specific required attributes (e.g., registration_number for pesticides)",
+      "Integrate validation strategy in Product.SetAttribute method",
+      "Return detailed validation errors for missing/invalid attributes"
+    ],
+    "passes": false,
+    "specRef": "Section 4.3 - GetRequiredProductAttributes",
+    "affectedModules": [
+      "backend/internal/domain/catalog/product.go",
+      "backend/internal/domain/shared/strategy/validation.go",
+      "backend/internal/application/catalog/product_service.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-013",
+    "story": "CustomerLevel Value Object Implementation",
+    "priority": "medium",
+    "requirements": [
+      "Refactor CustomerLevel from string enum to proper Value Object",
+      "Include discountRate field in CustomerLevel value object",
+      "Implement CustomerLevel comparison and validation",
+      "Support custom customer levels per tenant",
+      "Migrate existing customer data to new structure"
+    ],
+    "passes": false,
+    "specRef": "Section 5.2 - CustomerLevel Value Object",
+    "affectedModules": [
+      "backend/internal/domain/partner/customer.go",
+      "backend/internal/domain/partner/customer_level.go",
+      "backend/internal/infrastructure/persistence/customer_repository.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-014",
+    "story": "Unit Value Object Implementation",
+    "priority": "medium",
+    "requirements": [
+      "Create Unit value object with code, name, and conversionRate",
+      "Replace string Unit fields with Unit value object in domain entities",
+      "Support unit conversion calculations",
+      "Add product-level unit definitions with base unit",
+      "Implement unit validation and normalization"
+    ],
+    "passes": false,
+    "specRef": "Section 5.1 - Unit Value Object",
+    "affectedModules": [
+      "backend/internal/domain/shared/valueobject/unit.go",
+      "backend/internal/domain/catalog/product.go",
+      "backend/internal/domain/trade/sales_order.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-015",
+    "story": "Address Value Object Implementation",
+    "priority": "medium",
+    "requirements": [
+      "Create Address value object with province, city, district, detail fields",
+      "Replace string address fields in Customer, Supplier, Warehouse",
+      "Implement Address formatting methods (full address string)",
+      "Support address validation and normalization"
+    ],
+    "passes": false,
+    "specRef": "Section 5.2 - Address Value Object",
+    "affectedModules": [
+      "backend/internal/domain/shared/valueobject/address.go",
+      "backend/internal/domain/partner/customer.go",
+      "backend/internal/domain/partner/supplier.go",
+      "backend/internal/domain/partner/warehouse.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-016",
+    "story": "Trial Balance Check Implementation",
+    "priority": "medium",
+    "requirements": [
+      "Implement trial balance validation in Finance context",
+      "Check debit/credit balance before finalizing financial operations",
+      "Add reconciliation report showing balance discrepancies",
+      "Prevent operations that would cause imbalance",
+      "Log audit trail for balance checks"
+    ],
+    "passes": false,
+    "specRef": "Section 7.4 - Trial Balance Check",
+    "affectedModules": [
+      "backend/internal/domain/finance/",
+      "backend/internal/application/finance/",
+      "backend/internal/interfaces/http/handler/finance.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-017",
+    "story": "Customer Balance Recharge Backend Integration",
+    "priority": "medium",
+    "requirements": [
+      "Complete backend API for customer balance top-up",
+      "Implement BalanceTransaction recording for all balance changes",
+      "Support balance deduction during sales order payment",
+      "Implement balance refund for returns",
+      "Add balance history query endpoint"
+    ],
+    "passes": false,
+    "specRef": "Appendix A - CustomerBalanceTopUp Event",
+    "affectedModules": [
+      "backend/internal/domain/partner/customer.go",
+      "backend/internal/application/partner/customer_service.go",
+      "backend/internal/domain/partner/balance_transaction.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-018",
+    "story": "Event Handler Idempotency Keys",
+    "priority": "medium",
+    "requirements": [
+      "Add idempotency key check in all event handlers",
+      "Store processed event IDs to prevent duplicate processing",
+      "Implement idempotency key storage with TTL",
+      "Return success for duplicate events without reprocessing",
+      "Add metrics for duplicate event detection"
+    ],
+    "passes": false,
+    "specRef": "Section 7.3 - Event Idempotency",
+    "affectedModules": [
+      "backend/internal/application/trade/sales_order_event_handlers.go",
+      "backend/internal/application/inventory/event_handlers.go",
+      "backend/internal/infrastructure/event/"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-019",
+    "story": "Event Versioning Support",
+    "priority": "medium",
+    "requirements": [
+      "Add version field to domain event base structure",
+      "Implement event schema versioning (v1, v2, etc.)",
+      "Support backward-compatible event deserialization",
+      "Document event versioning strategy for developers",
+      "Add event migration utilities for schema changes"
+    ],
+    "passes": false,
+    "specRef": "Section 7.3 - Event Infrastructure",
+    "affectedModules": [
+      "backend/internal/domain/shared/domain_event.go",
+      "backend/internal/infrastructure/event/"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-020",
+    "story": "Warehouse-Level Data Scoping",
+    "priority": "medium",
+    "requirements": [
+      "Implement warehouse_id based data scope filtering",
+      "Support WAREHOUSE role type with warehouse-level access",
+      "Add warehouse assignment to user/role configuration",
+      "Filter inventory queries by user's assigned warehouses",
+      "Test multi-warehouse data isolation"
+    ],
+    "passes": false,
+    "specRef": "Section 13.4 - Predefined Roles (WAREHOUSE role)",
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/datascope/filter.go",
+      "backend/internal/domain/identity/role.go",
+      "backend/internal/infrastructure/persistence/inventory_repository.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-021",
+    "story": "Cost Calculation Using Injected Strategy",
+    "priority": "medium",
+    "requirements": [
+      "Inject CostCalculationStrategy into InventoryDomainService",
+      "Use strategy to calculate unit cost during stock increase",
+      "Support MovingAverageCost and FIFO cost strategies",
+      "Allow tenant-level cost strategy configuration",
+      "Record cost calculation method in inventory transaction"
+    ],
+    "passes": false,
+    "specRef": "Section 4.4 - Domain Service Using Strategy",
+    "affectedModules": [
+      "backend/internal/domain/inventory/inventory_item.go",
+      "backend/internal/application/inventory/inventory_service.go",
+      "backend/internal/infrastructure/strategy/cost/"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-022",
+    "story": "Frontend Types Alignment with Domain",
+    "priority": "medium",
+    "requirements": [
+      "Regenerate frontend API types from OpenAPI spec",
+      "Ensure Money value object is represented correctly in frontend",
+      "Align status enums between frontend and backend",
+      "Add TypeScript types for all domain value objects",
+      "Document frontend-backend type mapping"
+    ],
+    "passes": false,
+    "specRef": "Section 5 - API Contract Code Generation",
+    "affectedModules": [
+      "frontend/src/api/",
+      "frontend/src/types/",
+      "backend/docs/swagger.yaml"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "DDD-023",
+    "story": "Product Disabled Event Implementation",
+    "priority": "medium",
+    "requirements": [
+      "Emit ProductDisabled event when product.Disable() is called",
+      "Create ProductDisabledEvent struct with product details",
+      "Handle ProductDisabled in inventory context (mark inventory as inactive)",
+      "Prevent sales of disabled products",
+      "Add event handler tests"
+    ],
+    "passes": false,
+    "specRef": "Section 5.1 - Product Domain Events",
+    "affectedModules": [
+      "backend/internal/domain/catalog/product.go",
+      "backend/internal/domain/catalog/product_events.go",
+      "backend/internal/application/catalog/event_handlers.go"
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "id": "P10-BUG-010",
+    "story": "修复表格操作下拉菜单getBoundingClientRect报错",
+    "priority": "high",
+    "requirements": [
+      "问题: 所有表格最右侧的三个点操作菜单点击后报错",
+      "错误: Uncaught TypeError: n.getBoundingClientRect is not a function",
+      "文件: frontend/src/components/common/table/TableActions.tsx (L193-207)",
+      "",
+      "调查结果:",
+      "- TableActions使用Semi Design Dropdown组件",
+      "- 缺少getPopupContainer属性导致fixed column中无法正确计算位置",
+      "- 对比正常工作的LanguageSwitcher.tsx使用了getPopupContainer",
+      "",
+      "修复步骤:",
+      "在TableActions.tsx第193行的Dropdown组件添加:",
+      "  getPopupContainer={() => document.body}",
+      "",
+      "修复后效果:",
+      "- Dropdown菜单挂载到document.body避免fixed column影响",
+      "- trigger元素的BoundingClientRect能被正确获取",
+      "",
+      "验证:",
+      "- 在所有带操作列的表格页面测试三个点菜单",
+      "- 确认无JS错误且菜单正确弹出"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-011",
+    "story": "修复权限配置页面角色列表400错误",
+    "priority": "high",
+    "requirements": [
+      "问题: 权限配置页面获取角色列表返回400错误",
+      "请求: GET /api/v1/identity/roles?page=1&page_size=1000&is_enabled=true",
+      "文件: frontend/src/pages/system/Permissions.tsx (L205)",
+      "",
+      "调查结果:",
+      "- 后端RoleListQuery验证: page_size max=100",
+      "- 前端请求page_size=1000超过后端限制",
+      "",
+      "修复步骤:",
+      "将Permissions.tsx第205行的page_size从1000改为100:",
+      "  const query: RoleListQuery = {",
+      "    page: 1,",
+      "    page_size: 100,  // 从1000改为100",
+      "    is_enabled: true,",
+      "  }",
+      "",
+      "或者实现分页加载获取全部角色"
+    ],
+    "passes": false
+  },
+  {
+    "id": "P10-BUG-012",
+    "story": "修复权限名称显示英文key问题",
+    "priority": "medium",
+    "requirements": [
+      "问题: 权限名称显示为permissions.actions.admin而非中文",
+      "文件:",
+      "- frontend/src/pages/system/Permissions.tsx (L98-99)",
+      "- frontend/src/locales/zh-CN/system.json (L255-276)",
+      "",
+      "调查结果:",
+      "- 前端代码提取权限action部分查找i18n翻译",
+      "- 某些action(如admin)在翻译文件中不存在",
+      "- 导致显示原始key而非翻译文本",
+      "",
+      "修复步骤:",
+      "1. 在system.json的permissions.actions中添加缺失的action翻译:",
+      "   \"admin\": \"管理\"",
+      "2. 检查后端返回的所有权限action,确保翻译完整",
+      "3. 或修改前端逻辑,对未翻译的action显示更友好的默认值"
+    ],
+    "passes": false
   }
 ]

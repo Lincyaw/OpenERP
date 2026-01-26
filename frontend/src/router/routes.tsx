@@ -63,6 +63,7 @@ const PurchaseOrderDetailPage = () => lazyLoad(() => import('@/pages/trade/Purch
 const PurchaseOrderReceivePage = () => lazyLoad(() => import('@/pages/trade/PurchaseOrderReceive'))
 const SalesReturnsPage = () => lazyLoad(() => import('@/pages/trade/SalesReturns'))
 const SalesReturnNewPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnNew'))
+const SalesReturnDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnDetail'))
 const SalesReturnApprovalPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnApproval'))
 const PurchaseReturnsPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturns'))
 const PurchaseReturnNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturnNew'))
@@ -648,6 +649,7 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'sales-returns', element: SalesReturnsPage() },
           { path: 'sales-returns/new', element: SalesReturnNewPage() },
           { path: 'sales-returns/approval', element: SalesReturnApprovalPage() },
+          { path: 'sales-returns/:id', element: SalesReturnDetailPage() },
           // Purchase returns routes
           { path: 'purchase-returns', element: PurchaseReturnsPage() },
           { path: 'purchase-returns/new', element: PurchaseReturnNewPage() }
