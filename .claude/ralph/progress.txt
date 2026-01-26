@@ -24688,3 +24688,95 @@ All data loaded successfully via `make db-reset`.
 - Consider adding more E2E tests to verify frontend displays all seed data correctly
 - Add more variety in payment methods for finance vouchers
 - Consider adding sample stock taking records
+
+2025-01-27 - P7-BE-012: Taobao Adapter Implementation
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `backend/internal/infrastructure/ecommerce/taobao_config.go` - Configuration for Taobao API integration
+   - TaobaoConfig struct with AppKey, AppSecret, SessionKey fields
+   - Sign() method for MD5 signature generation (Taobao API requirement)
+   - SignHMAC() method for HMAC-MD5 alternative signature
+   - Validation methods with appropriate error handling
+
+2. `backend/internal/infrastructure/ecommerce/taobao_types.go` - API response type definitions
+   - TaobaoResponse base type with error handling
+   - TaobaoTrade, TaobaoOrder for order data structures
+   - TaobaoItem, TaobaoSku for product data structures
+   - Logistics and inventory sync types
+   - ParseDecimal helper for safe decimal parsing
+
+3. `backend/internal/infrastructure/ecommerce/taobao_adapter.go` - Main adapter implementation
+   - Implements integration.EcommercePlatform interface
+   - PullOrders: Pull orders from Taobao with pagination
+   - GetOrder: Get single order details
+   - UpdateOrderStatus: Send shipment info to Taobao
+   - SyncInventory: Sync item and SKU quantities
+   - SyncProducts: Sync product updates
+   - GetProduct: Retrieve product details from platform
+   - Thread-safe tenant configuration management with sync.RWMutex
+
+4. `backend/internal/infrastructure/ecommerce/taobao_adapter_test.go` - Comprehensive unit tests
+   - 19 test functions covering all major functionality
+   - Mock HTTP server for API simulation
+   - Tests for config validation, order pulling, inventory sync
+   - Tests for status mapping and error handling
+
+**Key Design Decisions:**
+1. **Ports & Adapters Pattern**: Implements domain-defined EcommercePlatform interface
+2. **Multi-tenant Support**: Per-tenant configuration with mutex protection for thread safety
+3. **Response Size Limit**: 10MB max response size to prevent memory exhaustion attacks
+4. **Input Validation**: Numeric ID validation for product/order IDs
+5. **Domain Error Wrapping**: All API errors wrapped with domain-specific error types
+6. **MD5 Signature**: Required by Taobao API (documented security trade-off)
+
+**Security Improvements Applied:**
+- Race condition fixed with sync.RWMutex for tenant config map
+- Response body size limited to 10MB
+- Input validation for platform IDs
+- Consistent error wrapping with domain errors
+- Removed unused code (doRequestJSON method)
+
+**Taobao API Methods Implemented:**
+- taobao.trades.sold.get - List sold orders
+- taobao.trade.fullinfo.get - Get order details
+- taobao.logistics.offline.send - Send shipment info
+- taobao.item.get - Get product details
+- taobao.item.quantity.update - Update item inventory
+- taobao.item.sku.update - Update SKU inventory
+- taobao.item.update - Update product info
+
+**Status Mapping:**
+- WAIT_BUYER_PAY → PENDING
+- WAIT_SELLER_SEND_GOODS → PAID
+- WAIT_BUYER_CONFIRM_GOODS → SHIPPED
+- TRADE_BUYER_SIGNED → DELIVERED
+- TRADE_FINISHED → COMPLETED
+- TRADE_CLOSED → CLOSED
+- TRADE_CLOSED_BY_TAOBAO → CANCELLED
+
+**Shipping Company Mapping:**
+- Supports major Chinese carriers: SF, YTO, ZTO, STO, YUNDA, EMS, JD, HTKY, DBL, JTSD
+
+=== Verification ===
+
+- Go build: PASS
+- Go vet: PASS
+- Unit tests: 19 tests, all PASS
+- Code review: PASS (CRITICAL/HIGH issues fixed)
+
+=== Notes ===
+
+- This is an optional/low priority task implementing the Taobao/Tmall e-commerce platform adapter
+- The adapter follows existing patterns in the codebase (payment adapters)
+- MD5 signature is used because Taobao's legacy API requires it
+- The adapter supports both production and sandbox environments
+- Multi-tenant configuration allows different API credentials per tenant
+
+=== Next Steps ===
+
+- P7-BE-013: Implement Douyin Adapter (optional)
+- Future: Implement JD, PDD adapters following the same pattern
+- Future: Create HTTP handlers to expose platform integration APIs
+- Future: Implement order sync scheduler for automatic order pulling
