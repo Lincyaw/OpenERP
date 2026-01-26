@@ -27,17 +27,6 @@ const (
 	CustomerTypeOrganization CustomerType = "organization" // Business/company
 )
 
-// CustomerLevel represents the customer's tier/grade
-type CustomerLevel string
-
-const (
-	CustomerLevelNormal   CustomerLevel = "normal"
-	CustomerLevelSilver   CustomerLevel = "silver"
-	CustomerLevelGold     CustomerLevel = "gold"
-	CustomerLevelPlatinum CustomerLevel = "platinum"
-	CustomerLevelVIP      CustomerLevel = "vip"
-)
-
 // Customer represents a customer in the partner context
 // It is the aggregate root for customer-related operations
 type Customer struct {
@@ -46,7 +35,7 @@ type Customer struct {
 	Name        string          `gorm:"type:varchar(200);not null"`
 	ShortName   string          `gorm:"type:varchar(100)"`                              // Abbreviated name
 	Type        CustomerType    `gorm:"type:varchar(20);not null;default:'individual'"` // individual or organization
-	Level       CustomerLevel   `gorm:"type:varchar(20);not null;default:'normal'"`     // Customer tier
+	Level       CustomerLevel   `gorm:"type:varchar(20);not null;default:'normal'"`     // Customer tier (stored as code)
 	Status      CustomerStatus  `gorm:"type:varchar(20);not null;default:'active'"`
 	ContactName string          `gorm:"type:varchar(100)"` // Primary contact person
 	Phone       string          `gorm:"type:varchar(50);index"`
@@ -86,7 +75,7 @@ func NewCustomer(tenantID uuid.UUID, code, name string, customerType CustomerTyp
 		Code:                strings.ToUpper(code),
 		Name:                name,
 		Type:                customerType,
-		Level:               CustomerLevelNormal,
+		Level:               NormalLevel(), // Use factory function for default level
 		Status:              CustomerStatusActive,
 		CreditLimit:         decimal.Zero,
 		Balance:             decimal.Zero,
@@ -479,12 +468,13 @@ func validateCustomerType(t CustomerType) error {
 }
 
 func validateCustomerLevel(level CustomerLevel) error {
-	switch level {
-	case CustomerLevelNormal, CustomerLevelSilver, CustomerLevelGold, CustomerLevelPlatinum, CustomerLevelVIP:
-		return nil
-	default:
+	if level.IsEmpty() {
+		return shared.NewDomainError("INVALID_LEVEL", "Customer level cannot be empty")
+	}
+	if !level.IsValid() {
 		return shared.NewDomainError("INVALID_LEVEL", "Invalid customer level")
 	}
+	return nil
 }
 
 func validatePhone(phone string) error {

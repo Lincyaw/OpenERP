@@ -316,7 +316,10 @@ func (s *CustomerService) Update(ctx context.Context, tenantID, customerID uuid.
 
 	// Update level
 	if req.Level != nil {
-		level := partner.CustomerLevel(*req.Level)
+		level, err := partner.NewCustomerLevelFromCode(*req.Level)
+		if err != nil {
+			return nil, err
+		}
 		if err := customer.SetLevel(level); err != nil {
 			return nil, err
 		}
@@ -521,7 +524,10 @@ func (s *CustomerService) SetLevel(ctx context.Context, tenantID, customerID uui
 		return nil, err
 	}
 
-	customerLevel := partner.CustomerLevel(level)
+	customerLevel, err := partner.NewCustomerLevelFromCode(level)
+	if err != nil {
+		return nil, err
+	}
 	if err := customer.SetLevel(customerLevel); err != nil {
 		return nil, err
 	}
@@ -566,11 +572,11 @@ func (s *CustomerService) CountByLevel(ctx context.Context, tenantID uuid.UUID) 
 	counts := make(map[string]int64)
 
 	levels := []partner.CustomerLevel{
-		partner.CustomerLevelNormal,
-		partner.CustomerLevelSilver,
-		partner.CustomerLevelGold,
-		partner.CustomerLevelPlatinum,
-		partner.CustomerLevelVIP,
+		partner.NormalLevel(),
+		partner.SilverLevel(),
+		partner.GoldLevel(),
+		partner.PlatinumLevel(),
+		partner.VIPLevel(),
 	}
 
 	var total int64
@@ -579,7 +585,7 @@ func (s *CustomerService) CountByLevel(ctx context.Context, tenantID uuid.UUID) 
 		if err != nil {
 			return nil, err
 		}
-		counts[string(level)] = count
+		counts[level.Code()] = count
 		total += count
 	}
 	counts["total"] = total

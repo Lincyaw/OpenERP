@@ -176,13 +176,34 @@ ON CONFLICT DO NOTHING;
 -- PARTNER MODULE - Customers, Suppliers, Warehouses
 -- ============================================================================
 
--- Customers
-INSERT INTO customers (id, tenant_id, code, name, short_name, type, level, status, contact_name, phone, email, address, city, province, credit_limit, balance) VALUES
-('50000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'CUST001', 'Beijing Tech Solutions Ltd', 'Beijing Tech', 'organization', 'gold', 'active', 'Zhang Wei', '13800138001', 'zhang.wei@bjtech.com', 'No. 100 Zhongguancun Street', 'Beijing', 'Beijing', 100000.0000, 5000.0000),
-('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'CUST002', 'Shanghai Digital Corp', 'Shanghai Digital', 'organization', 'platinum', 'active', 'Li Ming', '13800138002', 'li.ming@shdigital.com', 'No. 200 Nanjing Road', 'Shanghai', 'Shanghai', 200000.0000, 10000.0000),
-('50000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'CUST003', 'Shenzhen Hardware Inc', 'SZ Hardware', 'organization', 'silver', 'active', 'Wang Fang', '13800138003', 'wang.fang@szhw.com', 'No. 300 Science Park', 'Shenzhen', 'Guangdong', 50000.0000, 0.0000),
-('50000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'CUST004', 'Chen Xiaoming', 'Chen', 'individual', 'normal', 'active', 'Chen Xiaoming', '13800138004', 'chen.xiaoming@gmail.com', 'Room 501, Building A', 'Hangzhou', 'Zhejiang', 10000.0000, 500.0000),
-('50000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'CUST005', 'Wang Xiaohong', 'Wang', 'individual', 'vip', 'active', 'Wang Xiaohong', '13800138005', 'wang.xiaohong@qq.com', 'No. 88 Tianhe Road', 'Guangzhou', 'Guangdong', 20000.0000, 2000.0000)
+-- Customer Levels (must be inserted before customers for level_id reference)
+INSERT INTO customer_levels (id, tenant_id, code, name, discount_rate, sort_order, is_default, is_active, description) VALUES
+('60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'normal', '普通会员', 0.0000, 0, true, true, '普通会员，无折扣'),
+('60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'silver', '银卡会员', 0.0300, 1, false, true, '银卡会员，享受3%折扣'),
+('60000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'gold', '金卡会员', 0.0500, 2, false, true, '金卡会员，享受5%折扣'),
+('60000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'platinum', '白金会员', 0.0800, 3, false, true, '白金会员，享受8%折扣'),
+('60000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'vip', 'VIP会员', 0.1000, 4, false, true, 'VIP会员，享受10%折扣'),
+-- Alpha tenant customer levels
+('60000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000002', 'normal', '普通会员', 0.0000, 0, true, true, '普通会员，无折扣'),
+('60000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000002', 'silver', '银卡会员', 0.0300, 1, false, true, '银卡会员，享受3%折扣'),
+('60000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000002', 'gold', '金卡会员', 0.0500, 2, false, true, '金卡会员，享受5%折扣'),
+('60000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000002', 'platinum', '白金会员', 0.0800, 3, false, true, '白金会员，享受8%折扣'),
+('60000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000002', 'vip', 'VIP会员', 0.1000, 4, false, true, 'VIP会员，享受10%折扣'),
+-- Beta tenant customer levels
+('60000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000003', 'normal', '普通会员', 0.0000, 0, true, true, '普通会员，无折扣'),
+('60000000-0000-0000-0000-000000000202', '00000000-0000-0000-0000-000000000003', 'silver', '银卡会员', 0.0300, 1, false, true, '银卡会员，享受3%折扣'),
+('60000000-0000-0000-0000-000000000203', '00000000-0000-0000-0000-000000000003', 'gold', '金卡会员', 0.0500, 2, false, true, '金卡会员，享受5%折扣'),
+('60000000-0000-0000-0000-000000000204', '00000000-0000-0000-0000-000000000003', 'platinum', '白金会员', 0.0800, 3, false, true, '白金会员，享受8%折扣'),
+('60000000-0000-0000-0000-000000000205', '00000000-0000-0000-0000-000000000003', 'vip', 'VIP会员', 0.1000, 4, false, true, 'VIP会员，享受10%折扣')
+ON CONFLICT DO NOTHING;
+
+-- Customers (with level_id reference)
+INSERT INTO customers (id, tenant_id, code, name, short_name, type, level, level_id, status, contact_name, phone, email, address, city, province, credit_limit, balance) VALUES
+('50000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'CUST001', 'Beijing Tech Solutions Ltd', 'Beijing Tech', 'organization', 'gold', '60000000-0000-0000-0000-000000000003', 'active', 'Zhang Wei', '13800138001', 'zhang.wei@bjtech.com', 'No. 100 Zhongguancun Street', 'Beijing', 'Beijing', 100000.0000, 5000.0000),
+('50000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'CUST002', 'Shanghai Digital Corp', 'Shanghai Digital', 'organization', 'platinum', '60000000-0000-0000-0000-000000000004', 'active', 'Li Ming', '13800138002', 'li.ming@shdigital.com', 'No. 200 Nanjing Road', 'Shanghai', 'Shanghai', 200000.0000, 10000.0000),
+('50000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'CUST003', 'Shenzhen Hardware Inc', 'SZ Hardware', 'organization', 'silver', '60000000-0000-0000-0000-000000000002', 'active', 'Wang Fang', '13800138003', 'wang.fang@szhw.com', 'No. 300 Science Park', 'Shenzhen', 'Guangdong', 50000.0000, 0.0000),
+('50000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'CUST004', 'Chen Xiaoming', 'Chen', 'individual', 'normal', '60000000-0000-0000-0000-000000000001', 'active', 'Chen Xiaoming', '13800138004', 'chen.xiaoming@gmail.com', 'Room 501, Building A', 'Hangzhou', 'Zhejiang', 10000.0000, 500.0000),
+('50000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'CUST005', 'Wang Xiaohong', 'Wang', 'individual', 'vip', '60000000-0000-0000-0000-000000000005', 'active', 'Wang Xiaohong', '13800138005', 'wang.xiaohong@qq.com', 'No. 88 Tianhe Road', 'Guangzhou', 'Guangdong', 20000.0000, 2000.0000)
 ON CONFLICT DO NOTHING;
 
 -- Suppliers

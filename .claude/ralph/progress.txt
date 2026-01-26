@@ -19339,3 +19339,389 @@ Added tests for validation integration:
 
 ### Related Tasks
 - DDD-012 (parent analysis task)
+
+
+## 2026-01-26 - DDD-012: Product Custom Attributes Strategy Validation - COMPLETE
+
+### Task ID
+DDD-012
+
+### Story
+Product Custom Attributes Strategy Validation
+
+### Priority
+MEDIUM
+
+### DDD Validation Performed
+
+Invoked `ddd-consistency-validator` agent to perform comprehensive validation against spec.md.
+
+#### Overall Consistency Score: 8/10
+
+### Requirements Verification
+
+| Requirement | Status | Evidence |
+|-------------|--------|----------|
+| Use ProductValidationStrategy to validate custom attributes | ✅ COMPLETE | ProductService.validateProduct() calls strategy.Validate() |
+| Support industry-specific required attributes | ✅ COMPLETE | AgriculturalProductValidator validates registration_number for PESTICIDE category |
+| Integrate validation strategy in Product.SetAttribute | ⚠️ ALTERNATIVE | Validation in ProductService (application layer) - appropriate design choice |
+| Return detailed validation errors | ✅ COMPLETE | ValidationError includes Field, Code, Message, Severity |
+
+### Implementation Review
+
+#### What Was Already Implemented
+
+1. **ValidationStrategyGetter Interface** (`product_service.go:20-22`)
+   - Decouples ProductService from concrete StrategyRegistry
+   - Enables easy mocking for tests
+
+2. **Validation Integration in Create/Update** (`product_service.go:141-145, 328-337`)
+   - `validateProduct()` helper method orchestrates validation
+   - Category code resolved via `getCategoryCode()` for industry routing
+   - Validation errors converted to DomainError
+
+3. **AgriculturalProductValidator** (`agricultural.go`)
+   - Validates manufacturer (required for all agricultural products)
+   - PESTICIDE: registration_number required with PD+8 digits format
+   - SEED: variety_approval_number warning
+   - FERTILIZER: production_license warning
+
+4. **StandardProductValidator** (`standard.go`)
+   - Validates required fields: SKU, name, categoryId, unitId
+   - Validates price/cost non-negative
+   - Validates stock levels
+
+#### Test Coverage
+- All validation tests pass (9 tests in product_service_test.go)
+- Agricultural validator tests pass (9 tests)
+- Strategy registry tests pass
+
+### Design Decisions Documented
+
+1. **GetRequiredAttributes() Method Location**
+   - **Spec**: `ProductValidationStrategy.GetRequiredAttributes() []string`
+   - **Implementation**: `IndustryPlugin.GetRequiredProductAttributes() []AttributeDefinition`
+   - **Rationale**: AttributeDefinition provides richer metadata (Label, Required, Regex, CategoryCodes)
+   - **Trade-off**: 
+     - Pro: More detailed attribute metadata for frontend
+     - Con: Slightly different API from spec
+   - **Risk Level**: 🟢 LOW
+
+2. **Validation at Service Layer vs Aggregate**
+   - **Spec**: "Integrate validation strategy in Product.SetAttribute method"
+   - **Implementation**: Validation in ProductService before Save()
+   - **Rationale**: 
+     - Validation requires external dependencies (strategy registry, category lookup)
+     - Application layer is appropriate for cross-cutting concerns
+     - Domain aggregate remains dependency-free
+   - **Trade-off**:
+     - Pro: Clean aggregate design, testable
+     - Con: Direct aggregate manipulation bypasses validation
+   - **Risk Level**: 🟡 MEDIUM (mitigated by controlled access)
+
+3. **Enhanced ValidationResult**
+   - **Spec**: `{Valid bool, Message string}`
+   - **Implementation**: `{IsValid bool, Errors []ValidationError, Warnings []ValidationWarning}`
+   - **Rationale**: Richer error information, separate warnings from errors
+   - **Risk Level**: 🟢 LOW
+
+### Red Flags Checked
+
+- [x] No God Objects - ProductService has single responsibility
+- [x] No tight coupling - ValidationStrategyGetter interface decouples
+- [x] Clear structure - Strategy pattern properly implemented
+- [x] No premature optimization - Straightforward validation flow
+- [x] No magic - All validation rules explicit in validators
+
+### Files Verified
+- backend/internal/domain/shared/strategy/validation.go
+- backend/internal/application/catalog/product_service.go
+- backend/internal/infrastructure/plugin/agricultural.go
+- backend/internal/infrastructure/strategy/validation/standard.go
+- backend/internal/infrastructure/strategy/registry.go
+
+### Remaining Observations (Non-blocking)
+
+1. **HIGH-001: Missing GetRequiredAttributes() in interface**
+   - Accepted deviation - using IndustryPlugin instead
+   - Create follow-up task if spec update needed
+
+2. **MEDIUM-001: SetAttribute vs SetAttributes naming**
+   - Implementation uses SetAttributes(json string)
+   - Spec describes setAttribute(key, value)
+   - Consider adding SetAttribute() helper method in future
+
+3. **LOW-002: SEED category warning vs error**
+   - Implementation: Warning for missing variety_approval_number
+   - Spec: Suggests error
+   - Business decision - warning is more lenient
+
+### Outcome
+**PASS** - DDD-012 validation complete. All requirements satisfied with acceptable design deviations documented.
+
+### Next Steps
+- None blocking - task complete
+- Optional: Update spec.md to reflect actual implementation choices
+- Optional: Add GetRequiredAttributes() API endpoint for frontend use
+
+
+---
+
+## 2026-01-26 - DDD-013: CustomerLevel Value Object Validation
+
+### Task Overview
+**Task ID:** DDD-013
+**Story:** CustomerLevel Value Object Implementation
+**Spec Reference:** Section 5.2 - CustomerLevel Value Object
+**Validation Type:** DDD Consistency Review
+
+### Validation Score: 4/10 (Significant Gaps Found)
+
+### Executive Summary
+
+The CustomerLevel implementation has **critical deviations** from the spec.md design. The spec defines CustomerLevel as a proper **Value Object** with three properties (code, name, discountRate), but the current implementation uses a simple **string type alias** (enumeration). This fundamentally violates DDD Value Object principles and separates related data across different layers.
+
+### Spec Requirements (Section 5.2)
+
+```mermaid
+class CustomerLevel {
+    <<Value Object>>
+    +string code
+    +string name
+    +Decimal discountRate
+}
+```
+
+### Current Implementation Analysis
+
+**Location:** `backend/internal/domain/partner/customer.go:30-39`
+
+```go
+// CustomerLevel represents the customer's tier/grade
+type CustomerLevel string
+
+const (
+    CustomerLevelNormal   CustomerLevel = "normal"
+    CustomerLevelSilver   CustomerLevel = "silver"
+    CustomerLevelGold     CustomerLevel = "gold"
+    CustomerLevelPlatinum CustomerLevel = "platinum"
+    CustomerLevelVIP      CustomerLevel = "vip"
+)
+```
+
+### Critical Issues Identified
+
+#### CRITICAL-1: CustomerLevel is Not a Value Object
+- **Impact:** Violates DDD Value Object principles (immutability, equality-based, encapsulation)
+- **Missing Fields:** discountRate, name (human-readable display name)
+- **Separation:** Business logic (discount rate) is in infrastructure layer instead of domain
+
+#### CRITICAL-2: Discount Rate Logic Separated from Domain
+- **Location:** `backend/internal/infrastructure/strategy/pricing/customer_level.go`
+- **Issue:** Discount rates are hardcoded in infrastructure layer, not part of domain model
+- **Impact:** Cannot express "a customer level HAS a discount rate" - core business concept
+
+### High Priority Issues
+
+#### HIGH-1: No Support for Custom Customer Levels per Tenant
+- **Location:** `backend/migrations/000005_create_customers.up.sql:49`
+- **Constraint:** `CHECK (level IN ('normal', 'silver', 'gold', 'platinum', 'vip'))`
+- **Impact:** Cannot add tenant-specific levels without database migration
+
+#### HIGH-2: Missing Comparison and Validation Methods
+- **Requirement:** "Implement CustomerLevel comparison and validation"
+- **Missing:** `Equals()`, `IsHigherThan()`, `CanUpgradeTo()`, factory methods
+
+#### HIGH-3: Inconsistent Usage in Trade Context
+- **Location:** `backend/internal/application/trade/dto.go:313`
+- **Issue:** CustomerLevel passed as plain string, no type safety
+
+### Medium Priority Issues
+
+#### MEDIUM-1: CustomerLevelChangedEvent Incomplete
+- **Issue:** Event doesn't include discountRate for downstream subscribers
+
+#### MEDIUM-2: Frontend Has No Type Definition
+- **Issue:** Relies on auto-generated models treating level as plain string
+
+### Positive Findings
+
+1. ✅ Domain Events implemented (`CustomerLevelChangedEvent`)
+2. ✅ Repository pattern correct (interface in domain, impl in infrastructure)
+3. ✅ Pricing Strategy pattern well-structured (just needs domain connection)
+4. ✅ Multi-tenancy implemented with `TenantID`
+5. ✅ Service layer separation proper
+
+### Red Flags Checked
+
+- [x] No God Objects - Customer aggregate is focused
+- [ ] No tight coupling - **ISSUE:** Pricing strategy duplicates domain data
+- [x] Clear structure - Code organization is good
+- [x] No premature optimization - Implementation is straightforward
+- [ ] No magic - **ISSUE:** Discount rates hardcoded in infrastructure
+
+### DDD-013 Requirements vs Implementation
+
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| Refactor CustomerLevel to Value Object | ❌ NOT DONE | Still a string alias |
+| Include discountRate field | ❌ NOT DONE | In pricing strategy instead |
+| Implement comparison and validation | ❌ NOT DONE | Only basic switch validation |
+| Support custom levels per tenant | ❌ NOT DONE | DB constraint prevents |
+| Migrate existing data | ❌ NOT DONE | No migration created |
+
+### Recommended Implementation Phases
+
+**Phase 1: Create CustomerLevel Table and Value Object**
+1. Create `customer_levels` migration with default levels
+2. Refactor CustomerLevel from type alias to struct
+3. Add factory methods for standard levels
+4. Update validation to check against database
+
+**Phase 2: Connect Domain and Infrastructure**
+1. Update CustomerLevelPricingStrategy to query CustomerLevel for discount rate
+2. Update CustomerLevelChangedEvent to include full CustomerLevel data
+3. Update repository to load CustomerLevel with its properties
+
+**Phase 3: API and Frontend**
+1. Add API endpoint to list tenant customer levels
+2. Update OpenAPI spec and regenerate frontend SDK
+3. Update frontend forms to use dynamic level options
+
+**Phase 4: Data Migration**
+1. Create migration script to convert existing customer level strings
+2. Add data validation to ensure no orphaned levels
+3. Remove hardcoded CHECK constraint from database
+
+### Risk Assessment
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Data Migration | HIGH | Create customer_levels table first, update FKs after |
+| API Breaking Changes | MEDIUM | Keep `level` as string, add `level_details` object |
+| Strategy Registry Impact | LOW | Strategy queries CustomerLevel by code |
+| Test Coverage | MEDIUM | Update tests incrementally |
+
+### Trade-Off Analysis for This Task
+
+**Current Approach (String Enum):**
+- **Pros:** Simple, no DB lookup required, fast
+- **Cons:** Violates DDD, no tenant customization, separated concerns
+- **Risk Level:** 🔴 HIGH (architectural debt)
+
+**Recommended Approach (Proper Value Object):**
+- **Pros:** DDD compliant, tenant customizable, encapsulated business rules
+- **Cons:** More complex, requires migration, additional DB table
+- **Risk Level:** 🟢 LOW (clean architecture)
+
+### Outcome
+
+**FAIL - DDD-013 is NOT complete**
+
+The current implementation does not satisfy ANY of the 5 requirements:
+1. ❌ CustomerLevel is still a string enum, not a Value Object
+2. ❌ discountRate is not in the CustomerLevel type
+3. ❌ No comparison or proper validation methods
+4. ❌ No tenant customization support
+5. ❌ No migration created
+
+### Next Steps (Implementation Tasks)
+
+Based on this validation, the following implementation work is needed:
+
+1. **Create `customer_levels` table migration** (Priority: HIGH)
+2. **Refactor CustomerLevel to struct with code/name/discountRate** (Priority: HIGH)
+3. **Update CustomerLevelPricingStrategy to use domain CustomerLevel** (Priority: MEDIUM)
+4. **Add CustomerLevel repository and service methods** (Priority: MEDIUM)
+5. **Create data migration for existing customers** (Priority: MEDIUM)
+6. **Update frontend types and forms** (Priority: LOW)
+
+### Files Reviewed
+- backend/internal/domain/partner/customer.go
+- backend/internal/domain/partner/customer_events.go
+- backend/internal/domain/partner/customer_repository.go
+- backend/internal/infrastructure/persistence/customer_repository.go
+- backend/internal/infrastructure/strategy/pricing/customer_level.go
+- backend/migrations/000005_create_customers.up.sql
+- backend/internal/application/trade/dto.go
+- backend/internal/domain/shared/valueobject/money.go (reference pattern)
+
+2026-01-26 - impl-CustomerLevel-001: Create CustomerLevel Value Object and Database Table
+
+=== Implementation Details ===
+- Created customer_levels table migration (000026_create_customer_levels.up.sql)
+  - Table schema: id, tenant_id, code, name, discount_rate, sort_order, is_default, is_active, description
+  - Added trigger to ensure only one default level per tenant
+  - Added level_id foreign key to customers table
+  - Includes default level seed data for default tenant
+  
+- Created CustomerLevel Value Object (customer_level.go)
+  - Immutable struct with code, name, discountRate fields
+  - Factory methods: NewCustomerLevel, MustNewCustomerLevel, NewCustomerLevelFromCode
+  - Predefined level constructors: NormalLevel(), SilverLevel(), GoldLevel(), PlatinumLevel(), VIPLevel()
+  - Value Object methods: Code(), Name(), DiscountRate(), DiscountPercent(), Equals(), CodeEquals(), IsHigherThan(), IsLowerThan()
+  - Validation: IsValid(), IsEmpty(), IsStandardLevel(), HasDiscount()
+  - Business methods: ApplyDiscount(), CalculateDiscountAmount()
+  - JSON serialization with MarshalJSON/UnmarshalJSON
+  - GORM hooks with Value()/Scan() for database serialization
+  - WithDetails() for enriching partially loaded levels
+  - CustomerLevelRecord entity for database operations
+  - DefaultCustomerLevelRecords() for tenant initialization
+
+- Updated Customer aggregate (customer.go)
+  - Changed Level field from type alias to CustomerLevel Value Object
+  - Updated NewCustomer to use NormalLevel() factory
+  - Updated validateCustomerLevel to use Value Object methods
+
+- Updated application layer (customer_service.go, dto.go)
+  - Fixed SetLevel to use NewCustomerLevelFromCode
+  - Updated DTOs to use Level.Code() for serialization
+  - Updated CountByLevel to use predefined level factories
+
+- Updated test files
+  - customer_test.go: Updated to use new CustomerLevel type
+  - customer_repository_test.go: Updated mock tests
+  - integration/customer_repository_test.go: Updated integration tests
+
+- Added seed data (docker/seed-data.sql)
+  - Default customer levels for all tenants
+  - Updated customers INSERT to include level_id references
+
+=== Verification ===
+- All domain tests pass: go test ./internal/domain/partner/... ✓
+- All persistence tests pass: go test ./internal/infrastructure/persistence/... ✓
+- Build succeeds: go build ./... ✓
+- go vet passes: go vet ./... ✓
+- Code review: APPROVED by code-reviewer agent
+
+=== Files Modified ===
+- backend/migrations/000026_create_customer_levels.up.sql (NEW)
+- backend/migrations/000026_create_customer_levels.down.sql (NEW)
+- backend/internal/domain/partner/customer_level.go (NEW)
+- backend/internal/domain/partner/customer_level_test.go (NEW)
+- backend/internal/domain/partner/customer.go (MODIFIED)
+- backend/internal/domain/partner/customer_test.go (MODIFIED)
+- backend/internal/application/partner/customer_service.go (MODIFIED)
+- backend/internal/application/partner/dto.go (MODIFIED)
+- backend/internal/infrastructure/persistence/customer_repository_test.go (MODIFIED)
+- backend/tests/integration/customer_repository_test.go (MODIFIED)
+- docker/seed-data.sql (MODIFIED)
+
+=== Design Decisions ===
+- CustomerLevel stored as code string in customers.level column for backwards compatibility
+- Full level details stored in customer_levels table with tenant isolation
+- level_id added to customers table as nullable FK for migration safety
+- Discount rate stored as decimal (0-1) rather than percentage for precision
+- Predefined levels use Chinese names by default (configurable per tenant)
+
+=== Notes ===
+- Code review warnings addressed:
+  1. Added documentation for partial level enrichment in NewCustomerLevelFromCode
+  2. Migration includes default levels for existing default tenant
+- Future work identified for impl-CustomerLevel-002:
+  - CustomerLevelRepository interface implementation
+  - Level enrichment in application layer
+
+=== Next Steps ===
+- impl-CustomerLevel-002: Repository and Service implementation
+- impl-CustomerLevel-003: Pricing strategy integration

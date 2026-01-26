@@ -130,7 +130,7 @@ func ToCustomerResponse(c *partner.Customer) CustomerResponse {
 		Name:        c.Name,
 		ShortName:   c.ShortName,
 		Type:        string(c.Type),
-		Level:       string(c.Level),
+		Level:       c.Level.Code(), // CustomerLevel is now a Value Object, use Code()
 		Status:      string(c.Status),
 		ContactName: c.ContactName,
 		Phone:       c.Phone,
@@ -161,7 +161,7 @@ func ToCustomerListResponse(c *partner.Customer) CustomerListResponse {
 		Name:        c.Name,
 		ShortName:   c.ShortName,
 		Type:        string(c.Type),
-		Level:       string(c.Level),
+		Level:       c.Level.Code(), // CustomerLevel is now a Value Object, use Code()
 		Status:      string(c.Status),
 		ContactName: c.ContactName,
 		Phone:       c.Phone,

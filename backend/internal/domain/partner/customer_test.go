@@ -20,7 +20,7 @@ func TestNewCustomer(t *testing.T) {
 		assert.Equal(t, "CUST001", customer.Code)
 		assert.Equal(t, "Test Customer", customer.Name)
 		assert.Equal(t, CustomerTypeIndividual, customer.Type)
-		assert.Equal(t, CustomerLevelNormal, customer.Level)
+		assert.True(t, customer.Level.CodeEquals(NormalLevel())) // CustomerLevel is now a Value Object
 		assert.Equal(t, CustomerStatusActive, customer.Status)
 		assert.Equal(t, tenantID, customer.TenantID)
 		assert.True(t, customer.CreditLimit.IsZero())
@@ -185,15 +185,16 @@ func TestCustomerLevel(t *testing.T) {
 	customer.ClearDomainEvents()
 
 	t.Run("upgrades level successfully", func(t *testing.T) {
-		err := customer.SetLevel(CustomerLevelGold)
+		err := customer.SetLevel(GoldLevel())
 
 		require.NoError(t, err)
-		assert.Equal(t, CustomerLevelGold, customer.Level)
+		assert.True(t, customer.Level.CodeEquals(GoldLevel()))
 		assert.Len(t, customer.GetDomainEvents(), 1)
 	})
 
 	t.Run("fails with invalid level", func(t *testing.T) {
-		err := customer.SetLevel(CustomerLevel("diamond"))
+		invalidLevel := CustomerLevel{} // Empty level
+		err := customer.SetLevel(invalidLevel)
 
 		assert.Error(t, err)
 	})

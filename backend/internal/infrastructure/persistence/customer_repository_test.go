@@ -390,12 +390,13 @@ func TestGormCustomerRepository_CountByLevel(t *testing.T) {
 		defer mockDB.Close()
 
 		tenantID := uuid.New()
+		goldLevel := partner.GoldLevel()
 
 		mock.ExpectQuery(`SELECT count\(\*\) FROM "customers" WHERE tenant_id = \$1 AND level = \$2`).
-			WithArgs(tenantID, partner.CustomerLevelGold).
+			WithArgs(tenantID, goldLevel.Code()).
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
 
-		count, err := repo.CountByLevel(context.Background(), tenantID, partner.CustomerLevelGold)
+		count, err := repo.CountByLevel(context.Background(), tenantID, goldLevel)
 
 		assert.NoError(t, err)
 		assert.Equal(t, int64(2), count)

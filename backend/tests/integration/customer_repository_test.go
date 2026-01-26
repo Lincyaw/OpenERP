@@ -279,15 +279,15 @@ func TestCustomerRepository_Integration(t *testing.T) {
 			name  string
 			level partner.CustomerLevel
 		}{
-			{"SEARCH-NORMAL", "Normal Customer", partner.CustomerLevelNormal},
-			{"SEARCH-VIP", "VIP Customer", partner.CustomerLevelVIP},
-			{"SEARCH-GOLD", "Gold Customer", partner.CustomerLevelGold},
+			{"SEARCH-NORMAL", "Normal Customer", partner.NormalLevel()},
+			{"SEARCH-VIP", "VIP Customer", partner.VIPLevel()},
+			{"SEARCH-GOLD", "Gold Customer", partner.GoldLevel()},
 		}
 
 		for _, c := range customers {
 			customer, err := partner.NewIndividualCustomer(searchTenant, c.code, c.name)
 			require.NoError(t, err)
-			if c.level != partner.CustomerLevelNormal {
+			if !c.level.CodeEquals(partner.NormalLevel()) {
 				err = customer.SetLevel(c.level)
 				require.NoError(t, err)
 			}
@@ -306,7 +306,7 @@ func TestCustomerRepository_Integration(t *testing.T) {
 		// Filter by level
 		filter = shared.Filter{
 			Filters: map[string]any{
-				"level": partner.CustomerLevelVIP,
+				"level": partner.VIPLevel().Code(),
 			},
 		}
 		found, err = repo.FindAllForTenant(ctx, searchTenant, filter)
