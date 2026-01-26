@@ -27,7 +27,9 @@ import type {
   HandlerPurchaseOrderListResponse,
 } from '@/api/models'
 import './PurchaseReturnForm.css'
-import { safeToFixed, safeFormatCurrency } from '@/utils'
+import { safeToFixed, safeFormatCurrency, createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('PurchaseReturnForm')
 
 const { Title, Text } = Typography
 
@@ -182,10 +184,10 @@ export function PurchaseReturnForm() {
         if (response.success && response.data) {
           setOrders(response.data)
         } else if (!response.success) {
-          console.error('Failed to fetch orders:', response.error)
+          log.error('Failed to fetch orders', response.error)
         }
       } catch (error) {
-        console.error('Error fetching orders:', error)
+        log.error('Error fetching orders', error)
       } finally {
         setOrdersLoading(false)
       }
@@ -255,10 +257,10 @@ export function PurchaseReturnForm() {
           }
         }
       } else if (!response.success) {
-        console.error('Failed to fetch warehouses:', response.error)
+        log.error('Failed to fetch warehouses', response.error)
       }
     } catch (error) {
-      console.error('Error fetching warehouses:', error)
+      log.error('Error fetching warehouses', error)
     } finally {
       setWarehousesLoading(false)
     }

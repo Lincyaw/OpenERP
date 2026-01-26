@@ -28,6 +28,9 @@ import type {
   HandlerCreatePurchaseOrderItemInput,
 } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('PurchaseOrderForm')
 import { safeToFixed } from '@/utils'
 import './PurchaseOrderForm.css'
 
@@ -176,11 +179,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         if (response.success && response.data) {
           setSuppliers(response.data)
         } else if (!response.success) {
-          console.error('Failed to fetch suppliers:', response.error)
+          log.error('Failed to fetch suppliers', response.error)
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
-        console.error('Error fetching suppliers:', error)
+        log.error('Error fetching suppliers', error)
       } finally {
         setSuppliersLoading(false)
       }
@@ -204,11 +207,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         if (response.success && response.data) {
           setProducts(response.data)
         } else if (!response.success) {
-          console.error('Failed to fetch products:', response.error)
+          log.error('Failed to fetch products', response.error)
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
-        console.error('Error fetching products:', error)
+        log.error('Error fetching products', error)
       } finally {
         setProductsLoading(false)
       }
@@ -238,11 +241,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
             }
           }
         } else if (!response.success) {
-          console.error('Failed to fetch warehouses:', response.error)
+          log.error('Failed to fetch warehouses', response.error)
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
-        console.error('Error fetching warehouses:', error)
+        log.error('Error fetching warehouses', error)
       } finally {
         setWarehousesLoading(false)
       }

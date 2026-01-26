@@ -37,6 +37,9 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockAlerts.css'
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('StockAlerts')
 
 const { Title, Text } = Typography
 
@@ -148,7 +151,7 @@ export default function StockAlertsPage() {
         setWarehouseMap(map)
       }
     } catch {
-      console.error('Failed to fetch warehouses')
+      log.error('Failed to fetch warehouses')
     }
   }, [warehousesApi, t])
 
@@ -167,7 +170,7 @@ export default function StockAlertsPage() {
         setProductMap(map)
       }
     } catch {
-      console.error('Failed to fetch products')
+      log.error('Failed to fetch products')
     }
   }, [productsApi])
 

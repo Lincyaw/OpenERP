@@ -23,6 +23,9 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockTakingList.css'
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('StockTakingList')
 
 const { Title } = Typography
 
@@ -129,7 +132,7 @@ export default function StockTakingListPage() {
         setWarehouseOptions(options)
       }
     } catch {
-      console.error('Failed to fetch warehouses')
+      log.error('Failed to fetch warehouses')
     }
   }, [warehousesApi, t])
 

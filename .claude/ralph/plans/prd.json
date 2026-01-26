@@ -4811,7 +4811,7 @@
       "统一使用值对象而非 decimal.Decimal",
       "确保类型安全的数量操作"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "MEDIUM",
@@ -4926,7 +4926,7 @@
       "考虑使用 logger 服务统一管理",
       "生产环境可配置关闭"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend Code Review",
     "category": "frontend",
     "severity": "MEDIUM",

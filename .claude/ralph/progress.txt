@@ -23514,3 +23514,118 @@ Examples:
 - DDD-M04: Complete Quantity value object migration (fix remaining tests)
 - Future: Integrate StockAllocationService with repository layer for domain-level persistence
 - Future: Add distributed transaction support (outbox pattern) for production reliability
+
+2027-01-27 - Task ID: FE-005 - Clean up console.error in production code (清理生产代码中的 console.error)
+
+=== Implementation Details ===
+
+**Problem**: 26 console.error statements scattered across frontend codebase, logging directly to browser console without configuration for production environments.
+
+**Solution**: Created a centralized logger service with production-configurable logging:
+
+1. **Created Logger Service** (`frontend/src/utils/logger.ts`):
+   - Production-configurable: logs are disabled in production by default, enabled in development
+   - Log levels: debug, info, warn, error
+   - Configurable minimum log level (development: debug, production: error)
+   - Scoped loggers with context prefix for easy identification
+   - External handler support for integration with error tracking services (Sentry, DataDog, etc.)
+   - Structured logging with timestamps
+
+2. **API**:
+   - `logger.error(message, context?, data?)` - Log error messages
+   - `logger.warn(message, context?, data?)` - Log warning messages
+   - `logger.info(message, context?, data?)` - Log info messages
+   - `logger.debug(message, context?, data?)` - Log debug messages (dev only)
+   - `createScopedLogger(context)` - Create a logger with fixed context
+   - `configureLogger(config)` - Runtime configuration
+   - `resetLoggerConfig()` - Reset to defaults
+   - `getLoggerConfig()` - Get current config
+
+3. **Replaced console.error in 8 files (26 instances)**:
+
+   **Trade Feature Forms (4 files, 20 instances):**
+   - `frontend/src/features/trade/SalesOrderForm.tsx` (6 instances)
+   - `frontend/src/features/trade/PurchaseOrderForm.tsx` (6 instances)
+   - `frontend/src/features/trade/SalesReturnForm.tsx` (4 instances)
+   - `frontend/src/features/trade/PurchaseReturnForm.tsx` (4 instances)
+
+   **Inventory Pages (3 files, 5 instances):**
+   - `frontend/src/pages/inventory/StockList.tsx` (2 instances)
+   - `frontend/src/pages/inventory/StockTakingList.tsx` (1 instance)
+   - `frontend/src/pages/inventory/StockAlerts.tsx` (2 instances)
+
+   **Common Components (1 file, 1 instance):**
+   - `frontend/src/components/common/TenantSwitcher.tsx` (1 instance)
+
+4. **Exported from utils/index.ts** for easy importing
+
+=== Key Design Decisions ===
+
+1. **Environment-based defaults**: Using `import.meta.env.DEV` to automatically configure appropriate log level for each environment
+
+2. **Scoped loggers**: Using `createScopedLogger()` pattern instead of passing context on every call - improves readability and consistency
+
+3. **External handler hook**: Allows integration with error tracking services without modifying the logger internals
+
+4. **ESLint compliance**: Used `// eslint-disable-next-line no-console` in the logger module since that's the one place console.* calls are intentional
+
+=== Key Files Modified ===
+- `frontend/src/utils/logger.ts` (NEW)
+- `frontend/src/utils/index.ts` (MODIFIED - added exports)
+- `frontend/src/features/trade/SalesOrderForm.tsx` (MODIFIED)
+- `frontend/src/features/trade/PurchaseOrderForm.tsx` (MODIFIED)
+- `frontend/src/features/trade/SalesReturnForm.tsx` (MODIFIED)
+- `frontend/src/features/trade/PurchaseReturnForm.tsx` (MODIFIED)
+- `frontend/src/pages/inventory/StockList.tsx` (MODIFIED)
+- `frontend/src/pages/inventory/StockTakingList.tsx` (MODIFIED)
+- `frontend/src/pages/inventory/StockAlerts.tsx` (MODIFIED)
+- `frontend/src/components/common/TenantSwitcher.tsx` (MODIFIED)
+
+=== Verification ===
+
+- ✅ TypeScript type checking passes (`tsc --noEmit`)
+- ✅ All 26 console.error instances in production code replaced with logger
+- ✅ Only console.error remaining is in logger.ts (intentional, with eslint-disable)
+- ✅ Logger is production-configurable (disabled in production by default)
+
+=== Requirements Satisfied ===
+
+- ✅ 移除或替换 29 处 console.error (Removed/replaced 26 console.error instances - actual count was 26, not 29)
+- ✅ 考虑使用 logger 服务统一管理 (Created centralized logger service)
+- ✅ 生产环境可配置关闭 (Production configurable - disabled by default, configurable via `configureLogger()`)
+
+=== Usage Example ===
+
+```typescript
+// Using scoped logger (recommended)
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('SalesOrderForm')
+
+log.error('Failed to fetch customers', error)
+log.debug('Form state updated', { formData })
+
+// Using global logger
+import { logger, configureLogger } from '@/utils'
+
+logger.error('Something went wrong', 'ComponentName', errorObject)
+
+// Enable logging in production for debugging
+configureLogger({ enabled: true, minLevel: 'warn' })
+
+// Connect to external service
+configureLogger({
+  externalHandler: (entry) => {
+    if (entry.level === 'error') {
+      Sentry.captureException(entry.data)
+    }
+  }
+})
+```
+
+=== Next Steps ===
+
+- Consider adding logger initialization in main.tsx to configure external error tracking
+- Add logger tests for coverage
+- Document logger usage in frontend/README.md
+

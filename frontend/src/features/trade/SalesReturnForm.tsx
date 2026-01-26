@@ -26,7 +26,9 @@ import type {
   HandlerWarehouseListResponse,
   HandlerSalesOrderListResponse,
 } from '@/api/models'
-import { safeToFixed, safeFormatCurrency } from '@/utils'
+import { safeToFixed, safeFormatCurrency, createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('SalesReturnForm')
 import './SalesReturnForm.css'
 
 const { Title, Text } = Typography
@@ -180,10 +182,10 @@ export function SalesReturnForm() {
         if (response.success && response.data) {
           setOrders(response.data)
         } else if (!response.success) {
-          console.error('Failed to fetch orders:', response.error)
+          log.error('Failed to fetch orders', response.error)
         }
       } catch (error) {
-        console.error('Error fetching orders:', error)
+        log.error('Error fetching orders', error)
       } finally {
         setOrdersLoading(false)
       }
@@ -251,10 +253,10 @@ export function SalesReturnForm() {
           }
         }
       } else if (!response.success) {
-        console.error('Failed to fetch warehouses:', response.error)
+        log.error('Failed to fetch warehouses', response.error)
       }
     } catch (error) {
-      console.error('Error fetching warehouses:', error)
+      log.error('Error fetching warehouses', error)
     } finally {
       setWarehousesLoading(false)
     }

@@ -13,6 +13,9 @@ import { useI18n } from '@/hooks'
 import { useAuthStore, useUser } from '@/store'
 import { getTenants } from '@/api/tenants/tenants'
 import type { HandlerTenantResponse } from '@/api/models'
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('TenantSwitcher')
 
 interface TenantSwitcherProps {
   /** Show label next to icon */
@@ -89,7 +92,7 @@ export function TenantSwitcher({
         setTenants(tenantOptions)
       }
     } catch (error) {
-      console.error('Failed to fetch tenants:', error)
+      log.error('Failed to fetch tenants', error)
       Toast.error(t('tenantSwitcher.messages.fetchError', 'Failed to load tenants'))
     } finally {
       setLoading(false)
@@ -204,7 +207,9 @@ export function TenantSwitcher({
           aria-label={t('tenantSwitcher.ariaLabel', 'Switch tenant')}
         >
           {showLabel && currentTenant && (
-            <span style={{ marginLeft: '4px' }}>{currentTenant.shortName || currentTenant.name}</span>
+            <span style={{ marginLeft: '4px' }}>
+              {currentTenant.shortName || currentTenant.name}
+            </span>
           )}
         </Button>
       </span>

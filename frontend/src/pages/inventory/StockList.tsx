@@ -24,6 +24,9 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockList.css'
+import { createScopedLogger } from '@/utils'
+
+const log = createScopedLogger('StockList')
 
 const { Title } = Typography
 
@@ -133,7 +136,7 @@ export default function StockListPage() {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
-        console.error('Failed to fetch warehouses')
+        log.error('Failed to fetch warehouses')
       }
     },
     [warehousesApi, t]
@@ -159,7 +162,7 @@ export default function StockListPage() {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
-        console.error('Failed to fetch products')
+        log.error('Failed to fetch products')
       }
     },
     [productsApi]
