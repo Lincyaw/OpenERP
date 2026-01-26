@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 )
 
@@ -340,6 +341,58 @@ func (w *Warehouse) GetFullAddress() string {
 		parts = append(parts, w.PostalCode)
 	}
 	return strings.Join(parts, " ")
+}
+
+// GetAddressVO returns the warehouse's address as an Address value object
+// Returns an empty Address if no address fields are set or if validation fails
+// Note: If validation fails, this may indicate data integrity issues in the database
+func (w *Warehouse) GetAddressVO() valueobject.Address {
+	if w.Province == "" && w.City == "" && w.Address == "" {
+		return valueobject.EmptyAddress()
+	}
+
+	// Try to construct an Address VO; if validation fails, return empty
+	// This can happen with legacy data that doesn't meet current validation rules
+	addr, err := valueobject.NewAddressFull(
+		w.Province,
+		w.City,
+		"", // District is stored as part of Address field in legacy schema
+		w.Address,
+		w.PostalCode,
+		w.Country,
+	)
+	if err != nil {
+		// Legacy data may not meet current validation requirements
+		// Return empty address rather than failing
+		return valueobject.EmptyAddress()
+	}
+	return addr
+}
+
+// SetAddressVO sets the warehouse's address from an Address value object
+func (w *Warehouse) SetAddressVO(addr valueobject.Address) {
+	if addr.IsEmpty() {
+		w.Address = ""
+		w.City = ""
+		w.Province = ""
+		w.PostalCode = ""
+		// Keep default country
+	} else {
+		w.Province = addr.Province()
+		w.City = addr.City()
+		// Combine district and detail into Address field for backward compatibility
+		if addr.District() != "" {
+			w.Address = addr.District() + " " + addr.Detail()
+		} else {
+			w.Address = addr.Detail()
+		}
+		w.PostalCode = addr.PostalCode()
+		if addr.Country() != "" {
+			w.Country = addr.Country()
+		}
+	}
+	w.UpdatedAt = time.Now()
+	w.IncrementVersion()
 }
 
 // Validation functions

@@ -3,6 +3,7 @@ package partner
 import (
 	"testing"
 
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -653,6 +654,58 @@ func TestSupplier_GetFullAddress(t *testing.T) {
 
 	fullAddress := supplier.GetFullAddress()
 	assert.Equal(t, "中国 Shanghai Shanghai 123 Main Street 200000", fullAddress)
+}
+
+func TestSupplierAddressVO(t *testing.T) {
+	t.Run("GetAddressVO returns Address value object", func(t *testing.T) {
+		supplier := createTestSupplier(t)
+		supplier.SetAddress("科技园南路123号", "深圳市", "广东省", "518000", "中国")
+
+		addr := supplier.GetAddressVO()
+
+		assert.False(t, addr.IsEmpty())
+		assert.Equal(t, "广东省", addr.Province())
+		assert.Equal(t, "深圳市", addr.City())
+		assert.Equal(t, "科技园南路123号", addr.Detail())
+		assert.Equal(t, "518000", addr.PostalCode())
+	})
+
+	t.Run("GetAddressVO returns empty for supplier without address", func(t *testing.T) {
+		supplier := createTestSupplier(t)
+
+		addr := supplier.GetAddressVO()
+
+		assert.True(t, addr.IsEmpty())
+	})
+
+	t.Run("SetAddressVO sets address from value object", func(t *testing.T) {
+		supplier := createTestSupplier(t)
+		addr := valueobject.MustNewAddress("广东省", "深圳市", "南山区", "科技园南路123号",
+			valueobject.WithPostalCode("518000"), valueobject.WithCountry("中国"))
+
+		supplier.SetAddressVO(addr)
+
+		assert.Equal(t, "广东省", supplier.Province)
+		assert.Equal(t, "深圳市", supplier.City)
+		assert.Contains(t, supplier.Address, "南山区")
+		assert.Contains(t, supplier.Address, "科技园南路123号")
+		assert.Equal(t, "518000", supplier.PostalCode)
+		assert.Equal(t, "中国", supplier.Country)
+	})
+
+	t.Run("SetAddressVO clears address with empty value object", func(t *testing.T) {
+		supplier := createTestSupplier(t)
+		supplier.SetAddress("Some Address", "City", "Province", "100000", "中国")
+
+		supplier.SetAddressVO(valueobject.EmptyAddress())
+
+		assert.Equal(t, "", supplier.Province)
+		assert.Equal(t, "", supplier.City)
+		assert.Equal(t, "", supplier.Address)
+		assert.Equal(t, "", supplier.PostalCode)
+		// Country should be kept for default
+		assert.Equal(t, "中国", supplier.Country)
+	})
 }
 
 func TestSupplier_TableName(t *testing.T) {

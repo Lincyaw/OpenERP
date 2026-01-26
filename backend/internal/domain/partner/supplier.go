@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -484,6 +485,58 @@ func (s *Supplier) GetFullAddress() string {
 		parts = append(parts, s.PostalCode)
 	}
 	return strings.Join(parts, " ")
+}
+
+// GetAddressVO returns the supplier's address as an Address value object
+// Returns an empty Address if no address fields are set or if validation fails
+// Note: If validation fails, this may indicate data integrity issues in the database
+func (s *Supplier) GetAddressVO() valueobject.Address {
+	if s.Province == "" && s.City == "" && s.Address == "" {
+		return valueobject.EmptyAddress()
+	}
+
+	// Try to construct an Address VO; if validation fails, return empty
+	// This can happen with legacy data that doesn't meet current validation rules
+	addr, err := valueobject.NewAddressFull(
+		s.Province,
+		s.City,
+		"", // District is stored as part of Address field in legacy schema
+		s.Address,
+		s.PostalCode,
+		s.Country,
+	)
+	if err != nil {
+		// Legacy data may not meet current validation requirements
+		// Return empty address rather than failing
+		return valueobject.EmptyAddress()
+	}
+	return addr
+}
+
+// SetAddressVO sets the supplier's address from an Address value object
+func (s *Supplier) SetAddressVO(addr valueobject.Address) {
+	if addr.IsEmpty() {
+		s.Address = ""
+		s.City = ""
+		s.Province = ""
+		s.PostalCode = ""
+		// Keep default country
+	} else {
+		s.Province = addr.Province()
+		s.City = addr.City()
+		// Combine district and detail into Address field for backward compatibility
+		if addr.District() != "" {
+			s.Address = addr.District() + " " + addr.Detail()
+		} else {
+			s.Address = addr.Detail()
+		}
+		s.PostalCode = addr.PostalCode()
+		if addr.Country() != "" {
+			s.Country = addr.Country()
+		}
+	}
+	s.UpdatedAt = time.Now()
+	s.IncrementVersion()
 }
 
 // Validation functions

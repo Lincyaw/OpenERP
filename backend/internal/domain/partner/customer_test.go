@@ -3,6 +3,7 @@ package partner
 import (
 	"testing"
 
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -361,4 +362,58 @@ func TestGetFullAddress(t *testing.T) {
 	assert.Contains(t, fullAddress, "Shanghai")
 	assert.Contains(t, fullAddress, "123 Main Street")
 	assert.Contains(t, fullAddress, "200000")
+}
+
+func TestCustomerAddressVO(t *testing.T) {
+	tenantID := uuid.New()
+
+	t.Run("GetAddressVO returns Address value object", func(t *testing.T) {
+		customer, _ := NewCustomer(tenantID, "CUST001", "Test", CustomerTypeIndividual)
+		customer.SetAddress("科技园南路123号", "深圳市", "广东省", "518000", "中国")
+
+		addr := customer.GetAddressVO()
+
+		assert.False(t, addr.IsEmpty())
+		assert.Equal(t, "广东省", addr.Province())
+		assert.Equal(t, "深圳市", addr.City())
+		assert.Equal(t, "科技园南路123号", addr.Detail())
+		assert.Equal(t, "518000", addr.PostalCode())
+	})
+
+	t.Run("GetAddressVO returns empty for customer without address", func(t *testing.T) {
+		customer, _ := NewCustomer(tenantID, "CUST002", "Test", CustomerTypeIndividual)
+
+		addr := customer.GetAddressVO()
+
+		assert.True(t, addr.IsEmpty())
+	})
+
+	t.Run("SetAddressVO sets address from value object", func(t *testing.T) {
+		customer, _ := NewCustomer(tenantID, "CUST003", "Test", CustomerTypeIndividual)
+		addr := valueobject.MustNewAddress("广东省", "深圳市", "南山区", "科技园南路123号",
+			valueobject.WithPostalCode("518000"), valueobject.WithCountry("中国"))
+
+		customer.SetAddressVO(addr)
+
+		assert.Equal(t, "广东省", customer.Province)
+		assert.Equal(t, "深圳市", customer.City)
+		assert.Contains(t, customer.Address, "南山区")
+		assert.Contains(t, customer.Address, "科技园南路123号")
+		assert.Equal(t, "518000", customer.PostalCode)
+		assert.Equal(t, "中国", customer.Country)
+	})
+
+	t.Run("SetAddressVO clears address with empty value object", func(t *testing.T) {
+		customer, _ := NewCustomer(tenantID, "CUST004", "Test", CustomerTypeIndividual)
+		customer.SetAddress("Some Address", "City", "Province", "100000", "中国")
+
+		customer.SetAddressVO(valueobject.EmptyAddress())
+
+		assert.Equal(t, "", customer.Province)
+		assert.Equal(t, "", customer.City)
+		assert.Equal(t, "", customer.Address)
+		assert.Equal(t, "", customer.PostalCode)
+		// Country should be kept for default
+		assert.Equal(t, "中国", customer.Country)
+	})
 }

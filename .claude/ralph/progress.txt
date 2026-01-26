@@ -20074,3 +20074,80 @@ Task DDD-014 FAILS validation:
 === Notes ===
 - Pre-existing test failure in trade/sales_return_test.go unrelated to this change
 - Task DDD-014 now marked as PASSED (9/10 score)
+
+================================================================================
+2026-01-26 - DDD-015: Address Value Object Implementation
+================================================================================
+
+=== Implementation Details ===
+- Created Address value object in backend/internal/domain/shared/valueobject/address.go
+  - Immutable struct with province, city, district, detail, postalCode, country fields
+  - Functional options pattern (WithPostalCode, WithCountry) for optional fields
+  - Comprehensive validation in constructors with proper error messages
+  - Factory functions: NewAddress, NewAddressWithPostalCode, NewAddressFull, MustNewAddress
+  - EmptyAddress() for optional address fields
+  - Multiple formatting methods: FullAddress(), ShortAddress(), RegionAddress(), ChineseFullAddress()
+  - Comparison methods: Equals(), SameRegion(), SameCity(), SameProvince()
+  - Immutable update methods: WithProvince(), WithCity(), WithDistrict(), WithDetail(), etc.
+  - JSON marshaling/unmarshaling with addressJSON struct
+  - SQL driver.Valuer and sql.Scanner for database storage as JSON
+  - AddressDTO for GORM operations with individual columns
+  - Chinese province validation: ChineseProvinces list, IsValidChineseProvince(), NormalizeProvince()
+
+- Updated Customer entity in backend/internal/domain/partner/customer.go
+  - Added GetAddressVO() to construct Address VO from entity fields
+  - Added SetAddressVO() to set address from Address VO (combines district+detail)
+  - Maintains backward compatibility with existing string fields and database schema
+
+- Updated Supplier entity in backend/internal/domain/partner/supplier.go
+  - Added GetAddressVO() and SetAddressVO() methods
+  - Same backward-compatible approach as Customer
+
+- Updated Warehouse entity in backend/internal/domain/partner/warehouse.go
+  - Added GetAddressVO() and SetAddressVO() methods
+  - Same backward-compatible approach as Customer
+
+=== Files Changed ===
+- NEW: backend/internal/domain/shared/valueobject/address.go (538 lines)
+- NEW: backend/internal/domain/shared/valueobject/address_test.go (543 lines)
+- MOD: backend/internal/domain/partner/customer.go (+52 lines)
+- MOD: backend/internal/domain/partner/customer_test.go (+52 lines)
+- MOD: backend/internal/domain/partner/supplier.go (+52 lines)
+- MOD: backend/internal/domain/partner/supplier_test.go (+52 lines)
+- MOD: backend/internal/domain/partner/warehouse.go (+52 lines)
+- MOD: backend/internal/domain/partner/warehouse_test.go (+52 lines)
+
+=== Verification ===
+- All Address value object tests pass (21 tests)
+- All Customer tests pass including new AddressVO tests (4 tests)
+- All Supplier tests pass including new AddressVO tests (4 tests)
+- All Warehouse tests pass including new AddressVO tests (4 tests)
+- Build succeeds: `go build ./...`
+- Code review: PASSED (no CRITICAL/HIGH issues after documentation improvement)
+
+=== Design Decisions ===
+1. Kept existing database schema columns (Address, City, Province, PostalCode, Country)
+   for backward compatibility with legacy data
+2. District is stored as part of Address field in legacy schema - combined in GetAddressVO/SetAddressVO
+3. GetAddressVO returns EmptyAddress() on validation failure to handle legacy data gracefully
+4. SetAddressVO combines district and detail into the Address field for backward compatibility
+5. Default country is "中国" (China) following existing convention
+6. Province validation is optional (IsValidChineseProvince) rather than enforced
+7. Immutability enforced via private fields with public getters
+
+=== Requirements Coverage ===
+- [x] Create Address value object with province, city, district, detail fields
+- [x] Replace string address fields in Customer, Supplier, Warehouse (via VO methods)
+- [x] Implement Address formatting methods (FullAddress, ShortAddress, ChineseFullAddress)
+- [x] Support address validation and normalization (province validation, trimming)
+
+=== Notes ===
+- Pre-existing test failures in trade/sales_return_test.go are unrelated to this change
+- Code duplication in entity GetAddressVO/SetAddressVO methods flagged as MEDIUM priority
+  improvement - can be addressed in future refactoring task
+- Task DDD-015 marked as PASSED
+
+=== Next Steps ===
+- Consider adding domain events for address changes (CustomerAddressChangedEvent, etc.)
+- Consider extracting shared address handling to reduce code duplication
+- Future: Add GPS coordinates support for warehouse locations

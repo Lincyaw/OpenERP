@@ -3,6 +3,7 @@ package partner
 import (
 	"testing"
 
+	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -612,4 +613,56 @@ func createTestWarehouse(t *testing.T) *Warehouse {
 	warehouse, err := NewWarehouse(tenantID, "WH001", "Test Warehouse", WarehouseTypePhysical)
 	require.NoError(t, err)
 	return warehouse
+}
+
+func TestWarehouseAddressVO(t *testing.T) {
+	t.Run("GetAddressVO returns Address value object", func(t *testing.T) {
+		warehouse := createTestWarehouse(t)
+		warehouse.SetAddress("科技园南路123号", "深圳市", "广东省", "518000", "中国")
+
+		addr := warehouse.GetAddressVO()
+
+		assert.False(t, addr.IsEmpty())
+		assert.Equal(t, "广东省", addr.Province())
+		assert.Equal(t, "深圳市", addr.City())
+		assert.Equal(t, "科技园南路123号", addr.Detail())
+		assert.Equal(t, "518000", addr.PostalCode())
+	})
+
+	t.Run("GetAddressVO returns empty for warehouse without address", func(t *testing.T) {
+		warehouse := createTestWarehouse(t)
+
+		addr := warehouse.GetAddressVO()
+
+		assert.True(t, addr.IsEmpty())
+	})
+
+	t.Run("SetAddressVO sets address from value object", func(t *testing.T) {
+		warehouse := createTestWarehouse(t)
+		addr := valueobject.MustNewAddress("广东省", "深圳市", "南山区", "科技园南路123号",
+			valueobject.WithPostalCode("518000"), valueobject.WithCountry("中国"))
+
+		warehouse.SetAddressVO(addr)
+
+		assert.Equal(t, "广东省", warehouse.Province)
+		assert.Equal(t, "深圳市", warehouse.City)
+		assert.Contains(t, warehouse.Address, "南山区")
+		assert.Contains(t, warehouse.Address, "科技园南路123号")
+		assert.Equal(t, "518000", warehouse.PostalCode)
+		assert.Equal(t, "中国", warehouse.Country)
+	})
+
+	t.Run("SetAddressVO clears address with empty value object", func(t *testing.T) {
+		warehouse := createTestWarehouse(t)
+		warehouse.SetAddress("Some Address", "City", "Province", "100000", "中国")
+
+		warehouse.SetAddressVO(valueobject.EmptyAddress())
+
+		assert.Equal(t, "", warehouse.Province)
+		assert.Equal(t, "", warehouse.City)
+		assert.Equal(t, "", warehouse.Address)
+		assert.Equal(t, "", warehouse.PostalCode)
+		// Country should be kept for default
+		assert.Equal(t, "中国", warehouse.Country)
+	})
 }
