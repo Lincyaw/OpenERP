@@ -1123,6 +1123,20 @@ func TestPaymentRecord_StatusMethods(t *testing.T) {
 		assert.Empty(t, record.ReversalReason)
 	})
 
+	t.Run("legacy payment record with empty status is treated as active", func(t *testing.T) {
+		// Simulate a legacy payment record loaded from database (before BUG-010)
+		record := &PaymentRecord{
+			ID:               uuid.New(),
+			ReceiptVoucherID: uuid.New(),
+			Amount:           decimal.NewFromFloat(500.00),
+			AppliedAt:        time.Now(),
+			// Status is empty (legacy record)
+		}
+
+		assert.True(t, record.IsActive(), "Legacy records without status should be considered active")
+		assert.False(t, record.IsReversed())
+	})
+
 	t.Run("MarkReversed sets status and timestamps", func(t *testing.T) {
 		voucherID := uuid.New()
 		amount := valueobject.NewMoneyCNYFromFloat(500.00)

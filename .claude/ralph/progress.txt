@@ -22820,3 +22820,91 @@ Test coverage for reversal scenarios:
 - Consider adding application service to automate credit memo creation on reversal
 - May need to implement refund processing integration
 - Consider adding `ReverseSinglePayment()` method for granular reversal in future
+
+---
+
+2025-01-26 - BUG-010: 应收冲红时更新支付记录 (Update Payment Records on Account Receivable Reversal)
+
+=== Implementation Details ===
+
+**Problem**: When an Account Receivable was reversed (冲红), the associated PaymentRecords were not marked as reversed, causing incomplete audit trails and making it difficult to track refund processing.
+
+**Solution**: Enhanced the PaymentRecord value object and Reverse() method to properly track reversal status and provide compensation record IDs for downstream processing.
+
+=== Key Changes ===
+
+1. **PaymentRecordStatus enum** (account_receivable.go)
+   - Added `ACTIVE` and `REVERSED` status values
+   - Added `IsValid()` validation method
+
+2. **PaymentRecord enhancements** (account_receivable.go)
+   - Added `Status`, `ReversedAt`, `ReversalReason` fields
+   - Added `IsActive()`, `IsReversed()`, `MarkReversed(reason)` methods
+   - Legacy records with empty status are treated as active for backward compatibility
+
+3. **ReversalResult enhancements** (account_receivable.go)
+   - Added `ReversedPaymentCount` field
+   - Added `CompensationRecordIDs []uuid.UUID` for external refund processing
+   - Payment records in result are now marked as reversed
+
+4. **Reverse() method updates** (account_receivable.go)
+   - Now iterates through all active payment records and marks them as reversed
+   - Generates compensation record IDs for each reversed payment
+   - Passes ReversalResult to event constructor
+
+5. **ReversedPaymentInfo struct** (account_receivable_events.go)
+   - New struct providing complete audit trail for each reversed payment
+   - Contains: PaymentRecordID, ReceiptVoucherID, Amount, AppliedAt, ReversedAt, CompensationID
+
+6. **AccountReceivableReversedEvent enhancements** (account_receivable_events.go)
+   - Added `ReversedPaymentCount` field
+   - Added `ReversedPayments []ReversedPaymentInfo` for complete audit trail
+   - Event now captures all details needed for downstream refund processing
+
+=== Files Modified ===
+
+1. `backend/internal/domain/finance/account_receivable.go`
+   - Added PaymentRecordStatus enum and status tracking
+   - Enhanced Reverse() method
+   - Enhanced ReversalResult struct
+
+2. `backend/internal/domain/finance/account_receivable_events.go`
+   - Added ReversedPaymentInfo struct
+   - Enhanced AccountReceivableReversedEvent
+   - Updated NewAccountReceivableReversedEvent() signature
+
+3. `backend/internal/domain/finance/account_receivable_test.go`
+   - Added 40+ test cases for BUG-010 functionality
+   - Tests for PaymentRecordStatus enum
+   - Tests for payment record status methods
+   - Tests for reversal with multiple payments
+   - Tests for event audit trail
+
+=== Verification ===
+
+- All 100+ finance domain tests pass
+- Build compiles successfully
+- Code review: APPROVED with minor suggestions
+- Backward compatibility: Legacy records without status handled correctly
+
+=== Design Decisions ===
+
+1. **Compensation IDs vs Actual Records**: We generate UUIDs for compensation records rather than creating actual records. This allows the application layer to decide how to process refunds (credit memo, actual refund, etc.)
+
+2. **Marking in Place**: Payment records in the aggregate are marked as reversed directly (not copied first). This ensures database persistence includes the reversal status.
+
+3. **Event Contains Full Audit Trail**: The event includes all details needed for downstream systems to process refunds without additional queries.
+
+4. **Legacy Compatibility**: `IsActive()` returns true for empty status to handle records created before BUG-010.
+
+=== Requirements Satisfied ===
+
+- ✅ 冲红时标记关联的 PaymentRecord (Mark associated PaymentRecords on reversal)
+- ✅ 确保审计追踪完整 (Ensure complete audit trail)
+- ✅ 添加冲红补偿记录 (Add compensation records for reversal)
+
+=== Next Steps ===
+
+- Application service should handle actual refund/credit memo creation using CompensationRecordIDs
+- Event handlers can subscribe to AccountReceivableReversedEvent for automated processing
+- Consider database migration if JSONB storage causes performance issues with many payments
