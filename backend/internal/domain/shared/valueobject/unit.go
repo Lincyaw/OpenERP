@@ -217,7 +217,17 @@ func (u Unit) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
+// UnmarshalJSON implements json.Unmarshaler for deserialization purposes.
+//
+// IMPORTANT: This method exists ONLY to support JSON deserialization scenarios
+// (e.g., API request binding, reading JSON from external sources).
+// It is NOT intended for general Unit creation from JSON data.
+//
+// For programmatic JSON parsing where you want explicit error handling and
+// clearer intent, use ParseUnitFromJSON instead.
+//
+// This method delegates to NewUnit factory, ensuring all validation rules
+// are applied consistently and maintaining immutability semantics.
 func (u *Unit) UnmarshalJSON(data []byte) error {
 	var v struct {
 		Code           string `json:"code"`
@@ -242,6 +252,41 @@ func (u *Unit) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ParseUnitFromJSON creates a Unit from JSON data with full validation.
+// This is the recommended way to create Unit from JSON when you want
+// explicit control over error handling and clearer intent in your code.
+//
+// Unlike UnmarshalJSON (which is called implicitly by json.Unmarshal),
+// this factory function:
+// - Makes the parsing operation explicit
+// - Returns a new Unit value (not a pointer), maintaining immutability semantics
+// - Uses the NewUnit factory for consistent validation
+//
+// Example:
+//
+//	jsonData := []byte(`{"code":"BOX","name":"Box","conversionRate":"12"}`)
+//	unit, err := valueobject.ParseUnitFromJSON(jsonData)
+//	if err != nil {
+//	    // handle parsing error
+//	}
+func ParseUnitFromJSON(data []byte) (Unit, error) {
+	var v struct {
+		Code           string `json:"code"`
+		Name           string `json:"name"`
+		ConversionRate string `json:"conversionRate"`
+	}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return Unit{}, fmt.Errorf("failed to parse unit JSON: %w", err)
+	}
+
+	rate, err := decimal.NewFromString(v.ConversionRate)
+	if err != nil {
+		return Unit{}, fmt.Errorf("invalid conversion rate: %w", err)
+	}
+
+	return NewUnit(v.Code, v.Name, rate)
+}
+
 // Value implements driver.Valuer for database storage.
 // Stores the code only (name and rate should be stored separately if needed).
 func (u Unit) Value() (driver.Value, error) {
@@ -249,8 +294,13 @@ func (u Unit) Value() (driver.Value, error) {
 }
 
 // Scan implements sql.Scanner for database retrieval.
-// Only reads the code; sets default name and rate=1.
-// Use ScanFull for complete unit data.
+//
+// IMPORTANT: This method exists ONLY to support GORM/database scanning scenarios.
+// It is NOT intended for general Unit creation from raw data.
+//
+// Note: Only reads the code; sets default name (same as code) and rate=1.
+// For complete unit data with name and conversion rate, use JSON storage
+// and UnmarshalJSON, or consider using ScanFull for complete unit data.
 func (u *Unit) Scan(value any) error {
 	if value == nil {
 		u.code = ""

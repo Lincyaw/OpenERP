@@ -351,3 +351,53 @@ func TestMoneyValue(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "123.45", val)
 }
+
+func TestParseMoneyFromJSON(t *testing.T) {
+	t.Run("valid money JSON", func(t *testing.T) {
+		data := []byte(`{"amount":"99.99","currency":"CNY"}`)
+		money, err := ParseMoneyFromJSON(data)
+		require.NoError(t, err)
+		assert.True(t, money.Amount().Equal(decimal.NewFromFloat(99.99)))
+		assert.Equal(t, CNY, money.Currency())
+	})
+
+	t.Run("valid money with USD currency", func(t *testing.T) {
+		data := []byte(`{"amount":"150.00","currency":"USD"}`)
+		money, err := ParseMoneyFromJSON(data)
+		require.NoError(t, err)
+		assert.True(t, money.Amount().Equal(decimal.NewFromFloat(150.00)))
+		assert.Equal(t, USD, money.Currency())
+	})
+
+	t.Run("invalid JSON returns error", func(t *testing.T) {
+		data := []byte(`{invalid json}`)
+		_, err := ParseMoneyFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse money JSON")
+	})
+
+	t.Run("invalid amount string returns error", func(t *testing.T) {
+		data := []byte(`{"amount":"not-a-number","currency":"CNY"}`)
+		_, err := ParseMoneyFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid amount")
+	})
+
+	t.Run("empty currency returns error", func(t *testing.T) {
+		data := []byte(`{"amount":"100.00","currency":""}`)
+		_, err := ParseMoneyFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "currency cannot be empty")
+	})
+
+	t.Run("immutability - returns new value", func(t *testing.T) {
+		data := []byte(`{"amount":"50.00","currency":"CNY"}`)
+		money1, err := ParseMoneyFromJSON(data)
+		require.NoError(t, err)
+		money2, err := ParseMoneyFromJSON(data)
+		require.NoError(t, err)
+
+		// Both money values should be equal but independent
+		assert.True(t, money1.Equals(money2))
+	})
+}

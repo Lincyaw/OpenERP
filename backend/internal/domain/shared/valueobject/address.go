@@ -323,7 +323,17 @@ func (a Address) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler for deserialization purposes.
+//
+// IMPORTANT: This method exists ONLY to support JSON deserialization scenarios
+// (e.g., API request binding, database JSON column retrieval).
+// It is NOT intended for general Address creation from JSON data.
+//
+// For programmatic JSON parsing where you want explicit error handling and
+// clearer intent, use ParseAddressFromJSON instead.
+//
+// The method maintains immutability by delegating to NewAddressFull factory,
+// ensuring all validation rules are applied consistently.
 func (a *Address) UnmarshalJSON(data []byte) error {
 	var v addressJSON
 	if err := json.Unmarshal(data, &v); err != nil {
@@ -342,6 +352,35 @@ func (a *Address) UnmarshalJSON(data []byte) error {
 	}
 	*a = addr
 	return nil
+}
+
+// ParseAddressFromJSON creates an Address from JSON data.
+// This is the recommended way to create an Address from JSON when you want
+// explicit control over error handling and clearer intent in your code.
+//
+// Unlike UnmarshalJSON (which is called implicitly by json.Unmarshal),
+// this factory function makes the parsing operation explicit and returns
+// a new Address value (not a pointer), maintaining immutability semantics.
+//
+// Example:
+//
+//	jsonData := []byte(`{"province":"北京市","city":"北京市","district":"海淀区","detail":"中关村"}`)
+//	addr, err := valueobject.ParseAddressFromJSON(jsonData)
+//	if err != nil {
+//	    // handle parsing error
+//	}
+func ParseAddressFromJSON(data []byte) (Address, error) {
+	var v addressJSON
+	if err := json.Unmarshal(data, &v); err != nil {
+		return Address{}, fmt.Errorf("failed to parse address JSON: %w", err)
+	}
+
+	// Allow empty addresses from JSON
+	if v.Province == "" && v.City == "" && v.District == "" && v.Detail == "" {
+		return EmptyAddress(), nil
+	}
+
+	return NewAddressFull(v.Province, v.City, v.District, v.Detail, v.PostalCode, v.Country)
 }
 
 // AddressDTO is a data transfer object for database operations
@@ -393,7 +432,13 @@ func (a Address) Value() (driver.Value, error) {
 	return json.Marshal(a)
 }
 
-// Scan implements sql.Scanner for database retrieval
+// Scan implements sql.Scanner for database retrieval.
+//
+// IMPORTANT: This method exists ONLY to support GORM/database scanning scenarios.
+// It is NOT intended for general Address creation from raw data.
+//
+// The method maintains immutability by delegating to UnmarshalJSON, which in turn
+// uses the NewAddressFull factory, ensuring all validation rules are applied.
 func (a *Address) Scan(value any) error {
 	if value == nil {
 		*a = EmptyAddress()

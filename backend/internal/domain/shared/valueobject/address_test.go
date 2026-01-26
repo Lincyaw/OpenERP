@@ -542,3 +542,49 @@ func TestNormalizeProvince(t *testing.T) {
 		})
 	}
 }
+
+func TestParseAddressFromJSON(t *testing.T) {
+	t.Run("valid address JSON", func(t *testing.T) {
+		data := []byte(`{"province":"北京市","city":"北京市","district":"海淀区","detail":"中关村科技园","postalCode":"100080","country":"中国"}`)
+		addr, err := ParseAddressFromJSON(data)
+		require.NoError(t, err)
+		assert.Equal(t, "北京市", addr.Province())
+		assert.Equal(t, "北京市", addr.City())
+		assert.Equal(t, "海淀区", addr.District())
+		assert.Equal(t, "中关村科技园", addr.Detail())
+		assert.Equal(t, "100080", addr.PostalCode())
+		assert.Equal(t, "中国", addr.Country())
+	})
+
+	t.Run("empty address JSON returns empty address", func(t *testing.T) {
+		data := []byte(`{"province":"","city":"","district":"","detail":""}`)
+		addr, err := ParseAddressFromJSON(data)
+		require.NoError(t, err)
+		assert.True(t, addr.IsEmpty())
+	})
+
+	t.Run("invalid JSON returns error", func(t *testing.T) {
+		data := []byte(`{invalid json}`)
+		_, err := ParseAddressFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse address JSON")
+	})
+
+	t.Run("invalid address data returns validation error", func(t *testing.T) {
+		data := []byte(`{"province":"","city":"北京市","district":"海淀区","detail":"中关村"}`)
+		_, err := ParseAddressFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "province cannot be empty")
+	})
+
+	t.Run("immutability - returns new value", func(t *testing.T) {
+		data := []byte(`{"province":"广东省","city":"深圳市","district":"南山区","detail":"科技园"}`)
+		addr1, err := ParseAddressFromJSON(data)
+		require.NoError(t, err)
+		addr2, err := ParseAddressFromJSON(data)
+		require.NoError(t, err)
+
+		// Both addresses should be equal but independent
+		assert.True(t, addr1.Equals(addr2))
+	})
+}

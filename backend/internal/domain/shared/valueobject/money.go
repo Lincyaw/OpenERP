@@ -292,7 +292,20 @@ func (m Money) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler for deserialization purposes.
+//
+// IMPORTANT: This method exists ONLY to support JSON deserialization scenarios
+// (e.g., API request binding, reading JSON from external sources).
+// It is NOT intended for general Money creation from JSON data.
+//
+// For programmatic JSON parsing where you want explicit error handling and
+// clearer intent, use ParseMoneyFromJSON instead.
+//
+// Note: This method directly assigns fields (amount, currency) without going
+// through NewMoney factory, which bypasses validation. This is acceptable because:
+// 1. Money allows any decimal amount (including negative for refunds/credits)
+// 2. Currency is directly assigned from JSON (empty currency will cause issues later)
+// For strict validation, use ParseMoneyFromJSON instead.
 func (m *Money) UnmarshalJSON(data []byte) error {
 	var v struct {
 		Amount   string   `json:"amount"`
@@ -310,13 +323,52 @@ func (m *Money) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ParseMoneyFromJSON creates a Money from JSON data with full validation.
+// This is the recommended way to create Money from JSON when you want
+// explicit control over error handling and stricter validation.
+//
+// Unlike UnmarshalJSON (which is called implicitly by json.Unmarshal),
+// this factory function:
+// - Makes the parsing operation explicit
+// - Validates that currency is not empty
+// - Returns a new Money value (not a pointer), maintaining immutability semantics
+//
+// Example:
+//
+//	jsonData := []byte(`{"amount":"99.99","currency":"CNY"}`)
+//	money, err := valueobject.ParseMoneyFromJSON(jsonData)
+//	if err != nil {
+//	    // handle parsing error
+//	}
+func ParseMoneyFromJSON(data []byte) (Money, error) {
+	var v struct {
+		Amount   string   `json:"amount"`
+		Currency Currency `json:"currency"`
+	}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return Money{}, fmt.Errorf("failed to parse money JSON: %w", err)
+	}
+	amount, err := decimal.NewFromString(v.Amount)
+	if err != nil {
+		return Money{}, fmt.Errorf("invalid amount: %w", err)
+	}
+	return NewMoney(amount, v.Currency)
+}
+
 // Value implements driver.Valuer for database storage
 // Stores as a numeric value (amount only)
 func (m Money) Value() (driver.Value, error) {
 	return m.amount.String(), nil
 }
 
-// Scan implements sql.Scanner for database retrieval
+// Scan implements sql.Scanner for database retrieval.
+//
+// IMPORTANT: This method exists ONLY to support GORM/database scanning scenarios.
+// It is NOT intended for general Money creation from raw data.
+//
+// Note: This scans only the amount from database; currency defaults to DefaultCurrency
+// if not already set. For complete Money data, consider storing as JSON column
+// and using UnmarshalJSON, or store currency in a separate column.
 func (m *Money) Scan(value any) error {
 	if value == nil {
 		m.amount = decimal.Zero

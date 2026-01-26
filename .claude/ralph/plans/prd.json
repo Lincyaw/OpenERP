@@ -4702,7 +4702,7 @@
       "考虑添加 ParseAddressFromJSON 工厂函数",
       "审计其他值对象的不可变性"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "DDD Consistency Review",
     "category": "ddd",
     "severity": "HIGH",

@@ -450,3 +450,53 @@ func TestQuantityValue(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "50.25", val)
 }
+
+func TestParseQuantityFromJSON(t *testing.T) {
+	t.Run("valid quantity JSON", func(t *testing.T) {
+		data := []byte(`{"value":"100.5","unit":"KG"}`)
+		qty, err := ParseQuantityFromJSON(data)
+		require.NoError(t, err)
+		assert.True(t, qty.Amount().Equal(decimal.NewFromFloat(100.5)))
+		assert.Equal(t, "KG", qty.Unit())
+	})
+
+	t.Run("valid quantity without unit", func(t *testing.T) {
+		data := []byte(`{"value":"50","unit":""}`)
+		qty, err := ParseQuantityFromJSON(data)
+		require.NoError(t, err)
+		assert.True(t, qty.Amount().Equal(decimal.NewFromFloat(50)))
+		assert.Equal(t, "", qty.Unit())
+	})
+
+	t.Run("invalid JSON returns error", func(t *testing.T) {
+		data := []byte(`{invalid json}`)
+		_, err := ParseQuantityFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse quantity JSON")
+	})
+
+	t.Run("invalid value string returns error", func(t *testing.T) {
+		data := []byte(`{"value":"not-a-number","unit":"PCS"}`)
+		_, err := ParseQuantityFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid value")
+	})
+
+	t.Run("negative quantity returns error", func(t *testing.T) {
+		data := []byte(`{"value":"-10","unit":"PCS"}`)
+		_, err := ParseQuantityFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot be negative")
+	})
+
+	t.Run("immutability - returns new value", func(t *testing.T) {
+		data := []byte(`{"value":"25","unit":"BOX"}`)
+		qty1, err := ParseQuantityFromJSON(data)
+		require.NoError(t, err)
+		qty2, err := ParseQuantityFromJSON(data)
+		require.NoError(t, err)
+
+		// Both quantities should be equal but independent
+		assert.True(t, qty1.Equals(qty2))
+	})
+}

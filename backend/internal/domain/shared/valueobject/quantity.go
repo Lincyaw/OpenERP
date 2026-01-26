@@ -316,7 +316,17 @@ func (q Quantity) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler for deserialization purposes.
+//
+// IMPORTANT: This method exists ONLY to support JSON deserialization scenarios
+// (e.g., API request binding, reading JSON from external sources).
+// It is NOT intended for general Quantity creation from JSON data.
+//
+// For programmatic JSON parsing where you want explicit error handling and
+// clearer intent, use ParseQuantityFromJSON instead.
+//
+// This method validates that quantity is non-negative during unmarshaling,
+// maintaining the domain invariant that quantities cannot be negative.
 func (q *Quantity) UnmarshalJSON(data []byte) error {
 	var v struct {
 		Value string `json:"value"`
@@ -337,12 +347,51 @@ func (q *Quantity) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ParseQuantityFromJSON creates a Quantity from JSON data with full validation.
+// This is the recommended way to create Quantity from JSON when you want
+// explicit control over error handling and clearer intent in your code.
+//
+// Unlike UnmarshalJSON (which is called implicitly by json.Unmarshal),
+// this factory function:
+// - Makes the parsing operation explicit
+// - Returns a new Quantity value (not a pointer), maintaining immutability semantics
+// - Uses the NewQuantity factory for consistent validation
+//
+// Example:
+//
+//	jsonData := []byte(`{"value":"10.5","unit":"KG"}`)
+//	qty, err := valueobject.ParseQuantityFromJSON(jsonData)
+//	if err != nil {
+//	    // handle parsing error
+//	}
+func ParseQuantityFromJSON(data []byte) (Quantity, error) {
+	var v struct {
+		Value string `json:"value"`
+		Unit  string `json:"unit"`
+	}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return Quantity{}, fmt.Errorf("failed to parse quantity JSON: %w", err)
+	}
+	value, err := decimal.NewFromString(v.Value)
+	if err != nil {
+		return Quantity{}, fmt.Errorf("invalid value: %w", err)
+	}
+	return NewQuantity(value, v.Unit)
+}
+
 // Value implements driver.Valuer for database storage
 func (q Quantity) Value() (driver.Value, error) {
 	return q.value.String(), nil
 }
 
-// Scan implements sql.Scanner for database retrieval
+// Scan implements sql.Scanner for database retrieval.
+//
+// IMPORTANT: This method exists ONLY to support GORM/database scanning scenarios.
+// It is NOT intended for general Quantity creation from raw data.
+//
+// Note: This scans only the numeric value from database; unit is not restored
+// from this operation. For complete Quantity data with unit, consider storing
+// as JSON column or storing unit in a separate column.
 func (q *Quantity) Scan(value any) error {
 	if value == nil {
 		q.value = decimal.Zero

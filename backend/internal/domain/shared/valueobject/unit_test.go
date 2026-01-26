@@ -592,3 +592,61 @@ func normalizeCode(code string) string {
 	}
 	return result
 }
+
+func TestParseUnitFromJSON(t *testing.T) {
+	t.Run("valid unit JSON", func(t *testing.T) {
+		data := []byte(`{"code":"BOX","name":"Box","conversionRate":"24"}`)
+		unit, err := ParseUnitFromJSON(data)
+		require.NoError(t, err)
+		assert.Equal(t, "BOX", unit.Code())
+		assert.Equal(t, "Box", unit.Name())
+		assert.True(t, unit.ConversionRate().Equal(decimal.NewFromInt(24)))
+	})
+
+	t.Run("valid base unit JSON (rate 1)", func(t *testing.T) {
+		data := []byte(`{"code":"PCS","name":"Pieces","conversionRate":"1"}`)
+		unit, err := ParseUnitFromJSON(data)
+		require.NoError(t, err)
+		assert.Equal(t, "PCS", unit.Code())
+		assert.True(t, unit.IsBaseUnit())
+	})
+
+	t.Run("invalid JSON returns error", func(t *testing.T) {
+		data := []byte(`{invalid json}`)
+		_, err := ParseUnitFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse unit JSON")
+	})
+
+	t.Run("invalid conversion rate returns error", func(t *testing.T) {
+		data := []byte(`{"code":"BOX","name":"Box","conversionRate":"not-a-number"}`)
+		_, err := ParseUnitFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid conversion rate")
+	})
+
+	t.Run("empty code returns error", func(t *testing.T) {
+		data := []byte(`{"code":"","name":"Box","conversionRate":"24"}`)
+		_, err := ParseUnitFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unit code cannot be empty")
+	})
+
+	t.Run("zero conversion rate returns error", func(t *testing.T) {
+		data := []byte(`{"code":"BOX","name":"Box","conversionRate":"0"}`)
+		_, err := ParseUnitFromJSON(data)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot be zero")
+	})
+
+	t.Run("immutability - returns new value", func(t *testing.T) {
+		data := []byte(`{"code":"PACK","name":"Pack","conversionRate":"12"}`)
+		unit1, err := ParseUnitFromJSON(data)
+		require.NoError(t, err)
+		unit2, err := ParseUnitFromJSON(data)
+		require.NoError(t, err)
+
+		// Both units should be equal but independent
+		assert.True(t, unit1.EqualsStrict(unit2))
+	})
+}

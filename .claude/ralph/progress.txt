@@ -23148,3 +23148,106 @@ for _, lock := range expiredLocks {
 - Consider adding `TimeUntilExpiryAt(referenceTime)` method for consistency
 - Consider adding staticcheck SA1019 linter rule to warn on deprecated method usage
 - Existing usages in application layer are appropriate (display purposes for DTOs)
+
+---
+
+2025-01-27 - DDD-H02: Value Objects 不可变性文档化 (Value Objects Immutability Documentation)
+
+=== Implementation Details ===
+
+**Task**: Document and improve immutability semantics for all value objects in the shared domain layer.
+
+**Changes Made**:
+
+1. **Address Value Object** (address.go)
+   - Added comprehensive documentation to `UnmarshalJSON` explaining it exists ONLY for deserialization
+   - Added new `ParseAddressFromJSON` factory function as explicit alternative to UnmarshalJSON
+   - Added documentation to `Scan` method clarifying its purpose for GORM/database scanning only
+   - Both methods maintain immutability by delegating to factory functions (NewAddressFull)
+
+2. **Money Value Object** (money.go)
+   - Added comprehensive documentation to `UnmarshalJSON` explaining deserialization-only purpose
+   - Added new `ParseMoneyFromJSON` factory function with strict validation (checks empty currency)
+   - Added documentation to `Scan` method noting it only restores amount (currency defaults to CNY)
+   - Note: UnmarshalJSON bypasses validation for flexibility; ParseMoneyFromJSON uses NewMoney for strict validation
+
+3. **Quantity Value Object** (quantity.go)
+   - Added comprehensive documentation to `UnmarshalJSON` explaining deserialization-only purpose
+   - Added new `ParseQuantityFromJSON` factory function with full validation via NewQuantity
+   - Added documentation to `Scan` method noting unit is not restored from database
+   - UnmarshalJSON validates non-negative quantity during unmarshaling
+
+4. **Unit Value Object** (unit.go)
+   - Added comprehensive documentation to `UnmarshalJSON` explaining deserialization-only purpose
+   - Added new `ParseUnitFromJSON` factory function with full validation via NewUnit
+   - Enhanced documentation on `Scan` method noting it defaults name to code and rate to 1
+   - UnmarshalJSON properly delegates to NewUnit factory for validation
+
+=== Files Modified ===
+
+1. `backend/internal/domain/shared/valueobject/address.go`
+   - Added documentation to UnmarshalJSON (lines 326-344)
+   - Added ParseAddressFromJSON factory function (lines 346-384)
+   - Added documentation to Scan method (lines 433-440)
+
+2. `backend/internal/domain/shared/valueobject/money.go`
+   - Added documentation to UnmarshalJSON (lines 295-322)
+   - Added ParseMoneyFromJSON factory function (lines 324-362)
+   - Added documentation to Scan method (lines 369-376)
+
+3. `backend/internal/domain/shared/valueobject/quantity.go`
+   - Added documentation to UnmarshalJSON (lines 308-335)
+   - Added ParseQuantityFromJSON factory function (lines 337-375)
+   - Added documentation to Scan method (lines 382-389)
+
+4. `backend/internal/domain/shared/valueobject/unit.go`
+   - Added documentation to UnmarshalJSON (lines 220-251)
+   - Added ParseUnitFromJSON factory function (lines 253-291)
+   - Enhanced documentation on Scan method (lines 298-306)
+
+=== Test Files Modified ===
+
+1. `backend/internal/domain/shared/valueobject/address_test.go`
+   - Added TestParseAddressFromJSON with 5 test cases
+
+2. `backend/internal/domain/shared/valueobject/money_test.go`
+   - Added TestParseMoneyFromJSON with 6 test cases
+
+3. `backend/internal/domain/shared/valueobject/quantity_test.go`
+   - Added TestParseQuantityFromJSON with 6 test cases
+
+4. `backend/internal/domain/shared/valueobject/unit_test.go`
+   - Added TestParseUnitFromJSON with 7 test cases
+
+=== Verification ===
+
+- All 100+ value object tests pass
+- Build compiles successfully with no errors
+- New ParseXXXFromJSON functions follow immutability principle (return values, not pointers)
+- Documentation clearly explains the purpose and appropriate use of UnmarshalJSON vs ParseXXXFromJSON
+
+=== Design Decisions ===
+
+1. **Dual Approach**: Kept UnmarshalJSON for implicit deserialization (required by json.Unmarshal) while adding explicit ParseXXXFromJSON factory functions for code that wants clearer intent and stricter validation.
+
+2. **Documentation Focus**: Added detailed godoc comments explaining:
+   - Purpose (deserialization-only vs programmatic parsing)
+   - Validation behavior (what is/isn't checked)
+   - Immutability semantics (returns new values)
+   - Usage examples
+
+3. **Consistent Pattern**: All four value objects now follow the same pattern:
+   - UnmarshalJSON: Implicit deserialization with minimal validation
+   - ParseXXXFromJSON: Explicit factory with full validation via NewXXX
+   - Scan: Database retrieval with clear limitations documented
+
+=== Requirements Satisfied ===
+
+- ✅ 为 Address UnmarshalJSON 添加文档说明仅用于反序列化 (Added documentation explaining UnmarshalJSON is only for deserialization)
+- ✅ 考虑添加 ParseAddressFromJSON 工厂函数 (Added ParseAddressFromJSON factory function)
+- ✅ 审计其他值对象的不可变性 (Audited Money, Quantity, Unit value objects - all now documented with consistent pattern)
+
+=== Next Steps ===
+
+- Consider adding similar documentation patterns to other domain objects
+- Monitor usage of ParseXXXFromJSON functions to ensure they're being used appropriately
