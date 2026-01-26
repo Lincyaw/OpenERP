@@ -9,8 +9,17 @@ import (
 	"github.com/erp/backend/internal/infrastructure/strategy/validation"
 )
 
-// NewRegistryWithDefaults creates a new registry with default strategies registered
+// NewRegistryWithDefaults creates a new registry with default strategies registered.
+// The customer level pricing strategy uses static fallback discounts.
+// For production use with dynamic discount lookup, use NewRegistryWithProvider.
 func NewRegistryWithDefaults() (*StrategyRegistry, error) {
+	return NewRegistryWithProvider(nil)
+}
+
+// NewRegistryWithProvider creates a new registry with default strategies registered,
+// using the provided CustomerLevelProvider for dynamic discount lookups.
+// If provider is nil, the customer level strategy uses static fallback discounts.
+func NewRegistryWithProvider(customerLevelProvider pricing.CustomerLevelProvider) (*StrategyRegistry, error) {
 	r := NewStrategyRegistry()
 
 	// Register cost strategies
@@ -35,7 +44,8 @@ func NewRegistryWithDefaults() (*StrategyRegistry, error) {
 		return nil, err
 	}
 
-	customerLevelPricing := pricing.DefaultCustomerLevelPricingStrategy()
+	// Create customer level pricing strategy with provider (if provided)
+	customerLevelPricing := pricing.NewCustomerLevelPricingStrategy(customerLevelProvider)
 	if err := r.RegisterPricingStrategy(customerLevelPricing); err != nil {
 		return nil, err
 	}

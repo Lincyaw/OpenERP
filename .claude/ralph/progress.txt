@@ -20846,3 +20846,83 @@ Implemented ProductDisabled event and related functionality for cross-context in
 - Wire up ProductSaleValidator in dependency injection (cmd/server/main.go)
 - Subscribe ProductDisabledHandler to event bus
 - Consider adding inventory deactivation handler when product is disabled
+
+2026-01-26 - Task impl-CustomerLevel-003: Integrate CustomerLevel with Pricing Strategy
+
+=== Implementation Details ===
+Integrated CustomerLevel domain object with CustomerLevelPricingStrategy for dynamic discount lookup:
+
+1. **CustomerLevelProvider Interface**: Created in `backend/internal/infrastructure/strategy/pricing/customer_level.go`
+   - `GetCustomerLevel(ctx, tenantID, levelCode)`: Retrieves CustomerLevel by code for a tenant
+   - `GetAllCustomerLevels(ctx, tenantID)`: Retrieves all active customer levels for a tenant
+   - Allows pricing strategy to query discount rates dynamically from the domain layer
+
+2. **GormCustomerLevelProvider Implementation**: Created in `backend/internal/infrastructure/strategy/pricing/customer_level_provider.go`
+   - Wraps CustomerLevelRepository for use by the pricing strategy
+   - Converts CustomerLevelRecord to CustomerLevel value objects
+
+3. **CustomerLevelPricingStrategy Refactored**:
+   - Two operating modes:
+     - Dynamic mode (with provider): Looks up discount rates from CustomerLevel domain objects
+     - Static mode (without provider): Uses fallback discount mappings
+   - New constructors:
+     - `NewCustomerLevelPricingStrategy(provider)`: Creates strategy with provider for dynamic lookup
+     - `NewCustomerLevelPricingStrategyWithFallback(provider, fallbacks)`: Custom fallback discounts
+     - `NewCustomerLevelPricingStrategyFromDiscounts([]CustomerLevelDiscount)`: Legacy constructor for backwards compatibility
+   - `GetDiscountForLevelWithContext(ctx, tenantID, levelCode)`: Dynamic lookup with fallback
+   - `SetProvider(provider)`: Allows setting provider after construction
+   - `HasProvider()`: Checks if provider is configured
+   - Graceful fallback to static discounts on provider error or invalid tenant ID
+
+4. **Registry Enhancement**:
+   - Added `NewRegistryWithProvider(provider)` to `defaults.go`
+   - Allows creating strategy registry with CustomerLevelProvider for production use
+   - `NewRegistryWithDefaults()` now delegates to `NewRegistryWithProvider(nil)` for backwards compatibility
+
+5. **Fallback Discounts**: Uses domain-defined level codes from `partner.CustomerLevelCode*` constants
+   - normal: 0%, silver: 3%, gold: 5%, platinum: 8%, vip: 10%
+
+=== Key Files Created/Modified ===
+
+**New Files:**
+- backend/internal/infrastructure/strategy/pricing/customer_level_provider.go
+
+**Modified Files:**
+- backend/internal/infrastructure/strategy/pricing/customer_level.go - Refactored for dynamic lookup
+- backend/internal/infrastructure/strategy/pricing/customer_level_test.go - Added provider tests
+- backend/internal/infrastructure/strategy/defaults.go - Added NewRegistryWithProvider
+
+=== Verification ===
+- All pricing strategy tests pass: `go test ./internal/infrastructure/strategy/pricing/...`
+- All partner domain tests pass: `go test ./internal/domain/partner/...`
+- Build succeeds: `go build ./...`
+
+=== Test Coverage ===
+New test cases added:
+- TestCustomerLevelPricingStrategy_HasProvider
+- TestCustomerLevelPricingStrategy_WithProvider (3 subtests)
+- TestCustomerLevelPricingStrategy_WithProviderError
+- TestCustomerLevelPricingStrategy_InvalidTenantID (2 subtests)
+- TestCustomerLevelPricingStrategy_GetDiscountForLevelWithContext (2 subtests)
+- TestCustomerLevelPricingStrategy_WithFallback (2 subtests)
+
+=== Design Decisions ===
+1. **Provider Pattern**: Used provider interface instead of directly injecting repository to decouple infrastructure from domain
+2. **Fallback Strategy**: Always provides default discounts when provider fails, ensuring pricing always works
+3. **Backwards Compatibility**: Existing code using `DefaultCustomerLevelPricingStrategy()` continues to work
+4. **Tenant-Specific Discounts**: Provider queries are tenant-scoped, enabling tenant-specific discount configurations
+5. **Percentage vs Rate**: Strategy works with percentages (3, 5, 10) while CustomerLevel stores rates (0.03, 0.05, 0.10). Conversion handled via `DiscountPercent()` method.
+
+=== Integration Notes ===
+To enable dynamic discount lookup in production:
+```go
+// In main.go or dependency injection setup:
+customerLevelRepo := persistence.NewGormCustomerLevelRepository(db)
+customerLevelProvider := pricing.NewGormCustomerLevelProvider(customerLevelRepo)
+strategyRegistry, err := strategy.NewRegistryWithProvider(customerLevelProvider)
+```
+
+=== Next Steps ===
+- Wire CustomerLevelProvider in application main.go for production use
+- Consider caching frequently accessed customer levels
+- Add metrics/logging for provider lookup failures

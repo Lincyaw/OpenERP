@@ -4189,7 +4189,7 @@
       "Inject CustomerLevelRepository or Provider into pricing strategy",
       "Update tests to use proper CustomerLevel objects"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 4.1 - Strategy Extensions (Pricing)",
     "parentTask": "DDD-013",
     "affectedModules": [
