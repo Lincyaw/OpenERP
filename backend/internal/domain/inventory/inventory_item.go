@@ -381,21 +381,56 @@ func (i *InventoryItem) GetActiveLocks() []StockLock {
 	return activeLocks
 }
 
-// GetExpiredLocks returns locks that have expired but are not yet released
+// GetExpiredLocks returns locks that have expired but are not yet released.
+//
+// Deprecated: Use GetExpiredLocksAt() with a reference timestamp for critical operations
+// to avoid race conditions. This method captures time.Now() internally which may cause
+// inconsistent results in concurrent scenarios.
+//
+// BUG-013: For atomic expiration checking, use GetExpiredLocksAt() instead.
 func (i *InventoryItem) GetExpiredLocks() []StockLock {
+	return i.GetExpiredLocksAt(time.Now())
+}
+
+// GetExpiredLocksAt returns locks that have expired relative to the reference time.
+//
+// This method should be used for critical business operations where atomicity matters.
+// By passing a reference timestamp (e.g., captured at the start of a batch operation
+// or received from the database query), you ensure consistent expiration checking
+// throughout the operation, preventing race conditions.
+//
+// BUG-013: This method addresses the non-atomic lock expiration check issue.
+func (i *InventoryItem) GetExpiredLocksAt(referenceTime time.Time) []StockLock {
 	expiredLocks := make([]StockLock, 0)
-	now := time.Now()
 	for _, lock := range i.Locks {
-		if !lock.Released && !lock.Consumed && lock.ExpireAt.Before(now) {
+		if !lock.Released && !lock.Consumed && lock.IsExpiredAt(referenceTime) {
 			expiredLocks = append(expiredLocks, lock)
 		}
 	}
 	return expiredLocks
 }
 
-// ReleaseExpiredLocks releases all expired locks back to available stock
+// ReleaseExpiredLocks releases all expired locks back to available stock.
+//
+// Deprecated: Use ReleaseExpiredLocksAt() with a reference timestamp for critical operations
+// to avoid race conditions. This method captures time.Now() internally which may cause
+// inconsistent results in concurrent scenarios.
+//
+// BUG-013: For atomic expiration checking, use ReleaseExpiredLocksAt() instead.
 func (i *InventoryItem) ReleaseExpiredLocks() int {
-	expiredLocks := i.GetExpiredLocks()
+	return i.ReleaseExpiredLocksAt(time.Now())
+}
+
+// ReleaseExpiredLocksAt releases all locks that have expired relative to the reference time.
+//
+// This method should be used for critical business operations where atomicity matters.
+// By passing a reference timestamp (e.g., captured at the start of a batch operation
+// or received from the database query), you ensure consistent expiration checking
+// throughout the operation, preventing race conditions between check and action.
+//
+// BUG-013: This method addresses the non-atomic lock expiration check issue.
+func (i *InventoryItem) ReleaseExpiredLocksAt(referenceTime time.Time) int {
+	expiredLocks := i.GetExpiredLocksAt(referenceTime)
 	count := 0
 	for _, lock := range expiredLocks {
 		if err := i.UnlockStock(lock.ID); err == nil {

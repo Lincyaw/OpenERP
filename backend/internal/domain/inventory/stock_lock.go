@@ -45,9 +45,45 @@ func (l *StockLock) IsActive() bool {
 	return !l.Released && !l.Consumed
 }
 
-// IsExpired returns true if the lock has expired
+// IsExpired returns true if the lock has expired based on current time.
+//
+// WARNING: This method uses time.Now() which can cause race conditions in concurrent
+// environments. For critical business logic (e.g., releasing expired locks, validating
+// lock status before operations), use IsExpiredAt() with a reference timestamp captured
+// at the start of the operation, or rely on database-level timestamp comparisons in the
+// repository layer (FindExpired, ReleaseExpired).
+//
+// This method is suitable for:
+// - Display purposes (UI showing if a lock is expired)
+// - Non-critical status checks
+//
+// BUG-013: See IsExpiredAt() for atomic expiration checking.
 func (l *StockLock) IsExpired() bool {
-	return time.Now().After(l.ExpireAt)
+	return l.IsExpiredAt(time.Now())
+}
+
+// IsExpiredAt returns true if the lock has expired relative to the given reference time.
+//
+// This method should be used for critical business operations where atomicity matters.
+// By passing a reference timestamp captured at the start of an operation (or from the
+// database query), you ensure consistent expiration checking throughout the operation,
+// preventing race conditions between check and action.
+//
+// Example usage:
+//
+//	// Capture reference time once at operation start
+//	referenceTime := time.Now()
+//
+//	// Use same reference for all expiration checks in this operation
+//	for _, lock := range locks {
+//	    if lock.IsExpiredAt(referenceTime) {
+//	        // Process expired lock
+//	    }
+//	}
+//
+// BUG-013: This method addresses the non-atomic lock expiration check issue.
+func (l *StockLock) IsExpiredAt(referenceTime time.Time) bool {
+	return referenceTime.After(l.ExpireAt)
 }
 
 // Release marks the lock as released (cancellation)

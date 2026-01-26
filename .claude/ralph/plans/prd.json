@@ -5070,7 +5070,7 @@
       "在数据库查询中使用时间戳比较而非内存检查",
       "防止检查和操作之间的竞态"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "MEDIUM",

@@ -610,6 +610,234 @@ func TestInventoryItem_GetActiveLocks(t *testing.T) {
 	assert.Equal(t, "SO-002", activeLocks[0].SourceID)
 }
 
+// BUG-013: Tests for atomic expiration checking in InventoryItem
+func TestInventoryItem_GetExpiredLocks(t *testing.T) {
+	t.Run("returns only expired active locks", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 200)
+
+		// Create lock that is already expired (1 hour in past)
+		expiredLock, _ := item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Now().Add(-time.Hour),
+		)
+
+		// Create lock that will expire in future
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-002",
+			time.Now().Add(time.Hour),
+		)
+
+		expiredLocks := item.GetExpiredLocks()
+
+		require.Len(t, expiredLocks, 1)
+		assert.Equal(t, expiredLock.ID, expiredLocks[0].ID)
+		assert.Equal(t, "SO-001", expiredLocks[0].SourceID)
+	})
+
+	t.Run("excludes released locks", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 200)
+
+		// Create expired lock, then release it
+		expiredLock, _ := item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Now().Add(-time.Hour),
+		)
+		_ = item.UnlockStock(expiredLock.ID)
+
+		expiredLocks := item.GetExpiredLocks()
+
+		assert.Len(t, expiredLocks, 0)
+	})
+}
+
+// BUG-013: Tests for GetExpiredLocksAt - atomic expiration checking
+func TestInventoryItem_GetExpiredLocksAt(t *testing.T) {
+	t.Run("returns expired locks relative to reference time", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 300)
+
+		// Use fixed reference time for atomic checking
+		referenceTime := time.Date(2024, 6, 15, 12, 0, 0, 0, time.UTC)
+
+		// Create locks with different expiration times
+		// Lock 1: expires before reference (should be included)
+		lock1, _ := item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Date(2024, 6, 15, 11, 0, 0, 0, time.UTC), // 1 hour before reference
+		)
+
+		// Lock 2: expires after reference (should not be included)
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-002",
+			time.Date(2024, 6, 15, 13, 0, 0, 0, time.UTC), // 1 hour after reference
+		)
+
+		// Lock 3: expires at reference time (should not be included - boundary)
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-003",
+			referenceTime,
+		)
+
+		expiredLocks := item.GetExpiredLocksAt(referenceTime)
+
+		require.Len(t, expiredLocks, 1)
+		assert.Equal(t, lock1.ID, expiredLocks[0].ID)
+	})
+
+	t.Run("provides consistent results with same reference time", func(t *testing.T) {
+		// BUG-013: This test verifies that using a fixed reference time
+		// produces consistent results regardless of when the method is called
+		item := createTestInventoryItemWithStock(t, 200)
+
+		// Create two locks expiring at different times
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Date(2024, 6, 15, 10, 0, 0, 0, time.UTC),
+		)
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-002",
+			time.Date(2024, 6, 15, 14, 0, 0, 0, time.UTC),
+		)
+
+		// Same reference time - should always give same result
+		referenceTime := time.Date(2024, 6, 15, 12, 0, 0, 0, time.UTC)
+
+		// Call multiple times - should be consistent
+		result1 := item.GetExpiredLocksAt(referenceTime)
+		result2 := item.GetExpiredLocksAt(referenceTime)
+		result3 := item.GetExpiredLocksAt(referenceTime)
+
+		assert.Len(t, result1, 1)
+		assert.Len(t, result2, 1)
+		assert.Len(t, result3, 1)
+		assert.Equal(t, result1[0].ID, result2[0].ID)
+		assert.Equal(t, result2[0].ID, result3[0].ID)
+	})
+}
+
+// BUG-013: Tests for ReleaseExpiredLocksAt - atomic expiration release
+func TestInventoryItem_ReleaseExpiredLocksAt(t *testing.T) {
+	t.Run("releases only locks expired relative to reference time", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 300)
+		item.ClearDomainEvents()
+
+		// Use fixed reference time for atomic checking
+		referenceTime := time.Date(2024, 6, 15, 12, 0, 0, 0, time.UTC)
+
+		// Lock 1: expires before reference (should be released)
+		lock1, _ := item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Date(2024, 6, 15, 11, 0, 0, 0, time.UTC),
+		)
+
+		// Lock 2: expires after reference (should not be released)
+		lock2, _ := item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-002",
+			time.Date(2024, 6, 15, 13, 0, 0, 0, time.UTC),
+		)
+
+		item.ClearDomainEvents()
+
+		count := item.ReleaseExpiredLocksAt(referenceTime)
+
+		assert.Equal(t, 1, count)
+
+		// Verify lock1 was released
+		var releasedLock *StockLock
+		for i := range item.Locks {
+			if item.Locks[i].ID == lock1.ID {
+				releasedLock = &item.Locks[i]
+				break
+			}
+		}
+		require.NotNil(t, releasedLock)
+		assert.True(t, releasedLock.Released)
+
+		// Verify lock2 was NOT released
+		var activeLock *StockLock
+		for i := range item.Locks {
+			if item.Locks[i].ID == lock2.ID {
+				activeLock = &item.Locks[i]
+				break
+			}
+		}
+		require.NotNil(t, activeLock)
+		assert.False(t, activeLock.Released)
+	})
+
+	t.Run("returns quantity to available after release", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 100)
+
+		// Lock 50 units that expire in the past
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Now().Add(-time.Hour),
+		)
+
+		// Should have 50 available, 50 locked
+		assert.True(t, decimal.NewFromInt(50).Equal(item.AvailableQuantity))
+		assert.True(t, decimal.NewFromInt(50).Equal(item.LockedQuantity))
+
+		// Release expired locks
+		count := item.ReleaseExpiredLocks()
+
+		assert.Equal(t, 1, count)
+		// Should have 100 available, 0 locked
+		assert.True(t, decimal.NewFromInt(100).Equal(item.AvailableQuantity))
+		assert.True(t, item.LockedQuantity.IsZero())
+	})
+
+	t.Run("emits StockUnlocked events for each released lock", func(t *testing.T) {
+		item := createTestInventoryItemWithStock(t, 200)
+
+		// Create two expired locks
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-001",
+			time.Now().Add(-time.Hour),
+		)
+		_, _ = item.LockStock(
+			decimal.NewFromInt(50),
+			"sales_order",
+			"SO-002",
+			time.Now().Add(-time.Hour),
+		)
+
+		item.ClearDomainEvents()
+
+		count := item.ReleaseExpiredLocks()
+
+		assert.Equal(t, 2, count)
+		events := item.GetDomainEvents()
+		require.Len(t, events, 2)
+		for _, event := range events {
+			assert.Equal(t, EventTypeStockUnlocked, event.EventType())
+		}
+	})
+}
+
 func TestInventoryItem_GetTotalValue(t *testing.T) {
 	item := createTestInventoryItemWithStock(t, 100)
 	item.UnitCost = decimal.NewFromFloat(25.50)
