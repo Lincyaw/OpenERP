@@ -18319,3 +18319,57 @@ Updated the application DTO JSON tags to match the swagger specification:
 - This is a common issue when swagger annotations use different JSON field names than the actual DTO
 - The Go struct field name (CreditDays) remains unchanged, only the JSON serialization tag was updated
 - No frontend changes were needed as the auto-generated API models already expected `payment_term_days`
+
+---
+
+## P10-BUG-006: 修复库存盘点差异金额不显示 (2026-01-26)
+
+### Problem
+The stock taking list table was not displaying the total_difference column - it showed as ¥0.00 even when there were actual differences.
+
+### Root Cause Analysis
+1. Backend uses `shopspring/decimal` type for monetary values
+2. Go's JSON marshaling serializes decimal.Decimal as strings (e.g., "1234.5600" instead of 1234.56)
+3. Frontend's render function cast the value as `number` and checked `diff === 0`
+4. A string value like "0.0000" doesn't equal the number 0, but also doesn't properly parse for comparison
+
+Code before:
+```typescript
+render: (value: unknown) => {
+  const diff = value as number  // This casts string "123.45" to number, but doesn't convert it
+  if (diff === undefined || diff === null || diff === 0) {  // "0.0000" !== 0
+```
+
+### Solution
+Updated the render function to properly parse string values:
+
+**frontend/src/pages/inventory/StockTakingList.tsx:**
+- Changed the total_difference column render function to use `parseFloat()` for string values
+- Added `isNaN()` check for safety
+- Changed variable name from `diff` to `numValue` for clarity
+
+Code after:
+```typescript
+render: (value: unknown) => {
+  const numValue = typeof value === 'string' ? parseFloat(value) : (value as number)
+  if (numValue === undefined || numValue === null || isNaN(numValue) || numValue === 0) {
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `frontend/src/pages/inventory/StockTakingList.tsx` | Fixed total_difference column render to parse string values |
+| `.claude/ralph/plans/prd.json` | Marked P10-BUG-006 as passes: true |
+
+### Verification
+- ✅ TypeScript type check passes (`npx tsc --noEmit`)
+- ✅ Frontend build succeeds (`npm run build`)
+
+### Notes
+- This is the same root cause as P10-BUG-004 (unit_cost and total_value not displaying)
+- The useFormatters hook was already updated to handle strings, but the render function's conditional check still failed
+- This pattern should be used whenever comparing decimal values from the API:
+  ```typescript
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
+  ```

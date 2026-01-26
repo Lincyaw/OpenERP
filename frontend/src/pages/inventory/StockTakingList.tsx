@@ -298,14 +298,15 @@ export default function StockTakingListPage() {
         width: 110,
         align: 'right',
         render: (value: unknown) => {
-          const diff = value as number
-          if (diff === undefined || diff === null || diff === 0) {
+          // Handle string values from API (decimal.Decimal serializes as string)
+          const numValue = typeof value === 'string' ? parseFloat(value) : (value as number)
+          if (numValue === undefined || numValue === null || isNaN(numValue) || numValue === 0) {
             return formatCurrency(0)
           }
           return (
-            <span className={diff > 0 ? 'diff-positive' : 'diff-negative'}>
-              {diff > 0 ? '+' : ''}
-              {formatCurrency(diff)}
+            <span className={numValue > 0 ? 'diff-positive' : 'diff-negative'}>
+              {numValue > 0 ? '+' : ''}
+              {formatCurrency(numValue)}
             </span>
           )
         },
