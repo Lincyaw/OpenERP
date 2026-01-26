@@ -68,6 +68,9 @@ type SalesReturnItem struct {
 	UnitPrice         decimal.Decimal `gorm:"type:decimal(18,4);not null"` // Price per unit (from original order)
 	RefundAmount      decimal.Decimal `gorm:"type:decimal(18,4);not null"` // ReturnQuantity * UnitPrice
 	Unit              string          `gorm:"type:varchar(20);not null"`
+	ConversionRate    decimal.Decimal `gorm:"type:decimal(18,6);not null;default:1"` // Conversion rate to base unit
+	BaseQuantity      decimal.Decimal `gorm:"type:decimal(18,4);not null"`           // Return quantity in base units (for inventory)
+	BaseUnit          string          `gorm:"type:varchar(20);not null"`             // Base unit code
 	Reason            string          `gorm:"type:varchar(500)"`
 	ConditionOnReturn string          `gorm:"type:varchar(100)"` // e.g., "damaged", "defective", "wrong_item"
 	CreatedAt         time.Time       `gorm:"not null"`
@@ -80,12 +83,23 @@ func (SalesReturnItem) TableName() string {
 }
 
 // NewSalesReturnItem creates a new sales return item
+// Parameters:
+//   - returnID: the parent return ID
+//   - salesOrderItemID: the original sales order item ID
+//   - productID: the product ID
+//   - productName, productCode: product display info
+//   - unit: the unit of measure (may be auxiliary unit)
+//   - baseUnit: the base unit code for the product
+//   - originalQuantity: quantity in original order (in order unit)
+//   - returnQuantity: quantity being returned (in order unit)
+//   - conversionRate: conversion rate from order unit to base unit (1 if using base unit)
+//   - unitPrice: price per order unit
 func NewSalesReturnItem(
 	returnID uuid.UUID,
 	salesOrderItemID uuid.UUID,
 	productID uuid.UUID,
-	productName, productCode, unit string,
-	originalQuantity, returnQuantity decimal.Decimal,
+	productName, productCode, unit, baseUnit string,
+	originalQuantity, returnQuantity, conversionRate decimal.Decimal,
 	unitPrice valueobject.Money,
 ) (*SalesReturnItem, error) {
 	if productID == uuid.Nil {
@@ -106,9 +120,17 @@ func NewSalesReturnItem(
 	if unit == "" {
 		return nil, shared.NewDomainError("INVALID_UNIT", "Unit cannot be empty")
 	}
+	if baseUnit == "" {
+		return nil, shared.NewDomainError("INVALID_BASE_UNIT", "Base unit cannot be empty")
+	}
+	if conversionRate.LessThanOrEqual(decimal.Zero) {
+		return nil, shared.NewDomainError("INVALID_CONVERSION_RATE", "Conversion rate must be positive")
+	}
 
 	now := time.Now()
 	refundAmount := returnQuantity.Mul(unitPrice.Amount())
+	// Calculate base quantity: returnQuantity * conversionRate
+	baseQuantity := returnQuantity.Mul(conversionRate).Round(4)
 
 	return &SalesReturnItem{
 		ID:               uuid.New(),
@@ -122,12 +144,15 @@ func NewSalesReturnItem(
 		UnitPrice:        unitPrice.Amount(),
 		RefundAmount:     refundAmount,
 		Unit:             unit,
+		ConversionRate:   conversionRate,
+		BaseQuantity:     baseQuantity,
+		BaseUnit:         baseUnit,
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}, nil
 }
 
-// UpdateReturnQuantity updates the return quantity and recalculates the refund amount
+// UpdateReturnQuantity updates the return quantity and recalculates the refund amount and base quantity
 func (i *SalesReturnItem) UpdateReturnQuantity(quantity decimal.Decimal) error {
 	if quantity.LessThanOrEqual(decimal.Zero) {
 		return shared.NewDomainError("INVALID_QUANTITY", "Return quantity must be positive")
@@ -138,6 +163,7 @@ func (i *SalesReturnItem) UpdateReturnQuantity(quantity decimal.Decimal) error {
 
 	i.ReturnQuantity = quantity
 	i.RefundAmount = quantity.Mul(i.UnitPrice)
+	i.BaseQuantity = quantity.Mul(i.ConversionRate).Round(4)
 	i.UpdatedAt = time.Now()
 
 	return nil
@@ -262,8 +288,10 @@ func (r *SalesReturn) AddItem(
 		salesOrderItem.ProductName,
 		salesOrderItem.ProductCode,
 		salesOrderItem.Unit,
+		salesOrderItem.BaseUnit,
 		salesOrderItem.Quantity,
 		returnQuantity,
+		salesOrderItem.ConversionRate,
 		salesOrderItem.GetUnitPriceMoney(),
 	)
 	if err != nil {

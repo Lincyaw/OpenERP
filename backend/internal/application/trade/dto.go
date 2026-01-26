@@ -310,7 +310,7 @@ func ToReceivedItemResponses(infos []trade.ReceivedItemInfo) []ReceivedItemRespo
 type CreateSalesOrderRequest struct {
 	CustomerID          uuid.UUID                   `json:"customer_id" binding:"required"`
 	CustomerName        string                      `json:"customer_name" binding:"required,min=1,max=200"`
-	CustomerLevel       string                      `json:"customer_level"`         // Customer level for pricing (normal, silver, gold, platinum, vip)
+	CustomerLevel       string                      `json:"customer_level"` // Customer level for pricing (normal, silver, gold, platinum, vip)
 	WarehouseID         *uuid.UUID                  `json:"warehouse_id"`
 	Items               []CreateSalesOrderItemInput `json:"items"`
 	Discount            *decimal.Decimal            `json:"discount"`
@@ -327,9 +327,9 @@ type CreateSalesOrderItemInput struct {
 	Unit           string          `json:"unit" binding:"required,min=1,max=20"`
 	BaseUnit       string          `json:"base_unit" binding:"required,min=1,max=20"` // Base unit code
 	Quantity       decimal.Decimal `json:"quantity" binding:"required"`
-	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"`   // Conversion rate to base unit (1 if using base unit)
-	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`        // Final unit price (or override price)
-	BasePrice      decimal.Decimal `json:"base_price"`                           // Optional: base price before strategy calculation
+	ConversionRate decimal.Decimal `json:"conversion_rate" binding:"required"` // Conversion rate to base unit (1 if using base unit)
+	UnitPrice      decimal.Decimal `json:"unit_price" binding:"required"`      // Final unit price (or override price)
+	BasePrice      decimal.Decimal `json:"base_price"`                         // Optional: base price before strategy calculation
 	Remark         string          `json:"remark"`
 }
 
@@ -689,6 +689,9 @@ type SalesReturnItemResponse struct {
 	UnitPrice         decimal.Decimal `json:"unit_price"`
 	RefundAmount      decimal.Decimal `json:"refund_amount"`
 	Unit              string          `json:"unit"`
+	ConversionRate    decimal.Decimal `json:"conversion_rate"`
+	BaseQuantity      decimal.Decimal `json:"base_quantity"`
+	BaseUnit          string          `json:"base_unit"`
 	Reason            string          `json:"reason,omitempty"`
 	ConditionOnReturn string          `json:"condition_on_return,omitempty"`
 	CreatedAt         time.Time       `json:"created_at"`
@@ -793,6 +796,9 @@ func ToSalesReturnItemResponse(item *trade.SalesReturnItem) SalesReturnItemRespo
 		UnitPrice:         item.UnitPrice,
 		RefundAmount:      item.RefundAmount,
 		Unit:              item.Unit,
+		ConversionRate:    item.ConversionRate,
+		BaseQuantity:      item.BaseQuantity,
+		BaseUnit:          item.BaseUnit,
 		Reason:            item.Reason,
 		ConditionOnReturn: item.ConditionOnReturn,
 		CreatedAt:         item.CreatedAt,

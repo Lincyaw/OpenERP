@@ -78,6 +78,48 @@
     "passes": false
   },
   {
+    "id": "P0-LOADGEN-001",
+    "story": "Circuit-Based API Load Generator - 基于 OpenAPI 的电路式负载生成器",
+    "priority": "high",
+    "requirements": [
+      "=== 概述 ===",
+      "基于 OpenAPI 的电路式负载生成器，自动推断参数语义，通过参数池实现 API 端点间的动态连接",
+      "",
+      "=== 核心特性 ===",
+      "1. OpenAPI 解析: 从 OpenAPI spec 自动解析端点和参数",
+      "2. 语义类型推断: 自动推断参数语义 (customer_id -> entity.customer.id)",
+      "3. 参数池管理: 存储和分发参数值，实现端点间的数据流动",
+      "4. 自动依赖解决: 缺少参数时触发生产者端点",
+      "5. 权重调度: 按权重随机选择端点执行",
+      "6. 业务流程支持: 定义完整的业务流程 (如: 创建客户 -> 创建订单 -> 发货)",
+      "",
+      "=== 技术实现 ===",
+      "- 语言: Go",
+      "- 依赖: getkin/kin-openapi (OpenAPI 解析)",
+      "- 输出: 控制台实时统计信息",
+      "",
+      "=== 验收标准 ===",
+      "- 零配置启动: 只需 OpenAPI spec + 认证信息即可运行",
+      "- 支持 ERP 系统的主要业务流程",
+      "- 控制台实时输出统计信息 (RPS, 成功率, 延迟分布)",
+      "- 可配置并发数、时长、权重",
+      "- 支持 dry-run 模式验证配置",
+      "",
+      "=== 配置项 ===",
+      "- --spec: OpenAPI spec 文件路径",
+      "- --base-url: API 基础 URL",
+      "- --token: 认证 Token",
+      "- --concurrency: 并发数 (默认 10)",
+      "- --duration: 运行时长 (默认 60s)",
+      "- --dry-run: 只解析不执行"
+    ],
+    "passes": false,
+    "designDoc": "tools/loadgen/loadgen.md",
+    "blockedBy": [
+      "P0-SEED-001"
+    ]
+  },
+  {
     "id": "P0-BE-001",
     "story": "项目脚手架搭建 (Go Module, 目录结构)",
     "priority": "high",
@@ -4523,7 +4565,7 @@
       "创建退货时计算基本单位数量",
       "确保库存回滚使用正确的基本单位数量"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "HIGH",

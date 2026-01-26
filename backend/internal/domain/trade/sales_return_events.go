@@ -31,6 +31,9 @@ type SalesReturnItemInfo struct {
 	UnitPrice        decimal.Decimal `json:"unit_price"`
 	RefundAmount     decimal.Decimal `json:"refund_amount"`
 	Unit             string          `json:"unit"`
+	ConversionRate   decimal.Decimal `json:"conversion_rate"`
+	BaseQuantity     decimal.Decimal `json:"base_quantity"`
+	BaseUnit         string          `json:"base_unit"`
 }
 
 // SalesReturnCreatedEvent is raised when a new sales return is created
@@ -90,6 +93,9 @@ func NewSalesReturnSubmittedEvent(sr *SalesReturn) *SalesReturnSubmittedEvent {
 			UnitPrice:        item.UnitPrice,
 			RefundAmount:     item.RefundAmount,
 			Unit:             item.Unit,
+			ConversionRate:   item.ConversionRate,
+			BaseQuantity:     item.BaseQuantity,
+			BaseUnit:         item.BaseUnit,
 		}
 	}
 
@@ -143,6 +149,9 @@ func NewSalesReturnApprovedEvent(sr *SalesReturn) *SalesReturnApprovedEvent {
 			UnitPrice:        item.UnitPrice,
 			RefundAmount:     item.RefundAmount,
 			Unit:             item.Unit,
+			ConversionRate:   item.ConversionRate,
+			BaseQuantity:     item.BaseQuantity,
+			BaseUnit:         item.BaseUnit,
 		}
 	}
 
@@ -201,6 +210,9 @@ func NewSalesReturnReceivingEvent(sr *SalesReturn) *SalesReturnReceivingEvent {
 			UnitPrice:        item.UnitPrice,
 			RefundAmount:     item.RefundAmount,
 			Unit:             item.Unit,
+			ConversionRate:   item.ConversionRate,
+			BaseQuantity:     item.BaseQuantity,
+			BaseUnit:         item.BaseUnit,
 		}
 	}
 
@@ -295,6 +307,9 @@ func NewSalesReturnCompletedEvent(sr *SalesReturn) *SalesReturnCompletedEvent {
 			UnitPrice:        item.UnitPrice,
 			RefundAmount:     item.RefundAmount,
 			Unit:             item.Unit,
+			ConversionRate:   item.ConversionRate,
+			BaseQuantity:     item.BaseQuantity,
+			BaseUnit:         item.BaseUnit,
 		}
 	}
 
@@ -351,6 +366,9 @@ func NewSalesReturnCancelledEvent(sr *SalesReturn, wasApproved bool) *SalesRetur
 			UnitPrice:        item.UnitPrice,
 			RefundAmount:     item.RefundAmount,
 			Unit:             item.Unit,
+			ConversionRate:   item.ConversionRate,
+			BaseQuantity:     item.BaseQuantity,
+			BaseUnit:         item.BaseUnit,
 		}
 	}
 

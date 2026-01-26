@@ -21246,3 +21246,81 @@ Added "success - unlock specific lock from multiple locks" test case that verifi
 === Next Steps ===
 - Consider extracting FindLockByID helper method to reduce code duplication
 - Consider adding warning logs in batch operations when lock is unexpectedly not found
+
+2026-01-26 - Task BUG-005: Add unit conversion support to SalesReturn
+
+=== Problem Description ===
+SalesReturnItem was missing ConversionRate, BaseQuantity, and BaseUnit fields that are present 
+in SalesOrderItem. This caused inventory restoration to use the wrong quantities when auxiliary 
+units (e.g., boxes) were used instead of base units (e.g., pieces).
+
+Example of the bug:
+- Sold 5 boxes (conversion rate: 12 pieces/box = 60 pieces deducted from inventory)
+- Return 2 boxes → should restore 24 pieces to inventory
+- Without fix: restored 2 units (wrong)
+- With fix: restores 24 pieces (correct)
+
+=== Implementation Details ===
+
+1. Domain Model (sales_return.go):
+   - Added ConversionRate, BaseQuantity, BaseUnit fields to SalesReturnItem struct
+   - Updated NewSalesReturnItem factory to accept conversion parameters
+   - Updated UpdateReturnQuantity to recalculate BaseQuantity
+
+2. Events (sales_return_events.go):
+   - Added ConversionRate, BaseQuantity, BaseUnit to SalesReturnItemInfo
+   - Updated all event constructors (Submitted, Approved, Receiving, Completed, Cancelled)
+
+3. Handler (sales_return_completed_handler.go):
+   - Changed to use item.BaseQuantity instead of item.ReturnQuantity for inventory restoration
+   - Fixed UnitCost fallback to calculate base unit price when inventory doesn't exist:
+     `unitCost = UnitPrice / ConversionRate`
+   - Improved logging to show both return quantity and base quantity
+
+4. DTOs (dto.go):
+   - Added ConversionRate, BaseQuantity, BaseUnit to SalesReturnItemResponse
+   - Updated ToSalesReturnItemResponse function
+
+5. Database Migration (000029_add_unit_conversion_to_sales_return_items.up.sql):
+   - Added conversion_rate, base_quantity, base_unit columns
+   - Migrated existing data (base_quantity = return_quantity, base_unit = unit)
+
+6. Tests (sales_return_test.go):
+   - Fixed pre-existing broken tests (missing Receive() call before Complete())
+   - Fixed TestReturnStatus_CanTransitionTo for APPROVED → RECEIVING → COMPLETED flow
+   - Added comprehensive TestSalesReturnItem_UnitConversion test suite
+
+=== Key Files Modified ===
+- backend/internal/domain/trade/sales_return.go
+- backend/internal/domain/trade/sales_return_events.go
+- backend/internal/application/trade/sales_return_completed_handler.go
+- backend/internal/application/trade/dto.go
+- backend/internal/domain/trade/sales_return_test.go
+- backend/migrations/000029_add_unit_conversion_to_sales_return_items.up.sql (new)
+- backend/migrations/000029_add_unit_conversion_to_sales_return_items.down.sql (new)
+
+=== Verification ===
+- [x] All domain tests pass (30 tests)
+- [x] All handler tests pass (8 tests)
+- [x] Go build succeeds
+- [x] Go vet passes
+- [x] Code review completed - CRITICAL and HIGH issues fixed
+- [x] Unit conversion test added (3 sub-tests)
+
+=== Design Decisions ===
+1. **Base quantity calculation**: Uses `returnQuantity * conversionRate` with 4 decimal precision
+   to match SalesOrderItem behavior
+
+2. **UnitCost fallback**: When inventory doesn't exist, calculates base unit cost as 
+   `UnitPrice / ConversionRate` to maintain correct inventory valuation
+
+3. **Migration backward compatibility**: Existing records get `base_quantity = return_quantity`
+   and `base_unit = unit`, assuming they were using base units (safe default)
+
+=== Related Work ===
+- SalesOrderItem already has unit conversion fields (lines 64-66)
+- PurchaseOrderItem and PurchaseReturnItem also have unit conversion support
+
+=== Next Steps ===
+- Consider adding similar unit conversion support to purchase return inventory operations
+- Consider adding BaseUnitPrice field to pre-calculate base unit price at item creation time

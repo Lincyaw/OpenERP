@@ -76,18 +76,26 @@ func (h *SalesReturnCompletedHandler) Handle(ctx context.Context, event shared.D
 		// This will be used to maintain accurate inventory valuation
 		unitCost, err := h.getUnitCostForProduct(ctx, event.TenantID(), completedEvent.WarehouseID, item.ProductID)
 		if err != nil {
-			h.logger.Warn("failed to get unit cost, using item unit price",
+			h.logger.Warn("failed to get unit cost, calculating from item unit price",
 				zap.String("product_id", item.ProductID.String()),
 				zap.Error(err),
 			)
-			// Fall back to the original unit price from the sales order
-			unitCost = item.UnitPrice
+			// Calculate base unit price: unitPrice / conversionRate
+			// e.g., $1200/box / 12 pieces/box = $100/piece
+			// This ensures correct inventory valuation when using auxiliary units
+			if item.ConversionRate.IsPositive() {
+				unitCost = item.UnitPrice.Div(item.ConversionRate).Round(4)
+			} else {
+				unitCost = item.UnitPrice
+			}
 		}
 
+		// Use BaseQuantity for inventory restoration (the quantity in base units)
+		// This ensures correct inventory quantities when using auxiliary units
 		req := inventoryapp.IncreaseStockRequest{
 			WarehouseID: completedEvent.WarehouseID,
 			ProductID:   item.ProductID,
-			Quantity:    item.ReturnQuantity,
+			Quantity:    item.BaseQuantity,
 			UnitCost:    unitCost,
 			SourceType:  string(inventory.SourceTypeSalesReturn),
 			SourceID:    completedEvent.ReturnID.String(),
@@ -114,7 +122,10 @@ func (h *SalesReturnCompletedHandler) Handle(ctx context.Context, event shared.D
 			zap.String("product_id", item.ProductID.String()),
 			zap.String("product_code", item.ProductCode),
 			zap.String("product_name", item.ProductName),
-			zap.String("quantity", item.ReturnQuantity.String()),
+			zap.String("return_quantity", item.ReturnQuantity.String()),
+			zap.String("unit", item.Unit),
+			zap.String("base_quantity", item.BaseQuantity.String()),
+			zap.String("base_unit", item.BaseUnit),
 		)
 	}
 
