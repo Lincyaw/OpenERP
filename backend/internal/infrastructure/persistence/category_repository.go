@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/catalog"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -23,86 +24,110 @@ func NewGormCategoryRepository(db *gorm.DB) *GormCategoryRepository {
 
 // FindByID finds a category by its ID
 func (r *GormCategoryRepository) FindByID(ctx context.Context, id uuid.UUID) (*catalog.Category, error) {
-	var category catalog.Category
-	if err := r.db.WithContext(ctx).First(&category, "id = ?", id).Error; err != nil {
+	var model models.CategoryModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &category, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a category by ID within a tenant
 func (r *GormCategoryRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*catalog.Category, error) {
-	var category catalog.Category
+	var model models.CategoryModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&category).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &category, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a category by its code within a tenant
 func (r *GormCategoryRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*catalog.Category, error) {
-	var category catalog.Category
+	var model models.CategoryModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
-		First(&category).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &category, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all categories matching the filter
 func (r *GormCategoryRepository) FindAll(ctx context.Context, filter shared.Filter) ([]catalog.Category, error) {
-	var categories []catalog.Category
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&catalog.Category{}), filter)
+	var categoryModels []models.CategoryModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.CategoryModel{}), filter)
 
-	if err := query.Find(&categories).Error; err != nil {
+	if err := query.Find(&categoryModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	categories := make([]catalog.Category, len(categoryModels))
+	for i, model := range categoryModels {
+		categories[i] = *model.ToDomain()
 	}
 	return categories, nil
 }
 
 // FindAllForTenant finds all categories for a tenant
 func (r *GormCategoryRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]catalog.Category, error) {
-	var categories []catalog.Category
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&catalog.Category{}).Where("tenant_id = ?", tenantID), filter)
+	var categoryModels []models.CategoryModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.CategoryModel{}).Where("tenant_id = ?", tenantID), filter)
 
-	if err := query.Find(&categories).Error; err != nil {
+	if err := query.Find(&categoryModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	categories := make([]catalog.Category, len(categoryModels))
+	for i, model := range categoryModels {
+		categories[i] = *model.ToDomain()
 	}
 	return categories, nil
 }
 
 // FindChildren finds all direct children of a category
 func (r *GormCategoryRepository) FindChildren(ctx context.Context, tenantID, parentID uuid.UUID) ([]catalog.Category, error) {
-	var categories []catalog.Category
+	var categoryModels []models.CategoryModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND parent_id = ?", tenantID, parentID).
 		Order("sort_order ASC, name ASC").
-		Find(&categories).Error; err != nil {
+		Find(&categoryModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	categories := make([]catalog.Category, len(categoryModels))
+	for i, model := range categoryModels {
+		categories[i] = *model.ToDomain()
 	}
 	return categories, nil
 }
 
 // FindRootCategories finds all root categories for a tenant
 func (r *GormCategoryRepository) FindRootCategories(ctx context.Context, tenantID uuid.UUID) ([]catalog.Category, error) {
-	var categories []catalog.Category
+	var categoryModels []models.CategoryModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND parent_id IS NULL", tenantID).
 		Order("sort_order ASC, name ASC").
-		Find(&categories).Error; err != nil {
+		Find(&categoryModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	categories := make([]catalog.Category, len(categoryModels))
+	for i, model := range categoryModels {
+		categories[i] = *model.ToDomain()
 	}
 	return categories, nil
 }
@@ -115,39 +140,46 @@ func (r *GormCategoryRepository) FindDescendants(ctx context.Context, tenantID, 
 		return nil, err
 	}
 
-	var categories []catalog.Category
+	var categoryModels []models.CategoryModel
 	// Find all categories whose path starts with the parent's path followed by /
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND path LIKE ?", tenantID, parent.Path+"/%").
 		Order("level ASC, sort_order ASC, name ASC").
-		Find(&categories).Error; err != nil {
+		Find(&categoryModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	categories := make([]catalog.Category, len(categoryModels))
+	for i, model := range categoryModels {
+		categories[i] = *model.ToDomain()
 	}
 	return categories, nil
 }
 
 // FindByPath finds a category by its materialized path
 func (r *GormCategoryRepository) FindByPath(ctx context.Context, tenantID uuid.UUID, path string) (*catalog.Category, error) {
-	var category catalog.Category
+	var model models.CategoryModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND path = ?", tenantID, path).
-		First(&category).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &category, nil
+	return model.ToDomain(), nil
 }
 
 // Save creates or updates a category
 func (r *GormCategoryRepository) Save(ctx context.Context, category *catalog.Category) error {
-	return r.db.WithContext(ctx).Save(category).Error
+	model := models.CategoryModelFromDomain(category)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // Delete deletes a category
 func (r *GormCategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&catalog.Category{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.CategoryModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -159,7 +191,7 @@ func (r *GormCategoryRepository) Delete(ctx context.Context, id uuid.UUID) error
 
 // DeleteForTenant deletes a category within a tenant
 func (r *GormCategoryRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&catalog.Category{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.CategoryModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -173,7 +205,7 @@ func (r *GormCategoryRepository) DeleteForTenant(ctx context.Context, tenantID, 
 func (r *GormCategoryRepository) HasChildren(ctx context.Context, tenantID, categoryID uuid.UUID) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Category{}).
+		Model(&models.CategoryModel{}).
 		Where("tenant_id = ? AND parent_id = ?", tenantID, categoryID).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -192,7 +224,7 @@ func (r *GormCategoryRepository) HasProducts(ctx context.Context, tenantID, cate
 // Count counts categories matching the filter
 func (r *GormCategoryRepository) Count(ctx context.Context, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&catalog.Category{})
+	query := r.db.WithContext(ctx).Model(&models.CategoryModel{})
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -204,7 +236,7 @@ func (r *GormCategoryRepository) Count(ctx context.Context, filter shared.Filter
 // CountForTenant counts categories for a tenant
 func (r *GormCategoryRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&catalog.Category{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.CategoryModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -217,7 +249,7 @@ func (r *GormCategoryRepository) CountForTenant(ctx context.Context, tenantID uu
 func (r *GormCategoryRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Category{}).
+		Model(&models.CategoryModel{}).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -237,7 +269,7 @@ func (r *GormCategoryRepository) UpdatePath(ctx context.Context, tenantID, categ
 
 	// Update the category itself
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Category{}).
+		Model(&models.CategoryModel{}).
 		Where("id = ?", categoryID).
 		Updates(map[string]interface{}{
 			"path":  newPath,
@@ -249,7 +281,7 @@ func (r *GormCategoryRepository) UpdatePath(ctx context.Context, tenantID, categ
 	// Update all descendants
 	// Replace the old path prefix with the new path prefix
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Category{}).
+		Model(&models.CategoryModel{}).
 		Where("tenant_id = ? AND path LIKE ?", tenantID, oldPath+"/%").
 		Updates(map[string]interface{}{
 			"path":  gorm.Expr("REPLACE(path, ?, ?)", oldPath, newPath),

@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -25,12 +26,14 @@ func NewGormRoleRepository(db *gorm.DB) *GormRoleRepository {
 
 // Create creates a new role
 func (r *GormRoleRepository) Create(ctx context.Context, role *identity.Role) error {
-	return r.db.WithContext(ctx).Create(role).Error
+	model := models.RoleModelFromDomain(role)
+	return r.db.WithContext(ctx).Create(model).Error
 }
 
 // Update updates an existing role
 func (r *GormRoleRepository) Update(ctx context.Context, role *identity.Role) error {
-	result := r.db.WithContext(ctx).Save(role)
+	model := models.RoleModelFromDomain(role)
+	result := r.db.WithContext(ctx).Save(model)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -44,17 +47,17 @@ func (r *GormRoleRepository) Update(ctx context.Context, role *identity.Role) er
 func (r *GormRoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete role permissions
-		if err := tx.Where("role_id = ?", id).Delete(&identity.RolePermission{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", id).Delete(&models.RolePermissionModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete role data scopes
-		if err := tx.Where("role_id = ?", id).Delete(&identity.RoleDataScope{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", id).Delete(&models.RoleDataScopeModel{}).Error; err != nil {
 			return err
 		}
 
 		// Delete role
-		result := tx.Delete(&identity.Role{}, "id = ?", id)
+		result := tx.Delete(&models.RoleModel{}, "id = ?", id)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -67,34 +70,34 @@ func (r *GormRoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 // FindByID finds a role by ID
 func (r *GormRoleRepository) FindByID(ctx context.Context, id uuid.UUID) (*identity.Role, error) {
-	var role identity.Role
-	if err := r.db.WithContext(ctx).First(&role, "id = ?", id).Error; err != nil {
+	var model models.RoleModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &role, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a role by code within a tenant
 func (r *GormRoleRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*identity.Role, error) {
-	var role identity.Role
+	var model models.RoleModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND UPPER(code) = ?", tenantID, strings.ToUpper(code)).
-		First(&role).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &role, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all roles for a tenant with optional filtering
 func (r *GormRoleRepository) FindAll(ctx context.Context, tenantID uuid.UUID, filter *identity.RoleFilter) ([]*identity.Role, error) {
-	var roles []*identity.Role
-	query := r.db.WithContext(ctx).Model(&identity.Role{}).Where("tenant_id = ?", tenantID)
+	var roleModels []*models.RoleModel
+	query := r.db.WithContext(ctx).Model(&models.RoleModel{}).Where("tenant_id = ?", tenantID)
 
 	query = r.applyFilter(query, filter)
 
@@ -112,8 +115,14 @@ func (r *GormRoleRepository) FindAll(ctx context.Context, tenantID uuid.UUID, fi
 		}
 	}
 
-	if err := query.Find(&roles).Error; err != nil {
+	if err := query.Find(&roleModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	roles := make([]*identity.Role, len(roleModels))
+	for i, model := range roleModels {
+		roles[i] = model.ToDomain()
 	}
 
 	return roles, nil
@@ -122,7 +131,7 @@ func (r *GormRoleRepository) FindAll(ctx context.Context, tenantID uuid.UUID, fi
 // Count counts roles matching the filter
 func (r *GormRoleRepository) Count(ctx context.Context, tenantID uuid.UUID, filter *identity.RoleFilter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&identity.Role{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.RoleModel{}).Where("tenant_id = ?", tenantID)
 
 	query = r.applyFilter(query, filter)
 
@@ -136,7 +145,7 @@ func (r *GormRoleRepository) Count(ctx context.Context, tenantID uuid.UUID, filt
 func (r *GormRoleRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&identity.Role{}).
+		Model(&models.RoleModel{}).
 		Where("tenant_id = ? AND UPPER(code) = ?", tenantID, strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -148,7 +157,7 @@ func (r *GormRoleRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUI
 func (r *GormRoleRepository) ExistsByID(ctx context.Context, id uuid.UUID) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&identity.Role{}).
+		Model(&models.RoleModel{}).
 		Where("id = ?", id).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -162,24 +171,38 @@ func (r *GormRoleRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) ([]
 		return []*identity.Role{}, nil
 	}
 
-	var roles []*identity.Role
+	var roleModels []*models.RoleModel
 	if err := r.db.WithContext(ctx).
 		Where("id IN ?", ids).
-		Find(&roles).Error; err != nil {
+		Find(&roleModels).Error; err != nil {
 		return nil, err
 	}
+
+	// Convert to domain entities
+	roles := make([]*identity.Role, len(roleModels))
+	for i, model := range roleModels {
+		roles[i] = model.ToDomain()
+	}
+
 	return roles, nil
 }
 
 // FindSystemRoles finds all system roles for a tenant
 func (r *GormRoleRepository) FindSystemRoles(ctx context.Context, tenantID uuid.UUID) ([]*identity.Role, error) {
-	var roles []*identity.Role
+	var roleModels []*models.RoleModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND is_system_role = ?", tenantID, true).
 		Order("sort_order ASC, name ASC").
-		Find(&roles).Error; err != nil {
+		Find(&roleModels).Error; err != nil {
 		return nil, err
 	}
+
+	// Convert to domain entities
+	roles := make([]*identity.Role, len(roleModels))
+	for i, model := range roleModels {
+		roles[i] = model.ToDomain()
+	}
+
 	return roles, nil
 }
 
@@ -187,15 +210,15 @@ func (r *GormRoleRepository) FindSystemRoles(ctx context.Context, tenantID uuid.
 func (r *GormRoleRepository) SavePermissions(ctx context.Context, role *identity.Role) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete existing permissions
-		if err := tx.Where("role_id = ?", role.ID).Delete(&identity.RolePermission{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", role.ID).Delete(&models.RolePermissionModel{}).Error; err != nil {
 			return err
 		}
 
 		// Insert new permissions
 		if len(role.Permissions) > 0 {
-			rolePerms := make([]identity.RolePermission, len(role.Permissions))
+			rolePermModels := make([]models.RolePermissionModel, len(role.Permissions))
 			for i, perm := range role.Permissions {
-				rolePerms[i] = identity.RolePermission{
+				rolePermModels[i] = models.RolePermissionModel{
 					RoleID:      role.ID,
 					TenantID:    role.TenantID,
 					Code:        perm.Code,
@@ -205,7 +228,7 @@ func (r *GormRoleRepository) SavePermissions(ctx context.Context, role *identity
 					CreatedAt:   time.Now(),
 				}
 			}
-			if err := tx.Create(&rolePerms).Error; err != nil {
+			if err := tx.Create(&rolePermModels).Error; err != nil {
 				return err
 			}
 		}
@@ -216,21 +239,16 @@ func (r *GormRoleRepository) SavePermissions(ctx context.Context, role *identity
 
 // LoadPermissions loads permissions for a role
 func (r *GormRoleRepository) LoadPermissions(ctx context.Context, role *identity.Role) error {
-	var rolePerms []identity.RolePermission
+	var rolePermModels []models.RolePermissionModel
 	if err := r.db.WithContext(ctx).
 		Where("role_id = ?", role.ID).
-		Find(&rolePerms).Error; err != nil {
+		Find(&rolePermModels).Error; err != nil {
 		return err
 	}
 
-	permissions := make([]identity.Permission, len(rolePerms))
-	for i, rp := range rolePerms {
-		permissions[i] = identity.Permission{
-			Code:        rp.Code,
-			Resource:    rp.Resource,
-			Action:      rp.Action,
-			Description: rp.Description,
-		}
+	permissions := make([]identity.Permission, len(rolePermModels))
+	for i, model := range rolePermModels {
+		permissions[i] = model.ToDomain()
 	}
 	role.Permissions = permissions
 
@@ -241,30 +259,31 @@ func (r *GormRoleRepository) LoadPermissions(ctx context.Context, role *identity
 func (r *GormRoleRepository) SaveDataScopes(ctx context.Context, role *identity.Role) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete existing data scopes
-		if err := tx.Where("role_id = ?", role.ID).Delete(&identity.RoleDataScope{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", role.ID).Delete(&models.RoleDataScopeModel{}).Error; err != nil {
 			return err
 		}
 
 		// Insert new data scopes
 		if len(role.DataScopes) > 0 {
-			roleScopes := make([]identity.RoleDataScope, len(role.DataScopes))
+			roleScopeModels := make([]models.RoleDataScopeModel, len(role.DataScopes))
 			for i, scope := range role.DataScopes {
 				scopeValues := ""
 				if len(scope.ScopeValues) > 0 {
 					bytes, _ := json.Marshal(scope.ScopeValues)
 					scopeValues = string(bytes)
 				}
-				roleScopes[i] = identity.RoleDataScope{
+				roleScopeModels[i] = models.RoleDataScopeModel{
 					RoleID:      role.ID,
 					TenantID:    role.TenantID,
 					Resource:    scope.Resource,
 					ScopeType:   scope.ScopeType,
+					ScopeField:  scope.ScopeField,
 					ScopeValues: scopeValues,
 					Description: scope.Description,
 					CreatedAt:   time.Now(),
 				}
 			}
-			if err := tx.Create(&roleScopes).Error; err != nil {
+			if err := tx.Create(&roleScopeModels).Error; err != nil {
 				return err
 			}
 		}
@@ -275,24 +294,25 @@ func (r *GormRoleRepository) SaveDataScopes(ctx context.Context, role *identity.
 
 // LoadDataScopes loads data scopes for a role
 func (r *GormRoleRepository) LoadDataScopes(ctx context.Context, role *identity.Role) error {
-	var roleScopes []identity.RoleDataScope
+	var roleScopeModels []models.RoleDataScopeModel
 	if err := r.db.WithContext(ctx).
 		Where("role_id = ?", role.ID).
-		Find(&roleScopes).Error; err != nil {
+		Find(&roleScopeModels).Error; err != nil {
 		return err
 	}
 
-	dataScopes := make([]identity.DataScope, len(roleScopes))
-	for i, rs := range roleScopes {
+	dataScopes := make([]identity.DataScope, len(roleScopeModels))
+	for i, model := range roleScopeModels {
 		var scopeValues []string
-		if rs.ScopeValues != "" {
-			_ = json.Unmarshal([]byte(rs.ScopeValues), &scopeValues)
+		if model.ScopeValues != "" {
+			_ = json.Unmarshal([]byte(model.ScopeValues), &scopeValues)
 		}
 		dataScopes[i] = identity.DataScope{
-			Resource:    rs.Resource,
-			ScopeType:   rs.ScopeType,
+			Resource:    model.Resource,
+			ScopeType:   model.ScopeType,
+			ScopeField:  model.ScopeField,
 			ScopeValues: scopeValues,
-			Description: rs.Description,
+			Description: model.Description,
 		}
 	}
 	role.DataScopes = dataScopes
@@ -310,16 +330,16 @@ func (r *GormRoleRepository) LoadPermissionsAndDataScopes(ctx context.Context, r
 
 // FindUsersWithRole finds all user IDs that have this role
 func (r *GormRoleRepository) FindUsersWithRole(ctx context.Context, roleID uuid.UUID) ([]uuid.UUID, error) {
-	var userRoles []identity.UserRole
+	var userRoleModels []models.UserRoleModel
 	if err := r.db.WithContext(ctx).
 		Where("role_id = ?", roleID).
-		Find(&userRoles).Error; err != nil {
+		Find(&userRoleModels).Error; err != nil {
 		return nil, err
 	}
 
-	userIDs := make([]uuid.UUID, len(userRoles))
-	for i, ur := range userRoles {
-		userIDs[i] = ur.UserID
+	userIDs := make([]uuid.UUID, len(userRoleModels))
+	for i, model := range userRoleModels {
+		userIDs[i] = model.UserID
 	}
 	return userIDs, nil
 }
@@ -328,7 +348,7 @@ func (r *GormRoleRepository) FindUsersWithRole(ctx context.Context, roleID uuid.
 func (r *GormRoleRepository) CountUsersWithRole(ctx context.Context, roleID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&identity.UserRole{}).
+		Model(&models.UserRoleModel{}).
 		Where("role_id = ?", roleID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -338,20 +358,20 @@ func (r *GormRoleRepository) CountUsersWithRole(ctx context.Context, roleID uuid
 
 // FindRolesWithPermission finds all roles that have a specific permission
 func (r *GormRoleRepository) FindRolesWithPermission(ctx context.Context, tenantID uuid.UUID, permissionCode string) ([]*identity.Role, error) {
-	var rolePerms []identity.RolePermission
+	var rolePermModels []models.RolePermissionModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, permissionCode).
-		Find(&rolePerms).Error; err != nil {
+		Find(&rolePermModels).Error; err != nil {
 		return nil, err
 	}
 
-	if len(rolePerms) == 0 {
+	if len(rolePermModels) == 0 {
 		return []*identity.Role{}, nil
 	}
 
-	roleIDs := make([]uuid.UUID, len(rolePerms))
-	for i, rp := range rolePerms {
-		roleIDs[i] = rp.RoleID
+	roleIDs := make([]uuid.UUID, len(rolePermModels))
+	for i, model := range rolePermModels {
+		roleIDs[i] = model.RoleID
 	}
 
 	return r.FindByIDs(ctx, roleIDs)
@@ -361,7 +381,7 @@ func (r *GormRoleRepository) FindRolesWithPermission(ctx context.Context, tenant
 func (r *GormRoleRepository) GetAllPermissionCodes(ctx context.Context, tenantID uuid.UUID) ([]string, error) {
 	var codes []string
 	if err := r.db.WithContext(ctx).
-		Model(&identity.RolePermission{}).
+		Model(&models.RolePermissionModel{}).
 		Where("tenant_id = ?", tenantID).
 		Distinct("code").
 		Pluck("code", &codes).Error; err != nil {

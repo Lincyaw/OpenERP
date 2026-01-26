@@ -8,6 +8,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -24,28 +25,28 @@ func NewGormTenantRepository(db *gorm.DB) *GormTenantRepository {
 
 // FindByID finds a tenant by its ID
 func (r *GormTenantRepository) FindByID(ctx context.Context, id uuid.UUID) (*identity.Tenant, error) {
-	var tenant identity.Tenant
-	if err := r.db.WithContext(ctx).First(&tenant, "id = ?", id).Error; err != nil {
+	var model models.TenantModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &tenant, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a tenant by its unique code
 func (r *GormTenantRepository) FindByCode(ctx context.Context, code string) (*identity.Tenant, error) {
-	var tenant identity.Tenant
+	var model models.TenantModel
 	if err := r.db.WithContext(ctx).
 		Where("UPPER(code) = ?", strings.ToUpper(code)).
-		First(&tenant).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &tenant, nil
+	return model.ToDomain(), nil
 }
 
 // FindByDomain finds a tenant by its custom domain
@@ -53,22 +54,22 @@ func (r *GormTenantRepository) FindByDomain(ctx context.Context, domain string) 
 	if domain == "" {
 		return nil, shared.ErrNotFound
 	}
-	var tenant identity.Tenant
+	var model models.TenantModel
 	if err := r.db.WithContext(ctx).
 		Where("LOWER(domain) = ?", strings.ToLower(domain)).
-		First(&tenant).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &tenant, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all tenants matching the filter
 func (r *GormTenantRepository) FindAll(ctx context.Context, filter shared.Filter) ([]identity.Tenant, error) {
-	var tenants []identity.Tenant
-	query := r.db.WithContext(ctx).Model(&identity.Tenant{})
+	var tenantModels []models.TenantModel
+	query := r.db.WithContext(ctx).Model(&models.TenantModel{})
 
 	// Apply keyword search
 	if filter.Search != "" {
@@ -98,8 +99,14 @@ func (r *GormTenantRepository) FindAll(ctx context.Context, filter shared.Filter
 	}
 	query = query.Offset(offset).Limit(limit)
 
-	if err := query.Find(&tenants).Error; err != nil {
+	if err := query.Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -107,8 +114,8 @@ func (r *GormTenantRepository) FindAll(ctx context.Context, filter shared.Filter
 
 // FindByStatus finds tenants by status
 func (r *GormTenantRepository) FindByStatus(ctx context.Context, status identity.TenantStatus, filter shared.Filter) ([]identity.Tenant, error) {
-	var tenants []identity.Tenant
-	query := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	var tenantModels []models.TenantModel
+	query := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("status = ?", status)
 
 	// Apply keyword search
@@ -139,8 +146,14 @@ func (r *GormTenantRepository) FindByStatus(ctx context.Context, status identity
 	}
 	query = query.Offset(offset).Limit(limit)
 
-	if err := query.Find(&tenants).Error; err != nil {
+	if err := query.Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -148,8 +161,8 @@ func (r *GormTenantRepository) FindByStatus(ctx context.Context, status identity
 
 // FindByPlan finds tenants by subscription plan
 func (r *GormTenantRepository) FindByPlan(ctx context.Context, plan identity.TenantPlan, filter shared.Filter) ([]identity.Tenant, error) {
-	var tenants []identity.Tenant
-	query := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	var tenantModels []models.TenantModel
+	query := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("plan = ?", plan)
 
 	// Apply pagination
@@ -163,8 +176,14 @@ func (r *GormTenantRepository) FindByPlan(ctx context.Context, plan identity.Ten
 	}
 	query = query.Offset(offset).Limit(limit)
 
-	if err := query.Find(&tenants).Error; err != nil {
+	if err := query.Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -177,7 +196,7 @@ func (r *GormTenantRepository) FindActive(ctx context.Context, filter shared.Fil
 
 // FindTrialExpiring finds tenants whose trial is expiring within the given days
 func (r *GormTenantRepository) FindTrialExpiring(ctx context.Context, withinDays int) ([]identity.Tenant, error) {
-	var tenants []identity.Tenant
+	var tenantModels []models.TenantModel
 	expiryDate := time.Now().AddDate(0, 0, withinDays)
 
 	if err := r.db.WithContext(ctx).
@@ -185,8 +204,14 @@ func (r *GormTenantRepository) FindTrialExpiring(ctx context.Context, withinDays
 		Where("trial_ends_at IS NOT NULL").
 		Where("trial_ends_at <= ?", expiryDate).
 		Where("trial_ends_at > ?", time.Now()).
-		Find(&tenants).Error; err != nil {
+		Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -194,7 +219,7 @@ func (r *GormTenantRepository) FindTrialExpiring(ctx context.Context, withinDays
 
 // FindSubscriptionExpiring finds tenants whose subscription is expiring within the given days
 func (r *GormTenantRepository) FindSubscriptionExpiring(ctx context.Context, withinDays int) ([]identity.Tenant, error) {
-	var tenants []identity.Tenant
+	var tenantModels []models.TenantModel
 	expiryDate := time.Now().AddDate(0, 0, withinDays)
 
 	if err := r.db.WithContext(ctx).
@@ -202,8 +227,14 @@ func (r *GormTenantRepository) FindSubscriptionExpiring(ctx context.Context, wit
 		Where("expires_at IS NOT NULL").
 		Where("expires_at <= ?", expiryDate).
 		Where("expires_at > ?", time.Now()).
-		Find(&tenants).Error; err != nil {
+		Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -215,11 +246,17 @@ func (r *GormTenantRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) (
 		return []identity.Tenant{}, nil
 	}
 
-	var tenants []identity.Tenant
+	var tenantModels []models.TenantModel
 	if err := r.db.WithContext(ctx).
 		Where("id IN ?", ids).
-		Find(&tenants).Error; err != nil {
+		Find(&tenantModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
 	}
 
 	return tenants, nil
@@ -227,12 +264,13 @@ func (r *GormTenantRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) (
 
 // Save creates or updates a tenant
 func (r *GormTenantRepository) Save(ctx context.Context, tenant *identity.Tenant) error {
-	return r.db.WithContext(ctx).Save(tenant).Error
+	model := models.TenantModelFromDomain(tenant)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // Delete deletes a tenant
 func (r *GormTenantRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&identity.Tenant{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.TenantModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -245,7 +283,7 @@ func (r *GormTenantRepository) Delete(ctx context.Context, id uuid.UUID) error {
 // Count counts tenants matching the filter
 func (r *GormTenantRepository) Count(ctx context.Context, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&identity.Tenant{})
+	query := r.db.WithContext(ctx).Model(&models.TenantModel{})
 
 	// Apply keyword search
 	if filter.Search != "" {
@@ -263,7 +301,7 @@ func (r *GormTenantRepository) Count(ctx context.Context, filter shared.Filter) 
 // CountByStatus counts tenants by status
 func (r *GormTenantRepository) CountByStatus(ctx context.Context, status identity.TenantStatus) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	if err := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("status = ?", status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -274,7 +312,7 @@ func (r *GormTenantRepository) CountByStatus(ctx context.Context, status identit
 // CountByPlan counts tenants by plan
 func (r *GormTenantRepository) CountByPlan(ctx context.Context, plan identity.TenantPlan) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	if err := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("plan = ?", plan).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -285,7 +323,7 @@ func (r *GormTenantRepository) CountByPlan(ctx context.Context, plan identity.Te
 // ExistsByCode checks if a tenant with the given code exists
 func (r *GormTenantRepository) ExistsByCode(ctx context.Context, code string) (bool, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	if err := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("UPPER(code) = ?", strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -299,7 +337,7 @@ func (r *GormTenantRepository) ExistsByDomain(ctx context.Context, domain string
 		return false, nil
 	}
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&identity.Tenant{}).
+	if err := r.db.WithContext(ctx).Model(&models.TenantModel{}).
 		Where("LOWER(domain) = ?", strings.ToLower(domain)).
 		Count(&count).Error; err != nil {
 		return false, err

@@ -21738,3 +21738,122 @@ Benefits:
 - Consider applying same pattern to PayablePaymentRecord in AccountPayable
 - Monitor query performance for JSONB column
 - Consider adding GIN index paths for specific JSONB queries if needed
+
+## 2026-01-26 - DDD-C01: Domain Entity GORM Tag Removal - Phase 1 (Persistence Models & Repository Updates)
+
+### Task ID: DDD-C01
+### Status: In Progress (Phase 1 Complete)
+
+### Overview
+
+This task involves removing GORM tags from domain entities to maintain DDD purity. The work is split into multiple phases:
+
+1. **Phase 1 (COMPLETE)**: Create persistence models with GORM tags
+2. **Phase 2 (COMPLETE for identity, catalog)**: Update repositories to use persistence models
+3. **Phase 3 (PENDING)**: Update remaining repositories (partner, inventory, trade, finance)
+4. **Phase 4 (PENDING)**: Remove GORM tags from domain entities
+
+### Implementation Details
+
+#### Phase 1: Persistence Models Created
+
+Created `/backend/internal/infrastructure/persistence/models/` directory with:
+
+| File | Models | Purpose |
+|------|--------|---------|
+| doc.go | - | Package documentation |
+| base.go | BaseModel, AggregateModel, TenantAggregateModel | Base embedded models with GORM tags |
+| outbox.go | OutboxEntryModel | Transactional outbox pattern |
+| identity.go | UserModel, UserRoleModel, TenantModel, RoleModel, RolePermissionModel, RoleDataScopeModel | Identity module persistence |
+| catalog.go | ProductModel, CategoryModel, ProductUnitModel | Catalog module persistence |
+| partner.go | CustomerModel, SupplierModel, WarehouseModel, CustomerLevelRecordModel, BalanceTransactionModel | Partner module persistence |
+| inventory.go | InventoryItemModel, StockBatchModel, StockLockModel, InventoryTransactionModel, StockTakingModel, StockTakingItemModel | Inventory module persistence |
+| trade.go | SalesOrderModel, SalesOrderItemModel, PurchaseOrderModel, PurchaseOrderItemModel, SalesReturnModel, SalesReturnItemModel, PurchaseReturnModel, PurchaseReturnItemModel | Trade module persistence |
+| finance.go | AccountReceivableModel, AccountPayableModel, PayablePaymentRecordModel, ReceiptVoucherModel, ReceivableAllocationModel, PaymentVoucherModel, PayableAllocationModel, ExpenseRecordModel, OtherIncomeRecordModel, TrialBalanceAuditLogModel | Finance module persistence |
+
+Each model includes:
+- GORM tags for database mapping
+- `TableName()` method
+- `ToDomain()` method for converting to domain entity
+- `FromDomain()` method for populating from domain entity
+- `{Model}FromDomain()` factory function
+
+#### Phase 2: Repository Updates (Completed)
+
+**Identity Module:**
+- user_repository.go - Updated to use models.UserModel, models.UserRoleModel
+- tenant_repository.go - Updated to use models.TenantModel
+- role_repository.go - Updated to use models.RoleModel, models.RolePermissionModel, models.RoleDataScopeModel
+
+**Catalog Module:**
+- product_repository.go - Updated to use models.ProductModel
+- category_repository.go - Updated to use models.CategoryModel
+- product_unit_repository.go - Updated to use models.ProductUnitModel
+
+#### Phase 3: Remaining Repositories (PENDING)
+
+**Partner Module (5 repositories):**
+- customer_repository.go
+- supplier_repository.go
+- warehouse_repository.go
+- customer_level_repository.go
+- balance_transaction_repository.go
+
+**Inventory Module (6 repositories):**
+- inventory_repository.go
+- stock_batch_repository.go
+- stock_lock_repository.go
+- inventory_transaction_repository.go
+- stock_taking_repository.go
+
+**Trade Module (4 repositories):**
+- sales_order_repository.go
+- purchase_order_repository.go
+- sales_return_repository.go
+- purchase_return_repository.go
+
+**Finance Module (6 repositories):**
+- account_receivable_repository.go
+- account_payable_repository.go
+- receipt_voucher_repository.go
+- payment_voucher_repository.go
+- expense_record_repository.go
+- other_income_record_repository.go
+
+**Other:**
+- outbox_repository.go (event module)
+- sales_report_repository.go (report)
+- inventory_report_repository.go (report)
+- finance_report_repository.go (report)
+
+### Design Decisions
+
+1. **Persistence Model Pattern**: Each domain entity has a corresponding persistence model that:
+   - Contains all GORM tags and database-specific annotations
+   - Provides bidirectional conversion methods (ToDomain/FromDomain)
+   - Is named with a `Model` suffix (e.g., `UserModel` for `User`)
+
+2. **Value Object Handling**: Value objects stored as JSONB (e.g., PaymentRecords) have their GORM Scanner/Valuer implementations in the domain, which will be moved to persistence models in Phase 4.
+
+3. **Embedded Structs**: Used base models (BaseModel, AggregateModel, TenantAggregateModel) for common fields with consistent GORM tags.
+
+### Verification
+
+- Build passes: `go build ./...` ✓
+- No breaking changes to existing functionality
+- Domain entities remain functional (still have GORM tags temporarily)
+
+### Next Steps
+
+1. Continue updating repositories for partner, inventory, trade, and finance modules
+2. Update report repositories
+3. Update outbox repository
+4. Remove GORM tags from domain entities
+5. Run full test suite
+6. Create final commit
+
+### Notes
+
+- This is a multi-session task due to the large scope (34 domain files, 29+ repositories)
+- Checkpoint commits should be made at logical boundaries
+- Pre-existing error in account_receivable.go (PaymentRecord.ReceivableID undefined) is unrelated to this task

@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/catalog"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -23,42 +24,42 @@ func NewGormProductRepository(db *gorm.DB) *GormProductRepository {
 
 // FindByID finds a product by its ID
 func (r *GormProductRepository) FindByID(ctx context.Context, id uuid.UUID) (*catalog.Product, error) {
-	var product catalog.Product
-	if err := r.db.WithContext(ctx).First(&product, "id = ?", id).Error; err != nil {
+	var model models.ProductModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &product, nil
+	return model.ToDomain(), nil
 }
 
 // FindByIDForTenant finds a product by ID within a tenant
 func (r *GormProductRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*catalog.Product, error) {
-	var product catalog.Product
+	var model models.ProductModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id = ?", tenantID, id).
-		First(&product).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &product, nil
+	return model.ToDomain(), nil
 }
 
 // FindByCode finds a product by its code within a tenant
 func (r *GormProductRepository) FindByCode(ctx context.Context, tenantID uuid.UUID, code string) (*catalog.Product, error) {
-	var product catalog.Product
+	var model models.ProductModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
-		First(&product).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &product, nil
+	return model.ToDomain(), nil
 }
 
 // FindByBarcode finds a product by its barcode within a tenant
@@ -66,51 +67,69 @@ func (r *GormProductRepository) FindByBarcode(ctx context.Context, tenantID uuid
 	if barcode == "" {
 		return nil, shared.NewDomainError("INVALID_BARCODE", "Barcode cannot be empty")
 	}
-	var product catalog.Product
+	var model models.ProductModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND barcode = ?", tenantID, barcode).
-		First(&product).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &product, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll finds all products matching the filter
 func (r *GormProductRepository) FindAll(ctx context.Context, filter shared.Filter) ([]catalog.Product, error) {
-	var products []catalog.Product
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&catalog.Product{}), filter)
+	var productModels []models.ProductModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.ProductModel{}), filter)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
 
 // FindAllForTenant finds all products for a tenant
 func (r *GormProductRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]catalog.Product, error) {
-	var products []catalog.Product
-	query := r.applyFilter(r.db.WithContext(ctx).Model(&catalog.Product{}).Where("tenant_id = ?", tenantID), filter)
+	var productModels []models.ProductModel
+	query := r.applyFilter(r.db.WithContext(ctx).Model(&models.ProductModel{}).Where("tenant_id = ?", tenantID), filter)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
 
 // FindByCategory finds all products in a specific category
 func (r *GormProductRepository) FindByCategory(ctx context.Context, tenantID, categoryID uuid.UUID, filter shared.Filter) ([]catalog.Product, error) {
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&catalog.Product{}).
+		r.db.WithContext(ctx).Model(&models.ProductModel{}).
 			Where("tenant_id = ? AND category_id = ?", tenantID, categoryID),
 		filter,
 	)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
@@ -121,45 +140,63 @@ func (r *GormProductRepository) FindByCategories(ctx context.Context, tenantID u
 		return []catalog.Product{}, nil
 	}
 
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&catalog.Product{}).
+		r.db.WithContext(ctx).Model(&models.ProductModel{}).
 			Where("tenant_id = ? AND category_id IN ?", tenantID, categoryIDs),
 		filter,
 	)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
 
 // FindActive finds all active products for a tenant
 func (r *GormProductRepository) FindActive(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]catalog.Product, error) {
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&catalog.Product{}).
+		r.db.WithContext(ctx).Model(&models.ProductModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, catalog.ProductStatusActive),
 		filter,
 	)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
 
 // FindByStatus finds products by status for a tenant
 func (r *GormProductRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status catalog.ProductStatus, filter shared.Filter) ([]catalog.Product, error) {
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&catalog.Product{}).
+		r.db.WithContext(ctx).Model(&models.ProductModel{}).
 			Where("tenant_id = ? AND status = ?", tenantID, status),
 		filter,
 	)
 
-	if err := query.Find(&products).Error; err != nil {
+	if err := query.Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
@@ -170,11 +207,17 @@ func (r *GormProductRepository) FindByIDs(ctx context.Context, tenantID uuid.UUI
 		return []catalog.Product{}, nil
 	}
 
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND id IN ?", tenantID, ids).
-		Find(&products).Error; err != nil {
+		Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
@@ -191,18 +234,25 @@ func (r *GormProductRepository) FindByCodes(ctx context.Context, tenantID uuid.U
 		upperCodes[i] = strings.ToUpper(code)
 	}
 
-	var products []catalog.Product
+	var productModels []models.ProductModel
 	if err := r.db.WithContext(ctx).
 		Where("tenant_id = ? AND code IN ?", tenantID, upperCodes).
-		Find(&products).Error; err != nil {
+		Find(&productModels).Error; err != nil {
 		return nil, err
+	}
+
+	// Convert to domain entities
+	products := make([]catalog.Product, len(productModels))
+	for i, model := range productModels {
+		products[i] = *model.ToDomain()
 	}
 	return products, nil
 }
 
 // Save creates or updates a product
 func (r *GormProductRepository) Save(ctx context.Context, product *catalog.Product) error {
-	return r.db.WithContext(ctx).Save(product).Error
+	model := models.ProductModelFromDomain(product)
+	return r.db.WithContext(ctx).Save(model).Error
 }
 
 // SaveBatch creates or updates multiple products
@@ -210,12 +260,16 @@ func (r *GormProductRepository) SaveBatch(ctx context.Context, products []*catal
 	if len(products) == 0 {
 		return nil
 	}
-	return r.db.WithContext(ctx).Save(products).Error
+	productModels := make([]*models.ProductModel, len(products))
+	for i, p := range products {
+		productModels[i] = models.ProductModelFromDomain(p)
+	}
+	return r.db.WithContext(ctx).Save(productModels).Error
 }
 
 // Delete deletes a product
 func (r *GormProductRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&catalog.Product{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.ProductModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -227,7 +281,7 @@ func (r *GormProductRepository) Delete(ctx context.Context, id uuid.UUID) error 
 
 // DeleteForTenant deletes a product within a tenant
 func (r *GormProductRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Delete(&catalog.Product{}, "tenant_id = ? AND id = ?", tenantID, id)
+	result := r.db.WithContext(ctx).Delete(&models.ProductModel{}, "tenant_id = ? AND id = ?", tenantID, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -240,7 +294,7 @@ func (r *GormProductRepository) DeleteForTenant(ctx context.Context, tenantID, i
 // Count counts products matching the filter
 func (r *GormProductRepository) Count(ctx context.Context, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&catalog.Product{})
+	query := r.db.WithContext(ctx).Model(&models.ProductModel{})
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -252,7 +306,7 @@ func (r *GormProductRepository) Count(ctx context.Context, filter shared.Filter)
 // CountForTenant counts products for a tenant
 func (r *GormProductRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
-	query := r.db.WithContext(ctx).Model(&catalog.Product{}).Where("tenant_id = ?", tenantID)
+	query := r.db.WithContext(ctx).Model(&models.ProductModel{}).Where("tenant_id = ?", tenantID)
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -265,7 +319,7 @@ func (r *GormProductRepository) CountForTenant(ctx context.Context, tenantID uui
 func (r *GormProductRepository) CountByCategory(ctx context.Context, tenantID, categoryID uuid.UUID) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Product{}).
+		Model(&models.ProductModel{}).
 		Where("tenant_id = ? AND category_id = ?", tenantID, categoryID).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -277,7 +331,7 @@ func (r *GormProductRepository) CountByCategory(ctx context.Context, tenantID, c
 func (r *GormProductRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status catalog.ProductStatus) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Product{}).
+		Model(&models.ProductModel{}).
 		Where("tenant_id = ? AND status = ?", tenantID, status).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -289,7 +343,7 @@ func (r *GormProductRepository) CountByStatus(ctx context.Context, tenantID uuid
 func (r *GormProductRepository) ExistsByCode(ctx context.Context, tenantID uuid.UUID, code string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Product{}).
+		Model(&models.ProductModel{}).
 		Where("tenant_id = ? AND code = ?", tenantID, strings.ToUpper(code)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -304,7 +358,7 @@ func (r *GormProductRepository) ExistsByBarcode(ctx context.Context, tenantID uu
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&catalog.Product{}).
+		Model(&models.ProductModel{}).
 		Where("tenant_id = ? AND barcode = ?", tenantID, barcode).
 		Count(&count).Error; err != nil {
 		return false, err

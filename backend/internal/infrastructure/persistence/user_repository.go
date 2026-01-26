@@ -8,6 +8,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -24,12 +25,14 @@ func NewGormUserRepository(db *gorm.DB) *GormUserRepository {
 
 // Create creates a new user
 func (r *GormUserRepository) Create(ctx context.Context, user *identity.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
+	model := models.UserModelFromDomain(user)
+	return r.db.WithContext(ctx).Create(model).Error
 }
 
 // Update updates an existing user
 func (r *GormUserRepository) Update(ctx context.Context, user *identity.User) error {
-	result := r.db.WithContext(ctx).Save(user)
+	model := models.UserModelFromDomain(user)
+	result := r.db.WithContext(ctx).Save(model)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -44,11 +47,11 @@ func (r *GormUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	// Delete user roles first
 	if err := r.db.WithContext(ctx).
 		Where("user_id = ?", id).
-		Delete(&identity.UserRole{}).Error; err != nil {
+		Delete(&models.UserRoleModel{}).Error; err != nil {
 		return err
 	}
 
-	result := r.db.WithContext(ctx).Delete(&identity.User{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&models.UserModel{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -60,28 +63,28 @@ func (r *GormUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 // FindByID finds a user by ID
 func (r *GormUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*identity.User, error) {
-	var user identity.User
-	if err := r.db.WithContext(ctx).First(&user, "id = ?", id).Error; err != nil {
+	var model models.UserModel
+	if err := r.db.WithContext(ctx).First(&model, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &user, nil
+	return model.ToDomain(), nil
 }
 
 // FindByUsername finds a user by username within the tenant
 func (r *GormUserRepository) FindByUsername(ctx context.Context, username string) (*identity.User, error) {
-	var user identity.User
+	var model models.UserModel
 	if err := r.db.WithContext(ctx).
 		Where("LOWER(username) = ?", strings.ToLower(username)).
-		First(&user).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &user, nil
+	return model.ToDomain(), nil
 }
 
 // FindByEmail finds a user by email within the tenant
@@ -89,16 +92,16 @@ func (r *GormUserRepository) FindByEmail(ctx context.Context, email string) (*id
 	if email == "" {
 		return nil, shared.ErrNotFound
 	}
-	var user identity.User
+	var model models.UserModel
 	if err := r.db.WithContext(ctx).
 		Where("LOWER(email) = ?", strings.ToLower(email)).
-		First(&user).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &user, nil
+	return model.ToDomain(), nil
 }
 
 // FindByPhone finds a user by phone within the tenant
@@ -106,24 +109,24 @@ func (r *GormUserRepository) FindByPhone(ctx context.Context, phone string) (*id
 	if phone == "" {
 		return nil, shared.ErrNotFound
 	}
-	var user identity.User
+	var model models.UserModel
 	if err := r.db.WithContext(ctx).
 		Where("phone = ?", phone).
-		First(&user).Error; err != nil {
+		First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
-	return &user, nil
+	return model.ToDomain(), nil
 }
 
 // FindAll returns all users for the current tenant with pagination
 func (r *GormUserRepository) FindAll(ctx context.Context, filter identity.UserFilter) ([]*identity.User, int64, error) {
-	var users []*identity.User
+	var userModels []*models.UserModel
 	var total int64
 
-	query := r.db.WithContext(ctx).Model(&identity.User{})
+	query := r.db.WithContext(ctx).Model(&models.UserModel{})
 
 	// Apply filters
 	query = r.applyFilter(query, filter)
@@ -149,8 +152,14 @@ func (r *GormUserRepository) FindAll(ctx context.Context, filter identity.UserFi
 	limit := filter.Limit()
 	query = query.Offset(offset).Limit(limit)
 
-	if err := query.Find(&users).Error; err != nil {
+	if err := query.Find(&userModels).Error; err != nil {
 		return nil, 0, err
+	}
+
+	// Convert to domain entities
+	users := make([]*identity.User, len(userModels))
+	for i, model := range userModels {
+		users[i] = model.ToDomain()
 	}
 
 	return users, total, nil
@@ -158,13 +167,20 @@ func (r *GormUserRepository) FindAll(ctx context.Context, filter identity.UserFi
 
 // FindByRoleID finds all users with a specific role
 func (r *GormUserRepository) FindByRoleID(ctx context.Context, roleID uuid.UUID) ([]*identity.User, error) {
-	var users []*identity.User
+	var userModels []*models.UserModel
 	if err := r.db.WithContext(ctx).
 		Joins("JOIN user_roles ON users.id = user_roles.user_id").
 		Where("user_roles.role_id = ?", roleID).
-		Find(&users).Error; err != nil {
+		Find(&userModels).Error; err != nil {
 		return nil, err
 	}
+
+	// Convert to domain entities
+	users := make([]*identity.User, len(userModels))
+	for i, model := range userModels {
+		users[i] = model.ToDomain()
+	}
+
 	return users, nil
 }
 
@@ -172,7 +188,7 @@ func (r *GormUserRepository) FindByRoleID(ctx context.Context, roleID uuid.UUID)
 func (r *GormUserRepository) ExistsByUsername(ctx context.Context, username string) (bool, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&identity.User{}).
+		Model(&models.UserModel{}).
 		Where("LOWER(username) = ?", strings.ToLower(username)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -187,7 +203,7 @@ func (r *GormUserRepository) ExistsByEmail(ctx context.Context, email string) (b
 	}
 	var count int64
 	if err := r.db.WithContext(ctx).
-		Model(&identity.User{}).
+		Model(&models.UserModel{}).
 		Where("LOWER(email) = ?", strings.ToLower(email)).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -199,22 +215,22 @@ func (r *GormUserRepository) ExistsByEmail(ctx context.Context, email string) (b
 func (r *GormUserRepository) SaveUserRoles(ctx context.Context, user *identity.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete existing roles
-		if err := tx.Where("user_id = ?", user.ID).Delete(&identity.UserRole{}).Error; err != nil {
+		if err := tx.Where("user_id = ?", user.ID).Delete(&models.UserRoleModel{}).Error; err != nil {
 			return err
 		}
 
 		// Insert new roles
 		if len(user.RoleIDs) > 0 {
-			userRoles := make([]identity.UserRole, len(user.RoleIDs))
+			userRoleModels := make([]models.UserRoleModel, len(user.RoleIDs))
 			for i, roleID := range user.RoleIDs {
-				userRoles[i] = identity.UserRole{
+				userRoleModels[i] = models.UserRoleModel{
 					UserID:    user.ID,
 					RoleID:    roleID,
 					TenantID:  user.TenantID,
 					CreatedAt: time.Now(),
 				}
 			}
-			if err := tx.Create(&userRoles).Error; err != nil {
+			if err := tx.Create(&userRoleModels).Error; err != nil {
 				return err
 			}
 		}
@@ -225,16 +241,16 @@ func (r *GormUserRepository) SaveUserRoles(ctx context.Context, user *identity.U
 
 // LoadUserRoles loads the user's roles from the database
 func (r *GormUserRepository) LoadUserRoles(ctx context.Context, user *identity.User) error {
-	var userRoles []identity.UserRole
+	var userRoleModels []models.UserRoleModel
 	if err := r.db.WithContext(ctx).
 		Where("user_id = ?", user.ID).
-		Find(&userRoles).Error; err != nil {
+		Find(&userRoleModels).Error; err != nil {
 		return err
 	}
 
-	roleIDs := make([]uuid.UUID, len(userRoles))
-	for i, ur := range userRoles {
-		roleIDs[i] = ur.RoleID
+	roleIDs := make([]uuid.UUID, len(userRoleModels))
+	for i, model := range userRoleModels {
+		roleIDs[i] = model.RoleID
 	}
 	user.RoleIDs = roleIDs
 
@@ -244,7 +260,7 @@ func (r *GormUserRepository) LoadUserRoles(ctx context.Context, user *identity.U
 // Count returns the total number of users for the tenant
 func (r *GormUserRepository) Count(ctx context.Context) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&identity.User{}).Count(&count).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.UserModel{}).Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
