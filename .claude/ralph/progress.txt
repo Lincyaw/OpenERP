@@ -22619,3 +22619,86 @@ All OWASP CORS best practices followed:
 
 - Review other SEC-* tasks for remaining security issues
 - Consider adding CORS origin validation for URL format
+
+---
+
+2025-01-26 - SEC-006: Add Missing Security Headers
+
+=== Implementation Details ===
+
+Added three missing security headers to the Secure() middleware to strengthen the application's security posture:
+
+1. **Content-Security-Policy (CSP)**
+   - Prevents XSS attacks by controlling which resources the browser can load
+   - Default policy: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`
+   - Note: `'unsafe-inline'` for style-src is required for Semi Design UI framework
+   - `frame-ancestors 'none'` provides additional clickjacking protection
+
+2. **Strict-Transport-Security (HSTS)**
+   - Forces HTTPS connections after first visit
+   - Disabled by default (requires HTTPS setup and verification)
+   - Default max-age: 1 year (31536000 seconds)
+   - Supports includeSubDomains and preload options
+
+3. **Permissions-Policy**
+   - Disables dangerous browser features by default
+   - Default policy disables: accelerometer, camera, geolocation, gyroscope, magnetometer, microphone, payment, usb
+
+=== Key Files Modified ===
+
+1. **backend/internal/interfaces/http/middleware/common.go**
+   - Added `SecurityConfig` struct for configurable security headers
+   - Added `DefaultSecurityConfig()` function with secure defaults
+   - Added `SecureWithConfig(cfg SecurityConfig)` for custom configuration
+   - Updated `Secure()` to use `SecureWithConfig(DefaultSecurityConfig())`
+   - Pre-computed HSTS header value outside request handler for performance
+
+2. **backend/internal/interfaces/http/middleware/common_test.go**
+   - Added `TestSecure` with comprehensive assertions for all headers
+   - Added `TestSecureWithConfig` with test cases for:
+     - Custom CSP directive
+     - HSTS enabled with all options
+     - HSTS enabled without optional flags
+     - Custom Permissions-Policy directive
+     - All headers disabled
+     - All headers enabled with full config
+   - Added `TestDefaultSecurityConfig` to verify secure defaults
+
+=== Design Decisions ===
+
+1. **HSTS Disabled by Default**: HSTS is disabled by default because:
+   - It requires HTTPS to be properly configured
+   - Enabling HSTS on HTTP can cause access issues
+   - Applications should explicitly enable it in production config
+
+2. **CSP with 'unsafe-inline' for styles**: The default CSP allows `'unsafe-inline'` for `style-src` because:
+   - Many UI frameworks (including Semi Design) require inline styles
+   - Future improvement: migrate to nonce-based CSP
+
+3. **Configurable Headers**: All new headers are configurable via `SecurityConfig`:
+   - Enable/disable each header individually
+   - Customize directive strings for CSP and Permissions-Policy
+   - Configure HSTS options (max-age, includeSubDomains, preload)
+
+=== Verification ===
+
+- All middleware tests pass (113/113)
+- Go build successful
+- Code review by code-reviewer agent: APPROVED
+  - 0 Critical issues
+  - 0 High issues
+  - 3 Medium suggestions (for future enhancements)
+
+=== Code Review Suggestions for Future Enhancements ===
+
+1. Add `upgrade-insecure-requests` to CSP directive
+2. Add CSP reporting via `report-uri` or `report-to`
+3. Add `Content-Security-Policy-Report-Only` option for testing
+4. Consider adding Cross-Origin headers (COOP, COEP)
+5. Update integration tests to verify new headers
+
+=== Next Steps ===
+
+- Consider enabling HSTS in production configuration after HTTPS is verified
+- May need to customize CSP for specific frontend requirements
+- Consider adding CSP violation reporting endpoint
