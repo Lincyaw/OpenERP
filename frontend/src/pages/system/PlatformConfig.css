@@ -1,0 +1,151 @@
+/* Platform Config Page Styles */
+
+.platform-config-page {
+  padding: var(--spacing-4);
+}
+
+.platform-config-card {
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+.platform-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-4);
+}
+
+.platform-config-banner {
+  margin-bottom: var(--spacing-4);
+}
+
+.platform-config-tabs {
+  margin-top: var(--spacing-4);
+}
+
+/* Tab styling */
+.tab-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--semi-border-radius-small);
+  font-size: var(--semi-font-size-small);
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Form styles */
+.platform-config-form {
+  padding: var(--spacing-4) 0;
+}
+
+.form-section {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.form-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.form-banner {
+  margin-bottom: var(--spacing-4);
+}
+
+.form-inline-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.form-inline-field > .semi-form-field-label-text {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+  margin-top: var(--spacing-4);
+}
+
+/* Status colors */
+.status-tag-connected {
+  color: var(--semi-color-success);
+}
+
+.status-tag-failed {
+  color: var(--semi-color-danger);
+}
+
+.status-tag-disabled {
+  color: var(--semi-color-text-2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .platform-config-page {
+    padding: var(--spacing-2);
+  }
+
+  .platform-config-header {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .form-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .form-inline-field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .tab-title {
+    flex-direction: column;
+    gap: var(--spacing-1);
+    font-size: var(--semi-font-size-small);
+  }
+}
+
+/* Tab content padding */
+.platform-config-tabs .semi-tabs-content {
+  padding: var(--spacing-2);
+}
+
+/* Description list styling */
+.form-section .semi-descriptions-item {
+  padding: var(--spacing-2) 0;
+}
+
+.form-section .semi-descriptions-item-label {
+  color: var(--semi-color-text-2);
+}
+
+.form-section .semi-descriptions-item-value {
+  color: var(--semi-color-text-0);
+}
