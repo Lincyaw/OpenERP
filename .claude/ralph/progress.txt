@@ -19110,3 +19110,232 @@ Per Section 13.3-13.5 of spec.md:
 - [ ] Create ADR for DataScope architecture decision
 - [ ] Add integration tests for multi-role scope merging
 - [ ] Implement DEPARTMENT scope when department_id is added to entities
+
+## 2026-01-26 - DDD-012: Product Custom Attributes Strategy Validation Review
+
+### Task Summary
+**Task ID:** DDD-012
+**Story:** Product Custom Attributes Strategy Validation
+**Status:** NOT PASSED - Critical integration gaps identified
+
+### Requirements Checked
+1. ❌ Use ProductValidationStrategy to validate custom attributes
+2. ✅ Support industry-specific required attributes (infrastructure exists)
+3. ❌ Integrate validation strategy in Product.SetAttribute method
+4. ✅ Return detailed validation errors (infrastructure exists but NOT USED)
+
+### DDD Consistency Validation Results
+
+#### Overall Consistency Score: 4/10
+
+#### Critical Issues (Must Fix)
+
+**CRIT-01: Product.SetAttributes Does NOT Integrate Validation Strategy**
+- Location: `backend/internal/domain/catalog/product.go` (lines 221-236)
+- Current: Only performs basic JSON syntax validation (checks { and })
+- Expected: Should invoke ProductValidationStrategy.Validate() for industry rules
+- Impact: Agricultural products can be created without required registration_number
+
+**CRIT-02: ProductService Does NOT Use ProductValidationStrategy**
+- Location: `backend/internal/application/catalog/product_service.go`
+- Current: Does not inject or use any ProductValidationStrategy
+- Expected: Should use StrategyRegistry to get validator and call Validate()
+- Impact: Industry-specific validation never applied during Create/Update
+
+#### High Priority Issues
+
+**HIGH-01: ProductValidationStrategy Interface Mismatch**
+- Spec defines: `Validate(product *Product) ValidationResult` and `GetRequiredAttributes() []string`
+- Actual: `Validate(ctx, valCtx, data ProductData) (ValidationResult, error)` - NO GetRequiredAttributes()
+- Decision: Actual signature is better but deviates from spec without ADR
+
+**HIGH-02: Validation Infrastructure Unused**
+- AgriculturalProductValidator fully implemented with detailed error messages
+- ValidationResult supports errors with severity and warnings
+- None of this is ever invoked in the system
+
+#### Medium Priority Issues
+
+**MED-01: Category Code Detection Issue**
+- AgriculturalProductValidator checks `attributes["category_code"]`
+- Product stores CategoryID as UUID, not code in attributes
+- Fix: Pass category code in ProductData or resolve from CategoryID
+
+**MED-02: JSON String vs map[string]any Mismatch**
+- Product.Attributes: `string` (JSON)
+- ProductData.Attributes: `map[string]any`
+- Fix: JSON parsing required in application layer
+
+### Positive Findings
+
+1. ✅ **Well-Designed Strategy Infrastructure** - StrategyRegistry is thread-safe with comprehensive CRUD
+2. ✅ **Plugin Manager Implementation** - Correctly implements plugin registration
+3. ✅ **Agricultural Plugin** - Well-implemented with regex validation for pesticide registration
+4. ✅ **Detailed ValidationResult** - Supports errors with severity levels and warnings
+5. ✅ **IndustryPlugin Interface** - GetRequiredProductAttributes() returns AttributeDefinition
+
+### Trade-Off Analysis
+
+| Aspect | Pro | Con | Risk |
+|--------|-----|-----|------|
+| Enhanced Validate() signature | Context support, better error handling | Spec deviation | 🟢 LOW |
+| Validation in App Layer | Clean separation, testable | Extra JSON parsing | 🟢 LOW |
+| Missing GetRequiredAttributes | Interface simpler | Can't query required attrs programmatically | 🟡 MEDIUM |
+| JSON string attributes | Flexible schema | Type safety lost, parsing overhead | 🟡 MEDIUM |
+
+### Red Flags Checked
+
+- [x] No God Objects - Product and validators are focused
+- [x] No tight coupling - Strategy injected via registry
+- [ ] **Issue: Analysis Paralysis** - Infrastructure over-engineered but not integrated
+- [x] No magic - Explicit validation rules
+- [x] Clear structure - DDD layers properly separated
+
+### Recommended Implementation Path
+
+1. **Inject StrategyRegistry into ProductService**
+   ```go
+   type ProductService struct {
+       productRepo     catalog.ProductRepository
+       categoryRepo    catalog.CategoryRepository
+       strategyRegistry *strategy.StrategyRegistry  // ADD THIS
+   }
+   ```
+
+2. **Add Validation in Create/Update Methods**
+   ```go
+   func (s *ProductService) Create(...) (*ProductResponse, error) {
+       // ... existing validation ...
+       
+       // Get industry validation strategy
+       validator := s.strategyRegistry.GetValidationStrategyOrDefault("agricultural")
+       if validator != nil {
+           productData := s.toProductData(product, categoryCode)
+           result, err := validator.Validate(ctx, valCtx, productData)
+           if err != nil {
+               return nil, err
+           }
+           if !result.IsValid {
+               return nil, s.toValidationError(result)
+           }
+       }
+       // ... save product ...
+   }
+   ```
+
+3. **Convert Validation Errors to Domain Errors**
+   ```go
+   func (s *ProductService) toValidationError(result ValidationResult) error {
+       var messages []string
+       for _, e := range result.Errors {
+           messages = append(messages, fmt.Sprintf("%s: %s", e.Field, e.Message))
+       }
+       return shared.NewDomainError("VALIDATION_FAILED", strings.Join(messages, "; "))
+   }
+   ```
+
+### Implementation Status
+
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| ProductValidationStrategy interface | Partial | Missing GetRequiredAttributes() |
+| AgriculturalProductValidator | ✅ Complete | Well-tested with 9 tests |
+| StandardProductValidator | ✅ Complete | Registered as default |
+| StrategyRegistry validation support | ✅ Complete | Get/Register/List methods |
+| Product.SetAttributes validation | ❌ Missing | Only JSON syntax check |
+| ProductService validation integration | ❌ Missing | No strategy injection |
+| Detailed validation errors | Partial | Infrastructure exists, not used |
+
+### Next Steps
+
+1. Create implementation task for ProductService validation integration
+2. Add GetRequiredAttributes() to interface or create ADR for spec deviation
+3. Implement category code resolution for validators
+4. Add integration tests for validation flow
+
+### Files Reviewed
+- backend/internal/domain/catalog/product.go
+- backend/internal/domain/shared/strategy/validation.go
+- backend/internal/infrastructure/plugin/agricultural.go
+- backend/internal/infrastructure/strategy/validation/standard.go
+- backend/internal/application/catalog/product_service.go
+- backend/internal/infrastructure/strategy/registry.go
+- backend/internal/domain/shared/plugin/plugin.go
+
+
+## 2026-01-26 - bug-fix-DDD012-validation-integration: ProductService Validation Strategy Integration
+
+### Task ID
+bug-fix-DDD012-validation-integration
+
+### Story
+Fix: ProductService Missing Validation Strategy Integration
+
+### Priority
+HIGH (Severity: HIGH)
+
+### What was done
+
+#### 1. Added ValidationStrategyGetter Interface
+Created an interface to decouple ProductService from concrete StrategyRegistry:
+- `ValidationStrategyGetter` interface in `product_service.go`
+- Follows Interface Segregation Principle
+- Enables easy mocking for tests
+
+#### 2. Injected StrategyRegistry into ProductService
+Modified `ProductService` struct and constructor to accept `ValidationStrategyGetter`:
+- Added `strategyRegistry` field to `ProductService`
+- Updated `NewProductService()` to accept `ValidationStrategyGetter` parameter
+- Updated all callers in `main.go` and test files
+
+#### 3. Added Validation in Create() and Update() Methods
+Integrated validation strategy calls before saving:
+- `validateProduct()` helper method orchestrates validation
+- `toProductData()` converts domain Product to strategy.ProductData
+- `toValidationError()` converts ValidationResult to DomainError
+- `getCategoryCode()` resolves category ID to category code for industry-specific validation
+- `getValidationStrategyName()` determines which validator to use based on category
+
+#### 4. Category Code Resolution for Industry Validators
+Implemented mapping from category codes to validation strategies:
+- PESTICIDE, SEED, FERTILIZER, FEED → "agricultural" validator
+- Other categories → "standard" validator
+
+#### 5. Comprehensive Test Coverage
+Added tests for validation integration:
+- `TestProductService_Create_WithValidationStrategy_Success`
+- `TestProductService_Create_WithValidationStrategy_Failure`
+- `TestProductService_Update_WithValidationStrategy_Success`
+- `TestProductService_Update_WithValidationStrategy_Failure`
+- `TestProductService_Create_NilStrategyGetter`
+- `TestGetValidationStrategyName`
+- `TestToProductData`
+- `TestToValidationError`
+
+### Key Files Modified
+- `backend/internal/application/catalog/product_service.go` - Core changes
+- `backend/cmd/server/main.go` - Updated dependency injection
+- `backend/internal/application/catalog/product_service_test.go` - Added validation tests
+- `backend/internal/interfaces/http/handler/product_test.go` - Updated mock
+- `backend/tests/integration/product_api_test.go` - Updated test setup
+- `backend/tests/integration/performance_test.go` - Updated test setup
+
+### Verification
+- [x] All product-related tests pass
+- [x] Type checking passes (go build ./...)
+- [x] Code review completed (no CRITICAL issues)
+- [x] Documentation added via code comments
+
+### Design Decisions
+1. **Interface over Concrete Type**: Used `ValidationStrategyGetter` interface instead of directly depending on `*StrategyRegistry` for better testability
+2. **Nil-safe Design**: `validateProduct()` gracefully handles nil strategyRegistry and nil validators
+3. **Graceful Degradation**: If category code lookup fails, standard validation is used as fallback
+4. **Industry-specific Routing**: Category codes determine which validator to use
+
+### Notes
+- Agricultural validator is registered via the plugin system in main.go
+- Category existence is validated BEFORE calling getCategoryCode()
+- Pre-existing SalesOrderHandler_Confirm test failure is unrelated to these changes
+
+### Related Tasks
+- DDD-012 (parent analysis task)

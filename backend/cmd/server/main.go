@@ -180,7 +180,7 @@ func main() {
 	)
 
 	// Initialize application services
-	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	productService := catalogapp.NewProductService(productRepo, categoryRepo, strategyRegistry)
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)

@@ -13,6 +13,7 @@ import (
 	catalogapp "github.com/erp/backend/internal/application/catalog"
 	"github.com/erp/backend/internal/domain/catalog"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -23,6 +24,19 @@ import (
 // MockProductRepository implements catalog.ProductRepository for testing
 type MockProductRepository struct {
 	mock.Mock
+}
+
+// MockValidationStrategyGetter implements catalogapp.ValidationStrategyGetter for testing
+type MockValidationStrategyGetter struct {
+	mock.Mock
+}
+
+func (m *MockValidationStrategyGetter) GetValidationStrategyOrDefault(name string) strategy.ProductValidationStrategy {
+	args := m.Called(name)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(strategy.ProductValidationStrategy)
 }
 
 func (m *MockProductRepository) FindByID(ctx context.Context, id uuid.UUID) (*catalog.Product, error) {
@@ -261,7 +275,9 @@ func setupTestRouter() *gin.Engine {
 }
 
 func setupProductHandler(productRepo *MockProductRepository, categoryRepo *MockCategoryRepository) *ProductHandler {
-	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(nil)
+	productService := catalogapp.NewProductService(productRepo, categoryRepo, mockStrategyGetter)
 	return NewProductHandler(productService)
 }
 

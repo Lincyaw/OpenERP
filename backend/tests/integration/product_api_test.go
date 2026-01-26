@@ -14,6 +14,7 @@ import (
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
 	"github.com/erp/backend/internal/infrastructure/persistence"
+	infrastrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/router"
 	"github.com/gin-gonic/gin"
@@ -40,8 +41,11 @@ func NewTestServer(t *testing.T) *TestServer {
 	productRepo := persistence.NewGormProductRepository(testDB.DB)
 	categoryRepo := persistence.NewGormCategoryRepository(testDB.DB)
 
+	// Initialize strategy registry
+	strategyRegistry := infrastrategy.NewStrategyRegistry()
+
 	// Initialize services
-	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	productService := catalogapp.NewProductService(productRepo, categoryRepo, strategyRegistry)
 
 	// Initialize handlers
 	productHandler := handler.NewProductHandler(productService)

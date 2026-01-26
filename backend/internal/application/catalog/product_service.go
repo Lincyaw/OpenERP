@@ -2,29 +2,42 @@ package catalog
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/erp/backend/internal/domain/catalog"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
+// ValidationStrategyGetter is an interface for getting validation strategies
+// This decouples ProductService from the concrete StrategyRegistry implementation
+type ValidationStrategyGetter interface {
+	GetValidationStrategyOrDefault(name string) strategy.ProductValidationStrategy
+}
+
 // ProductService handles product-related business operations
 type ProductService struct {
-	productRepo  catalog.ProductRepository
-	categoryRepo catalog.CategoryRepository
+	productRepo      catalog.ProductRepository
+	categoryRepo     catalog.CategoryRepository
+	strategyRegistry ValidationStrategyGetter
 }
 
 // NewProductService creates a new ProductService
 func NewProductService(
 	productRepo catalog.ProductRepository,
 	categoryRepo catalog.CategoryRepository,
+	strategyRegistry ValidationStrategyGetter,
 ) *ProductService {
 	return &ProductService{
-		productRepo:  productRepo,
-		categoryRepo: categoryRepo,
+		productRepo:      productRepo,
+		categoryRepo:     categoryRepo,
+		strategyRegistry: strategyRegistry,
 	}
 }
 
@@ -123,6 +136,12 @@ func (s *ProductService) Create(ctx context.Context, tenantID uuid.UUID, req Cre
 		if err := product.SetAttributes(req.Attributes); err != nil {
 			return nil, err
 		}
+	}
+
+	// Validate product using industry-specific strategy
+	categoryCode := s.getCategoryCode(ctx, tenantID, req.CategoryID)
+	if err := s.validateProduct(ctx, product, categoryCode, true); err != nil {
+		return nil, err
 	}
 
 	// Save the product
@@ -306,6 +325,17 @@ func (s *ProductService) Update(ctx context.Context, tenantID, productID uuid.UU
 		}
 	}
 
+	// Validate product using industry-specific strategy
+	// Use the new category ID if being updated, otherwise use existing
+	categoryID := product.CategoryID
+	if req.CategoryID != nil {
+		categoryID = req.CategoryID
+	}
+	categoryCode := s.getCategoryCode(ctx, tenantID, categoryID)
+	if err := s.validateProduct(ctx, product, categoryCode, false); err != nil {
+		return nil, err
+	}
+
 	// Save the product
 	if err := s.productRepo.Save(ctx, product); err != nil {
 		return nil, err
@@ -457,4 +487,139 @@ func (s *ProductService) CountByStatus(ctx context.Context, tenantID uuid.UUID) 
 	counts["total"] = activeCount + inactiveCount + discontinuedCount
 
 	return counts, nil
+}
+
+// validateProduct validates a product using the strategy registry
+// If strategyName is empty, the default strategy is used
+func (s *ProductService) validateProduct(
+	ctx context.Context,
+	product *catalog.Product,
+	categoryCode string,
+	isNew bool,
+) error {
+	if s.strategyRegistry == nil {
+		return nil
+	}
+
+	// Determine which validator to use based on industry/tenant configuration
+	// For now, we use the default or agricultural validator based on category
+	strategyName := s.getValidationStrategyName(categoryCode)
+
+	validator := s.strategyRegistry.GetValidationStrategyOrDefault(strategyName)
+	if validator == nil {
+		return nil
+	}
+
+	// Convert product to ProductData for validation
+	productData := s.toProductData(product, categoryCode)
+	valCtx := strategy.ValidationContext{
+		TenantID: product.TenantID.String(),
+		IsNew:    isNew,
+	}
+
+	result, err := validator.Validate(ctx, valCtx, productData)
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	if !result.IsValid {
+		return s.toValidationError(result)
+	}
+
+	return nil
+}
+
+// getValidationStrategyName determines which validation strategy to use
+// based on the category code
+func (s *ProductService) getValidationStrategyName(categoryCode string) string {
+	// Agricultural products use the agricultural validator
+	agriculturalCategories := map[string]bool{
+		"PESTICIDE":  true,
+		"SEED":       true,
+		"FERTILIZER": true,
+		"FEED":       true,
+	}
+
+	if agriculturalCategories[categoryCode] {
+		return "agricultural"
+	}
+
+	// Default to standard validation
+	return "standard"
+}
+
+// toProductData converts a domain Product to strategy.ProductData for validation
+func (s *ProductService) toProductData(product *catalog.Product, categoryCode string) strategy.ProductData {
+	data := strategy.ProductData{
+		ID:         product.ID.String(),
+		TenantID:   product.TenantID.String(),
+		SKU:        product.Code,
+		Name:       product.Name,
+		UnitID:     product.Unit,
+		Price:      product.SellingPrice,
+		Cost:       product.PurchasePrice,
+		MinStock:   product.MinStock,
+		MaxStock:   decimal.Zero, // Not tracked at product level
+		IsActive:   product.IsActive(),
+		Attributes: make(map[string]any),
+	}
+
+	if product.CategoryID != nil {
+		data.CategoryID = product.CategoryID.String()
+	}
+
+	// Parse attributes from JSON string to map
+	if product.Attributes != "" && product.Attributes != "{}" {
+		var attrs map[string]any
+		if err := json.Unmarshal([]byte(product.Attributes), &attrs); err == nil {
+			data.Attributes = attrs
+		}
+	}
+
+	// Add category code to attributes for industry-specific validation
+	if categoryCode != "" {
+		data.Attributes["category_code"] = categoryCode
+	}
+
+	return data
+}
+
+// toValidationError converts a ValidationResult to a DomainError
+func (s *ProductService) toValidationError(result strategy.ValidationResult) error {
+	if len(result.Errors) == 0 {
+		return shared.NewDomainError("VALIDATION_FAILED", "Product validation failed")
+	}
+
+	// Build a comprehensive error message from all validation errors
+	var messages []string
+	for _, e := range result.Errors {
+		if e.Field != "" {
+			messages = append(messages, fmt.Sprintf("%s: %s", e.Field, e.Message))
+		} else {
+			messages = append(messages, e.Message)
+		}
+	}
+
+	return shared.NewDomainError("VALIDATION_FAILED", strings.Join(messages, "; "))
+}
+
+// getCategoryCode retrieves the category code for a given category ID.
+// Returns empty string if categoryID is nil or if the category cannot be found.
+// Note: Category existence is already validated in Create/Update methods before
+// this function is called. Empty string results in standard validation being used
+// as a safe fallback.
+func (s *ProductService) getCategoryCode(ctx context.Context, tenantID uuid.UUID, categoryID *uuid.UUID) string {
+	if categoryID == nil {
+		return ""
+	}
+
+	category, err := s.categoryRepo.FindByIDForTenant(ctx, tenantID, *categoryID)
+	if err != nil {
+		// Category lookup failed (possibly race condition or DB error).
+		// Return empty string to use standard validation as fallback.
+		// The category was already validated to exist earlier in the flow.
+		return ""
+	}
+
+	return category.Code
 }

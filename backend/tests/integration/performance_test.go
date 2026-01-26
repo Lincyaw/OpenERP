@@ -28,6 +28,7 @@ import (
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/erp/backend/internal/infrastructure/persistence"
+	infrastrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/router"
 	"github.com/gin-gonic/gin"
@@ -329,8 +330,11 @@ func NewPerformanceTestServer(t *testing.T) *PerformanceTestServer {
 	lockRepo := persistence.NewGormStockLockRepository(testDB.DB)
 	transactionRepo := persistence.NewGormInventoryTransactionRepository(testDB.DB)
 
+	// Initialize strategy registry
+	strategyRegistry := infrastrategy.NewStrategyRegistry()
+
 	// Initialize services
-	productService := catalogapp.NewProductService(productRepo, categoryRepo)
+	productService := catalogapp.NewProductService(productRepo, categoryRepo, strategyRegistry)
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)

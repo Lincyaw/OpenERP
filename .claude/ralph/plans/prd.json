@@ -4172,7 +4172,23 @@
       "backend/internal/domain/shared/strategy/validation.go",
       "backend/internal/application/catalog/product_service.go"
     ],
-    "severity": "MEDIUM"
+    "severity": "MEDIUM",
+    "validation_findings": [
+      "CRIT-01: Product.SetAttributes does NOT integrate ProductValidationStrategy",
+      "CRIT-02: ProductService does NOT use ProductValidationStrategy",
+      "HIGH-01: ProductValidationStrategy interface missing GetRequiredAttributes() method from spec",
+      "HIGH-02: Validation results infrastructure exists but is never exercised",
+      "MED-01: Category code detection issue in AgriculturalProductValidator",
+      "MED-02: Standard validator registered but validation never invoked",
+      "MED-03: Attributes stored as JSON string but ProductData expects map[string]any"
+    ],
+    "recommendedFixes": [
+      "Inject StrategyRegistry into ProductService",
+      "Call validationStrategy.Validate() before saving product in Create/Update",
+      "Add GetRequiredAttributes() to ProductValidationStrategy interface or update spec",
+      "Add CategoryCode field to ProductData or populate attributes[category_code]",
+      "Ensure JSON parsing of attributes before validation"
+    ]
   },
   {
     "id": "DDD-013",
@@ -4473,5 +4489,27 @@
       "3. 或修改前端逻辑,对未翻译的action显示更友好的默认值"
     ],
     "passes": true
+  },
+  {
+    "id": "bug-fix-DDD012-validation-integration",
+    "story": "Fix: ProductService Missing Validation Strategy Integration",
+    "priority": "high",
+    "requirements": [
+      "Current state: ProductService does not inject or use ProductValidationStrategy",
+      "Expected state: ProductService should use StrategyRegistry to validate products",
+      "Root cause: Validation infrastructure built but never wired into application layer",
+      "Impact: Industry-specific validation (pesticide registration_number) never enforced"
+    ],
+    "implementation": [
+      "Inject StrategyRegistry into ProductService constructor",
+      "Add validation call in Create() method before saving",
+      "Add validation call in Update() method before saving",
+      "Convert ValidationResult errors to DomainError",
+      "Add toProductData() helper to convert Product to ProductData",
+      "Handle category code resolution for industry validators"
+    ],
+    "passes": true,
+    "relatedTo": "DDD-012",
+    "severity": "HIGH"
   }
 ]

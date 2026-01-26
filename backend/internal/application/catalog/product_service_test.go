@@ -6,11 +6,25 @@ import (
 
 	"github.com/erp/backend/internal/domain/catalog"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+// MockValidationStrategyGetter is a mock implementation of ValidationStrategyGetter
+type MockValidationStrategyGetter struct {
+	mock.Mock
+}
+
+func (m *MockValidationStrategyGetter) GetValidationStrategyOrDefault(name string) strategy.ProductValidationStrategy {
+	args := m.Called(name)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(strategy.ProductValidationStrategy)
+}
 
 // MockProductRepository is a mock implementation of ProductRepository
 type MockProductRepository struct {
@@ -264,11 +278,20 @@ func createTestProduct(tenantID uuid.UUID) *catalog.Product {
 	return product
 }
 
-// Tests for ProductService.Create
-func TestProductService_Create_Success(t *testing.T) {
+// newTestProductService creates a ProductService with mocked dependencies for testing
+// The validation strategy getter is configured to return nil (no validation)
+func newTestProductService() (*ProductService, *MockProductRepository, *MockCategoryRepository, *MockValidationStrategyGetter) {
 	mockProductRepo := new(MockProductRepository)
 	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(nil)
+	service := NewProductService(mockProductRepo, mockCategoryRepo, mockStrategyGetter)
+	return service, mockProductRepo, mockCategoryRepo, mockStrategyGetter
+}
+
+// Tests for ProductService.Create
+func TestProductService_Create_Success(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -293,9 +316,7 @@ func TestProductService_Create_Success(t *testing.T) {
 }
 
 func TestProductService_Create_WithAllFields(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, mockCategoryRepo, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -344,9 +365,7 @@ func TestProductService_Create_WithAllFields(t *testing.T) {
 }
 
 func TestProductService_Create_DuplicateCode(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -369,9 +388,7 @@ func TestProductService_Create_DuplicateCode(t *testing.T) {
 }
 
 func TestProductService_Create_DuplicateBarcode(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -396,9 +413,7 @@ func TestProductService_Create_DuplicateBarcode(t *testing.T) {
 }
 
 func TestProductService_Create_InvalidCategory(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, mockCategoryRepo, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -426,9 +441,7 @@ func TestProductService_Create_InvalidCategory(t *testing.T) {
 
 // Tests for ProductService.GetByID
 func TestProductService_GetByID_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -446,9 +459,7 @@ func TestProductService_GetByID_Success(t *testing.T) {
 }
 
 func TestProductService_GetByID_NotFound(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -466,9 +477,7 @@ func TestProductService_GetByID_NotFound(t *testing.T) {
 
 // Tests for ProductService.List
 func TestProductService_List_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -493,9 +502,7 @@ func TestProductService_List_Success(t *testing.T) {
 }
 
 func TestProductService_List_WithFilters(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -533,9 +540,7 @@ func TestProductService_List_WithFilters(t *testing.T) {
 
 // Tests for ProductService.Update
 func TestProductService_Update_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -562,9 +567,7 @@ func TestProductService_Update_Success(t *testing.T) {
 }
 
 func TestProductService_Update_NotFound(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -587,9 +590,7 @@ func TestProductService_Update_NotFound(t *testing.T) {
 
 // Tests for ProductService.UpdateCode
 func TestProductService_UpdateCode_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -610,9 +611,7 @@ func TestProductService_UpdateCode_Success(t *testing.T) {
 }
 
 func TestProductService_UpdateCode_DuplicateCode(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -635,9 +634,7 @@ func TestProductService_UpdateCode_DuplicateCode(t *testing.T) {
 
 // Tests for ProductService.Delete
 func TestProductService_Delete_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -654,9 +651,7 @@ func TestProductService_Delete_Success(t *testing.T) {
 }
 
 func TestProductService_Delete_NotFound(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -673,9 +668,7 @@ func TestProductService_Delete_NotFound(t *testing.T) {
 
 // Tests for ProductService.Activate
 func TestProductService_Activate_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -695,9 +688,7 @@ func TestProductService_Activate_Success(t *testing.T) {
 }
 
 func TestProductService_Activate_AlreadyActive(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -718,9 +709,7 @@ func TestProductService_Activate_AlreadyActive(t *testing.T) {
 
 // Tests for ProductService.Deactivate
 func TestProductService_Deactivate_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -740,9 +729,7 @@ func TestProductService_Deactivate_Success(t *testing.T) {
 
 // Tests for ProductService.Discontinue
 func TestProductService_Discontinue_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -761,9 +748,7 @@ func TestProductService_Discontinue_Success(t *testing.T) {
 }
 
 func TestProductService_Discontinue_CannotActivateAfter(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -785,9 +770,7 @@ func TestProductService_Discontinue_CannotActivateAfter(t *testing.T) {
 
 // Tests for ProductService.CountByStatus
 func TestProductService_CountByStatus_Success(t *testing.T) {
-	mockProductRepo := new(MockProductRepository)
-	mockCategoryRepo := new(MockCategoryRepository)
-	service := NewProductService(mockProductRepo, mockCategoryRepo)
+	service, mockProductRepo, _, _ := newTestProductService()
 
 	ctx := context.Background()
 	tenantID := newTestTenantID()
@@ -834,4 +817,305 @@ func TestToProductListResponses(t *testing.T) {
 	assert.Len(t, results, 2)
 	assert.Equal(t, products[0].Code, results[0].Code)
 	assert.Equal(t, products[1].Code, results[1].Code)
+}
+
+// =========================================================================
+// Tests for Validation Integration
+// =========================================================================
+
+// MockProductValidationStrategy is a mock implementation of ProductValidationStrategy
+type MockProductValidationStrategy struct {
+	mock.Mock
+}
+
+func (m *MockProductValidationStrategy) Name() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockProductValidationStrategy) Type() strategy.StrategyType {
+	args := m.Called()
+	return args.Get(0).(strategy.StrategyType)
+}
+
+func (m *MockProductValidationStrategy) Description() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockProductValidationStrategy) Validate(
+	ctx context.Context,
+	valCtx strategy.ValidationContext,
+	data strategy.ProductData,
+) (strategy.ValidationResult, error) {
+	args := m.Called(ctx, valCtx, data)
+	return args.Get(0).(strategy.ValidationResult), args.Error(1)
+}
+
+func (m *MockProductValidationStrategy) ValidateField(
+	ctx context.Context,
+	field string,
+	value any,
+) ([]strategy.ValidationError, error) {
+	args := m.Called(ctx, field, value)
+	return args.Get(0).([]strategy.ValidationError), args.Error(1)
+}
+
+// Tests for validation strategy integration
+
+func TestProductService_Create_WithValidationStrategy_Success(t *testing.T) {
+	mockProductRepo := new(MockProductRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockValidator := new(MockProductValidationStrategy)
+
+	// Setup validation to return success
+	mockValidator.On("Validate", mock.Anything, mock.Anything, mock.Anything).Return(strategy.ValidationResult{
+		IsValid:  true,
+		Errors:   []strategy.ValidationError{},
+		Warnings: []strategy.ValidationWarning{},
+	}, nil)
+
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(mockValidator)
+	service := NewProductService(mockProductRepo, mockCategoryRepo, mockStrategyGetter)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	req := CreateProductRequest{
+		Code: "PESTICIDE-001",
+		Name: "Test Pesticide",
+		Unit: "瓶",
+	}
+
+	mockProductRepo.On("ExistsByCode", ctx, tenantID, req.Code).Return(false, nil)
+	mockProductRepo.On("Save", ctx, mock.AnythingOfType("*catalog.Product")).Return(nil)
+
+	result, err := service.Create(ctx, tenantID, req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "PESTICIDE-001", result.Code)
+	mockProductRepo.AssertExpectations(t)
+	mockValidator.AssertExpectations(t)
+}
+
+func TestProductService_Create_WithValidationStrategy_Failure(t *testing.T) {
+	mockProductRepo := new(MockProductRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockValidator := new(MockProductValidationStrategy)
+
+	// Setup validation to return failure
+	mockValidator.On("Validate", mock.Anything, mock.Anything, mock.Anything).Return(strategy.ValidationResult{
+		IsValid: false,
+		Errors: []strategy.ValidationError{
+			{
+				Field:    "attributes.registration_number",
+				Code:     "REQUIRED",
+				Message:  "农药产品必须填写农药登记证号",
+				Severity: strategy.ValidationSeverityError,
+			},
+		},
+		Warnings: []strategy.ValidationWarning{},
+	}, nil)
+
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(mockValidator)
+	service := NewProductService(mockProductRepo, mockCategoryRepo, mockStrategyGetter)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	req := CreateProductRequest{
+		Code: "PESTICIDE-001",
+		Name: "Test Pesticide Without Registration",
+		Unit: "瓶",
+	}
+
+	mockProductRepo.On("ExistsByCode", ctx, tenantID, req.Code).Return(false, nil)
+
+	result, err := service.Create(ctx, tenantID, req)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "VALIDATION_FAILED", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "农药产品必须填写农药登记证号")
+	mockProductRepo.AssertExpectations(t)
+	mockValidator.AssertExpectations(t)
+}
+
+func TestProductService_Update_WithValidationStrategy_Success(t *testing.T) {
+	mockProductRepo := new(MockProductRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockValidator := new(MockProductValidationStrategy)
+
+	// Setup validation to return success
+	mockValidator.On("Validate", mock.Anything, mock.Anything, mock.Anything).Return(strategy.ValidationResult{
+		IsValid:  true,
+		Errors:   []strategy.ValidationError{},
+		Warnings: []strategy.ValidationWarning{},
+	}, nil)
+
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(mockValidator)
+	service := NewProductService(mockProductRepo, mockCategoryRepo, mockStrategyGetter)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	newName := "Updated Pesticide Name"
+	req := UpdateProductRequest{
+		Name: &newName,
+	}
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockProductRepo.On("Save", ctx, mock.AnythingOfType("*catalog.Product")).Return(nil)
+
+	result, err := service.Update(ctx, tenantID, productID, req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, newName, result.Name)
+	mockProductRepo.AssertExpectations(t)
+	mockValidator.AssertExpectations(t)
+}
+
+func TestProductService_Update_WithValidationStrategy_Failure(t *testing.T) {
+	mockProductRepo := new(MockProductRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+	mockStrategyGetter := new(MockValidationStrategyGetter)
+	mockValidator := new(MockProductValidationStrategy)
+
+	// Setup validation to return failure
+	mockValidator.On("Validate", mock.Anything, mock.Anything, mock.Anything).Return(strategy.ValidationResult{
+		IsValid: false,
+		Errors: []strategy.ValidationError{
+			{
+				Field:    "attributes.manufacturer",
+				Code:     "REQUIRED",
+				Message:  "生产厂家是必填项",
+				Severity: strategy.ValidationSeverityError,
+			},
+		},
+		Warnings: []strategy.ValidationWarning{},
+	}, nil)
+
+	mockStrategyGetter.On("GetValidationStrategyOrDefault", mock.Anything).Return(mockValidator)
+	service := NewProductService(mockProductRepo, mockCategoryRepo, mockStrategyGetter)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	newName := "Updated Product"
+	req := UpdateProductRequest{
+		Name: &newName,
+	}
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+
+	result, err := service.Update(ctx, tenantID, productID, req)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "VALIDATION_FAILED", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "生产厂家是必填项")
+	mockProductRepo.AssertExpectations(t)
+	mockValidator.AssertExpectations(t)
+}
+
+func TestProductService_Create_NilStrategyGetter(t *testing.T) {
+	mockProductRepo := new(MockProductRepository)
+	mockCategoryRepo := new(MockCategoryRepository)
+
+	// Create service with nil strategy getter - validation should be skipped
+	service := NewProductService(mockProductRepo, mockCategoryRepo, nil)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	req := CreateProductRequest{
+		Code: "SIMPLE-001",
+		Name: "Simple Product",
+		Unit: "pcs",
+	}
+
+	mockProductRepo.On("ExistsByCode", ctx, tenantID, req.Code).Return(false, nil)
+	mockProductRepo.On("Save", ctx, mock.AnythingOfType("*catalog.Product")).Return(nil)
+
+	result, err := service.Create(ctx, tenantID, req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "SIMPLE-001", result.Code)
+	mockProductRepo.AssertExpectations(t)
+}
+
+// Tests for helper functions
+
+func TestGetValidationStrategyName(t *testing.T) {
+	service := &ProductService{}
+
+	tests := []struct {
+		categoryCode string
+		expected     string
+	}{
+		{"PESTICIDE", "agricultural"},
+		{"SEED", "agricultural"},
+		{"FERTILIZER", "agricultural"},
+		{"FEED", "agricultural"},
+		{"ELECTRONICS", "standard"},
+		{"CLOTHING", "standard"},
+		{"", "standard"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.categoryCode, func(t *testing.T) {
+			result := service.getValidationStrategyName(tt.categoryCode)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestToProductData(t *testing.T) {
+	service := &ProductService{}
+	tenantID := newTestTenantID()
+	product := createTestProduct(tenantID)
+	product.SetAttributes(`{"registration_number": "PD12345678", "manufacturer": "TestCorp"}`)
+
+	data := service.toProductData(product, "PESTICIDE")
+
+	assert.Equal(t, product.ID.String(), data.ID)
+	assert.Equal(t, product.TenantID.String(), data.TenantID)
+	assert.Equal(t, product.Code, data.SKU)
+	assert.Equal(t, product.Name, data.Name)
+	assert.Equal(t, product.Unit, data.UnitID)
+	assert.Equal(t, "PESTICIDE", data.Attributes["category_code"])
+	assert.Equal(t, "PD12345678", data.Attributes["registration_number"])
+	assert.Equal(t, "TestCorp", data.Attributes["manufacturer"])
+}
+
+func TestToValidationError(t *testing.T) {
+	service := &ProductService{}
+
+	result := strategy.ValidationResult{
+		IsValid: false,
+		Errors: []strategy.ValidationError{
+			{Field: "name", Code: "REQUIRED", Message: "Name is required"},
+			{Field: "price", Code: "INVALID", Message: "Price must be positive"},
+		},
+	}
+
+	err := service.toValidationError(result)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "VALIDATION_FAILED", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "name: Name is required")
+	assert.Contains(t, domainErr.Message, "price: Price must be positive")
 }
