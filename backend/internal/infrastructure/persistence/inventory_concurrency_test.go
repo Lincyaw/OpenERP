@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/erp/backend/internal/domain/inventory"
+	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -46,7 +47,13 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.Version = 2 // Simulate incremented version after domain operation
 
-		// Expect UPDATE with version check - use sqlmock.AnyArg for flexibility
+		// First, expect SELECT to get current version from DB
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(1) // DB has version 1
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
+
+		// Then expect UPDATE with version check
 		mock.ExpectExec(`UPDATE "inventory_items" SET`).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
@@ -61,11 +68,15 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2
+		item.Version = 2 // Domain expects DB to have version 1
 
-		// Simulate concurrent modification - no rows affected because version doesn't match
-		mock.ExpectExec(`UPDATE "inventory_items" SET`).
-			WillReturnResult(sqlmock.NewResult(0, 0)) // 0 rows affected
+		// DB returns version 2 (another transaction already updated)
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
+
+		// No UPDATE should be attempted since version mismatch detected early
 
 		err := repo.SaveWithLock(context.Background(), item)
 
@@ -81,12 +92,64 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.Version = 2
 
+		// First, SELECT returns correct version
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(1)
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
+
+		// UPDATE fails with DB error
 		mock.ExpectExec(`UPDATE "inventory_items" SET`).
 			WillReturnError(assert.AnError)
 
 		err := repo.SaveWithLock(context.Background(), item)
 
 		require.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("fails when item not found in database", func(t *testing.T) {
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		item := createTestInventoryItemForConcurrency(t)
+		item.Version = 2
+
+		// SELECT returns empty rows (GORM's Scan doesn't return ErrRecordNotFound)
+		// We need to simulate RowsAffected = 0
+		rows := sqlmock.NewRows([]string{"version"}) // Empty rows
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
+
+		err := repo.SaveWithLock(context.Background(), item)
+
+		require.Error(t, err)
+		assert.ErrorIs(t, err, shared.ErrNotFound, "expected ErrNotFound when item does not exist")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("fails when rows affected is zero after UPDATE", func(t *testing.T) {
+		repo, mock, mockDB := newMockInventoryRepoForConcurrency(t)
+		defer mockDB.Close()
+
+		item := createTestInventoryItemForConcurrency(t)
+		item.Version = 2
+
+		// SELECT returns expected version
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(1)
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
+
+		// UPDATE succeeds but affects 0 rows (race condition between SELECT and UPDATE)
+		mock.ExpectExec(`UPDATE "inventory_items" SET`).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+
+		err := repo.SaveWithLock(context.Background(), item)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "modified by another transaction")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
@@ -105,6 +168,12 @@ func TestSaveWithLock_UpdatedFields(t *testing.T) {
 		item.MaxQuantity = decimal.NewFromInt(500)
 		item.Version = 3
 		item.UpdatedAt = time.Now()
+
+		// First, SELECT returns expected version (version - 1 = 2)
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
 
 		// The update should include all these fields
 		mock.ExpectExec(`UPDATE "inventory_items" SET`).
@@ -143,9 +212,11 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 		assert.Equal(t, 2, reader2.Version)
 
 		// In the real database scenario with SaveWithLock:
-		// - Reader 1 saves first: UPDATE WHERE version = 1 -> succeeds, version becomes 2 in DB
-		// - Reader 2 tries to save: UPDATE WHERE version = 1 -> fails (0 rows), version is already 2 in DB
-		// This test verifies the version increment behavior at domain level
+		// - Reader 1 saves first: SELECT returns version=1, version check passes,
+		//   UPDATE WHERE version=1 succeeds, DB version becomes 2
+		// - Reader 2 tries to save: SELECT returns version=2 (DB was updated),
+		//   but reader2.Version-1=1 != 2, so optimistic lock fails immediately
+		// This ensures only one writer succeeds when concurrent modifications occur
 	})
 
 	t.Run("repository SaveWithLock rejects stale version", func(t *testing.T) {
@@ -156,10 +227,13 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 		item.Version = 2 // After domain operation increments version
 
 		// Simulate database already has version 2 (another transaction saved first)
-		// SaveWithLock uses WHERE version = item.Version - 1 (i.e., version = 1)
-		// But DB has version 2, so 0 rows affected
-		mock.ExpectExec(`UPDATE "inventory_items" SET`).
-			WillReturnResult(sqlmock.NewResult(0, 0))
+		// SaveWithLock first SELECTs the current version from DB
+		// Then compares: currentVersion (2) != expectedVersion (item.Version-1 = 1)
+		// So optimistic lock fails without even attempting UPDATE
+		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
+		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
+			WithArgs(item.ID).
+			WillReturnRows(rows)
 
 		err := repo.SaveWithLock(context.Background(), item)
 

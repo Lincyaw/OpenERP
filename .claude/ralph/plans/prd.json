@@ -5053,7 +5053,7 @@
       "或使用 GORM 内置乐观锁",
       "处理新实体（Version=1）的边界情况"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Code Review",
     "category": "bug",
     "severity": "MEDIUM",

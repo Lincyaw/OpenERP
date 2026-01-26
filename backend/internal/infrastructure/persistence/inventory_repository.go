@@ -211,12 +211,45 @@ func (r *GormInventoryItemRepository) Save(ctx context.Context, item *inventory.
 }
 
 // SaveWithLock saves with optimistic locking (checks version)
+// This method properly handles version checking by:
+// 1. Fetching the current version from the database
+// 2. Comparing it with the expected version (item.Version - 1, since domain operations increment before save)
+// 3. Updating only if versions match
+//
+// For new entities (Version=1), use Save() instead as there's no existing record to lock against.
 func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *inventory.InventoryItem) error {
-	model := models.InventoryItemModelFromDomain(item)
+	// Get current version from database
+	// Note: GORM's Scan() does not return ErrRecordNotFound for empty results,
+	// so we must check RowsAffected explicitly.
+	var currentVersion int
 	result := r.db.WithContext(ctx).
-		Model(model).
-		Where("id = ? AND version = ?", item.ID, item.Version-1).
-		Updates(map[string]interface{}{
+		Model(&models.InventoryItemModel{}).
+		Where("id = ?", item.ID).
+		Select("version").
+		Scan(&currentVersion)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Check if the item exists (Scan doesn't return ErrRecordNotFound for empty results)
+	if result.RowsAffected == 0 {
+		return shared.ErrNotFound
+	}
+
+	// The expected version is item.Version - 1, because domain operations increment
+	// version BEFORE calling SaveWithLock. This check ensures no other transaction
+	// modified the record between read and write.
+	expectedVersion := item.Version - 1
+	if currentVersion != expectedVersion {
+		return shared.NewDomainError("OPTIMISTIC_LOCK_FAILED", "Inventory item was modified by another transaction")
+	}
+
+	// Update with version check in WHERE clause for additional safety
+	updateResult := r.db.WithContext(ctx).
+		Model(&models.InventoryItemModel{}).
+		Where("id = ? AND version = ?", item.ID, expectedVersion).
+		Updates(map[string]any{
 			"available_quantity": item.AvailableQuantity,
 			"locked_quantity":    item.LockedQuantity,
 			"unit_cost":          item.UnitCost,
@@ -226,10 +259,10 @@ func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *in
 			"updated_at":         item.UpdatedAt,
 		})
 
-	if result.Error != nil {
-		return result.Error
+	if updateResult.Error != nil {
+		return updateResult.Error
 	}
-	if result.RowsAffected == 0 {
+	if updateResult.RowsAffected == 0 {
 		return shared.NewDomainError("OPTIMISTIC_LOCK_FAILED", "Inventory item was modified by another transaction")
 	}
 	return nil
