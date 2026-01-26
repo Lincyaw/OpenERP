@@ -456,14 +456,15 @@ test.describe('Stock Taking Module E2E Tests (P2-INT-002)', () => {
       for (let i = 0; i < itemCount; i++) {
         const row = itemRows.nth(i)
         const cells = row.locator('.semi-table-row-cell')
-        const productCode = ((await cells.first().textContent()) || '').trim()
+        // Column 0 is checkbox, column 1 is product code, column 3 is system quantity
         const systemQtyText = (await cells.nth(3).textContent()) || '0'
         const systemQty = parseFloat(systemQtyText.replace(/[^\d.-]/g, '')) || 0
 
-        // Add small variance for demonstration
-        const variance = i === 0 ? 5 : i === 1 ? -3 : 0
-        await inventoryPage.enterActualQuantity(productCode, systemQty + variance)
-        await page.waitForTimeout(200)
+        // Add small variance for demonstration (first item: +30, second: -3, rest: same as system)
+        const variance = i === 0 ? 30 : i === 1 ? -3 : 0
+        // Use index-based entry which is more reliable than product code matching
+        await inventoryPage.enterActualQuantityByIndex(i, systemQty + variance)
+        await page.waitForTimeout(300)
       }
       await inventoryPage.screenshotStockTaking('video-8-quantities-entered')
 

@@ -538,6 +538,7 @@ export class InventoryPage extends BasePage {
 
   /**
    * Select warehouse in stock taking create form
+   * Handles timing issues with warehouse API loading
    */
   async selectStockTakingWarehouse(warehouseName: string): Promise<void> {
     // Find the form-field-wrapper containing the warehouse label
@@ -577,38 +578,101 @@ export class InventoryPage extends BasePage {
       this.page.waitForTimeout(2000), // fallback if response already completed
     ])
 
-    // Extra wait for mobile-safari which can be slower
-    await this.page.waitForTimeout(300)
+    // Extra wait for React state to update and re-render
+    await this.page.waitForTimeout(500)
 
-    await select.click()
-    await this.page.waitForTimeout(600) // Give dropdown time to render options (longer for mobile-safari)
+    // Retry logic for selecting warehouse with multiple attempts
+    let attempts = 0
+    const maxAttempts = 3
 
-    const optionToSelect = this.page
-      .locator('.semi-select-option')
-      .filter({ hasText: warehouseName })
+    while (attempts < maxAttempts) {
+      attempts++
 
-    // Check if we got "暂无数据" instead of actual options
-    const noDataOption = this.page.locator('.semi-select-option').filter({ hasText: '暂无数据' })
-    const hasNoData = await noDataOption.isVisible().catch(() => false)
+      await select.click()
+      await this.page.waitForTimeout(600) // Give dropdown time to render options
 
-    if (hasNoData) {
-      // Close dropdown and retry
+      const optionToSelect = this.page
+        .locator('.semi-select-option')
+        .filter({ hasText: warehouseName })
+
+      // Check if we got "暂无数据" instead of actual options
+      const noDataOption = this.page.locator('.semi-select-option').filter({ hasText: '暂无数据' })
+      const hasNoData = await noDataOption.isVisible().catch(() => false)
+
+      if (hasNoData) {
+        // Close dropdown and wait before retry
+        await this.page.keyboard.press('Escape')
+        await this.page.waitForTimeout(1500) // Wait longer for React to update
+        continue
+      }
+
+      // Check if the option is visible
+      const isOptionVisible = await optionToSelect.isVisible().catch(() => false)
+      if (isOptionVisible) {
+        await optionToSelect.click()
+        break
+      }
+
+      // Option not visible, close dropdown and retry
       await this.page.keyboard.press('Escape')
       await this.page.waitForTimeout(1000)
-      await select.click()
-      await this.page.waitForTimeout(600)
     }
 
-    await optionToSelect.waitFor({ state: 'visible', timeout: 10000 })
-    await optionToSelect.click()
-    await this.page.waitForTimeout(500) // Wait for inventory to load
+    // Final wait to ensure option was selected
+    await this.page.waitForTimeout(300)
+
+    // Verify selection was made
+    const finalValue = await select.textContent()
+    if (!finalValue?.includes(warehouseName)) {
+      throw new Error(
+        `Failed to select warehouse "${warehouseName}" after ${maxAttempts} attempts. Current value: ${finalValue}`
+      )
+    }
+
+    // Wait for the inventory API call to complete after warehouse selection
+    await Promise.race([
+      this.page.waitForResponse(
+        (response) =>
+          response.url().includes('/inventory/warehouses/') &&
+          response.url().includes('/items') &&
+          response.status() === 200,
+        { timeout: 15000 }
+      ),
+      this.page.waitForTimeout(3000), // fallback if response already completed or not triggered
+    ])
+
+    // Wait for loading spinner to disappear
+    await this.page
+      .locator('.loading-container .semi-spin, .semi-spin-wrapper')
+      .waitFor({ state: 'hidden', timeout: 10000 })
+      .catch(() => {
+        /* loading might already be done */
+      })
+
+    // Extra wait for React state to settle
+    await this.page.waitForTimeout(500)
   }
 
   /**
    * Click "全部导入" button to import all inventory items
+   * Waits for inventory to load first before clicking
    */
   async clickImportAllProducts(): Promise<void> {
+    // Wait for loading to complete (inventory fetch after warehouse selection)
+    await this.page
+      .locator('.loading-container, .semi-spin-wrapper')
+      .waitFor({ state: 'hidden', timeout: 15000 })
+      .catch(() => {
+        /* loading might already be done */
+      })
+
+    // Wait for the button to be visible (only shows when inventory is loaded)
     const importButton = this.page.locator('button').filter({ hasText: '全部导入' })
+    await importButton.waitFor({ state: 'visible', timeout: 15000 })
+
+    // Ensure button is enabled
+    await expect(importButton).toBeEnabled({ timeout: 5000 })
+
     await importButton.click()
     await this.waitForToast('已导入')
   }
@@ -873,30 +937,55 @@ export class InventoryPage extends BasePage {
 
   /**
    * Save all counts in stock taking
+   * Waits for API response and React state to update
    */
   async clickSaveAllCounts(): Promise<void> {
     const saveButton = this.page.locator('button').filter({ hasText: '保存全部' })
-    // Wait for button to be enabled (there are items to save)
+    // Wait for button to be visible
     await saveButton.waitFor({ state: 'visible', timeout: 5000 })
     // The button might be disabled if no counts have changed
     const isEnabled = await saveButton.isEnabled()
     if (isEnabled) {
       await saveButton.click()
       await this.waitForToast('保存')
-      // Wait for the save to complete and button state to update
-      await this.page.waitForTimeout(500)
+      // Wait for the save API to complete and React state to propagate
+      // The submit button should become enabled after this
+      await this.page.waitForTimeout(1000)
+
+      // Wait for progress bar to show 100% (indicating all items counted)
+      await this.page
+        .locator('.semi-progress')
+        .filter({ hasText: '100%' })
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => {
+          /* progress bar might already be at 100% */
+        })
     }
   }
 
   /**
    * Submit stock taking for approval
+   * Waits for progress to reach 100% before attempting to submit
    */
   async clickSubmitForApproval(): Promise<void> {
+    // First, verify that progress is 100% (all items counted)
+    const progressText = this.page.locator('.progress-info, .semi-progress').filter({ hasText: '100' })
+    await progressText
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(async () => {
+        // Log current progress for debugging
+        const currentProgress = await this.page.locator('.semi-progress').textContent()
+        console.log(`Progress bar shows: ${currentProgress}`)
+      })
+
+    // Wait a bit for React state to propagate to button disabled state
+    await this.page.waitForTimeout(500)
+
     const submitButton = this.page.locator('button').filter({ hasText: '提交审批' })
     // Wait for button to become enabled (all items must be counted)
     await submitButton.waitFor({ state: 'visible', timeout: 5000 })
-    // Wait for button to be enabled using locator assertion
-    await expect(submitButton).toBeEnabled({ timeout: 10000 })
+    // Wait for button to be enabled using locator assertion with longer timeout
+    await expect(submitButton).toBeEnabled({ timeout: 15000 })
     await submitButton.click()
     await this.page.waitForTimeout(300)
   }

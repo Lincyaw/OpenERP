@@ -186,3 +186,65 @@ Worked on fixing Finance E2E tests (P4-INT-001). Fixed multiple issues:
 - Receipt voucher creation test needs UI selector fix (separate from backend/data issues)
 - Consider marking P4-INT-001 as partial pass, or fix UI test issue
 
+---
+
+## 2026-01-26 - P9-FIX-001 Stock Taking E2E Test Timing Fixes
+
+### Summary
+Fixed timing issues in stock-taking E2E tests that were causing the "Video Recording - Complete Stock Taking Flow" test to fail. The root causes were:
+1. Product code extraction using wrong table column index
+2. Timing issues with dropdown rendering and data loading
+
+### Problems Identified
+
+1. **Video Recording test failing with "提交审批" button disabled**
+   - Root cause: Test was extracting product code from `cells.first()` which returns the checkbox cell (column 0), not the product code (column 1)
+   - This caused `enterActualQuantity(productCode, qty)` to fail for most rows since the empty/garbage product code didn't match any row
+   - Only 1/5 items showed "已盘" status because row matching partially worked for the first item
+
+2. **"全部导入" button timeout**
+   - Root cause: Button only renders after warehouse selection AND inventory data loads
+   - E2E test was clicking too fast before loading completed
+
+3. **Warehouse dropdown showing "暂无数据"**
+   - Root cause: Dropdown options not rendered by React before click, race condition between API response and UI update
+
+### Files Modified
+
+#### Frontend E2E Tests
+- `frontend/tests/e2e/inventory/stock-taking.spec.ts`
+  - **Lines 452-467**: Fixed Video Recording test quantity entry loop
+    - Changed from `enterActualQuantity(productCode, qty)` to `enterActualQuantityByIndex(i, qty)`
+    - Removed incorrect `cells.first()` product code extraction
+    - Fixed variance calculation (30 instead of 5 for first item)
+    - Added longer wait between entries (300ms)
+
+#### Frontend E2E Page Objects
+- `frontend/tests/e2e/pages/InventoryPage.ts`
+  - **clickImportAllProducts()** (lines ~857-870): Enhanced waiting
+    - Wait for loading spinner to disappear (15s timeout)
+    - Wait for button visibility and enabled state before clicking
+
+  - **selectStockTakingWarehouse()** (lines ~800-850): Retry mechanism
+    - Implemented 3-attempt retry loop
+    - Check for "暂无数据" and retry if found
+    - Longer waits between retries (1500ms)
+
+  - **clickSaveAllCounts()** (lines ~942-962): Progress verification
+    - Wait for progress bar to show 100% after save
+
+  - **clickSubmitForApproval()** (lines ~978-990): Pre-validation
+    - Wait for progress to show 100% before checking button
+    - Added debug logging for progress state
+
+### Test Results
+- TypeScript type check: PASSED
+- E2E tests (chromium): 24/24 PASSED
+- Command: `make e2e ARGS="tests/e2e/inventory/stock-taking.spec.ts --project=chromium"`
+
+### Key Learnings
+1. Semi Design Table rows have checkbox as first cell (column 0), data starts at column 1
+2. E2E tests should use index-based methods when product codes are unreliable for matching
+3. Dropdown interactions need retry mechanisms for async data loading
+4. Progress-dependent buttons need explicit progress verification before assertion
+
