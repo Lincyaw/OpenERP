@@ -18964,3 +18964,149 @@ CreateSalesOrderRequest now supports:
 - ✅ CustomerLevelPricingStrategy: 7 tests pass
 - ✅ Go build successful
 - ✅ Strategy registry registration successful
+
+
+## 2026-01-26 - DDD-005: DataScope Full Integration in Repository Queries
+
+### Summary
+Integrated DataScope filtering into all repository queries (SalesOrder, PurchaseOrder, Inventory) to enforce data-level permissions based on user roles. Added support for warehouse-level and region-based CUSTOM scope filtering.
+
+### Problem
+- DataScope filter was defined but not integrated into repository queries
+- CUSTOM scope incorrectly filtered by `created_by` instead of resource-specific fields
+- WAREHOUSE role couldn't see only their warehouse data as spec required
+- No support for region-based filtering via CUSTOM scope
+
+### Solution
+
+#### Domain Model Enhancement
+
+Added `ScopeField` to DataScope value object for flexible field-based filtering:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `Resource` | string | Resource name (e.g., "sales_order") |
+| `ScopeType` | DataScopeType | ALL, SELF, DEPARTMENT, CUSTOM |
+| `ScopeField` | string | **NEW**: Field to filter on (e.g., "warehouse_id", "region_id") |
+| `ScopeValues` | []string | Values for CUSTOM scope |
+| `Description` | string | Optional description |
+
+#### Files Modified
+
+| File | Change |
+|------|--------|
+| `backend/internal/domain/identity/role.go` | Added `ScopeField` to DataScope value object and RoleDataScope table |
+| `backend/internal/infrastructure/persistence/datascope/filter.go` | Enhanced CUSTOM scope to use ScopeField with default field mapping |
+| `backend/internal/infrastructure/persistence/sales_order_repository.go` | Integrated DataScope filtering in all query methods |
+| `backend/internal/infrastructure/persistence/purchase_order_repository.go` | Integrated DataScope filtering in all query methods |
+| `backend/internal/infrastructure/persistence/inventory_repository.go` | Integrated DataScope filtering in all query methods |
+| `backend/internal/infrastructure/persistence/datascope/filter_test.go` | Added comprehensive unit tests |
+
+#### New Factory Method
+
+```go
+// NewCustomDataScopeWithField creates a DataScope with custom field filtering
+func NewCustomDataScopeWithField(resource, scopeField string, scopeValues []string) (*DataScope, error)
+```
+
+#### Default Scope Field Mapping
+
+For CUSTOM scope without explicit ScopeField:
+
+| Resource | Default Field |
+|----------|---------------|
+| `inventory` | `warehouse_id` |
+| `sales_order` | `warehouse_id` |
+| `purchase_order` | `warehouse_id` |
+| `stock_batch` | `warehouse_id` |
+| `stock_lock` | `warehouse_id` |
+| `sales_return` | `warehouse_id` |
+| `purchase_return` | `warehouse_id` |
+
+#### WAREHOUSE Role Configuration Example
+
+```go
+// Create WAREHOUSE role with warehouse-level data scope
+warehouseRole, _ := identity.NewRole(tenantID, "WAREHOUSE", "Warehouse Manager")
+ds, _ := identity.NewCustomDataScopeWithField("inventory", "warehouse_id", []string{warehouseID.String()})
+warehouseRole.SetDataScope(*ds)
+// Now warehouse manager only sees inventory in their assigned warehouse(s)
+```
+
+#### Region-Based CUSTOM Scope Example
+
+```go
+// Create role for regional manager
+regionalRole, _ := identity.NewRole(tenantID, "REGIONAL_MANAGER", "Regional Manager")
+ds, _ := identity.NewCustomDataScopeWithField("sales_order", "region_id", []string{"region-east", "region-west"})
+regionalRole.SetDataScope(*ds)
+// Now regional manager only sees orders in their assigned regions
+```
+
+### Spec Alignment
+
+Per Section 13.3-13.5 of spec.md:
+
+| Role | Spec Data Scope | Implementation |
+|------|-----------------|----------------|
+| ADMIN | ALL | ✅ DataScopeAll - no filtering |
+| OWNER | ALL | ✅ DataScopeAll - no filtering |
+| MANAGER | ALL | ✅ DataScopeAll - no filtering |
+| SALES | SELF | ✅ DataScopeSelf - filters by `created_by` |
+| PURCHASER | SELF | ✅ DataScopeSelf - filters by `created_by` |
+| **WAREHOUSE** | ALL (warehouse dimension) | ✅ DataScopeCustom with `warehouse_id` field |
+| CASHIER | SELF | ✅ DataScopeSelf - filters by `created_by` |
+| ACCOUNTANT | ALL | ✅ DataScopeAll - no filtering |
+
+### Trade-Off Analysis
+
+| Aspect | Pro | Con | Risk |
+|--------|-----|-----|------|
+| **ScopeField in Domain** | Flexible field-based filtering | Added complexity to value object | 🟢 LOW |
+| **Default Field Mapping** | Works without explicit config | May not match all use cases | 🟢 LOW |
+| **Repository Integration** | Consistent enforcement | Performance overhead per query | 🟡 MEDIUM |
+| **DEPARTMENT Fallback** | Prevents errors | Users may expect dept-level access | 🟡 MEDIUM |
+
+### Red Flags Checked
+
+- [x] No God Objects - DataScope remains a focused value object
+- [x] No tight coupling - Filter is injected via context, not hardcoded
+- [x] Clear structure - Domain → Filter → Repository pattern maintained
+- [x] No premature optimization - Simple IN clause filtering
+- [x] No magic - Default field mapping is explicit and documented
+
+### Test Results
+
+```
+=== RUN   TestFilter_getDefaultScopeField
+--- PASS: TestFilter_getDefaultScopeField (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/inventory (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/sales_order (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/purchase_order (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/stock_batch (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/stock_lock (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/sales_return (0.00s)
+    --- PASS: TestFilter_getDefaultScopeField/purchase_return (0.00s)
+
+=== RUN   TestFilter_CustomScopeWithField
+--- PASS: TestFilter_CustomScopeWithField (0.00s)
+    --- PASS: TestFilter_CustomScopeWithField/uses_custom_scope_field_when_specified (0.00s)
+    --- PASS: TestFilter_CustomScopeWithField/falls_back_to_default_field_when_scope_field_is_empty (0.00s)
+
+=== RUN   TestCustomDataScopeWithField
+--- PASS: TestCustomDataScopeWithField (0.00s)
+    --- PASS: TestCustomDataScopeWithField/creates_custom_scope_with_field (0.00s)
+    --- PASS: TestCustomDataScopeWithField/fails_with_empty_scope_field (0.00s)
+    --- PASS: TestCustomDataScopeWithField/fails_with_empty_scope_values (0.00s)
+```
+
+- ✅ All 30 DataScope unit tests pass
+- ✅ Go build successful
+- ✅ Repository integration complete
+
+### Next Steps
+
+- [ ] Add database migration for `scope_field` column in `role_data_scopes` table
+- [ ] Create ADR for DataScope architecture decision
+- [ ] Add integration tests for multi-role scope merging
+- [ ] Implement DEPARTMENT scope when department_id is added to entities

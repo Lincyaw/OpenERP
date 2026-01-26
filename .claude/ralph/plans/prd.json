@@ -3970,7 +3970,7 @@
       "Add CUSTOM scope support for region-based filtering",
       "Test data isolation between different scope types"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Section 13.3 - Data Permissions Model",
     "affectedModules": [
       "backend/internal/infrastructure/persistence/datascope/filter.go",

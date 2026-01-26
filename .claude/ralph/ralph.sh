@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# Ralph Multi-Role Workflow - Enhanced with role routing
 
 if [ -z "$1" ]; then
   echo "Usage: $0 <max iterations>"
@@ -20,21 +21,37 @@ log() {
   echo "$1" | tee -a "$MAIN_LOG"
 }
 
-log "Starting Ralph loop, max iterations: $MAX_ITER"
-log "Logs will be saved to: $MAIN_LOG"
+# Detect role from task ID pattern
+detect_role() {
+  local task_id=$1
 
-PROMPT="@.claude/ralph/plans/prd.json @.claude/ralph/progress.txt  progress.txt may be long, so use tail, or grep to search it by id, like 'P0-BE-005'. \
-  1. Find the highest-priority code bug fixing to work on and work only on that feature, if there are backend/frontend functionality missing, you also need to implement it. \
-  This should be the one YOU decide has the highest priority - not necessarily the first item. You can split it into sub-tasks by adding new prd to prd.json, to better control the quality. \
-  2. If the prd.json is not clear, you can reference .claude/ralph/docs/spec.md and .claude/ralph/docs/task.md, but be careful the files is long, use grep, tail, head to find relevant information. \
-  3. Update the PRD with the work that was done. \
-  4. Append your progress to the progress.txt file, use this to leave a note for the next person working in the codebase. \
-  5. If there are some questions you have about the design, implementation, etc., stop your work and ask me. \
-  6. Call proper subagent and use proper skills for specfic tasks, but do not use Plan agent unless you feel it is must. \
-  7. Make a git commit of that feature. \
-  ONLY WORK ON A SINGLE FEATURE. \
-  8. Check CLAUDE.md to see if there are any special instructions for committing code, e.g., format code, lint, etc. You can skip e2e test by --no-verify, but need to check code type using tsc \
-  If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> here."
+  case "$task_id" in
+    P*-PD-*)      echo "pm" ;;     # Product Design tasks
+    P*-INT-*)     echo "qa" ;;     # Integration test tasks
+    DDD-*)        echo "pm" ;;     # DDD validation tasks
+    review-*)     echo "pm" ;;     # Review tasks
+    acceptance-*) echo "pm" ;;     # Acceptance tasks
+    e2e-test-*)   echo "qa" ;;     # E2E test implementation tasks
+    *)            echo "dev" ;;    # Default: development tasks (BE, FE, API, bug-fix, etc.)
+  esac
+}
+
+# Get next highest priority incomplete task from prd.json
+get_next_task_id() {
+  jq -r '
+    .[]
+    | select(.passes == false)
+    | {priority: .priority, id: .id, sort_key: (if .priority == "high" then 1 elif .priority == "medium" then 2 else 3 end)}
+    | [.sort_key, .id]
+    | @tsv
+  ' .claude/ralph/plans/prd.json \
+  | sort -n \
+  | head -1 \
+  | awk '{print $2}'
+}
+
+log "Starting Ralph Multi-Role Workflow, max iterations: $MAX_ITER"
+log "Logs will be saved to: $MAIN_LOG"
 
 for ((i=1; i<=MAX_ITER; i++)); do
   log "========================================"
@@ -43,10 +60,58 @@ for ((i=1; i<=MAX_ITER; i++)); do
 
   ITER_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.log"
   ITER_JSON_LOG="$LOG_DIR/iter_${TIMESTAMP}_${i}.jsonl"
-  
+
+  # Get next task
+  TASK_ID=$(get_next_task_id)
+
+  if [ -z "$TASK_ID" ]; then
+    log "No incomplete tasks found in prd.json"
+    log "All tasks complete! 🎉"
+    break
+  fi
+
+  log "Selected task: $TASK_ID"
+
+  # Detect role
+  ROLE=$(detect_role "$TASK_ID")
+  AGENT_NAME="ralph-$ROLE"
+  [ "$ROLE" = "dev" ] && AGENT_NAME="ralph-prd-developer"
+
+  log "Assigned role: $ROLE (agent: $AGENT_NAME)"
+
+  # Build prompt
+  PROMPT="Work on task: $TASK_ID
+
+Context:
+- Read task details from .claude/ralph/plans/prd.json using jq
+- Read spec.md (.claude/ralph/docs/spec.md) for design requirements (use grep for specific sections)
+- Read progress.txt (tail -100 .claude/ralph/progress.txt) for recent work context
+- Follow CLAUDE.md project rules for commits, linting, testing
+
+Your mission:
+1. Complete the assigned task according to your role
+2. Update prd.json: Set passes: true when task is complete
+3. Append detailed progress entry to progress.txt
+4. Create git commit (if code changes were made)
+
+Quality requirements:
+- Follow self-verification checklist in your agent instructions
+- Delegate to specialized agents when appropriate (tdd-guide, code-reviewer, security-reviewer)
+- Document all decisions and changes
+
+If ALL tasks in prd.json are complete (all passes: true), output:
+<promise>COMPLETE</promise>"
+
   TEMP_RESULT=$(mktemp)
-  
-  claude --dangerously-skip-permissions -p --verbose --output-format stream-json "$PROMPT" 2>&1 | \
+
+  log "Executing agent: $AGENT_NAME"
+
+  claude --agent="$AGENT_NAME" \
+         --dangerously-skip-permissions \
+         -p \
+         --verbose \
+         --output-format stream-json \
+         "$PROMPT" 2>&1 | \
     tee "$ITER_JSON_LOG" | \
     while IFS= read -r line; do
       echo "$line" >> "$ITER_LOG"
@@ -54,7 +119,7 @@ for ((i=1; i<=MAX_ITER; i++)); do
         echo "$line" | jq -r '.message.content[]? | select(.type == "text") | .text // empty' 2>/dev/null >> "$TEMP_RESULT"
       fi
     done
-  
+
   result=$(cat "$TEMP_RESULT")
   rm -f "$TEMP_RESULT"
 
@@ -67,10 +132,12 @@ for ((i=1; i<=MAX_ITER; i++)); do
   fi
 
   log "Iteration $i completed."
+  log ""
 done
 
 log "========================================"
 log "Ralph loop finished at $(date)"
 log "Full log saved to: $MAIN_LOG"
 log "Individual iteration logs in: $LOG_DIR/"
-log "JSON stream logs: $LOG_DIR/iter_*.json"
+log "JSON stream logs: $LOG_DIR/iter_*.jsonl"
+log "========================================"
