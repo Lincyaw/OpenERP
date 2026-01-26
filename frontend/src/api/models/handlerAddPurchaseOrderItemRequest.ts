@@ -8,6 +8,10 @@
  * Request body for adding an item to a purchase order
  */
 export interface HandlerAddPurchaseOrderItemRequest {
+  /** Base unit code - defaults to Unit if empty */
+  base_unit?: string
+  /** Conversion rate to base unit - defaults to 1 if empty */
+  conversion_rate?: number
   /**
    * @minLength 1
    * @maxLength 50

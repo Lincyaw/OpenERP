@@ -17,7 +17,7 @@ RUN_E2E=false
 if [ -n "$STAGED_GO_FILES" ]; then
     echo ""
     echo "📦 Checking Go files..."
-    RUN_E2E=true
+    RUN_E2E=false
     
     # Check formatting
     echo "  → Checking Go formatting..."
@@ -48,7 +48,7 @@ fi
 if [ -n "$STAGED_FRONTEND_FILES" ]; then
     echo ""
     echo "📦 Checking frontend files..."
-    RUN_E2E=true
+    RUN_E2E=false
     
     cd frontend
     

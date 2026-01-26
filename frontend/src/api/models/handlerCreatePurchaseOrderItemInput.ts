@@ -8,6 +8,10 @@
  * Purchase order item for creation
  */
 export interface HandlerCreatePurchaseOrderItemInput {
+  /** Base unit code - defaults to Unit if empty */
+  base_unit?: string
+  /** Conversion rate to base unit - defaults to 1 if empty */
+  conversion_rate?: number
   /**
    * @minLength 1
    * @maxLength 50

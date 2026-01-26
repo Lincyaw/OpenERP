@@ -7,6 +7,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/persistence/datascope"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -63,14 +64,18 @@ func (r *GormInventoryItemRepository) FindByWarehouseAndProduct(ctx context.Cont
 	return &item, nil
 }
 
-// FindByWarehouse finds all inventory items in a warehouse
+// FindByWarehouse finds all inventory items in a warehouse with data scope filtering
 func (r *GormInventoryItemRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
 	var items []inventory.InventoryItem
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
-			Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&items).Error; err != nil {
 		return nil, err
@@ -78,14 +83,18 @@ func (r *GormInventoryItemRepository) FindByWarehouse(ctx context.Context, tenan
 	return items, nil
 }
 
-// FindByProduct finds all inventory items for a product (across warehouses)
+// FindByProduct finds all inventory items for a product (across warehouses) with data scope filtering
 func (r *GormInventoryItemRepository) FindByProduct(ctx context.Context, tenantID, productID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
 	var items []inventory.InventoryItem
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
-			Where("tenant_id = ? AND product_id = ?", tenantID, productID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND product_id = ?", tenantID, productID)
+
+	// Apply data scope filtering - warehouse users only see their warehouse's inventory
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&items).Error; err != nil {
 		return nil, err
@@ -93,14 +102,18 @@ func (r *GormInventoryItemRepository) FindByProduct(ctx context.Context, tenantI
 	return items, nil
 }
 
-// FindAllForTenant finds all inventory items for a tenant
+// FindAllForTenant finds all inventory items for a tenant with data scope filtering
 func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
 	var items []inventory.InventoryItem
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
-			Where("tenant_id = ?", tenantID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering - warehouse users only see their warehouse's inventory
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&items).Error; err != nil {
 		return nil, err
@@ -108,14 +121,18 @@ func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tena
 	return items, nil
 }
 
-// FindBelowMinimum finds items below their minimum threshold
+// FindBelowMinimum finds items below their minimum threshold with data scope filtering
 func (r *GormInventoryItemRepository) FindBelowMinimum(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
 	var items []inventory.InventoryItem
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
-			Where("tenant_id = ? AND min_quantity > 0 AND (available_quantity + locked_quantity) < min_quantity", tenantID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND min_quantity > 0 AND (available_quantity + locked_quantity) < min_quantity", tenantID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&items).Error; err != nil {
 		return nil, err
@@ -123,14 +140,18 @@ func (r *GormInventoryItemRepository) FindBelowMinimum(ctx context.Context, tena
 	return items, nil
 }
 
-// FindWithAvailableStock finds items that have available stock
+// FindWithAvailableStock finds items that have available stock with data scope filtering
 func (r *GormInventoryItemRepository) FindWithAvailableStock(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
 	var items []inventory.InventoryItem
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
-			Where("tenant_id = ? AND available_quantity > 0", tenantID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND available_quantity > 0", tenantID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&items).Error; err != nil {
 		return nil, err
@@ -206,10 +227,15 @@ func (r *GormInventoryItemRepository) DeleteForTenant(ctx context.Context, tenan
 	return nil
 }
 
-// CountForTenant counts inventory items for a tenant
+// CountForTenant counts inventory items for a tenant with data scope filtering
 func (r *GormInventoryItemRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -218,25 +244,33 @@ func (r *GormInventoryItemRepository) CountForTenant(ctx context.Context, tenant
 	return count, nil
 }
 
-// CountByWarehouse counts inventory items in a warehouse
+// CountByWarehouse counts inventory items in a warehouse with data scope
 func (r *GormInventoryItemRepository) CountByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryItem{}).
-		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-// CountByProduct counts inventory items for a product
+// CountByProduct counts inventory items for a product with data scope
 func (r *GormInventoryItemRepository) CountByProduct(ctx context.Context, tenantID, productID uuid.UUID) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&inventory.InventoryItem{}).
-		Where("tenant_id = ? AND product_id = ?", tenantID, productID).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&inventory.InventoryItem{}).
+		Where("tenant_id = ? AND product_id = ?", tenantID, productID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "inventory")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil

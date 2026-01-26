@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/trade"
+	"github.com/erp/backend/internal/infrastructure/persistence/datascope"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -74,13 +75,19 @@ func (r *GormSalesOrderRepository) FindByOrderNumber(ctx context.Context, tenant
 	return &order, nil
 }
 
-// FindAllForTenant finds all sales orders for a tenant with filtering
+// FindAllForTenant finds all sales orders for a tenant with filtering and data scope
 func (r *GormSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
 	var orders []trade.SalesOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesOrder{}).Where("tenant_id = ?", tenantID),
-		filter,
-	)
+
+	// Start with tenant filter
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering from context
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	// Apply additional filters
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -88,14 +95,18 @@ func (r *GormSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantI
 	return orders, nil
 }
 
-// FindByCustomer finds sales orders for a customer
+// FindByCustomer finds sales orders for a customer with data scope filtering
 func (r *GormSalesOrderRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
 	var orders []trade.SalesOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
-			Where("tenant_id = ? AND customer_id = ?", tenantID, customerID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -103,14 +114,18 @@ func (r *GormSalesOrderRepository) FindByCustomer(ctx context.Context, tenantID,
 	return orders, nil
 }
 
-// FindByStatus finds sales orders by status for a tenant
+// FindByStatus finds sales orders by status for a tenant with data scope filtering
 func (r *GormSalesOrderRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus, filter shared.Filter) ([]trade.SalesOrder, error) {
 	var orders []trade.SalesOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
-			Where("tenant_id = ? AND status = ?", tenantID, status),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+		Where("tenant_id = ? AND status = ?", tenantID, status)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -118,14 +133,18 @@ func (r *GormSalesOrderRepository) FindByStatus(ctx context.Context, tenantID uu
 	return orders, nil
 }
 
-// FindByWarehouse finds sales orders for a warehouse
+// FindByWarehouse finds sales orders for a warehouse with data scope filtering
 func (r *GormSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
 	var orders []trade.SalesOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
-			Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -402,10 +421,15 @@ func (r *GormSalesOrderRepository) DeleteForTenant(ctx context.Context, tenantID
 	})
 }
 
-// CountForTenant counts sales orders for a tenant with optional filters
+// CountForTenant counts sales orders for a tenant with optional filters and data scope
 func (r *GormSalesOrderRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -414,25 +438,33 @@ func (r *GormSalesOrderRepository) CountForTenant(ctx context.Context, tenantID 
 	return count, nil
 }
 
-// CountByStatus counts sales orders by status for a tenant
+// CountByStatus counts sales orders by status for a tenant with data scope
 func (r *GormSalesOrderRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesOrder{}).
-		Where("tenant_id = ? AND status = ?", tenantID, status).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+		Where("tenant_id = ? AND status = ?", tenantID, status)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-// CountByCustomer counts sales orders for a customer
+// CountByCustomer counts sales orders for a customer with data scope
 func (r *GormSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&trade.SalesOrder{}).
-		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&trade.SalesOrder{}).
+		Where("tenant_id = ? AND customer_id = ?", tenantID, customerID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "sales_order")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil

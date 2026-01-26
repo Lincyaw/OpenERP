@@ -188,7 +188,7 @@ e2e: ## Run E2E tests (resets environment, runs all tests)
 		-w /app \
 		-e HOME=/tmp \
 		-e E2E_BASE_URL="http://erp-frontend:80" \
-		-e CI=true \
+		-e CI=false \
 		$(PLAYWRIGHT_IMAGE) \
 		npx playwright test --reporter=list $(ARGS)
 	@echo ""

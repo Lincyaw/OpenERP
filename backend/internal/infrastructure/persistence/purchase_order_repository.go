@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/trade"
+	"github.com/erp/backend/internal/infrastructure/persistence/datascope"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -74,13 +75,19 @@ func (r *GormPurchaseOrderRepository) FindByOrderNumber(ctx context.Context, ten
 	return &order, nil
 }
 
-// FindAllForTenant finds all purchase orders for a tenant with filtering
+// FindAllForTenant finds all purchase orders for a tenant with filtering and data scope
 func (r *GormPurchaseOrderRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
 	var orders []trade.PurchaseOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).Where("tenant_id = ?", tenantID),
-		filter,
-	)
+
+	// Start with tenant filter
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering from context
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	// Apply additional filters
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -88,14 +95,18 @@ func (r *GormPurchaseOrderRepository) FindAllForTenant(ctx context.Context, tena
 	return orders, nil
 }
 
-// FindBySupplier finds purchase orders for a supplier
+// FindBySupplier finds purchase orders for a supplier with data scope filtering
 func (r *GormPurchaseOrderRepository) FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
 	var orders []trade.PurchaseOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
-			Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -103,14 +114,18 @@ func (r *GormPurchaseOrderRepository) FindBySupplier(ctx context.Context, tenant
 	return orders, nil
 }
 
-// FindByStatus finds purchase orders by status for a tenant
+// FindByStatus finds purchase orders by status for a tenant with data scope filtering
 func (r *GormPurchaseOrderRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.PurchaseOrderStatus, filter shared.Filter) ([]trade.PurchaseOrder, error) {
 	var orders []trade.PurchaseOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
-			Where("tenant_id = ? AND status = ?", tenantID, status),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND status = ?", tenantID, status)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -118,14 +133,18 @@ func (r *GormPurchaseOrderRepository) FindByStatus(ctx context.Context, tenantID
 	return orders, nil
 }
 
-// FindByWarehouse finds purchase orders for a warehouse
+// FindByWarehouse finds purchase orders for a warehouse with data scope filtering
 func (r *GormPurchaseOrderRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
 	var orders []trade.PurchaseOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
-			Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND warehouse_id = ?", tenantID, warehouseID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -133,17 +152,21 @@ func (r *GormPurchaseOrderRepository) FindByWarehouse(ctx context.Context, tenan
 	return orders, nil
 }
 
-// FindPendingReceipt finds purchase orders pending receipt (CONFIRMED or PARTIAL_RECEIVED)
+// FindPendingReceipt finds purchase orders pending receipt with data scope filtering
 func (r *GormPurchaseOrderRepository) FindPendingReceipt(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
 	var orders []trade.PurchaseOrder
-	query := r.applyFilter(
-		r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
-			Where("tenant_id = ? AND status IN ?", tenantID, []trade.PurchaseOrderStatus{
-				trade.PurchaseOrderStatusConfirmed,
-				trade.PurchaseOrderStatusPartialReceived,
-			}),
-		filter,
-	)
+
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND status IN ?", tenantID, []trade.PurchaseOrderStatus{
+			trade.PurchaseOrderStatusConfirmed,
+			trade.PurchaseOrderStatusPartialReceived,
+		})
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	query = r.applyFilter(query, filter)
 
 	if err := query.Find(&orders).Error; err != nil {
 		return nil, err
@@ -418,10 +441,15 @@ func (r *GormPurchaseOrderRepository) DeleteForTenant(ctx context.Context, tenan
 	})
 }
 
-// CountForTenant counts purchase orders for a tenant with optional filters
+// CountForTenant counts purchase orders for a tenant with optional filters and data scope
 func (r *GormPurchaseOrderRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).Where("tenant_id = ?", tenantID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
 	query = r.applyFilterWithoutPagination(query, filter)
 
 	if err := query.Count(&count).Error; err != nil {
@@ -430,40 +458,52 @@ func (r *GormPurchaseOrderRepository) CountForTenant(ctx context.Context, tenant
 	return count, nil
 }
 
-// CountByStatus counts purchase orders by status for a tenant
+// CountByStatus counts purchase orders by status for a tenant with data scope
 func (r *GormPurchaseOrderRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.PurchaseOrderStatus) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&trade.PurchaseOrder{}).
-		Where("tenant_id = ? AND status = ?", tenantID, status).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND status = ?", tenantID, status)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-// CountBySupplier counts purchase orders for a supplier
+// CountBySupplier counts purchase orders for a supplier with data scope
 func (r *GormPurchaseOrderRepository) CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&trade.PurchaseOrder{}).
-		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID).
-		Count(&count).Error; err != nil {
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
+		Where("tenant_id = ? AND supplier_id = ?", tenantID, supplierID)
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-// CountPendingReceipt counts orders pending receipt for a tenant
+// CountPendingReceipt counts orders pending receipt for a tenant with data scope
 func (r *GormPurchaseOrderRepository) CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).
-		Model(&trade.PurchaseOrder{}).
+	query := r.db.WithContext(ctx).Model(&trade.PurchaseOrder{}).
 		Where("tenant_id = ? AND status IN ?", tenantID, []trade.PurchaseOrderStatus{
 			trade.PurchaseOrderStatusConfirmed,
 			trade.PurchaseOrderStatusPartialReceived,
-		}).
-		Count(&count).Error; err != nil {
+		})
+
+	// Apply data scope filtering
+	dsFilter := datascope.NewFilterFromContext(ctx)
+	query = dsFilter.Apply(query, "purchase_order")
+
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
