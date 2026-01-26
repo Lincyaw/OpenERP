@@ -24378,3 +24378,127 @@ var _ catalog.ProductWriter = (*GormProductRepository)(nil)
 - Consider similar interface splits for other large repositories (CustomerRepository, etc.)
 - Clean up CategoryService's unused ProductRepository dependency
 - Apply ISP pattern to other monolithic interfaces in the codebase
+
+---
+
+2026-01-27 - P7-BE-010: EcommercePlatform Port 定义
+
+=== Summary ===
+
+Implemented the EcommercePlatform Port interface following the Ports & Adapters pattern. Created a new `integration` domain module containing:
+- **EcommercePlatform** port interface for connecting to e-commerce platforms
+- **OrderSync** service interface for order synchronization between platforms and ERP
+- **ProductMapping** entity and repository interfaces for managing product mappings
+
+=== Implementation Details ===
+
+**1. Domain Module Structure**
+
+Created `backend/internal/domain/integration/` with:
+- `doc.go` - Package documentation
+- `ecommerce_platform.go` - Core platform interface and value objects
+- `order_sync.go` - Order synchronization interfaces
+- `product_mapping.go` - Product mapping entity and repository
+
+**2. EcommercePlatform Port Interface (ecommerce_platform.go)**
+
+Core types:
+- `PlatformCode` enum: TAOBAO, JD, PDD, DOUYIN, WECHAT, KUAISHOU
+- `PlatformOrderStatus` enum: PENDING, PAID, SHIPPED, DELIVERED, COMPLETED, CANCELLED, REFUNDING, REFUNDED, CLOSED
+- `SyncStatus` enum: PENDING, IN_PROGRESS, SUCCESS, PARTIAL, FAILED
+
+Value objects:
+- `PlatformOrder` - Order from external platform
+- `PlatformOrderItem` - Order line item
+- `ProductSync` - Product data for synchronization
+- `ProductSkuSync` - SKU variant for synchronization
+- `InventorySync` - Inventory data to sync
+
+Request/Response DTOs:
+- `OrderPullRequest` / `OrderPullResponse` - Pull orders from platform
+- `SyncResult` / `SyncFailure` - Sync operation results
+- `OrderStatusUpdateRequest` - Update order status on platform
+
+Interfaces:
+- `EcommercePlatform` - Main port interface with methods:
+  - `PlatformCode()` - Get platform type
+  - `IsEnabled()` - Check if enabled for tenant
+  - `SyncProducts()` - Sync products to platform
+  - `GetProduct()` - Get product from platform
+  - `PullOrders()` - Pull orders from platform
+  - `GetOrder()` - Get single order
+  - `UpdateOrderStatus()` - Update order status
+  - `SyncInventory()` - Sync inventory levels
+- `EcommercePlatformRegistry` - Registry for platform adapters
+
+**3. OrderSync Interface (order_sync.go)**
+
+Types:
+- `OrderSyncDirection` enum: INBOUND, OUTBOUND
+- `PlatformOrderSyncRecord` - Record of sync operation
+- `OrderConversionResult` - Result of converting platform order to sales order
+- `OrderSyncConfig` - Sync configuration per tenant/platform
+
+Interfaces:
+- `OrderSyncService` - Application service interface:
+  - Inbound sync: `PullOrders()`, `ConvertToSalesOrder()`, `GetPendingOrders()`
+  - Outbound sync: `SyncShipmentToPlatform()`, `SyncOrderStatusToPlatform()`
+  - Sync records: `GetSyncRecord()`, `GetSyncRecordByLocalOrder()`, `ListSyncRecords()`
+  - Configuration: `GetSyncConfig()`, `UpdateSyncConfig()`
+- `OrderSyncRecordRepository` - Persistence for sync records
+- `OrderSyncConfigRepository` - Persistence for sync configs
+
+**4. ProductMapping Entity (product_mapping.go)**
+
+Entity:
+- `ProductMapping` with properties: ID, TenantID, LocalProductID, PlatformCode, PlatformProductID, SKUMappings, IsActive, SyncEnabled, LastSyncAt, LastSyncStatus, etc.
+- Methods: `NewProductMapping()`, `Validate()`, `AddSKUMapping()`, `RemoveSKUMapping()`, `GetLocalSKUID()`, `GetPlatformSkuID()`, `Activate()`, `Deactivate()`, `EnableSync()`, `DisableSync()`, `RecordSyncSuccess()`, `RecordSyncFailure()`
+
+Value object:
+- `SKUMapping` - Mapping between local SKU and platform SKU
+
+Repository interfaces (following ISP pattern):
+- `ProductMappingReader` - Read individual mappings
+- `ProductMappingFinder` - Search/filter mappings
+- `ProductMappingWriter` - Persist mappings
+- `ProductMappingRepository` - Composite interface
+
+Service interface:
+- `ProductMappingService` - Application service for CRUD, SKU mappings, lookups, sync operations
+
+=== Key Files Created ===
+
+1. `backend/internal/domain/integration/doc.go` - Package documentation
+2. `backend/internal/domain/integration/ecommerce_platform.go` - Platform port interface
+3. `backend/internal/domain/integration/order_sync.go` - Order sync interfaces
+4. `backend/internal/domain/integration/product_mapping.go` - Product mapping entity
+5. `backend/internal/domain/integration/ecommerce_platform_test.go` - Platform tests
+6. `backend/internal/domain/integration/product_mapping_test.go` - Mapping tests
+
+=== Design Decisions ===
+
+1. **Ports & Adapters Pattern**: Port interfaces defined in domain layer, adapters will be in infrastructure
+2. **Interface Segregation Principle**: Repository split into Reader/Finder/Writer for better testability
+3. **Platform Agnostic**: Single interface for all platforms (Taobao, JD, PDD, Douyin, etc.)
+4. **Bidirectional Sync**: Support both inbound (platform→ERP) and outbound (ERP→platform) operations
+5. **SKU-level Mapping**: Support mapping at both product and SKU levels for variants
+6. **Sync Status Tracking**: Track last sync status and errors for debugging
+
+=== Verification ===
+
+- Go build: PASS
+- Unit tests: PASS (22 test functions, all passing)
+- Test coverage: Comprehensive tests for all value objects and entity methods
+- No compiler warnings
+
+=== Notes ===
+
+- This task defines interfaces only; actual implementations (adapters) will be created in P7-BE-011 and later tasks
+- The interfaces align with spec.md section 18 (External Integration)
+- Support for 6 major Chinese e-commerce platforms: Taobao/Tmall, JD, PDD, Douyin, WeChat Mini Program, Kuaishou
+
+=== Next Steps ===
+
+- P7-BE-011: Implement ProductMapping repository and service
+- Future: Implement platform adapters (Taobao, JD, etc.) in infrastructure layer
+- Future: Implement OrderSyncService application service
