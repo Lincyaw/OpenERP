@@ -19725,3 +19725,92 @@ Based on this validation, the following implementation work is needed:
 === Next Steps ===
 - impl-CustomerLevel-002: Repository and Service implementation
 - impl-CustomerLevel-003: Pricing strategy integration
+
+2026-01-26 - impl-CustomerLevel-002: CustomerLevel Repository and Service Implementation
+
+=== Implementation Details ===
+- Created CustomerLevelRepository interface in domain layer
+  - Methods: FindByID, FindByIDForTenant, FindByCode, FindAllForTenant
+  - Methods: FindActiveForTenant, FindDefaultForTenant, Save, Delete, DeleteForTenant
+  - Methods: ExistsByCode, CountCustomersWithLevel, CountCustomersByLevelCodes
+  - Method: InitializeDefaultLevels for tenant setup
+
+- Implemented GormCustomerLevelRepository in infrastructure layer
+  - Full GORM implementation of all repository methods
+  - Added batch query CountCustomersByLevelCodes to prevent N+1 queries
+  - InitializeDefaultLevels uses transaction for race condition safety
+
+- Created CustomerLevelService in application layer
+  - Full CRUD operations: Create, GetByID, GetByCode, GetDefault, List, Update, Delete
+  - Status operations: SetDefault, Activate, Deactivate
+  - Tenant initialization: InitializeDefaultLevels
+  - Level enrichment helper: EnrichCustomerLevel
+  - DTOs: CreateCustomerLevelRequest, UpdateCustomerLevelRequest
+  - Responses: CustomerLevelResponse, CustomerLevelListResponse
+
+- Created CustomerLevelHandler in interfaces/http/handler layer
+  - HTTP endpoints for all service operations
+  - Full Swagger/OpenAPI documentation
+  - Input validation for code parameter (alphanumeric with underscore/hyphen)
+
+- Wired everything in main.go
+  - Repository initialization
+  - Service initialization
+  - Handler initialization
+  - Route registration under /partner/customer-levels/*
+
+=== Verification ===
+- go build ./... - PASSED
+- go vet ./... - PASSED
+- go test ./internal/domain/partner/... - PASSED (all customer_level tests)
+- Code review performed by code-reviewer agent
+
+=== Code Review Findings (ADDRESSED) ===
+1. CRITICAL: N+1 query in List method
+   - Fixed: Added CountCustomersByLevelCodes batch method
+   - Service now fetches all counts in single query
+   
+2. HIGH: Race condition in InitializeDefaultLevels
+   - Fixed: Wrapped in database transaction
+   
+3. HIGH: Missing input validation for code parameter
+   - Fixed: Added isValidLevelCode() with regex validation
+   
+4. MEDIUM: Comment mismatch in repository interface
+   - Fixed: Updated comment to match method name
+
+=== Files Created ===
+- backend/internal/domain/partner/customer_level_repository.go
+- backend/internal/infrastructure/persistence/customer_level_repository.go
+- backend/internal/application/partner/customer_level_service.go
+- backend/internal/interfaces/http/handler/customer_level.go
+
+=== Files Modified ===
+- backend/cmd/server/main.go (wiring and route registration)
+
+=== API Endpoints Added ===
+- POST   /api/v1/partner/customer-levels           - Create level
+- GET    /api/v1/partner/customer-levels           - List levels
+- GET    /api/v1/partner/customer-levels/default   - Get default level
+- POST   /api/v1/partner/customer-levels/initialize - Initialize defaults
+- GET    /api/v1/partner/customer-levels/:id       - Get by ID
+- GET    /api/v1/partner/customer-levels/code/:code - Get by code
+- PUT    /api/v1/partner/customer-levels/:id       - Update level
+- DELETE /api/v1/partner/customer-levels/:id       - Delete level
+- POST   /api/v1/partner/customer-levels/:id/set-default   - Set as default
+- POST   /api/v1/partner/customer-levels/:id/activate      - Activate
+- POST   /api/v1/partner/customer-levels/:id/deactivate    - Deactivate
+
+=== Design Decisions ===
+- Used batch query pattern to prevent N+1 queries
+- Used database transaction for InitializeDefaultLevels
+- Added input validation for URL path parameters
+- Kept DTOs in both service and handler layers for swagger annotations
+
+=== Notes ===
+- Test coverage for new files to be added in future task
+- Authorization checks for admin-only endpoints to be added
+
+=== Next Steps ===
+- impl-CustomerLevel-003: Integrate CustomerLevel with Pricing Strategy
+- Add unit tests for repository, service, and handler

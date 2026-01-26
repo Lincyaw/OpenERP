@@ -108,6 +108,7 @@ func main() {
 	productUnitRepo := persistence.NewGormProductUnitRepository(db.DB)
 	categoryRepo := persistence.NewGormCategoryRepository(db.DB)
 	customerRepo := persistence.NewGormCustomerRepository(db.DB)
+	customerLevelRepo := persistence.NewGormCustomerLevelRepository(db.DB)
 	supplierRepo := persistence.NewGormSupplierRepository(db.DB)
 	warehouseRepo := persistence.NewGormWarehouseRepository(db.DB)
 	balanceTransactionRepo := persistence.NewGormBalanceTransactionRepository(db.DB)
@@ -184,6 +185,7 @@ func main() {
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)
+	customerLevelService := partnerapp.NewCustomerLevelService(customerLevelRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
 	balanceTransactionService := partnerapp.NewBalanceTransactionService(balanceTransactionRepo, customerRepo)
@@ -396,6 +398,7 @@ func main() {
 	productUnitHandler := handler.NewProductUnitHandler(productUnitService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	customerHandler := handler.NewCustomerHandler(customerService)
+	customerLevelHandler := handler.NewCustomerLevelHandler(customerLevelService)
 	supplierHandler := handler.NewSupplierHandler(supplierService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
 	balanceTransactionHandler := handler.NewBalanceTransactionHandler(balanceTransactionService)
@@ -580,6 +583,19 @@ func main() {
 	partnerRoutes.GET("/customers/:id/balance/summary", balanceTransactionHandler.GetBalanceSummary)
 	partnerRoutes.GET("/customers/:id/balance/transactions", balanceTransactionHandler.ListTransactions)
 	partnerRoutes.GET("/balance/transactions/:id", balanceTransactionHandler.GetTransaction)
+
+	// Customer Level routes
+	partnerRoutes.POST("/customer-levels", customerLevelHandler.Create)
+	partnerRoutes.GET("/customer-levels", customerLevelHandler.List)
+	partnerRoutes.GET("/customer-levels/default", customerLevelHandler.GetDefault)
+	partnerRoutes.POST("/customer-levels/initialize", customerLevelHandler.InitializeDefaultLevels)
+	partnerRoutes.GET("/customer-levels/:id", customerLevelHandler.GetByID)
+	partnerRoutes.GET("/customer-levels/code/:code", customerLevelHandler.GetByCode)
+	partnerRoutes.PUT("/customer-levels/:id", customerLevelHandler.Update)
+	partnerRoutes.DELETE("/customer-levels/:id", customerLevelHandler.Delete)
+	partnerRoutes.POST("/customer-levels/:id/set-default", customerLevelHandler.SetDefault)
+	partnerRoutes.POST("/customer-levels/:id/activate", customerLevelHandler.Activate)
+	partnerRoutes.POST("/customer-levels/:id/deactivate", customerLevelHandler.Deactivate)
 
 	// Supplier routes
 	partnerRoutes.POST("/suppliers", supplierHandler.Create)
