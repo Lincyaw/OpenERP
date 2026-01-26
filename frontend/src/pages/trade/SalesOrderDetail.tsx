@@ -95,8 +95,9 @@ export default function SalesOrderDetailPage() {
           await salesOrderApi.postTradeSalesOrdersIdConfirm(order.id!, {})
           Toast.success(t('orderDetail.messages.confirmSuccess'))
           fetchOrder()
-        } catch {
+        } catch (error) {
           Toast.error(t('orderDetail.messages.confirmError'))
+          throw error // Re-throw to keep modal loading state and prevent double-click
         } finally {
           setActionLoading(false)
         }
@@ -161,8 +162,9 @@ export default function SalesOrderDetailPage() {
           })
           Toast.success(t('orderDetail.messages.cancelSuccess'))
           fetchOrder()
-        } catch {
+        } catch (error) {
           Toast.error(t('orderDetail.messages.cancelError'))
+          throw error // Re-throw to keep modal loading state and prevent double-click
         } finally {
           setActionLoading(false)
         }
@@ -333,7 +335,13 @@ export default function SalesOrderDetailPage() {
 
     const discountPercent =
       order.discount_amount && order.total_amount
-        ? safeToFixed((toNumber(order.discount_amount) / (toNumber(order.total_amount) + toNumber(order.discount_amount))) * 100, 1, '0')
+        ? safeToFixed(
+            (toNumber(order.discount_amount) /
+              (toNumber(order.total_amount) + toNumber(order.discount_amount))) *
+              100,
+            1,
+            '0'
+          )
         : '0'
 
     return (

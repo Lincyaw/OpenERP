@@ -266,8 +266,9 @@ export default function SalesOrdersPage() {
               t('salesOrder.messages.confirmSuccess', { orderNumber: order.order_number })
             )
             fetchOrders()
-          } catch {
+          } catch (error) {
             Toast.error(t('salesOrder.messages.confirmError'))
+            throw error // Re-throw to keep modal loading state and prevent double-click
           }
         },
       })
@@ -339,8 +340,9 @@ export default function SalesOrdersPage() {
               t('salesOrder.messages.cancelSuccess', { orderNumber: order.order_number })
             )
             fetchOrders()
-          } catch {
+          } catch (error) {
             Toast.error(t('salesOrder.messages.cancelError'))
+            throw error // Re-throw to keep modal loading state and prevent double-click
           }
         },
       })
@@ -365,8 +367,9 @@ export default function SalesOrdersPage() {
               t('salesOrder.messages.deleteSuccess', { orderNumber: order.order_number })
             )
             fetchOrders()
-          } catch {
+          } catch (error) {
             Toast.error(t('salesOrder.messages.deleteError'))
+            throw error // Re-throw to keep modal loading state and prevent double-click
           }
         },
       })

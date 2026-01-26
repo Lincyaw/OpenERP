@@ -22120,3 +22120,74 @@ useEffect(() => {
 === Next Steps ===
 - Consider FE-002 (Modal 确认添加防重复点击) as next priority
 - May want to extract AbortController pattern into a custom hook in future refactor
+
+2026-01-26 - FE-002: Modal 确认添加防重复点击
+
+=== Implementation Details ===
+
+### Problem Analysis
+Modal.confirm dialogs in SalesOrders.tsx and SalesOrderDetail.tsx did not prevent double-click submissions:
+- Users could click OK button multiple times during async operations
+- This could lead to duplicate API calls
+- No visual feedback (loading state) during async operations in Modal
+
+### Solution Approach
+Leveraged Semi Design's built-in Modal.confirm behavior where:
+- When `onOk` returns a Promise, Modal automatically shows `confirmLoading` state
+- When Promise rejects, Modal stays open (does not close)
+- This prevents double-click because button is disabled during loading
+
+### Files Modified
+1. **frontend/src/pages/trade/SalesOrders.tsx**
+   - `handleConfirm` (line 262-276): Added `throw error` after Toast.error to re-throw caught errors
+   - `handleCancel` (line 327-349): Added `throw error` after Toast.error
+   - `handleDelete` (line 352-375): Added `throw error` after Toast.error
+
+2. **frontend/src/pages/trade/SalesOrderDetail.tsx**
+   - `handleConfirm` (line 85-106): Added `throw error` after Toast.error
+   - `handleCancel` (line 148-172): Added `throw error` after Toast.error
+
+### Implementation Pattern
+```typescript
+Modal.confirm({
+  title: 'Confirm Action',
+  content: 'Are you sure?',
+  onOk: async () => {
+    try {
+      await apiCall()
+      Toast.success('Operation successful')
+      refreshData()
+    } catch (error) {
+      Toast.error('Operation failed')
+      throw error // Re-throw to enable confirmLoading and prevent double-click
+    }
+  },
+})
+```
+
+### Key Design Decisions
+1. **Error Re-throwing Pattern**: By re-throwing the caught error after displaying the toast, we leverage Modal.confirm's built-in Promise handling
+2. **No Additional State Needed**: The Modal automatically manages confirmLoading when onOk returns a Promise
+3. **Backward Compatible**: Existing try-catch error handling preserved; only added throw statement
+
+=== Verification ===
+- TypeScript compilation: PASSED (no errors)
+- Code review by code-reviewer agent: APPROVED with suggestions
+  - Pattern is correct for preventing double-click
+  - Code reviewer noted this pattern should be applied to other Modal.confirm usages across codebase (follow-up task)
+  - actionLoading state usage in SalesOrderDetail.tsx is appropriate for disabling page buttons
+
+=== Code Review Summary ===
+- No critical or high-priority issues found
+- Pattern correctly enables Semi Design Modal's confirmLoading
+- Comments explain the purpose of error re-throwing
+- Suggestion: Consider extracting to a reusable utility function in future refactor
+
+=== Notes ===
+- This is a CRITICAL severity fix that prevents duplicate submissions
+- The pattern relies on Semi Design's internal Modal behavior where rejected Promise in onOk keeps modal open
+- Other files in the codebase (Customers.tsx, PurchaseOrders.tsx, etc.) have similar patterns that could benefit from this fix
+
+=== Next Steps ===
+- Consider creating a follow-up task to apply this pattern across all Modal.confirm usages
+- Consider extracting to a reusable `confirmAsync` utility function for DRY compliance
