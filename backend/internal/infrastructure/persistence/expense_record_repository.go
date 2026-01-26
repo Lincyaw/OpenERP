@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/erp/backend/internal/domain/finance"
@@ -207,15 +206,9 @@ func (r *GormExpenseRecordRepository) CountForTenant(ctx context.Context, tenant
 func (r *GormExpenseRecordRepository) applyFilter(query *gorm.DB, filter finance.ExpenseRecordFilter) *gorm.DB {
 	query = r.applyFilterWithoutPagination(query, filter)
 
-	// Apply sorting
-	sortField := "created_at"
-	sortOrder := "DESC"
-	if filter.OrderBy != "" {
-		sortField = filter.OrderBy
-	}
-	if filter.OrderDir != "" {
-		sortOrder = strings.ToUpper(filter.OrderDir)
-	}
+	// Apply sorting with whitelist validation to prevent SQL injection
+	sortField := ValidateSortField(filter.OrderBy, ExpenseRecordSortFields, "created_at")
+	sortOrder := ValidateSortOrder(filter.OrderDir)
 	query = query.Order(fmt.Sprintf("%s %s", sortField, sortOrder))
 
 	// Apply pagination

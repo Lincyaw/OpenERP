@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/erp/backend/internal/domain/inventory"
@@ -239,13 +238,15 @@ func (r *GormInventoryTransactionRepository) applyFilter(query *gorm.DB, filter 
 		query = query.Offset(offset).Limit(filter.PageSize)
 	}
 
-	// Apply ordering
+	// Apply ordering with whitelist validation to prevent SQL injection
 	if filter.OrderBy != "" {
-		orderDir := "ASC"
-		if strings.ToLower(filter.OrderDir) == "desc" {
-			orderDir = "DESC"
+		sortField := ValidateSortField(filter.OrderBy, InventoryTransactionSortFields, "")
+		if sortField != "" {
+			sortOrder := ValidateSortOrder(filter.OrderDir)
+			query = query.Order(sortField + " " + sortOrder)
+		} else {
+			query = query.Order("transaction_date DESC")
 		}
-		query = query.Order(filter.OrderBy + " " + orderDir)
 	} else {
 		query = query.Order("transaction_date DESC")
 	}

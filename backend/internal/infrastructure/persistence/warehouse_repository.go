@@ -318,13 +318,16 @@ func (r *GormWarehouseRepository) applyFilter(query *gorm.DB, filter shared.Filt
 		query = query.Offset(offset).Limit(filter.PageSize)
 	}
 
-	// Apply ordering
+	// Apply ordering with whitelist validation to prevent SQL injection
 	if filter.OrderBy != "" {
-		orderDir := "ASC"
-		if strings.ToLower(filter.OrderDir) == "desc" {
-			orderDir = "DESC"
+		sortField := ValidateSortField(filter.OrderBy, WarehouseSortFields, "")
+		if sortField != "" {
+			sortOrder := ValidateSortOrder(filter.OrderDir)
+			query = query.Order(sortField + " " + sortOrder)
+		} else {
+			// Default ordering if invalid field
+			query = query.Order("is_default DESC, sort_order ASC, name ASC")
 		}
-		query = query.Order(filter.OrderBy + " " + orderDir)
 	} else {
 		// Default ordering: default warehouse first, then by sort_order and name
 		query = query.Order("is_default DESC, sort_order ASC, name ASC")

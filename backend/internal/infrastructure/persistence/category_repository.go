@@ -303,13 +303,13 @@ func (r *GormCategoryRepository) applyFilter(query *gorm.DB, filter shared.Filte
 		query = query.Offset(offset).Limit(filter.PageSize)
 	}
 
-	// Apply ordering
+	// Apply ordering with whitelist validation to prevent SQL injection
 	if filter.OrderBy != "" {
-		orderDir := "ASC"
-		if strings.ToLower(filter.OrderDir) == "desc" {
-			orderDir = "DESC"
+		sortField := ValidateSortField(filter.OrderBy, CategorySortFields, "")
+		if sortField != "" {
+			sortOrder := ValidateSortOrder(filter.OrderDir)
+			query = query.Order(sortField + " " + sortOrder)
 		}
-		query = query.Order(filter.OrderBy + " " + orderDir)
 	}
 
 	return query

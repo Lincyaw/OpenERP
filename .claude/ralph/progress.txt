@@ -25311,3 +25311,91 @@ Code review performed by code-reviewer agent:
 - P7-BE-XXX: Implement backend API handlers for triggering manual sync
 - Future: Add real-time sync status updates via WebSocket
 - Future: Add sync error details and retry functionality
+
+---
+
+2025-01-27 - Task SEC-001: 修复 SQL 注入漏洞 - ORDER BY 子句未验证
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `backend/internal/infrastructure/persistence/sort_validation.go` - Central utility for ORDER BY validation
+   - `ValidateSortField()` - Validates sort field against whitelist, returns default if invalid
+   - `ValidateSortOrder()` - Validates sort direction (ASC/DESC only), returns DESC if invalid
+   - 20 entity-specific whitelists (UserSortFields, TenantSortFields, CustomerSortFields, etc.)
+
+2. `backend/internal/infrastructure/persistence/sort_validation_test.go` - Comprehensive unit tests
+   - Tests for ValidateSortField and ValidateSortOrder functions
+   - Tests for all 20 whitelist maps
+   - SQL injection prevention tests with 12 different attack payloads
+
+**Files Modified (19 vulnerable repositories fixed):**
+1. `account_payable_repository.go` - applyPayableFilter()
+2. `account_receivable_repository.go` - applyReceivableFilter()
+3. `category_repository.go` - applyFilter()
+4. `customer_repository.go` - applyFilter()
+5. `expense_record_repository.go` - applyFilter()
+6. `inventory_repository.go` - applyFilter()
+7. `inventory_transaction_repository.go` - applyFilter()
+8. `other_income_record_repository.go` - applyFilter()
+9. `product_repository.go` - applyFilter()
+10. `purchase_order_repository.go` - applyFilter()
+11. `purchase_return_repository.go` - applyFilter()
+12. `sales_order_repository.go` - applyFilter()
+13. `sales_return_repository.go` - applyFilter()
+14. `stock_batch_repository.go` - applyFilter()
+15. `supplier_repository.go` - applyFilter()
+16. `tenant_repository.go` - FindAll(), FindByStatus()
+17. `user_repository.go` - FindAll()
+18. `warehouse_repository.go` - applyFilter()
+(Note: stock_taking_repository.go already had proper validation)
+
+**Key Design Decisions:**
+1. **Whitelist approach**: Each entity has its own allowed sort fields map. Unknown fields are rejected.
+2. **Default fallback**: Invalid fields return to safe default (usually "created_at")
+3. **Case sensitivity**: Field names must match exactly (lowercase)
+4. **Centralized validation**: All validation logic in one file for maintainability
+5. **Entity-specific fields**: Each whitelist contains only fields that exist in that entity's table
+
+**Vulnerability Fixed:**
+Before: User input from `filter.OrderBy` was directly concatenated into SQL:
+```go
+query.Order(filter.OrderBy + " " + orderDir)  // VULNERABLE
+```
+
+After: Input is validated against whitelist:
+```go
+sortField := ValidateSortField(filter.OrderBy, EntitySortFields, "created_at")
+sortOrder := ValidateSortOrder(filter.OrderDir)
+query.Order(sortField + " " + sortOrder)  // SAFE
+```
+
+**Attack Examples Now Prevented:**
+- `id; DROP TABLE users;--` → Returns "created_at"
+- `id' OR '1'='1` → Returns "created_at"
+- `id UNION SELECT * FROM users` → Returns "created_at"
+- Any non-whitelisted field → Returns default
+
+=== Verification ===
+
+- [x] All unit tests pass (TestValidateSortField, TestValidateSortOrder, TestSQLInjectionPrevention)
+- [x] All whitelist tests pass (TestSortFieldsWhitelists)
+- [x] Go build succeeds (no errors)
+- [x] All existing persistence layer tests pass
+- [x] No unused imports after cleanup (strings package removed where no longer needed)
+
+=== Requirements Satisfied ===
+✅ 在所有 Repository 中实现 ORDER BY 字段白名单验证 - 19 repositories fixed
+✅ 创建 validateSortField() 工具函数 - Created ValidateSortField() and ValidateSortOrder()
+✅ 对 sortOrder 只允许 ASC/DESC - ValidateSortOrder() enforces this
+✅ 覆盖所有 16+ 个受影响的 Repository 文件 - 19 files modified (exceeds 16+)
+
+=== Notes ===
+- stock_taking_repository.go was the only file that already had proper validation (used as reference pattern)
+- Removed unused "strings" imports from 5 files that no longer needed strings.ToUpper/ToLower
+
+=== Next Steps ===
+- SEC-002: Remove hardcoded User IDs from finance operations
+- SEC-003: Review and fix any other potential injection points
+- Consider adding middleware-level input validation for API parameters
+

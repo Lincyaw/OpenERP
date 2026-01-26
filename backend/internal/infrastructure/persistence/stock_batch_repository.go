@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/erp/backend/internal/domain/inventory"
@@ -192,13 +191,15 @@ func (r *GormStockBatchRepository) applyFilter(query *gorm.DB, filter shared.Fil
 		query = query.Offset(offset).Limit(filter.PageSize)
 	}
 
-	// Apply ordering
+	// Apply ordering with whitelist validation to prevent SQL injection
 	if filter.OrderBy != "" {
-		orderDir := "ASC"
-		if strings.ToLower(filter.OrderDir) == "desc" {
-			orderDir = "DESC"
+		sortField := ValidateSortField(filter.OrderBy, StockBatchSortFields, "")
+		if sortField != "" {
+			sortOrder := ValidateSortOrder(filter.OrderDir)
+			query = query.Order(sortField + " " + sortOrder)
+		} else {
+			query = query.Order("COALESCE(expiry_date, '9999-12-31') ASC, created_at ASC")
 		}
-		query = query.Order(filter.OrderBy + " " + orderDir)
 	} else {
 		query = query.Order("COALESCE(expiry_date, '9999-12-31') ASC, created_at ASC")
 	}

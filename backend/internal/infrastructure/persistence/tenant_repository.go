@@ -77,15 +77,9 @@ func (r *GormTenantRepository) FindAll(ctx context.Context, filter shared.Filter
 		query = query.Where("name ILIKE ? OR code ILIKE ? OR short_name ILIKE ?", keyword, keyword, keyword)
 	}
 
-	// Apply sorting
-	sortField := filter.OrderBy
-	if sortField == "" {
-		sortField = "created_at"
-	}
-	sortOrder := "DESC"
-	if filter.OrderDir == "asc" {
-		sortOrder = "ASC"
-	}
+	// Apply sorting with whitelist validation to prevent SQL injection
+	sortField := ValidateSortField(filter.OrderBy, TenantSortFields, "created_at")
+	sortOrder := ValidateSortOrder(filter.OrderDir)
 	query = query.Order(sortField + " " + sortOrder)
 
 	// Apply pagination
@@ -124,15 +118,9 @@ func (r *GormTenantRepository) FindByStatus(ctx context.Context, status identity
 		query = query.Where("name ILIKE ? OR code ILIKE ?", keyword, keyword)
 	}
 
-	// Apply sorting
-	sortField := filter.OrderBy
-	if sortField == "" {
-		sortField = "created_at"
-	}
-	sortOrder := "DESC"
-	if filter.OrderDir == "asc" {
-		sortOrder = "ASC"
-	}
+	// Apply sorting with whitelist validation to prevent SQL injection
+	sortField := ValidateSortField(filter.OrderBy, TenantSortFields, "created_at")
+	sortOrder := ValidateSortOrder(filter.OrderDir)
 	query = query.Order(sortField + " " + sortOrder)
 
 	// Apply pagination

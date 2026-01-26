@@ -385,13 +385,15 @@ func (r *GormAccountPayableRepository) applyPayableFilter(query *gorm.DB, filter
 		query = query.Offset(offset).Limit(filter.PageSize)
 	}
 
-	// Apply ordering
+	// Apply ordering with whitelist validation to prevent SQL injection
 	if filter.OrderBy != "" {
-		orderDir := "ASC"
-		if strings.ToLower(filter.OrderDir) == "desc" {
-			orderDir = "DESC"
+		sortField := ValidateSortField(filter.OrderBy, AccountPayableSortFields, "")
+		if sortField != "" {
+			sortOrder := ValidateSortOrder(filter.OrderDir)
+			query = query.Order(sortField + " " + sortOrder)
+		} else {
+			query = query.Order("created_at DESC")
 		}
-		query = query.Order(filter.OrderBy + " " + orderDir)
 	} else {
 		query = query.Order("created_at DESC")
 	}

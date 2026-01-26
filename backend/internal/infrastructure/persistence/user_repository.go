@@ -136,15 +136,9 @@ func (r *GormUserRepository) FindAll(ctx context.Context, filter identity.UserFi
 		return nil, 0, err
 	}
 
-	// Apply sorting
-	sortBy := filter.SortBy
-	if sortBy == "" {
-		sortBy = "created_at"
-	}
-	sortOrder := filter.SortOrder
-	if sortOrder == "" {
-		sortOrder = "desc"
-	}
+	// Apply sorting with whitelist validation to prevent SQL injection
+	sortBy := ValidateSortField(filter.SortBy, UserSortFields, "created_at")
+	sortOrder := ValidateSortOrder(filter.SortOrder)
 	query = query.Order(sortBy + " " + sortOrder)
 
 	// Apply pagination

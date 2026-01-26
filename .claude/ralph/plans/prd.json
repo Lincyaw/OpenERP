@@ -4336,7 +4336,7 @@
       "对 sortOrder 只允许 ASC/DESC",
       "覆盖所有 16+ 个受影响的 Repository 文件"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "CRITICAL",
