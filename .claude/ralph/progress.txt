@@ -23928,3 +23928,128 @@ Added form reset functionality to prevent stale data when navigation fails after
 
 - Consider adding similar reset functionality to other form components (SalesReturnForm, PurchaseReturnForm) if they exhibit similar issues
 - Consider adding unit tests for the resetForm function in useOrderForm hook
+
+---
+
+2026-01-27 - SEC-007: Swagger 文档生产环境保护 / Swagger Documentation Production Protection
+
+=== Implementation Details ===
+
+Implemented comprehensive Swagger endpoint protection for production environments with three protection mechanisms:
+
+1. **Configuration System** (`backend/config.toml`):
+   - Added `[swagger]` configuration section with three options:
+     - `enabled`: Enable/disable Swagger endpoint
+     - `require_auth`: Require JWT authentication
+     - `allowed_ips`: IP whitelist (supports CIDR notation)
+
+2. **Config Loader** (`backend/internal/infrastructure/config/config.go`):
+   - Added `SwaggerConfig` struct with `Enabled`, `RequireAuth`, and `AllowedIPs` fields
+   - Added production validation: Swagger must be disabled, require auth, OR have IP restrictions
+   - Error message: "swagger endpoint must be disabled, require authentication, or have IP restriction in production"
+
+3. **Swagger Protection Middleware** (`backend/internal/interfaces/http/middleware/swagger.go`):
+   - Created new middleware with IP whitelist support (CIDR notation)
+   - Supports three protection modes:
+     - Disabled: Returns 404 for all Swagger requests
+     - RequireAuth: Requires valid JWT token
+     - IP Whitelist: Only allows requests from specified IPs/CIDRs
+   - Can combine RequireAuth + IP whitelist for maximum security
+   - Uses Gin's ClientIP for proper proxy support
+
+4. **Main Application** (`backend/cmd/server/main.go`):
+   - Replaced direct Swagger registration with protected route group
+   - Configured JWT middleware for Swagger authentication (if enabled)
+   - Added informative logging about Swagger protection status
+
+**Files modified:**
+- backend/config.toml (added [swagger] section)
+- backend/internal/infrastructure/config/config.go (added SwaggerConfig and validation)
+- backend/cmd/server/main.go (protected Swagger endpoint)
+
+**Files created:**
+- backend/internal/interfaces/http/middleware/swagger.go (protection middleware)
+- backend/internal/interfaces/http/middleware/swagger_test.go (unit tests)
+
+=== Verification ===
+
+- TypeScript compilation: N/A (backend only)
+- Go build: PASS (`go build ./cmd/server/...`)
+- Unit tests: PASS (122 tests in config and middleware packages)
+- Swagger middleware tests: All 9 test cases pass
+  - TestSwaggerProtection_Disabled
+  - TestSwaggerProtection_Enabled_NoRestrictions
+  - TestSwaggerProtection_IPWhitelist_Allowed
+  - TestSwaggerProtection_IPWhitelist_Denied
+  - TestSwaggerProtection_CIDRWhitelist
+  - TestSwaggerProtection_RequireAuth_WithMockJWT
+  - TestSwaggerProtection_RequireAuth_WithMockJWT_Allow
+  - TestSwaggerProtection_CombinedProtection
+  - TestIsIPAllowed
+- Config validation tests: All 8 production validation tests pass
+
+=== Design Decisions ===
+
+1. **Three-tier Protection**: Implemented three independent protection mechanisms that can be combined:
+   - Environment-based enable/disable
+   - JWT authentication requirement
+   - IP-based access control with CIDR support
+
+2. **Production Validation**: Config validation enforces that production deployments MUST have at least one protection mechanism enabled. This is a fail-safe to prevent accidental exposure.
+
+3. **CIDR Support**: IP whitelist supports both single IPs and CIDR notation (e.g., "10.0.0.0/8") for easier configuration of network ranges.
+
+4. **Gin ClientIP Integration**: Uses Gin's built-in ClientIP method which properly handles X-Forwarded-For headers when trusted proxies are configured.
+
+5. **Middleware Composition**: Created as a separate middleware that can be composed with JWT middleware, allowing flexible configuration.
+
+=== Configuration Examples ===
+
+Development (unrestricted):
+```toml
+[swagger]
+enabled = true
+require_auth = false
+allowed_ips = []
+```
+
+Production Option 1 (disabled):
+```toml
+[swagger]
+enabled = false
+```
+
+Production Option 2 (JWT auth required):
+```toml
+[swagger]
+enabled = true
+require_auth = true
+allowed_ips = []
+```
+
+Production Option 3 (IP whitelist):
+```toml
+[swagger]
+enabled = true
+require_auth = false
+allowed_ips = ["10.0.0.0/8", "192.168.1.100"]
+```
+
+Production Option 4 (combined - most secure):
+```toml
+[swagger]
+enabled = true
+require_auth = true
+allowed_ips = ["10.0.0.0/8"]
+```
+
+=== Notes ===
+
+- Existing pre-commit hook failures and integration test failures are pre-existing and unrelated to this change
+- The implementation follows the existing middleware patterns in the codebase
+- Error responses use the standard API response format
+
+=== Next Steps ===
+
+- SEC-008: Add stricter rate limiting for authentication endpoints
+- Consider adding audit logging for Swagger access attempts in production

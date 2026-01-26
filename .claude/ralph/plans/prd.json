@@ -5000,7 +5000,7 @@
       "或添加认证保护",
       "或限制 IP 访问"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "MEDIUM",

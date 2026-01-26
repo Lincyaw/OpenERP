@@ -482,8 +482,48 @@ func main() {
 	// Health check endpoint (outside API versioning)
 	engine.GET("/health", healthHandler(db, log))
 
-	// Swagger documentation endpoint
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Swagger documentation endpoint with protection
+	// In production, Swagger must be disabled, require auth, or have IP restrictions (SEC-007)
+	swaggerGroup := engine.Group("/swagger")
+	{
+		// Create JWT middleware for Swagger authentication (if enabled)
+		var swaggerJWTMiddleware gin.HandlerFunc
+		if cfg.Swagger.RequireAuth {
+			swaggerJWTMiddleware = middleware.JWTAuthMiddlewareWithConfig(middleware.JWTMiddlewareConfig{
+				JWTService: jwtService,
+				SkipPaths:  []string{}, // Don't skip any paths for Swagger auth
+				Logger:     log,
+			})
+		}
+
+		// Apply Swagger protection middleware
+		swaggerCfg := middleware.SwaggerConfig{
+			Enabled:     cfg.Swagger.Enabled,
+			RequireAuth: cfg.Swagger.RequireAuth,
+			AllowedIPs:  cfg.Swagger.AllowedIPs,
+		}
+		swaggerGroup.Use(middleware.SwaggerProtection(swaggerCfg, swaggerJWTMiddleware))
+		swaggerGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+
+	// Log Swagger configuration status
+	if cfg.Swagger.Enabled {
+		swaggerProtection := []string{}
+		if cfg.Swagger.RequireAuth {
+			swaggerProtection = append(swaggerProtection, "JWT auth required")
+		}
+		if len(cfg.Swagger.AllowedIPs) > 0 {
+			swaggerProtection = append(swaggerProtection, "IP whitelist")
+		}
+		if len(swaggerProtection) == 0 {
+			swaggerProtection = append(swaggerProtection, "unrestricted (development only)")
+		}
+		log.Info("Swagger documentation enabled",
+			zap.Strings("protection", swaggerProtection),
+		)
+	} else {
+		log.Info("Swagger documentation disabled")
+	}
 
 	// Payment gateway callback endpoints (no authentication required)
 	// These endpoints are called directly by external payment gateways

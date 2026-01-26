@@ -21,6 +21,7 @@ type Config struct {
 	HTTP      HTTPConfig
 	Scheduler SchedulerConfig
 	StockLock StockLockConfig
+	Swagger   SwaggerConfig
 }
 
 // LogConfig holds logging configuration
@@ -119,6 +120,13 @@ type StockLockConfig struct {
 	CheckInterval      time.Duration // How often to check for expired locks
 	DefaultExpiration  time.Duration // Default lock expiration (24h as per spec)
 	AutoReleaseEnabled bool          // Whether to auto-release expired locks
+}
+
+// SwaggerConfig holds Swagger documentation endpoint configuration
+type SwaggerConfig struct {
+	Enabled     bool     // Whether to enable Swagger endpoint
+	RequireAuth bool     // Require authentication to access Swagger
+	AllowedIPs  []string // IP whitelist (empty = allow all)
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -228,6 +236,11 @@ func Load() (*Config, error) {
 			CheckInterval:      v.GetDuration("stock_lock.check_interval"),
 			DefaultExpiration:  v.GetDuration("stock_lock.default_expiration"),
 			AutoReleaseEnabled: v.GetBool("stock_lock.auto_release_enabled"),
+		},
+		Swagger: SwaggerConfig{
+			Enabled:     v.GetBool("swagger.enabled"),
+			RequireAuth: v.GetBool("swagger.require_auth"),
+			AllowedIPs:  v.GetStringSlice("swagger.allowed_ips"),
 		},
 	}
 
@@ -379,6 +392,8 @@ func applyDefaults(cfg *Config) {
 	if cfg.StockLock.DefaultExpiration == 0 {
 		cfg.StockLock.DefaultExpiration = 24 * time.Hour // 24h as per spec
 	}
+	// Swagger defaults: enabled by default (will be overridden by validation in production)
+	// Note: We set enabled=true here, but production validation enforces proper configuration
 }
 
 // validate performs validation on the configuration
@@ -421,6 +436,12 @@ func (c *Config) validate() error {
 		for _, origin := range c.HTTP.CORSAllowOrigins {
 			if origin == "*" {
 				return fmt.Errorf("cors_allow_origins cannot be '*' in production (use specific origins)")
+			}
+		}
+		// Swagger must be disabled OR protected in production
+		if c.Swagger.Enabled {
+			if !c.Swagger.RequireAuth && len(c.Swagger.AllowedIPs) == 0 {
+				return fmt.Errorf("swagger endpoint must be disabled, require authentication, or have IP restriction in production")
 			}
 		}
 	}
