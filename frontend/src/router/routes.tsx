@@ -96,6 +96,8 @@ const RolesPage = () => lazyLoad(() => import('@/pages/system/Roles'))
 const PermissionsPage = () => lazyLoad(() => import('@/pages/system/Permissions'))
 const PaymentSettingsPage = () => lazyLoad(() => import('@/pages/system/PaymentSettings'))
 const PlatformConfigPage = () => lazyLoad(() => import('@/pages/system/PlatformConfig'))
+const PlatformSyncStatusPage = () => lazyLoad(() => import('@/pages/system/PlatformSyncStatus'))
+const ProductMappingsPage = () => lazyLoad(() => import('@/pages/integration/ProductMappings'))
 
 /**
  * Application routes with metadata
@@ -486,6 +488,24 @@ export const appRoutes: AppRoute[] = [
           permissions: [Permissions.TENANT_UPDATE],
         },
       },
+      {
+        path: '/system/platform-sync',
+        meta: {
+          title: 'Platform Sync Status',
+          icon: 'IconSync',
+          order: 6,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
+      {
+        path: '/system/product-mappings',
+        meta: {
+          title: 'Product Mappings',
+          icon: 'IconConnection',
+          order: 7,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
     ],
   },
 ]
@@ -555,6 +575,10 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return PaymentSettingsPage()
     case '/system/platform-config':
       return PlatformConfigPage()
+    case '/system/platform-sync':
+      return PlatformSyncStatusPage()
+    case '/system/product-mappings':
+      return ProductMappingsPage()
     default:
       return null
   }

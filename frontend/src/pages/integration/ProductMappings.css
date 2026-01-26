@@ -1,0 +1,192 @@
+/* Product Mappings Page Styles */
+
+.product-mappings-page {
+  padding: var(--spacing-4);
+}
+
+.product-mappings-card {
+  background: var(--semi-color-bg-1);
+  border-radius: var(--semi-border-radius-medium);
+}
+
+.product-mappings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-4);
+}
+
+.product-mappings-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+/* Product cell in table */
+.product-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-cell .product-name {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-text-0);
+}
+
+.product-cell .product-code {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  font-family: var(--semi-font-family-code);
+}
+
+/* Mapping Modal */
+.mapping-modal .semi-modal-body {
+  padding: var(--spacing-4) var(--spacing-6);
+}
+
+.mapping-modal .sync-settings-section {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.mapping-modal .sync-settings-section .semi-checkbox-addon {
+  color: var(--semi-color-text-1);
+}
+
+/* Batch Mapping Modal */
+.batch-mapping-modal .semi-modal-body {
+  padding: var(--spacing-4) var(--spacing-6);
+}
+
+.batch-mapping-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.batch-platform-section {
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.batch-sync-section {
+  padding: var(--spacing-2) 0;
+}
+
+.unmapped-products-section {
+  padding-top: var(--spacing-2);
+}
+
+.unmapped-products-section .semi-typography-h6 {
+  margin-bottom: var(--spacing-2);
+}
+
+.unmapped-products-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: var(--spacing-3);
+  background: var(--semi-color-bg-2);
+  border-radius: var(--semi-border-radius-small);
+  margin-top: var(--spacing-3);
+}
+
+.unmapped-products-list .semi-checkbox-group {
+  gap: var(--spacing-2);
+}
+
+.unmapped-product-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-1) 0;
+}
+
+.unmapped-product-item .product-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-primary);
+  min-width: 80px;
+}
+
+.unmapped-product-item .product-name {
+  flex: 1;
+  color: var(--semi-color-text-0);
+}
+
+.unmapped-product-item .product-unit {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  min-width: 40px;
+  text-align: right;
+}
+
+.batch-selection-info {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--semi-color-primary-light-default);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-mappings-page {
+    padding: var(--spacing-2);
+  }
+
+  .product-mappings-header {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .mapping-modal .semi-modal-body,
+  .batch-mapping-modal .semi-modal-body {
+    padding: var(--spacing-3);
+  }
+
+  .unmapped-product-item {
+    flex-wrap: wrap;
+  }
+
+  .unmapped-product-item .product-name {
+    width: 100%;
+    order: 1;
+    margin-top: var(--spacing-1);
+  }
+
+  .unmapped-product-item .product-code {
+    order: 0;
+  }
+
+  .unmapped-product-item .product-unit {
+    order: 2;
+    margin-left: auto;
+  }
+}
+
+/* Empty state styling */
+.unmapped-products-section .semi-empty {
+  padding: var(--spacing-8) var(--spacing-4);
+  background: var(--semi-color-bg-2);
+  border-radius: var(--semi-border-radius-small);
+  margin-top: var(--spacing-3);
+}
+
+/* Hover effects for better UX */
+.unmapped-products-list .semi-checkbox:hover {
+  background: var(--semi-color-fill-0);
+  border-radius: var(--semi-border-radius-small);
+}
+
+/* Tag in table actions */
+.product-mappings-page .bulk-action-bar .semi-tag {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity var(--semi-transition-duration) var(--semi-transition-timing-function);
+}
+
+.product-mappings-page .bulk-action-bar .semi-tag:hover {
+  opacity: 0.8;
+}

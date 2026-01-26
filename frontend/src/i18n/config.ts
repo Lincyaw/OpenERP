@@ -37,6 +37,7 @@ export const NAMESPACES = [
   'inventory', // Stock management
   'finance', // Financial management
   'system', // System settings, users, roles
+  'integration', // E-commerce platform integration
 ] as const
 
 export type Namespace = (typeof NAMESPACES)[number]

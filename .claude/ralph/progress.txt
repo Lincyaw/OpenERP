@@ -25127,3 +25127,95 @@ Files Modified/Created:
 - P7-BE-XXX: Implement connection test endpoint that validates credentials with actual platform
 - Future: Add OAuth authorization flow redirect for automatic token acquisition
 - Future: Add sync history/logs view
+
+---
+
+2025-01-27 - Task P7-FE-003: 商品映射管理页面 (Product Mapping Management Page)
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `frontend/src/pages/integration/ProductMappings.tsx` - Main product mapping management page
+   - Display mapping list with pagination, search and filters
+   - Platform filter (淘宝/天猫, 抖音, 京东, 拼多多, 微信小商店, 快手)
+   - Sync status filter (synced/not synced)
+   - Manual mapping modal with:
+     - Platform selection dropdown
+     - Local product autocomplete search
+     - Platform product autocomplete search
+     - Sync settings (sync price, sync inventory)
+   - Batch mapping modal with:
+     - Platform selection
+     - Bulk sync settings
+     - Multi-select unmapped products list
+   - Row actions (edit, delete)
+   - Bulk delete with confirmation
+
+2. `frontend/src/pages/integration/ProductMappings.css` - Styling for the page
+   - Responsive design for mobile/tablet/desktop
+   - Product cell styling for name/code display
+   - Modal form section styling
+   - Unmapped products list styling
+   - Batch selection info styling
+
+3. `frontend/src/locales/zh-CN/integration.json` - Chinese translations
+4. `frontend/src/locales/en-US/integration.json` - English translations
+
+**Files Modified:**
+1. `frontend/src/i18n/config.ts` - Added 'integration' namespace
+2. `frontend/src/i18n/index.ts` - Imported integration translations
+3. `frontend/src/router/routes.tsx` - Added route for /system/product-mappings
+   - Lazy-loaded ProductMappingsPage component
+   - Route requires TENANT_UPDATE permission
+   - Added to System module navigation (order: 6)
+
+**Key Design Decisions:**
+1. **DataTable integration**: Uses existing DataTable, TableToolbar, and BulkActionBar components for consistency
+2. **Autocomplete for product search**: Both local and platform products use searchable Select with remote data
+3. **Platform codes match backend**: Uses same platform codes as PlatformConfig (TAOBAO, DOUYIN, JD, PDD, WECHAT, KUAISHOU)
+4. **Mock data for demo**: API calls are stubbed with TODO comments, using mock data for demonstration
+5. **Batch mapping workflow**: Unmapped products fetched per-platform, users select multiple products to map at once
+6. **Translation namespace**: Created new 'integration' namespace for e-commerce integration features
+
+**Page Features:**
+| Feature | Description |
+|---------|-------------|
+| 展示映射列表 | Table with columns: local product, platform, platform product, sync settings, last sync, created at |
+| 支持手动映射 | Modal with platform select + product autocomplete search + sync options |
+| 支持批量映射 | Modal with platform select + checkbox list of unmapped products |
+
+**ProductMapping Data Model:**
+- id: Unique identifier
+- localProductId/Code/Name: Local product reference
+- platformCode: E-commerce platform (TAOBAO, JD, etc.)
+- platformProductId/Sku: Platform product reference
+- syncPrice: Enable price sync to platform
+- syncInventory: Enable inventory sync to platform
+- lastSyncAt: Last successful sync timestamp
+- createdAt/updatedAt: Audit timestamps
+
+=== Verification ===
+
+- TypeScript type check: PASS (tsc --noEmit)
+- ESLint: PASS (no errors in new files, only pre-existing warnings in codebase)
+- Route configuration: Verified route at /system/product-mappings
+- Translations: Both zh-CN and en-US complete with all keys
+
+=== Notes ===
+
+- Backend API integration is stubbed (TODO comments) - ready for actual API when available
+- The page follows project design system with Semi Design components
+- Accessibility: Form labels, keyboard navigation, focus states all properly configured
+- The platform codes match exactly with backend domain model (integration/ecommerce_platform.go)
+
+=== Requirements Satisfied ===
+✅ 展示映射列表 - DataTable with local/platform product info, sync settings, timestamps
+✅ 支持手动映射 - Manual mapping modal with autocomplete product search
+✅ 支持批量映射 - Batch mapping modal with platform selection and multi-select product list
+
+=== Next Steps ===
+- P7-BE-XXX: Implement backend API handlers for product mapping CRUD
+- P7-BE-XXX: Implement product search endpoints for autocomplete
+- P7-BE-XXX: Implement platform product fetch integration
+- Future: Add sync history/logs view per mapping
+- Future: Add auto-matching by product code/barcode

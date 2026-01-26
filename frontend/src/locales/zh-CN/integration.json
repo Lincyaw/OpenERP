@@ -1,0 +1,82 @@
+{
+  "productMappings": {
+    "title": "商品映射管理",
+    "subtitle": "管理本地商品与电商平台商品的映射关系",
+    "searchPlaceholder": "搜索商品编码、名称、平台SKU...",
+    "addMapping": "新增映射",
+    "editMapping": "编辑映射",
+    "createMapping": "创建映射",
+    "batchMapping": "批量映射",
+    "batchMappingTitle": "批量创建映射",
+    "confirmBatchMapping": "确认批量映射",
+    "platformFilter": "平台筛选",
+    "syncStatusFilter": "同步状态",
+    "allPlatforms": "全部平台",
+    "allSyncStatus": "全部状态",
+    "syncPrice": "同步价格",
+    "syncInventory": "同步库存",
+    "unmappedProducts": "未映射商品",
+    "unmappedProductsHint": "以下商品在该平台上尚未建立映射关系",
+    "noUnmappedProducts": "暂无未映射商品",
+    "noUnmappedProductsHint": "所有商品都已在该平台建立映射",
+    "selectedCount": "已选择 {{count}} 个商品",
+    "syncStatus": {
+      "synced": "已同步",
+      "notSynced": "未同步"
+    },
+    "columns": {
+      "localProduct": "本地商品",
+      "platform": "平台",
+      "platformProduct": "平台商品",
+      "syncSettings": "同步设置",
+      "lastSync": "最后同步",
+      "createdAt": "创建时间"
+    },
+    "fields": {
+      "platform": "电商平台",
+      "localProduct": "本地商品",
+      "platformProduct": "平台商品",
+      "syncPrice": "同步价格到平台",
+      "syncInventory": "同步库存到平台"
+    },
+    "placeholders": {
+      "searchLocalProduct": "输入商品编码或名称搜索",
+      "searchPlatformProduct": "输入平台SKU或商品名称搜索"
+    },
+    "sections": {
+      "syncSettings": "同步设置"
+    },
+    "actions": {
+      "edit": "编辑",
+      "delete": "删除",
+      "batchDelete": "批量删除"
+    },
+    "confirm": {
+      "deleteTitle": "确认删除",
+      "deleteContent": "确定要删除该映射吗？删除后需要重新建立映射关系。",
+      "deleteOk": "确认删除",
+      "batchDeleteTitle": "确认批量删除",
+      "batchDeleteContent": "确定要删除选中的 {{count}} 个映射吗？"
+    },
+    "messages": {
+      "fetchError": "获取映射列表失败",
+      "searchLocalError": "搜索本地商品失败",
+      "searchPlatformError": "搜索平台商品失败",
+      "fetchUnmappedError": "获取未映射商品失败",
+      "createSuccess": "映射创建成功",
+      "updateSuccess": "映射更新成功",
+      "saveError": "保存映射失败",
+      "deleteSuccess": "映射删除成功",
+      "deleteError": "删除映射失败",
+      "batchCreateSuccess": "成功创建 {{count}} 个映射",
+      "batchCreateError": "批量创建映射失败",
+      "batchDeleteSuccess": "成功删除 {{count}} 个映射",
+      "batchDeleteError": "批量删除失败"
+    },
+    "errors": {
+      "localProductRequired": "请选择本地商品",
+      "platformProductRequired": "请选择平台商品",
+      "noProductSelected": "请至少选择一个商品"
+    }
+  }
+}
