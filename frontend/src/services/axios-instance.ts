@@ -12,6 +12,7 @@ import {
   waitForRefresh,
   redirectToLogin,
 } from './token-refresh'
+import { handleError, ErrorType, parseError } from './error-handler'
 import { useAuthStore } from '@/store'
 import i18n from '@/i18n'
 
@@ -217,27 +218,39 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // Handle other errors
+    // Handle other errors with unified error handler
+    // Don't show toast for 401 errors as they're handled above (redirect to login)
+    const errorDetails = parseError(error)
+
     if (error.response) {
       const status = error.response.status
 
       switch (status) {
         case 403:
-          // Forbidden - user doesn't have permission
-          // Log to error tracking service in production
+          // Forbidden - show error message but don't redirect
+          handleError(error, { showToast: true, context: 'Permission denied' })
           break
         case 429:
-          // Rate limited
-          // Log to error tracking service in production
+          // Rate limited - show error message
+          handleError(error, { showToast: true, context: 'Rate limited' })
           break
         case 500:
-          // Internal server error
-          // Log to error tracking service in production
+        case 502:
+        case 503:
+        case 504:
+          // Server errors - show error message
+          handleError(error, { showToast: true, context: 'Server error' })
           break
+        default:
+          // Other HTTP errors (400, 404, 409, etc.)
+          // Only show toast if it's not a validation error (those should be handled by forms)
+          if (errorDetails.type !== ErrorType.VALIDATION) {
+            handleError(error, { showToast: true })
+          }
       }
     } else if (error.request) {
-      // Network error
-      // Log to error tracking service in production
+      // Network error - no response received
+      handleError(error, { showToast: true, context: 'Network error' })
     }
 
     return Promise.reject(error)

@@ -164,6 +164,45 @@
       "pendingPayablesDesc": "{{amount}} to pay"
     }
   },
+  "errors": {
+    "network": {
+      "message": "Network connection failed",
+      "suggestion": "Please check your network connection and try again"
+    },
+    "auth": {
+      "message": "Session has expired",
+      "suggestion": "Please log in again to continue"
+    },
+    "permission": {
+      "message": "You do not have permission for this action",
+      "suggestion": "Please contact your administrator for access"
+    },
+    "validation": {
+      "message": "Invalid data submitted",
+      "suggestion": "Please check your input and try again"
+    },
+    "not_found": {
+      "message": "Requested data not found",
+      "suggestion": "The data may have been deleted or moved"
+    },
+    "conflict": {
+      "message": "Data conflict detected",
+      "suggestion": "This data may have been modified by another user. Please refresh and try again"
+    },
+    "rate_limit": {
+      "message": "Too many requests",
+      "suggestion": "Please wait a moment and try again"
+    },
+    "server": {
+      "message": "System is busy",
+      "suggestion": "Please try again later"
+    },
+    "unknown": {
+      "message": "Operation failed",
+      "suggestion": "Please try again later"
+    },
+    "contactSupport": "If the problem persists, please contact support"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "catalog": "Catalog",

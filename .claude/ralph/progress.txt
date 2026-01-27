@@ -29286,3 +29286,88 @@ Integrated PrintButton component into document detail pages and added print acti
 - PRINT-FE-003: Template management page with Monaco editor
 - Consider adding print action to additional list pages (SalesReturns, StockTaking)
 - Add print functionality to finance module when detail pages are implemented
+
+---
+
+2025-01-28 - UX-FE-002: 统一错误处理服务
+
+=== Implementation Details ===
+
+Created unified error handler service that provides user-friendly error messages for all API errors, replacing technical error messages with localized, actionable feedback.
+
+**Core Service (error-handler.ts):**
+- ErrorType enum with 9 error types: NETWORK, AUTH, PERMISSION, VALIDATION, NOT_FOUND, CONFLICT, RATE_LIMIT, SERVER, UNKNOWN
+- detectErrorType() function to identify error type from HTTP status codes
+- parseError() function to extract error details from AxiosError or standard Error
+- handleError() unified error handler with toast notifications
+- createErrorHandler() factory function for reusable error handlers
+- Helper functions: isAuthError, isPermissionError, isValidationError, isNetworkError, canRetryError, isErrorType
+
+**Error Message Mapping:**
+- Network error: "网络连接失败" / "请检查您的网络连接后重试"
+- Auth error (401): "登录已过期" / "请重新登录以继续操作"
+- Permission error (403): "您没有执行此操作的权限" / "请联系管理员获取相应权限"
+- Validation error (400/422): "提交的数据格式有误" / "请检查您填写的内容后重试"
+- Not found (404): "请求的数据不存在" / "数据可能已被删除或移动"
+- Conflict (409): "数据冲突" / "该数据可能已被其他用户修改，请刷新页面后重试"
+- Rate limit (429): "操作过于频繁" / "请稍等片刻后再试"
+- Server error (500+): "系统繁忙" / "请稍后重试"
+- Unknown: "操作失败" / "请稍后重试"
+- Contact support: "如问题持续，请联系客服"
+
+**Axios Integration:**
+- Modified axios-instance.ts response interceptor to use unified error handler
+- Handles 403, 429, 5xx errors with appropriate toast notifications
+- Network errors (no response) handled with toast
+- Validation errors (400/422) don't show toast (handled by forms)
+- 401 errors handled separately (existing token refresh logic)
+
+**i18n Support:**
+- Added 'errors' section to zh-CN/common.json with all error messages and suggestions
+- Added 'errors' section to en-US/common.json with English translations
+
+**Exports:**
+- Updated services/index.ts to export all error handler functions and types
+
+=== Verification ===
+
+- ✅ TypeScript type-check passes (`npm run type-check`)
+- ✅ All 51 unit tests pass for error-handler.test.ts:
+  - 13 tests for detectErrorType()
+  - 17 tests for parseError()
+  - 10 tests for handleError()
+  - 1 test for createErrorHandler()
+  - 10 tests for error type checkers
+- ✅ Code review passed (no CRITICAL or HIGH issues)
+- ✅ Follows project patterns and coding standards
+- ✅ Uses Semi Design Toast component
+- ✅ Full i18n support (zh-CN and en-US)
+
+=== Design Decisions ===
+
+1. **Toast Severity**: Warning toast for auth/permission/validation errors (recoverable), Error toast for network/server/unknown (severe)
+2. **Validation Errors**: Don't show toast automatically - forms should handle inline errors
+3. **Retry Logic**: canRetry=true only for NETWORK, SERVER, RATE_LIMIT errors
+4. **Contact Support**: showContactSupport=true only for SERVER and UNKNOWN errors
+5. **Field Errors**: Extracts field-level validation errors from backend response for form integration
+
+=== Files Modified ===
+
+- frontend/src/services/error-handler.ts (NEW)
+- frontend/src/services/error-handler.test.ts (NEW)
+- frontend/src/services/axios-instance.ts
+- frontend/src/services/index.ts
+- frontend/src/locales/zh-CN/common.json
+- frontend/src/locales/en-US/common.json
+
+=== Notes ===
+
+- TODO added for production error tracking integration (Sentry)
+- All error types have explicit switch cases for maintainability
+- parseError handles AxiosError, standard Error, and unknown types
+
+=== Next Steps ===
+
+- UX-FE-003: 表单自动保存与恢复 (if exists)
+- Consider adding retry button component that uses canRetryError()
+- Integrate error tracking service for production monitoring

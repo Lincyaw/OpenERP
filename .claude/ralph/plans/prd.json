@@ -7106,7 +7106,7 @@
       "- 错误提示包含可执行的操作建议（如\"重试\"按钮）",
       "- 严重错误提供客服联系方式"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P1-001",
     "affectedModules": [
       "frontend/src/services/error-handler.ts",

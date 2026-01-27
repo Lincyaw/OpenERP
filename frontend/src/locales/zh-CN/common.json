@@ -164,6 +164,45 @@
       "pendingPayablesDesc": "{{amount}} 待付款"
     }
   },
+  "errors": {
+    "network": {
+      "message": "网络连接失败",
+      "suggestion": "请检查您的网络连接后重试"
+    },
+    "auth": {
+      "message": "登录已过期",
+      "suggestion": "请重新登录以继续操作"
+    },
+    "permission": {
+      "message": "您没有执行此操作的权限",
+      "suggestion": "请联系管理员获取相应权限"
+    },
+    "validation": {
+      "message": "提交的数据格式有误",
+      "suggestion": "请检查您填写的内容后重试"
+    },
+    "not_found": {
+      "message": "请求的数据不存在",
+      "suggestion": "数据可能已被删除或移动"
+    },
+    "conflict": {
+      "message": "数据冲突",
+      "suggestion": "该数据可能已被其他用户修改，请刷新页面后重试"
+    },
+    "rate_limit": {
+      "message": "操作过于频繁",
+      "suggestion": "请稍等片刻后再试"
+    },
+    "server": {
+      "message": "系统繁忙",
+      "suggestion": "请稍后重试"
+    },
+    "unknown": {
+      "message": "操作失败",
+      "suggestion": "请稍后重试"
+    },
+    "contactSupport": "如问题持续，请联系客服"
+  },
   "nav": {
     "dashboard": "工作台",
     "catalog": "商品管理",
