@@ -33,6 +33,7 @@ type PaymentCallbackService struct {
 	gateways           map[finance.PaymentGatewayType]finance.PaymentGateway
 	receiptVoucherRepo finance.ReceiptVoucherRepository
 	receivableRepo     finance.AccountReceivableRepository
+	refundRecordRepo   finance.RefundRecordRepository
 	eventPublisher     shared.EventPublisher
 	reconciliationSvc  *finance.ReconciliationService
 	logger             *zap.Logger
@@ -44,6 +45,7 @@ type PaymentCallbackServiceConfig struct {
 	Gateways           []finance.PaymentGateway
 	ReceiptVoucherRepo finance.ReceiptVoucherRepository
 	ReceivableRepo     finance.AccountReceivableRepository
+	RefundRecordRepo   finance.RefundRecordRepository
 	EventPublisher     shared.EventPublisher
 	Logger             *zap.Logger
 }
@@ -64,6 +66,7 @@ func NewPaymentCallbackService(config PaymentCallbackServiceConfig) *PaymentCall
 		gateways:           gateways,
 		receiptVoucherRepo: config.ReceiptVoucherRepo,
 		receivableRepo:     config.ReceivableRepo,
+		refundRecordRepo:   config.RefundRecordRepo,
 		eventPublisher:     config.EventPublisher,
 		reconciliationSvc:  finance.NewReconciliationService(),
 		logger:             logger,
@@ -364,13 +367,27 @@ func (s *PaymentCallbackService) HandleRefundCallback(ctx context.Context, callb
 		zap.String("refund_number", callback.RefundNumber),
 		zap.String("amount", callback.RefundAmount.String()))
 
-	// TODO: Implement refund record update when refund entity is available
-	// For now, just publish the event
+	// Update or create refund record if repository is available
+	if s.refundRecordRepo != nil {
+		if err := s.updateOrCreateRefundRecord(ctx, callback); err != nil {
+			s.logger.Warn("Failed to update refund record",
+				zap.String("refund_number", callback.RefundNumber),
+				zap.Error(err))
+			// Don't fail the callback for record update errors
+		}
+	}
 
 	// Publish refund completed event
 	if s.eventPublisher != nil {
-		// Use Nil UUID as tenant ID for now - in production this should be looked up
-		event := finance.NewGatewayRefundCompletedEvent(uuid.Nil, callback)
+		// Use Nil UUID as tenant ID for now - in production this should be looked up from the refund record
+		tenantID := uuid.Nil
+		if s.refundRecordRepo != nil {
+			// Try to get tenant ID from existing refund record
+			if record, err := s.refundRecordRepo.FindByGatewayRefundID(ctx, callback.GatewayType, callback.GatewayRefundID); err == nil && record != nil {
+				tenantID = record.TenantID
+			}
+		}
+		event := finance.NewGatewayRefundCompletedEvent(tenantID, callback)
 		if err := s.eventPublisher.Publish(ctx, event); err != nil {
 			s.logger.Warn("Failed to publish refund completed event",
 				zap.String("refund_number", callback.RefundNumber),
@@ -378,6 +395,66 @@ func (s *PaymentCallbackService) HandleRefundCallback(ctx context.Context, callb
 			// Don't fail the callback for event publishing errors
 		}
 	}
+
+	return nil
+}
+
+// updateOrCreateRefundRecord updates an existing refund record or creates a new one from the callback
+func (s *PaymentCallbackService) updateOrCreateRefundRecord(ctx context.Context, callback *finance.RefundCallback) error {
+	// Try to find existing refund record by gateway refund ID
+	existingRecord, err := s.refundRecordRepo.FindByGatewayRefundID(ctx, callback.GatewayType, callback.GatewayRefundID)
+	if err != nil {
+		return fmt.Errorf("failed to find existing refund record: %w", err)
+	}
+
+	if existingRecord != nil {
+		// Update existing record with callback information
+		if err := existingRecord.CompleteFromCallback(callback); err != nil {
+			return fmt.Errorf("failed to complete refund record: %w", err)
+		}
+
+		if err := s.refundRecordRepo.SaveWithLock(ctx, existingRecord); err != nil {
+			return fmt.Errorf("failed to save refund record: %w", err)
+		}
+
+		s.logger.Info("Refund record updated from callback",
+			zap.String("refund_id", existingRecord.ID.String()),
+			zap.String("refund_number", existingRecord.RefundNumber),
+			zap.String("status", string(existingRecord.Status)))
+
+		return nil
+	}
+
+	// Try to find by refund number if provided
+	if callback.RefundNumber != "" {
+		// We need tenant ID to search by refund number, but we don't have it from the callback
+		// This is a limitation - we'll create a new record instead
+		s.logger.Info("No existing refund record found by gateway refund ID, will create new record",
+			zap.String("gateway_refund_id", callback.GatewayRefundID))
+	}
+
+	// Create a new refund record from the callback
+	// Note: This creates a minimal record since we don't have full context from the callback
+	// In production, refund records should be created when initiating the refund, not from callbacks
+
+	// Generate a new refund number for the orphan callback record
+	// Use a tenant ID of Nil for orphan records - these should be matched to the correct tenant later
+	refundNumber := fmt.Sprintf("RF-CB-%s", callback.GatewayRefundID[:min(8, len(callback.GatewayRefundID))])
+
+	newRecord, err := finance.NewRefundRecordFromCallback(uuid.Nil, refundNumber, callback)
+	if err != nil {
+		return fmt.Errorf("failed to create refund record from callback: %w", err)
+	}
+
+	if err := s.refundRecordRepo.Save(ctx, newRecord); err != nil {
+		return fmt.Errorf("failed to save new refund record: %w", err)
+	}
+
+	s.logger.Info("New refund record created from callback",
+		zap.String("refund_id", newRecord.ID.String()),
+		zap.String("refund_number", newRecord.RefundNumber),
+		zap.String("gateway_refund_id", callback.GatewayRefundID),
+		zap.String("status", string(newRecord.Status)))
 
 	return nil
 }

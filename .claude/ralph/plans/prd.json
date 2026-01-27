@@ -5637,7 +5637,7 @@
       "- 可查询退款历史记录",
       "运行命令 make e2e ARGS=\"tests/e2e/finance/payment-refund.spec.ts --project=chromium\" 进行测试"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P7-BE-004",
     "affectedModules": [
       "backend/internal/application/finance/payment_callback_service.go"

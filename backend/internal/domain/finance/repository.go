@@ -638,3 +638,86 @@ type DebitMemoRepository interface {
 	// GenerateMemoNumber generates a unique memo number for a tenant
 	GenerateMemoNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
 }
+
+// RefundRecordFilter defines filtering options for refund record queries
+type RefundRecordFilter struct {
+	shared.Filter
+	CustomerID  *uuid.UUID          // Filter by customer
+	Status      *RefundRecordStatus // Filter by status
+	SourceType  *RefundSourceType   // Filter by source type
+	SourceID    *uuid.UUID          // Filter by source document
+	GatewayType *PaymentGatewayType // Filter by payment gateway
+	FromDate    *time.Time          // Filter by creation date range start
+	ToDate      *time.Time          // Filter by creation date range end
+	MinAmount   *decimal.Decimal    // Filter by minimum refund amount
+	MaxAmount   *decimal.Decimal    // Filter by maximum refund amount
+}
+
+// RefundRecordRepository defines the interface for refund record persistence
+type RefundRecordRepository interface {
+	// FindByID finds a refund record by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*RefundRecord, error)
+
+	// FindByIDForTenant finds a refund record by ID for a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*RefundRecord, error)
+
+	// FindByRefundNumber finds by refund number for a tenant
+	FindByRefundNumber(ctx context.Context, tenantID uuid.UUID, refundNumber string) (*RefundRecord, error)
+
+	// FindByGatewayRefundID finds by gateway refund ID
+	FindByGatewayRefundID(ctx context.Context, gatewayType PaymentGatewayType, gatewayRefundID string) (*RefundRecord, error)
+
+	// FindBySource finds by source document (e.g., sales return, credit memo)
+	FindBySource(ctx context.Context, tenantID uuid.UUID, sourceType RefundSourceType, sourceID uuid.UUID) ([]RefundRecord, error)
+
+	// FindAllForTenant finds all refund records for a tenant with filtering
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter RefundRecordFilter) ([]RefundRecord, error)
+
+	// FindByCustomer finds refund records for a customer
+	FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter RefundRecordFilter) ([]RefundRecord, error)
+
+	// FindByStatus finds refund records by status for a tenant
+	FindByStatus(ctx context.Context, tenantID uuid.UUID, status RefundRecordStatus, filter RefundRecordFilter) ([]RefundRecord, error)
+
+	// FindPending finds all pending refund records for a tenant
+	FindPending(ctx context.Context, tenantID uuid.UUID) ([]RefundRecord, error)
+
+	// Save creates or updates a refund record
+	Save(ctx context.Context, record *RefundRecord) error
+
+	// SaveWithLock saves with optimistic locking (version check)
+	SaveWithLock(ctx context.Context, record *RefundRecord) error
+
+	// Delete soft deletes a refund record
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant soft deletes a refund record for a tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// CountForTenant counts refund records for a tenant with optional filters
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter RefundRecordFilter) (int64, error)
+
+	// CountByStatus counts refund records by status for a tenant
+	CountByStatus(ctx context.Context, tenantID uuid.UUID, status RefundRecordStatus) (int64, error)
+
+	// CountByCustomer counts refund records for a customer
+	CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
+
+	// SumByCustomer calculates total refund amount for a customer
+	SumByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error)
+
+	// SumForTenant calculates total refund amount for a tenant
+	SumForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error)
+
+	// SumSuccessfulByCustomer calculates total successful refund amount for a customer
+	SumSuccessfulByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error)
+
+	// ExistsByRefundNumber checks if a refund number exists for a tenant
+	ExistsByRefundNumber(ctx context.Context, tenantID uuid.UUID, refundNumber string) (bool, error)
+
+	// ExistsByGatewayRefundID checks if a refund exists for the given gateway refund ID
+	ExistsByGatewayRefundID(ctx context.Context, gatewayType PaymentGatewayType, gatewayRefundID string) (bool, error)
+
+	// GenerateRefundNumber generates a unique refund number for a tenant
+	GenerateRefundNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+}

@@ -808,3 +808,115 @@ func TrialBalanceAuditLogModelFromDomain(al *finance.TrialBalanceAuditLog) *Tria
 	m.FromDomain(al)
 	return m
 }
+
+// RefundRecordModel is the persistence model for the RefundRecord aggregate root.
+type RefundRecordModel struct {
+	TenantAggregateModel
+	RefundNumber         string                     `gorm:"type:varchar(50);not null;uniqueIndex:idx_refund_tenant_number,priority:2"`
+	OriginalPaymentID    *uuid.UUID                 `gorm:"type:uuid;index"`
+	OriginalOrderID      uuid.UUID                  `gorm:"type:uuid;not null;index"`
+	OriginalOrderNumber  string                     `gorm:"type:varchar(50);not null"`
+	SourceType           finance.RefundSourceType   `gorm:"type:varchar(30);not null;index"`
+	SourceID             uuid.UUID                  `gorm:"type:uuid;not null;index"`
+	SourceNumber         string                     `gorm:"type:varchar(50)"`
+	CustomerID           uuid.UUID                  `gorm:"type:uuid;not null;index"`
+	CustomerName         string                     `gorm:"type:varchar(200);not null"`
+	RefundAmount         decimal.Decimal            `gorm:"type:decimal(18,4);not null"`
+	ActualRefundAmount   decimal.Decimal            `gorm:"type:decimal(18,4);not null"`
+	Currency             string                     `gorm:"type:varchar(10);not null;default:'CNY'"`
+	GatewayType          finance.PaymentGatewayType `gorm:"type:varchar(20);not null;index"`
+	GatewayRefundID      string                     `gorm:"type:varchar(100);index"`
+	GatewayOrderID       string                     `gorm:"type:varchar(100)"`
+	GatewayTransactionID string                     `gorm:"type:varchar(100)"`
+	Status               finance.RefundRecordStatus `gorm:"type:varchar(20);not null;default:'PENDING';index"`
+	Reason               string                     `gorm:"type:varchar(500)"`
+	Remark               string                     `gorm:"type:text"`
+	FailReason           string                     `gorm:"type:varchar(500)"`
+	RawResponse          string                     `gorm:"type:text"`
+	RequestedAt          *time.Time                 `gorm:"index"`
+	CompletedAt          *time.Time
+	FailedAt             *time.Time
+}
+
+// TableName returns the table name for GORM
+func (RefundRecordModel) TableName() string {
+	return "refund_records"
+}
+
+// ToDomain converts the persistence model to a domain RefundRecord entity.
+func (m *RefundRecordModel) ToDomain() *finance.RefundRecord {
+	return &finance.RefundRecord{
+		TenantAggregateRoot: shared.TenantAggregateRoot{
+			BaseAggregateRoot: shared.BaseAggregateRoot{
+				BaseEntity: shared.BaseEntity{
+					ID:        m.ID,
+					CreatedAt: m.CreatedAt,
+					UpdatedAt: m.UpdatedAt,
+				},
+				Version: m.Version,
+			},
+			TenantID:  m.TenantID,
+			CreatedBy: m.CreatedBy,
+		},
+		RefundNumber:         m.RefundNumber,
+		OriginalPaymentID:    m.OriginalPaymentID,
+		OriginalOrderID:      m.OriginalOrderID,
+		OriginalOrderNumber:  m.OriginalOrderNumber,
+		SourceType:           m.SourceType,
+		SourceID:             m.SourceID,
+		SourceNumber:         m.SourceNumber,
+		CustomerID:           m.CustomerID,
+		CustomerName:         m.CustomerName,
+		RefundAmount:         m.RefundAmount,
+		ActualRefundAmount:   m.ActualRefundAmount,
+		Currency:             m.Currency,
+		GatewayType:          m.GatewayType,
+		GatewayRefundID:      m.GatewayRefundID,
+		GatewayOrderID:       m.GatewayOrderID,
+		GatewayTransactionID: m.GatewayTransactionID,
+		Status:               m.Status,
+		Reason:               m.Reason,
+		Remark:               m.Remark,
+		FailReason:           m.FailReason,
+		RawResponse:          m.RawResponse,
+		RequestedAt:          m.RequestedAt,
+		CompletedAt:          m.CompletedAt,
+		FailedAt:             m.FailedAt,
+	}
+}
+
+// FromDomain populates the persistence model from a domain RefundRecord entity.
+func (m *RefundRecordModel) FromDomain(rr *finance.RefundRecord) {
+	m.FromDomainTenantAggregateRoot(rr.TenantAggregateRoot)
+	m.RefundNumber = rr.RefundNumber
+	m.OriginalPaymentID = rr.OriginalPaymentID
+	m.OriginalOrderID = rr.OriginalOrderID
+	m.OriginalOrderNumber = rr.OriginalOrderNumber
+	m.SourceType = rr.SourceType
+	m.SourceID = rr.SourceID
+	m.SourceNumber = rr.SourceNumber
+	m.CustomerID = rr.CustomerID
+	m.CustomerName = rr.CustomerName
+	m.RefundAmount = rr.RefundAmount
+	m.ActualRefundAmount = rr.ActualRefundAmount
+	m.Currency = rr.Currency
+	m.GatewayType = rr.GatewayType
+	m.GatewayRefundID = rr.GatewayRefundID
+	m.GatewayOrderID = rr.GatewayOrderID
+	m.GatewayTransactionID = rr.GatewayTransactionID
+	m.Status = rr.Status
+	m.Reason = rr.Reason
+	m.Remark = rr.Remark
+	m.FailReason = rr.FailReason
+	m.RawResponse = rr.RawResponse
+	m.RequestedAt = rr.RequestedAt
+	m.CompletedAt = rr.CompletedAt
+	m.FailedAt = rr.FailedAt
+}
+
+// RefundRecordModelFromDomain creates a new persistence model from a domain RefundRecord.
+func RefundRecordModelFromDomain(rr *finance.RefundRecord) *RefundRecordModel {
+	m := &RefundRecordModel{}
+	m.FromDomain(rr)
+	return m
+}

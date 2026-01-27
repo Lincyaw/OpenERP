@@ -28150,3 +28150,95 @@ The test file `frontend/tests/e2e/trade/purchase-flow.spec.ts` covers:
 ### Files Modified
 - `frontend/tests/e2e/trade/purchase-flow.spec.ts` - NEW (created comprehensive E2E test file)
 - `.claude/ralph/plans/prd.json` - Updated passes: true
+
+---
+
+## 2026-01-27 - GAP-PAY-001: 实现退款记录关联更新
+
+### Task Summary
+Implemented refund record entity and updated payment callback service to store and track refund records from payment gateway callbacks (WeChat/Alipay).
+
+### Background
+The payment_callback_service.go had a TODO at line 320 for implementing refund record updates. Previously, refunds were only handled through Credit Memos without independent tracking of gateway refund status.
+
+### What was done
+
+1. **RefundRecord Domain Entity** (`backend/internal/domain/finance/refund.go`):
+   - Created RefundRecord aggregate root for tracking payment gateway refunds
+   - RefundRecordStatus enum: PENDING, PROCESSING, SUCCESS, FAILED, CLOSED
+   - RefundSourceType enum: SALES_RETURN, CREDIT_MEMO, ORDER_CANCEL, MANUAL
+   - Links to original payment, order, and source document (sales return/credit memo)
+   - Stores gateway information: GatewayRefundID, GatewayOrderID, GatewayTransactionID
+   - State machine for refund lifecycle: MarkProcessing, Complete, Fail, Close
+   - Factory methods: NewRefundRecord, NewRefundRecordFromCallback
+
+2. **Refund Domain Events** (`backend/internal/domain/finance/refund_events.go`):
+   - RefundRecordCreatedEvent: When new refund is initiated
+   - RefundRecordCompletedEvent: When gateway confirms successful refund
+   - RefundRecordFailedEvent: When refund fails
+
+3. **RefundRecordRepository Interface** (`backend/internal/domain/finance/repository.go`):
+   - Added RefundRecordFilter for query filtering
+   - Full repository interface with CRUD operations
+   - FindByGatewayRefundID for callback matching
+   - FindBySource for linking to source documents
+   - GenerateRefundNumber for unique number generation
+
+4. **Repository Implementation** (`backend/internal/infrastructure/persistence/refund_record_repository.go`):
+   - GormRefundRecordRepository with all interface methods
+   - Optimistic locking support with SaveWithLock
+   - Pagination and filtering support
+   - Sum queries for reporting (by customer, by tenant)
+
+5. **Persistence Model** (`backend/internal/infrastructure/persistence/models/finance.go`):
+   - RefundRecordModel with proper GORM tags
+   - ToDomain/FromDomain conversion methods
+
+6. **PaymentCallbackService Update** (`backend/internal/application/finance/payment_callback_service.go`):
+   - Added RefundRecordRepository to service config
+   - Updated HandleRefundCallback to:
+     - Find existing refund record by gateway refund ID
+     - Update existing record with callback data
+     - Create new record if no match found (orphan callback)
+     - Look up tenant ID from existing record for event publishing
+
+7. **Database Migration** (`backend/migrations/000032_create_refund_records.up.sql`):
+   - Created refund_records table with all fields
+   - Foreign key constraints to tenants and customers
+   - Indexes for common queries: tenant, customer, status, gateway, source
+   - Check constraints for valid status, source type, and gateway type
+
+8. **Unit Tests** (`backend/internal/domain/finance/refund_test.go`):
+   - Comprehensive tests for RefundRecord entity
+   - Tests for all status transitions and validation
+   - Tests for factory methods and helper functions
+   - 23 test cases all passing
+
+### Files Created
+- `backend/internal/domain/finance/refund.go` - RefundRecord aggregate root
+- `backend/internal/domain/finance/refund_events.go` - Domain events
+- `backend/internal/domain/finance/refund_test.go` - Unit tests
+- `backend/internal/infrastructure/persistence/refund_record_repository.go` - Repository implementation
+- `backend/migrations/000032_create_refund_records.up.sql` - Up migration
+- `backend/migrations/000032_create_refund_records.down.sql` - Down migration
+
+### Files Modified
+- `backend/internal/domain/finance/repository.go` - Added RefundRecordRepository interface
+- `backend/internal/infrastructure/persistence/models/finance.go` - Added RefundRecordModel
+- `backend/internal/application/finance/payment_callback_service.go` - Updated to use refund repository
+
+### Verification
+- ✅ Go build successful
+- ✅ All 23 unit tests passing
+- ✅ Type checking passed
+
+### Notes
+- Refund records can be created either proactively (when initiating refund) or reactively (from callback)
+- Orphan callbacks (no existing record) are handled by creating new records with RF-CB- prefix
+- The implementation follows DDD principles with proper aggregate boundaries
+- Events are published for downstream processing (financial reconciliation, notifications)
+
+### Next Steps
+- Add API endpoints for querying refund history
+- Create frontend UI for viewing refund records
+- Integrate with sales return workflow to auto-create refund records
