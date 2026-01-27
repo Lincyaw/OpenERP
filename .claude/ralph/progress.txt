@@ -28447,3 +28447,107 @@ collector_endpoint = "localhost:14317"
 - Configure log sampling if needed for high-volume production
 - Add Grafana Loki support as alternative log backend
 
+
+2026-01-27 - OBS-LOG-002: 日志与 Trace 关联 (Log-Trace Correlation)
+
+=== Implementation Details ===
+
+Implemented trace correlation for structured logging to enable correlating logs with distributed traces via trace_id and span_id.
+
+### Files Modified
+
+- `backend/internal/infrastructure/logger/context.go`
+  - Added `GetTraceID(ctx)` - extracts trace ID from context's span
+  - Added `GetSpanID(ctx)` - extracts span ID from context's span
+  - Added `WithTraceContext(ctx, logger)` - enriches logger with trace_id and span_id
+  - Added `ContextLogger` struct - wrapper for convenient context-aware logging
+  - Added `L(ctx)` - returns ContextLogger with automatic trace/context injection
+  - Added `WithLogger(ctx, logger)` - creates ContextLogger with explicit logger
+  - ContextLogger methods: Debug, Info, Warn, Error, Fatal, Panic, With, Zap, Sugar
+  - ContextLogger automatically injects trace_id, span_id, tenant_id, user_id, request_id
+
+- `backend/internal/infrastructure/logger/context_test.go`
+  - Added comprehensive unit tests for all trace correlation functions
+  - 24 new test cases covering:
+    - GetTraceID/GetSpanID with no span, valid span, invalid span context
+    - WithTraceContext with no span, valid span, invalid span context
+    - ContextLogger initialization (L, WithLogger)
+    - ContextLogger.With chaining
+    - All log levels (Debug, Info, Warn, Error)
+    - Zap() and Sugar() methods
+    - Context field enrichment (request_id, tenant_id, user_id)
+    - Empty context fields handling
+    - Nil logger handling
+
+### Usage Examples
+
+```go
+// Simple usage - logger from context
+logger.L(ctx).Info("Order created", zap.String("order_id", "order-123"))
+
+// With explicit logger
+logger.WithLogger(ctx, myLogger).Info("Processing payment")
+
+// With additional fields
+logger.L(ctx).With(zap.String("operation", "create")).Info("Creating resource")
+
+// Get raw zap.Logger
+zapLogger := logger.L(ctx).Zap()
+
+// Get sugared logger
+sugar := logger.L(ctx).Sugar()
+sugar.Infof("Processing %d items", count)
+
+// Direct trace context extraction
+traceID := logger.GetTraceID(ctx)
+spanID := logger.GetSpanID(ctx)
+
+// Enrich existing logger with trace context
+enrichedLogger := logger.WithTraceContext(ctx, baseLogger)
+```
+
+### Log Output Format
+
+When using ContextLogger, logs automatically include:
+
+```json
+{
+  "level": "info",
+  "msg": "Order created",
+  "trace_id": "abc123def456...",
+  "span_id": "xyz789...",
+  "tenant_id": "tenant-1",
+  "user_id": "user-1",
+  "request_id": "req-123",
+  "order_id": "order-123"
+}
+```
+
+### Architecture
+
+The implementation follows existing patterns:
+
+1. **Trace Extraction**: Uses OpenTelemetry's `trace.SpanFromContext()` to get current span
+2. **Graceful Degradation**: Returns empty strings when no valid span exists
+3. **Context Integration**: Works with existing context key system (RequestIDKey, TenantIDKey, UserIDKey)
+4. **Lazy Enrichment**: ContextLogger enriches on each log call (not on creation) to capture current span
+
+### Verification
+
+- ✅ Go build successful for all packages
+- ✅ All 38 logger unit tests passing (14 existing + 24 new)
+- ✅ Type checking passed
+- ✅ Existing logger functionality not affected
+
+### Notes
+
+- Trace correlation only works when OpenTelemetry tracing is enabled
+- When no valid span exists, trace_id and span_id fields are simply not added to logs
+- Context fields (tenant_id, user_id, request_id) are only added if present in context
+- The noop tracer (used in tests) creates invalid span contexts, so trace_id/span_id are empty in tests
+
+### Next Steps
+
+- OBS-ALERT-001: Configure metric-based alerting rules
+- Consider adding trace_id to GORM logger for database query correlation
+- Add request_id propagation to downstream service calls

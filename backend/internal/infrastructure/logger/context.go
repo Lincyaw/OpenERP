@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -77,4 +78,174 @@ func GetUserID(ctx context.Context) string {
 		return userID
 	}
 	return ""
+}
+
+// =============================================================================
+// Trace Correlation Functions
+// =============================================================================
+
+// GetTraceID extracts the trace ID from the context's span.
+// Returns an empty string if no active span exists or trace is invalid.
+func GetTraceID(ctx context.Context) string {
+	span := trace.SpanFromContext(ctx)
+	if span == nil {
+		return ""
+	}
+	spanCtx := span.SpanContext()
+	if !spanCtx.IsValid() {
+		return ""
+	}
+	return spanCtx.TraceID().String()
+}
+
+// GetSpanID extracts the span ID from the context's span.
+// Returns an empty string if no active span exists or span is invalid.
+func GetSpanID(ctx context.Context) string {
+	span := trace.SpanFromContext(ctx)
+	if span == nil {
+		return ""
+	}
+	spanCtx := span.SpanContext()
+	if !spanCtx.IsValid() {
+		return ""
+	}
+	return spanCtx.SpanID().String()
+}
+
+// WithTraceContext adds trace_id and span_id to the logger from the context's span.
+// If no valid span exists, returns the original logger unchanged.
+func WithTraceContext(ctx context.Context, logger *zap.Logger) *zap.Logger {
+	span := trace.SpanFromContext(ctx)
+	if span == nil {
+		return logger
+	}
+	spanCtx := span.SpanContext()
+	if !spanCtx.IsValid() {
+		return logger
+	}
+
+	return logger.With(
+		zap.String("trace_id", spanCtx.TraceID().String()),
+		zap.String("span_id", spanCtx.SpanID().String()),
+	)
+}
+
+// ContextLogger is a wrapper that provides convenient logging with automatic
+// trace correlation. It extracts trace_id, span_id, tenant_id, user_id from
+// the context and injects them into every log entry.
+type ContextLogger struct {
+	ctx    context.Context
+	logger *zap.Logger
+}
+
+// L returns a ContextLogger from the given context.
+// Usage: logger.L(ctx).Info("message", zap.String("key", "value"))
+//
+// This automatically injects:
+//   - trace_id: from OpenTelemetry span context
+//   - span_id: from OpenTelemetry span context
+//   - tenant_id: if present in context
+//   - user_id: if present in context
+//   - request_id: if present in context
+func L(ctx context.Context) *ContextLogger {
+	return &ContextLogger{
+		ctx:    ctx,
+		logger: FromContext(ctx),
+	}
+}
+
+// WithLogger returns a ContextLogger using the provided logger instead of
+// extracting from context. Useful when you have a pre-configured logger.
+func WithLogger(ctx context.Context, logger *zap.Logger) *ContextLogger {
+	return &ContextLogger{
+		ctx:    ctx,
+		logger: logger,
+	}
+}
+
+// enrichedLogger returns a logger enriched with trace and context fields.
+func (cl *ContextLogger) enrichedLogger() *zap.Logger {
+	l := cl.logger
+	if l == nil {
+		l = zap.NewNop()
+	}
+
+	// Add trace context
+	span := trace.SpanFromContext(cl.ctx)
+	if span != nil {
+		spanCtx := span.SpanContext()
+		if spanCtx.IsValid() {
+			l = l.With(
+				zap.String("trace_id", spanCtx.TraceID().String()),
+				zap.String("span_id", spanCtx.SpanID().String()),
+			)
+		}
+	}
+
+	// Add request ID if present
+	if requestID := GetRequestID(cl.ctx); requestID != "" {
+		l = l.With(zap.String("request_id", requestID))
+	}
+
+	// Add tenant ID if present
+	if tenantID := GetTenantID(cl.ctx); tenantID != "" {
+		l = l.With(zap.String("tenant_id", tenantID))
+	}
+
+	// Add user ID if present
+	if userID := GetUserID(cl.ctx); userID != "" {
+		l = l.With(zap.String("user_id", userID))
+	}
+
+	return l
+}
+
+// With creates a child ContextLogger with additional fields.
+func (cl *ContextLogger) With(fields ...zap.Field) *ContextLogger {
+	return &ContextLogger{
+		ctx:    cl.ctx,
+		logger: cl.logger.With(fields...),
+	}
+}
+
+// Debug logs a debug level message with trace context.
+func (cl *ContextLogger) Debug(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Debug(msg, fields...)
+}
+
+// Info logs an info level message with trace context.
+func (cl *ContextLogger) Info(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Info(msg, fields...)
+}
+
+// Warn logs a warning level message with trace context.
+func (cl *ContextLogger) Warn(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Warn(msg, fields...)
+}
+
+// Error logs an error level message with trace context.
+func (cl *ContextLogger) Error(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Error(msg, fields...)
+}
+
+// Fatal logs a fatal level message with trace context and then calls os.Exit(1).
+func (cl *ContextLogger) Fatal(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Fatal(msg, fields...)
+}
+
+// Panic logs a panic level message with trace context and then panics.
+func (cl *ContextLogger) Panic(msg string, fields ...zap.Field) {
+	cl.enrichedLogger().Panic(msg, fields...)
+}
+
+// Zap returns the underlying zap.Logger enriched with trace context.
+// This is useful when you need to pass the logger to functions that
+// expect a *zap.Logger.
+func (cl *ContextLogger) Zap() *zap.Logger {
+	return cl.enrichedLogger()
+}
+
+// Sugar returns a sugared logger enriched with trace context.
+func (cl *ContextLogger) Sugar() *zap.SugaredLogger {
+	return cl.enrichedLogger().Sugar()
 }
