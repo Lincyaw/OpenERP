@@ -8881,11 +8881,11 @@
       "- 轮询正常工作",
       "- 错误优雅处理"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 7.4 Component Integration",
     "affectedModules": [
-      "frontend/src/providers/FeatureFlagProvider.tsx",
-      "frontend/src/App.tsx"
+      "frontend/src/components/providers/FeatureFlagProvider.tsx",
+      "frontend/src/main.tsx"
     ],
     "blockedBy": [
       "FF-FE-001"

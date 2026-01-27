@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { getRouteObjects } from './router'
 import { AuthProvider } from './components/auth'
-import { I18nProvider } from './components/providers'
+import { I18nProvider, FeatureFlagProvider } from './components/providers'
 
 // Initialize i18n (must be imported before components that use translations)
 import './i18n'
@@ -20,9 +20,11 @@ const router = createBrowserRouter(getRouteObjects())
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <FeatureFlagProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </FeatureFlagProvider>
     </I18nProvider>
   </StrictMode>
 )
