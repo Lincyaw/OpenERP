@@ -58,6 +58,7 @@ type UpdateFlagHTTPRequest struct {
 	DefaultValue *dto.FlagValueDTO       `json:"default_value,omitempty"`
 	Rules        *[]dto.TargetingRuleDTO `json:"rules,omitempty"`
 	Tags         *[]string               `json:"tags,omitempty"`
+	Version      *int                    `json:"version,omitempty"` // For optimistic locking
 }
 
 // EvaluateFlagHTTPRequest represents the HTTP request body for evaluating a flag
@@ -277,6 +278,7 @@ func (h *FeatureFlagHandler) UpdateFlag(c *gin.Context) {
 		DefaultValue: req.DefaultValue,
 		Rules:        req.Rules,
 		Tags:         req.Tags,
+		Version:      req.Version,
 	}
 
 	result, err := h.flagService.UpdateFlag(c.Request.Context(), key, appReq, auditCtx)
