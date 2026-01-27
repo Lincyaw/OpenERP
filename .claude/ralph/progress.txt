@@ -28802,3 +28802,110 @@ Created the PDF generation engine infrastructure at `backend/internal/infrastruc
 - PRINT-BE-003: Implement template engine with Go html/template
 - PRINT-BE-004: Implement print service API (handlers, routes)
 - PRINT-BE-005/006: Create default print templates for documents
+
+================================================================================
+2025-01-27 - PRINT-BE-003: 模板引擎与数据绑定
+================================================================================
+
+=== Implementation Details ===
+
+Created the Template Engine and Data Provider infrastructure at `backend/internal/infrastructure/printing/`:
+
+**Files Created:**
+1. `template_engine.go` - Core template engine:
+   - `TemplateEngine` struct using Go html/template
+   - `Render()` method for rendering PrintTemplate with data
+   - `RenderString()` method for rendering template strings directly
+   - Comprehensive template function library
+
+2. `data_provider.go` - Data provider interfaces and types:
+   - `DataProvider` interface for document-specific data providers
+   - `DocumentData` common structure for all document types
+   - Data structures for each document type:
+     - `SalesOrderData` / `SalesOrderItemData`
+     - `SalesDeliveryData` / `SalesDeliveryItemData`
+     - `SalesReceiptData` / `SalesReceiptItemData`
+     - `PurchaseOrderData` / `PurchaseOrderItemData`
+     - `PurchaseReceivingData` / `PurchaseReceivingItemData`
+     - `ReceiptVoucherData` / `PaymentVoucherData`
+     - `StockTakingData` / `StockTakingItemData`
+   - Common info types: `CustomerInfo`, `SupplierInfo`, `WarehouseInfo`, etc.
+
+3. `template_engine_test.go` - Comprehensive test suite (105+ test cases)
+
+**Template Functions Implemented:**
+
+Money Formatting:
+- `formatMoney` - Format as ¥1,234.56
+- `formatMoneyRaw` - Format without symbol: 1,234.56
+- `moneyToChinese` - Convert to Chinese uppercase: 壹仟贰佰叁拾肆元伍角陆分
+
+Date Formatting:
+- `formatDate` - 2024-01-15
+- `formatDateTime` - 2024-01-15 14:30:00
+- `formatTime` - 14:30:00
+
+Number Formatting:
+- `formatDecimal` - Format with precision
+- `formatInt` - Integer format
+- `formatPercent` - Percentage format
+
+String Utilities:
+- `truncate` (UTF-8 aware), `padLeft`, `padRight`
+- `join`, `upper`, `lower`, `title`, `trim`, `replace`, `split`
+- `contains`, `hasPrefix`, `hasSuffix`, `trimPrefix`, `trimSuffix`
+
+Comparison & Logic:
+- `eq`, `ne`, `lt`, `le`, `gt`, `ge`
+
+Arithmetic:
+- `add`, `sub`, `mul`, `div`, `mod`, `abs`
+- `round`, `roundUp`, `roundDn`, `max`, `min`, `sum`, `sumField`
+
+Array/Slice:
+- `first`, `last`, `index`, `len`, `seq`, `repeat`, `in`, `empty`, `notEmpty`
+
+Conditional:
+- `default`, `ternary`, `coalesce`
+
+Safe HTML (with security documentation):
+- `safeHTML`, `safeCSS`, `safeJS`, `safeURL`
+
+Misc:
+- `dict`, `list`, `shortUUID`, `statusText`, `now`
+
+=== Verification ===
+- ✅ All 166 unit tests passing in printing module (domain + infrastructure)
+- ✅ Full backend build succeeds (`go build ./...`)
+- ✅ Code review completed - addressed CRITICAL/HIGH issues:
+  - Removed unused cache fields (code cleanup)
+  - Implemented `sumField` function with reflection
+  - Added UTF-8 aware string truncation
+  - Added security documentation for safe* functions
+  - Fixed padLeft/padRight empty pad edge case
+
+=== Security Considerations ===
+1. **Safe HTML Functions**: Added clear security documentation warning against using with user-controlled data
+2. **XSS Prevention**: Go html/template auto-escapes by default; safe* functions require explicit opt-in
+3. **Template Execution**: Templates are parsed fresh each time (no caching to prevent stale template injection)
+
+=== Design Decisions ===
+1. **No Template Caching**: Simpler implementation; templates are parsed on each render. Can add caching later if performance requires.
+2. **Reflection-based sumField**: Uses reflection to sum fields from any struct/map slice
+3. **Comprehensive Type Conversion**: `toDecimal` and `toTime` handle multiple input types gracefully
+4. **Chinese Money Conversion**: Handles edge cases like 0, decimals, negative numbers, and large amounts (亿级)
+5. **Data Provider Pattern**: Interface allows document-specific data fetching to be implemented separately
+
+=== Key Files Created ===
+- backend/internal/infrastructure/printing/template_engine.go (new)
+- backend/internal/infrastructure/printing/data_provider.go (new)
+- backend/internal/infrastructure/printing/template_engine_test.go (new)
+
+=== Notes ===
+- Data provider implementations will be created per document type as needed (PRINT-BE-004/005)
+- Template caching can be added if performance profiling shows it's needed
+- Safe HTML functions should only be used with trusted content (documented)
+
+=== Next Steps ===
+- PRINT-BE-004: Print service API implementation (handlers, routes)
+- PRINT-BE-005: Default print templates for P0 documents (delivery, receipt, receiving)
