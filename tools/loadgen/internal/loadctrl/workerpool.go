@@ -123,6 +123,8 @@ func (p *WorkerPool) Start(ctx context.Context) {
 
 	initialSize := int(p.currentSize.Load())
 	p.workersMu.Lock()
+	// Clear workers slice for restart support (keep capacity)
+	p.workers = p.workers[:0]
 	for i := range initialSize {
 		w := p.createWorker(i)
 		p.workers = append(p.workers, w)
@@ -197,13 +199,15 @@ func (p *WorkerPool) AdjustSize(targetSize int) {
 		targetSize = p.maxSize
 	}
 
-	currentSize := int(p.currentSize.Load())
+	p.workersMu.Lock()
+	// Use actual slice length inside lock for thread safety
+	currentSize := len(p.workers)
 	if targetSize == currentSize {
+		p.workersMu.Unlock()
 		return
 	}
 
-	p.workersMu.Lock()
-	defer p.workersMu.Unlock()
+	var workersToStop []*worker
 
 	if targetSize > currentSize {
 		// Scale up: add workers using stored context
@@ -218,17 +222,22 @@ func (p *WorkerPool) AdjustSize(targetSize int) {
 			go w.run(ctx)
 		}
 	} else {
-		// Scale down: stop excess workers
-		workersToStop := currentSize - targetSize
-		for i := 0; i < workersToStop && len(p.workers) > targetSize; i++ {
+		// Scale down: collect workers to stop
+		workersToStop = make([]*worker, 0, currentSize-targetSize)
+		for len(p.workers) > targetSize {
 			idx := len(p.workers) - 1
-			w := p.workers[idx]
+			workersToStop = append(workersToStop, p.workers[idx])
 			p.workers = p.workers[:idx]
-			w.stop()
 		}
 	}
 
 	p.currentSize.Store(int32(targetSize))
+	p.workersMu.Unlock()
+
+	// Stop workers outside the lock to prevent potential deadlock
+	for _, w := range workersToStop {
+		w.stop()
+	}
 }
 
 // CurrentSize returns the current number of workers.

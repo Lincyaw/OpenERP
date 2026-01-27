@@ -31502,3 +31502,99 @@ golang.org/x/time v0.14.0
 1. LOADGEN-015: WorkerPool implementation in internal/executor/
 2. LOADGEN-016: Scheduler and Executor
 3. LOADGEN-010: CircuitBoard (main controller integrating all components)
+
+2026-01-28 - LOADGEN-015: 工作者池实现 (WorkerPool Implementation)
+
+=== Implementation Details ===
+
+**Files Modified:**
+- `tools/loadgen/internal/loadctrl/workerpool.go` - WorkerPool implementation (already existed, enhanced)
+- `tools/loadgen/internal/loadctrl/workerpool_test.go` - Comprehensive test suite (significantly expanded)
+
+**Note:** The task specified `internal/executor/workerpool.go`, but the implementation was already in `internal/loadctrl/workerpool.go`. This location is appropriate as WorkerPool is a load control component.
+
+**Key Components Verified:**
+
+1. **WorkerPoolConfig:**
+   - MinSize (default: 1)
+   - MaxSize (default: 100)
+   - InitialSize (default: MinSize)
+   - TaskQueueSize (default: MaxSize * 2)
+
+2. **Core Methods:**
+   - `NewWorkerPool(config)` - Creates pool with validated config
+   - `Start(ctx)` - Starts workers, supports restart after Stop
+   - `Stop()` - Gracefully stops all workers
+   - `Submit(task)` - Non-blocking task submission
+   - `SubmitWait(ctx, task)` - Blocking task submission with context
+   - `AdjustSize(n)` - Dynamic worker scaling
+   - `CurrentSize()`, `MinSize()`, `MaxSize()` - Size accessors
+   - `Stats()` - Returns pool statistics
+   - `Results()` - Returns result channel
+
+3. **Thread Safety Fixes (from code review):**
+   - Fixed race condition in AdjustSize: Now uses len(p.workers) inside lock instead of atomic read before lock
+   - Fixed workers slice not reset on restart: Clear slice in Start() for proper restart support
+   - Fixed potential deadlock: Workers are now stopped outside the lock to prevent holding lock during blocking operations
+
+**Statistics Tracked:**
+- CurrentSize (active workers)
+- MinSize/MaxSize (configured bounds)
+- TotalExecuted (successful tasks)
+- TotalFailed (failed tasks)
+- PendingTasks (queue depth)
+
+=== Verification ===
+
+**Test Results:**
+- All 22 WorkerPool tests passing
+- Race detector: PASS (no data races detected)
+- Coverage: 85.3% (exceeds 80% requirement)
+- Test run 5x consecutively: PASS (stable, no flaky tests)
+
+**Acceptance Criteria Verified:**
+- ✅ WorkerPool implementation complete
+- ✅ Supports minWorkers and maxWorkers configuration
+- ✅ Implements dynamic scaling AdjustSize(n)
+- ✅ Graceful worker goroutine start/stop
+- ✅ Uses channel for task distribution
+- ✅ Records active worker count and queue depth
+- ✅ Tests verify scaling correctness
+- ✅ **10→100 worker scaling: PASS** (TestWorkerPool_Scale10To100_Acceptance)
+- ✅ **100→10 worker scaling: PASS** (TestWorkerPool_Scale100To10_ScaleDown)
+
+**Code Review Status:**
+- Reviewed by code-reviewer agent
+- Fixed all CRITICAL issues:
+  1. Race condition in AdjustSize when reading currentSize outside mutex
+  2. Workers slice not reset on restart
+- Fixed HIGH issues:
+  1. Potential deadlock: worker.stop() called while holding workersMu
+
+**New Tests Added:**
+- TestWorkerPool_Scale10To100_Acceptance - Verifies acceptance criteria
+- TestWorkerPool_Scale100To10_ScaleDown - Verifies scale down
+- TestWorkerPool_Results - Tests result channel
+- TestWorkerPool_FailedTask - Tests failure counting
+- TestWorkerPool_SubmitWait_Cancelled - Tests cancelled context handling
+- TestWorkerPool_SubmitWait_PoolStopped - Tests stopped pool handling
+- TestWorkerPool_AdjustSize_NotRunning - Tests adjust when not running
+- TestWorkerPool_DefaultConfig - Tests default configuration
+- TestWorkerPool_InvalidConfig - Tests config validation
+- TestWorkerPool_RestartAfterStop - Tests pool restart capability
+- TestWorkerPool_ContextCancellation - Tests context cancellation
+- TestWorkerPool_ConcurrentAdjustSize - Tests concurrent scaling
+- TestWorkerPool_PendingTasks - Tests pending task statistics
+
+=== Architecture Notes ===
+
+- Thread-safe: Uses RWMutex for workers slice, atomics for counters
+- Graceful shutdown: Workers respond to context cancellation, stopCh, and individual stop signals
+- Restart support: Pool can be stopped and started again without creating new instance
+- Channel-based: Tasks distributed via buffered channel, results collected via separate channel
+- Dynamic scaling: AdjustSize clamps to [minSize, maxSize] and handles both scale-up and scale-down
+
+=== Next Steps ===
+
+1. LOADGEN-016: Scheduler and Executor (integrate WorkerPool)
+2. LOADGEN-010: CircuitBoard (main controller integrating all components)
