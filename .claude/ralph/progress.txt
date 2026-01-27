@@ -31125,3 +31125,80 @@ docker/seed-data.sql                          # MODIFIED: Added feature_flag per
 
 === Decision ===
 [PASSED]: Integration test acceptance met. All 12 E2E tests pass consistently.
+
+2026-01-28 - LOADGEN-009: Producer Chain Guard Implementation PASSED
+
+=== Task Summary ===
+- Task ID: LOADGEN-009
+- Story: 生产者链保护机制
+- Status: PASSED
+
+=== Implementation Details ===
+
+**Files Created:**
+- `tools/loadgen/internal/circuit/producer_guard.go` - Main implementation
+- `tools/loadgen/internal/circuit/producer_guard_test.go` - Comprehensive tests
+- `tools/loadgen/go.mod` - Go module definition
+
+**ProducerChainGuard Features:**
+1. **Max Recursion Depth Limit (default 3)**
+   - Uses `atomic.Int32` for thread-safe depth tracking
+   - `Enter()` increments depth, `Exit()` decrements
+   - Returns `ErrMaxDepthExceeded` when limit reached
+
+2. **Cooldown Period (default 1s)**
+   - Per-semantic-type cooldown tracking via `sync.Map`
+   - `TryRefill()` checks cooldown before allowing refill
+   - Returns `ErrCooldownActive` during cooldown
+
+3. **Min Pool Size Trigger (default 5)**
+   - `ShouldRefill(currentSize int)` checks threshold
+   - Triggers refill when pool falls below threshold
+
+4. **Batch Refill (default 10)**
+   - `TryRefill()` returns batch size on success
+   - Configurable via `RefillBatchSize`
+
+5. **Thread Safety**
+   - Atomic operations for depth counter
+   - Per-semantic mutex for TryRefill race condition fix
+   - sync.Map for cooldown tracking
+
+**API Methods:**
+- `NewProducerChainGuard(config)` - Create guard with config
+- `Enter(ctx)` / `Exit()` - Depth tracking
+- `TryRefill(ctx, semantic)` - Cooldown-aware refill
+- `CanRefill(semantic)` / `ShouldRefill(size)` - Checks
+- `ExecuteWithGuard(ctx, fn)` - Convenience wrapper
+- `Config()` / `Stats()` - Configuration and statistics
+
+=== Verification ===
+
+**Test Results:**
+- Total Tests: 26
+- Passed: 26
+- Coverage: 97.8%
+- Race Detector: PASS
+
+**Acceptance Criteria Verified:**
+- ✅ Recursive calls exceeding 3 levels are rejected
+- ✅ Refill skipped during cooldown period
+- ✅ Concurrent access is thread-safe
+
+=== Code Review ===
+
+Code reviewed by code-reviewer agent:
+- Status: Approved with Suggestions
+- Applied fixes: Added thread-safety documentation, mutex cleanup in Reset methods
+
+=== Dependencies ===
+
+```
+github.com/stretchr/testify v1.10.0
+```
+
+=== Next Steps ===
+
+1. LOADGEN-010: CircuitBoard implementation (integrates ProducerChainGuard)
+2. LOADGEN-006: DependencyGraph (uses with ProducerChainGuard)
+3. LOADGEN-011: RateLimiter (works with CircuitBoard)
