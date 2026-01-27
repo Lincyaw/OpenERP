@@ -26,7 +26,7 @@ func (r *GormFinanceReportRepository) GetProfitLossStatement(filter report.Finan
 	if err := r.db.Table("sales_orders so").
 		Select("COALESCE(SUM(so.total_amount), 0)").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Scan(&salesRevenue).Error; err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (r *GormFinanceReportRepository) GetProfitLossStatement(filter report.Finan
 		Select("COALESCE(SUM(soi.quantity * soi.unit_cost), 0)").
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Scan(&cogs).Error; err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (r *GormFinanceReportRepository) GetProfitLossDetail(filter report.FinanceR
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Group("c.name").
 		Order("amount DESC").
@@ -231,16 +231,16 @@ func (r *GormFinanceReportRepository) GetMonthlyProfitTrend(filter report.Financ
 	// Get monthly sales and COGS
 	err := r.db.Table("sales_orders so").
 		Select(`
-			EXTRACT(YEAR FROM so.order_date)::int as year,
-			EXTRACT(MONTH FROM so.order_date)::int as month,
+			EXTRACT(YEAR FROM so.created_at)::int as year,
+			EXTRACT(MONTH FROM so.created_at)::int as month,
 			COALESCE(SUM(so.total_amount), 0) as sales_revenue,
 			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as cogs
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
-		Group("EXTRACT(YEAR FROM so.order_date), EXTRACT(MONTH FROM so.order_date)").
+		Group("EXTRACT(YEAR FROM so.created_at), EXTRACT(MONTH FROM so.created_at)").
 		Order("year ASC, month ASC").
 		Scan(&salesData).Error
 
@@ -354,7 +354,7 @@ func (r *GormFinanceReportRepository) GetProfitByProduct(filter report.FinanceRe
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Group("soi.product_id, p.sku, p.name, c.name").
 		Order("(COALESCE(SUM(soi.subtotal), 0) - COALESCE(SUM(soi.quantity * soi.unit_cost), 0)) DESC").
@@ -429,7 +429,7 @@ func (r *GormFinanceReportRepository) GetProfitByCustomer(filter report.FinanceR
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Group("so.customer_id, so.customer_name").
 		Order("(COALESCE(SUM(so.total_amount), 0) - COALESCE(SUM(soi.quantity * soi.unit_cost), 0)) DESC").

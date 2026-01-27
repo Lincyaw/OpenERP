@@ -22,8 +22,17 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/bin/
 # Runtime stage
 FROM alpine:3.19
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates tzdata
+# Install runtime dependencies including wkhtmltopdf and Chinese fonts
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    wkhtmltopdf \
+    # Chinese fonts for PDF generation
+    font-noto-cjk \
+    # Additional fonts for better compatibility
+    fontconfig \
+    ttf-freefont \
+    && fc-cache -f -v
 
 # Create non-root user
 RUN addgroup -g 1000 app && \
@@ -38,8 +47,11 @@ COPY --from=builder /app/bin/server /app/server
 # Copy migrations
 COPY --from=builder /app/migrations /app/migrations
 
+# Create data directory for PDF storage
+RUN mkdir -p /data/prints
+
 # Set ownership
-RUN chown -R app:app /app
+RUN chown -R app:app /app /data/prints
 
 # Switch to non-root user
 USER app

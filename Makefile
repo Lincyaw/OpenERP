@@ -95,7 +95,7 @@ docker-up: ## Start all services in Docker (postgres, redis, backend, frontend)
 	@sleep 5
 	@$(MAKE) db-migrate
 	@$(MAKE) db-seed
-	@$(DOCKER_COMPOSE) --profile docker up -d
+	@$(DOCKER_COMPOSE) --profile docker up -d $(ARGS)
 	@echo ""
 	@echo "$(GREEN)All services started!$(NC)"
 	@echo "  Frontend:  http://localhost:$${FRONTEND_PORT:-3000}"

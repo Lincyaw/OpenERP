@@ -3,20 +3,50 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Layout, Nav } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
 import {
+  // Dashboard
   IconHome,
-  IconGridView,
+  // Catalog module
+  IconApps,
+  IconBox,
+  IconTreeTriangleDown,
+  // Partner module
   IconUserGroup,
+  IconUser,
+  IconBriefcase,
+  IconInbox,
+  // Inventory module
+  IconArchive,
   IconList,
+  IconCheckList,
+  IconAlertTriangle,
+  // Trade module
+  IconCart,
   IconSend,
   IconDownload,
-  IconPriceTag,
+  IconUndo,
+  IconRedo,
+  // Finance module
+  IconCoinMoneyStroked,
+  IconMoneyExchangeStroked,
   IconCreditCard,
-  IconInbox,
-  IconTreeTriangleDown,
-  IconUserCardVideo,
-  IconMinus,
-  IconPlus,
+  IconMinusCircle,
+  IconPlusCircle,
   IconHistory,
+  // Reports module
+  IconPieChartStroked,
+  IconLineChartStroked,
+  IconBarChartHStroked,
+  IconRefresh,
+  IconCandlestickChartStroked,
+  // System module
+  IconSetting,
+  IconMember,
+  IconKey,
+  IconLink,
+  IconSync,
+  IconConnectionPoint1,
+  // Logo
+  IconGridView,
 } from '@douyinfe/semi-icons'
 
 import { useAppStore, useAuthStore } from '@/store'
@@ -29,22 +59,61 @@ const { Sider } = Layout
 
 /**
  * Icon mapping from string names to Semi Design icons
+ * Each menu item should have a unique, meaningful icon
  */
 const iconMap: Record<string, React.ReactNode> = {
+  // Dashboard
   IconHome: <IconHome />,
-  IconGridView: <IconGridView />,
+
+  // Catalog module
+  IconApps: <IconApps />,
+  IconBox: <IconBox />,
+  IconTreeTriangleDown: <IconTreeTriangleDown />,
+
+  // Partner module
   IconUserGroup: <IconUserGroup />,
+  IconUser: <IconUser />,
+  IconBriefcase: <IconBriefcase />,
+  IconInbox: <IconInbox />,
+
+  // Inventory module
+  IconArchive: <IconArchive />,
   IconList: <IconList />,
+  IconCheckList: <IconCheckList />,
+  IconAlertTriangle: <IconAlertTriangle />,
+
+  // Trade module
+  IconCart: <IconCart />,
   IconSend: <IconSend />,
   IconDownload: <IconDownload />,
-  IconPriceTag: <IconPriceTag />,
+  IconUndo: <IconUndo />,
+  IconRedo: <IconRedo />,
+
+  // Finance module
+  IconCoinMoneyStroked: <IconCoinMoneyStroked />,
+  IconMoneyExchangeStroked: <IconMoneyExchangeStroked />,
   IconCreditCard: <IconCreditCard />,
-  IconInbox: <IconInbox />,
-  IconTreeTriangleDown: <IconTreeTriangleDown />,
-  IconUserCardVideo: <IconUserCardVideo />,
-  IconMinus: <IconMinus />,
-  IconPlus: <IconPlus />,
+  IconMinusCircle: <IconMinusCircle />,
+  IconPlusCircle: <IconPlusCircle />,
   IconHistory: <IconHistory />,
+
+  // Reports module
+  IconPieChartStroked: <IconPieChartStroked />,
+  IconLineChartStroked: <IconLineChartStroked />,
+  IconBarChartHStroked: <IconBarChartHStroked />,
+  IconRefresh: <IconRefresh />,
+  IconCandlestickChartStroked: <IconCandlestickChartStroked />,
+
+  // System module
+  IconSetting: <IconSetting />,
+  IconMember: <IconMember />,
+  IconKey: <IconKey />,
+  IconLink: <IconLink />,
+  IconSync: <IconSync />,
+  IconConnectionPoint1: <IconConnectionPoint1 />,
+
+  // Logo
+  IconGridView: <IconGridView />,
 }
 
 /**
@@ -62,6 +131,7 @@ const titleToI18nKey: Record<string, string> = {
   Inventory: 'nav.inventory',
   'Stock List': 'nav.stock',
   'Stock Taking': 'nav.stockTaking',
+  'Stock Alerts': 'nav.stockAlerts',
   Trade: 'nav.trade',
   'Sales Orders': 'nav.salesOrders',
   'Purchase Orders': 'nav.purchaseOrders',
@@ -82,6 +152,10 @@ const titleToI18nKey: Record<string, string> = {
   Users: 'nav.users',
   Roles: 'nav.roles',
   Permissions: 'nav.permissions',
+  'Payment Settings': 'nav.paymentSettings',
+  'Platform Config': 'nav.platformConfig',
+  'Platform Sync Status': 'nav.platformSync',
+  'Product Mappings': 'nav.productMappings',
   Settings: 'nav.settings',
 }
 

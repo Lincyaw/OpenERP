@@ -158,7 +158,7 @@ export default function StockAlertsPage() {
   // Fetch products for display names
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await productsApi.getCatalogProducts({ page: 1, page_size: 500 })
+      const response = await productsApi.getCatalogProducts({ page: 1, page_size: 100 })
       if (response.success && response.data) {
         const products = response.data as HandlerProductListResponse[]
         const map = new Map<string, string>()

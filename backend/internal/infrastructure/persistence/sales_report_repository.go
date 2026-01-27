@@ -39,7 +39,7 @@ func (r *GormSalesReportRepository) GetSalesSummary(filter report.SalesReportFil
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"})
 
 	if filter.ProductID != nil {
@@ -93,7 +93,7 @@ func (r *GormSalesReportRepository) GetDailySalesTrend(filter report.SalesReport
 
 	err := r.db.Table("sales_orders so").
 		Select(`
-			DATE(so.order_date) as date,
+			DATE(so.created_at) as date,
 			COUNT(DISTINCT so.id) as order_count,
 			COALESCE(SUM(so.total_amount), 0) as total_amount,
 			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as total_cost,
@@ -101,9 +101,9 @@ func (r *GormSalesReportRepository) GetDailySalesTrend(filter report.SalesReport
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
-		Group("DATE(so.order_date)").
+		Group("DATE(so.created_at)").
 		Order("date ASC").
 		Scan(&results).Error
 
@@ -155,7 +155,7 @@ func (r *GormSalesReportRepository) GetProductSalesReport(filter report.SalesRep
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
 		Group("soi.product_id, p.sku, p.name, p.category_id, c.name").
 		Order("sales_amount DESC")
@@ -232,7 +232,7 @@ func (r *GormSalesReportRepository) GetProductSalesRanking(filter report.SalesRe
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
 		Group("soi.product_id, p.sku, p.name, c.name").
 		Order("total_amount DESC").
@@ -293,7 +293,7 @@ func (r *GormSalesReportRepository) GetCustomerSalesRanking(filter report.SalesR
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
-		Where("so.order_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
+		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
 		Group("so.customer_id, so.customer_name").
 		Order("total_amount DESC").

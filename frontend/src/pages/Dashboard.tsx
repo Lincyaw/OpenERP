@@ -218,7 +218,7 @@ export default function DashboardPage() {
             title: t('dashboard.pendingTasks.draftOrders', { count: draftCount }),
             description: t('dashboard.pendingTasks.draftOrdersDesc'),
             priority: 'medium',
-            link: '/trade/sales-orders?status=DRAFT',
+            link: '/trade/sales?status=DRAFT',
           })
         }
       }
@@ -233,7 +233,7 @@ export default function DashboardPage() {
             title: t('dashboard.pendingTasks.confirmedOrders', { count: confirmedCount }),
             description: t('dashboard.pendingTasks.confirmedOrdersDesc'),
             priority: 'high',
-            link: '/trade/sales-orders?status=CONFIRMED',
+            link: '/trade/sales?status=CONFIRMED',
           })
         }
       }
@@ -331,7 +331,7 @@ export default function DashboardPage() {
         subValue: formatNumber(orderSummary.confirmed),
         icon: <IconSend size="large" />,
         color: 'var(--semi-color-info)',
-        onClick: () => navigate('/trade/sales-orders'),
+        onClick: () => navigate('/trade/sales'),
       },
       {
         key: 'lowStock',
@@ -562,11 +562,7 @@ export default function DashboardPage() {
                 title={t('dashboard.recentOrders.title')}
                 className="recent-orders-card"
                 headerExtraContent={
-                  <Text
-                    link
-                    onClick={() => navigate('/trade/sales-orders')}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  <Text link onClick={() => navigate('/trade/sales')} style={{ cursor: 'pointer' }}>
                     {t('dashboard.recentOrders.viewAll')}
                   </Text>
                 }
@@ -579,7 +575,7 @@ export default function DashboardPage() {
                       <div
                         key={order.id}
                         className="recent-order-item"
-                        onClick={() => navigate(`/trade/sales-orders/${order.id}`)}
+                        onClick={() => navigate(`/trade/sales/${order.id}`)}
                       >
                         <div className="order-main">
                           <Text strong className="order-number">

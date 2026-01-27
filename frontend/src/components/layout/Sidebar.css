@@ -59,6 +59,142 @@
   padding: 8px 0;
 }
 
+/* ============================================
+   Group Headers (Parent items with children)
+   ============================================ */
+
+/* Style for parent menu items (groups/sections) */
+.sidebar__nav .semi-navigation-item-sub {
+  margin-top: 8px;
+}
+
+/* Group header title styling - make it more prominent */
+.sidebar__nav .semi-navigation-item-sub > .semi-navigation-item {
+  font-weight: 600;
+  color: var(--semi-color-text-0);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* Group header icon - more prominent */
+.sidebar__nav .semi-navigation-item-sub > .semi-navigation-item .semi-navigation-item-icon {
+  color: var(--semi-color-primary);
+  font-size: 18px;
+}
+
+/* ============================================
+   Child Menu Items (Leaf nodes)
+   Accessibility: Higher contrast for elderly users
+   ============================================ */
+
+/* Child items within a group - good contrast, readable size */
+.sidebar__nav .semi-navigation-sub .semi-navigation-item {
+  font-weight: 500;
+  color: var(--semi-color-text-0);
+  font-size: 14px;
+  padding-left: 12px;
+  min-height: 44px; /* Larger touch target for accessibility */
+}
+
+/* Child item text - ensure high contrast */
+.sidebar__nav .semi-navigation-sub .semi-navigation-item .semi-navigation-item-text {
+  color: var(--semi-color-text-0);
+}
+
+/* Child item icons - darker color, fully opaque */
+.sidebar__nav .semi-navigation-sub .semi-navigation-item .semi-navigation-item-icon {
+  color: var(--semi-color-text-1);
+  font-size: 16px;
+  opacity: 1;
+}
+
+/* Hover state for child items - clear visual feedback */
+.sidebar__nav .semi-navigation-sub .semi-navigation-item:hover {
+  background-color: var(--semi-color-fill-0);
+}
+
+.sidebar__nav .semi-navigation-sub .semi-navigation-item:hover .semi-navigation-item-icon {
+  color: var(--semi-color-primary);
+}
+
+.sidebar__nav .semi-navigation-sub .semi-navigation-item:hover .semi-navigation-item-text {
+  color: var(--semi-color-primary);
+}
+
+/* Selected state for child items - prominent highlight */
+.sidebar__nav .semi-navigation-sub .semi-navigation-item-selected,
+.sidebar__nav .semi-navigation-sub .semi-navigation-item.semi-navigation-item-selected {
+  background-color: var(--semi-color-primary-light-default);
+}
+
+.sidebar__nav .semi-navigation-sub .semi-navigation-item-selected .semi-navigation-item-icon,
+.sidebar__nav
+  .semi-navigation-sub
+  .semi-navigation-item.semi-navigation-item-selected
+  .semi-navigation-item-icon {
+  color: var(--semi-color-primary);
+}
+
+.sidebar__nav .semi-navigation-sub .semi-navigation-item-selected .semi-navigation-item-text,
+.sidebar__nav
+  .semi-navigation-sub
+  .semi-navigation-item.semi-navigation-item-selected
+  .semi-navigation-item-text {
+  color: var(--semi-color-primary);
+  font-weight: 600;
+}
+
+/* ============================================
+   Top-level items without children (Dashboard)
+   ============================================ */
+
+/* Dashboard and other standalone top-level items */
+.sidebar__nav > .semi-navigation-list > .semi-navigation-item:not(.semi-navigation-item-sub) {
+  font-weight: 500;
+  color: var(--semi-color-text-0);
+}
+
+.sidebar__nav
+  > .semi-navigation-list
+  > .semi-navigation-item:not(.semi-navigation-item-sub)
+  .semi-navigation-item-icon {
+  color: var(--semi-color-primary);
+  font-size: 18px;
+}
+
+/* ============================================
+   Visual separator between groups
+   ============================================ */
+
+/* Add subtle divider before each group except the first */
+.sidebar__nav .semi-navigation-item-sub:not(:first-child)::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background-color: var(--semi-color-border);
+  margin: 8px 16px;
+}
+
+/* ============================================
+   Icon visibility fix
+   ============================================ */
+
+/* Ensure all icons are visible with proper color */
+.sidebar__nav .semi-navigation-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  color: inherit;
+}
+
+/* Fix potential opacity issues */
+.sidebar__nav .semi-navigation-item-icon svg {
+  opacity: 1;
+  fill: currentColor;
+}
+
 /* Scrollbar styling */
 .sidebar__nav::-webkit-scrollbar {
   width: 4px;
@@ -91,6 +227,15 @@
 .sidebar--collapsed .semi-navigation-footer .semi-navigation-collapse-btn .semi-button {
   padding: 8px;
   min-width: auto;
+}
+
+/* ============================================
+   Collapsed state icon styles
+   ============================================ */
+
+/* In collapsed mode, ensure icons are centered and visible */
+.sidebar--collapsed .semi-navigation-item-icon {
+  margin: 0 auto;
 }
 
 /* Responsive - hide sidebar on mobile */

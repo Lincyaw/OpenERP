@@ -176,6 +176,7 @@
     "inventory": "Inventory",
     "stock": "Stock",
     "stockTaking": "Stock Taking",
+    "stockAlerts": "Stock Alerts",
     "trade": "Trade",
     "salesOrders": "Sales Orders",
     "purchaseOrders": "Purchase Orders",
@@ -198,6 +199,10 @@
     "users": "Users",
     "roles": "Roles",
     "permissions": "Permissions",
+    "paymentSettings": "Payment Settings",
+    "platformConfig": "Platform Config",
+    "platformSync": "Platform Sync",
+    "productMappings": "Product Mappings",
     "settings": "Settings",
     "profile": "Profile",
     "notifications": "Notifications"

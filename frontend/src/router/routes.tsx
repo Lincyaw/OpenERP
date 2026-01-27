@@ -126,7 +126,7 @@ export const appRoutes: AppRoute[] = [
     path: '/catalog',
     meta: {
       title: 'Catalog',
-      icon: 'IconGridView',
+      icon: 'IconApps',
       order: 1,
       permissions: [Permissions.PRODUCT_READ, Permissions.CATEGORY_READ],
     },
@@ -139,7 +139,7 @@ export const appRoutes: AppRoute[] = [
         path: '/catalog/products',
         meta: {
           title: 'Products',
-          icon: 'IconGridView',
+          icon: 'IconBox',
           order: 1,
           permissions: [Permissions.PRODUCT_READ],
         },
@@ -178,7 +178,7 @@ export const appRoutes: AppRoute[] = [
         path: '/partner/customers',
         meta: {
           title: 'Customers',
-          icon: 'IconUserGroup',
+          icon: 'IconUser',
           order: 1,
           permissions: [Permissions.CUSTOMER_READ],
         },
@@ -187,7 +187,7 @@ export const appRoutes: AppRoute[] = [
         path: '/partner/suppliers',
         meta: {
           title: 'Suppliers',
-          icon: 'IconUserCardVideo',
+          icon: 'IconBriefcase',
           order: 2,
           permissions: [Permissions.SUPPLIER_READ],
         },
@@ -209,7 +209,7 @@ export const appRoutes: AppRoute[] = [
     path: '/inventory',
     meta: {
       title: 'Inventory',
-      icon: 'IconList',
+      icon: 'IconArchive',
       order: 3,
       permissions: [Permissions.INVENTORY_READ],
     },
@@ -253,7 +253,7 @@ export const appRoutes: AppRoute[] = [
     path: '/trade',
     meta: {
       title: 'Trade',
-      icon: 'IconSend',
+      icon: 'IconCart',
       order: 4,
       permissions: [Permissions.SALES_ORDER_READ, Permissions.PURCHASE_ORDER_READ],
     },
@@ -306,7 +306,7 @@ export const appRoutes: AppRoute[] = [
     path: '/finance',
     meta: {
       title: 'Finance',
-      icon: 'IconPriceTag',
+      icon: 'IconCoinMoneyStroked',
       order: 5,
       permissions: [
         Permissions.ACCOUNT_RECEIVABLE_READ,
@@ -324,7 +324,7 @@ export const appRoutes: AppRoute[] = [
         path: '/finance/receivables',
         meta: {
           title: 'Receivables',
-          icon: 'IconPriceTag',
+          icon: 'IconMoneyExchangeStroked',
           order: 1,
           permissions: [Permissions.ACCOUNT_RECEIVABLE_READ],
         },
@@ -342,7 +342,7 @@ export const appRoutes: AppRoute[] = [
         path: '/finance/expenses',
         meta: {
           title: 'Expenses',
-          icon: 'IconMinus',
+          icon: 'IconMinusCircle',
           order: 3,
           permissions: [Permissions.EXPENSE_READ],
         },
@@ -351,7 +351,7 @@ export const appRoutes: AppRoute[] = [
         path: '/finance/incomes',
         meta: {
           title: 'Other Income',
-          icon: 'IconPlus',
+          icon: 'IconPlusCircle',
           order: 4,
           permissions: [Permissions.INCOME_READ],
         },
@@ -373,7 +373,7 @@ export const appRoutes: AppRoute[] = [
     path: '/report',
     meta: {
       title: 'Reports',
-      icon: 'IconChartLine',
+      icon: 'IconPieChartStroked',
       order: 6,
       permissions: [Permissions.REPORT_READ],
     },
@@ -386,7 +386,7 @@ export const appRoutes: AppRoute[] = [
         path: '/report/sales',
         meta: {
           title: 'Sales Report',
-          icon: 'IconChartLine',
+          icon: 'IconLineChartStroked',
           order: 1,
           permissions: [Permissions.REPORT_READ],
         },
@@ -413,7 +413,7 @@ export const appRoutes: AppRoute[] = [
         path: '/report/profit-loss',
         meta: {
           title: 'Profit & Loss',
-          icon: 'IconPieChartStroked',
+          icon: 'IconCandlestickChartStroked',
           order: 4,
           permissions: [Permissions.REPORT_READ],
         },
@@ -457,7 +457,7 @@ export const appRoutes: AppRoute[] = [
         path: '/system/roles',
         meta: {
           title: 'Roles',
-          icon: 'IconUserGroup',
+          icon: 'IconMember',
           order: 2,
           permissions: [Permissions.ROLE_READ],
         },
@@ -502,7 +502,7 @@ export const appRoutes: AppRoute[] = [
         path: '/system/product-mappings',
         meta: {
           title: 'Product Mappings',
-          icon: 'IconConnection',
+          icon: 'IconConnectionPoint1',
           order: 7,
           permissions: [Permissions.TENANT_UPDATE],
         },

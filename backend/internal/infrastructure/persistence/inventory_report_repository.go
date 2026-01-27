@@ -100,7 +100,7 @@ func (r *GormInventoryReportRepository) GetInventoryTurnover(filter report.Inven
 				WHERE soi.product_id = ii.product_id
 				AND so.warehouse_id = ii.warehouse_id
 				AND so.tenant_id = ii.tenant_id
-				AND so.order_date BETWEEN ? AND ?
+				AND so.created_at BETWEEN ? AND ?
 				AND so.status IN ('CONFIRMED', 'SHIPPED', 'COMPLETED')
 			), 0) as sold_quantity,
 			(ii.available_quantity * ii.average_cost) as stock_value
@@ -324,7 +324,7 @@ func (r *GormInventoryReportRepository) GetSlowMovingProducts(filter report.Inve
 				WHERE soi.product_id = ii.product_id
 				AND so.warehouse_id = ii.warehouse_id
 				AND so.tenant_id = ii.tenant_id
-				AND so.order_date BETWEEN ? AND ?
+				AND so.created_at BETWEEN ? AND ?
 				AND so.status IN ('CONFIRMED', 'SHIPPED', 'COMPLETED')
 			), 0) as sold_quantity,
 			(ii.available_quantity * ii.average_cost) as stock_value

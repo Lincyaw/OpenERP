@@ -176,6 +176,7 @@
     "inventory": "库存管理",
     "stock": "库存查询",
     "stockTaking": "库存盘点",
+    "stockAlerts": "库存预警",
     "trade": "交易管理",
     "salesOrders": "销售订单",
     "purchaseOrders": "采购订单",
@@ -198,6 +199,10 @@
     "users": "用户管理",
     "roles": "角色管理",
     "permissions": "权限配置",
+    "paymentSettings": "支付设置",
+    "platformConfig": "平台配置",
+    "platformSync": "平台同步",
+    "productMappings": "商品映射",
     "settings": "系统设置",
     "profile": "个人资料",
     "notifications": "通知"
