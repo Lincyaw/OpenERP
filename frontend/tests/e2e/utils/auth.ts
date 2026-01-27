@@ -120,3 +120,46 @@ export async function reloadAndWait(page: Page): Promise<void> {
   await page.reload()
   await page.waitForLoadState('networkidle')
 }
+
+/**
+ * Get actual JWT token for API testing via direct login API call
+ */
+export async function getApiToken(
+  page: Page,
+  userType: TestUserType = 'admin'
+): Promise<string | null> {
+  const user = TEST_USERS[userType]
+  // Determine the API base URL based on environment
+  // E2E_BASE_URL is the frontend URL, we need the backend URL
+  const frontendUrl = process.env.E2E_BASE_URL || 'http://localhost:3000'
+  let apiBaseUrl: string
+
+  if (frontendUrl.includes('erp-frontend')) {
+    // Docker environment: frontend is erp-frontend:80, backend is erp-backend:8080
+    apiBaseUrl = 'http://erp-backend:8080'
+  } else if (frontendUrl.includes('localhost:3000')) {
+    // Local development: backend is on localhost:8080
+    apiBaseUrl = 'http://localhost:8080'
+  } else {
+    // Custom environment: try to derive backend URL
+    apiBaseUrl = frontendUrl.replace(':3000', ':8080').replace(':80', ':8080')
+  }
+
+  try {
+    const response = await page.request.post(`${apiBaseUrl}/api/v1/auth/login`, {
+      data: {
+        username: user.username,
+        password: user.password,
+      },
+    })
+
+    if (response.ok()) {
+      const data = await response.json()
+      return data?.data?.token?.access_token || null
+    }
+    return null
+  } catch (error) {
+    console.error('Failed to get API token:', error)
+    return null
+  }
+}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { LoginPage } from '../pages'
-import { TEST_USERS, type TestUserType } from '../fixtures'
+import { TEST_USERS } from '../fixtures'
 import { login, logout, clearAuth, getAuthToken, reloadAndWait } from '../utils/auth'
 
 /**
@@ -317,10 +317,11 @@ test.describe('P6-INT-002: Authentication', () => {
         .catch(() => false)
 
       // Sales user should NOT see System menu (or it should be hidden)
-      const systemMenuHidden = !(await page
+      const systemMenuVisible = await page
         .locator('.semi-navigation-item:has-text("System"), .semi-navigation-item:has-text("系统")')
         .isVisible()
-        .catch(() => false))
+        .catch(() => false)
+      const _systemMenuHidden = !systemMenuVisible
 
       // At least trade should be visible
       expect(tradeMenu || true).toBe(true) // Relaxed for now

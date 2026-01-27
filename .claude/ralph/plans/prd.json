@@ -5985,7 +5985,7 @@
       "- 可识别慢查询",
       "- 可分析各操作类型的性能"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Metrics",
     "affectedModules": [
       "backend/internal/infrastructure/persistence/gorm/metrics.go"

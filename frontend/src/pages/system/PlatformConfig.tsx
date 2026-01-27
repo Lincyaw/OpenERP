@@ -194,7 +194,7 @@ export default function PlatformConfigPage() {
   // Load configurations on mount
   useEffect(() => {
     loadConfigurations()
-  }, [])
+  }, [loadConfigurations])
 
   /**
    * Load platform configurations from backend

@@ -27376,3 +27376,110 @@ rate(http_server_response_size_bytes_sum[5m]) / rate(http_server_response_size_b
 === Next Steps ===
 - OBS-METRICS-003: 数据库指标采集
 - OBS-METRICS-004: 业务指标采集
+
+================================================================================
+2025-01-27 - Task ID: OBS-METRICS-003
+================================================================================
+
+Story: 数据库指标采集 (Database Metrics Collection)
+Status: COMPLETED
+
+=== Implementation Details ===
+
+1. **Created db_metrics.go** (backend/internal/infrastructure/telemetry/db_metrics.go)
+   - New telemetry package for database metrics collection
+   - Thread-safe implementation with `sync.RWMutex` and `sync.Once`
+   
+2. **Connection Pool Metrics** (Collected every 15s):
+   - `db_pool_connections` (Gauge) - Connection states
+     * Labels: state (idle/in_use/open)
+     * idle: Number of idle connections
+     * in_use: Number of connections currently in use
+     * open: Total open connections (idle + in_use)
+   - `db_pool_connections_max` (Gauge) - Maximum pool size
+
+3. **Query Metrics** (via GORM callbacks):
+   - `db_query_total` (Counter)
+     * Labels: operation (SELECT/INSERT/UPDATE/DELETE/OTHER)
+     * Description: Total number of queries by operation type
+   - `db_query_duration_seconds` (Histogram)
+     * Labels: operation
+     * Buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
+   - `db_slow_query_total` (Counter)
+     * Labels: table
+     * Description: Slow queries (>200ms by default, configurable)
+
+4. **GORM Plugin Integration**:
+   - `DBMetricsPlugin` implements `gorm.Plugin` interface
+   - Registers before/after callbacks for all GORM operations
+   - Captures start time before queries, records metrics after
+   - Automatically detects operation type (SELECT/INSERT/UPDATE/DELETE)
+
+5. **Configuration Options**:
+   ```go
+   type DBMetricsConfig struct {
+       Enabled            bool
+       SlowQueryThreshold time.Duration // default: 200ms
+       PoolStatsInterval  time.Duration // default: 15s
+   }
+   ```
+
+6. **Main.go Integration**:
+   - Added database metrics registration after DB connection
+   - Starts pool stats collection goroutine
+   - Graceful shutdown with `defer dbMetrics.Stop()`
+
+=== Files Created/Modified ===
+- [NEW] backend/internal/infrastructure/telemetry/db_metrics.go (463 lines)
+- [NEW] backend/internal/infrastructure/telemetry/db_metrics_test.go (610 lines)
+- [MOD] backend/cmd/server/main.go (added metrics initialization)
+
+=== Test Coverage ===
+- 12 test functions with multiple subtests
+- Race condition testing with `-race` flag
+- Concurrent access testing
+- Pool stats collection lifecycle tests
+- Stop() idempotency test (critical safety fix)
+
+=== Verification ===
+- [x] All unit tests pass (12 test functions, 0.15s)
+- [x] Build succeeds: `go build ./...`
+- [x] go vet passes with no errors
+- [x] Code review completed - fixed CRITICAL and HIGH issues:
+  * Fixed Stop() double-close panic with sync.Once
+  * Fixed nil context handling in beforeCallback
+  * Fixed WaitCount semantic issue (using OpenConnections instead)
+
+=== Acceptance Criteria Met ===
+- [x] 可监控连接池使用率: `db_pool_connections{state="in_use"} / db_pool_connections_max`
+- [x] 可识别慢查询: `db_slow_query_total` counter by table
+- [x] 可分析各操作类型的性能: `histogram_quantile(0.99, db_query_duration_seconds{operation="SELECT"})`
+
+=== PromQL Examples ===
+```promql
+# Connection pool utilization
+sum(db_pool_connections{state="in_use"}) / sum(db_pool_connections_max)
+
+# Query rate by operation
+rate(db_query_total[5m])
+
+# P99 query latency by operation
+histogram_quantile(0.99, rate(db_query_duration_seconds_bucket[5m]))
+
+# Slow query rate by table
+rate(db_slow_query_total[5m])
+
+# Average query duration
+rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])
+```
+
+=== Notes ===
+- Implementation differs from PRD in pool state labels:
+  * PRD specified `state (idle/in_use/wait)`
+  * Implementation uses `state (idle/in_use/open)` because sql.DB.Stats().WaitCount 
+    is cumulative count, not current state. Using `open` for total connections instead.
+- Metrics disabled gracefully when telemetry is disabled
+- Thread-safe Stop() implementation with sync.Once prevents double-close panic
+
+=== Next Steps ===
+- OBS-METRICS-004: 业务指标采集 (Business Metrics)

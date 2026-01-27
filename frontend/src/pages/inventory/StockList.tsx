@@ -219,6 +219,7 @@ export default function StockListPage() {
       searchKeyword,
       warehouseFilter,
       stockStatusFilter,
+      t,
     ]
   )
 

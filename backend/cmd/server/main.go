@@ -145,6 +145,23 @@ func main() {
 			log.Error("Error closing database", zap.Error(err))
 		}
 	}()
+
+	// Initialize database metrics collection (connection pool and query metrics)
+	dbMetrics, err := telemetry.RegisterDBMetrics(db.DB, meterProvider, telemetry.DBMetricsConfig{
+		Enabled:            cfg.Telemetry.Enabled,
+		SlowQueryThreshold: cfg.Telemetry.DBSlowQueryThresh,
+		// PoolStatsInterval uses default (15s)
+	}, log)
+	if err != nil {
+		log.Error("Failed to initialize database metrics", zap.Error(err))
+		// Non-fatal: continue without metrics
+	}
+	if dbMetrics != nil {
+		// Start connection pool stats collection
+		dbMetrics.StartPoolStatsCollection(context.Background())
+		defer dbMetrics.Stop()
+	}
+
 	log.Info("Database connected successfully",
 		zap.Bool("tracing_enabled", cfg.Telemetry.DBTraceEnabled),
 	)

@@ -187,6 +187,7 @@ export default function ReceivablesPage() {
     sourceTypeFilter,
     dateRange,
     overdueOnly,
+    t,
   ])
 
   // Fetch summary
