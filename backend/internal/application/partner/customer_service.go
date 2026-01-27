@@ -2,16 +2,21 @@ package partner
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 // CustomerService handles customer-related business operations
 type CustomerService struct {
-	customerRepo partner.CustomerRepository
+	customerRepo          partner.CustomerRepository
+	accountReceivableRepo finance.AccountReceivableRepository // Optional: for delete validation
+	salesOrderRepo        trade.SalesOrderRepository          // Optional: for delete validation
 }
 
 // NewCustomerService creates a new CustomerService
@@ -19,6 +24,16 @@ func NewCustomerService(customerRepo partner.CustomerRepository) *CustomerServic
 	return &CustomerService{
 		customerRepo: customerRepo,
 	}
+}
+
+// SetAccountReceivableRepo sets the account receivable repository for delete validation
+func (s *CustomerService) SetAccountReceivableRepo(repo finance.AccountReceivableRepository) {
+	s.accountReceivableRepo = repo
+}
+
+// SetSalesOrderRepo sets the sales order repository for delete validation
+func (s *CustomerService) SetSalesOrderRepo(repo trade.SalesOrderRepository) {
+	s.salesOrderRepo = repo
 }
 
 // Create creates a new customer
@@ -394,11 +409,36 @@ func (s *CustomerService) Delete(ctx context.Context, tenantID, customerID uuid.
 
 	// Check if customer has balance
 	if customer.HasBalance() {
-		return shared.NewDomainError("CANNOT_DELETE", "Cannot delete customer with positive balance")
+		return shared.NewDomainError("HAS_BALANCE", fmt.Sprintf("Cannot delete customer with balance of %.2f", customer.Balance.InexactFloat64()))
 	}
 
-	// TODO: Check if customer has outstanding receivables or orders
-	// This should be implemented when those modules are available
+	// Check if customer has outstanding receivables (PENDING or PARTIAL status)
+	if s.accountReceivableRepo != nil {
+		outstandingCount, err := s.accountReceivableRepo.CountOutstandingByCustomer(ctx, tenantID, customerID)
+		if err != nil {
+			return shared.NewDomainError("RECEIVABLE_CHECK_FAILED", "Failed to check outstanding receivables. Please try again or contact support.")
+		}
+		if outstandingCount > 0 {
+			// Get the total outstanding amount for a more informative error message
+			outstandingAmount, _ := s.accountReceivableRepo.SumOutstandingByCustomer(ctx, tenantID, customerID)
+			return shared.NewDomainError("HAS_OUTSTANDING_RECEIVABLES",
+				fmt.Sprintf("Cannot delete customer: %d outstanding receivable(s) with total amount %.2f. Settle all receivables first.",
+					outstandingCount, outstandingAmount.InexactFloat64()))
+		}
+	}
+
+	// Check if customer has incomplete orders (DRAFT, CONFIRMED, or SHIPPED)
+	if s.salesOrderRepo != nil {
+		incompleteCount, err := s.salesOrderRepo.CountIncompleteByCustomer(ctx, tenantID, customerID)
+		if err != nil {
+			return shared.NewDomainError("ORDER_CHECK_FAILED", "Failed to check incomplete orders. Please try again or contact support.")
+		}
+		if incompleteCount > 0 {
+			return shared.NewDomainError("HAS_INCOMPLETE_ORDERS",
+				fmt.Sprintf("Cannot delete customer: %d incomplete order(s) exist. Complete or cancel all orders first.",
+					incompleteCount))
+		}
+	}
 
 	return s.customerRepo.DeleteForTenant(ctx, tenantID, customerID)
 }

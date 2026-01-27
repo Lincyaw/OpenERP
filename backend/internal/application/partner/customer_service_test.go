@@ -2,10 +2,13 @@ package partner
 
 import (
 	"context"
+	"errors"
 	"testing"
 
+	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -170,6 +173,267 @@ func (m *MockCustomerRepository) ExistsByEmail(ctx context.Context, tenantID uui
 	args := m.Called(ctx, tenantID, email)
 	return args.Bool(0), args.Error(1)
 }
+
+// MockAccountReceivableRepository is a mock implementation of AccountReceivableRepository
+// Only the methods needed for customer delete validation are implemented
+type MockAccountReceivableRepository struct {
+	mock.Mock
+}
+
+func (m *MockAccountReceivableRepository) FindByID(ctx context.Context, id uuid.UUID) (*finance.AccountReceivable, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindByReceivableNumber(ctx context.Context, tenantID uuid.UUID, receivableNumber string) (*finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, receivableNumber)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindBySource(ctx context.Context, tenantID uuid.UUID, sourceType finance.SourceType, sourceID uuid.UUID) (*finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, sourceType, sourceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).([]finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, customerID, filter)
+	return args.Get(0).([]finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status finance.ReceivableStatus, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, status, filter)
+	return args.Get(0).([]finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindOutstanding(ctx context.Context, tenantID, customerID uuid.UUID) ([]finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).([]finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) FindOverdue(ctx context.Context, tenantID uuid.UUID, filter finance.AccountReceivableFilter) ([]finance.AccountReceivable, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).([]finance.AccountReceivable), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) Save(ctx context.Context, receivable *finance.AccountReceivable) error {
+	args := m.Called(ctx, receivable)
+	return args.Error(0)
+}
+
+func (m *MockAccountReceivableRepository) SaveWithLock(ctx context.Context, receivable *finance.AccountReceivable) error {
+	args := m.Called(ctx, receivable)
+	return args.Error(0)
+}
+
+func (m *MockAccountReceivableRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockAccountReceivableRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
+	args := m.Called(ctx, tenantID, id)
+	return args.Error(0)
+}
+
+func (m *MockAccountReceivableRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter finance.AccountReceivableFilter) (int64, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status finance.ReceivableStatus) (int64, error) {
+	args := m.Called(ctx, tenantID, status)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) CountOutstandingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) SumOutstandingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) SumOutstandingForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) SumOverdueForTenant(ctx context.Context, tenantID uuid.UUID) (decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) ExistsByReceivableNumber(ctx context.Context, tenantID uuid.UUID, receivableNumber string) (bool, error) {
+	args := m.Called(ctx, tenantID, receivableNumber)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) ExistsBySource(ctx context.Context, tenantID uuid.UUID, sourceType finance.SourceType, sourceID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, sourceType, sourceID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockAccountReceivableRepository) GenerateReceivableNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
+	args := m.Called(ctx, tenantID)
+	return args.String(0), args.Error(1)
+}
+
+// Verify interface compliance
+var _ finance.AccountReceivableRepository = (*MockAccountReceivableRepository)(nil)
+
+// MockSalesOrderRepository is a mock implementation of SalesOrderRepository
+// Only the methods needed for customer delete validation are implemented
+type MockSalesOrderRepository struct {
+	mock.Mock
+}
+
+func (m *MockSalesOrderRepository) FindByID(ctx context.Context, id uuid.UUID) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, customerID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, status, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, warehouseID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) Save(ctx context.Context, order *trade.SalesOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepository) SaveWithLock(ctx context.Context, order *trade.SalesOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, order *trade.SalesOrder, events []shared.DomainEvent) error {
+	args := m.Called(ctx, order, events)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepository) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
+	args := m.Called(ctx, tenantID, id)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepository) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus) (int64, error) {
+	args := m.Called(ctx, tenantID, status)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) CountIncompleteByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockSalesOrderRepository) GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
+	args := m.Called(ctx, tenantID)
+	return args.String(0), args.Error(1)
+}
+
+// Verify interface compliance
+var _ trade.SalesOrderRepository = (*MockSalesOrderRepository)(nil)
 
 // =============================================================================
 // Test Helper Functions
@@ -462,8 +726,141 @@ func TestCustomerService_Delete_HasBalance(t *testing.T) {
 	assert.Error(t, err)
 	var domainErr *shared.DomainError
 	assert.ErrorAs(t, err, &domainErr)
-	assert.Equal(t, "CANNOT_DELETE", domainErr.Code)
+	assert.Equal(t, "HAS_BALANCE", domainErr.Code)
 	mockRepo.AssertExpectations(t)
+}
+
+func TestCustomerService_Delete_HasOutstandingReceivables(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	mockReceivableRepo := new(MockAccountReceivableRepository)
+	service := NewCustomerService(mockRepo)
+	service.SetAccountReceivableRepo(mockReceivableRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	customerID := newTestCustomerID()
+	customer := createTestCustomer(tenantID)
+
+	mockRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	mockReceivableRepo.On("CountOutstandingByCustomer", ctx, tenantID, customerID).Return(int64(3), nil)
+	mockReceivableRepo.On("SumOutstandingByCustomer", ctx, tenantID, customerID).Return(decimal.NewFromFloat(1500.00), nil)
+
+	err := service.Delete(ctx, tenantID, customerID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "HAS_OUTSTANDING_RECEIVABLES", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "3 outstanding receivable")
+	mockRepo.AssertExpectations(t)
+	mockReceivableRepo.AssertExpectations(t)
+}
+
+func TestCustomerService_Delete_HasIncompleteOrders(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	mockReceivableRepo := new(MockAccountReceivableRepository)
+	mockOrderRepo := new(MockSalesOrderRepository)
+	service := NewCustomerService(mockRepo)
+	service.SetAccountReceivableRepo(mockReceivableRepo)
+	service.SetSalesOrderRepo(mockOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	customerID := newTestCustomerID()
+	customer := createTestCustomer(tenantID)
+
+	mockRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	mockReceivableRepo.On("CountOutstandingByCustomer", ctx, tenantID, customerID).Return(int64(0), nil)
+	mockOrderRepo.On("CountIncompleteByCustomer", ctx, tenantID, customerID).Return(int64(2), nil)
+
+	err := service.Delete(ctx, tenantID, customerID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "HAS_INCOMPLETE_ORDERS", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "2 incomplete order")
+	mockRepo.AssertExpectations(t)
+	mockReceivableRepo.AssertExpectations(t)
+	mockOrderRepo.AssertExpectations(t)
+}
+
+func TestCustomerService_Delete_SuccessWithRepositoryChecks(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	mockReceivableRepo := new(MockAccountReceivableRepository)
+	mockOrderRepo := new(MockSalesOrderRepository)
+	service := NewCustomerService(mockRepo)
+	service.SetAccountReceivableRepo(mockReceivableRepo)
+	service.SetSalesOrderRepo(mockOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	customerID := newTestCustomerID()
+	customer := createTestCustomer(tenantID)
+
+	mockRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	mockReceivableRepo.On("CountOutstandingByCustomer", ctx, tenantID, customerID).Return(int64(0), nil)
+	mockOrderRepo.On("CountIncompleteByCustomer", ctx, tenantID, customerID).Return(int64(0), nil)
+	mockRepo.On("DeleteForTenant", ctx, tenantID, customerID).Return(nil)
+
+	err := service.Delete(ctx, tenantID, customerID)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+	mockReceivableRepo.AssertExpectations(t)
+	mockOrderRepo.AssertExpectations(t)
+}
+
+func TestCustomerService_Delete_ReceivableCheckFailed(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	mockReceivableRepo := new(MockAccountReceivableRepository)
+	service := NewCustomerService(mockRepo)
+	service.SetAccountReceivableRepo(mockReceivableRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	customerID := newTestCustomerID()
+	customer := createTestCustomer(tenantID)
+
+	mockRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	mockReceivableRepo.On("CountOutstandingByCustomer", ctx, tenantID, customerID).Return(int64(0), errors.New("db error"))
+
+	err := service.Delete(ctx, tenantID, customerID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "RECEIVABLE_CHECK_FAILED", domainErr.Code)
+	mockRepo.AssertExpectations(t)
+	mockReceivableRepo.AssertExpectations(t)
+}
+
+func TestCustomerService_Delete_OrderCheckFailed(t *testing.T) {
+	mockRepo := new(MockCustomerRepository)
+	mockReceivableRepo := new(MockAccountReceivableRepository)
+	mockOrderRepo := new(MockSalesOrderRepository)
+	service := NewCustomerService(mockRepo)
+	service.SetAccountReceivableRepo(mockReceivableRepo)
+	service.SetSalesOrderRepo(mockOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	customerID := newTestCustomerID()
+	customer := createTestCustomer(tenantID)
+
+	mockRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	mockReceivableRepo.On("CountOutstandingByCustomer", ctx, tenantID, customerID).Return(int64(0), nil)
+	mockOrderRepo.On("CountIncompleteByCustomer", ctx, tenantID, customerID).Return(int64(0), errors.New("db error"))
+
+	err := service.Delete(ctx, tenantID, customerID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "ORDER_CHECK_FAILED", domainErr.Code)
+	mockRepo.AssertExpectations(t)
+	mockReceivableRepo.AssertExpectations(t)
+	mockOrderRepo.AssertExpectations(t)
 }
 
 func TestCustomerService_Activate_Success(t *testing.T) {

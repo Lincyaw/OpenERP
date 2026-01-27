@@ -75,6 +75,10 @@ type AccountReceivableRepository interface {
 	// CountByCustomer counts account receivables for a customer
 	CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
 
+	// CountOutstandingByCustomer counts unsettled (PENDING or PARTIAL) receivables for a customer
+	// Used for validation before customer deletion
+	CountOutstandingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
+
 	// CountOverdue counts overdue receivables for a tenant
 	CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error)
 

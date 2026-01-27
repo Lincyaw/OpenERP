@@ -113,6 +113,11 @@ func (m *MockAccountReceivableRepository) CountByCustomer(ctx context.Context, t
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockAccountReceivableRepository) CountOutstandingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockAccountReceivableRepository) CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	args := m.Called(ctx, tenantID)
 	return args.Get(0).(int64), args.Error(1)

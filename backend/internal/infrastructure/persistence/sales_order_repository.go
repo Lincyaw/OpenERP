@@ -493,6 +493,19 @@ func (r *GormSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID
 	return count, nil
 }
 
+// CountIncompleteByCustomer counts incomplete orders (not COMPLETED or CANCELLED) for a customer
+func (r *GormSalesOrderRepository) CountIncompleteByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).
+		Model(&models.SalesOrderModel{}).
+		Where("tenant_id = ? AND customer_id = ? AND status NOT IN ?", tenantID, customerID,
+			[]trade.OrderStatus{trade.OrderStatusCompleted, trade.OrderStatusCancelled}).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // ExistsByOrderNumber checks if an order number exists for a tenant
 func (r *GormSalesOrderRepository) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
 	var count int64

@@ -185,6 +185,8 @@ func main() {
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)
+	customerService.SetAccountReceivableRepo(accountReceivableRepo)
+	customerService.SetSalesOrderRepo(salesOrderRepo)
 	customerLevelService := partnerapp.NewCustomerLevelService(customerLevelRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo, inventoryItemRepo)

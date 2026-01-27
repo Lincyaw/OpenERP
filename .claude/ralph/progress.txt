@@ -26204,3 +26204,167 @@ DELETE /api/v1/partner/warehouses/{id}
 === Next Steps ===
 - Add warehouse:force_delete permission to admin role in seed data
 - Consider adding E2E test for force delete flow
+
+================================================================================
+2025-01-27 - OBS-*: 创建可观测性 PRD 需求
+================================================================================
+
+=== 背景 ===
+用户希望为 ERP 系统投资可观测性基础设施，采用 OpenTelemetry 统一规范。
+讨论确定方案：日志、指标、链路追踪都使用 OpenTelemetry 规范，为后续微服务化做准备。
+
+=== 当前状态分析 ===
+- 日志：已有 Zap 结构化日志，支持 request_id/tenant_id/user_id
+- 指标：缺失，无 Prometheus
+- 链路追踪：缺失，无 OpenTelemetry/Jaeger
+
+=== 创建的 PRD 需求 ===
+
+### 阶段 1：基础设施 (高优先级)
+| ID | 描述 | 依赖 |
+|----|------|------|
+| OBS-INFRA-001 | 部署 OTEL Collector，exporter 设为文件输出 | 无 |
+
+### 阶段 2：链路追踪 (高优先级，为微服务化准备)
+| ID | 描述 | 依赖 |
+|----|------|------|
+| OBS-TRACE-001 | 集成 OpenTelemetry SDK 到后端 | OBS-INFRA-001 |
+| OBS-TRACE-002 | HTTP 中间件打桩 (otelgin) | OBS-TRACE-001 |
+| OBS-TRACE-003 | GORM 数据库打桩 (otelgorm) | OBS-TRACE-001 |
+| OBS-TRACE-004 | 业务关键路径打桩 (订单、库存、支付) | OBS-TRACE-002, OBS-TRACE-003 |
+
+### 阶段 3：指标监控 (中优先级)
+| ID | 描述 | 依赖 |
+|----|------|------|
+| OBS-METRICS-001 | 集成 OpenTelemetry Metrics | OBS-INFRA-001 |
+| OBS-METRICS-002 | HTTP 请求指标 (QPS/延迟/错误率) | OBS-METRICS-001 |
+| OBS-METRICS-003 | 数据库指标 (查询/连接池) | OBS-METRICS-001 |
+| OBS-METRICS-004 | 业务指标 (订单/库存/支付) | OBS-METRICS-001 |
+
+### 阶段 4：日志增强 (低优先级)
+| ID | 描述 | 依赖 |
+|----|------|------|
+| OBS-LOG-001 | Zap 日志桥接到 OTEL Logs | OBS-INFRA-001 |
+| OBS-LOG-002 | 日志与 Trace 关联 (trace_id, span_id) | OBS-LOG-001, OBS-TRACE-001 |
+
+### 阶段 5：告警 (低优先级，后续扩展)
+| ID | 描述 | 依赖 |
+|----|------|------|
+| OBS-ALERT-001 | 基于指标的告警规则配置 | OBS-METRICS-002/003/004 |
+
+=== 设计决策 ===
+
+1. **先部署 Collector 再接入 SDK**
+   - 理由：Collector 是所有遥测数据的汇聚点
+   - Trade-off：增加一步部署，但后续扩展更灵活
+   - Risk Level: LOW
+
+2. **Exporter 先用文件输出**
+   - 理由：开发阶段无需 Jaeger/Prometheus 后端
+   - Trade-off：无法使用可视化 UI，但降低部署复杂度
+   - Risk Level: LOW
+
+3. **链路追踪优先于指标**
+   - 理由：追踪对调试和微服务化更有价值
+   - Trade-off：延迟了容量规划能力
+   - Risk Level: LOW
+
+4. **业务指标最后实现**
+   - 理由：技术指标是基础，业务指标依赖稳定的基础设施
+   - Risk Level: LOW
+
+=== Red Flags Checked ===
+- [x] No God Objects - 每个模块职责清晰
+- [x] No tight coupling - 通过 OTEL Collector 解耦
+- [x] Clear structure - 分阶段实现
+- [x] No premature optimization - 先文件输出，后续可切换
+- [x] No magic - 所有配置显式声明
+
+=== 受影响模块 ===
+- docker-compose.yml
+- deploy/otel/
+- backend/internal/infrastructure/telemetry/
+- backend/internal/infrastructure/logger/
+- backend/internal/interfaces/http/middleware/
+- backend/internal/infrastructure/persistence/gorm/
+
+=== Next Steps ===
+1. 执行 OBS-INFRA-001：部署 OTEL Collector
+2. 执行 OBS-TRACE-001：集成 OpenTelemetry SDK
+3. 依次完成各阶段任务
+
+
+================================================================================
+2026-01-27 - Task GAP-VAL-002: Customer Delete Validation with Receivables and Orders Check
+================================================================================
+
+=== Implementation Details ===
+
+1. **Domain Layer Changes:**
+   - Added `CountOutstandingByCustomer(ctx, tenantID, customerID)` to `AccountReceivableRepository` interface
+   - Added `CountIncompleteByCustomer(ctx, tenantID, customerID)` to `SalesOrderRepository` interface
+
+2. **Infrastructure Layer Changes:**
+   - Implemented `CountOutstandingByCustomer` in `GormAccountReceivableRepository`
+     - Counts receivables with status PENDING or PARTIAL
+   - Implemented `CountIncompleteByCustomer` in `GormSalesOrderRepository`
+     - Counts orders with status NOT IN (COMPLETED, CANCELLED)
+
+3. **Application Layer Changes:**
+   - Updated `CustomerService` struct to include optional `AccountReceivableRepository` and `SalesOrderRepository` dependencies
+   - Added `SetAccountReceivableRepo` and `SetSalesOrderRepo` setter methods
+   - Rewrote `Delete` method with comprehensive validation:
+     - Check 1: Customer balance must be zero
+     - Check 2: No outstanding receivables (PENDING/PARTIAL)
+     - Check 3: No incomplete orders (DRAFT/CONFIRMED/SHIPPED)
+
+4. **Error Codes:**
+   - `HAS_BALANCE` - Customer has prepaid balance
+   - `HAS_OUTSTANDING_RECEIVABLES` - Customer has unsettled receivables (with count and amount in message)
+   - `HAS_INCOMPLETE_ORDERS` - Customer has incomplete orders (with count in message)
+   - `RECEIVABLE_CHECK_FAILED` - Database error during receivable check
+   - `ORDER_CHECK_FAILED` - Database error during order check
+
+5. **Wire-up (main.go):**
+   - Injected `accountReceivableRepo` and `salesOrderRepo` into `CustomerService`
+
+6. **Test Coverage:**
+   - Added MockAccountReceivableRepository with all interface methods
+   - Added MockSalesOrderRepository with all interface methods
+   - New tests:
+     - TestCustomerService_Delete_HasOutstandingReceivables
+     - TestCustomerService_Delete_HasIncompleteOrders
+     - TestCustomerService_Delete_SuccessWithRepositoryChecks
+     - TestCustomerService_Delete_ReceivableCheckFailed
+     - TestCustomerService_Delete_OrderCheckFailed
+   - Updated existing test: TestCustomerService_Delete_HasBalance (error code changed from CANNOT_DELETE to HAS_BALANCE)
+
+=== Files Modified ===
+- backend/internal/domain/finance/repository.go
+- backend/internal/domain/trade/repository.go
+- backend/internal/infrastructure/persistence/account_receivable_repository.go
+- backend/internal/infrastructure/persistence/sales_order_repository.go
+- backend/internal/application/partner/customer_service.go
+- backend/cmd/server/main.go
+- backend/internal/application/partner/customer_service_test.go
+- backend/internal/application/trade/sales_order_service_test.go (mock update)
+- backend/internal/application/finance/sales_order_shipped_handler_test.go (mock update)
+- backend/internal/interfaces/http/handler/sales_order_test.go (mock update)
+
+=== Verification ===
+- [x] Build passes: go build ./...
+- [x] Unit tests pass: go test ./internal/application/partner/... -v
+- [x] Code review passed (agent: code-reviewer)
+- [x] DDD patterns followed
+- [x] Tenant isolation maintained
+- [x] Error handling comprehensive
+
+=== Code Review Summary ===
+- Status: APPROVED with minor suggestions
+- Suggestions noted for future consideration:
+  - Consider database transaction for the full delete operation
+  - Consider consolidating mock repositories into shared testutil package
+  - Consider adding index hints for performance documentation
+
+=== Next Steps ===
+- N/A - Task complete

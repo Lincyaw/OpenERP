@@ -57,6 +57,10 @@ type SalesOrderRepository interface {
 	// CountByCustomer counts sales orders for a customer
 	CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
 
+	// CountIncompleteByCustomer counts incomplete (not COMPLETED or CANCELLED) orders for a customer
+	// Used for validation before customer deletion
+	CountIncompleteByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error)
+
 	// ExistsByOrderNumber checks if an order number exists for a tenant
 	ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error)
 

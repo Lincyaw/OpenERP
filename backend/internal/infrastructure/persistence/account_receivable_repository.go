@@ -250,6 +250,19 @@ func (r *GormAccountReceivableRepository) CountByCustomer(ctx context.Context, t
 	return count, nil
 }
 
+// CountOutstandingByCustomer counts unsettled (PENDING or PARTIAL) receivables for a customer
+func (r *GormAccountReceivableRepository) CountOutstandingByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).
+		Model(&models.AccountReceivableModel{}).
+		Where("tenant_id = ? AND customer_id = ? AND status IN ?", tenantID, customerID,
+			[]finance.ReceivableStatus{finance.ReceivableStatusPending, finance.ReceivableStatusPartial}).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // CountOverdue counts overdue receivables
 func (r *GormAccountReceivableRepository) CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	var count int64

@@ -121,6 +121,11 @@ func (m *MockSalesOrderRepository) CountByCustomer(ctx context.Context, tenantID
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockSalesOrderRepository) CountIncompleteByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockSalesOrderRepository) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
 	args := m.Called(ctx, tenantID, orderNumber)
 	return args.Bool(0), args.Error(1)
