@@ -31598,3 +31598,75 @@ golang.org/x/time v0.14.0
 
 1. LOADGEN-016: Scheduler and Executor (integrate WorkerPool)
 2. LOADGEN-010: CircuitBoard (main controller integrating all components)
+
+2026-01-28 - LOADGEN-018: 预热阶段实现 (Warmup Phase Implementation)
+
+=== Implementation Details ===
+
+**Files Created:**
+- `tools/loadgen/internal/warmup/config.go` - Warmup configuration structure and validation
+- `tools/loadgen/internal/warmup/executor.go` - Warmup executor implementation
+- `tools/loadgen/internal/warmup/config_test.go` - Configuration tests
+- `tools/loadgen/internal/warmup/executor_test.go` - Executor tests
+- `tools/loadgen/internal/pool/pool.go` - Parameter pool implementation
+- `tools/loadgen/internal/pool/pool_test.go` - Pool tests
+
+**Key Components Implemented:**
+
+1. **Warmup Configuration (warmup/config.go):**
+   - `Config` struct with iterations, fill, minPoolSize, timeout, retryCount, retryDelay
+   - `Validate()` method for config validation
+   - `ApplyDefaults()` using -1 sentinel for "use default" (preserves zero values)
+   - `IsEmpty()` and `Clone()` helper methods
+
+2. **Warmup Executor (warmup/executor.go):**
+   - Three-phase execution: Login → Fill → Verify
+   - `ProducerFunc` type for calling producer endpoints
+   - `LoginFunc` type for authentication
+   - `ProgressCallback` for real-time progress reporting
+   - Retry logic for transient failures (errors only recorded on final failure)
+   - Context cancellation and timeout support
+   - `ExecuteWarmupOnly()` for warmup-only mode
+
+3. **Parameter Pool (pool/pool.go):**
+   - `ParameterPool` interface with Add, Get, GetAll, Size, Clear, Cleanup, Stats
+   - `ShardedPool` implementation for high concurrency
+   - Ring buffer storage with FIFO eviction
+   - TTL-based expiration with automatic cleanup
+   - Thread-safe with fine-grained sharding (32 shards default)
+   - `WithNowFunc()` for testing time-dependent behavior
+
+**Thread Safety Fixes (from code review):**
+- Fixed data race in `getRandom`: Removed UsageCount mutation from read path
+- Fixed memory leak in `removeExpired`: Clear unused slots after compaction
+- Added documentation for `WithNowFunc` non-thread-safe nature
+
+=== Verification ===
+
+**Test Results:**
+- warmup package: 90.8% coverage
+- pool package: 93.0% coverage
+- All tests pass with race detector
+- No flaky tests observed
+
+**Acceptance Criteria Verified:**
+- ✅ Warmup config parsing (iterations, fill)
+- ✅ Login and token acquisition before warmup
+- ✅ Producer endpoints executed in fill order
+- ✅ MinPoolSize verification before completing warmup
+- ✅ ExecuteWarmupOnly() for -warmup-only mode
+- ✅ Progress callback with phase, type, iteration, pool status
+- ✅ Comprehensive test suite
+
+=== Architecture Notes ===
+
+- **Sentinel Values:** Config uses -1 for "use default", 0 is preserved as explicit
+- **Error Recording:** Only final failures are recorded; retry attempts don't pollute error list
+- **Pool Sharding:** FNV-1a hash with power-of-2 shard count for efficient distribution
+- **Ring Buffer:** Fixed capacity per type, FIFO eviction, O(1) add, O(n) expiration scan
+
+=== Next Steps ===
+
+1. LOADGEN-019: Data generators (faker, pattern, random)
+2. LOADGEN-010: CircuitBoard integration with warmup phase
+3. Integration with CLI -warmup-only flag
