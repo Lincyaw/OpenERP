@@ -9,6 +9,7 @@ import (
 
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -90,9 +91,16 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 	payload []byte,
 	signature string,
 ) (*PaymentCallbackResult, error) {
+	// Start tracing span for payment callback processing
+	ctx, span := telemetry.StartServiceSpan(ctx, "payment", "process_callback")
+	defer span.End()
+
+	telemetry.SetAttribute(span, telemetry.SpanAttrPaymentGateway, string(gatewayType))
+
 	// Get the gateway
 	gateway, err := s.GetGateway(gatewayType)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		s.logger.Error("Gateway not registered",
 			zap.String("gateway_type", string(gatewayType)),
 			zap.Error(err))
@@ -102,6 +110,7 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 	// Verify and parse the callback
 	callback, err := gateway.VerifyCallback(ctx, payload, signature)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		s.logger.Warn("Callback verification failed",
 			zap.String("gateway_type", string(gatewayType)),
 			zap.Error(err))
@@ -109,8 +118,17 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 	}
 
 	if callback == nil {
+		telemetry.RecordError(span, ErrCallbackInvalidPayload)
 		return nil, ErrCallbackInvalidPayload
 	}
+
+	// Add callback details to span
+	telemetry.SetAttributes(span,
+		"gateway_order_id", callback.GatewayOrderID,
+		telemetry.SpanAttrOrderNumber, callback.OrderNumber,
+		"payment_status", string(callback.Status),
+		telemetry.SpanAttrAmount, callback.Amount.String(),
+	)
 
 	s.logger.Info("Payment callback received",
 		zap.String("gateway_type", string(gatewayType)),
@@ -124,6 +142,7 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 	if _, loaded := s.processedCallbacks.LoadOrStore(idempotencyKey, time.Now()); loaded {
 		s.logger.Info("Callback already processed (idempotency check)",
 			zap.String("idempotency_key", idempotencyKey))
+		telemetry.AddEvent(span, "callback_already_processed")
 		return &PaymentCallbackResult{
 			Success:          true,
 			AlreadyProcessed: true,
@@ -136,6 +155,7 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 		// Remove from processed on error to allow retry
 		s.processedCallbacks.Delete(idempotencyKey)
 
+		telemetry.RecordError(span, err)
 		s.logger.Error("Failed to handle payment callback",
 			zap.String("gateway_order_id", callback.GatewayOrderID),
 			zap.Error(err))
@@ -147,6 +167,10 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 		}, err
 	}
 
+	telemetry.AddEvent(span, "payment_callback_processed",
+		"gateway_transaction_id", callback.GatewayTransactionID,
+	)
+
 	return &PaymentCallbackResult{
 		Success:         true,
 		Callback:        callback,
@@ -157,11 +181,22 @@ func (s *PaymentCallbackService) ProcessPaymentCallback(
 // HandlePaymentCallback processes a verified payment callback
 // This implements the PaymentCallbackHandler interface
 func (s *PaymentCallbackService) HandlePaymentCallback(ctx context.Context, callback *finance.PaymentCallback) error {
+	// Start tracing span for payment callback handling
+	ctx, span := telemetry.StartServiceSpan(ctx, "payment", "handle_callback")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrOrderNumber, callback.OrderNumber,
+		"payment_status", string(callback.Status),
+		telemetry.SpanAttrAmount, callback.Amount.String(),
+	)
+
 	// Only process successful payments
 	if !callback.Status.IsSuccess() {
 		s.logger.Info("Skipping non-successful payment callback",
 			zap.String("order_number", callback.OrderNumber),
 			zap.String("status", string(callback.Status)))
+		telemetry.AddEvent(span, "payment_not_successful", "status", string(callback.Status))
 		return nil
 	}
 
@@ -169,19 +204,24 @@ func (s *PaymentCallbackService) HandlePaymentCallback(ctx context.Context, call
 	// Note: The order number from the callback should match the receipt voucher's payment reference
 	voucher, err := s.receiptVoucherRepo.FindByPaymentReference(ctx, callback.OrderNumber)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return fmt.Errorf("failed to find receipt voucher: %w", err)
 	}
 	if voucher == nil {
 		s.logger.Warn("Receipt voucher not found for callback",
 			zap.String("order_number", callback.OrderNumber))
+		telemetry.RecordError(span, ErrCallbackOrderNotFound)
 		return ErrCallbackOrderNotFound
 	}
+
+	telemetry.SetAttribute(span, "voucher_id", voucher.ID.String())
 
 	// Check if already processed
 	if voucher.Status == finance.VoucherStatusConfirmed {
 		s.logger.Info("Receipt voucher already confirmed",
 			zap.String("voucher_id", voucher.ID.String()),
 			zap.String("order_number", callback.OrderNumber))
+		telemetry.AddEvent(span, "voucher_already_confirmed")
 		return nil
 	}
 
@@ -193,13 +233,20 @@ func (s *PaymentCallbackService) HandlePaymentCallback(ctx context.Context, call
 	// Auto-confirm the receipt voucher on successful payment
 	systemUserID := uuid.Nil // System action
 	if err := voucher.Confirm(systemUserID); err != nil {
+		telemetry.RecordError(span, err)
 		return fmt.Errorf("failed to confirm receipt voucher: %w", err)
 	}
 
 	// Save the updated voucher
 	if err := s.receiptVoucherRepo.SaveWithLock(ctx, voucher); err != nil {
+		telemetry.RecordError(span, err)
 		return fmt.Errorf("failed to save receipt voucher: %w", err)
 	}
+
+	telemetry.AddEvent(span, "voucher_confirmed",
+		"voucher_id", voucher.ID.String(),
+		"voucher_number", voucher.VoucherNumber,
+	)
 
 	s.logger.Info("Receipt voucher confirmed via gateway callback",
 		zap.String("voucher_id", voucher.ID.String()),

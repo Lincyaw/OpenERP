@@ -11,6 +11,7 @@ import (
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -351,10 +352,24 @@ func (s *InventoryService) GetTotalValueByWarehouse(ctx context.Context, tenantI
 // - Application service (this) handles orchestration: validation, data retrieval, persistence, events
 // - Domain service handles business logic: cost strategy resolution, cost calculation, domain events
 func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID, req IncreaseStockRequest) (*InventoryItemResponse, error) {
+	// Start tracing span for stock increase flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "increase_stock")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		"warehouse_id", req.WarehouseID.String(),
+		"product_id", req.ProductID.String(),
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+		telemetry.SpanAttrSourceType, req.SourceType,
+		telemetry.SpanAttrSourceID, req.SourceID,
+	)
+
 	// Validate source type
 	sourceType := inventory.SourceType(req.SourceType)
 	if !sourceType.IsValid() {
-		return nil, shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		err := shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	// Prepare batch info if provided
@@ -453,6 +468,7 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -461,11 +477,29 @@ func (s *InventoryService) IncreaseStock(ctx context.Context, tenantID uuid.UUID
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_increased",
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+		"cost_method", costMethod,
+	)
+
 	return response, nil
 }
 
 // LockStock locks stock for a pending order
 func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, req LockStockRequest) (*LockStockResponse, error) {
+	// Start tracing span for stock locking flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "lock_stock")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		"warehouse_id", req.WarehouseID.String(),
+		"product_id", req.ProductID.String(),
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+		telemetry.SpanAttrSourceType, req.SourceType,
+		telemetry.SpanAttrSourceID, req.SourceID,
+	)
+
 	// Set expiry time
 	expireAt := time.Now().Add(DefaultLockExpiry)
 	if req.ExpireAt != nil {
@@ -554,6 +588,7 @@ func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, re
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -562,11 +597,24 @@ func (s *InventoryService) LockStock(ctx context.Context, tenantID uuid.UUID, re
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_locked",
+		telemetry.SpanAttrLockID, response.LockID.String(),
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+	)
+	telemetry.SetAttribute(span, telemetry.SpanAttrLockID, response.LockID.String())
+
 	return response, nil
 }
 
 // UnlockStock releases a previously locked quantity back to available
 func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, req UnlockStockRequest) error {
+	// Start tracing span for stock unlock flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "unlock_stock")
+	defer span.End()
+
+	telemetry.SetAttribute(span, telemetry.SpanAttrLockID, req.LockID.String())
+
 	var domainEvents []shared.DomainEvent
 
 	// Core operation function that can be executed within a transaction
@@ -660,6 +708,7 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 
@@ -668,15 +717,32 @@ func (s *InventoryService) UnlockStock(ctx context.Context, tenantID uuid.UUID, 
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_unlocked",
+		telemetry.SpanAttrLockID, req.LockID.String(),
+	)
+
 	return nil
 }
 
 // DeductStock deducts locked stock (actual shipment/consumption)
 func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, req DeductStockRequest) error {
+	// Start tracing span for stock deduction flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "deduct_stock")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrLockID, req.LockID.String(),
+		telemetry.SpanAttrSourceType, req.SourceType,
+		telemetry.SpanAttrSourceID, req.SourceID,
+	)
+
 	// Validate source type
 	sourceType := inventory.SourceType(req.SourceType)
 	if !sourceType.IsValid() {
-		return shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		err := shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		telemetry.RecordError(span, err)
+		return err
 	}
 
 	var domainEvents []shared.DomainEvent
@@ -777,6 +843,7 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 
@@ -785,16 +852,34 @@ func (s *InventoryService) DeductStock(ctx context.Context, tenantID uuid.UUID, 
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_deducted",
+		telemetry.SpanAttrLockID, req.LockID.String(),
+	)
+
 	return nil
 }
 
-// DecreaseStock directly decreases available stock (without requiring a prior lock)
 // This is used for operations like purchase returns where goods are shipped back to supplier
 func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID, req DecreaseStockRequest) error {
+	// Start tracing span for stock decrease flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "decrease_stock")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		"warehouse_id", req.WarehouseID.String(),
+		"product_id", req.ProductID.String(),
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+		telemetry.SpanAttrSourceType, req.SourceType,
+		telemetry.SpanAttrSourceID, req.SourceID,
+	)
+
 	// Validate source type
 	sourceType := inventory.SourceType(req.SourceType)
 	if !sourceType.IsValid() {
-		return shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		err := shared.NewDomainError("INVALID_SOURCE_TYPE", "Invalid source type")
+		telemetry.RecordError(span, err)
+		return err
 	}
 
 	var domainEvents []shared.DomainEvent
@@ -866,6 +951,7 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 
@@ -874,11 +960,27 @@ func (s *InventoryService) DecreaseStock(ctx context.Context, tenantID uuid.UUID
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
 
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_decreased",
+		telemetry.SpanAttrQuantity, req.Quantity.String(),
+	)
+
 	return nil
 }
 
 // AdjustStock adjusts the stock to match actual quantity
 func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, req AdjustStockRequest) (*InventoryItemResponse, error) {
+	// Start tracing span for stock adjustment flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "adjust_stock")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		"warehouse_id", req.WarehouseID.String(),
+		"product_id", req.ProductID.String(),
+		"target_quantity", req.ActualQuantity.String(),
+		"reason", req.Reason,
+	)
+
 	// Determine source type and ID upfront
 	sourceType := inventory.SourceTypeManualAdjustment
 	if req.SourceType != "" {
@@ -963,6 +1065,7 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 	}
 
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -970,6 +1073,11 @@ func (s *InventoryService) AdjustStock(ctx context.Context, tenantID uuid.UUID, 
 	if s.eventPublisher != nil && len(domainEvents) > 0 {
 		_ = s.eventPublisher.Publish(ctx, domainEvents...)
 	}
+
+	// Add success event to span
+	telemetry.AddEvent(span, "stock_adjusted",
+		"target_quantity", req.ActualQuantity.String(),
+	)
 
 	return response, nil
 }
@@ -1220,15 +1328,32 @@ func (s *InventoryService) GetTransactionByID(ctx context.Context, tenantID, txI
 
 // CheckAvailability checks if a quantity is available for a product in a warehouse
 func (s *InventoryService) CheckAvailability(ctx context.Context, tenantID, warehouseID, productID uuid.UUID, quantity decimal.Decimal) (bool, decimal.Decimal, error) {
+	// Start tracing span for availability check
+	ctx, span := telemetry.StartServiceSpan(ctx, "inventory", "check_availability")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		"warehouse_id", warehouseID.String(),
+		"product_id", productID.String(),
+		telemetry.SpanAttrQuantity, quantity.String(),
+	)
+
 	item, err := s.inventoryRepo.FindByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
 	if err != nil {
 		if errors.Is(err, shared.ErrNotFound) {
+			telemetry.AddEvent(span, "no_inventory_found")
 			return false, decimal.Zero, nil
 		}
+		telemetry.RecordError(span, err)
 		return false, decimal.Zero, err
 	}
 
 	available := item.CanFulfill(quantity)
+	telemetry.SetAttributes(span,
+		"available_quantity", item.AvailableQuantity.Amount().String(),
+		"can_fulfill", available,
+	)
+
 	return available, item.AvailableQuantity.Amount(), nil
 }
 

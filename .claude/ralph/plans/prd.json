@@ -5845,7 +5845,7 @@
       "- 库存锁定失败时可在 Span 中看到错误详情",
       "- 支付回调能关联到原始支付请求"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Tracing",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/",

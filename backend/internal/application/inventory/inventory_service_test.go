@@ -444,7 +444,7 @@ func TestInventoryService_GetByWarehouseAndProduct(t *testing.T) {
 	item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(50), decimal.Zero)
 
 	t.Run("success", func(t *testing.T) {
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 
 		response, err := service.GetByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
 
@@ -455,7 +455,7 @@ func TestInventoryService_GetByWarehouseAndProduct(t *testing.T) {
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
 
 		response, err := service.GetByWarehouseAndProduct(ctx, tenantID, warehouseID, productID)
 
@@ -523,9 +523,9 @@ func TestInventoryService_IncreaseStock(t *testing.T) {
 	t.Run("success - increase existing stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := IncreaseStockRequest{
 			WarehouseID: warehouseID,
@@ -564,9 +564,9 @@ func TestInventoryService_IncreaseStock(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 		var capturedTx *inventory.InventoryTransaction
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Run(func(args mock.Arguments) {
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Run(func(args mock.Arguments) {
 			capturedTx = args.Get(1).(*inventory.InventoryTransaction)
 		}).Return(nil).Once()
 
@@ -604,10 +604,10 @@ func TestInventoryService_LockStock(t *testing.T) {
 	t.Run("success - lock available stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		lockRepo.On("Save", ctx, mock.AnythingOfType("*inventory.StockLock")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		lockRepo.On("Save", mock.Anything, mock.AnythingOfType("*inventory.StockLock")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := LockStockRequest{
 			WarehouseID: warehouseID,
@@ -629,7 +629,7 @@ func TestInventoryService_LockStock(t *testing.T) {
 	t.Run("insufficient stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(20), decimal.Zero)
 
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 
 		req := LockStockRequest{
 			WarehouseID: warehouseID,
@@ -646,7 +646,7 @@ func TestInventoryService_LockStock(t *testing.T) {
 	})
 
 	t.Run("no inventory found", func(t *testing.T) {
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
 
 		req := LockStockRequest{
 			WarehouseID: warehouseID,
@@ -686,11 +686,11 @@ func TestInventoryService_UnlockStock(t *testing.T) {
 		item.ID = itemID
 		item.Locks = []inventory.StockLock{*lock}
 
-		lockRepo.On("FindByID", ctx, lockID).Return(lock, nil).Once()
-		invRepo.On("FindByID", ctx, itemID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		lockRepo.On("Save", ctx, mock.AnythingOfType("*inventory.StockLock")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		lockRepo.On("FindByID", mock.Anything, lockID).Return(lock, nil).Once()
+		invRepo.On("FindByID", mock.Anything, itemID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		lockRepo.On("Save", mock.Anything, mock.AnythingOfType("*inventory.StockLock")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := UnlockStockRequest{LockID: lockID}
 
@@ -700,7 +700,7 @@ func TestInventoryService_UnlockStock(t *testing.T) {
 	})
 
 	t.Run("lock not found", func(t *testing.T) {
-		lockRepo.On("FindByID", ctx, lockID).Return(nil, shared.ErrNotFound).Once()
+		lockRepo.On("FindByID", mock.Anything, lockID).Return(nil, shared.ErrNotFound).Once()
 
 		req := UnlockStockRequest{LockID: lockID}
 
@@ -723,16 +723,16 @@ func TestInventoryService_UnlockStock(t *testing.T) {
 		item.ID = itemID
 		item.Locks = []inventory.StockLock{*lock1, *lock2} // lock2 is at index 1, not 0
 
-		lockRepo.On("FindByID", ctx, lock2ID).Return(lock2, nil).Once()
-		invRepo.On("FindByID", ctx, itemID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		lockRepo.On("FindByID", mock.Anything, lock2ID).Return(lock2, nil).Once()
+		invRepo.On("FindByID", mock.Anything, itemID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
 
 		// Verify that the correct lock (lock2) is saved, not lock1 at index 0
-		lockRepo.On("Save", ctx, mock.MatchedBy(func(l *inventory.StockLock) bool {
+		lockRepo.On("Save", mock.Anything, mock.MatchedBy(func(l *inventory.StockLock) bool {
 			return l.ID == lock2ID && l.Released
 		})).Return(nil).Once()
 
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := UnlockStockRequest{LockID: lock2ID}
 
@@ -759,9 +759,9 @@ func TestInventoryService_AdjustStock(t *testing.T) {
 	t.Run("success - increase adjustment", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := AdjustStockRequest{
 			WarehouseID:    warehouseID,
@@ -780,9 +780,9 @@ func TestInventoryService_AdjustStock(t *testing.T) {
 	t.Run("success - decrease adjustment", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		req := AdjustStockRequest{
 			WarehouseID:    warehouseID,
@@ -801,7 +801,7 @@ func TestInventoryService_AdjustStock(t *testing.T) {
 	t.Run("cannot adjust with locked stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.NewFromInt(20))
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 
 		req := AdjustStockRequest{
 			WarehouseID:    warehouseID,
@@ -833,8 +833,8 @@ func TestInventoryService_SetThresholds(t *testing.T) {
 	t.Run("success - set min quantity", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
-		invRepo.On("Save", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("Save", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
 
 		minQty := decimal.NewFromInt(10)
 		req := SetThresholdsRequest{
@@ -867,7 +867,7 @@ func TestInventoryService_CheckAvailability(t *testing.T) {
 	t.Run("sufficient stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(100), decimal.Zero)
 
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 
 		available, qty, err := service.CheckAvailability(ctx, tenantID, warehouseID, productID, decimal.NewFromInt(50))
 
@@ -879,7 +879,7 @@ func TestInventoryService_CheckAvailability(t *testing.T) {
 	t.Run("insufficient stock", func(t *testing.T) {
 		item := createTestInventoryItemWithStock(tenantID, warehouseID, productID, decimal.NewFromInt(30), decimal.Zero)
 
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 
 		available, qty, err := service.CheckAvailability(ctx, tenantID, warehouseID, productID, decimal.NewFromInt(50))
 
@@ -889,7 +889,7 @@ func TestInventoryService_CheckAvailability(t *testing.T) {
 	})
 
 	t.Run("no inventory", func(t *testing.T) {
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(nil, shared.ErrNotFound).Once()
 
 		available, qty, err := service.CheckAvailability(ctx, tenantID, warehouseID, productID, decimal.NewFromInt(50))
 
@@ -995,11 +995,11 @@ func TestInventoryService_AdjustStock_PublishesStockBelowThresholdEvent(t *testi
 		eventPublisher.Reset()
 
 		// Mock GetOrCreate to return the item
-		invRepo.On("GetOrCreate", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("GetOrCreate", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 		// Mock SaveWithLock to succeed
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
 		// Mock transaction repo
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		// Adjust stock to below minimum threshold (5 < 10)
 		req := AdjustStockRequest{
@@ -1053,11 +1053,11 @@ func TestInventoryService_DecreaseStock_PublishesStockBelowThresholdEvent(t *tes
 		eventPublisher.Reset()
 
 		// Mock FindByWarehouseAndProduct to return the item
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 		// Mock SaveWithLock to succeed
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
 		// Mock transaction repo
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		// Decrease stock by 10 (15 - 10 = 5, which is below minimum of 10)
 		req := DecreaseStockRequest{
@@ -1092,11 +1092,11 @@ func TestInventoryService_DecreaseStock_PublishesStockBelowThresholdEvent(t *tes
 		item.ClearDomainEvents()
 
 		// Mock FindByWarehouseAndProduct to return the item
-		invRepo.On("FindByWarehouseAndProduct", ctx, tenantID, warehouseID, productID).Return(item, nil).Once()
+		invRepo.On("FindByWarehouseAndProduct", mock.Anything, tenantID, warehouseID, productID).Return(item, nil).Once()
 		// Mock SaveWithLock to succeed
-		invRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
+		invRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*inventory.InventoryItem")).Return(nil).Once()
 		// Mock transaction repo
-		txRepo.On("Create", ctx, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
+		txRepo.On("Create", mock.Anything, mock.AnythingOfType("*inventory.InventoryTransaction")).Return(nil).Once()
 
 		// Decrease stock by 10 (100 - 10 = 90, which is still above minimum of 10)
 		req := DecreaseStockRequest{

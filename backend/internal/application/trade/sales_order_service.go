@@ -8,6 +8,7 @@ import (
 	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/erp/backend/internal/domain/trade"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -132,21 +133,35 @@ func (s *SalesOrderService) calculateItemPrice(
 
 // Create creates a new sales order
 func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req CreateSalesOrderRequest) (*SalesOrderResponse, error) {
+	// Start tracing span for order creation flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "sales_order", "create")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrCustomerID, req.CustomerID.String(),
+		telemetry.SpanAttrCustomerName, req.CustomerName,
+		"items_count", len(req.Items),
+	)
+
 	// Generate order number
 	orderNumber, err := s.orderRepo.GenerateOrderNumber(ctx, tenantID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+	telemetry.SetAttribute(span, telemetry.SpanAttrOrderNumber, orderNumber)
 
 	// Create order
 	order, err := trade.NewSalesOrder(tenantID, orderNumber, req.CustomerID, req.CustomerName)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
 	// Set warehouse if provided
 	if req.WarehouseID != nil {
 		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 	}
@@ -155,6 +170,7 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 	for _, item := range req.Items {
 		// Validate product can be sold (not disabled/discontinued)
 		if err := s.validateProductForSale(ctx, tenantID, item.ProductID, item.ProductCode); err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 
@@ -172,6 +188,7 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 			unitPrice,
 		)
 		if err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 		if item.Remark != "" {
@@ -183,6 +200,7 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 	if req.Discount != nil {
 		discountMoney := valueobject.NewMoneyCNY(*req.Discount)
 		if err := order.ApplyDiscount(discountMoney); err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 	}
@@ -199,8 +217,16 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 
 	// Save order
 	if err := s.orderRepo.Save(ctx, order); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	// Add final attributes to span
+	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, order.ID.String())
+	telemetry.AddEvent(span, "order_created",
+		telemetry.SpanAttrOrderID, order.ID.String(),
+		telemetry.SpanAttrOrderNumber, orderNumber,
+	)
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil
@@ -448,20 +474,35 @@ func (s *SalesOrderService) RemoveItem(ctx context.Context, tenantID, orderID, i
 // Confirm confirms a sales order
 // This triggers stock locking via domain events (P3-BE-006)
 func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.UUID, req ConfirmOrderRequest) (*SalesOrderResponse, error) {
+	// Start tracing span for order confirmation flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "sales_order", "confirm")
+	defer span.End()
+
+	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
+
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrOrderNumber, order.OrderNumber,
+		telemetry.SpanAttrCustomerID, order.CustomerID.String(),
+		"items_count", len(order.Items),
+	)
 
 	// Set warehouse if provided and not already set
 	if req.WarehouseID != nil && order.WarehouseID == nil {
 		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 	}
 
 	// Confirm order
 	if err := order.Confirm(); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -471,8 +512,15 @@ func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.
 
 	// Save with optimistic locking and events atomically (transactional outbox pattern)
 	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	telemetry.AddEvent(span, "order_confirmed",
+		telemetry.SpanAttrOrderID, orderID.String(),
+		telemetry.SpanAttrOrderStatus, string(order.Status),
+		"events_published", len(events),
+	)
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil
@@ -481,20 +529,34 @@ func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.
 // Ship marks an order as shipped
 // This triggers stock deduction via domain events (P3-BE-006)
 func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUID, req ShipOrderRequest) (*SalesOrderResponse, error) {
+	// Start tracing span for order shipping flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "sales_order", "ship")
+	defer span.End()
+
+	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
+
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrOrderNumber, order.OrderNumber,
+		telemetry.SpanAttrCustomerID, order.CustomerID.String(),
+	)
 
 	// Set warehouse if provided and not already set
 	if req.WarehouseID != nil {
 		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 	}
 
 	// Ship order
 	if err := order.Ship(); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -504,8 +566,15 @@ func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUI
 
 	// Save with optimistic locking and events atomically (transactional outbox pattern)
 	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	telemetry.AddEvent(span, "order_shipped",
+		telemetry.SpanAttrOrderID, orderID.String(),
+		telemetry.SpanAttrOrderStatus, string(order.Status),
+		"events_published", len(events),
+	)
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil
@@ -534,12 +603,26 @@ func (s *SalesOrderService) Complete(ctx context.Context, tenantID, orderID uuid
 // Cancel cancels a sales order
 // This triggers stock unlock via domain events (P3-BE-006) if order was confirmed
 func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.UUID, req CancelOrderRequest) (*SalesOrderResponse, error) {
+	// Start tracing span for order cancellation flow
+	ctx, span := telemetry.StartServiceSpan(ctx, "sales_order", "cancel")
+	defer span.End()
+
+	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
+
 	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrOrderNumber, order.OrderNumber,
+		telemetry.SpanAttrOrderStatus, string(order.Status),
+		"cancel_reason", req.Reason,
+	)
+
 	if err := order.Cancel(req.Reason); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -550,8 +633,14 @@ func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.U
 
 	// Save with optimistic locking and events atomically (transactional outbox pattern)
 	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
+
+	telemetry.AddEvent(span, "order_cancelled",
+		telemetry.SpanAttrOrderID, orderID.String(),
+		"events_published", len(events),
+	)
 
 	response := ToSalesOrderResponse(order)
 	return &response, nil

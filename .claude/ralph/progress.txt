@@ -27776,3 +27776,65 @@ make pyroscope-down
 - OBS-PROFILE-005: 业务关键路径 Profiling Labels
 - Integrate Pyroscope client in backend (pyroscope.Start() in main.go)
 - Configure pyroscope.ApplicationName and pyroscope.ServerAddress
+
+2026-01-27 - OBS-TRACE-004: Business Critical Path Tracing Instrumentation
+
+=== Implementation Details ===
+- Added tracing spans to application services for business critical paths:
+
+1. SalesOrderService (backend/internal/application/trade/sales_order_service.go):
+   - Create: sales_order.create span with customer info, items count
+   - Confirm: sales_order.confirm span with order status, events published
+   - Ship: sales_order.ship span with shipping details
+   - Cancel: sales_order.cancel span with cancellation reason
+
+2. InventoryService (backend/internal/application/inventory/inventory_service.go):
+   - CheckAvailability: inventory.check_availability span
+   - IncreaseStock: inventory.increase_stock span with cost method
+   - LockStock: inventory.lock_stock span with lock ID
+   - UnlockStock: inventory.unlock_stock span
+   - DeductStock: inventory.deduct_stock span
+   - DecreaseStock: inventory.decrease_stock span
+   - AdjustStock: inventory.adjust_stock span with target quantity
+
+3. PaymentCallbackService (backend/internal/application/finance/payment_callback_service.go):
+   - ProcessPaymentCallback: payment.process_callback span with gateway type
+   - HandlePaymentCallback: payment.handle_callback span with voucher details
+
+4. BalancePaymentService (backend/internal/application/finance/balance_payment_service.go):
+   - ProcessBalancePayment: payment.process_balance_payment span with balance changes
+
+=== Key Decisions ===
+- Used existing tracing utilities from telemetry/tracing.go:
+  - telemetry.StartServiceSpan(ctx, service, method) for consistent naming
+  - telemetry.SetAttributes/SetAttribute for span attributes
+  - telemetry.RecordError for error recording
+  - telemetry.AddEvent for success events
+- Span naming convention: {service}.{method} (e.g., sales_order.create)
+- Added meaningful attributes including IDs, quantities, amounts, statuses
+- Added events for successful operations (order_created, stock_locked, etc.)
+- Updated test mocks to use mock.Anything for context to accommodate span context
+
+=== Files Modified ===
+- backend/internal/application/trade/sales_order_service.go
+- backend/internal/application/inventory/inventory_service.go
+- backend/internal/application/finance/payment_callback_service.go
+- backend/internal/application/finance/balance_payment_service.go
+- backend/internal/application/inventory/inventory_service_test.go (mock fixes)
+- backend/internal/application/finance/balance_payment_service_test.go (mock fixes)
+
+=== Verification ===
+- All inventory tests pass: 25/25 tests pass
+- All finance tests pass: 35/35 tests pass
+- Build succeeds without errors
+- go vet passes without issues
+- Code review completed: No critical/high issues, implementation follows patterns
+
+=== Notes ===
+- Trade service tests have pre-existing failures (unrelated to this change)
+- Existing telemetry infrastructure (tracing.go) provides all needed utilities
+- Tests were updated to use mock.Anything for context to handle span context
+
+=== Next Steps ===
+- OBS-METRICS-001: Integrate OpenTelemetry Metrics
+- OBS-PROFILING-001: Add profiling support (Pyroscope)

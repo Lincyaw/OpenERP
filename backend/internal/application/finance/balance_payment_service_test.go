@@ -277,9 +277,9 @@ func TestBalancePaymentService_ProcessBalancePayment_Success(t *testing.T) {
 	customer.ID = customerID
 
 	// Mock expectations
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(nil)
-	balanceTxRepo.On("Create", ctx, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(nil)
+	balanceTxRepo.On("Create", mock.Anything, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
 
 	// Execute
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
@@ -319,7 +319,7 @@ func TestBalancePaymentService_ProcessBalancePayment_InsufficientBalance(t *test
 	customer.ID = customerID
 
 	// Mock expectations
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
 
 	// Execute - trying to pay 200 with only 100 balance
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
@@ -348,7 +348,7 @@ func TestBalancePaymentService_ProcessBalancePayment_CustomerNotFound(t *testing
 	service := NewBalancePaymentService(customerRepo, balanceTxRepo)
 
 	// Mock expectations - customer not found
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(nil, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(nil, nil)
 
 	// Execute
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
@@ -412,8 +412,8 @@ func TestBalancePaymentService_ProcessBalancePayment_SaveCustomerFails(t *testin
 	customer.ID = customerID
 
 	// Mock expectations
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(errors.New("database error"))
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(errors.New("database error"))
 
 	// Execute
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
@@ -447,7 +447,7 @@ func TestBalancePaymentService_ValidateBalancePayment_Success(t *testing.T) {
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(500.00))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
 
 	// Validate for 300 when customer has 500
 	err := service.ValidateBalancePayment(ctx, tenantID, customerID, decimal.NewFromFloat(300.00))
@@ -468,7 +468,7 @@ func TestBalancePaymentService_ValidateBalancePayment_InsufficientBalance(t *tes
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(100.00))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
 
 	// Validate for 300 when customer has only 100
 	err := service.ValidateBalancePayment(ctx, tenantID, customerID, decimal.NewFromFloat(300.00))
@@ -494,7 +494,7 @@ func TestBalancePaymentService_GetCustomerBalance_Success(t *testing.T) {
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(750.50))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
 
 	balance, err := service.GetCustomerBalance(ctx, tenantID, customerID)
 
@@ -519,7 +519,7 @@ func TestBalancePaymentService_HasSufficientBalance(t *testing.T) {
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(500.00))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
 
 	testCases := []struct {
 		amount   decimal.Decimal
@@ -556,9 +556,9 @@ func TestBalancePaymentService_ProcessReceiptVoucherBalancePayment_Success(t *te
 
 	voucher := createTestReceiptVoucherForBalance(tenantID, customerID, decimal.NewFromFloat(300.00), finance.PaymentMethodBalance)
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(nil)
-	balanceTxRepo.On("Create", ctx, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(nil)
+	balanceTxRepo.On("Create", mock.Anything, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
 
 	result, err := service.ProcessReceiptVoucherBalancePayment(ctx, tenantID, voucher, &operatorID)
 
@@ -625,9 +625,9 @@ func TestBalancePaymentService_RefundBalancePayment_Success(t *testing.T) {
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(500.00))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(nil)
-	balanceTxRepo.On("Create", ctx, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(nil)
+	balanceTxRepo.On("Create", mock.Anything, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
 
 	result, err := service.RefundBalancePayment(
 		ctx,
@@ -693,9 +693,9 @@ func TestBalancePaymentService_ProcessBalancePayment_ExactBalance(t *testing.T) 
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(500.00))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(nil)
-	balanceTxRepo.On("Create", ctx, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(nil)
+	balanceTxRepo.On("Create", mock.Anything, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
 
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
 		TenantID:   tenantID,
@@ -726,9 +726,9 @@ func TestBalancePaymentService_ProcessBalancePayment_SmallDecimalAmount(t *testi
 	customer := createTestCustomerWithBalance(tenantID, decimal.NewFromFloat(100.0025))
 	customer.ID = customerID
 
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(nil)
-	balanceTxRepo.On("Create", ctx, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(nil)
+	balanceTxRepo.On("Create", mock.Anything, mock.AnythingOfType("*partner.BalanceTransaction")).Return(nil)
 
 	result, err := service.ProcessBalancePayment(ctx, BalancePaymentRequest{
 		TenantID:   tenantID,
@@ -765,8 +765,8 @@ func TestBalancePaymentService_ProcessBalancePayment_OptimisticLockError(t *test
 	customer.ID = customerID
 
 	// Mock expectations - SaveWithLock fails due to concurrent modification
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(
 		shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The customer record has been modified by another transaction"),
 	)
 
@@ -801,8 +801,8 @@ func TestBalancePaymentService_RefundBalancePayment_OptimisticLockError(t *testi
 	customer.ID = customerID
 
 	// Mock expectations - SaveWithLock fails due to concurrent modification
-	customerRepo.On("FindByIDForTenant", ctx, tenantID, customerID).Return(customer, nil)
-	customerRepo.On("SaveWithLock", ctx, mock.AnythingOfType("*partner.Customer")).Return(
+	customerRepo.On("FindByIDForTenant", mock.Anything, tenantID, customerID).Return(customer, nil)
+	customerRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*partner.Customer")).Return(
 		shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The customer record has been modified by another transaction"),
 	)
 

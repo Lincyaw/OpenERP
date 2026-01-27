@@ -7,6 +7,7 @@ import (
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -56,33 +57,53 @@ func (s *BalancePaymentService) ProcessBalancePayment(
 	ctx context.Context,
 	req BalancePaymentRequest,
 ) (*BalancePaymentResult, error) {
+	// Start tracing span for balance payment processing
+	ctx, span := telemetry.StartServiceSpan(ctx, "payment", "process_balance_payment")
+	defer span.End()
+
+	telemetry.SetAttributes(span,
+		telemetry.SpanAttrCustomerID, req.CustomerID.String(),
+		telemetry.SpanAttrAmount, req.Amount.String(),
+		telemetry.SpanAttrSourceType, string(req.SourceType),
+		telemetry.SpanAttrSourceID, req.SourceID,
+	)
+
 	// Validate amount
 	if req.Amount.IsNegative() || req.Amount.IsZero() {
-		return nil, shared.NewDomainError("INVALID_AMOUNT", "Payment amount must be positive")
+		err := shared.NewDomainError("INVALID_AMOUNT", "Payment amount must be positive")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	// Get customer
 	customer, err := s.customerRepo.FindByIDForTenant(ctx, req.TenantID, req.CustomerID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, fmt.Errorf("failed to get customer: %w", err)
 	}
 	if customer == nil {
-		return nil, shared.NewDomainError("CUSTOMER_NOT_FOUND", "Customer not found")
+		err := shared.NewDomainError("CUSTOMER_NOT_FOUND", "Customer not found")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	// Check sufficient balance
 	if customer.Balance.LessThan(req.Amount) {
-		return nil, shared.NewDomainError(
+		err := shared.NewDomainError(
 			"INSUFFICIENT_BALANCE",
 			fmt.Sprintf("Insufficient balance: available %.2f, required %.2f",
 				customer.Balance.InexactFloat64(), req.Amount.InexactFloat64()),
 		)
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	balanceBefore := customer.Balance
+	telemetry.SetAttribute(span, "balance_before", balanceBefore.String())
 
 	// Deduct balance from customer
 	if err := customer.DeductBalance(req.Amount); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, fmt.Errorf("failed to deduct balance: %w", err)
 	}
 
@@ -95,6 +116,7 @@ func (s *BalancePaymentService) ProcessBalancePayment(
 		req.SourceType,
 	)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
@@ -115,13 +137,22 @@ func (s *BalancePaymentService) ProcessBalancePayment(
 	// Save customer (with updated balance) using optimistic locking
 	// This prevents concurrent payments from causing balance overdraft
 	if err := s.customerRepo.SaveWithLock(ctx, customer); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, fmt.Errorf("failed to save customer: %w", err)
 	}
 
 	// Save balance transaction
 	if err := s.balanceTxRepo.Create(ctx, transaction); err != nil {
+		telemetry.RecordError(span, err)
 		return nil, fmt.Errorf("failed to save transaction: %w", err)
 	}
+
+	// Add success event to span
+	telemetry.AddEvent(span, "balance_payment_completed",
+		"transaction_id", transaction.ID.String(),
+		"balance_after", customer.Balance.String(),
+	)
+	telemetry.SetAttribute(span, "balance_after", customer.Balance.String())
 
 	return &BalancePaymentResult{
 		TransactionID: transaction.ID,
