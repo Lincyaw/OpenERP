@@ -9,3 +9,6 @@ export * from './table'
 
 // Order components
 export * from './order'
+
+// Feature flag components
+export { Feature, type FeatureProps, type FeatureRenderFunction } from './Feature'
