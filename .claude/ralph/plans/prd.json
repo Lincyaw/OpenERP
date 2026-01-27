@@ -6053,7 +6053,7 @@
       "- 可监控库存健康度",
       "- 可分析支付成功率"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Metrics",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/business_metrics.go",

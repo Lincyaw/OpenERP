@@ -6,13 +6,15 @@ import (
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
 	"github.com/erp/backend/internal/domain/trade"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 )
 
 // PurchaseOrderService handles purchase order business operations
 type PurchaseOrderService struct {
-	orderRepo      trade.PurchaseOrderRepository
-	eventPublisher shared.EventPublisher
+	orderRepo       trade.PurchaseOrderRepository
+	eventPublisher  shared.EventPublisher
+	businessMetrics *telemetry.BusinessMetrics
 }
 
 // NewPurchaseOrderService creates a new PurchaseOrderService
@@ -25,6 +27,11 @@ func NewPurchaseOrderService(orderRepo trade.PurchaseOrderRepository) *PurchaseO
 // SetEventPublisher sets the event publisher for publishing domain events
 func (s *PurchaseOrderService) SetEventPublisher(publisher shared.EventPublisher) {
 	s.eventPublisher = publisher
+}
+
+// SetBusinessMetrics sets the business metrics collector
+func (s *PurchaseOrderService) SetBusinessMetrics(bm *telemetry.BusinessMetrics) {
+	s.businessMetrics = bm
 }
 
 // Create creates a new purchase order
@@ -90,6 +97,11 @@ func (s *PurchaseOrderService) Create(ctx context.Context, tenantID uuid.UUID, r
 	// Save order
 	if err := s.orderRepo.Save(ctx, order); err != nil {
 		return nil, err
+	}
+
+	// Record business metrics
+	if s.businessMetrics != nil {
+		s.businessMetrics.RecordOrderWithAmount(ctx, tenantID, telemetry.OrderTypePurchase, order.TotalAmount)
 	}
 
 	response := ToPurchaseOrderResponse(order)

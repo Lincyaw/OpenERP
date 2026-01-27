@@ -35,6 +35,7 @@ type SalesOrderService struct {
 	eventPublisher   shared.EventPublisher
 	pricingProvider  PricingStrategyProvider
 	productValidator ProductSaleValidator
+	businessMetrics  *telemetry.BusinessMetrics
 }
 
 // NewSalesOrderService creates a new SalesOrderService
@@ -57,6 +58,11 @@ func (s *SalesOrderService) SetPricingProvider(provider PricingStrategyProvider)
 // SetProductValidator sets the product validator for sale eligibility checks
 func (s *SalesOrderService) SetProductValidator(validator ProductSaleValidator) {
 	s.productValidator = validator
+}
+
+// SetBusinessMetrics sets the business metrics collector
+func (s *SalesOrderService) SetBusinessMetrics(bm *telemetry.BusinessMetrics) {
+	s.businessMetrics = bm
 }
 
 // validateProductForSale validates that a product can be sold
@@ -219,6 +225,11 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 	if err := s.orderRepo.Save(ctx, order); err != nil {
 		telemetry.RecordError(span, err)
 		return nil, err
+	}
+
+	// Record business metrics
+	if s.businessMetrics != nil {
+		s.businessMetrics.RecordOrderWithAmount(ctx, tenantID, telemetry.OrderTypeSales, order.TotalAmount)
 	}
 
 	// Add final attributes to span

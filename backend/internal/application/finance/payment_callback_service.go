@@ -36,6 +36,7 @@ type PaymentCallbackService struct {
 	refundRecordRepo   finance.RefundRecordRepository
 	eventPublisher     shared.EventPublisher
 	reconciliationSvc  *finance.ReconciliationService
+	businessMetrics    *telemetry.BusinessMetrics
 	logger             *zap.Logger
 	processedCallbacks sync.Map // For idempotency checking
 }
@@ -47,6 +48,7 @@ type PaymentCallbackServiceConfig struct {
 	ReceivableRepo     finance.AccountReceivableRepository
 	RefundRecordRepo   finance.RefundRecordRepository
 	EventPublisher     shared.EventPublisher
+	BusinessMetrics    *telemetry.BusinessMetrics
 	Logger             *zap.Logger
 }
 
@@ -69,6 +71,7 @@ func NewPaymentCallbackService(config PaymentCallbackServiceConfig) *PaymentCall
 		refundRecordRepo:   config.RefundRecordRepo,
 		eventPublisher:     config.EventPublisher,
 		reconciliationSvc:  finance.NewReconciliationService(),
+		businessMetrics:    config.BusinessMetrics,
 		logger:             logger,
 	}
 }
@@ -200,6 +203,15 @@ func (s *PaymentCallbackService) HandlePaymentCallback(ctx context.Context, call
 			zap.String("order_number", callback.OrderNumber),
 			zap.String("status", string(callback.Status)))
 		telemetry.AddEvent(span, "payment_not_successful", "status", string(callback.Status))
+
+		// Record failed payment metrics (we still need tenant ID, try to find voucher)
+		if s.businessMetrics != nil {
+			voucher, _ := s.receiptVoucherRepo.FindByPaymentReference(ctx, callback.OrderNumber)
+			if voucher != nil {
+				s.businessMetrics.RecordPayment(ctx, voucher.TenantID, string(callback.GatewayType), telemetry.PaymentStatusFailed)
+			}
+		}
+
 		return nil
 	}
 
@@ -255,6 +267,11 @@ func (s *PaymentCallbackService) HandlePaymentCallback(ctx context.Context, call
 		zap.String("voucher_id", voucher.ID.String()),
 		zap.String("voucher_number", voucher.VoucherNumber),
 		zap.String("gateway_transaction_id", callback.GatewayTransactionID))
+
+	// Record payment metrics
+	if s.businessMetrics != nil {
+		s.businessMetrics.RecordPayment(ctx, voucher.TenantID, string(callback.GatewayType), telemetry.PaymentStatusSuccess)
+	}
 
 	// Auto-reconcile with outstanding receivables if configured
 	if s.receivableRepo != nil && s.reconciliationSvc != nil {

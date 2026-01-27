@@ -28242,3 +28242,105 @@ The payment_callback_service.go had a TODO at line 320 for implementing refund r
 - Add API endpoints for querying refund history
 - Create frontend UI for viewing refund records
 - Integrate with sales return workflow to auto-create refund records
+
+---
+
+2026-01-27 - OBS-METRICS-004: Business Metrics Collection (业务指标采集)
+
+=== Implementation Details ===
+
+Implemented business metrics collection for monitoring ERP system health.
+
+### Metrics Defined
+
+1. **erp_order_created_total** (Counter)
+   - Labels: tenant_id, order_type (sales/purchase)
+   - Description: Total number of orders created
+
+2. **erp_order_amount_total** (Counter)
+   - Labels: tenant_id, order_type
+   - Description: Total order amount in fen (cents)
+
+3. **erp_inventory_locked_quantity** (Gauge)
+   - Labels: tenant_id, warehouse_id
+   - Description: Current locked inventory quantity
+
+4. **erp_inventory_low_stock_count** (Gauge)
+   - Labels: tenant_id
+   - Description: Number of products below minimum stock threshold
+
+5. **erp_payment_total** (Counter)
+   - Labels: tenant_id, payment_method, status (success/failed)
+   - Description: Total number of payment transactions
+
+### Files Created
+
+- `backend/internal/infrastructure/telemetry/business_metrics.go`
+  - BusinessMetrics struct with all metric definitions
+  - OrderType and PaymentStatus type aliases for labeling
+  - RecordOrderCreated, RecordOrderAmount, RecordOrderWithAmount methods
+  - RecordPayment method for payment callbacks
+  - RecordLockedQuantity, RecordLowStockCount for inventory gauges
+  - Periodic collection support with StartPeriodicCollection and Stop
+  - InventoryMetricsProvider interface for dependency injection
+
+- `backend/internal/infrastructure/telemetry/business_metrics_test.go`
+  - 15 unit tests covering all metric recording methods
+  - Mock implementations for TenantProvider and InventoryMetricsProvider
+  - Tests for periodic collection and graceful shutdown
+
+- `backend/internal/infrastructure/telemetry/inventory_metrics_provider.go`
+  - GormInventoryMetricsProvider for database-backed metrics
+  - GormTenantProvider for listing active tenants
+  - Direct SQL queries for efficient aggregation
+
+### Files Modified
+
+- `backend/internal/application/trade/sales_order_service.go`
+  - Added businessMetrics field and SetBusinessMetrics method
+  - Recording order metrics in Create method
+
+- `backend/internal/application/trade/purchase_order_service.go`
+  - Added businessMetrics field and SetBusinessMetrics method
+  - Recording order metrics in Create method
+
+- `backend/internal/application/finance/payment_callback_service.go`
+  - Added businessMetrics field to service and config
+  - Recording payment metrics (success/failed) in HandlePaymentCallback
+
+### Design Decisions
+
+1. **Counter vs Gauge Selection**
+   - Counters for orders/payments (monotonically increasing events)
+   - Gauges for inventory metrics (point-in-time values)
+
+2. **Periodic Collection for Gauges**
+   - Inventory metrics collected every 5 minutes (configurable)
+   - Uses separate provider interfaces to avoid circular dependencies
+
+3. **Optional Integration**
+   - All metric recording is nil-safe (no-op if businessMetrics not set)
+   - Services work without metrics for easier testing
+
+4. **Amount in Fen**
+   - Order amounts stored in smallest currency unit for precision
+   - Follows OpenTelemetry convention of using smallest units
+
+### Verification
+
+- ✅ Go build successful
+- ✅ All 15 business metrics unit tests passing
+- ✅ Payment callback service tests passing
+- ✅ Type checking passed
+
+### Notes
+
+- Metrics require OpenTelemetry Collector to be running for export
+- For local development, metrics can be viewed via Prometheus endpoint
+- Periodic collection requires explicit start via StartPeriodicCollection
+
+### Next Steps
+
+- OBS-ALERT-001 is now unblocked (depends on OBS-METRICS-004)
+- Configure alerting rules for business metrics thresholds
+- Create Grafana dashboards for business metric visualization
