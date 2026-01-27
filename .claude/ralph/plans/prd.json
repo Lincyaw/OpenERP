@@ -5936,7 +5936,7 @@
       "- 可计算 P99 延迟: histogram_quantile(0.99, ...)",
       "- 可计算错误率: rate(http_server_request_total{status_code=~\"5..\"}[1m])"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Metrics",
     "affectedModules": [
       "backend/internal/interfaces/http/middleware/metrics.go"

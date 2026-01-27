@@ -27271,3 +27271,108 @@ and export to OTEL Collector.
 - OBS-METRICS-002: HTTP 请求指标采集 (uses Counter/Histogram from this task)
 - OBS-METRICS-003: 数据库指标采集
 - OBS-METRICS-004: 业务指标采集
+
+================================================================================
+2025-01-27 - Task OBS-METRICS-002: HTTP 请求指标采集
+================================================================================
+
+=== Implementation Summary ===
+Verified that HTTP metrics middleware was already fully implemented during 
+OBS-METRICS-001 task. The middleware collects RED method metrics (Rate, Errors, 
+Duration) for all HTTP requests.
+
+=== Implementation Details ===
+
+1. **HTTP Metrics Middleware** (backend/internal/interfaces/http/middleware/metrics.go)
+   - `HTTPMetrics()` - Main middleware function
+   - `HTTPMetricsWithMeter()` - Alternative for testing with custom meter
+   - Graceful fallback to no-op when metrics disabled
+
+2. **Metrics Collected** (per PRD requirements):
+   - `http_server_request_total` (Counter)
+     - Labels: method, route, status_code, tenant_id
+     - Description: Total number of HTTP requests
+   
+   - `http_server_request_duration_seconds` (Histogram)
+     - Labels: method, route
+     - Buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+     - Description: HTTP request latency distribution in seconds
+   
+   - `http_server_request_size_bytes` (Histogram)
+     - Labels: method, route
+     - Buckets: [100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
+     - Description: HTTP request body size distribution in bytes
+   
+   - `http_server_response_size_bytes` (Histogram)
+     - Labels: method, route
+     - Buckets: [100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000]
+     - Description: HTTP response body size distribution in bytes
+
+   - `http_server_active_requests` (UpDownCounter - bonus metric)
+     - Description: Number of currently active HTTP requests
+
+3. **High Cardinality Prevention**:
+   - Uses `getRoutePattern()` to get route template (e.g., `/api/v1/products/:id`)
+   - Returns "unknown" for unmatched routes
+   - tenant_id only added to request_total counter (not histograms)
+
+4. **Integration in main.go** (lines 572-576):
+   ```go
+   engine.Use(middleware.HTTPMetrics(middleware.HTTPMetricsConfig{
+       MeterProvider: meterProvider,
+       ServiceName:   cfg.Telemetry.ServiceName,
+       Enabled:       cfg.Telemetry.Enabled,
+   }))
+   ```
+
+5. **Comprehensive Tests** (backend/internal/interfaces/http/middleware/metrics_test.go):
+   - 17 test cases covering all scenarios
+   - Tests for disabled middleware, nil provider
+   - Tests for counter, histogram, active requests
+   - Tests for tenant_id attribute injection
+   - Tests for route pattern (high cardinality prevention)
+
+=== Files Reviewed ===
+- backend/internal/interfaces/http/middleware/metrics.go (EXISTING - 362 lines)
+- backend/internal/interfaces/http/middleware/metrics_test.go (EXISTING - 719 lines)
+- backend/cmd/server/main.go (EXISTING - middleware registered)
+- backend/internal/infrastructure/telemetry/metrics.go (EXISTING - base types)
+
+=== Verification ===
+- [x] All unit tests pass (17 tests, 0.078s)
+- [x] Build succeeds: `go build ./...`
+- [x] go vet passes
+- [x] Middleware registered in main.go
+- [x] Route pattern used (not actual path) for cardinality control
+
+=== Acceptance Criteria Met ===
+- [x] 可计算 QPS: `rate(http_server_request_total[1m])`
+- [x] 可计算 P99 延迟: `histogram_quantile(0.99, http_server_request_duration_seconds)`
+- [x] 可计算错误率: `rate(http_server_request_total{status_code=~"5.."}[1m])`
+
+=== PromQL Examples ===
+```promql
+# QPS (queries per second)
+rate(http_server_request_total[1m])
+
+# P99 latency
+histogram_quantile(0.99, rate(http_server_request_duration_seconds_bucket[5m]))
+
+# Error rate (5xx responses)
+sum(rate(http_server_request_total{status_code=~"5.."}[5m])) / sum(rate(http_server_request_total[5m]))
+
+# Request rate by route
+sum by (route) (rate(http_server_request_total[5m]))
+
+# Average response size
+rate(http_server_response_size_bytes_sum[5m]) / rate(http_server_response_size_bytes_count[5m])
+```
+
+=== Notes ===
+- Implementation was completed as part of OBS-METRICS-001
+- No additional code changes required for this task
+- Verified existing implementation meets all requirements
+
+=== Next Steps ===
+- OBS-METRICS-003: 数据库指标采集
+- OBS-METRICS-004: 业务指标采集
