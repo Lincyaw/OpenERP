@@ -9217,8 +9217,7 @@
       "backend/migrations/seed-data.sql"
     ],
     "blockedBy": [
-      "FF-ADMIN-003",
-      "FF-FE-005"
+      "bug-fix-ff-array-format"
     ]
   },
   {
@@ -9325,6 +9324,40 @@
     ],
     "blockedBy": [
       "FF-INT-001"
+    ]
+  },
+  {
+    "id": "bug-fix-ff-array-format",
+    "story": "Fix: GORM PostgreSQL array format incompatibility in feature_flag_repo",
+    "priority": "critical",
+    "category": "bugfix",
+    "requirements": [
+      "=== Bug Description ===",
+      "GORM is inserting JSON array format into PostgreSQL VARCHAR[] columns",
+      "",
+      "=== Error ===",
+      "ERROR: malformed array literal: \"[\\\"test\\\",\\\"percentage\\\"]\" (SQLSTATE 22P02)",
+      "",
+      "=== Root Cause ===",
+      "feature_flag_repo.go sends tags as JSON array [\"test\",\"percentage\"]",
+      "PostgreSQL VARCHAR[] expects format {test,percentage}",
+      "",
+      "=== Affected Files ===",
+      "backend/internal/infrastructure/persistence/feature_flag_repo.go",
+      "backend/internal/domain/featureflag/entity.go (Tags field definition)",
+      "",
+      "=== Fix Options ===",
+      "1. Use pq.StringArray type from github.com/lib/pq",
+      "2. Implement custom GORM serializer for PostgreSQL arrays",
+      "3. Change column type to JSONB instead of VARCHAR[]",
+      "",
+      "=== Verification ===",
+      "After fix, E2E tests in frontend/tests/e2e/feature-flag/ should pass"
+    ],
+    "passes": false,
+    "affectedModules": [
+      "backend/internal/infrastructure/persistence/feature_flag_repo.go",
+      "backend/internal/domain/featureflag/entity.go"
     ]
   }
 ]

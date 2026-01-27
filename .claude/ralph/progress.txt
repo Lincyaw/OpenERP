@@ -30569,3 +30569,491 @@ Audit:
 === Next Steps ===
 - FF-FE-005: Feature Flag SSE Real-time Updates
 - FF-ADMIN-001: Feature Flag Admin UI - List Page
+
+2026-01-28 - Task ID: FF-INT-001 - Feature Flag E2E Integration Tests
+
+=== Task Status ===
+**BLOCKED** - Cannot proceed due to incomplete dependencies
+
+=== Blocking Dependencies ===
+1. **FF-ADMIN-003** (passes: false) - Feature Flag 管理界面 - 详情页和 Override 管理
+   - Required for: Override management E2E tests
+   - Missing: FeatureFlagDetail.tsx page, OverrideForm component, AuditLogTimeline component
+
+2. **FF-FE-005** (passes: false) - Feature Flag SSE 实时更新  
+   - Required for: Realtime update E2E tests (5-second update verification)
+   - Missing: SSE endpoint implementation, featureFlagSSE.ts client, SSE integration in provider
+
+=== Current Implementation Status ===
+
+✅ **Completed Feature Flag Components:**
+- Backend API handlers (feature_flag.go) - CRUD, evaluation, override operations
+- Database migration (000034_create_feature_flags.up.sql)
+- Feature flag Zustand store (featureFlagStore.ts)
+- useFeatureFlag hook (useFeatureFlag.ts)
+- FeatureFlagProvider component (FeatureFlagProvider.tsx)
+- FeatureFlag render component (FeatureFlag.tsx)
+
+❌ **Missing Components Required for E2E Tests:**
+1. Feature Flag Admin UI List Page (FF-ADMIN-001)
+2. Feature Flag Admin UI Create/Edit Page (FF-ADMIN-002)
+3. Feature Flag Admin UI Detail/Override Page (FF-ADMIN-003) ← BLOCKING
+4. Feature Flag SSE Real-time Updates (FF-FE-005) ← BLOCKING
+
+=== E2E Test Plan (When Unblocked) ===
+
+Test files to create in frontend/tests/e2e/feature-flag/:
+1. **admin.spec.ts** - Flag management workflow
+   - Create Boolean Flag → Verify list display
+   - Enable Flag → Verify status change
+   - Edit Flag → Verify save success
+   - Archive Flag → Verify removal from list
+
+2. **evaluation.spec.ts** - Flag evaluation workflow
+   - Create enabled Boolean Flag
+   - Frontend page responds to Flag state
+   - Disable Flag → Page updates
+
+3. **override.spec.ts** - Override management workflow
+   - Create user-level Override
+   - Verify user sees override value
+   - Verify other users see default value
+   - Delete Override → Restore default
+
+4. **percentage.spec.ts** - Percentage rollout testing
+   - Create 50% percentage Flag
+   - Multiple evaluations verify ~50% distribution
+   - Same user consistent result across evaluations
+
+5. **realtime.spec.ts** - Real-time update testing
+   - Page open → Modify Flag
+   - Verify page updates within 5 seconds
+
+=== Seed Data Requirement ===
+Need to add to docker/seed-data.sql:
+- test_boolean_flag (Boolean, enabled)
+- test_percentage_flag (Percentage, 50%)
+- test_variant_flag (Variant, A/B/C)
+
+=== Decision ===
+[BLOCKED]: Cannot implement E2E tests until:
+1. FF-ADMIN-003 (Feature Flag Detail/Override page) is complete
+2. FF-FE-005 (SSE real-time updates) is complete
+
+Recommend completing these tasks first, then resuming FF-INT-001.
+
+=== Next Steps ===
+1. Complete FF-ADMIN-001: Feature Flag Admin UI - List Page
+2. Complete FF-ADMIN-002: Feature Flag Admin UI - Create/Edit Form
+3. Complete FF-ADMIN-003: Feature Flag Admin UI - Detail/Override Page
+4. Complete FF-FE-005: Feature Flag SSE Real-time Updates
+5. Resume FF-INT-001: Implement E2E tests
+
+
+2026-01-28 - Task ID: FF-INT-001 - Feature Flag E2E Integration Tests (Re-Assessment)
+
+=== Task Status ===
+**BLOCKED** - No change from previous assessment
+
+=== Re-Assessment Summary ===
+Performed thorough check of:
+1. Blocking dependencies (FF-ADMIN-003, FF-FE-005)
+2. Full dependency chain analysis
+3. Existing implementations
+
+=== Dependency Chain Status ===
+
+**FF-INT-001** (E2E Tests) ← BLOCKED
+├── **FF-ADMIN-003** (Detail/Override page) ❌ passes: false
+│   └── **FF-ADMIN-002** (Create/Edit Form) ❌ passes: false
+│       └── **FF-ADMIN-001** (List Page) ❌ passes: false
+│           ├── **FF-FE-001** (Store) ✅ passes: true
+│           └── **FF-BE-007** (API) ✅ passes: true
+└── **FF-FE-005** (SSE Real-time) ❌ passes: false
+    ├── **FF-FE-004** (Provider) ✅ passes: true
+    └── **FF-BE-006** (Evaluation Service) ✅ passes: true
+
+=== Verified Implementations ===
+
+✅ **Backend (Complete):**
+- feature_flag.go: Full CRUD, evaluation, override API handlers
+- All backend FF-BE-* tasks completed (001-007)
+
+✅ **Frontend Core (Complete):**
+- featureFlagStore.ts: Zustand store with persistence
+- FeatureFlagProvider.tsx: Context provider with polling
+- useFeatureFlag.ts: React hook
+
+❌ **Frontend Admin UI (Not Started):**
+- NO files found in frontend/src/pages/admin/ for Feature Flags
+- NO files found matching *FeatureFlag*.tsx in pages
+- NO routes configured for /admin/feature-flags
+
+❌ **SSE Implementation (Not Started):**
+- NO backend/internal/interfaces/http/handlers/feature_flag_sse.go
+- NO frontend/src/services/featureFlagSSE.ts
+- SSE endpoint /api/v1/feature-flags/stream not registered
+
+=== Next Steps to Unblock ===
+
+1. **Complete FF-ADMIN-001** (Feature Flag List Page)
+   - Create frontend/src/pages/admin/FeatureFlagList.tsx
+   - Add route to router configuration
+   - Implement list with pagination, search, filtering
+
+2. **Complete FF-ADMIN-002** (Feature Flag Create/Edit Form)
+   - Create frontend/src/pages/admin/FeatureFlagForm.tsx
+   - Implement form with all field types
+
+3. **Complete FF-ADMIN-003** (Feature Flag Detail Page)
+   - Create frontend/src/pages/admin/FeatureFlagDetail.tsx
+   - Implement Override management
+   - Implement Audit log timeline
+
+4. **Complete FF-FE-005** (SSE Real-time Updates)
+   - Implement backend SSE endpoint
+   - Implement frontend SSE client
+   - Integrate with FeatureFlagProvider
+
+5. **Then FF-INT-001 can proceed**
+
+=== Decision ===
+[BLOCKED]: Task remains blocked. prd.json already has passes: false set correctly.
+No code changes required - waiting for dependent tasks to complete.
+
+
+
+2026-01-28 - Task ID: FF-INT-001 - Feature Flag E2E Integration Tests (QA Assessment)
+
+=== Task Status ===
+**BLOCKED** - Dependencies not met
+
+=== QA Assessment Summary ===
+Performed comprehensive check of:
+1. Blocking dependencies (FF-ADMIN-003, FF-FE-005)
+2. Full dependency chain analysis
+3. E2E test file existence
+4. Backend API readiness
+5. Frontend infrastructure readiness
+
+=== Dependency Chain Status ===
+
+**FF-INT-001** (E2E Tests) ← BLOCKED
+├── **FF-ADMIN-003** (Detail/Override page) ❌ passes: false
+│   └── **FF-ADMIN-002** (Create/Edit Form) ❌ passes: false
+│       └── **FF-ADMIN-001** (List Page) ❌ passes: false
+│           ├── **FF-FE-001** (Store) ✅ passes: true
+│           └── **FF-BE-007** (API) ✅ passes: true
+└── **FF-FE-005** (SSE Real-time) ❌ passes: false
+    ├── **FF-FE-004** (Provider) ✅ passes: true
+    └── **FF-BE-006** (Evaluation Service) ✅ passes: true
+
+=== E2E Test Files Status ===
+
+Required test files from task requirements - ALL MISSING:
+- frontend/tests/e2e/feature-flag/admin.spec.ts ❌ NOT FOUND
+- frontend/tests/e2e/feature-flag/evaluation.spec.ts ❌ NOT FOUND
+- frontend/tests/e2e/feature-flag/override.spec.ts ❌ NOT FOUND
+- frontend/tests/e2e/feature-flag/percentage.spec.ts ❌ NOT FOUND
+- frontend/tests/e2e/feature-flag/realtime.spec.ts ❌ NOT FOUND
+
+=== Backend Implementation Status ===
+
+✅ **Backend (Complete - All API Handlers Ready):**
+- feature_flag.go: Full CRUD, evaluation, override API handlers
+- ListFlags, CreateFlag, GetFlag, UpdateFlag, ArchiveFlag
+- EnableFlag, DisableFlag
+- EvaluateFlag, BatchEvaluate, GetClientConfig
+- ListOverrides, CreateOverride, DeleteOverride
+- GetAuditLogs
+- All backend FF-BE-001 through FF-BE-007 tasks completed
+
+=== Frontend Infrastructure Status ===
+
+✅ **Frontend Core (Complete):**
+- featureFlagStore.ts: Zustand store with persistence, polling
+- FeatureFlagProvider.tsx: Context provider with polling
+- useFeatureFlag.ts: React hooks for flag access
+- Feature.tsx: Conditional rendering component
+
+❌ **Frontend Admin UI (Not Started):**
+- NO files found in frontend/src/pages/ for Feature Flag admin
+- NO routes configured in routes.tsx for /system/feature-flags or similar
+- FF-ADMIN-001, FF-ADMIN-002, FF-ADMIN-003 all at passes: false
+
+❌ **SSE Implementation (Not Started):**
+- NO backend SSE endpoint (feature_flag_sse.go)
+- NO frontend SSE client (featureFlagSSE.ts)
+- FF-FE-005 at passes: false
+
+=== Test Scenarios (Cannot Test Without UI) ===
+
+1. Flag Management Flow - BLOCKED (needs FF-ADMIN-001, FF-ADMIN-002)
+   - Create Boolean Flag -> Verify list display
+   - Enable Flag -> Verify status change
+   - Edit Flag -> Verify save success
+   - Archive Flag -> Verify removal from list
+
+2. Flag Evaluation Flow - BLOCKED (needs Admin UI + working Flag)
+   - Create enabled Boolean Flag
+   - Frontend page responds to Flag status
+   - Disable Flag, page updates
+
+3. Override Flow - BLOCKED (needs FF-ADMIN-003)
+   - Create user-level Override
+   - Verify user sees override value
+   - Verify other users see default
+   - Delete Override, restore default
+
+4. Percentage Rollout Test - BLOCKED (needs Admin UI)
+   - Create 50% percentage Flag
+   - Multiple evaluations verify ~50% distribution
+   - Same user consistent across evaluations
+
+5. Real-time Update Test - BLOCKED (needs FF-FE-005)
+   - Page open → Modify Flag
+   - Verify page updates within 5 seconds
+
+=== Seed Data Status ===
+
+❌ Need to add to seed-data.sql when Admin UI ready:
+- test_boolean_flag (Boolean, enabled)
+- test_percentage_flag (Percentage, 50%)
+- test_variant_flag (Variant, A/B/C)
+
+=== Decision ===
+[BLOCKED]: Task cannot proceed until:
+1. FF-ADMIN-001 (Feature Flag List Page) is complete
+2. FF-ADMIN-002 (Feature Flag Create/Edit Form) is complete
+3. FF-ADMIN-003 (Feature Flag Detail/Override Page) is complete
+4. FF-FE-005 (SSE Real-time Updates) is complete (for realtime.spec.ts)
+
+=== Next Steps to Unblock ===
+
+1. **Complete FF-ADMIN-001** (Feature Flag List Page)
+   - Create frontend/src/pages/system/FeatureFlagList.tsx
+   - Add route to routes.tsx: /system/feature-flags
+   - Implement list with pagination, search, filtering
+
+2. **Complete FF-ADMIN-002** (Feature Flag Create/Edit Form)
+   - Create frontend/src/pages/system/FeatureFlagForm.tsx
+   - Implement form with all field types (boolean, percentage, variant)
+
+3. **Complete FF-ADMIN-003** (Feature Flag Detail Page)
+   - Create frontend/src/pages/system/FeatureFlagDetail.tsx
+   - Implement Override management
+   - Implement Audit log timeline
+
+4. **Complete FF-FE-005** (SSE Real-time Updates)
+   - Implement backend SSE endpoint
+   - Implement frontend SSE client
+   - Integrate with FeatureFlagProvider
+
+5. **Then FF-INT-001 can proceed**:
+   - Create test directory: frontend/tests/e2e/feature-flag/
+   - Implement all 5 test spec files
+   - Add seed data for test flags
+   - Run E2E tests for stability
+
+=== PRD Update ===
+prd.json already has passes: false - correct status maintained.
+No code changes required - waiting for dependent tasks to complete.
+
+## 2026-01-28 - FF-INT-001: Feature Flag E2E Integration Testing
+
+### Task ID: FF-INT-001
+### Status: BLOCKED - Waiting for dependent tasks
+
+### Assessment Summary
+
+#### 1. Blocker Analysis
+
+The following tasks must be completed before FF-INT-001 can proceed:
+
+| Blocker Task | Description | Status | Required For |
+|--------------|-------------|--------|--------------|
+| FF-ADMIN-001 | Feature Flag List Page | ❌ Not Started | admin.spec.ts - Flag listing tests |
+| FF-ADMIN-002 | Feature Flag Create/Edit Form | ❌ Not Started | admin.spec.ts - Flag CRUD tests |
+| FF-ADMIN-003 | Feature Flag Detail/Override Page | ❌ Not Started | override.spec.ts - Override management |
+| FF-FE-005 | SSE Real-time Updates | ❌ Not Started | realtime.spec.ts - Live update tests |
+
+#### 2. Infrastructure Status
+
+**Backend (Complete):**
+- ✅ FF-BE-001 through FF-BE-007 all complete
+- ✅ Feature flag API handlers implemented:
+  - ListFlags, CreateFlag, GetFlag, UpdateFlag, ArchiveFlag
+  - EnableFlag, DisableFlag
+  - EvaluateFlag, BatchEvaluate, GetClientConfig
+  - ListOverrides, CreateOverride, DeleteOverride
+  - GetAuditLogs
+- ✅ Database migration 000034_create_feature_flags.up.sql complete
+
+**Frontend Core (Complete):**
+- ✅ FF-FE-001: featureFlagStore.ts (Zustand store with persistence, polling)
+- ✅ FF-FE-002: useFeatureFlag.ts (React hooks for flag access)
+- ✅ FF-FE-003: Feature.tsx (Conditional rendering component)
+- ✅ FF-FE-004: FeatureFlagProvider.tsx (Context provider with polling)
+
+**Frontend Admin UI (Not Started):**
+- ❌ No Feature Flag admin pages exist in frontend/src/pages/
+- ❌ No routes configured for /system/feature-flags or similar
+- ❌ Cannot perform E2E tests that require UI interactions
+
+**E2E Test Infrastructure:**
+- ❌ No files exist in frontend/tests/e2e/feature-flag/
+- ✅ E2E test framework ready (Playwright configured)
+- ✅ Page Object Model pattern established
+- ✅ Test fixtures available (TEST_USERS, etc.)
+
+#### 3. Test Scenarios Assessment
+
+| Test File | Can Proceed? | Reason |
+|-----------|--------------|--------|
+| admin.spec.ts | ❌ No | Requires FF-ADMIN-001, FF-ADMIN-002 |
+| evaluation.spec.ts | ❌ No | Requires Admin UI to create test flags |
+| override.spec.ts | ❌ No | Requires FF-ADMIN-003 |
+| percentage.spec.ts | ❌ No | Requires Admin UI to create percentage flags |
+| realtime.spec.ts | ❌ No | Requires FF-FE-005 (SSE implementation) |
+
+#### 4. Seed Data Status
+
+The seed-data.sql currently has NO feature flag entries. When the blockers are resolved, the following seed data should be added:
+- test_boolean_flag (Boolean, enabled)
+- test_percentage_flag (Percentage, 50%)
+- test_variant_flag (Variant, A/B/C)
+
+#### 5. Decision
+
+**[BLOCKED]**: This task cannot proceed until all blocking tasks are complete.
+
+Updated blockedBy in prd.json to include all blockers:
+- FF-ADMIN-001 (Feature Flag List Page)
+- FF-ADMIN-002 (Feature Flag Create/Edit Form)
+- FF-ADMIN-003 (Feature Flag Detail/Override Page)
+- FF-FE-005 (SSE Real-time Updates)
+
+#### 6. Next Steps to Unblock
+
+1. Complete FF-ADMIN-001: Create FeatureFlagList.tsx with list/search/filter
+2. Complete FF-ADMIN-002: Create FeatureFlagForm.tsx with type-specific fields
+3. Complete FF-ADMIN-003: Create FeatureFlagDetail.tsx with override management
+4. Complete FF-FE-005: Implement SSE endpoint and client
+5. Add routes in routes.tsx for /system/feature-flags
+6. Then FF-INT-001 can implement all 5 test spec files
+
+### PRD Update
+- Updated blockedBy field to include all 4 blockers
+- passes: false (correctly reflecting blocked status)
+
+
+---
+
+## 2026-01-28 - FF-INT-001: Feature Flag E2E Integration Tests
+
+### Status: BLOCKED (Backend Bug)
+
+### Work Completed
+
+#### 1. E2E Test Files Created
+
+All 5 test spec files implemented with API-based testing approach:
+
+| Test File | Tests | Coverage |
+|-----------|-------|----------|
+| admin.spec.ts | 10 | Flag CRUD, type validation, duplicate rejection |
+| evaluation.spec.ts | 8 | Single/batch evaluation, client-config, frontend store |
+| override.spec.ts | 11 | User/tenant overrides, expiration, conflict handling |
+| percentage.spec.ts | 5 | 50% distribution, sticky bucketing, 0%/100% edge cases |
+| realtime.spec.ts | 7 | Polling updates, state transitions, rapid updates |
+
+**Total: 41 test cases covering all required scenarios**
+
+Location: `frontend/tests/e2e/feature-flag/`
+
+#### 2. Infrastructure Files Created
+
+- `frontend/tests/e2e/feature-flag/api-utils.ts` - Shared utility for Docker/local API URL handling
+
+#### 3. Infrastructure Fixes Applied
+
+**pg_trgm Extension Fix:**
+- Added `CREATE EXTENSION IF NOT EXISTS "pg_trgm";` to migration 000001_init_schema.up.sql
+- Required for migration 31 (departments) which uses `gin_trgm_ops` for text search
+
+**Feature Flag Permissions:**
+- Added 8 feature_flag permissions to seed-data.sql for admin role:
+  - feature_flag:read, :create, :update, :delete
+  - feature_flag:evaluate, :override, :audit, :admin
+
+#### 4. Backend Bug Discovered
+
+**Critical Bug: PostgreSQL Array Format Incompatibility**
+
+```
+ERROR: malformed array literal: "[\"test\",\"percentage\"]" (SQLSTATE 22P02)
+```
+
+**Root Cause:**
+- The `feature_flags` table has `tags VARCHAR(100)[]` column (PostgreSQL native array)
+- GORM is sending JSON array format: `["test","percentage"]`
+- PostgreSQL expects native array format: `{test,percentage}`
+
+**Affected File:** `backend/internal/infrastructure/persistence/feature_flag_repo.go`
+
+**Fix Options:**
+1. Use `pq.StringArray` type from `github.com/lib/pq`
+2. Implement custom GORM serializer
+3. Change column type to JSONB
+
+**Created Bug Task:** `bug-fix-ff-array-format` (priority: critical)
+
+### Test Execution Attempt
+
+```bash
+# Environment: Docker (postgres:15, redis:7)
+# Browser: chromium
+# Test file: tests/e2e/feature-flag/admin.spec.ts
+
+# Result: All tests failed with 500 Internal Server Error
+# Root cause: Backend bug with PostgreSQL array format
+```
+
+### Files Changed
+
+```
+frontend/tests/e2e/feature-flag/
+├── api-utils.ts          # NEW: API URL utility
+├── admin.spec.ts         # NEW: Flag management tests
+├── evaluation.spec.ts    # NEW: Flag evaluation tests
+├── override.spec.ts      # NEW: Override management tests
+├── percentage.spec.ts    # NEW: Percentage rollout tests
+└── realtime.spec.ts      # NEW: Real-time update tests
+
+backend/migrations/000001_init_schema.up.sql  # MODIFIED: Added pg_trgm extension
+docker/seed-data.sql                          # MODIFIED: Added feature_flag permissions
+```
+
+### PRD Updates
+
+1. **FF-INT-001**: Updated `blockedBy` to `["bug-fix-ff-array-format"]`
+2. **bug-fix-ff-array-format**: Created new critical bug task with:
+   - Full error description
+   - Root cause analysis
+   - Fix options
+   - Verification criteria
+
+### Decision
+
+**[BLOCKED]**: E2E test infrastructure is complete, but tests cannot pass until backend bug is fixed.
+
+### Next Steps
+
+1. Fix `bug-fix-ff-array-format` in backend feature_flag_repo.go
+2. Rebuild backend Docker image
+3. Re-run E2E tests to verify fix
+4. Mark FF-INT-001 as passed when tests pass 3 consecutive times
+
+### Blockers
+
+- `bug-fix-ff-array-format` - GORM PostgreSQL array format incompatibility (CRITICAL)

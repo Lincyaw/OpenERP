@@ -158,6 +158,21 @@ INSERT INTO user_roles (user_id, role_id, tenant_id) VALUES
 ('00000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
 
+-- Add feature_flag permissions to ADMIN role (for E2E testing)
+INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
+SELECT '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', p.code, p.resource, p.action, p.description
+FROM (VALUES
+    ('feature_flag:read', 'feature_flag', 'read', 'View feature flags'),
+    ('feature_flag:create', 'feature_flag', 'create', 'Create feature flags'),
+    ('feature_flag:update', 'feature_flag', 'update', 'Update feature flags'),
+    ('feature_flag:delete', 'feature_flag', 'delete', 'Delete feature flags'),
+    ('feature_flag:evaluate', 'feature_flag', 'evaluate', 'Evaluate feature flags'),
+    ('feature_flag:override', 'feature_flag', 'override', 'Manage feature flag overrides'),
+    ('feature_flag:audit', 'feature_flag', 'audit', 'View feature flag audit logs'),
+    ('feature_flag:admin', 'feature_flag', 'admin', 'Admin access to feature flags')
+) AS p(code, resource, action, description)
+ON CONFLICT DO NOTHING;
+
 -- Add permissions to SALES role
 INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, description)
 SELECT '00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000001', p.code, p.resource, p.action, p.description
@@ -628,6 +643,19 @@ INSERT INTO balance_transactions (id, tenant_id, customer_id, transaction_type, 
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
+-- LAYER 8: FEATURE FLAGS (3 total for E2E testing)
+-- ============================================================================
+
+INSERT INTO feature_flags (id, key, name, description, type, status, default_value, rules, tags, version, created_by, updated_by) VALUES
+-- Boolean flag (enabled)
+('f0000000-0000-0000-0000-000000000001', 'test_boolean_flag', 'Test Boolean Flag', 'A test boolean flag for E2E testing - enabled by default', 'boolean', 'enabled', '{"enabled": true}', NULL, ARRAY['test', 'e2e', 'boolean'], 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002'),
+-- Percentage flag (50%)
+('f0000000-0000-0000-0000-000000000002', 'test_percentage_flag', 'Test Percentage Flag', 'A test percentage flag with 50% rollout', 'percentage', 'enabled', '{"enabled": true, "metadata": {"percentage": 50}}', NULL, ARRAY['test', 'e2e', 'percentage'], 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002'),
+-- Variant flag (A/B/C)
+('f0000000-0000-0000-0000-000000000003', 'test_variant_flag', 'Test Variant Flag', 'A test variant flag with A/B/C variants', 'variant', 'enabled', '{"enabled": true, "variant": "A", "metadata": {"variants": ["A", "B", "C"]}}', NULL, ARRAY['test', 'e2e', 'variant'], 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002')
+ON CONFLICT (key) DO NOTHING;
+
+-- ============================================================================
 -- SUMMARY
 -- ============================================================================
 -- Comprehensive seed data created:
@@ -674,6 +702,9 @@ ON CONFLICT DO NOTHING;
 --   - 6 expense records (rent, utilities, salary, other)
 --   - 4 other income records (services, interest)
 --   - 10 balance transactions (recharges and consumptions)
+--
+-- LAYER 8 - Feature Flags:
+--   - 3 feature flags (test_boolean_flag, test_percentage_flag, test_variant_flag)
 --
 -- Data Consistency:
 --   - Sales order amounts = SUM(order item amounts)

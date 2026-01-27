@@ -5,6 +5,7 @@
 -- Enable required PostgreSQL extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- Create schema version tracking table (used internally by golang-migrate)
 -- Note: golang-migrate creates its own schema_migrations table automatically
