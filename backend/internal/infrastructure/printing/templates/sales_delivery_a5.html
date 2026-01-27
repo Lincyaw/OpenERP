@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>销售发货单 - {{ .Document.DeliveryNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .page {
+            width: 138mm;
+            padding: 3mm;
+        }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .header .title {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .header .company-name {
+            font-size: 11px;
+            margin-top: 3px;
+            color: #666;
+        }
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 9px;
+        }
+        .info-left, .info-right {
+            width: 48%;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 2px;
+        }
+        .info-label {
+            width: 55px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            padding-left: 3px;
+        }
+        /* Table Section */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 3px 4px;
+            text-align: center;
+        }
+        .items-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            font-size: 9px;
+        }
+        .items-table td {
+            font-size: 9px;
+        }
+        .items-table .col-index { width: 20px; }
+        .items-table .col-code { width: 55px; }
+        .items-table .col-name { width: auto; text-align: left; }
+        .items-table .col-unit { width: 25px; }
+        .items-table .col-qty { width: 40px; text-align: right; }
+        .items-table .col-price { width: 50px; text-align: right; }
+        .items-table .col-amount { width: 55px; text-align: right; }
+        /* Summary Section */
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .summary-left {
+            font-size: 9px;
+        }
+        .summary-right {
+            text-align: right;
+        }
+        .total-amount {
+            font-size: 11px;
+            font-weight: bold;
+            color: #c00;
+        }
+        .amount-chinese {
+            font-size: 9px;
+            color: #666;
+        }
+        /* Signature Section */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+        .signature-label {
+            font-size: 9px;
+            margin-bottom: 15px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 3px;
+            height: 15px;
+        }
+        .signature-date {
+            font-size: 8px;
+            color: #666;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 8px;
+            font-size: 8px;
+            color: #666;
+            text-align: center;
+        }
+        /* Print styles */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">销 售 发 货 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <!-- Document Info -->
+        <div class="info-section">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">单据编号:</span>
+                    <span class="info-value">{{ .Document.DeliveryNo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">客户名称:</span>
+                    <span class="info-value">{{ truncate .Document.Customer.Name 15 }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">联系电话:</span>
+                    <span class="info-value">{{ .Document.Customer.Phone }}</span>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">发货日期:</span>
+                    <span class="info-value">{{ .Document.ShippedAtFormatted }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">发货仓库:</span>
+                    <span class="info-value">{{ .Document.Warehouse.Name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">打印日期:</span>
+                    <span class="info-value">{{ .PrintDate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序</th>
+                    <th class="col-code">编码</th>
+                    <th class="col-name">商品名称</th>
+                    <th class="col-unit">单位</th>
+                    <th class="col-qty">数量</th>
+                    <th class="col-price">单价</th>
+                    <th class="col-amount">金额</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Items }}
+                <tr>
+                    <td class="col-index">{{ .Index }}</td>
+                    <td class="col-code">{{ .ProductCode }}</td>
+                    <td class="col-name">{{ truncate .ProductName 20 }}</td>
+                    <td class="col-unit">{{ .Unit }}</td>
+                    <td class="col-qty">{{ .QuantityFormatted }}</td>
+                    <td class="col-price">{{ .UnitPriceFormatted }}</td>
+                    <td class="col-amount">{{ .AmountFormatted }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-left">
+                <div>品种: {{ .Document.ItemCount }} | 数量: {{ formatDecimal .Document.TotalQuantity 2 }}</div>
+            </div>
+            <div class="summary-right">
+                <div class="total-amount">合计: {{ .Document.TotalAmountFormatted }}</div>
+                <div class="amount-chinese">{{ moneyToChinese .Document.TotalAmount }}</div>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">发货人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">收货人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">验收人</div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            {{ .Company.Name }} | {{ .PrintDateTime }}
+        </div>
+    </div>
+</body>
+</html>

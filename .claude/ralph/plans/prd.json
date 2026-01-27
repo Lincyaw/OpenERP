@@ -6772,7 +6772,7 @@
       "- 不同纸张尺寸正常显示",
       "- 中英文混排正常"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Default Templates",
     "affectedModules": [
       "backend/internal/infrastructure/printing/templates/",

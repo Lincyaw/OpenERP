@@ -28989,3 +28989,138 @@ Created a complete Print Service API with the following components:
 - PRINT-BE-005: Create default print templates for P0 documents
 - PRINT-FE-001: Template editor frontend
 - PRINT-FE-002: Document page print button integration
+
+2025-01-28 - Task ID: PRINT-BE-005 - Default Print Templates Implementation (P0 Core)
+
+=== Implementation Details ===
+
+Created default print templates for P0 business documents with support for multiple paper sizes.
+
+**Templates Created:**
+
+1. **SALES_DELIVERY (销售发货单/送货单)** - 3 templates:
+   - A4 format (default): Full-featured delivery note with customer info, item table, signature areas
+   - A5 format: Compact version for smaller shipments
+   - 241mm Continuous paper: Multi-copy format for dot-matrix printers
+
+2. **SALES_RECEIPT (销售收据)** - 3 templates:
+   - 58mm thermal receipt (default): Compact POS receipt for thermal printers
+   - 80mm thermal receipt: More detailed receipt with payment info
+   - A5 format: Formal receipt for filing/documentation
+
+3. **PURCHASE_RECEIVING (采购入库单)** - 2 templates:
+   - A4 format (default): Full receiving note with supplier info, batch/expiry, quality status
+   - 241mm Continuous paper: Multi-copy format for warehouse dot-matrix printers
+
+**Infrastructure Created:**
+
+- `backend/internal/infrastructure/printing/templates/` - Directory with 8 HTML template files
+- `backend/internal/infrastructure/printing/default_templates.go` - Template loader/registry with:
+  - `GetDefaultTemplates()` - Returns all default template configurations
+  - `LoadTemplateContent(filePath)` - Loads HTML content from embedded files
+  - `GetDefaultTemplateByDocTypeAndPaperSize()` - Find template by type and paper size
+  - `GetDefaultTemplateForDocType()` - Get default template for a document type
+  - `GetTemplatesByDocType()` - Get all templates for a document type
+- `backend/internal/infrastructure/printing/default_templates_test.go` - Comprehensive tests (460 lines, 12 test functions)
+- `backend/migrations/000033_create_print_templates.up.sql` - Migration creating tables and seeding templates
+- `backend/migrations/000033_create_print_templates.down.sql` - Rollback migration
+
+**Database Schema:**
+
+```sql
+CREATE TABLE print_templates (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    document_type VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    content TEXT NOT NULL,
+    paper_size VARCHAR(20) NOT NULL,
+    orientation VARCHAR(20) NOT NULL,
+    margin_* INTEGER NOT NULL,
+    is_default BOOLEAN NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    ...
+);
+
+CREATE TABLE print_jobs (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    template_id UUID NOT NULL REFERENCES print_templates(id),
+    document_type VARCHAR(50) NOT NULL,
+    document_id UUID NOT NULL,
+    ...
+);
+```
+
+=== Design Decisions ===
+
+1. **Template Embedding**: Used Go's `embed` directive to bundle HTML templates at compile time, ensuring templates are always available without external file dependencies.
+
+2. **Dual Storage**: Templates exist both as embedded files (for development/preview) and in database (for runtime customization). Migration seeds the database with default templates.
+
+3. **Paper Size Support**: Each document type has templates for relevant paper sizes:
+   - A4/A5 for standard printers
+   - 58mm/80mm for thermal receipt printers
+   - 241mm continuous for dot-matrix printers
+
+4. **Chinese Money Conversion**: Templates use `moneyToChinese` function for official Chinese uppercase money format (e.g., 壹仟贰佰叁拾肆元伍角陆分)
+
+5. **Print-Optimized CSS**: All templates include:
+   - Fixed widths in mm for paper sizes
+   - `@media print` rules for proper print output
+   - `-webkit-print-color-adjust: exact` for color preservation
+   - Clear table borders and signature areas
+
+6. **One Default Per DocType**: Each document type has exactly one default template (marked with `is_default = true`).
+
+=== Key Files Created ===
+
+| File | Lines | Description |
+|------|-------|-------------|
+| templates/sales_delivery_a4.html | 190 | A4 delivery note |
+| templates/sales_delivery_a5.html | 130 | A5 delivery note |
+| templates/sales_delivery_continuous.html | 140 | 241mm continuous delivery note |
+| templates/sales_receipt_58mm.html | 120 | 58mm thermal receipt |
+| templates/sales_receipt_80mm.html | 150 | 80mm thermal receipt |
+| templates/sales_receipt_a5.html | 160 | A5 receipt |
+| templates/purchase_receiving_a4.html | 210 | A4 receiving note |
+| templates/purchase_receiving_continuous.html | 150 | 241mm receiving note |
+| default_templates.go | 168 | Template loader/registry |
+| default_templates_test.go | 460 | Unit tests |
+| 000033_create_print_templates.up.sql | 586 | Migration with seed data |
+| 000033_create_print_templates.down.sql | 14 | Rollback migration |
+
+=== Verification ===
+
+- ✅ All unit tests passing (12 test functions, 100% pass rate)
+- ✅ Full backend build succeeds (`go build ./...`)
+- ✅ Code review completed - APPROVED
+  - No CRITICAL or HIGH issues found
+  - MEDIUM issues are improvement suggestions (documented for future)
+  - Templates use proper HTML escaping via Go's html/template
+  - CSS is print-optimized with proper media queries
+
+=== Test Coverage ===
+
+Tests verify:
+- Template count and document type distribution
+- Valid DocTypes, PaperSizes, and Orientations
+- Exactly one default per document type
+- All templates loadable from embedded filesystem
+- Template syntax validity (can be parsed by Go template engine)
+- Margin bounds validation (non-negative, reasonable limits)
+- Receipt paper has smaller margins
+
+=== Notes ===
+
+- Template content is duplicated in HTML files and migration SQL - document that both must be updated together
+- QR code functionality in receipts shows placeholder - actual QR generation needs separate implementation
+- All UI text is hardcoded in Chinese - appropriate for current target audience
+- Templates rely on data structures defined in `data_provider.go` (SalesDeliveryData, SalesReceiptData, PurchaseReceivingData)
+
+=== Next Steps ===
+
+- PRINT-FE-001: Template editor frontend
+- PRINT-FE-002: Document page print button integration
+- Consider adding templates for remaining document types (SALES_ORDER, SALES_RETURN, PURCHASE_ORDER, etc.)

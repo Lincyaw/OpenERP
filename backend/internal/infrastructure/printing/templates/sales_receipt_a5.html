@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>销售收据 - {{ .Document.ReceiptNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .page {
+            width: 138mm;
+            padding: 5mm;
+        }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+        .header .title {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        .header .store-name {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #666;
+        }
+        .header .store-info {
+            font-size: 10px;
+            color: #888;
+            margin-top: 3px;
+        }
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .info-col {
+            font-size: 10px;
+        }
+        .info-row {
+            margin-bottom: 3px;
+        }
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 50px;
+        }
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 5px 8px;
+            text-align: center;
+        }
+        .items-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .items-table td {
+            font-size: 10px;
+        }
+        .items-table .col-index { width: 25px; }
+        .items-table .col-name { width: auto; text-align: left; }
+        .items-table .col-qty { width: 40px; text-align: right; }
+        .items-table .col-price { width: 55px; text-align: right; }
+        .items-table .col-discount { width: 50px; text-align: right; }
+        .items-table .col-amount { width: 60px; text-align: right; }
+        .items-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        /* Summary Section */
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .summary-left {
+            width: 50%;
+        }
+        .summary-right {
+            width: 45%;
+            text-align: right;
+        }
+        .summary-row {
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+        .summary-row.discount {
+            color: #c00;
+        }
+        .total-row {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #ddd;
+        }
+        .amount-chinese {
+            font-size: 10px;
+            color: #666;
+        }
+        /* Payments Section */
+        .payments-section {
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .payments-title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        .change-row {
+            font-weight: bold;
+            color: #060;
+        }
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px dashed #999;
+        }
+        .footer .thanks {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .footer .info {
+            font-size: 9px;
+            color: #666;
+        }
+        /* Print */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">销 售 收 据</div>
+            <div class="store-name">{{ .Document.Store.Name }}</div>
+            {{ if .Document.Store.Address }}
+            <div class="store-info">{{ .Document.Store.Address }}</div>
+            {{ end }}
+            {{ if .Document.Store.Phone }}
+            <div class="store-info">电话: {{ .Document.Store.Phone }}</div>
+            {{ end }}
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-col">
+                <div class="info-row">
+                    <span class="info-label">单号:</span>{{ .Document.ReceiptNo }}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">日期:</span>{{ .Document.TransactedAtFormatted }}
+                </div>
+            </div>
+            <div class="info-col">
+                <div class="info-row">
+                    <span class="info-label">收银员:</span>{{ .Document.Cashier }}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">打印:</span>{{ .PrintDateTime }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序号</th>
+                    <th class="col-name">商品名称</th>
+                    <th class="col-qty">数量</th>
+                    <th class="col-price">单价</th>
+                    <th class="col-discount">折扣</th>
+                    <th class="col-amount">金额</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Items }}
+                <tr>
+                    <td class="col-index">{{ .Index }}</td>
+                    <td class="col-name">{{ .ProductName }}</td>
+                    <td class="col-qty">{{ formatDecimal .Quantity 0 }}</td>
+                    <td class="col-price">{{ formatMoney .UnitPrice }}</td>
+                    <td class="col-discount">{{ if gt .Discount.IntPart 0 }}-{{ formatMoney .Discount }}{{ else }}-{{ end }}</td>
+                    <td class="col-amount">{{ formatMoney .Amount }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-left">
+                <div class="summary-row">商品种类: {{ .Document.ItemCount }}</div>
+                <div class="summary-row">商品数量: {{ formatDecimal .Document.TotalQuantity 0 }}</div>
+            </div>
+            <div class="summary-right">
+                <div class="summary-row">商品小计: {{ .Document.SubtotalFormatted }}</div>
+                {{ if gt .Document.DiscountTotal.IntPart 0 }}
+                <div class="summary-row discount">优惠金额: -{{ .Document.DiscountTotalFormatted }}</div>
+                {{ end }}
+                {{ if gt .Document.TaxTotal.IntPart 0 }}
+                <div class="summary-row">税额: {{ .Document.TaxTotalFormatted }}</div>
+                {{ end }}
+                <div class="total-row">应付金额: {{ .Document.GrandTotalFormatted }}</div>
+                <div class="amount-chinese">大写: {{ moneyToChinese .Document.GrandTotal }}</div>
+            </div>
+        </div>
+
+        <!-- Payments Section -->
+        <div class="payments-section">
+            <div class="payments-title">支付方式</div>
+            {{ range .Document.Payments }}
+            <div class="payment-row">
+                <span>{{ .MethodText }}</span>
+                <span>{{ .AmountFormatted }}</span>
+            </div>
+            {{ end }}
+            {{ if gt .Document.Change.IntPart 0 }}
+            <div class="payment-row change-row">
+                <span>找零</span>
+                <span>{{ .Document.ChangeFormatted }}</span>
+            </div>
+            {{ end }}
+        </div>
+
+        <!-- Remark -->
+        {{ if .Document.Remark }}
+        <div style="font-size: 10px; color: #666; margin-bottom: 10px; padding: 5px; background: #fffef0; border: 1px solid #e6e6c0;">
+            <strong>备注:</strong> {{ .Document.Remark }}
+        </div>
+        {{ end }}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="thanks">谢谢惠顾!</div>
+            {{ if .Document.Store.TaxID }}
+            <div class="info">税号: {{ .Document.Store.TaxID }}</div>
+            {{ end }}
+            <div class="info">请妥善保管本收据，如有问题请在7天内持本收据联系我们</div>
+        </div>
+    </div>
+</body>
+</html>

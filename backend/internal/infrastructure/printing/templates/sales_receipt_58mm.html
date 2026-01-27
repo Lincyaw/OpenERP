@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>销售收据 - {{ .Document.ReceiptNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #000;
+            width: 54mm;
+        }
+        .receipt {
+            width: 54mm;
+            padding: 1mm;
+        }
+        /* Header */
+        .header {
+            text-align: center;
+            padding-bottom: 3px;
+            border-bottom: 1px dashed #000;
+            margin-bottom: 3px;
+        }
+        .store-name {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .store-info {
+            font-size: 7px;
+            color: #333;
+            margin-top: 2px;
+        }
+        /* Receipt Info */
+        .receipt-info {
+            font-size: 8px;
+            margin-bottom: 3px;
+            padding-bottom: 3px;
+            border-bottom: 1px dashed #000;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Items */
+        .items {
+            margin-bottom: 3px;
+            padding-bottom: 3px;
+            border-bottom: 1px dashed #000;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+        }
+        .item-line {
+            font-size: 8px;
+            margin-bottom: 2px;
+        }
+        .item-name {
+            display: block;
+        }
+        .item-detail {
+            display: flex;
+            justify-content: space-between;
+            color: #333;
+            padding-left: 5px;
+        }
+        /* Totals */
+        .totals {
+            margin-bottom: 3px;
+            padding-bottom: 3px;
+            border-bottom: 1px dashed #000;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+        }
+        .total-row.grand {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 2px;
+            padding-top: 2px;
+            border-top: 1px solid #ccc;
+        }
+        .total-row.discount {
+            color: #c00;
+        }
+        /* Payments */
+        .payments {
+            margin-bottom: 3px;
+            font-size: 8px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .change-row {
+            font-weight: bold;
+        }
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 7px;
+            color: #666;
+            padding-top: 3px;
+        }
+        .footer .thanks {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .qr-placeholder {
+            text-align: center;
+            margin: 3px 0;
+            font-size: 7px;
+            color: #999;
+        }
+        /* Divider */
+        .divider {
+            border-bottom: 1px dashed #000;
+            margin: 3px 0;
+        }
+        /* Print */
+        @media print {
+            body { width: 54mm; }
+            .receipt { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <!-- Header -->
+        <div class="header">
+            <div class="store-name">{{ .Document.Store.Name }}</div>
+            {{ if .Document.Store.Address }}
+            <div class="store-info">{{ truncate .Document.Store.Address 30 }}</div>
+            {{ end }}
+            {{ if .Document.Store.Phone }}
+            <div class="store-info">电话: {{ .Document.Store.Phone }}</div>
+            {{ end }}
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+            <div class="receipt-row">
+                <span>单号: {{ .Document.ReceiptNo }}</span>
+            </div>
+            <div class="receipt-row">
+                <span>时间: {{ .Document.TransactedAtFormatted }}</span>
+            </div>
+            <div class="receipt-row">
+                <span>收银员: {{ .Document.Cashier }}</span>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="items">
+            <div class="item-header">
+                <span>品名</span>
+                <span>金额</span>
+            </div>
+            {{ range .Document.Items }}
+            <div class="item-line">
+                <span class="item-name">{{ truncate .ProductName 18 }}</span>
+                <div class="item-detail">
+                    <span>{{ formatDecimal .Quantity 0 }} x {{ formatMoney .UnitPrice }}</span>
+                    <span>{{ formatMoney .Amount }}</span>
+                </div>
+            </div>
+            {{ end }}
+        </div>
+
+        <!-- Totals -->
+        <div class="totals">
+            <div class="total-row">
+                <span>小计 ({{ .Document.ItemCount }}件)</span>
+                <span>{{ .Document.SubtotalFormatted }}</span>
+            </div>
+            {{ if gt .Document.DiscountTotal.IntPart 0 }}
+            <div class="total-row discount">
+                <span>优惠</span>
+                <span>-{{ .Document.DiscountTotalFormatted }}</span>
+            </div>
+            {{ end }}
+            {{ if gt .Document.TaxTotal.IntPart 0 }}
+            <div class="total-row">
+                <span>税额</span>
+                <span>{{ .Document.TaxTotalFormatted }}</span>
+            </div>
+            {{ end }}
+            <div class="total-row grand">
+                <span>合计</span>
+                <span>{{ .Document.GrandTotalFormatted }}</span>
+            </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="payments">
+            {{ range .Document.Payments }}
+            <div class="payment-row">
+                <span>{{ .MethodText }}</span>
+                <span>{{ .AmountFormatted }}</span>
+            </div>
+            {{ end }}
+            {{ if gt .Document.Change.IntPart 0 }}
+            <div class="payment-row change-row">
+                <span>找零</span>
+                <span>{{ .Document.ChangeFormatted }}</span>
+            </div>
+            {{ end }}
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- QR Code Placeholder -->
+        {{ if .Document.QRCode }}
+        <div class="qr-placeholder">
+            [电子发票二维码]
+        </div>
+        {{ end }}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="thanks">谢谢惠顾!</div>
+            {{ if .Document.Store.TaxID }}
+            <div>税号: {{ .Document.Store.TaxID }}</div>
+            {{ end }}
+            <div>{{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>
