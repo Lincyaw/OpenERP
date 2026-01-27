@@ -27,6 +27,12 @@ type ChangePasswordRequest struct {
 	NewPassword string `json:"new_password" binding:"required,min=8,max=128"`
 }
 
+// ForceLogoutRequest represents the request body for admin force logout
+type ForceLogoutRequest struct {
+	UserID string `json:"user_id" binding:"required,uuid"`
+	Reason string `json:"reason" binding:"required,min=3,max=500"`
+}
+
 // =====================
 // Auth Response DTOs
 // =====================
@@ -72,5 +78,10 @@ type CurrentUserResponse struct {
 
 // LogoutResponse represents the response body for logout
 type LogoutResponse struct {
+	Message string `json:"message"`
+}
+
+// ForceLogoutResponse represents the response body for admin force logout
+type ForceLogoutResponse struct {
 	Message string `json:"message"`
 }

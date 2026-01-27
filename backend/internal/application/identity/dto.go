@@ -77,3 +77,16 @@ type CurrentUserResult struct {
 	User        UserInfo
 	Permissions []string
 }
+
+// ForceLogoutInput contains the input for force logout operation
+type ForceLogoutInput struct {
+	AdminUserID  uuid.UUID // Admin performing the action
+	TargetUserID uuid.UUID // User to force logout
+	TenantID     uuid.UUID
+	Reason       string // Reason for force logout (for audit)
+}
+
+// ForceLogoutResult contains the result of force logout operation
+type ForceLogoutResult struct {
+	Message string
+}

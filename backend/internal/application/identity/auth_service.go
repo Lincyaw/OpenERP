@@ -27,11 +27,12 @@ func DefaultAuthServiceConfig() AuthServiceConfig {
 
 // AuthService handles authentication operations
 type AuthService struct {
-	userRepo   identity.UserRepository
-	roleRepo   identity.RoleRepository
-	jwtService *auth.JWTService
-	config     AuthServiceConfig
-	logger     *zap.Logger
+	userRepo       identity.UserRepository
+	roleRepo       identity.RoleRepository
+	jwtService     *auth.JWTService
+	tokenBlacklist auth.TokenBlacklist
+	config         AuthServiceConfig
+	logger         *zap.Logger
 }
 
 // NewAuthService creates a new authentication service
@@ -43,12 +44,19 @@ func NewAuthService(
 	logger *zap.Logger,
 ) *AuthService {
 	return &AuthService{
-		userRepo:   userRepo,
-		roleRepo:   roleRepo,
-		jwtService: jwtService,
-		config:     config,
-		logger:     logger,
+		userRepo:       userRepo,
+		roleRepo:       roleRepo,
+		jwtService:     jwtService,
+		tokenBlacklist: nil, // Optional, set via SetTokenBlacklist
+		config:         config,
+		logger:         logger,
 	}
+}
+
+// SetTokenBlacklist sets the token blacklist for the service
+// This allows token revocation on logout and password change
+func (s *AuthService) SetTokenBlacklist(blacklist auth.TokenBlacklist) {
+	s.tokenBlacklist = blacklist
 }
 
 // Login authenticates a user and returns tokens
@@ -180,6 +188,23 @@ func (s *AuthService) RefreshToken(ctx context.Context, input RefreshTokenInput)
 		}
 	}
 
+	// Check if the refresh token or user tokens have been invalidated
+	if s.tokenBlacklist != nil {
+		// Check if user's tokens have been globally invalidated (logout, password change)
+		tokenIssuedAt := refreshClaims.GetIssuedAtTime()
+		invalidated, err := s.tokenBlacklist.IsUserTokenInvalidated(ctx, refreshClaims.UserID, tokenIssuedAt)
+		if err != nil {
+			s.logger.Error("Failed to check token invalidation during refresh",
+				zap.String("user_id", refreshClaims.UserID),
+				zap.Error(err))
+			// Don't fail on error - allow refresh for availability
+		} else if invalidated {
+			s.logger.Warn("Refresh token rejected - user tokens invalidated",
+				zap.String("user_id", refreshClaims.UserID))
+			return nil, shared.NewDomainError("TOKEN_REVOKED", "Session has been invalidated. Please log in again")
+		}
+	}
+
 	// Parse user ID from refresh token claims
 	userID, err := uuid.Parse(refreshClaims.UserID)
 	if err != nil {
@@ -244,19 +269,32 @@ func (s *AuthService) RefreshToken(ctx context.Context, input RefreshTokenInput)
 	}, nil
 }
 
-// Logout handles user logout
-// Currently this is a no-op since we use stateless JWT tokens
-// In a production system, you might want to:
-// - Add tokens to a blacklist (Redis)
-// - Invalidate refresh tokens
-// - Clear server-side sessions
+// Logout handles user logout by invalidating all tokens for the user
+// This ensures both access and refresh tokens are immediately invalidated
 func (s *AuthService) Logout(ctx context.Context, input LogoutInput) error {
 	s.logger.Info("User logout",
 		zap.String("user_id", input.UserID.String()),
-		zap.String("tenant_id", input.TenantID.String()))
+		zap.String("tenant_id", input.TenantID.String()),
+		zap.String("token_jti", input.TokenJTI))
 
-	// TODO: Implement token blacklisting if needed
-	// For now, logout is handled client-side by clearing tokens
+	// Invalidate all tokens for the user to ensure complete logout
+	// This is more secure than just blacklisting the access token JTI
+	// because it also invalidates any refresh tokens the user might have
+	if s.tokenBlacklist != nil {
+		// Use refresh token expiration as TTL since that's the longest-lived token
+		ttl := s.jwtService.GetRefreshTokenExpiration()
+
+		if err := s.tokenBlacklist.AddUserTokensToBlacklist(ctx, input.UserID.String(), ttl); err != nil {
+			s.logger.Error("Failed to invalidate user tokens on logout",
+				zap.String("user_id", input.UserID.String()),
+				zap.Error(err))
+			// Don't fail logout if invalidation fails - tokens will still expire naturally
+			// But log the error for monitoring
+		} else {
+			s.logger.Info("All user tokens invalidated on logout",
+				zap.String("user_id", input.UserID.String()))
+		}
+	}
 
 	return nil
 }
@@ -297,7 +335,7 @@ func (s *AuthService) GetCurrentUser(ctx context.Context, input GetCurrentUserIn
 	}, nil
 }
 
-// ChangePassword changes a user's password
+// ChangePassword changes a user's password and invalidates all existing tokens
 func (s *AuthService) ChangePassword(ctx context.Context, input ChangePasswordInput) error {
 	user, err := s.userRepo.FindByID(ctx, input.UserID)
 	if err != nil {
@@ -315,7 +353,95 @@ func (s *AuthService) ChangePassword(ctx context.Context, input ChangePasswordIn
 
 	s.logger.Info("User password changed", zap.String("user_id", input.UserID.String()))
 
+	// Invalidate all existing tokens for security
+	// User must re-login on all devices after password change
+	if s.tokenBlacklist != nil {
+		// Use refresh token expiration as TTL since that's the longest-lived token
+		ttl := s.jwtService.GetRefreshTokenExpiration()
+
+		if err := s.tokenBlacklist.AddUserTokensToBlacklist(ctx, input.UserID.String(), ttl); err != nil {
+			s.logger.Error("Failed to invalidate user tokens after password change",
+				zap.String("user_id", input.UserID.String()),
+				zap.Error(err))
+			// Don't fail password change if token invalidation fails
+			// The password was changed successfully, just log the error
+		} else {
+			s.logger.Info("All user tokens invalidated after password change",
+				zap.String("user_id", input.UserID.String()))
+		}
+	}
+
 	return nil
+}
+
+// ForceLogout invalidates all tokens for a user, forcing them to re-authenticate
+// This is typically used by administrators when a user's account is compromised
+func (s *AuthService) ForceLogout(ctx context.Context, input ForceLogoutInput) (*ForceLogoutResult, error) {
+	s.logger.Info("Force logout initiated",
+		zap.String("admin_user_id", input.AdminUserID.String()),
+		zap.String("target_user_id", input.TargetUserID.String()),
+		zap.String("tenant_id", input.TenantID.String()),
+		zap.String("reason", input.Reason))
+
+	// Verify target user exists
+	user, err := s.userRepo.FindByID(ctx, input.TargetUserID)
+	if err != nil {
+		return nil, shared.NewDomainError("USER_NOT_FOUND", "Target user not found")
+	}
+
+	// Verify target user is in the same tenant
+	if user.TenantID != input.TenantID {
+		s.logger.Warn("Force logout attempt across tenant boundary",
+			zap.String("admin_user_id", input.AdminUserID.String()),
+			zap.String("target_user_id", input.TargetUserID.String()),
+			zap.String("admin_tenant_id", input.TenantID.String()),
+			zap.String("target_tenant_id", user.TenantID.String()))
+		return nil, shared.NewDomainError("FORBIDDEN", "Cannot force logout user from different tenant")
+	}
+
+	// Check if token blacklist is available
+	if s.tokenBlacklist == nil {
+		s.logger.Warn("Token blacklist not configured, force logout has limited effect")
+		return &ForceLogoutResult{
+			Message: "Force logout completed (token blacklist not configured - user sessions will expire naturally)",
+		}, nil
+	}
+
+	// Use refresh token expiration as TTL since that's the longest-lived token
+	ttl := s.jwtService.GetRefreshTokenExpiration()
+
+	// Invalidate all tokens for the target user
+	if err := s.tokenBlacklist.AddUserTokensToBlacklist(ctx, input.TargetUserID.String(), ttl); err != nil {
+		s.logger.Error("Failed to invalidate user tokens on force logout",
+			zap.String("target_user_id", input.TargetUserID.String()),
+			zap.Error(err))
+		return nil, shared.NewDomainError("INTERNAL_ERROR", "Failed to invalidate user sessions")
+	}
+
+	s.logger.Info("Force logout completed successfully",
+		zap.String("admin_user_id", input.AdminUserID.String()),
+		zap.String("target_user_id", input.TargetUserID.String()),
+		zap.String("reason", input.Reason))
+
+	return &ForceLogoutResult{
+		Message: "All sessions for user have been invalidated",
+	}, nil
+}
+
+// IsTokenBlacklisted checks if a token (by JTI) is blacklisted
+func (s *AuthService) IsTokenBlacklisted(ctx context.Context, jti string) (bool, error) {
+	if s.tokenBlacklist == nil {
+		return false, nil
+	}
+	return s.tokenBlacklist.IsBlacklisted(ctx, jti)
+}
+
+// IsUserTokenInvalidated checks if a user's tokens have been globally invalidated
+func (s *AuthService) IsUserTokenInvalidated(ctx context.Context, userID string, tokenIssuedAt time.Time) (bool, error) {
+	if s.tokenBlacklist == nil {
+		return false, nil
+	}
+	return s.tokenBlacklist.IsUserTokenInvalidated(ctx, userID, tokenIssuedAt)
 }
 
 // collectUserPermissions collects all unique permissions from the user's roles

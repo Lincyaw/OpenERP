@@ -362,3 +362,65 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		"message": "Password changed successfully",
 	}))
 }
+
+// ForceLogout godoc
+// @Summary      Force logout user (Admin)
+// @Description  Invalidate all sessions for a specific user. Requires user:force_logout permission.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body ForceLogoutRequest true "Force logout request"
+// @Success      200 {object} dto.Response{data=ForceLogoutResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      403 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /auth/force-logout [post]
+func (h *AuthHandler) ForceLogout(c *gin.Context) {
+	claims := middleware.GetJWTClaims(c)
+	if claims == nil {
+		h.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	var req ForceLogoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.BadRequest(c, "Invalid request body")
+		return
+	}
+
+	adminUserID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		h.BadRequest(c, "Invalid admin user ID in token")
+		return
+	}
+
+	targetUserID, err := uuid.Parse(req.UserID)
+	if err != nil {
+		h.BadRequest(c, "Invalid target user ID")
+		return
+	}
+
+	tenantID, err := uuid.Parse(claims.TenantID)
+	if err != nil {
+		h.BadRequest(c, "Invalid tenant ID in token")
+		return
+	}
+
+	result, err := h.authService.ForceLogout(c.Request.Context(), identity.ForceLogoutInput{
+		AdminUserID:  adminUserID,
+		TargetUserID: targetUserID,
+		TenantID:     tenantID,
+		Reason:       req.Reason,
+	})
+	if err != nil {
+		h.HandleError(c, err)
+		return
+	}
+
+	h.Success(c, ForceLogoutResponse{
+		Message: result.Message,
+	})
+}

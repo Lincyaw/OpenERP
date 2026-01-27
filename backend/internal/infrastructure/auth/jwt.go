@@ -27,6 +27,7 @@ var (
 	ErrMissingTenantID    = errors.New("missing tenant_id in claims")
 	ErrMissingUserID      = errors.New("missing user_id in claims")
 	ErrMaxRefreshExceeded = errors.New("maximum refresh count exceeded")
+	ErrTokenBlacklisted   = errors.New("token has been revoked")
 )
 
 // Claims represents custom JWT claims
@@ -340,4 +341,42 @@ func (c *Claims) HasAllPermissions(permissions ...string) bool {
 		}
 	}
 	return true
+}
+
+// GetIssuedAtTime returns the token's issued-at time as time.Time
+func (c *Claims) GetIssuedAtTime() time.Time {
+	if c.IssuedAt != nil {
+		return c.IssuedAt.Time
+	}
+	return time.Time{}
+}
+
+// GetExpiresAtTime returns the token's expiration time as time.Time
+func (c *Claims) GetExpiresAtTime() time.Time {
+	if c.ExpiresAt != nil {
+		return c.ExpiresAt.Time
+	}
+	return time.Time{}
+}
+
+// GetRemainingTTL returns the remaining time until the token expires
+func (c *Claims) GetRemainingTTL() time.Duration {
+	if c.ExpiresAt == nil {
+		return 0
+	}
+	remaining := time.Until(c.ExpiresAt.Time)
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
+// GetAccessTokenExpiration returns the access token expiration duration
+func (s *JWTService) GetAccessTokenExpiration() time.Duration {
+	return s.accessExpiration
+}
+
+// GetRefreshTokenExpiration returns the refresh token expiration duration
+func (s *JWTService) GetRefreshTokenExpiration() time.Duration {
+	return s.refreshExpiration
 }

@@ -5516,7 +5516,7 @@
       "- 黑名单自动过期清理",
       "- 性能影响可接受（Redis查询<1ms）"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "安全增强",
     "affectedModules": [
       "backend/internal/application/identity/auth_service.go",

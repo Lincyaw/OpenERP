@@ -227,6 +227,32 @@ func main() {
 	// Identity services (auth, user, role, tenant)
 	jwtService := auth.NewJWTService(cfg.JWT)
 	authService := identityapp.NewAuthService(userRepo, roleRepo, jwtService, identityapp.DefaultAuthServiceConfig(), log)
+
+	// Initialize token blacklist for secure logout and session invalidation
+	// This uses Redis to store blacklisted token JTIs and user invalidation timestamps
+	var tokenBlacklist auth.TokenBlacklist
+	tokenBlacklistCfg := auth.RedisTokenBlacklistConfig{
+		Host:     cfg.Redis.Host,
+		Port:     cfg.Redis.Port,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	}
+	redisBlacklist, err := auth.NewRedisTokenBlacklist(tokenBlacklistCfg)
+	if err != nil {
+		log.Warn("Failed to initialize Redis token blacklist, using in-memory fallback",
+			zap.Error(err),
+			zap.String("note", "In-memory blacklist does not persist across restarts and does not work in multi-instance deployments"))
+		tokenBlacklist = auth.NewInMemoryTokenBlacklist()
+	} else {
+		tokenBlacklist = redisBlacklist
+		log.Info("Token blacklist initialized with Redis",
+			zap.String("host", cfg.Redis.Host),
+			zap.Int("port", cfg.Redis.Port))
+	}
+
+	// Set token blacklist on auth service for logout and password change handling
+	authService.SetTokenBlacklist(tokenBlacklist)
+
 	userService := identityapp.NewUserService(userRepo, roleRepo, log)
 	roleService := identityapp.NewRoleService(roleRepo, userRepo, log)
 	tenantService := identityapp.NewTenantService(tenantRepo, log)
@@ -601,7 +627,8 @@ func main() {
 	// Apply JWT authentication middleware to API routes
 	// Configure skip paths for public endpoints
 	jwtConfig := middleware.JWTMiddlewareConfig{
-		JWTService: jwtService,
+		JWTService:     jwtService,
+		TokenBlacklist: tokenBlacklist,
 		SkipPaths: []string{
 			"/api/v1/auth/login",
 			"/api/v1/auth/refresh",
@@ -975,6 +1002,7 @@ func main() {
 	identityRoutes.POST("/auth/logout", authHandler.Logout)
 	identityRoutes.GET("/auth/me", authHandler.GetCurrentUser)
 	identityRoutes.PUT("/auth/password", authHandler.ChangePassword)
+	identityRoutes.POST("/auth/force-logout", middleware.RequirePermission("user:force_logout"), authHandler.ForceLogout)
 
 	// User management routes
 	identityRoutes.POST("/users", userHandler.Create)

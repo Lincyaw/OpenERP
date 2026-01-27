@@ -26,6 +26,8 @@ const (
 type JWTMiddlewareConfig struct {
 	// JWTService is required for token validation
 	JWTService *auth.JWTService
+	// TokenBlacklist is optional for checking revoked tokens
+	TokenBlacklist auth.TokenBlacklist
 	// SkipPaths are paths that don't require authentication
 	SkipPaths []string
 	// SkipPathPrefixes are path prefixes that don't require authentication
@@ -39,7 +41,8 @@ type JWTMiddlewareConfig struct {
 // DefaultJWTConfig returns default JWT middleware configuration
 func DefaultJWTConfig(jwtService *auth.JWTService) JWTMiddlewareConfig {
 	return JWTMiddlewareConfig{
-		JWTService: jwtService,
+		JWTService:     jwtService,
+		TokenBlacklist: nil,
 		SkipPaths: []string{
 			"/health",
 			"/healthz",
@@ -110,6 +113,44 @@ func JWTAuthMiddlewareWithConfig(cfg JWTMiddlewareConfig) gin.HandlerFunc {
 			return
 		}
 
+		// Check token blacklist if configured
+		if cfg.TokenBlacklist != nil {
+			ctx := c.Request.Context()
+
+			// Check if the specific token JTI is blacklisted (individual logout)
+			if claims.ID != "" {
+				blacklisted, err := cfg.TokenBlacklist.IsBlacklisted(ctx, claims.ID)
+				if err != nil {
+					// Log error but don't fail the request - fail open for availability
+					if cfg.Logger != nil {
+						cfg.Logger.Error("Failed to check token blacklist",
+							zap.String("jti", claims.ID),
+							zap.Error(err))
+					}
+				} else if blacklisted {
+					handleAuthError(c, cfg, auth.ErrTokenBlacklisted, "Token has been revoked")
+					return
+				}
+			}
+
+			// Check if user's tokens have been globally invalidated (force logout, password change)
+			if claims.UserID != "" {
+				tokenIssuedAt := claims.GetIssuedAtTime()
+				invalidated, err := cfg.TokenBlacklist.IsUserTokenInvalidated(ctx, claims.UserID, tokenIssuedAt)
+				if err != nil {
+					// Log error but don't fail the request - fail open for availability
+					if cfg.Logger != nil {
+						cfg.Logger.Error("Failed to check user token invalidation",
+							zap.String("user_id", claims.UserID),
+							zap.Error(err))
+					}
+				} else if invalidated {
+					handleAuthError(c, cfg, auth.ErrTokenBlacklisted, "User session has been invalidated")
+					return
+				}
+			}
+		}
+
 		// Store claims in context for downstream use
 		c.Set(JWTClaimsKey, claims)
 		c.Set(JWTUserIDKey, claims.UserID)
@@ -169,6 +210,9 @@ func handleAuthError(c *gin.Context, cfg JWTMiddlewareConfig, err error, message
 	case auth.ErrTokenNotYetValid:
 		errorCode = "TOKEN_NOT_VALID"
 		errorMessage = "Token is not yet valid"
+	case auth.ErrTokenBlacklisted:
+		errorCode = "TOKEN_REVOKED"
+		errorMessage = "Token has been revoked"
 	}
 
 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

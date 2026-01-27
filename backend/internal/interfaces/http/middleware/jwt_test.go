@@ -461,3 +461,188 @@ func TestJWTAuthMiddleware_GetPermissions(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 	assert.Equal(t, input.Permissions, capturedPermissions)
 }
+
+func TestJWTAuthMiddleware_BlacklistedToken(t *testing.T) {
+	jwtService := newTestJWTService()
+	pair, _ := newTestTokenPair(jwtService)
+
+	// Create a blacklist and add the token
+	blacklist := auth.NewInMemoryTokenBlacklist()
+
+	// Parse the token to get the JTI
+	claims, err := jwtService.ValidateAccessToken(pair.AccessToken)
+	require.NoError(t, err)
+
+	// Blacklist the token
+	err = blacklist.AddToBlacklist(t.Context(), claims.ID, 1*time.Hour)
+	require.NoError(t, err)
+
+	cfg := JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: blacklist,
+	}
+
+	router := gin.New()
+	router.Use(JWTAuthMiddlewareWithConfig(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+pair.AccessToken)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	assert.Contains(t, rec.Body.String(), "TOKEN_REVOKED")
+}
+
+func TestJWTAuthMiddleware_UserTokenInvalidated(t *testing.T) {
+	jwtService := newTestJWTService()
+	pair, input := newTestTokenPair(jwtService)
+
+	// Create a blacklist and invalidate all tokens for the user
+	blacklist := auth.NewInMemoryTokenBlacklist()
+
+	// Small delay to ensure invalidation timestamp is after token issuedAt
+	time.Sleep(10 * time.Millisecond)
+
+	// Invalidate all user tokens
+	err := blacklist.AddUserTokensToBlacklist(t.Context(), input.UserID.String(), 1*time.Hour)
+	require.NoError(t, err)
+
+	cfg := JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: blacklist,
+	}
+
+	router := gin.New()
+	router.Use(JWTAuthMiddlewareWithConfig(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+pair.AccessToken)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	assert.Contains(t, rec.Body.String(), "TOKEN_REVOKED")
+}
+
+func TestJWTAuthMiddleware_NonBlacklistedToken(t *testing.T) {
+	jwtService := newTestJWTService()
+	pair, input := newTestTokenPair(jwtService)
+
+	// Create an empty blacklist
+	blacklist := auth.NewInMemoryTokenBlacklist()
+
+	cfg := JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: blacklist,
+	}
+
+	router := gin.New()
+	router.Use(JWTAuthMiddlewareWithConfig(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		claims := GetJWTClaims(c)
+		assert.NotNil(t, claims)
+		assert.Equal(t, input.UserID.String(), claims.UserID)
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+pair.AccessToken)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestJWTAuthMiddleware_NilBlacklist(t *testing.T) {
+	// Test that nil blacklist doesn't cause issues
+	jwtService := newTestJWTService()
+	pair, input := newTestTokenPair(jwtService)
+
+	cfg := JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: nil, // Explicitly nil
+	}
+
+	router := gin.New()
+	router.Use(JWTAuthMiddlewareWithConfig(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		claims := GetJWTClaims(c)
+		assert.NotNil(t, claims)
+		assert.Equal(t, input.UserID.String(), claims.UserID)
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+pair.AccessToken)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestJWTAuthMiddleware_TokenIssuedAfterInvalidation(t *testing.T) {
+	jwtService := newTestJWTService()
+
+	// First, create the blacklist and invalidate user tokens
+	blacklist := auth.NewInMemoryTokenBlacklist()
+
+	input := auth.GenerateTokenInput{
+		TenantID:    uuid.New(),
+		UserID:      uuid.New(),
+		Username:    "testuser",
+		RoleIDs:     []uuid.UUID{uuid.New()},
+		Permissions: []string{"product:read"},
+	}
+
+	// Invalidate first - but use a timestamp in the past to simulate
+	// that invalidation happened some time ago
+	err := blacklist.AddUserTokensToBlacklist(t.Context(), input.UserID.String(), 1*time.Hour)
+	require.NoError(t, err)
+
+	// We need to ensure that the token issuedAt > invalidation time
+	// Since JWT uses Unix seconds, we need to wait at least 1 second
+	// For faster tests, we can skip this specific test or use a mock
+	if testing.Short() {
+		t.Skip("Skipping test that requires time-based token validation")
+	}
+
+	// Wait for next second boundary to ensure token issuedAt > invalidation time
+	time.Sleep(1100 * time.Millisecond)
+
+	// Now generate a new token (issued after invalidation)
+	pair, err := jwtService.GenerateTokenPair(input)
+	require.NoError(t, err)
+
+	cfg := JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: blacklist,
+	}
+
+	router := gin.New()
+	router.Use(JWTAuthMiddlewareWithConfig(cfg))
+	router.GET("/test", func(c *gin.Context) {
+		claims := GetJWTClaims(c)
+		assert.NotNil(t, claims)
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+pair.AccessToken)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	// Token issued after invalidation should be valid
+	assert.Equal(t, http.StatusOK, rec.Code)
+}

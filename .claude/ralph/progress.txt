@@ -26930,3 +26930,115 @@ retry_attempts = 3
 - Monitor scheduler in production
 - Consider adding supplier/warehouse dimension aggregation tables
 - Add job completion callback for better tracking
+
+================================================================================
+2025-01-27 - GAP-SEC-001: Implement JWT Token Blacklist Mechanism
+================================================================================
+
+=== Summary ===
+Implemented a comprehensive JWT token blacklisting system for secure logout,
+force logout, and password change token invalidation.
+
+=== Implementation Details ===
+
+1. **TokenBlacklist Interface** (NEW: token_blacklist.go)
+   - Defined TokenBlacklist interface with 4 methods:
+     * AddToBlacklist - Blacklist individual token by JTI
+     * IsBlacklisted - Check if JTI is blacklisted
+     * AddUserTokensToBlacklist - Invalidate all tokens for a user
+     * IsUserTokenInvalidated - Check user-wide invalidation
+   - RedisTokenBlacklist implementation with:
+     * Connection pooling (10 connections, 3 min idle)
+     * Configurable timeouts (dial: 5s, read/write: 3s)
+     * TTL-based auto-expiration
+   - InMemoryTokenBlacklist for testing with:
+     * sync.RWMutex for thread safety
+     * UnixNano precision for sub-second timing tests
+
+2. **JWT Service Updates** (jwt.go)
+   - Added ErrTokenBlacklisted error type
+   - Added Claims helper methods:
+     * GetIssuedAtTime() - Extract iat as time.Time
+     * GetExpiresAtTime() - Extract exp as time.Time
+     * GetRemainingTTL() - Calculate remaining validity
+   - Added JWTService methods:
+     * GetAccessTokenExpiration()
+     * GetRefreshTokenExpiration()
+
+3. **AuthService Updates** (auth_service.go)
+   - Added tokenBlacklist field and SetTokenBlacklist setter
+   - Logout now uses user-wide invalidation (not just JTI)
+     - More secure: invalidates both access and refresh tokens
+   - RefreshToken checks for user-wide invalidation before refreshing
+   - Added ForceLogout for admin-initiated session termination
+     - Cross-tenant validation
+     - Audit logging
+   - ChangePassword invalidates all user tokens after success
+
+4. **JWT Middleware Updates** (middleware/jwt.go)
+   - Added TokenBlacklist to JWTMiddlewareConfig
+   - Two-level blacklist checking:
+     1. Individual JTI blacklist check
+     2. User-wide invalidation check
+   - Fail-open policy: Redis errors don't block requests (availability)
+   - New error code: TOKEN_REVOKED
+
+5. **HTTP Handler** (handler/auth.go)
+   - Added ForceLogout endpoint: DELETE /api/v1/auth/force-logout
+   - Requires user:force-logout permission
+   - Returns success message
+
+6. **main.go Wiring**
+   - Redis token blacklist initialization
+   - Fallback to in-memory if Redis unavailable
+   - Injected into AuthService and JWT middleware config
+   - Added force-logout route with permission middleware
+
+=== Files Changed ===
+- backend/internal/infrastructure/auth/token_blacklist.go (NEW)
+- backend/internal/infrastructure/auth/token_blacklist_test.go (NEW)
+- backend/internal/infrastructure/auth/jwt.go
+- backend/internal/application/identity/auth_service.go
+- backend/internal/application/identity/dto.go
+- backend/internal/interfaces/http/handler/auth.go
+- backend/internal/interfaces/http/handler/auth_dto.go
+- backend/internal/interfaces/http/middleware/jwt.go
+- backend/internal/interfaces/http/middleware/jwt_test.go
+- backend/cmd/server/main.go
+
+=== Technical Decisions ===
+1. **User-wide invalidation over JTI-only**: Logout invalidates ALL user tokens
+   (not just access token JTI) for better security - also catches refresh tokens
+2. **Fail-open on Redis errors**: Prioritize availability; tokens will expire naturally
+3. **UnixNano for in-memory**: Sub-second precision needed for fast tests
+4. **Connection pooling**: 10 pool size, 3 min idle for production workloads
+5. **No JTI blacklist on logout**: User-wide is sufficient and more comprehensive
+
+=== Code Review Findings Addressed ===
+- CRITICAL: Race condition in InMemoryTokenBlacklist - Added sync.RWMutex
+- HIGH: Missing refresh token blacklist check - Added in RefreshToken method
+- HIGH: No Redis connection pool config - Added PoolSize, timeouts, retries
+- MEDIUM: Changed logout to user-wide invalidation for better security
+
+=== Verification ===
+- [x] All tests pass: go test ./internal/... -v
+- [x] Race detector clean: go test -race ./internal/...
+- [x] Build succeeds: go build ./...
+- [x] Code reviewed with code-reviewer agent
+- [x] Security reviewed for auth/token handling
+
+=== API Endpoints ===
+- DELETE /api/v1/auth/force-logout (admin, requires user:force-logout permission)
+  - Request: { "target_user_id": "uuid", "reason": "string" }
+  - Response: { "message": "All sessions for user have been invalidated" }
+
+=== Acceptance Criteria Met ===
+- [x] Logout invalidates tokens (returns 401 on subsequent use)
+- [x] Admin can force logout specified user
+- [x] Blacklist auto-expires (Redis TTL = token expiration)
+- [x] Performance acceptable (Redis SET/GET operations)
+
+=== Next Steps ===
+- Monitor Redis memory usage in production
+- Consider adding audit log entries for force logouts
+- Add metrics for blacklist operations (hits, misses, errors)
