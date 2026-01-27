@@ -28711,3 +28711,94 @@ Created the `printing` domain module at `backend/internal/domain/printing/` with
 === Next Steps ===
 - PRINT-BE-002: Implement PDF generation engine with wkhtmltopdf
 - PRINT-BE-003: Implement template engine with Go html/template
+
+================================================================================
+2025-01-27 - PRINT-BE-002: PDF生成引擎实现 (wkhtmltopdf)
+================================================================================
+
+=== Implementation Details ===
+
+Created the PDF generation engine infrastructure at `backend/internal/infrastructure/printing/`:
+
+**Files Created:**
+1. `doc.go` - Package documentation for the printing infrastructure
+2. `renderer.go` - Core interfaces and types:
+   - `PDFRenderer` interface for HTML to PDF conversion
+   - `RenderRequest` struct with paper size, margins, orientation, timeout support
+   - `RenderResult` struct with PDF data, page count, render duration
+   - `RenderError` type with error codes for different failure scenarios
+
+3. `wkhtmltopdf.go` - WkhtmltopdfRenderer implementation:
+   - Executes wkhtmltopdf command-line tool
+   - Supports all paper sizes (A4, A5, 58mm/80mm receipt, 241mm continuous)
+   - Configurable margins, orientation, DPI, image quality
+   - Header and footer HTML support with proper temp file cleanup
+   - JavaScript enable/disable option
+   - Local file access control (security)
+   - Context-aware timeout control (default 30s)
+   - Page count estimation from PDF data
+
+4. `storage.go` - FileSystemStorage implementation:
+   - PDF storage path: `/data/prints/{tenant_id}/{year}/{month}/{job_id}.pdf`
+   - Multi-tenant isolation via tenant ID in path
+   - Path traversal attack prevention (containsDotDot, absolute path checks)
+   - Additional security: resolved path must stay under base directory
+   - Context cancellation support
+   - Cleanup of files older than specified duration
+   - URL generation for stored PDFs
+
+5. `renderer_test.go` - Comprehensive tests for renderer (16 test cases)
+6. `storage_test.go` - Comprehensive tests for storage (14 test cases)
+
+**Docker Updates (backend/Dockerfile):**
+- Added wkhtmltopdf package installation
+- Added Chinese fonts (font-noto-cjk) for PDF generation
+- Added fontconfig and ttf-freefont for font compatibility
+- Created /data/prints directory for PDF storage
+- Set proper ownership for non-root user
+
+=== Verification ===
+- ✅ All 62 unit tests passing (`go test ./internal/infrastructure/printing/... -v`)
+- ✅ Full backend build succeeds (`go build ./...`)
+- ✅ Code review completed (addressed CRITICAL and HIGH issues)
+- ✅ Security review: Path traversal protection, temp file cleanup
+- ✅ Type checking passes
+
+=== Security Considerations ===
+1. **Path Traversal Protection**: 
+   - Raw path checked for ".." before normalization
+   - Resolved absolute path verified to stay under base directory
+   - Suspicious paths logged for security monitoring
+
+2. **Temp File Management**:
+   - All temp files (HTML input, PDF output, headers, footers) cleaned up via defer
+   - tempFiles struct tracks header/footer paths for cleanup
+
+3. **Local File Access**:
+   - Disabled by default to prevent SSRF attacks
+   - Can be enabled per-request if needed (with caution warning in docs)
+
+=== Design Decisions ===
+1. **wkhtmltopdf over chromedp**: Lighter weight, better for container deployment
+2. **File system storage**: Simple and reliable for single-node deployment
+3. **Tenant-based paths**: Natural multi-tenant isolation
+4. **Context-aware operations**: Proper cancellation and timeout support
+
+=== Key Files Modified ===
+- backend/internal/infrastructure/printing/doc.go (new)
+- backend/internal/infrastructure/printing/renderer.go (new)
+- backend/internal/infrastructure/printing/wkhtmltopdf.go (new)
+- backend/internal/infrastructure/printing/storage.go (new)
+- backend/internal/infrastructure/printing/renderer_test.go (new)
+- backend/internal/infrastructure/printing/storage_test.go (new)
+- backend/Dockerfile (updated)
+
+=== Notes ===
+- Integration tests with actual wkhtmltopdf binary not included (requires binary installation)
+- Performance testing should be done in CI/CD with actual rendering workloads
+- The splitPath function is used by containsDotDot for security checks
+
+=== Next Steps ===
+- PRINT-BE-003: Implement template engine with Go html/template
+- PRINT-BE-004: Implement print service API (handlers, routes)
+- PRINT-BE-005/006: Create default print templates for documents
