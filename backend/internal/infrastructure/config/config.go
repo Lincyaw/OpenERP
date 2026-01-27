@@ -140,6 +140,10 @@ type TelemetryConfig struct {
 	SamplingRatio     float64 // Sampling ratio (0.0-1.0, 1.0 = 100%)
 	ServiceName       string  // Service name for traces
 	Insecure          bool    // Use insecure (non-TLS) connection (development only)
+	// Database tracing options
+	DBTraceEnabled    bool          // Enable database query tracing (otelgorm)
+	DBLogFullSQL      bool          // Log full SQL statements (dev only, disable in prod for security)
+	DBSlowQueryThresh time.Duration // Slow query threshold for warnings (default: 200ms)
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -264,6 +268,9 @@ func Load() (*Config, error) {
 			SamplingRatio:     v.GetFloat64("telemetry.sampling_ratio"),
 			ServiceName:       v.GetString("telemetry.service_name"),
 			Insecure:          v.GetBool("telemetry.insecure"),
+			DBTraceEnabled:    v.GetBool("telemetry.db_trace_enabled"),
+			DBLogFullSQL:      v.GetBool("telemetry.db_log_full_sql"),
+			DBSlowQueryThresh: v.GetDuration("telemetry.db_slow_query_threshold"),
 		},
 	}
 
@@ -436,6 +443,12 @@ func applyDefaults(cfg *Config) {
 		cfg.Telemetry.ServiceName = "erp-backend"
 	}
 	// Note: Insecure defaults to false for safety (TLS enabled by default)
+	// Database tracing defaults - enabled by default when telemetry is enabled
+	// DBTraceEnabled defaults to false (needs explicit enable)
+	if cfg.Telemetry.DBSlowQueryThresh == 0 {
+		cfg.Telemetry.DBSlowQueryThresh = 200 * time.Millisecond // 200ms default as per spec
+	}
+	// Note: DBLogFullSQL defaults to false for security (disable in production)
 }
 
 // validate performs validation on the configuration
@@ -485,6 +498,10 @@ func (c *Config) validate() error {
 			if !c.Swagger.RequireAuth && len(c.Swagger.AllowedIPs) == 0 {
 				return fmt.Errorf("swagger endpoint must be disabled, require authentication, or have IP restriction in production")
 			}
+		}
+		// Database tracing: full SQL logging is a security risk in production
+		if c.Telemetry.DBLogFullSQL {
+			return fmt.Errorf("telemetry.db_log_full_sql must be false in production to prevent sensitive data exposure in traces")
 		}
 	}
 

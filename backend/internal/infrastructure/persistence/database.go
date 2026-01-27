@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/erp/backend/internal/infrastructure/config"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -12,26 +14,34 @@ import (
 
 // Database holds the database connection and provides methods for database operations
 type Database struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	logger *zap.Logger
 }
 
 // NewDatabase creates a new database connection with the given configuration
 func NewDatabase(cfg *config.DatabaseConfig) (*Database, error) {
-	return newDatabaseWithLogLevel(cfg, logger.Silent)
+	return newDatabaseWithLogLevel(cfg, logger.Silent, nil, nil)
 }
 
 // NewDatabaseWithLogger creates a new database connection with custom logger settings
 func NewDatabaseWithLogger(cfg *config.DatabaseConfig, logLevel logger.LogLevel) (*Database, error) {
-	return newDatabaseWithLogLevel(cfg, logLevel)
+	return newDatabaseWithLogLevel(cfg, logLevel, nil, nil)
 }
 
 // NewDatabaseWithCustomLogger creates a new database connection with a custom GORM logger
 func NewDatabaseWithCustomLogger(cfg *config.DatabaseConfig, gormLogger logger.Interface) (*Database, error) {
-	return newDatabaseWithCustomLogger(cfg, gormLogger)
+	return newDatabaseWithCustomLogger(cfg, gormLogger, nil, nil)
+}
+
+// NewDatabaseWithTracing creates a new database connection with OpenTelemetry tracing enabled.
+// The telemetryCfg controls database tracing options (slow query threshold, SQL logging).
+// The zapLogger is used for logging tracing-related messages.
+func NewDatabaseWithTracing(cfg *config.DatabaseConfig, gormLogger logger.Interface, telemetryCfg *config.TelemetryConfig, zapLogger *zap.Logger) (*Database, error) {
+	return newDatabaseWithCustomLogger(cfg, gormLogger, telemetryCfg, zapLogger)
 }
 
 // newDatabaseWithLogLevel is the internal function that creates database connections
-func newDatabaseWithLogLevel(cfg *config.DatabaseConfig, logLevel logger.LogLevel) (*Database, error) {
+func newDatabaseWithLogLevel(cfg *config.DatabaseConfig, logLevel logger.LogLevel, telemetryCfg *config.TelemetryConfig, zapLogger *zap.Logger) (*Database, error) {
 	dsn := cfg.DSN()
 	gormLogger := logger.Default.LogMode(logLevel)
 
@@ -44,11 +54,11 @@ func newDatabaseWithLogLevel(cfg *config.DatabaseConfig, logLevel logger.LogLeve
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	return configureConnectionPool(db, cfg)
+	return configureConnectionPool(db, cfg, telemetryCfg, zapLogger)
 }
 
 // newDatabaseWithCustomLogger creates database connection with a custom logger
-func newDatabaseWithCustomLogger(cfg *config.DatabaseConfig, customLogger logger.Interface) (*Database, error) {
+func newDatabaseWithCustomLogger(cfg *config.DatabaseConfig, customLogger logger.Interface, telemetryCfg *config.TelemetryConfig, zapLogger *zap.Logger) (*Database, error) {
 	dsn := cfg.DSN()
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -60,11 +70,11 @@ func newDatabaseWithCustomLogger(cfg *config.DatabaseConfig, customLogger logger
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	return configureConnectionPool(db, cfg)
+	return configureConnectionPool(db, cfg, telemetryCfg, zapLogger)
 }
 
 // configureConnectionPool sets up the connection pool and pings the database
-func configureConnectionPool(db *gorm.DB, cfg *config.DatabaseConfig) (*Database, error) {
+func configureConnectionPool(db *gorm.DB, cfg *config.DatabaseConfig, telemetryCfg *config.TelemetryConfig, zapLogger *zap.Logger) (*Database, error) {
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
@@ -79,7 +89,27 @@ func configureConnectionPool(db *gorm.DB, cfg *config.DatabaseConfig) (*Database
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return &Database{DB: db}, nil
+	// Configure database tracing if enabled
+	if telemetryCfg != nil && telemetryCfg.DBTraceEnabled && telemetryCfg.Enabled {
+		if zapLogger == nil {
+			zapLogger = zap.NewNop()
+		}
+		tracingCfg := telemetry.DBTracingConfig{
+			Enabled:          true,
+			LogFullSQL:       telemetryCfg.DBLogFullSQL,
+			SlowQueryThresh:  telemetryCfg.DBSlowQueryThresh,
+			DBSystem:         "postgresql",
+			WithoutVariables: !telemetryCfg.DBLogFullSQL, // Hide variables unless full SQL is requested
+		}
+		plugin := telemetry.NewDBTracingPlugin(tracingCfg, zapLogger)
+		if err := plugin.RegisterOtelGorm(db); err != nil {
+			return nil, fmt.Errorf("failed to register database tracing plugin: %w", err)
+		}
+		// Note: DBTracingPlugin.RegisterOtelGorm already registers slow query callbacks
+		// via otelgorm and custom callbacks, so we don't need additional timing callbacks
+	}
+
+	return &Database{DB: db, logger: zapLogger}, nil
 }
 
 // Close closes the database connection

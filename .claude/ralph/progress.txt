@@ -26760,3 +26760,115 @@ for transaction records. This could lead to orphaned references in historical or
 === Next Steps ===
 - OBS-METRICS-001: Configure Prometheus metrics pipeline
 - Consider adding custom spans for database queries and external service calls
+
+---
+
+2026-01-27 - Task ID: OBS-TRACE-003 - GORM 数据库链路追踪打桩 (otelgorm)
+
+=== Implementation Details ===
+
+**Summary**: Integrated otelgorm plugin for automatic database query tracing with slow query detection and error marking.
+
+**Files Created**:
+1. `backend/internal/infrastructure/telemetry/db_tracing.go` (NEW)
+   - DBTracingConfig: Configuration for database tracing options
+   - DBTracingPlugin: Wrapper around otelgorm with slow query detection
+   - registerBeforeCallbacks: Sets query start time for accurate timing
+   - registerSlowQueryCallback: After callbacks for slow query detection and error marking
+   - DBTracingCallback: Standalone callback for timing (exported for flexibility)
+   - WithQueryStartTime: Helper to inject query start time into context
+
+2. `backend/internal/infrastructure/telemetry/db_tracing_test.go` (NEW)
+   - 20+ test cases covering all functionality
+   - Tests for enabled/disabled states, slow query detection, error marking
+   - Tests for security defaults (SQL parameters hidden by default)
+   - Integration tests with otelgorm
+   - Benchmark for callback performance
+
+**Files Modified**:
+1. `backend/internal/infrastructure/config/config.go`
+   - Added DBTraceEnabled, DBLogFullSQL, DBSlowQueryThresh to TelemetryConfig
+   - Added config loading for new options
+   - Added defaults (DBSlowQueryThresh = 200ms)
+   - Added production validation: DBLogFullSQL must be false in production
+
+2. `backend/internal/infrastructure/persistence/database.go`
+   - Added NewDatabaseWithTracing function
+   - Updated configureConnectionPool to register otelgorm plugin
+   - Added logger field to Database struct
+
+3. `backend/cmd/server/main.go`
+   - Updated to use NewDatabaseWithTracing instead of NewDatabaseWithCustomLogger
+   - Added tracing_enabled log field
+
+4. `backend/config.toml`
+   - Added database tracing configuration section
+   - db_trace_enabled = true
+   - db_log_full_sql = false (secure default)
+   - db_slow_query_threshold = "200ms"
+
+5. `backend/go.mod`
+   - Added github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.2
+   - Added gorm.io/driver/sqlite (for tests)
+
+6. `backend/internal/infrastructure/config/config_test.go`
+   - Added tests for DB tracing config loading
+   - Added tests for production validation of DBLogFullSQL
+
+**Key Design Decisions**:
+1. Security: DBLogFullSQL defaults to false and is BLOCKED in production to prevent PII exposure
+2. Performance: Slow query detection uses context-based timing for accurate measurement
+3. Attributes: Standard semconv attributes (db.system, db.statement, db.operation) via otelgorm, plus custom attributes (db.rows_affected, db.sql.table, db.slow_query, db.query_duration_ms)
+4. Error handling: ErrRecordNotFound is NOT marked as error (expected behavior), other errors are properly marked
+
+**Span Attributes** (via otelgorm + custom):
+- db.system = postgresql
+- db.statement (sanitized or full based on config)
+- db.operation (SELECT/INSERT/UPDATE/DELETE)
+- db.sql.table (custom)
+- db.rows_affected (custom)
+- db.slow_query (custom, boolean)
+- db.query_duration_ms (custom, for slow queries)
+
+**Slow Query Detection**:
+- Threshold configurable via db_slow_query_threshold (default 200ms)
+- Slow queries emit "slow_query_warning" event
+- Slow queries set db.slow_query = true and db.query_duration_ms attributes
+
+=== Verification ===
+- [x] go build ./... succeeds
+- [x] go test ./internal/infrastructure/telemetry/... passes (db_tracing tests: 20+ cases)
+- [x] go test ./internal/infrastructure/config/... passes
+- [x] go vet passes for all modified packages
+- [x] Code review passed with CRITICAL/HIGH issues fixed:
+      - Changed db_log_full_sql default to false in config.toml
+      - Added production validation blocking db_log_full_sql = true
+      - Removed duplicate callback registration
+- [x] No debug statements
+
+=== Acceptance Criteria Met ===
+- [x] 每个数据库操作生成子 Span (via otelgorm.NewPlugin())
+- [x] Span 正确链接到父 HTTP 请求 Span (automatic via otel context propagation)
+- [x] 慢查询标记为 warning (via slow_query_warning event and db.slow_query attribute)
+- [x] 查询错误正确标记 span.SetStatus(codes.Error) (via slowQueryCallback)
+- [x] db.system = postgresql (via otelgorm WithDBName option)
+- [x] db.statement sanitized in production (via otelgorm WithoutQueryVariables)
+- [x] db.sql.table and db.rows_affected attributes (via custom callbacks)
+
+=== Security Notes ===
+- DBLogFullSQL is BLOCKED in production via config validation
+- SQL parameters are hidden by default (WithoutVariables: true when DBLogFullSQL = false)
+- Production environments will fail to start if db_log_full_sql = true
+
+=== Configuration Example ===
+```toml
+[telemetry]
+enabled = true
+db_trace_enabled = true
+db_log_full_sql = false  # MUST be false in production
+db_slow_query_threshold = "200ms"
+```
+
+=== Next Steps ===
+- OBS-TRACE-004: 应用层业务流程打桩 (if exists)
+- OBS-METRICS-001: Configure Prometheus metrics pipeline

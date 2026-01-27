@@ -5797,7 +5797,7 @@
       "- 慢查询标记为 warning",
       "- 查询错误正确标记 span.SetStatus(codes.Error)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Tracing",
     "affectedModules": [
       "backend/internal/infrastructure/persistence/gorm/connection.go"

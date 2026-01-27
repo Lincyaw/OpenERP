@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -258,6 +259,28 @@ func TestLoad_ProductionValidation(t *testing.T) {
 		require.NoError(t, err)
 		assert.False(t, cfg.Swagger.Enabled)
 	})
+
+	t.Run("fails if db_log_full_sql enabled in production", func(t *testing.T) {
+		clearEnv()
+		setValidProductionBase()
+		os.Setenv("ERP_TELEMETRY_DB_LOG_FULL_SQL", "true")
+
+		_, err := Load()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "db_log_full_sql must be false in production")
+	})
+
+	t.Run("passes with db_log_full_sql disabled in production", func(t *testing.T) {
+		clearEnv()
+		setValidProductionBase()
+		os.Setenv("ERP_TELEMETRY_DB_LOG_FULL_SQL", "false")
+		os.Setenv("ERP_TELEMETRY_DB_TRACE_ENABLED", "true")
+
+		cfg, err := Load()
+		require.NoError(t, err)
+		assert.True(t, cfg.Telemetry.DBTraceEnabled)
+		assert.False(t, cfg.Telemetry.DBLogFullSQL)
+	})
 }
 
 func TestDatabaseConfig_DSN(t *testing.T) {
@@ -311,10 +334,13 @@ func TestDatabaseConfig_DSN(t *testing.T) {
 
 func TestLoad_TelemetryConfig(t *testing.T) {
 	originalEnv := map[string]string{
-		"ERP_TELEMETRY_ENABLED":            os.Getenv("ERP_TELEMETRY_ENABLED"),
-		"ERP_TELEMETRY_COLLECTOR_ENDPOINT": os.Getenv("ERP_TELEMETRY_COLLECTOR_ENDPOINT"),
-		"ERP_TELEMETRY_SAMPLING_RATIO":     os.Getenv("ERP_TELEMETRY_SAMPLING_RATIO"),
-		"ERP_TELEMETRY_SERVICE_NAME":       os.Getenv("ERP_TELEMETRY_SERVICE_NAME"),
+		"ERP_TELEMETRY_ENABLED":                 os.Getenv("ERP_TELEMETRY_ENABLED"),
+		"ERP_TELEMETRY_COLLECTOR_ENDPOINT":      os.Getenv("ERP_TELEMETRY_COLLECTOR_ENDPOINT"),
+		"ERP_TELEMETRY_SAMPLING_RATIO":          os.Getenv("ERP_TELEMETRY_SAMPLING_RATIO"),
+		"ERP_TELEMETRY_SERVICE_NAME":            os.Getenv("ERP_TELEMETRY_SERVICE_NAME"),
+		"ERP_TELEMETRY_DB_TRACE_ENABLED":        os.Getenv("ERP_TELEMETRY_DB_TRACE_ENABLED"),
+		"ERP_TELEMETRY_DB_LOG_FULL_SQL":         os.Getenv("ERP_TELEMETRY_DB_LOG_FULL_SQL"),
+		"ERP_TELEMETRY_DB_SLOW_QUERY_THRESHOLD": os.Getenv("ERP_TELEMETRY_DB_SLOW_QUERY_THRESHOLD"),
 	}
 
 	defer func() {
@@ -402,5 +428,26 @@ func TestLoad_TelemetryConfig(t *testing.T) {
 		cfg, err := Load()
 		require.NoError(t, err)
 		assert.True(t, cfg.Telemetry.Insecure)
+	})
+
+	t.Run("loads database tracing config", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("ERP_TELEMETRY_DB_TRACE_ENABLED", "true")
+		os.Setenv("ERP_TELEMETRY_DB_LOG_FULL_SQL", "false")
+		os.Setenv("ERP_TELEMETRY_DB_SLOW_QUERY_THRESHOLD", "500ms")
+
+		cfg, err := Load()
+		require.NoError(t, err)
+		assert.True(t, cfg.Telemetry.DBTraceEnabled)
+		assert.False(t, cfg.Telemetry.DBLogFullSQL)
+		assert.Equal(t, 500*time.Millisecond, cfg.Telemetry.DBSlowQueryThresh)
+	})
+
+	t.Run("defaults db_slow_query_threshold to 200ms", func(t *testing.T) {
+		clearEnv()
+
+		cfg, err := Load()
+		require.NoError(t, err)
+		assert.Equal(t, 200*time.Millisecond, cfg.Telemetry.DBSlowQueryThresh)
 	})
 }

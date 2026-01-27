@@ -109,8 +109,8 @@ func main() {
 	gormLogLevel := logger.MapGormLogLevel(cfg.Log.Level)
 	gormLog := logger.NewGormLogger(log, gormLogLevel)
 
-	// Initialize database connection with custom logger
-	db, err := persistence.NewDatabaseWithCustomLogger(&cfg.Database, gormLog)
+	// Initialize database connection with custom logger and tracing
+	db, err := persistence.NewDatabaseWithTracing(&cfg.Database, gormLog, &cfg.Telemetry, log)
 	if err != nil {
 		log.Fatal("Failed to connect to database", zap.Error(err))
 	}
@@ -119,7 +119,9 @@ func main() {
 			log.Error("Error closing database", zap.Error(err))
 		}
 	}()
-	log.Info("Database connected successfully")
+	log.Info("Database connected successfully",
+		zap.Bool("tracing_enabled", cfg.Telemetry.DBTraceEnabled),
+	)
 
 	// Initialize repositories
 	productRepo := persistence.NewGormProductRepository(db.DB)

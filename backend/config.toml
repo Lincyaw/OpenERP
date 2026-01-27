@@ -124,3 +124,14 @@ service_name = "erp-backend"
 # Use insecure (non-TLS) connection to collector
 # Set to true for local development, false for production (TLS required)
 insecure = true
+
+# Database tracing options (otelgorm)
+# Enable database query tracing
+db_trace_enabled = true
+# Log full SQL statements including query parameters
+# WARNING: MUST be false in production to avoid exposing sensitive data in traces
+# Only enable in development for debugging purposes
+db_log_full_sql = false
+# Slow query threshold - queries exceeding this duration are marked as slow
+# Default: 200ms, adjust based on your performance requirements
+db_slow_query_threshold = "200ms"
