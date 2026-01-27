@@ -8566,11 +8566,11 @@
       "- 各角色按预期访问 API",
       "- 未授权访问返回 403"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 11 Security",
     "affectedModules": [
-      "backend/migrations/seed-data.sql",
-      "backend/internal/domain/auth/permissions.go"
+      "backend/migrations/000037_add_feature_flag_permissions.up.sql",
+      "backend/migrations/000037_add_feature_flag_permissions.down.sql"
     ],
     "blockedBy": [
       "FF-BE-007"

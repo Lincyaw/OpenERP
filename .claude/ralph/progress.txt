@@ -32019,3 +32019,69 @@ All loadgen tests pass:
 
 === Next Steps ===
 - FF-INT-001: E2E integration tests for Feature Flag management
+
+---
+
+2026-01-28 - Task ID: FF-BE-008 - Feature Flag 权限配置
+
+=== Implementation Details ===
+- Created migration file 000037_add_feature_flag_permissions.up.sql
+- Created rollback file 000037_add_feature_flag_permissions.down.sql
+- Added new DEVELOPER role (system role) with sort_order 8
+- Defined 7 feature_flag permissions:
+  - feature_flag:read - View flag configuration
+  - feature_flag:create - Create new flags
+  - feature_flag:update - Modify flag settings
+  - feature_flag:delete - Archive flags
+  - feature_flag:override - Create/delete overrides
+  - feature_flag:audit - View audit logs
+  - feature_flag:evaluate - Evaluate flag values
+
+=== Role Permission Matrix ===
+| Role       | read | create | update | delete | override | audit | evaluate |
+|------------|------|--------|--------|--------|----------|-------|----------|
+| ADMIN      | ✓    | ✓      | ✓      | ✓      | ✓        | ✓     | ✓        |
+| MANAGER    | ✓    | ✓      | ✓      | ✗      | ✓        | ✗     | ✓        |
+| DEVELOPER  | ✓    | ✓      | ✓      | ✗      | ✗        | ✗     | ✓        |
+| SALES      | ✓    | ✗      | ✗      | ✗      | ✗        | ✗     | ✓        |
+| PURCHASER  | ✓    | ✗      | ✗      | ✗      | ✗        | ✗     | ✓        |
+| WAREHOUSE  | ✓    | ✗      | ✗      | ✗      | ✗        | ✗     | ✓        |
+| CASHIER    | ✓    | ✗      | ✗      | ✗      | ✗        | ✗     | ✓        |
+| ACCOUNTANT | ✓    | ✗      | ✗      | ✗      | ✗        | ✗     | ✓        |
+
+=== Key Files Created ===
+- backend/migrations/000037_add_feature_flag_permissions.up.sql
+- backend/migrations/000037_add_feature_flag_permissions.down.sql
+
+=== Verification ===
+- Migration executed successfully (version 37)
+- All 27 feature_flag permissions inserted into role_permissions table
+- DEVELOPER role created with ID 00000000-0000-0000-0000-000000000017
+- Feature flag handler tests: PASSED (25/25 tests)
+- Permission middleware tests: PASSED (22/22 tests)
+
+=== Design Decisions ===
+1. Added 'evaluate' permission for all roles - needed for runtime flag evaluation in their operations
+2. ADMIN gets additional 'feature_flag:admin' permission for cross-tenant operations
+3. DEVELOPER role positioned at sort_order 8 (after ACCOUNTANT at 7)
+4. Used idempotent INSERT ... WHERE NOT EXISTS pattern for safe re-runs
+5. Used explicit UUID casts (::uuid) to avoid PostgreSQL type inference issues
+
+=== Acceptance Criteria Met ===
+- ✅ All 7 feature_flag permissions defined in migration file
+- ✅ DEVELOPER role created as a new system role
+- ✅ ADMIN: all permissions (read, create, update, delete, override, audit, evaluate)
+- ✅ MANAGER: read, create, update, override, evaluate (no delete, no audit)
+- ✅ DEVELOPER: read, create, update, evaluate (basic development access)
+- ✅ Other roles: read, evaluate (view-only + runtime evaluation)
+- ✅ Migration executed without errors
+- ✅ Permissions correctly inserted in database
+
+=== Notes ===
+- The routes in backend/cmd/server/main.go already use RequirePermission middleware for all feature flag endpoints
+- Unauthorized access will return 403 Forbidden with proper error format
+- Migration is reversible via down migration which removes all feature_flag permissions
+
+=== Next Steps ===
+- FF-BE-009: Feature Flag 中间件 (请求级注入) - depends on this task
+- FF-INT-001: E2E integration tests - depends on this task
