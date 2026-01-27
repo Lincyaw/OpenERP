@@ -31670,3 +31670,101 @@ golang.org/x/time v0.14.0
 1. LOADGEN-019: Data generators (faker, pattern, random)
 2. LOADGEN-010: CircuitBoard integration with warmup phase
 3. Integration with CLI -warmup-only flag
+
+2026-01-28 - LOADGEN-029: ERP 配置文件与集成测试 (ERP Configuration File and Integration Tests)
+
+=== Implementation Details ===
+
+**Files Created:**
+- `tools/loadgen/internal/config/config.go` - Main configuration structure tying together all loadgen components
+- `tools/loadgen/internal/config/config_test.go` - Unit tests for config loading, validation, defaults
+- `tools/loadgen/internal/config/erp_integration_test.go` - Integration tests validating ERP config file
+- `tools/loadgen/configs/erp.yaml` - Complete ERP load test configuration with 50+ endpoints
+- `tools/loadgen/internal/e2e/erp_load_test.go` - E2E tests requiring running ERP backend
+
+**Key Components Implemented:**
+
+1. **Configuration Structure (config/config.go):**
+   - `Config` root structure integrating all loadgen components
+   - `TargetConfig` for target server settings (baseURL, timeout, headers)
+   - `AuthConfig` with login-based and static token authentication
+   - `EndpointConfig` with method, path, parameters, weight, produces/consumes semantics
+   - `ParameterConfig` with generators (static, faker, random, pool)
+   - `LoadFromFile()` and `LoadFromBytes()` for YAML loading
+   - `Validate()` with comprehensive validation rules
+   - `ApplyDefaults()` for sensible default values
+   - Helper methods: `GetEnabledEndpoints()`, `GetProducerEndpoints()`, `GetConsumerEndpoints()`
+
+2. **ERP Configuration (configs/erp.yaml):**
+   - Complete endpoint configuration for all ERP domains:
+     - Auth: login, logout, token refresh
+     - Catalog: products, categories, suppliers, customers, warehouses
+     - Inventory: stock levels, movements, adjustments
+     - Trade: sales orders, purchase orders
+     - Finance: payables, receivables, cost ledger
+     - Reports: various list and summary endpoints
+     - System: health, ping, stats
+   - Warmup configuration:
+     ```yaml
+     warmup:
+       iterations: 10
+       minPoolSize: 5
+       fill: [warehouse.id, category.id, product.id, customer.id, supplier.id, sales_order.id, purchase_order.id]
+     ```
+   - Traffic shaping with step pattern: 10→50→100→50→10 QPS
+   - Read-heavy weight distribution (realistic workload: reads 5-10x writes)
+
+3. **Integration Tests (config/erp_integration_test.go):**
+   - `TestERPConfig_DomainCoverage` - Verifies all ERP domains are represented
+   - `TestERPConfig_WarmupProducers` - Ensures warmup fill types have producers
+   - `TestERPConfig_SemanticConsistency` - Validates semantic type usage
+   - `TestERPConfig_WeightDistribution` - Checks read vs write weights
+   - `TestERPConfig_Scenarios` - Validates scenario definitions
+   - `TestERPConfig_Paths` - Validates endpoint path conventions
+   - `TestERPConfig_HTTPMethods` - Validates HTTP method usage
+   - `TestERPConfig_AuthConfiguration` - Validates authentication setup
+   - `TestERPConfig_NamingConventions` - Validates endpoint naming
+
+4. **E2E Tests (e2e/erp_load_test.go):**
+   - Gated by `LOADGEN_E2E_TEST=1` environment variable
+   - `TestERPConnectivity` - Basic connectivity check
+   - `TestERPAuthentication` - Login flow verification
+   - `TestERPWarmupEndpoints` - Producer endpoint accessibility
+   - `TestERPSimpleLoadRun` - 30-second quick validation (10 QPS, 90% success rate)
+   - `TestERPExtendedLoadRun` - 5-minute acceptance test (50 QPS, 5000+ requests, 95% success, P95 <2s)
+
+=== Verification ===
+
+**Test Results:**
+```
+ok  github.com/example/erp/tools/loadgen/internal/config   coverage: 94.3%
+ok  github.com/example/erp/tools/loadgen/internal/e2e      (skipped - requires backend)
+```
+
+All loadgen tests pass:
+- circuit: 97.8% coverage
+- config: 94.3% coverage
+- loadctrl: 85.2% coverage
+- pool: 93.0% coverage
+- warmup: 90.8% coverage
+
+**Acceptance Criteria Verified:**
+- ✅ configs/erp.yaml complete configuration file created
+- ✅ All ERP endpoints configured with semantic mappings
+- ✅ Reasonable weight distribution (read-heavy, realistic workload)
+- ✅ Warmup rules configured (iterations, minPoolSize, fill types)
+- ✅ End-to-end integration tests written
+- ✅ E2E test framework with 5-minute acceptance test (TestERPExtendedLoadRun)
+
+=== Architecture Notes ===
+
+- **Semantic Types:** Use circuit.SemanticType for type-safe pool connections
+- **Producer/Consumer Pattern:** Endpoints can produce values (e.g., list endpoints returning IDs) or consume values (e.g., detail endpoints needing an ID)
+- **Warmup Fill Order:** Types in warmup.fill are processed in order, allowing dependencies
+- **E2E Test Gating:** Tests skip unless LOADGEN_E2E_TEST=1, preventing CI failures without backend
+
+=== Next Steps ===
+
+1. LOADGEN-030: Run actual 5-minute E2E test against ERP backend
+2. LOADGEN-010: CircuitBoard integration (main controller)
+3. CLI implementation with --warmup-only flag

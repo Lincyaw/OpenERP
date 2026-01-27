@@ -1,0 +1,969 @@
+# ERP Load Generator Configuration
+# This configuration defines load test scenarios for the ERP system.
+#
+# Semantic Types Convention:
+#   entity.<domain>.<field> - Entity identifiers (e.g., entity.customer.id)
+#   ref.<domain>.<field>    - Reference values (e.g., ref.product.code)
+#   enum.<domain>.<field>   - Enumerated values (e.g., enum.order.status)
+
+name: "ERP Load Test"
+description: "Comprehensive load test configuration for the ERP system"
+version: "1.0"
+
+# Target system configuration
+target:
+  baseURL: "http://localhost:8080"
+  apiVersion: "v1"
+  timeout: 30s
+  headers:
+    Accept: "application/json"
+    Content-Type: "application/json"
+
+# Authentication configuration
+auth:
+  type: "bearer"
+  login:
+    endpoint: "/auth/login"
+    method: "POST"
+    username: "admin"
+    password: "admin123"
+    tokenPath: "$.data.access_token"
+    refreshEndpoint: "/auth/refresh"
+    refreshInterval: 15m
+
+# Test duration
+duration: 5m
+
+# Traffic shaping configuration
+trafficShaper:
+  type: "step"
+  baseQPS: 10
+  step:
+    steps:
+      - qps: 10
+        duration: 30s
+        rampDuration: 10s
+      - qps: 50
+        duration: 60s
+        rampDuration: 20s
+      - qps: 100
+        duration: 120s
+        rampDuration: 30s
+      - qps: 50
+        duration: 60s
+        rampDuration: 10s
+      - qps: 10
+        duration: 30s
+        rampDuration: 10s
+    loop: false
+
+# Rate limiter configuration
+rateLimiter:
+  type: "token_bucket"
+  qps: 100
+  burstSize: 50
+
+# Worker pool configuration
+workerPool:
+  minSize: 5
+  maxSize: 100
+  initialSize: 10
+  taskQueueSize: 200
+
+# Load controller configuration
+controller:
+  adjustInterval: 100ms
+  adaptive: true
+  targetP95: 500ms
+  adaptiveReductionFactor: 0.1
+  adaptiveRecoveryFactor: 0.05
+  minQPS: 5
+  consecutiveBreachThreshold: 3
+  workerAutoScale: true
+  workerLatencyBuffer: 1.5
+  defaultAvgLatency: 50ms
+
+# Backpressure configuration
+backpressure:
+  strategy: "reduce"
+  errorRateThreshold: 0.1
+  latencyP99Threshold: 1s
+  warningErrorThreshold: 0.05
+  warningLatencyThreshold: 500ms
+  recoveryPeriod: 30s
+  checkInterval: 100ms
+  reductionFactor: 0.5
+
+# Metrics configuration
+metrics:
+  windowSize: 10s
+  bucketSize: 1s
+
+# Warmup phase configuration
+warmup:
+  iterations: 10
+  minPoolSize: 5
+  timeout: 3m
+  retryCount: 3
+  retryDelay: 1s
+  continueOnError: true
+  verbose: true
+  fill:
+    - "entity.warehouse.id"
+    - "entity.category.id"
+    - "entity.product.id"
+    - "entity.customer.id"
+    - "entity.supplier.id"
+    - "entity.sales_order.id"
+    - "entity.purchase_order.id"
+
+# Output configuration
+output:
+  type: "console"
+  reportInterval: 10s
+  verbose: false
+
+# ============================================================================
+# ENDPOINTS CONFIGURATION
+# ============================================================================
+# Organized by domain for clarity. Weights are relative - higher = more calls.
+# Weight distribution rationale:
+#   - Read operations (GET): Higher weights (common in real usage)
+#   - Write operations (POST/PUT): Lower weights (less frequent)
+#   - Admin operations: Lowest weights (rare)
+# ============================================================================
+
+endpoints:
+
+  # ==========================================================================
+  # AUTH DOMAIN
+  # ==========================================================================
+
+  - name: "auth.login"
+    description: "User login"
+    path: "/auth/login"
+    method: "POST"
+    weight: 1
+    tags: ["auth", "write"]
+    requiresAuth: false
+    body: |
+      {
+        "username": "admin",
+        "password": "admin123"
+      }
+    expectedStatus: 200
+    produces:
+      - semanticType: "token.access"
+        jsonPath: "$.data.access_token"
+      - semanticType: "token.refresh"
+        jsonPath: "$.data.refresh_token"
+
+  - name: "auth.me"
+    description: "Get current user info"
+    path: "/auth/me"
+    method: "GET"
+    weight: 5
+    tags: ["auth", "read"]
+
+  - name: "auth.refresh"
+    description: "Refresh access token"
+    path: "/auth/refresh"
+    method: "POST"
+    weight: 2
+    tags: ["auth", "write"]
+    body: |
+      {
+        "refresh_token": "{{.token.refresh}}"
+      }
+
+  # ==========================================================================
+  # CATALOG DOMAIN - Categories
+  # ==========================================================================
+
+  - name: "catalog.categories.list"
+    description: "List categories with pagination"
+    path: "/catalog/categories"
+    method: "GET"
+    weight: 15
+    tags: ["catalog", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.category.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+
+  - name: "catalog.categories.tree"
+    description: "Get category tree structure"
+    path: "/catalog/categories/tree"
+    method: "GET"
+    weight: 10
+    tags: ["catalog", "read"]
+
+  - name: "catalog.categories.roots"
+    description: "Get root categories"
+    path: "/catalog/categories/roots"
+    method: "GET"
+    weight: 5
+    tags: ["catalog", "read"]
+
+  - name: "catalog.categories.get"
+    description: "Get category by ID"
+    path: "/catalog/categories/{id}"
+    method: "GET"
+    weight: 10
+    tags: ["catalog", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.category.id"
+    consumes:
+      - "entity.category.id"
+
+  - name: "catalog.categories.children"
+    description: "Get category children"
+    path: "/catalog/categories/{id}/children"
+    method: "GET"
+    weight: 8
+    tags: ["catalog", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.category.id"
+    consumes:
+      - "entity.category.id"
+
+  - name: "catalog.categories.create"
+    description: "Create a new category"
+    path: "/catalog/categories"
+    method: "POST"
+    weight: 2
+    tags: ["catalog", "write", "producer"]
+    body: |
+      {
+        "name": "Category-{{.random.string:8}}",
+        "code": "CAT-{{.sequence:6}}",
+        "description": "Test category created by load generator"
+      }
+    expectedStatus: 201
+    produces:
+      - semanticType: "entity.category.id"
+        jsonPath: "$.data.id"
+
+  # ==========================================================================
+  # CATALOG DOMAIN - Products
+  # ==========================================================================
+
+  - name: "catalog.products.list"
+    description: "List products with pagination"
+    path: "/catalog/products"
+    method: "GET"
+    weight: 20
+    tags: ["catalog", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.product.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+      - semanticType: "ref.product.code"
+        jsonPath: "$.data[*].code"
+        multiple: true
+
+  - name: "catalog.products.get"
+    description: "Get product by ID"
+    path: "/catalog/products/{id}"
+    method: "GET"
+    weight: 15
+    tags: ["catalog", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.product.id"
+    consumes:
+      - "entity.product.id"
+
+  - name: "catalog.products.getByCode"
+    description: "Get product by code"
+    path: "/catalog/products/code/{code}"
+    method: "GET"
+    weight: 10
+    tags: ["catalog", "read"]
+    pathParams:
+      code:
+        semanticType: "ref.product.code"
+    consumes:
+      - "ref.product.code"
+
+  - name: "catalog.products.stats"
+    description: "Get product statistics"
+    path: "/catalog/products/stats/count"
+    method: "GET"
+    weight: 3
+    tags: ["catalog", "read", "stats"]
+
+  - name: "catalog.products.units"
+    description: "Get product units"
+    path: "/catalog/products/{id}/units"
+    method: "GET"
+    weight: 8
+    tags: ["catalog", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.product.id"
+    consumes:
+      - "entity.product.id"
+
+  - name: "catalog.products.create"
+    description: "Create a new product"
+    path: "/catalog/products"
+    method: "POST"
+    weight: 3
+    tags: ["catalog", "write", "producer"]
+    body: |
+      {
+        "name": "Product-{{.random.string:8}}",
+        "code": "SKU-{{.sequence:8}}",
+        "category_id": "{{.entity.category.id}}",
+        "description": "Test product created by load generator",
+        "base_unit": "pcs",
+        "sale_price": {{.random.float:10:1000}},
+        "cost_price": {{.random.float:5:500}}
+      }
+    expectedStatus: 201
+    consumes:
+      - "entity.category.id"
+    produces:
+      - semanticType: "entity.product.id"
+        jsonPath: "$.data.id"
+      - semanticType: "ref.product.code"
+        jsonPath: "$.data.code"
+
+  # ==========================================================================
+  # PARTNER DOMAIN - Customers
+  # ==========================================================================
+
+  - name: "partner.customers.list"
+    description: "List customers with pagination"
+    path: "/partner/customers"
+    method: "GET"
+    weight: 15
+    tags: ["partner", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.customer.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+
+  - name: "partner.customers.get"
+    description: "Get customer by ID"
+    path: "/partner/customers/{id}"
+    method: "GET"
+    weight: 12
+    tags: ["partner", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.customer.id"
+    consumes:
+      - "entity.customer.id"
+
+  - name: "partner.customers.balance"
+    description: "Get customer balance"
+    path: "/partner/customers/{id}/balance"
+    method: "GET"
+    weight: 8
+    tags: ["partner", "read", "finance"]
+    pathParams:
+      id:
+        semanticType: "entity.customer.id"
+    consumes:
+      - "entity.customer.id"
+
+  - name: "partner.customers.stats"
+    description: "Get customer statistics"
+    path: "/partner/customers/stats/count"
+    method: "GET"
+    weight: 3
+    tags: ["partner", "read", "stats"]
+
+  - name: "partner.customers.create"
+    description: "Create a new customer"
+    path: "/partner/customers"
+    method: "POST"
+    weight: 2
+    tags: ["partner", "write", "producer"]
+    body: |
+      {
+        "name": "Customer-{{.random.string:8}}",
+        "code": "CUST-{{.sequence:6}}",
+        "contact_person": "{{.faker.name}}",
+        "phone": "{{.faker.phone}}",
+        "email": "{{.faker.email}}",
+        "address": "{{.faker.address}}"
+      }
+    expectedStatus: 201
+    produces:
+      - semanticType: "entity.customer.id"
+        jsonPath: "$.data.id"
+
+  # ==========================================================================
+  # PARTNER DOMAIN - Suppliers
+  # ==========================================================================
+
+  - name: "partner.suppliers.list"
+    description: "List suppliers with pagination"
+    path: "/partner/suppliers"
+    method: "GET"
+    weight: 12
+    tags: ["partner", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.supplier.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+
+  - name: "partner.suppliers.get"
+    description: "Get supplier by ID"
+    path: "/partner/suppliers/{id}"
+    method: "GET"
+    weight: 10
+    tags: ["partner", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.supplier.id"
+    consumes:
+      - "entity.supplier.id"
+
+  - name: "partner.suppliers.stats"
+    description: "Get supplier statistics"
+    path: "/partner/suppliers/stats/count"
+    method: "GET"
+    weight: 3
+    tags: ["partner", "read", "stats"]
+
+  - name: "partner.suppliers.create"
+    description: "Create a new supplier"
+    path: "/partner/suppliers"
+    method: "POST"
+    weight: 2
+    tags: ["partner", "write", "producer"]
+    body: |
+      {
+        "name": "Supplier-{{.random.string:8}}",
+        "code": "SUPP-{{.sequence:6}}",
+        "contact_person": "{{.faker.name}}",
+        "phone": "{{.faker.phone}}",
+        "email": "{{.faker.email}}",
+        "address": "{{.faker.address}}"
+      }
+    expectedStatus: 201
+    produces:
+      - semanticType: "entity.supplier.id"
+        jsonPath: "$.data.id"
+
+  # ==========================================================================
+  # PARTNER DOMAIN - Warehouses
+  # ==========================================================================
+
+  - name: "partner.warehouses.list"
+    description: "List warehouses"
+    path: "/partner/warehouses"
+    method: "GET"
+    weight: 10
+    tags: ["partner", "read", "list"]
+    produces:
+      - semanticType: "entity.warehouse.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+
+  - name: "partner.warehouses.get"
+    description: "Get warehouse by ID"
+    path: "/partner/warehouses/{id}"
+    method: "GET"
+    weight: 8
+    tags: ["partner", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.warehouse.id"
+    consumes:
+      - "entity.warehouse.id"
+
+  - name: "partner.warehouses.default"
+    description: "Get default warehouse"
+    path: "/partner/warehouses/default"
+    method: "GET"
+    weight: 5
+    tags: ["partner", "read"]
+    produces:
+      - semanticType: "entity.warehouse.id"
+        jsonPath: "$.data.id"
+
+  - name: "partner.warehouses.stats"
+    description: "Get warehouse statistics"
+    path: "/partner/warehouses/stats/count"
+    method: "GET"
+    weight: 3
+    tags: ["partner", "read", "stats"]
+
+  # ==========================================================================
+  # INVENTORY DOMAIN
+  # ==========================================================================
+
+  - name: "inventory.items.list"
+    description: "List inventory items"
+    path: "/inventory/items"
+    method: "GET"
+    weight: 15
+    tags: ["inventory", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.inventory.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+
+  - name: "inventory.items.get"
+    description: "Get inventory item by ID"
+    path: "/inventory/items/{id}"
+    method: "GET"
+    weight: 10
+    tags: ["inventory", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.inventory.id"
+    consumes:
+      - "entity.inventory.id"
+
+  - name: "inventory.items.lookup"
+    description: "Lookup inventory items"
+    path: "/inventory/items/lookup"
+    method: "GET"
+    weight: 8
+    tags: ["inventory", "read"]
+    queryParams:
+      warehouse_id:
+        semanticType: "entity.warehouse.id"
+      product_id:
+        semanticType: "entity.product.id"
+    consumes:
+      - "entity.warehouse.id"
+      - "entity.product.id"
+
+  - name: "inventory.items.lowStock"
+    description: "Get low stock alerts"
+    path: "/inventory/items/alerts/low-stock"
+    method: "GET"
+    weight: 5
+    tags: ["inventory", "read", "alerts"]
+
+  - name: "inventory.transactions.list"
+    description: "List inventory transactions"
+    path: "/inventory/transactions"
+    method: "GET"
+    weight: 8
+    tags: ["inventory", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+
+  - name: "inventory.availability.check"
+    description: "Check stock availability"
+    path: "/inventory/availability/check"
+    method: "GET"
+    weight: 10
+    tags: ["inventory", "read"]
+    queryParams:
+      warehouse_id:
+        semanticType: "entity.warehouse.id"
+      product_id:
+        semanticType: "entity.product.id"
+    consumes:
+      - "entity.warehouse.id"
+      - "entity.product.id"
+
+  # ==========================================================================
+  # TRADE DOMAIN - Sales Orders
+  # ==========================================================================
+
+  - name: "trade.sales_orders.list"
+    description: "List sales orders with pagination"
+    path: "/trade/sales-orders"
+    method: "GET"
+    weight: 15
+    tags: ["trade", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.sales_order.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+      - semanticType: "ref.sales_order.number"
+        jsonPath: "$.data[*].order_number"
+        multiple: true
+
+  - name: "trade.sales_orders.get"
+    description: "Get sales order by ID"
+    path: "/trade/sales-orders/{id}"
+    method: "GET"
+    weight: 12
+    tags: ["trade", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.sales_order.id"
+    consumes:
+      - "entity.sales_order.id"
+
+  - name: "trade.sales_orders.getByNumber"
+    description: "Get sales order by number"
+    path: "/trade/sales-orders/number/{order_number}"
+    method: "GET"
+    weight: 8
+    tags: ["trade", "read"]
+    pathParams:
+      order_number:
+        semanticType: "ref.sales_order.number"
+    consumes:
+      - "ref.sales_order.number"
+
+  - name: "trade.sales_orders.stats"
+    description: "Get sales order statistics"
+    path: "/trade/sales-orders/stats/summary"
+    method: "GET"
+    weight: 5
+    tags: ["trade", "read", "stats"]
+
+  - name: "trade.sales_orders.create"
+    description: "Create a new sales order"
+    path: "/trade/sales-orders"
+    method: "POST"
+    weight: 3
+    tags: ["trade", "write", "producer"]
+    body: |
+      {
+        "customer_id": "{{.entity.customer.id}}",
+        "warehouse_id": "{{.entity.warehouse.id}}",
+        "remark": "Sales order created by load generator"
+      }
+    expectedStatus: 201
+    consumes:
+      - "entity.customer.id"
+      - "entity.warehouse.id"
+    produces:
+      - semanticType: "entity.sales_order.id"
+        jsonPath: "$.data.id"
+      - semanticType: "ref.sales_order.number"
+        jsonPath: "$.data.order_number"
+
+  # ==========================================================================
+  # TRADE DOMAIN - Purchase Orders
+  # ==========================================================================
+
+  - name: "trade.purchase_orders.list"
+    description: "List purchase orders with pagination"
+    path: "/trade/purchase-orders"
+    method: "GET"
+    weight: 12
+    tags: ["trade", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+    produces:
+      - semanticType: "entity.purchase_order.id"
+        jsonPath: "$.data[*].id"
+        multiple: true
+      - semanticType: "ref.purchase_order.number"
+        jsonPath: "$.data[*].order_number"
+        multiple: true
+
+  - name: "trade.purchase_orders.get"
+    description: "Get purchase order by ID"
+    path: "/trade/purchase-orders/{id}"
+    method: "GET"
+    weight: 10
+    tags: ["trade", "read"]
+    pathParams:
+      id:
+        semanticType: "entity.purchase_order.id"
+    consumes:
+      - "entity.purchase_order.id"
+
+  - name: "trade.purchase_orders.pendingReceipt"
+    description: "List pending receipt orders"
+    path: "/trade/purchase-orders/pending-receipt"
+    method: "GET"
+    weight: 5
+    tags: ["trade", "read"]
+
+  - name: "trade.purchase_orders.stats"
+    description: "Get purchase order statistics"
+    path: "/trade/purchase-orders/stats/summary"
+    method: "GET"
+    weight: 5
+    tags: ["trade", "read", "stats"]
+
+  - name: "trade.purchase_orders.create"
+    description: "Create a new purchase order"
+    path: "/trade/purchase-orders"
+    method: "POST"
+    weight: 2
+    tags: ["trade", "write", "producer"]
+    body: |
+      {
+        "supplier_id": "{{.entity.supplier.id}}",
+        "warehouse_id": "{{.entity.warehouse.id}}",
+        "remark": "Purchase order created by load generator"
+      }
+    expectedStatus: 201
+    consumes:
+      - "entity.supplier.id"
+      - "entity.warehouse.id"
+    produces:
+      - semanticType: "entity.purchase_order.id"
+        jsonPath: "$.data.id"
+      - semanticType: "ref.purchase_order.number"
+        jsonPath: "$.data.order_number"
+
+  # ==========================================================================
+  # FINANCE DOMAIN
+  # ==========================================================================
+
+  - name: "finance.receivables.list"
+    description: "List accounts receivable"
+    path: "/finance/receivables"
+    method: "GET"
+    weight: 8
+    tags: ["finance", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+
+  - name: "finance.receivables.summary"
+    description: "Get receivables summary"
+    path: "/finance/receivables/summary"
+    method: "GET"
+    weight: 5
+    tags: ["finance", "read", "stats"]
+
+  - name: "finance.payables.list"
+    description: "List accounts payable"
+    path: "/finance/payables"
+    method: "GET"
+    weight: 8
+    tags: ["finance", "read", "list"]
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"
+
+  - name: "finance.payables.summary"
+    description: "Get payables summary"
+    path: "/finance/payables/summary"
+    method: "GET"
+    weight: 5
+    tags: ["finance", "read", "stats"]
+
+  - name: "finance.cashFlow"
+    description: "Get cash flow report"
+    path: "/finance/cash-flow"
+    method: "GET"
+    weight: 3
+    tags: ["finance", "read", "report"]
+
+  - name: "finance.receipts.list"
+    description: "List receipt vouchers"
+    path: "/finance/receipts"
+    method: "GET"
+    weight: 5
+    tags: ["finance", "read", "list"]
+
+  - name: "finance.payments.list"
+    description: "List payment vouchers"
+    path: "/finance/payments"
+    method: "GET"
+    weight: 5
+    tags: ["finance", "read", "list"]
+
+  - name: "finance.trialBalance.quickCheck"
+    description: "Quick trial balance check"
+    path: "/finance/trial-balance/quick-check"
+    method: "GET"
+    weight: 3
+    tags: ["finance", "read", "audit"]
+
+  # ==========================================================================
+  # REPORTS DOMAIN
+  # ==========================================================================
+
+  - name: "reports.sales.summary"
+    description: "Get sales summary report"
+    path: "/reports/sales/summary"
+    method: "GET"
+    weight: 5
+    tags: ["reports", "read"]
+
+  - name: "reports.sales.dailyTrend"
+    description: "Get daily sales trend"
+    path: "/reports/sales/daily-trend"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.sales.productsRanking"
+    description: "Get product sales ranking"
+    path: "/reports/sales/products/ranking"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.sales.customersRanking"
+    description: "Get customer ranking"
+    path: "/reports/sales/customers/ranking"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.inventory.summary"
+    description: "Get inventory summary"
+    path: "/reports/inventory/summary"
+    method: "GET"
+    weight: 5
+    tags: ["reports", "read"]
+
+  - name: "reports.inventory.turnover"
+    description: "Get inventory turnover report"
+    path: "/reports/inventory/turnover"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.inventory.slowMoving"
+    description: "Get slow moving inventory"
+    path: "/reports/inventory/slow-moving"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.finance.profitLoss"
+    description: "Get profit/loss report"
+    path: "/reports/finance/profit-loss"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  - name: "reports.finance.monthlyTrend"
+    description: "Get monthly financial trend"
+    path: "/reports/finance/monthly-trend"
+    method: "GET"
+    weight: 3
+    tags: ["reports", "read"]
+
+  # ==========================================================================
+  # SYSTEM DOMAIN
+  # ==========================================================================
+
+  - name: "system.ping"
+    description: "Health check endpoint"
+    path: "/system/ping"
+    method: "GET"
+    weight: 5
+    tags: ["system", "health"]
+    requiresAuth: false
+
+  - name: "system.info"
+    description: "Get system info"
+    path: "/system/info"
+    method: "GET"
+    weight: 2
+    tags: ["system", "read"]
+
+  - name: "system.strategies"
+    description: "Get available strategies"
+    path: "/system/strategies"
+    method: "GET"
+    weight: 2
+    tags: ["system", "read"]
+
+# ============================================================================
+# SCENARIOS
+# ============================================================================
+# Named scenarios that group related endpoints for focused testing.
+
+scenarios:
+  - name: "browse_catalog"
+    description: "Simulates a user browsing the product catalog"
+    endpoints:
+      - "catalog.categories.tree"
+      - "catalog.products.list"
+      - "catalog.products.get"
+    weight: 30
+    sequential: false
+
+  - name: "create_sales_order"
+    description: "Simulates creating a sales order flow"
+    endpoints:
+      - "partner.customers.list"
+      - "catalog.products.list"
+      - "inventory.availability.check"
+      - "trade.sales_orders.create"
+    weight: 15
+    sequential: true
+
+  - name: "create_purchase_order"
+    description: "Simulates creating a purchase order flow"
+    endpoints:
+      - "partner.suppliers.list"
+      - "catalog.products.list"
+      - "trade.purchase_orders.create"
+    weight: 10
+    sequential: true
+
+  - name: "check_inventory"
+    description: "Simulates checking inventory status"
+    endpoints:
+      - "inventory.items.list"
+      - "inventory.availability.check"
+      - "inventory.items.lowStock"
+    weight: 20
+    sequential: false
+
+  - name: "review_finances"
+    description: "Simulates reviewing financial status"
+    endpoints:
+      - "finance.receivables.summary"
+      - "finance.payables.summary"
+      - "finance.cashFlow"
+    weight: 10
+    sequential: false
+
+  - name: "view_reports"
+    description: "Simulates viewing reports"
+    endpoints:
+      - "reports.sales.summary"
+      - "reports.inventory.summary"
+      - "reports.finance.profitLoss"
+    weight: 15
+    sequential: false

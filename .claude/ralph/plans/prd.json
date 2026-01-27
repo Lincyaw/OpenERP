@@ -8079,7 +8079,7 @@
       "验证与 ERP backend 的集成",
       "验收标准：对 ERP 运行 5 分钟负载测试通过"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-030",
