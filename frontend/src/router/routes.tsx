@@ -102,6 +102,7 @@ const ProductMappingsPage = () => lazyLoad(() => import('@/pages/integration/Pro
 
 // Admin module
 const FeatureFlagListPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagList'))
+const FeatureFlagFormPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagForm'))
 
 /**
  * Application routes with metadata
@@ -751,6 +752,14 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'expenses/:id/edit', element: ExpenseFormPage() },
           { path: 'incomes/new', element: OtherIncomeFormPage() },
           { path: 'incomes/:id/edit', element: OtherIncomeFormPage() }
+        )
+      }
+
+      // Add admin module detail routes (not in menu)
+      if (route.path === '/admin') {
+        childRoutes.push(
+          { path: 'feature-flags/new', element: FeatureFlagFormPage() },
+          { path: 'feature-flags/:key/edit', element: FeatureFlagFormPage() }
         )
       }
 

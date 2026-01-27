@@ -9092,7 +9092,7 @@
       "- 规则编辑器可用",
       "- 变体编辑器可用"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 12 Implementation Roadmap",
     "affectedModules": [
       "frontend/src/pages/admin/FeatureFlagForm.tsx",

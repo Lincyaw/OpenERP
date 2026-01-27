@@ -31827,3 +31827,89 @@ All loadgen tests pass:
 === Next Steps ===
 - FF-ADMIN-002: Feature Flag detail page
 - FF-ADMIN-003: Feature Flag create/edit form page
+
+2025-01-28 - FF-ADMIN-002: Feature Flag 管理界面 - 创建/编辑表单
+
+=== Implementation Details ===
+- Created FeatureFlagForm page (frontend/src/pages/admin/FeatureFlagForm.tsx)
+  - Uses React Hook Form with Zod validation schema
+  - Supports both create and edit modes (edit uses :key route param)
+  - Dynamic default value field based on flag type:
+    - Boolean: Switch component
+    - Percentage: Slider with InputNumber (0-100%)
+    - Variant: VariantEditor component
+    - User Segment: Switch for default non-matching users
+  - Form sections: Basic Info, Default Value, Targeting Rules
+  - Validation rules: key format (snake_case), required fields, variant weight sum
+  
+- Created VariantEditor component (frontend/src/pages/admin/components/VariantEditor.tsx)
+  - Add/remove variants (min 2, max 8)
+  - Adjust weights with slider and InputNumber
+  - Auto-balance button for equal distribution
+  - Real-time weight distribution bar chart visualization
+  - Color-coded variants
+  - Default variant selection
+  - Weight validation (must sum to 100%)
+  
+- Created RulesEditor component (frontend/src/pages/admin/components/RulesEditor.tsx)
+  - Add/remove targeting rules
+  - Rule priority with move up/down buttons
+  - Multiple conditions per rule with AND logic
+  - Condition editor: attribute selector, operator selector, value input
+  - Common attributes: user_id, email, country, device_type, etc.
+  - Operators: eq, neq, contains, in, regex, etc.
+  - Rule value configuration based on flag type
+  - Empty state with add rule prompt
+  
+- Created TagInputField component (frontend/src/pages/admin/components/TagInputField.tsx)
+  - Reusable tag input with react-hook-form Controller pattern
+  - Support for comma/Enter separator
+  
+- Updated i18n translations
+  - Added ~70 new translation keys for form labels, placeholders, errors, etc.
+  - Both zh-CN and en-US locales updated
+  
+- Updated route configuration (frontend/src/router/routes.tsx)
+  - Added FeatureFlagFormPage lazy loader
+  - Added routes: /admin/feature-flags/new, /admin/feature-flags/:key/edit
+
+=== Key Files Modified ===
+- frontend/src/pages/admin/FeatureFlagForm.tsx (new)
+- frontend/src/pages/admin/FeatureFlagForm.css (new)
+- frontend/src/pages/admin/components/VariantEditor.tsx (new)
+- frontend/src/pages/admin/components/RulesEditor.tsx (new)
+- frontend/src/pages/admin/components/TagInputField.tsx (new)
+- frontend/src/pages/admin/components/index.ts (new)
+- frontend/src/locales/zh-CN/admin.json (updated)
+- frontend/src/locales/en-US/admin.json (updated)
+- frontend/src/router/routes.tsx (updated)
+
+=== Verification ===
+- TypeScript type checking: PASSED (tsc --noEmit)
+- ESLint: PASSED (no errors, no warnings)
+- Prettier formatting: APPLIED
+
+=== Design Decisions ===
+1. Used existing common form components (TextField, SelectField, etc.) for consistency
+2. Created dedicated VariantEditor and RulesEditor components for complex field types
+3. Form supports optimistic locking via version field in edit mode
+4. Rules use priority-based ordering (first match wins)
+5. Variant colors cycle through a palette of 8 colors
+6. Weight distribution shown as horizontal stacked bar chart
+7. Used useFormWithValidation hook for consistent form handling pattern
+
+=== Acceptance Criteria Met ===
+- ✅ Create/edit flow complete (form submits to API)
+- ✅ Form validation correct (key format, required fields, weight sum)
+- ✅ Rules editor functional (add/remove/reorder/edit conditions)
+- ✅ Variant editor functional (add/remove/weight slider/distribution chart)
+- ✅ Dynamic default value based on type
+
+=== Notes ===
+- Key uniqueness check requires backend validation (API returns error)
+- Drag-drop reordering uses simple up/down buttons (simpler than DnD library)
+- Form preserves rules state separately from react-hook-form (complex nested structure)
+
+=== Next Steps ===
+- FF-ADMIN-003: Feature Flag detail page with audit logs
+- FF-INT-001: E2E integration tests for Feature Flag management
