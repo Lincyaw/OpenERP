@@ -27042,3 +27042,131 @@ force logout, and password change token invalidation.
 - Monitor Redis memory usage in production
 - Consider adding audit log entries for force logouts
 - Add metrics for blacklist operations (hits, misses, errors)
+
+2026-01-27 - GAP-SEC-002: Implement Department-Level Data Scope Filtering
+
+=== Implementation Details ===
+
+1. **Department Domain Entity** (backend/internal/domain/identity/department.go)
+   - Created Department aggregate with hierarchical structure
+   - Supports parent_id for parent-child relationships
+   - Materialized path pattern for efficient hierarchy queries (e.g., "/root-id/parent-id/this-id")
+   - Level field tracks depth in hierarchy (0 = root)
+   - Manager ID field for department manager tracking
+   - Status field (active/inactive)
+   - Metadata map for extensibility
+   - Helper methods:
+     * SetParent - Sets parent with automatic path/level calculation
+     * IsAncestorOf/IsDescendantOf - Path-based hierarchy checks
+     * GetAncestorIDs - Extracts all ancestor IDs from path
+     * UpdatePath - Updates materialized path after creation
+
+2. **Department Events** (backend/internal/domain/identity/department_events.go)
+   - DepartmentCreatedEvent
+   - DepartmentUpdatedEvent
+   - DepartmentManagerChangedEvent
+   - DepartmentDeletedEvent
+
+3. **Department Repository** (backend/internal/domain/identity/department_repository.go)
+   - Interface with 12 methods for CRUD and hierarchy queries
+   - FindDescendants uses LIKE pattern on path for efficient subtree queries
+   - GetAllDepartmentIDsInSubtree returns all IDs in a subtree (for filtering)
+
+4. **Database Migration** (backend/migrations/000031_create_departments.up.sql)
+   - departments table with hierarchy support
+   - Added department_id column to users table
+   - Indexes for tenant_id, parent_id, path, manager_id
+   - GIN index for path pattern matching
+   - Foreign key constraints (tenant, parent, manager)
+   - Default root department for existing tenant
+
+5. **User Domain Update** (backend/internal/domain/identity/user.go)
+   - Added DepartmentID field (nullable)
+   - Added SetDepartment method
+
+6. **DataScope Filter Enhancement** (backend/internal/infrastructure/persistence/datascope/filter.go)
+   - Fully implemented DataScopeDepartment case
+   - Filter now includes departmentID and departmentIDs fields
+   - Context keys for department info: UserDepartmentIDKey, DepartmentIDsKey
+   - New helper functions:
+     * WithDepartmentInfo - Adds department info to context
+     * GetDepartmentIDFromContext - Gets user's department
+     * GetDepartmentIDsFromContext - Gets all accessible department IDs
+     * GetDepartmentIDs - Gets department IDs for resource
+     * HasDepartmentAccess - Checks if user can access department
+     * IsDepartmentScoped - Checks if resource is department-scoped
+     * SetDepartmentInfo - Sets department info on filter
+   - departmentScopedResources map defines which resources support department scoping
+   - CreateDepartmentScopesForRole helper function
+
+7. **Model Updates** (backend/internal/infrastructure/persistence/models/identity.go)
+   - DepartmentModel with all fields and JSON metadata
+   - Updated UserModel with DepartmentID field
+   - Updated ToDomain/FromDomain mappings for both
+
+8. **Department Repository Implementation** (backend/internal/infrastructure/persistence/department_repository.go)
+   - Full GORM implementation
+   - Delete checks for children and users before allowing deletion
+   - JSON serialization for metadata
+   - Path-based descendant queries
+
+=== Files Changed ===
+- backend/internal/domain/identity/department.go (NEW)
+- backend/internal/domain/identity/department_events.go (NEW)
+- backend/internal/domain/identity/department_repository.go (NEW)
+- backend/internal/domain/identity/department_test.go (NEW)
+- backend/internal/domain/identity/user.go (MODIFIED - added DepartmentID)
+- backend/internal/infrastructure/persistence/models/identity.go (MODIFIED)
+- backend/internal/infrastructure/persistence/department_repository.go (NEW)
+- backend/internal/infrastructure/persistence/datascope/filter.go (MODIFIED)
+- backend/internal/infrastructure/persistence/datascope/filter_test.go (MODIFIED)
+- backend/migrations/000031_create_departments.up.sql (NEW)
+- backend/migrations/000031_create_departments.down.sql (NEW)
+
+=== Technical Decisions ===
+
+1. **Materialized Path Pattern**: Chose over adjacency list for efficient subtree queries
+   - Pattern: "/" + parent.path + "/" + id
+   - Allows simple LIKE queries for descendant lookups
+   - Trade-off: Path updates needed when moving departments (rare operation)
+
+2. **Department Scope Resolution**:
+   - Middleware loads user's department and all sub-department IDs into context
+   - Filter reads from context to avoid database lookups during filtering
+   - Falls back to created_by if no department assigned
+
+3. **Hierarchy Level Tracking**:
+   - Level 0 = root departments
+   - Level increments for each child level
+   - Supports unlimited nesting (practical limit ~10 levels)
+
+4. **Department-Scoped Resources**:
+   - Initially: sales_order, purchase_order, sales_return, purchase_return, customer, expense_record
+   - Resources need department_id column to support department scoping
+   - Other resources can be added to departmentScopedResources map
+
+5. **Scope Priority**: ALL (100) > DEPARTMENT (50) > WAREHOUSE (45) > CUSTOM (40) > SELF (10)
+   - Department manager with ALL scope sees everything
+   - Department scope sees own + sub-department data
+
+=== Verification ===
+- [x] All new tests pass: go test ./internal/domain/identity/... -v -run Department
+- [x] DataScope tests pass: go test ./internal/infrastructure/persistence/datascope/... -v
+- [x] Build succeeds: go build ./...
+- [x] No type errors
+- [x] No dead code
+
+=== Acceptance Criteria Met ===
+- [x] User table has department_id field (migration 000031)
+- [x] DataScope supports DEPARTMENT option (identity.DataScopeDepartment)
+- [x] Query adds department_id filter when DEPARTMENT scope configured
+- [x] Multi-level department tree supported via materialized path
+- [x] Department manager can see sub-department data (via GetAllDepartmentIDsInSubtree)
+- [x] Existing ALL/SELF permissions unaffected (scope level precedence)
+
+=== Next Steps ===
+- Add department_id column to sales_order, purchase_order, etc. tables (separate migrations)
+- Implement DataScopeMiddleware enhancement to load department hierarchy into context
+- Create department management API endpoints (CRUD)
+- Add UI for department management and user department assignment
+- Consider adding department transfer with path update logic

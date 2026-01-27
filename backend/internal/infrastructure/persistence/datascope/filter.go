@@ -4,7 +4,7 @@
 // and their data scope configurations. It supports five scope types:
 //   - ALL: Access all data within the tenant
 //   - SELF: Only data created by the current user
-//   - DEPARTMENT: Data within the user's department (future support)
+//   - DEPARTMENT: Data within the user's department and sub-departments
 //   - CUSTOM: Custom-defined scope values (e.g., specific regions)
 //   - WAREHOUSE: Data within the user's assigned warehouses (inventory-focused)
 //
@@ -35,13 +35,19 @@ const (
 	UserRolesKey DataScopeContextKey = "user_roles"
 	// WarehouseIDsKey is the context key for storing user's assigned warehouse IDs
 	WarehouseIDsKey DataScopeContextKey = "warehouse_ids"
+	// DepartmentIDsKey is the context key for storing user's department IDs (including sub-departments)
+	DepartmentIDsKey DataScopeContextKey = "department_ids"
+	// UserDepartmentIDKey is the context key for storing user's own department ID
+	UserDepartmentIDKey DataScopeContextKey = "user_department_id"
 )
 
 // Filter applies data scope filtering to GORM queries
 type Filter struct {
-	ctx        context.Context
-	userID     uuid.UUID
-	dataScopes map[string]identity.DataScope // resource -> data scope
+	ctx           context.Context
+	userID        uuid.UUID
+	departmentID  *uuid.UUID                    // User's own department ID
+	departmentIDs []uuid.UUID                   // All departments in the user's subtree (for managers)
+	dataScopes    map[string]identity.DataScope // resource -> data scope
 }
 
 // NewFilter creates a new DataScope filter from roles
@@ -50,6 +56,17 @@ func NewFilter(ctx context.Context, roles []identity.Role) *Filter {
 	var userID uuid.UUID
 	if userIDStr != "" {
 		userID, _ = uuid.Parse(userIDStr)
+	}
+
+	// Get department information from context if available
+	var departmentID *uuid.UUID
+	if deptID, ok := ctx.Value(UserDepartmentIDKey).(*uuid.UUID); ok {
+		departmentID = deptID
+	}
+
+	var departmentIDs []uuid.UUID
+	if deptIDs, ok := ctx.Value(DepartmentIDsKey).([]uuid.UUID); ok {
+		departmentIDs = deptIDs
 	}
 
 	// Merge data scopes from all roles
@@ -68,9 +85,11 @@ func NewFilter(ctx context.Context, roles []identity.Role) *Filter {
 	}
 
 	return &Filter{
-		ctx:        ctx,
-		userID:     userID,
-		dataScopes: dataScopes,
+		ctx:           ctx,
+		userID:        userID,
+		departmentID:  departmentID,
+		departmentIDs: departmentIDs,
+		dataScopes:    dataScopes,
 	}
 }
 
@@ -82,6 +101,17 @@ func NewFilterFromContext(ctx context.Context) *Filter {
 		userID, _ = uuid.Parse(userIDStr)
 	}
 
+	// Get department information from context if available
+	var departmentID *uuid.UUID
+	if deptID, ok := ctx.Value(UserDepartmentIDKey).(*uuid.UUID); ok {
+		departmentID = deptID
+	}
+
+	var departmentIDs []uuid.UUID
+	if deptIDs, ok := ctx.Value(DepartmentIDsKey).([]uuid.UUID); ok {
+		departmentIDs = deptIDs
+	}
+
 	// Try to get data scopes from context
 	dataScopes := make(map[string]identity.DataScope)
 	if scopes, ok := ctx.Value(ScopesKey).(map[string]identity.DataScope); ok {
@@ -89,9 +119,11 @@ func NewFilterFromContext(ctx context.Context) *Filter {
 	}
 
 	return &Filter{
-		ctx:        ctx,
-		userID:     userID,
-		dataScopes: dataScopes,
+		ctx:           ctx,
+		userID:        userID,
+		departmentID:  departmentID,
+		departmentIDs: departmentIDs,
+		dataScopes:    dataScopes,
 	}
 }
 
@@ -134,13 +166,23 @@ func (f *Filter) Apply(db *gorm.DB, resource string) *gorm.DB {
 		return db.Where("created_by = ?", f.userID)
 
 	case identity.DataScopeDepartment:
-		// TODO: Implement department filtering
-		// This requires a department_id field and department membership
-		// For now, fall back to SELF with warning
-		if f.userID == uuid.Nil {
-			return db.Where("1 = 0")
+		// Department scope filtering - filters by department_id
+		// The departmentIDs slice includes the user's department and all sub-departments
+		// This is set by the middleware after looking up the department hierarchy
+		if len(f.departmentIDs) == 0 {
+			// No department IDs available - fall back to user's own department
+			if f.departmentID == nil {
+				// No department assigned - fall back to created_by (SELF behavior)
+				if f.userID == uuid.Nil {
+					return db.Where("1 = 0")
+				}
+				return db.Where("created_by = ?", f.userID)
+			}
+			// Filter by user's own department only
+			return db.Where("department_id = ?", f.departmentID)
 		}
-		return db.Where("created_by = ?", f.userID)
+		// Filter by all departments in the user's hierarchy (user's dept + sub-depts)
+		return db.Where("department_id IN ?", f.departmentIDs)
 
 	case identity.DataScopeWarehouse:
 		// Warehouse scope filtering - filters by warehouse_id
@@ -375,6 +417,120 @@ func CreateWarehouseScopesForRole(warehouseIDs []string) ([]identity.DataScope, 
 	var scopes []identity.DataScope
 	for resource := range warehouseScopedResources {
 		ds, err := identity.NewWarehouseDataScope(resource, warehouseIDs)
+		if err != nil {
+			return nil, err
+		}
+		scopes = append(scopes, *ds)
+	}
+	return scopes, nil
+}
+
+// ============================================================================
+// Department Scope Support - GAP-SEC-002
+// ============================================================================
+
+// WithDepartmentInfo adds department information to context for use by filter
+func WithDepartmentInfo(ctx context.Context, departmentID *uuid.UUID, departmentIDs []uuid.UUID) context.Context {
+	ctx = context.WithValue(ctx, UserDepartmentIDKey, departmentID)
+	ctx = context.WithValue(ctx, DepartmentIDsKey, departmentIDs)
+	return ctx
+}
+
+// GetDepartmentIDFromContext extracts user's department ID from context
+func GetDepartmentIDFromContext(ctx context.Context) *uuid.UUID {
+	if deptID, ok := ctx.Value(UserDepartmentIDKey).(*uuid.UUID); ok {
+		return deptID
+	}
+	return nil
+}
+
+// GetDepartmentIDsFromContext extracts all department IDs (user's dept + sub-depts) from context
+func GetDepartmentIDsFromContext(ctx context.Context) []uuid.UUID {
+	if ids, ok := ctx.Value(DepartmentIDsKey).([]uuid.UUID); ok {
+		return ids
+	}
+	return nil
+}
+
+// GetDepartmentIDs returns the department IDs the filter user has access to
+// Returns nil if no department scope is configured (ALL access)
+func (f *Filter) GetDepartmentIDs(resource string) []uuid.UUID {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return nil // No restriction
+	}
+	if ds.ScopeType == identity.DataScopeDepartment {
+		return f.departmentIDs
+	}
+	return nil
+}
+
+// HasDepartmentAccess checks if the user has access to a specific department
+// Returns true if no department scope is configured (ALL access) or if the
+// department is in the user's department hierarchy
+func (f *Filter) HasDepartmentAccess(resource string, departmentID uuid.UUID) bool {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return true // No scope = full access
+	}
+	if ds.ScopeType == identity.DataScopeAll {
+		return true
+	}
+	if ds.ScopeType == identity.DataScopeDepartment {
+		return slices.Contains(f.departmentIDs, departmentID)
+	}
+	// For other scope types, department access is not explicitly restricted
+	return true
+}
+
+// IsDepartmentScoped returns true if the user has department-level scope for the resource
+func (f *Filter) IsDepartmentScoped(resource string) bool {
+	ds, exists := f.dataScopes[resource]
+	if !exists {
+		return false
+	}
+	return ds.ScopeType == identity.DataScopeDepartment
+}
+
+// GetUserDepartmentID returns the user's own department ID
+func (f *Filter) GetUserDepartmentID() *uuid.UUID {
+	return f.departmentID
+}
+
+// SetDepartmentInfo sets department information for the filter
+// This is useful when creating a filter manually or updating department info
+func (f *Filter) SetDepartmentInfo(departmentID *uuid.UUID, departmentIDs []uuid.UUID) {
+	f.departmentID = departmentID
+	f.departmentIDs = departmentIDs
+}
+
+// departmentScopedResources defines which resources support department-level scoping
+// These resources must have a department_id column for department filtering to work
+var departmentScopedResources = map[string]string{
+	"sales_order":     "department_id",
+	"purchase_order":  "department_id",
+	"sales_return":    "department_id",
+	"purchase_return": "department_id",
+	"customer":        "department_id",
+	"expense_record":  "department_id",
+}
+
+// IsResourceDepartmentScoped returns true if the resource supports department-level scoping
+func IsResourceDepartmentScoped(resource string) bool {
+	_, exists := departmentScopedResources[resource]
+	return exists
+}
+
+// CreateDepartmentScopesForRole creates data scopes for all department-related resources
+// This is a helper to configure a department-scoped role
+func CreateDepartmentScopesForRole(resources []string) ([]identity.DataScope, error) {
+	if len(resources) == 0 {
+		return nil, nil
+	}
+
+	var scopes []identity.DataScope
+	for _, resource := range resources {
+		ds, err := identity.NewDataScope(resource, identity.DataScopeDepartment)
 		if err != nil {
 			return nil, err
 		}

@@ -18,6 +18,7 @@ type UserModel struct {
 	DisplayName        string              `gorm:"type:varchar(200)"`
 	Avatar             string              `gorm:"type:varchar(500)"`
 	Status             identity.UserStatus `gorm:"type:varchar(20);not null;default:'pending'"`
+	DepartmentID       *uuid.UUID          `gorm:"type:uuid;index"`
 	LastLoginAt        *time.Time          `gorm:"index"`
 	LastLoginIP        string              `gorm:"type:varchar(45)"`
 	FailedAttempts     int                 `gorm:"not null;default:0"`
@@ -55,6 +56,7 @@ func (m *UserModel) ToDomain() *identity.User {
 		DisplayName:        m.DisplayName,
 		Avatar:             m.Avatar,
 		Status:             m.Status,
+		DepartmentID:       m.DepartmentID,
 		RoleIDs:            make([]uuid.UUID, 0), // Loaded separately
 		LastLoginAt:        m.LastLoginAt,
 		LastLoginIP:        m.LastLoginIP,
@@ -77,6 +79,7 @@ func (m *UserModel) FromDomain(u *identity.User) {
 	m.DisplayName = u.DisplayName
 	m.Avatar = u.Avatar
 	m.Status = u.Status
+	m.DepartmentID = u.DepartmentID
 	m.LastLoginAt = u.LastLoginAt
 	m.LastLoginIP = u.LastLoginIP
 	m.FailedAttempts = u.FailedAttempts
@@ -370,4 +373,76 @@ func (m *RoleDataScopeModel) FromDomain(roleID, tenantID uuid.UUID, ds identity.
 	m.ScopeValues = scopeValuesJSON
 	m.Description = ds.Description
 	m.CreatedAt = time.Now()
+}
+
+// DepartmentModel is the persistence model for the Department domain entity.
+type DepartmentModel struct {
+	TenantAggregateModel
+	Code        string                    `gorm:"type:varchar(50);not null"`
+	Name        string                    `gorm:"type:varchar(200);not null"`
+	Description string                    `gorm:"type:text"`
+	ParentID    *uuid.UUID                `gorm:"type:uuid;index"`
+	Path        string                    `gorm:"type:varchar(1000);not null;index"`
+	Level       int                       `gorm:"not null;default:0"`
+	SortOrder   int                       `gorm:"not null;default:0"`
+	ManagerID   *uuid.UUID                `gorm:"type:uuid;index"`
+	Status      identity.DepartmentStatus `gorm:"type:varchar(20);not null;default:'active'"`
+	Metadata    string                    `gorm:"type:jsonb;default:'{}'"`
+}
+
+// TableName returns the table name for GORM
+func (DepartmentModel) TableName() string {
+	return "departments"
+}
+
+// ToDomain converts the persistence model to a domain Department entity.
+func (m *DepartmentModel) ToDomain() *identity.Department {
+	dept := &identity.Department{
+		TenantAggregateRoot: shared.TenantAggregateRoot{
+			BaseAggregateRoot: shared.BaseAggregateRoot{
+				BaseEntity: shared.BaseEntity{
+					ID:        m.ID,
+					CreatedAt: m.CreatedAt,
+					UpdatedAt: m.UpdatedAt,
+				},
+				Version: m.Version,
+			},
+			TenantID:  m.TenantID,
+			CreatedBy: m.CreatedBy,
+		},
+		Code:        m.Code,
+		Name:        m.Name,
+		Description: m.Description,
+		ParentID:    m.ParentID,
+		Path:        m.Path,
+		Level:       m.Level,
+		SortOrder:   m.SortOrder,
+		ManagerID:   m.ManagerID,
+		Status:      m.Status,
+		Metadata:    make(map[string]string), // Parsed from JSON by repository
+	}
+	return dept
+}
+
+// FromDomain populates the persistence model from a domain Department entity.
+// Note: Metadata must be JSON-encoded by the repository.
+func (m *DepartmentModel) FromDomain(d *identity.Department, metadataJSON string) {
+	m.FromDomainTenantAggregateRoot(d.TenantAggregateRoot)
+	m.Code = d.Code
+	m.Name = d.Name
+	m.Description = d.Description
+	m.ParentID = d.ParentID
+	m.Path = d.Path
+	m.Level = d.Level
+	m.SortOrder = d.SortOrder
+	m.ManagerID = d.ManagerID
+	m.Status = d.Status
+	m.Metadata = metadataJSON
+}
+
+// DepartmentModelFromDomain creates a new persistence model from a domain Department entity.
+func DepartmentModelFromDomain(d *identity.Department, metadataJSON string) *DepartmentModel {
+	m := &DepartmentModel{}
+	m.FromDomain(d, metadataJSON)
+	return m
 }

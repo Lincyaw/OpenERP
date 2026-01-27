@@ -5551,7 +5551,7 @@
       "- 部门经理可看到下级部门数据",
       "- 不影响现有ALL/SELF权限"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P6-BE-013",
     "affectedModules": [
       "backend/internal/infrastructure/persistence/datascope/filter.go"

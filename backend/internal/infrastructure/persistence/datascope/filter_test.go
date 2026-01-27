@@ -815,3 +815,314 @@ func TestMergeScopes_WithWarehouse(t *testing.T) {
 		assert.Equal(t, identity.DataScopeWarehouse, result["inventory"].ScopeType)
 	})
 }
+
+// ============================================================================
+// DEPARTMENT Scope Tests - GAP-SEC-002
+// ============================================================================
+
+func TestDepartmentScope(t *testing.T) {
+	tenantID := uuid.New()
+	departmentID1 := uuid.New()
+	departmentID2 := uuid.New()
+	_ = tenantID // Used in sub-tests
+
+	t.Run("creates filter with department info from context", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = WithDepartmentInfo(ctx, &departmentID1, []uuid.UUID{departmentID1, departmentID2})
+
+		role, _ := identity.NewRole(tenantID, "MANAGER", "Manager")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.Equal(t, &departmentID1, filter.GetUserDepartmentID())
+		assert.Equal(t, []uuid.UUID{departmentID1, departmentID2}, filter.GetDepartmentIDs("sales_order"))
+	})
+
+	t.Run("GetDepartmentIDsFromContext retrieves department IDs", func(t *testing.T) {
+		ctx := context.Background()
+		deptIDs := []uuid.UUID{departmentID1, departmentID2}
+		ctx = WithDepartmentInfo(ctx, &departmentID1, deptIDs)
+
+		retrieved := GetDepartmentIDsFromContext(ctx)
+		assert.Equal(t, deptIDs, retrieved)
+	})
+
+	t.Run("GetDepartmentIDFromContext retrieves user department", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = WithDepartmentInfo(ctx, &departmentID1, nil)
+
+		retrieved := GetDepartmentIDFromContext(ctx)
+		assert.Equal(t, &departmentID1, retrieved)
+	})
+
+	t.Run("GetDepartmentIDsFromContext returns nil for missing context", func(t *testing.T) {
+		ctx := context.Background()
+		retrieved := GetDepartmentIDsFromContext(ctx)
+		assert.Nil(t, retrieved)
+	})
+}
+
+func TestFilter_DepartmentScope(t *testing.T) {
+	tenantID := uuid.New()
+	departmentID1 := uuid.New()
+	departmentID2 := uuid.New()
+
+	t.Run("GetDepartmentIDs returns department IDs for DEPARTMENT scope", func(t *testing.T) {
+		ctx := context.Background()
+		deptIDs := []uuid.UUID{departmentID1, departmentID2}
+		ctx = WithDepartmentInfo(ctx, &departmentID1, deptIDs)
+
+		role, _ := identity.NewRole(tenantID, "MANAGER", "Manager")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		result := filter.GetDepartmentIDs("sales_order")
+		assert.Equal(t, deptIDs, result)
+	})
+
+	t.Run("GetDepartmentIDs returns nil for non-DEPARTMENT scope", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = WithDepartmentInfo(ctx, &departmentID1, []uuid.UUID{departmentID1})
+
+		role, _ := identity.NewRole(tenantID, "ADMIN", "Admin")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeAll)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.Nil(t, filter.GetDepartmentIDs("sales_order"))
+	})
+
+	t.Run("GetDepartmentIDs returns nil for unconfigured resource", func(t *testing.T) {
+		ctx := context.Background()
+		filter := NewFilter(ctx, []identity.Role{})
+
+		assert.Nil(t, filter.GetDepartmentIDs("sales_order"))
+	})
+}
+
+func TestFilter_HasDepartmentAccess(t *testing.T) {
+	tenantID := uuid.New()
+	departmentID1 := uuid.New()
+	departmentID2 := uuid.New()
+	departmentID3 := uuid.New()
+
+	t.Run("returns true for department in scope", func(t *testing.T) {
+		ctx := context.Background()
+		deptIDs := []uuid.UUID{departmentID1, departmentID2}
+		ctx = WithDepartmentInfo(ctx, &departmentID1, deptIDs)
+
+		role, _ := identity.NewRole(tenantID, "MANAGER", "Manager")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.True(t, filter.HasDepartmentAccess("sales_order", departmentID1))
+		assert.True(t, filter.HasDepartmentAccess("sales_order", departmentID2))
+	})
+
+	t.Run("returns false for department not in scope", func(t *testing.T) {
+		ctx := context.Background()
+		deptIDs := []uuid.UUID{departmentID1, departmentID2}
+		ctx = WithDepartmentInfo(ctx, &departmentID1, deptIDs)
+
+		role, _ := identity.NewRole(tenantID, "MANAGER", "Manager")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.False(t, filter.HasDepartmentAccess("sales_order", departmentID3))
+	})
+
+	t.Run("returns true for ALL scope", func(t *testing.T) {
+		ctx := context.Background()
+
+		role, _ := identity.NewRole(tenantID, "ADMIN", "Admin")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeAll)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.True(t, filter.HasDepartmentAccess("sales_order", departmentID1))
+		assert.True(t, filter.HasDepartmentAccess("sales_order", departmentID3))
+	})
+
+	t.Run("returns true for unconfigured resource", func(t *testing.T) {
+		ctx := context.Background()
+		filter := NewFilter(ctx, []identity.Role{})
+
+		assert.True(t, filter.HasDepartmentAccess("sales_order", departmentID1))
+	})
+}
+
+func TestFilter_IsDepartmentScoped(t *testing.T) {
+	tenantID := uuid.New()
+	departmentID := uuid.New()
+
+	t.Run("returns true for DEPARTMENT scope", func(t *testing.T) {
+		ctx := context.Background()
+		ctx = WithDepartmentInfo(ctx, &departmentID, []uuid.UUID{departmentID})
+
+		role, _ := identity.NewRole(tenantID, "MANAGER", "Manager")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.True(t, filter.IsDepartmentScoped("sales_order"))
+	})
+
+	t.Run("returns false for other scope types", func(t *testing.T) {
+		ctx := context.Background()
+
+		role, _ := identity.NewRole(tenantID, "ADMIN", "Admin")
+		ds, _ := identity.NewDataScope("sales_order", identity.DataScopeAll)
+		_ = role.SetDataScope(*ds)
+
+		filter := NewFilter(ctx, []identity.Role{*role})
+
+		assert.False(t, filter.IsDepartmentScoped("sales_order"))
+	})
+
+	t.Run("returns false for unconfigured resource", func(t *testing.T) {
+		ctx := context.Background()
+		filter := NewFilter(ctx, []identity.Role{})
+
+		assert.False(t, filter.IsDepartmentScoped("sales_order"))
+	})
+}
+
+func TestFilter_SetDepartmentInfo(t *testing.T) {
+	departmentID := uuid.New()
+	deptIDs := []uuid.UUID{departmentID, uuid.New()}
+
+	t.Run("sets department info on filter", func(t *testing.T) {
+		ctx := context.Background()
+		filter := NewFilter(ctx, []identity.Role{})
+
+		filter.SetDepartmentInfo(&departmentID, deptIDs)
+
+		assert.Equal(t, &departmentID, filter.GetUserDepartmentID())
+	})
+}
+
+func TestCompareScopeLevel_WithDepartment(t *testing.T) {
+	testCases := []struct {
+		name     string
+		a        identity.DataScopeType
+		b        identity.DataScopeType
+		expected int
+	}{
+		{"ALL > DEPARTMENT", identity.DataScopeAll, identity.DataScopeDepartment, 50},
+		{"DEPARTMENT < ALL", identity.DataScopeDepartment, identity.DataScopeAll, -50},
+		{"DEPARTMENT > SELF", identity.DataScopeDepartment, identity.DataScopeSelf, 40},
+		{"DEPARTMENT > CUSTOM", identity.DataScopeDepartment, identity.DataScopeCustom, 10},
+		{"DEPARTMENT > WAREHOUSE", identity.DataScopeDepartment, identity.DataScopeWarehouse, 5},
+		{"DEPARTMENT == DEPARTMENT", identity.DataScopeDepartment, identity.DataScopeDepartment, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := compareScopeLevel(tc.a, tc.b)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestMergeScopes_WithDepartment(t *testing.T) {
+	departmentID := uuid.New()
+
+	t.Run("ALL takes precedence over DEPARTMENT", func(t *testing.T) {
+		dsDept, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		dsAll, _ := identity.NewDataScope("sales_order", identity.DataScopeAll)
+
+		result := MergeScopes(
+			[]identity.DataScope{*dsDept},
+			[]identity.DataScope{*dsAll},
+		)
+
+		assert.Len(t, result, 1)
+		assert.Equal(t, identity.DataScopeAll, result["sales_order"].ScopeType)
+	})
+
+	t.Run("DEPARTMENT takes precedence over SELF", func(t *testing.T) {
+		dsDept, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		dsSelf, _ := identity.NewDataScope("sales_order", identity.DataScopeSelf)
+
+		result := MergeScopes(
+			[]identity.DataScope{*dsSelf},
+			[]identity.DataScope{*dsDept},
+		)
+
+		assert.Len(t, result, 1)
+		assert.Equal(t, identity.DataScopeDepartment, result["sales_order"].ScopeType)
+	})
+
+	t.Run("DEPARTMENT takes precedence over WAREHOUSE", func(t *testing.T) {
+		dsDept, _ := identity.NewDataScope("sales_order", identity.DataScopeDepartment)
+		dsWarehouse, _ := identity.NewWarehouseDataScope("sales_order", []string{departmentID.String()})
+
+		result := MergeScopes(
+			[]identity.DataScope{*dsWarehouse},
+			[]identity.DataScope{*dsDept},
+		)
+
+		assert.Len(t, result, 1)
+		assert.Equal(t, identity.DataScopeDepartment, result["sales_order"].ScopeType)
+	})
+}
+
+func TestIsResourceDepartmentScoped(t *testing.T) {
+	t.Run("returns true for department-scoped resources", func(t *testing.T) {
+		assert.True(t, IsResourceDepartmentScoped("sales_order"))
+		assert.True(t, IsResourceDepartmentScoped("purchase_order"))
+		assert.True(t, IsResourceDepartmentScoped("sales_return"))
+		assert.True(t, IsResourceDepartmentScoped("purchase_return"))
+		assert.True(t, IsResourceDepartmentScoped("customer"))
+		assert.True(t, IsResourceDepartmentScoped("expense_record"))
+	})
+
+	t.Run("returns false for non-department resources", func(t *testing.T) {
+		assert.False(t, IsResourceDepartmentScoped("inventory"))
+		assert.False(t, IsResourceDepartmentScoped("product"))
+		assert.False(t, IsResourceDepartmentScoped("warehouse"))
+		assert.False(t, IsResourceDepartmentScoped("unknown"))
+	})
+}
+
+func TestCreateDepartmentScopesForRole(t *testing.T) {
+	t.Run("creates scopes for specified resources", func(t *testing.T) {
+		resources := []string{"sales_order", "customer"}
+		scopes, err := CreateDepartmentScopesForRole(resources)
+		require.NoError(t, err)
+
+		assert.Len(t, scopes, 2)
+
+		resourcesFound := make(map[string]bool)
+		for _, ds := range scopes {
+			assert.Equal(t, identity.DataScopeDepartment, ds.ScopeType)
+			resourcesFound[ds.Resource] = true
+		}
+
+		assert.True(t, resourcesFound["sales_order"])
+		assert.True(t, resourcesFound["customer"])
+	})
+
+	t.Run("returns nil for empty resources", func(t *testing.T) {
+		scopes, err := CreateDepartmentScopesForRole([]string{})
+		require.NoError(t, err)
+		assert.Nil(t, scopes)
+	})
+
+	t.Run("returns nil for nil resources", func(t *testing.T) {
+		scopes, err := CreateDepartmentScopesForRole(nil)
+		require.NoError(t, err)
+		assert.Nil(t, scopes)
+	})
+}

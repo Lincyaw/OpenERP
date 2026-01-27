@@ -34,6 +34,7 @@ type User struct {
 	DisplayName        string
 	Avatar             string
 	Status             UserStatus
+	DepartmentID       *uuid.UUID  // Primary department the user belongs to
 	RoleIDs            []uuid.UUID // Stored in separate table, loaded by repository
 	LastLoginAt        *time.Time
 	LastLoginIP        string // IPv6 max length
@@ -150,6 +151,13 @@ func (u *User) SetAvatar(avatar string) error {
 // SetNotes sets the user's notes
 func (u *User) SetNotes(notes string) {
 	u.Notes = notes
+	u.UpdatedAt = time.Now()
+	u.IncrementVersion()
+}
+
+// SetDepartment sets the user's department
+func (u *User) SetDepartment(departmentID *uuid.UUID) {
+	u.DepartmentID = departmentID
 	u.UpdatedAt = time.Now()
 	u.IncrementVersion()
 }
