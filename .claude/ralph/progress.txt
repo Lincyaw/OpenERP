@@ -31202,3 +31202,102 @@ github.com/stretchr/testify v1.10.0
 1. LOADGEN-010: CircuitBoard implementation (integrates ProducerChainGuard)
 2. LOADGEN-006: DependencyGraph (uses with ProducerChainGuard)
 3. LOADGEN-011: RateLimiter (works with CircuitBoard)
+
+2026-01-28 - LOADGEN-012: Traffic Shaper Implementation PASSED
+
+=== Task Summary ===
+- Task ID: LOADGEN-012
+- Story: 流量整形器实现
+- Status: PASSED
+
+=== Implementation Details ===
+
+**Files Created:**
+- `tools/loadgen/internal/loadctrl/shaper.go` - TrafficShaper interface and configuration types
+- `tools/loadgen/internal/loadctrl/shaper_sine.go` - SineWaveShaper implementation
+- `tools/loadgen/internal/loadctrl/shaper_spike.go` - SpikeShaper implementation
+- `tools/loadgen/internal/loadctrl/shaper_step.go` - StepShaper implementation
+- `tools/loadgen/internal/loadctrl/shaper_custom.go` - CustomShaper implementation
+- `tools/loadgen/internal/loadctrl/shaper_test.go` - Comprehensive tests
+
+**TrafficShaper Interface:**
+```go
+type TrafficShaper interface {
+    GetTargetQPS(elapsed time.Duration) float64
+    GetPhase(elapsed time.Duration) string
+    Name() string
+    Config() ShaperConfig
+}
+```
+
+**Shaper Types Implemented:**
+
+1. **SineWaveShaper** (正弦波):
+   - Formula: QPS = BaseQPS + Amplitude * sin(2π * t / Period)
+   - Supports absolute amplitude (>1) or relative percentage (≤1)
+   - Configurable period, min/max clamping
+   - Methods: GetPeriod(), GetAmplitude(), GetMinMaxQPS()
+
+2. **SpikeShaper** (突发尖峰):
+   - Alternates between BaseQPS and SpikeQPS at regular intervals
+   - Configurable spike duration and interval
+   - Methods: GetSpikeInterval(), GetSpikeDuration(), TimeUntilNextSpike()
+
+3. **StepShaper** (阶梯形):
+   - Executes QPS changes in discrete steps
+   - Optional ramp transitions between steps
+   - Supports looping mode
+   - Methods: GetTotalDuration(), IsLooping(), CurrentStepIndex()
+
+4. **CustomShaper** (自定义曲线):
+   - User-defined QPS curve using interpolation points
+   - Linear interpolation between points
+   - Holds first/last point values before/after curve
+   - Methods: GetPoints(), GetMinMaxQPS(), CurrentSegment()
+
+**Configuration System:**
+- YAML/JSON serializable configuration structs
+- Comprehensive validation for all shaper types
+- Factory function: NewTrafficShaper(config)
+- Min/Max QPS clamping support across all shapers
+
+=== Verification ===
+
+**Test Results:**
+- Total Tests: 44
+- Passed: 44
+- Coverage: 84.0%
+- Race Detector: PASS
+
+**Acceptance Criteria Verified:**
+- ✅ SineWaveShaper 60s period ±50% amplitude correct
+  - At t=0s: QPS = 100 (base)
+  - At t=15s (peak): QPS = 150 (+50%)
+  - At t=45s (trough): QPS = 50 (-50%)
+  - At t=60s: QPS = 100 (full cycle)
+
+**Code Review Status:**
+- Reviewed by code-reviewer agent
+- Status: Approved
+- Coverage threshold met (84% > 80%)
+- All formatting issues fixed (gofmt)
+
+=== Architecture Notes ===
+
+- Thread-safe: All shapers are read-only after creation
+- Immutable: Configuration copied on construction
+- Factory pattern: NewTrafficShaper() dispatches to correct constructor
+- Helper function: clampQPS() for min/max bounds enforcement
+
+=== Dependencies ===
+
+Uses existing module:
+```
+github.com/stretchr/testify v1.10.0
+```
+
+=== Next Steps ===
+
+1. LOADGEN-011: RateLimiter implementation (prerequisite for LoadController)
+2. LOADGEN-013: LoadController (integrates RateLimiter + TrafficShaper)
+3. LOADGEN-006: DependencyGraph (uses ProducerChainGuard)
