@@ -52,3 +52,15 @@ export {
 
 // Print hooks
 export { usePrint, ZOOM_LEVELS, type UsePrintOptions, type UsePrintReturn } from './usePrint'
+
+// Feature flag hooks
+export {
+  useFeatureFlag,
+  useFeatureVariant,
+  useFeatureFlags,
+  useFeatureFlagReady,
+  useFeatureFlagValue,
+  useFeatureFlagLoading,
+  useFeatureFlagError,
+  type FeatureFlagValue,
+} from './useFeatureFlag'

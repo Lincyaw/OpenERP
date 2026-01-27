@@ -30333,3 +30333,90 @@ Audit:
 - FF-FE-002: FeatureGate Component (wraps components with flag checks)
 - FF-FE-003: useFeatureFlag Hook (convenience hooks for components)
 - Consider: Add convenience hook for auto-cleanup of polling
+
+2026-01-28 - Task ID: FF-FE-002 - Feature Flag React Hooks
+
+=== Implementation Details ===
+- Created Feature Flag React Hooks (frontend/src/hooks/useFeatureFlag.ts)
+  - All hooks are type-safe with comprehensive JSDoc documentation
+  - Hooks integrate with the Feature Flag Zustand Store (FF-FE-001)
+
+- Implemented hooks matching PRD specifications:
+  1. useFeatureFlag(key, defaultValue?): boolean
+     - Returns whether a flag is enabled
+     - Supports optional default value
+     - Auto-subscribes to store updates
+
+  2. useFeatureVariant(key): string | null
+     - Returns variant value for A/B testing
+     - Returns null if flag doesn't exist or has no variant
+
+  3. useFeatureFlags<K>(keys): Record<K, boolean>
+     - Batch retrieval of multiple flags
+     - Type-safe with generic parameter
+     - Uses Zustand's useShallow for performance optimization
+     - Only re-renders when requested flag values change
+
+  4. useFeatureFlagReady(): boolean
+     - Returns whether flags have been loaded (from server or cache)
+     - Used for loading state UI
+
+  5. useFeatureFlagValue(key): FeatureFlagValue | null
+     - Returns full flag value including metadata
+     - Useful for complex features needing all flag properties
+
+  6. useFeatureFlagLoading(): boolean
+     - Returns loading state during initial fetch
+
+  7. useFeatureFlagError(): string | null
+     - Returns error message if flag loading failed
+
+- Updated store exports to remove duplicate selector hooks
+  - Hooks file is now the canonical API for feature flags
+  - Store index only exports useFeatureFlagStore and types
+
+=== Files Created/Modified ===
+- frontend/src/hooks/useFeatureFlag.ts (NEW - ~300 lines)
+- frontend/src/hooks/useFeatureFlag.test.ts (NEW - ~400 lines, 31 tests)
+- frontend/src/hooks/index.ts (MODIFIED - added exports)
+- frontend/src/store/index.ts (MODIFIED - removed duplicate selector exports)
+
+=== Verification ===
+- All 31 unit tests pass:
+  - useFeatureFlag tests (6): Enabled, disabled, non-existent, defaultValue, update
+  - useFeatureVariant tests (4): With variant, without variant, non-existent, update
+  - useFeatureFlags tests (6): Batch retrieval, type safety, empty array, updates
+  - useFeatureFlagReady tests (3): Ready state, not ready, updates
+  - useFeatureFlagValue tests (4): Full value, metadata, non-existent, updates
+  - useFeatureFlagLoading tests (3): Loading state
+  - useFeatureFlagError tests (3): Error state
+  - Integration tests (2): Store updates, reset handling
+
+- TypeScript: No type errors
+- ESLint: No lint errors (implicit via tsc check)
+- Store tests: 27 tests still passing (no regressions)
+- Code review: Addressed all HIGH issues
+  - Fixed naming conflict by removing duplicate exports from store
+  - Fixed useFeatureFlags memoization using Zustand's useShallow instead of JSON.stringify
+  - Re-exported FlagValue type from store instead of duplicating
+
+=== Design Decisions ===
+1. Used Zustand's useShallow for useFeatureFlags performance optimization
+   - Only re-renders when the actual flag values change
+   - Avoids unnecessary re-renders when unrelated flags change
+2. Re-exported FlagValue type as FeatureFlagValue for backward compatibility
+   - Single source of truth for type definition
+3. Removed duplicate selector hooks from store index
+   - Hooks file is the canonical API
+   - Prevents naming conflicts and confusion
+4. Used useRef pattern in useFeatureFlags for stable key array comparison
+   - More performant than JSON.stringify
+
+=== Notes ===
+- Dependency: FF-FE-001 (Feature Flag Zustand Store) must be complete
+- These hooks are consumed by FF-FE-003 (FeatureGate Component)
+- Import hooks from '@/hooks' not '@/store'
+
+=== Next Steps ===
+- FF-FE-003: FeatureGate Component (conditional rendering)
+- FF-FE-004: FeatureFlagProvider (context provider for initialization)

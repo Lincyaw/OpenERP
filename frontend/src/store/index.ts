@@ -16,15 +16,10 @@ export {
 } from './appStore'
 
 // Feature flag store
-export {
-  useFeatureFlagStore,
-  useIsFeatureEnabled,
-  useFeatureVariant,
-  useFeatureFlag,
-  useFeatureFlagsLoading,
-  useFeatureFlagsReady,
-  useFeatureFlagsError,
-} from './featureFlagStore'
+// Note: Selector hooks (useFeatureFlag, useFeatureVariant, etc.) are provided
+// by @/hooks/useFeatureFlag for type-safe, documented API.
+// Only export the store itself here for advanced use cases.
+export { useFeatureFlagStore } from './featureFlagStore'
 
 // Store utilities
 export { createSelectors, createStoreWithSelectors } from './createStore'

@@ -8772,7 +8772,7 @@
       "- 响应式更新",
       "- 有 JSDoc 文档"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 7.3 Hook API",
     "affectedModules": [
       "frontend/src/hooks/useFeatureFlag.ts"
