@@ -30254,3 +30254,82 @@ Audit:
 - FF-BE-009: Feature Flag Middleware for Gin HTTP handlers
 - Consider adding rate limiting to evaluation endpoints in production
 - Consider adding unit tests for FeatureFlagHandler
+
+2026-01-28 - Task ID: FF-FE-001 - Feature Flag Zustand Store
+
+=== Implementation Details ===
+- Created Feature Flag Zustand Store (frontend/src/store/featureFlagStore.ts)
+  - Full TypeScript types: FlagValue, FeatureFlagState, FeatureFlagActions
+  - State management with Zustand, devtools, and persist middleware
+  - sessionStorage persistence for fast page refresh recovery
+  - API integration with POST /api/v1/feature-flags/client-config
+
+- Store Features:
+  - initialize(): Fetches flags from server, caches in sessionStorage
+  - refresh(): Updates flags without loading state (no UI flicker)
+  - isEnabled(key): Check if flag is enabled (defaults to false if missing)
+  - getVariant(key): Get variant value for A/B testing
+  - getFlagValue(key): Get full flag value including metadata
+  - setFlags(): Manual flag setting for testing/SSR
+  - startPolling()/stopPolling(): Optional 30s polling for real-time updates
+  - clearError(): Clear error state
+
+- Selector Hooks:
+  - useIsFeatureEnabled(key): Check specific flag enabled state
+  - useFeatureVariant(key): Get flag variant
+  - useFeatureFlag(key): Get full flag value
+  - useFeatureFlagsLoading(): Loading state
+  - useFeatureFlagsReady(): Ready state (server or cache loaded)
+  - useFeatureFlagsError(): Error state
+
+- Error Handling:
+  - Graceful fallback to cached flags on network errors
+  - Error captured in state.error for UI display
+  - Non-throwing design - app continues with cached flags
+
+- Exported from store index.ts
+
+=== Files Created/Modified ===
+- frontend/src/store/featureFlagStore.ts (NEW - ~420 lines)
+- frontend/src/store/featureFlagStore.test.ts (NEW - ~520 lines, 27 tests)
+- frontend/src/store/index.ts (MODIFIED - added exports)
+
+=== Verification ===
+- All 27 unit tests pass:
+  - Initialize tests (6): Server fetch, caching, error handling
+  - Refresh tests (3): Server update, fallback on error
+  - isEnabled tests (3): Enabled, disabled, non-existent flags
+  - getVariant tests (3): With/without variants, non-existent
+  - getFlagValue tests (2): Full value, null for non-existent
+  - setFlags test (1): Manual flag setting
+  - clearError test (1): Error clearing
+  - Polling tests (3): Start, stop, interval replacement
+  - Selector hooks tests (3): Enabled state, variant, full flag
+  - Persistence tests (2): sessionStorage configuration
+
+- TypeScript: No type errors
+- ESLint: No lint errors
+- Code review: Addressed all critical/high issues
+  - Removed console.error (captured in state.error instead)
+  - Extracted duplicated normalization logic to helper function
+  - Added comprehensive JSDoc to selector hooks
+
+=== Design Decisions ===
+1. Used sessionStorage instead of localStorage for per-session caching
+   - Clears on tab close, better for flag freshness
+2. POST instead of GET for client-config (matches backend API)
+   - Allows context enrichment from JWT claims
+3. Non-blocking refresh - doesn't set isLoading to avoid UI flicker
+4. Module-level pollingIntervalId to keep store state clean
+5. Default false for non-existent flags (fail-safe approach)
+6. Cache used as fallback on network errors (better UX)
+
+=== Notes ===
+- Backend dependency: FF-BE-007 (Feature Flag HTTP API) must be deployed
+- Polling is optional - call startPolling() in App.tsx if needed
+- For cleanup, call stopPolling() in useEffect cleanup
+
+=== Next Steps ===
+- FF-FE-002: FeatureGate Component (wraps components with flag checks)
+- FF-FE-003: useFeatureFlag Hook (convenience hooks for components)
+- Consider: Add convenience hook for auto-cleanup of polling

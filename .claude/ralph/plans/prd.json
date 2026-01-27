@@ -8725,7 +8725,7 @@
       "- 页面刷新后快速恢复",
       "- API 错误优雅处理"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 7.2 Zustand Store",
     "affectedModules": [
       "frontend/src/stores/featureFlagStore.ts"
