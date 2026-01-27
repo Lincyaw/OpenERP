@@ -197,3 +197,171 @@ func TestRateLimitByKey(t *testing.T) {
 		assert.Equal(t, http.StatusTooManyRequests, w2.Code)
 	})
 }
+
+func TestAuthRateLimit(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("allows requests within auth limit", func(t *testing.T) {
+		limiter := NewRateLimiter(5, time.Minute) // 5 attempts per minute
+		router := gin.New()
+		router.Use(AuthRateLimit(limiter))
+		router.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		// Should allow 5 requests
+		for i := 0; i < 5; i++ {
+			req := httptest.NewRequest("POST", "/login", nil)
+			req.RemoteAddr = "192.168.1.100:12345"
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusOK, w.Code, "request %d should be allowed", i+1)
+		}
+	})
+
+	t.Run("returns 429 with AUTH_RATE_LIMIT_EXCEEDED when auth limit exceeded", func(t *testing.T) {
+		limiter := NewRateLimiter(3, time.Minute)
+		router := gin.New()
+		router.Use(AuthRateLimit(limiter))
+		router.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		// Use up all tokens
+		for i := 0; i < 3; i++ {
+			req := httptest.NewRequest("POST", "/login", nil)
+			req.RemoteAddr = "192.168.1.100:12345"
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusOK, w.Code)
+		}
+
+		// Next request should be rate limited with AUTH-specific error
+		req := httptest.NewRequest("POST", "/login", nil)
+		req.RemoteAddr = "192.168.1.100:12345"
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusTooManyRequests, w.Code)
+		assert.Contains(t, w.Body.String(), "AUTH_RATE_LIMIT_EXCEEDED")
+		assert.Contains(t, w.Body.String(), "Too many authentication attempts")
+	})
+
+	t.Run("includes rate limit headers", func(t *testing.T) {
+		limiter := NewRateLimiter(5, time.Minute)
+		router := gin.New()
+		router.Use(AuthRateLimit(limiter))
+		router.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		req := httptest.NewRequest("POST", "/login", nil)
+		req.RemoteAddr = "192.168.1.100:12345"
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, "5", w.Header().Get("X-RateLimit-Limit"))
+		assert.Equal(t, "4", w.Header().Get("X-RateLimit-Remaining"))
+	})
+
+	t.Run("includes Retry-After header when blocked", func(t *testing.T) {
+		limiter := NewRateLimiter(1, time.Minute)
+		router := gin.New()
+		router.Use(AuthRateLimit(limiter))
+		router.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		// Use up token
+		req1 := httptest.NewRequest("POST", "/login", nil)
+		req1.RemoteAddr = "192.168.1.100:12345"
+		w1 := httptest.NewRecorder()
+		router.ServeHTTP(w1, req1)
+
+		// Next request should have Retry-After header
+		req2 := httptest.NewRequest("POST", "/login", nil)
+		req2.RemoteAddr = "192.168.1.100:12345"
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+
+		assert.Equal(t, http.StatusTooManyRequests, w2.Code)
+		assert.Equal(t, "60", w2.Header().Get("Retry-After")) // 60 seconds = 1 minute
+	})
+
+	t.Run("separate limits per IP address", func(t *testing.T) {
+		limiter := NewRateLimiter(2, time.Minute)
+		router := gin.New()
+		router.Use(AuthRateLimit(limiter))
+		router.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		// IP 1: Use up tokens
+		for i := 0; i < 2; i++ {
+			req := httptest.NewRequest("POST", "/login", nil)
+			req.RemoteAddr = "192.168.1.1:12345"
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusOK, w.Code)
+		}
+
+		// IP 1: Should be blocked
+		req1 := httptest.NewRequest("POST", "/login", nil)
+		req1.RemoteAddr = "192.168.1.1:12345"
+		w1 := httptest.NewRecorder()
+		router.ServeHTTP(w1, req1)
+		assert.Equal(t, http.StatusTooManyRequests, w1.Code)
+
+		// IP 2: Should still work
+		req2 := httptest.NewRequest("POST", "/login", nil)
+		req2.RemoteAddr = "192.168.1.2:12345"
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+		assert.Equal(t, http.StatusOK, w2.Code)
+	})
+
+	t.Run("uses auth prefix in key to isolate from other rate limiters", func(t *testing.T) {
+		// Create two separate limiters (simulating global and auth)
+		globalLimiter := NewRateLimiter(100, time.Minute)
+		authLimiter := NewRateLimiter(2, time.Minute)
+
+		router := gin.New()
+
+		// Auth route with auth limiter
+		authGroup := router.Group("/auth")
+		authGroup.Use(AuthRateLimit(authLimiter))
+		authGroup.POST("/login", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"success": true})
+		})
+
+		// Other route with global limiter
+		router.Use(RateLimit(globalLimiter))
+		router.GET("/api/data", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"data": "test"})
+		})
+
+		// Exhaust auth limit
+		for i := 0; i < 2; i++ {
+			req := httptest.NewRequest("POST", "/auth/login", nil)
+			req.RemoteAddr = "192.168.1.100:12345"
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusOK, w.Code)
+		}
+
+		// Auth should be blocked
+		req1 := httptest.NewRequest("POST", "/auth/login", nil)
+		req1.RemoteAddr = "192.168.1.100:12345"
+		w1 := httptest.NewRecorder()
+		router.ServeHTTP(w1, req1)
+		assert.Equal(t, http.StatusTooManyRequests, w1.Code)
+
+		// Other API should still work (different limiter)
+		req2 := httptest.NewRequest("GET", "/api/data", nil)
+		req2.RemoteAddr = "192.168.1.100:12345"
+		w2 := httptest.NewRecorder()
+		router.ServeHTTP(w2, req2)
+		assert.Equal(t, http.StatusOK, w2.Code)
+	})
+}

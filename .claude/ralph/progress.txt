@@ -25587,3 +25587,111 @@ The security-reviewer agent identified:
 - Consider disabling X-Tenant-ID header fallback in tenant middleware for authenticated routes
 - Update rate limiter to use JWT tenant ID instead of header
 - Update remaining test mocks to match current service method signatures
+
+---
+
+## 2026-01-27 - SEC-008: 认证端点添加更严格的限流
+
+### Task ID: SEC-008
+### Status: ✅ COMPLETE
+
+=== Implementation Details ===
+
+**Story:** 认证端点添加更严格的限流 (Add stricter rate limiting for authentication endpoints)
+
+**Requirements Implemented:**
+1. ✅ 为 /auth 路由添加独立的限流器 - Added dedicated rate limiter for /auth routes
+2. ✅ 限制为每分钟 5 次尝试 - Limited to 5 attempts per minute
+3. ✅ 防止暴力破解 - Prevents brute force attacks
+
+**Files Modified:**
+
+1. **backend/internal/interfaces/http/middleware/ratelimit.go**
+   - Added `AuthRateLimit()` middleware function specifically for auth endpoints
+   - Uses IP-based rate limiting with `auth:` key prefix for isolation
+   - Returns `AUTH_RATE_LIMIT_EXCEEDED` error code
+   - Includes `Retry-After` header for client awareness
+   - Fixed race condition: `Remaining()` called after `Allow()` for accurate count
+   - Removed unused `AuthRateLimitConfig` struct
+
+2. **backend/internal/infrastructure/config/config.go**
+   - Added `AuthRateLimitEnabled` (bool) to HTTPConfig
+   - Added `AuthRateLimitRequests` (int) with default of 5
+   - Added `AuthRateLimitWindow` (time.Duration) with default of 1 minute
+   - Added config loading for `http.auth_rate_limit_*` settings
+
+3. **backend/cmd/server/main.go** (lines 889-903)
+   - Integrated auth rate limiter with auth routes
+   - Conditionally enabled based on `cfg.HTTP.AuthRateLimitEnabled`
+   - Logs configuration when enabled
+
+4. **backend/config.toml**
+   - Added `auth_rate_limit_enabled = true`
+   - Added `auth_rate_limit_requests = 5`
+   - Added `auth_rate_limit_window = "1m"`
+   - Added security documentation for `trusted_proxies` configuration
+
+5. **backend/internal/interfaces/http/middleware/ratelimit_test.go**
+   - Added comprehensive `TestAuthRateLimit` test suite:
+     - allows_requests_within_auth_limit
+     - returns_429_with_AUTH_RATE_LIMIT_EXCEEDED_when_auth_limit_exceeded
+     - includes_rate_limit_headers
+     - includes_Retry-After_header_when_blocked
+     - separate_limits_per_IP_address
+     - uses_auth_prefix_in_key_to_isolate_from_other_rate_limiters
+
+=== Security Review Findings ===
+
+Security review conducted by security-reviewer agent:
+
+**Fixed Issues:**
+- Race condition in header reporting (remaining count now accurate)
+- Removed unused config struct
+
+**Documented Considerations (for future work):**
+- In-memory rate limiter doesn't scale horizontally (for Redis-backed solution in scaled deployments)
+- IP spoofing vulnerability if `trusted_proxies` not configured properly (documented in config.toml)
+- Consider rate limiting password change endpoints in future
+
+**Good Security Practices Implemented:**
+- Distinct error code `AUTH_RATE_LIMIT_EXCEEDED` for monitoring
+- IP-based isolation prevents distributed brute force from single user
+- `auth:` key prefix isolates auth rate limits from global limits
+- Proper `Retry-After` header for client awareness
+
+=== Code Review Findings ===
+
+Code review conducted by code-reviewer agent:
+
+- Good test coverage with 6 test scenarios
+- Clean integration following existing patterns
+- Proper error response format
+- Fixed race condition in original implementation
+
+=== Verification ===
+
+- [x] Build passes (`go build ./...`)
+- [x] All rate limiter tests pass (14 tests total)
+- [x] Security review passed
+- [x] Code review passed
+- [x] No console.log/debug statements
+- [x] prd.json updated (`passes: true`)
+
+=== Notes ===
+
+**Configuration Defaults:**
+- Auth rate limiting is ENABLED by default
+- 5 requests per minute per IP address
+- Standard rate limiting remains at 100 requests per minute
+
+**Security Recommendation for Production:**
+If deploying behind a reverse proxy/load balancer, configure `trusted_proxies` in config.toml to prevent IP spoofing:
+```toml
+trusted_proxies = ["10.0.0.0/8", "172.16.0.0/12"]  # Example for internal network
+```
+
+=== Next Steps ===
+- Consider implementing Redis-backed rate limiter for horizontal scaling
+- Consider adding rate limiting to /identity/auth/password endpoint
+- Monitor auth rate limit violations for security alerts
+

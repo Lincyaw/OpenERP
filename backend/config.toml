@@ -72,11 +72,18 @@ max_body_size = 10485760      # 10MB
 rate_limit_enabled = true
 rate_limit_requests = 100
 rate_limit_window = "1m"
+# Auth rate limiting - stricter limits for authentication endpoints (SEC-008)
+auth_rate_limit_enabled = true
+auth_rate_limit_requests = 5    # 5 attempts per window
+auth_rate_limit_window = "1m"   # 1 minute window
 # For cookie-based auth with credentials, use specific origins (not "*")
 # In production, set to your actual frontend origin
 cors_allow_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 cors_allow_headers = ["Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"]
+# SECURITY: If behind a reverse proxy/load balancer, set trusted_proxies to
+# prevent IP spoofing attacks on the rate limiter. Empty = trust only RemoteAddr.
+# Example for internal network: trusted_proxies = ["10.0.0.0/8", "172.16.0.0/12"]
 trusted_proxies = []
 
 [scheduler]

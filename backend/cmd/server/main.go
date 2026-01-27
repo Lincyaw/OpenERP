@@ -888,6 +888,17 @@ func main() {
 
 	// Identity domain (authentication, users, roles) - public routes
 	authRoutes := router.NewDomainGroup("auth", "/auth")
+
+	// Apply auth-specific rate limiting (stricter limits for login/refresh to prevent brute force)
+	if cfg.HTTP.AuthRateLimitEnabled {
+		authRateLimiter := middleware.NewRateLimiter(cfg.HTTP.AuthRateLimitRequests, cfg.HTTP.AuthRateLimitWindow)
+		authRoutes.Use(middleware.AuthRateLimit(authRateLimiter))
+		log.Info("Auth rate limiting enabled",
+			zap.Int("requests", cfg.HTTP.AuthRateLimitRequests),
+			zap.Duration("window", cfg.HTTP.AuthRateLimitWindow),
+		)
+	}
+
 	authRoutes.POST("/login", authHandler.Login)
 	authRoutes.POST("/refresh", authHandler.RefreshToken)
 

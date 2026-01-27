@@ -91,18 +91,21 @@ type EventConfig struct {
 
 // HTTPConfig holds HTTP server configuration
 type HTTPConfig struct {
-	ReadTimeout       time.Duration
-	WriteTimeout      time.Duration
-	IdleTimeout       time.Duration
-	MaxHeaderBytes    int
-	MaxBodySize       int64
-	RateLimitEnabled  bool
-	RateLimitRequests int
-	RateLimitWindow   time.Duration
-	CORSAllowOrigins  []string
-	CORSAllowMethods  []string
-	CORSAllowHeaders  []string
-	TrustedProxies    []string
+	ReadTimeout           time.Duration
+	WriteTimeout          time.Duration
+	IdleTimeout           time.Duration
+	MaxHeaderBytes        int
+	MaxBodySize           int64
+	RateLimitEnabled      bool
+	RateLimitRequests     int
+	RateLimitWindow       time.Duration
+	AuthRateLimitEnabled  bool          // Enable stricter rate limiting for auth endpoints
+	AuthRateLimitRequests int           // Max auth attempts (default: 5)
+	AuthRateLimitWindow   time.Duration // Auth rate limit window (default: 1 minute)
+	CORSAllowOrigins      []string
+	CORSAllowMethods      []string
+	CORSAllowHeaders      []string
+	TrustedProxies        []string
 }
 
 // SchedulerConfig holds report scheduler configuration
@@ -211,18 +214,21 @@ func Load() (*Config, error) {
 			CleanupRetention: v.GetDuration("event.cleanup_retention"),
 		},
 		HTTP: HTTPConfig{
-			ReadTimeout:       v.GetDuration("http.read_timeout"),
-			WriteTimeout:      v.GetDuration("http.write_timeout"),
-			IdleTimeout:       v.GetDuration("http.idle_timeout"),
-			MaxHeaderBytes:    v.GetInt("http.max_header_bytes"),
-			MaxBodySize:       v.GetInt64("http.max_body_size"),
-			RateLimitEnabled:  v.GetBool("http.rate_limit_enabled"),
-			RateLimitRequests: v.GetInt("http.rate_limit_requests"),
-			RateLimitWindow:   v.GetDuration("http.rate_limit_window"),
-			CORSAllowOrigins:  v.GetStringSlice("http.cors_allow_origins"),
-			CORSAllowMethods:  v.GetStringSlice("http.cors_allow_methods"),
-			CORSAllowHeaders:  v.GetStringSlice("http.cors_allow_headers"),
-			TrustedProxies:    v.GetStringSlice("http.trusted_proxies"),
+			ReadTimeout:           v.GetDuration("http.read_timeout"),
+			WriteTimeout:          v.GetDuration("http.write_timeout"),
+			IdleTimeout:           v.GetDuration("http.idle_timeout"),
+			MaxHeaderBytes:        v.GetInt("http.max_header_bytes"),
+			MaxBodySize:           v.GetInt64("http.max_body_size"),
+			RateLimitEnabled:      v.GetBool("http.rate_limit_enabled"),
+			RateLimitRequests:     v.GetInt("http.rate_limit_requests"),
+			RateLimitWindow:       v.GetDuration("http.rate_limit_window"),
+			AuthRateLimitEnabled:  v.GetBool("http.auth_rate_limit_enabled"),
+			AuthRateLimitRequests: v.GetInt("http.auth_rate_limit_requests"),
+			AuthRateLimitWindow:   v.GetDuration("http.auth_rate_limit_window"),
+			CORSAllowOrigins:      v.GetStringSlice("http.cors_allow_origins"),
+			CORSAllowMethods:      v.GetStringSlice("http.cors_allow_methods"),
+			CORSAllowHeaders:      v.GetStringSlice("http.cors_allow_headers"),
+			TrustedProxies:        v.GetStringSlice("http.trusted_proxies"),
 		},
 		Scheduler: SchedulerConfig{
 			Enabled:           v.GetBool("scheduler.enabled"),
@@ -359,6 +365,13 @@ func applyDefaults(cfg *Config) {
 	}
 	if cfg.HTTP.RateLimitWindow == 0 {
 		cfg.HTTP.RateLimitWindow = time.Minute
+	}
+	// Auth rate limiting defaults - stricter limits for auth endpoints to prevent brute force
+	if cfg.HTTP.AuthRateLimitRequests == 0 {
+		cfg.HTTP.AuthRateLimitRequests = 5 // 5 attempts per window
+	}
+	if cfg.HTTP.AuthRateLimitWindow == 0 {
+		cfg.HTTP.AuthRateLimitWindow = time.Minute // 1 minute window
 	}
 	// NOTE: CORS origins are intentionally not given a default fallback to "*".
 	// An empty list means no cross-origin requests are allowed until explicitly configured.

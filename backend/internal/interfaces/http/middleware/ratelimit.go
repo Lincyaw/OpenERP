@@ -150,3 +150,42 @@ func RateLimitByKey(limiter *RateLimiter, keyFunc func(*gin.Context) string) gin
 		c.Next()
 	}
 }
+
+// AuthRateLimit returns a rate limiting middleware specifically designed for authentication endpoints.
+// It uses stricter rate limits and includes IP-based blocking to prevent brute force attacks.
+//
+// Security Note: This middleware relies on c.ClientIP() which respects the trusted proxies
+// configuration. In production behind a load balancer, ensure trusted_proxies is properly
+// configured in config.toml to prevent IP spoofing attacks.
+func AuthRateLimit(limiter *RateLimiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// For auth endpoints, use only client IP as key to prevent distributed brute force
+		// Do not include tenant ID - auth requests don't have authenticated tenant yet
+		key := "auth:" + c.ClientIP()
+
+		if !limiter.Allow(key) {
+			// Set headers for client awareness
+			c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", limiter.limit))
+			c.Header("X-RateLimit-Remaining", "0")
+			c.Header("Retry-After", fmt.Sprintf("%d", int(limiter.window.Seconds())))
+
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "AUTH_RATE_LIMIT_EXCEEDED",
+					"message": "Too many authentication attempts. Please try again later.",
+				},
+			})
+			return
+		}
+
+		// Get remaining AFTER successful Allow() to ensure accurate count
+		remaining := limiter.Remaining(key)
+
+		// Set rate limit headers for successful requests
+		c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", limiter.limit))
+		c.Header("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
+
+		c.Next()
+	}
+}
