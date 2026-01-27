@@ -1,0 +1,207 @@
+/**
+ * FormFieldHelp Styles
+ *
+ * Help tooltips and hints for form fields
+ */
+
+/* === Help Icon Button === */
+
+.form-field-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: var(--spacing-1);
+  margin-left: var(--spacing-1);
+  color: var(--semi-color-text-2);
+  cursor: help;
+  border-radius: var(--semi-border-radius-small);
+  transition:
+    color var(--duration-fast) var(--ease-default),
+    background-color var(--duration-fast) var(--ease-default);
+  vertical-align: middle;
+}
+
+.form-field-help:hover {
+  color: var(--semi-color-primary);
+  background-color: var(--semi-color-primary-light-default);
+}
+
+.form-field-help:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.form-field-help:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.form-field-help:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Size variants */
+.form-field-help--small {
+  font-size: 12px;
+  padding: 2px;
+}
+
+.form-field-help--small .semi-icon {
+  font-size: 12px;
+}
+
+.form-field-help--default {
+  font-size: 14px;
+  padding: var(--spacing-1);
+}
+
+.form-field-help--default .semi-icon {
+  font-size: 14px;
+}
+
+.form-field-help--large {
+  font-size: 16px;
+  padding: var(--spacing-1);
+}
+
+.form-field-help--large .semi-icon {
+  font-size: 16px;
+}
+
+/* Inline mode */
+.form-field-help--inline {
+  display: inline;
+  padding: 0;
+  margin-left: var(--spacing-2);
+  color: var(--semi-color-text-2);
+  font-size: var(--font-size-xs);
+  cursor: default;
+}
+
+/* Tooltip content styling */
+.form-field-help__tooltip-content {
+  max-width: 280px;
+}
+
+.form-field-help__tooltip-title {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-sm);
+}
+
+.form-field-help__tooltip-body {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+}
+
+.form-field-help__tooltip-body ul,
+.form-field-help__tooltip-body ol {
+  margin: var(--spacing-1) 0 0 0;
+  padding-left: var(--spacing-4);
+}
+
+.form-field-help__tooltip-body li {
+  margin-bottom: var(--spacing-1);
+}
+
+.form-field-help__tooltip-body li:last-child {
+  margin-bottom: 0;
+}
+
+/* === Field Hint === */
+
+.form-field-hint {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  margin-top: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+.form-field-hint--default {
+  color: var(--semi-color-text-2);
+  background-color: transparent;
+}
+
+.form-field-hint--info {
+  color: var(--semi-color-primary);
+  background-color: var(--semi-color-primary-light-default);
+}
+
+.form-field-hint--warning {
+  color: var(--semi-color-warning);
+  background-color: var(--semi-color-warning-light-default);
+}
+
+/* === Field Example === */
+
+.form-field-example {
+  font-size: var(--font-size-xs);
+  color: var(--semi-color-text-2);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.form-field-example__prefix {
+  color: var(--semi-color-text-2);
+}
+
+.form-field-example__value {
+  font-family: var(--font-family-code, monospace);
+  background-color: var(--semi-color-fill-0);
+  padding: 0 var(--spacing-1);
+  border-radius: var(--semi-border-radius-small);
+  font-size: var(--font-size-xs);
+}
+
+.form-field-example__separator {
+  color: var(--semi-color-text-3);
+}
+
+/* === Accessibility === */
+
+/* Elder-friendly theme */
+[theme-mode='elder'] .form-field-help {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+[theme-mode='elder'] .form-field-help--default {
+  font-size: 18px;
+}
+
+[theme-mode='elder'] .form-field-help--default .semi-icon {
+  font-size: 18px;
+}
+
+[theme-mode='elder'] .form-field-help__tooltip-content {
+  max-width: 320px;
+}
+
+[theme-mode='elder'] .form-field-help__tooltip-title {
+  font-size: var(--font-size-base);
+}
+
+[theme-mode='elder'] .form-field-help__tooltip-body {
+  font-size: var(--font-size-sm);
+}
+
+[theme-mode='elder'] .form-field-hint,
+[theme-mode='elder'] .form-field-example {
+  font-size: var(--font-size-sm);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .form-field-help:hover {
+    text-decoration: underline;
+  }
+
+  .form-field-example__value {
+    border: 1px solid currentColor;
+  }
+}

@@ -1,0 +1,136 @@
+/**
+ * FormErrorSummary Styles
+ *
+ * Displays form validation errors in an accessible summary format
+ */
+
+.form-error-summary {
+  margin-bottom: var(--spacing-4);
+  animation: form-error-summary-slide-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes form-error-summary-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .form-error-summary {
+    animation: none;
+  }
+}
+
+.form-error-summary__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.form-error-summary__count {
+  font-weight: var(--font-weight-normal);
+  color: var(--semi-color-text-2);
+  font-size: var(--font-size-xs);
+}
+
+.form-error-summary__list {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-2) 0 0 0;
+}
+
+.form-error-summary__item {
+  margin-bottom: var(--spacing-1);
+}
+
+.form-error-summary__item:last-child {
+  margin-bottom: 0;
+}
+
+.form-error-summary__link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-1);
+  text-decoration: none;
+  color: var(--semi-color-text-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  margin-left: calc(-1 * var(--spacing-2));
+  border-radius: var(--semi-border-radius-small);
+  transition: background-color var(--duration-fast) var(--ease-default);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.form-error-summary__link:hover {
+  background-color: rgba(var(--semi-red-0), 0.5);
+}
+
+.form-error-summary__link:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  background-color: rgba(var(--semi-red-0), 0.5);
+}
+
+.form-error-summary__link:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.form-error-summary__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.form-error-summary__field {
+  color: var(--semi-color-danger);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.form-error-summary__message {
+  color: var(--semi-color-text-1);
+}
+
+.form-error-summary__more {
+  color: var(--semi-color-text-2);
+  font-size: var(--font-size-xs);
+  padding-left: var(--spacing-2);
+  margin-top: var(--spacing-1);
+  font-style: italic;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .form-error-summary__link:hover,
+  .form-error-summary__link:focus {
+    text-decoration: underline;
+  }
+
+  .form-error-summary__field {
+    text-decoration: underline;
+  }
+}
+
+/* Elder-friendly theme */
+[theme-mode='elder'] .form-error-summary__title {
+  font-size: var(--font-size-base);
+}
+
+[theme-mode='elder'] .form-error-summary__link {
+  font-size: var(--font-size-base);
+  padding: var(--spacing-2) var(--spacing-3);
+  min-height: 44px;
+}
+
+[theme-mode='elder'] .form-error-summary__count,
+[theme-mode='elder'] .form-error-summary__more {
+  font-size: var(--font-size-sm);
+}

@@ -29371,3 +29371,101 @@ Created unified error handler service that provides user-friendly error messages
 - UX-FE-003: 表单自动保存与恢复 (if exists)
 - Consider adding retry button component that uses canRetryError()
 - Integrate error tracking service for production monitoring
+
+---
+
+2025-01-28 - UX-FE-003: 表单验证错误提示增强
+
+=== Implementation Details ===
+
+Enhanced form validation error messages with field-specific context, format examples, and accessible error summaries.
+
+**Enhanced validation.json i18n Files (zh-CN & en-US):**
+- Added field-specific error message variants (e.g., `requiredWithField`, `minLengthWithField`)
+- Added format examples for email, phone, SKU, barcode, postal code, etc.
+- Added `errorSummary` section for FormErrorSummary component translations
+- Added `fieldLabels` section mapping field names to localized labels
+- Added `help` section for FormFieldHelp component translations
+
+**FormErrorSummary Component:**
+- Displays form validation errors at the top of forms
+- Click-to-navigate to error fields with smooth scroll
+- aria-live region for screen reader announcements
+- Keyboard accessible (focusable links, Enter/Space activation)
+- Collapsible when many errors (maxVisible prop)
+- Uses unique IDs via React useId() for multiple instance support
+- i18n support via react-i18next
+- Supports nested form field errors (address.street, items.0.name)
+
+**FormFieldHelp Component:**
+- Tooltip-based help text display with Semi Design Tooltip
+- Supports icon mode and inline text mode
+- Keyboard accessible (focusable button, tabIndex)
+- Customizable icon, size, position
+- i18n support for default aria-label
+
+**FormFieldHint Component:**
+- Persistent hint text below form fields
+- Three variants: default, info, warning
+- Has role="note" for accessibility
+
+**FormFieldExample Component:**
+- Shows example values in code format
+- Supports single or multiple examples
+- i18n support for default prefix
+
+**CSS Styling:**
+- Uses design tokens (--spacing-*, --font-size-*, etc.)
+- Supports elder-friendly theme (larger touch targets, font sizes)
+- Supports prefers-reduced-motion for animations
+- Supports high contrast mode
+- BEM naming convention
+
+=== Files Created/Modified ===
+
+**New Files:**
+- frontend/src/components/common/form/FormErrorSummary.tsx
+- frontend/src/components/common/form/FormErrorSummary.css
+- frontend/src/components/common/form/FormErrorSummary.test.tsx
+- frontend/src/components/common/form/FormFieldHelp.tsx
+- frontend/src/components/common/form/FormFieldHelp.css
+- frontend/src/components/common/form/FormFieldHelp.test.tsx
+
+**Modified Files:**
+- frontend/src/locales/zh-CN/validation.json (enhanced)
+- frontend/src/locales/en-US/validation.json (enhanced)
+- frontend/src/components/common/form/index.ts (exports)
+
+=== Verification ===
+
+- ✅ TypeScript type-check passes (`npm run type-check`)
+- ✅ All 42 unit tests pass (18 FormErrorSummary + 24 FormFieldHelp)
+- ✅ Code review passed - fixed HIGH issues (i18n hardcoded text, unique IDs)
+- ✅ Accessibility: WCAG 2.1 AA compliant
+  - aria-live for screen readers
+  - Keyboard navigation
+  - Focus management
+  - High contrast support
+  - Elder-friendly theme support
+- ✅ i18n: Full support for zh-CN and en-US
+
+=== Design Decisions ===
+
+1. **useId() for unique IDs**: Prevents duplicate ID issues when multiple FormErrorSummary components render on same page
+2. **i18n for all text**: No hardcoded Chinese/English - uses react-i18next
+3. **Semi UI Banner**: Used for consistent error alert styling
+4. **Flat error structure**: Nested form errors flattened to dot-notation paths (address.street)
+5. **Focus field strategy**: Tries multiple selectors (name, id, data-field) to find field
+
+=== Acceptance Criteria Verification ===
+
+- ✅ All validation errors include specific field names (via fieldLabels)
+- ✅ Format errors provide correct format examples (emailWithExample, phoneWithExample, etc.)
+- ✅ FormErrorSummary available for complex forms
+- ✅ Screen readers can announce error messages (aria-live region)
+
+=== Next Steps ===
+
+- UX-FE-004: Mobile sidebar navigation improvements
+- Consider adding FormErrorSummary to existing complex forms (SalesOrderForm, ProductForm)
+- Add more domain-specific field labels to validation.json as needed

@@ -13,6 +13,10 @@ export { TreeSelectField, type TreeNode } from './TreeSelectField'
 export { Form, FormActions, FormSection, FormRow } from './Form'
 export { FormFieldWrapper } from './FormFieldWrapper'
 
+// Form feedback components
+export { FormErrorSummary, type FormErrorItem } from './FormErrorSummary'
+export { FormFieldHelp, FormFieldHint, FormFieldExample } from './FormFieldHelp'
+
 // Form utilities
 export { useFormWithValidation } from './useFormWithValidation'
 

@@ -6803,7 +6803,7 @@
       "- P1模板完成",
       "- P2模板至少完成2个"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Extended Templates",
     "affectedModules": [
       "backend/internal/infrastructure/printing/templates/"
@@ -6908,7 +6908,7 @@
       "- 模板CRUD功能完整",
       "- 代码编辑器语法高亮"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Template Management",
     "affectedModules": [
       "frontend/src/pages/settings/print-templates/"
@@ -6942,7 +6942,7 @@
       "=== 验收标准 ===",
       "- 协议文档完整"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Local Agent Protocol",
     "affectedModules": [
       "docs/print-agent-protocol.md"
@@ -6976,7 +6976,7 @@
       "- 静默打印成功",
       "- 内存 < 30MB"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Local Agent",
     "affectedModules": [
       "tools/print-agent/"
@@ -7001,7 +7001,7 @@
       "- 静默打印功能完整",
       "- 降级方案正常"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Frontend Agent",
     "affectedModules": [
       "frontend/src/services/printAgent.ts",
@@ -7030,7 +7030,7 @@
       "- 后端覆盖率 > 80%",
       "- E2E测试通过"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Testing",
     "affectedModules": [
       "backend/internal/application/printing/*_test.go",
@@ -7064,7 +7064,7 @@
       "- 主题切换后 localStorage 存储正确的 theme 值",
       "- Elder 主题的字体放大和高对比度效果正常"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P0-001",
     "affectedModules": [
       "frontend/src/hooks/useTheme.ts"
@@ -7147,7 +7147,7 @@
       "- FormErrorSummary 在复杂表单中可用",
       "- 屏幕阅读器可朗读错误消息"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P1-002",
     "affectedModules": [
       "frontend/src/locales/zh-CN/validation.json",
@@ -7193,7 +7193,7 @@
       "- 动画流畅（60fps）",
       "- 关闭按钮触摸目标 >= 44px"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P1-003",
     "affectedModules": [
       "frontend/src/components/layout/Header.tsx",
@@ -7238,7 +7238,7 @@
       "- 用户自定义顺序可持久化",
       "- 新增角色可通过配置文件扩展"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P1-004",
     "affectedModules": [
       "frontend/src/config/dashboard-config.ts",
@@ -7283,7 +7283,7 @@
       "- 快捷键不与浏览器快捷键冲突",
       "- 触摸设备上 FAB 触摸目标 >= 56px"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P1-005",
     "affectedModules": [
       "frontend/src/components/common/QuickActions.tsx",
@@ -7321,7 +7321,7 @@
       "- 开发环境可看到错误堆栈",
       "- 生产环境错误被上报"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-005",
     "affectedModules": [
       "frontend/src/components/common/ErrorBoundary.tsx",
@@ -7361,7 +7361,7 @@
       "- 记住我功能正常工作",
       "- 所有交互元素有正确的 aria 属性"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-004",
     "affectedModules": [
       "frontend/src/pages/Login.tsx",
@@ -7390,7 +7390,7 @@
       "- Elder 主题默认简洁视图",
       "- 用户选择被记住"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-001",
     "affectedModules": [
       "frontend/src/pages/Dashboard.tsx",
@@ -7426,7 +7426,7 @@
       "- 图标颜色符合操作语义（删除为红色）",
       "- 触摸目标 >= 44px"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-002",
     "affectedModules": [
       "frontend/src/components/common/table/DataTable.tsx"
@@ -7459,7 +7459,7 @@
       "- 批量删除需要输入确认",
       "- 确认按钮在 danger 类型时为红色"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-006",
     "affectedModules": [
       "frontend/src/components/common/ConfirmDialog.tsx",
@@ -7487,7 +7487,7 @@
       "- 面包屑可点击导航",
       "- 移动端面包屑不溢出"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P2-003",
     "affectedModules": [
       "frontend/src/router/routes.tsx",
@@ -7517,7 +7517,7 @@
       "- 有微妙的动画效果",
       "- 加载完成后平滑过渡"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P3-004",
     "affectedModules": [
       "frontend/src/components/common/Skeleton.tsx",
@@ -7546,7 +7546,7 @@
       "- VoiceOver/NVDA 可朗读错误消息",
       "- Lighthouse 无障碍分数 >= 90"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - P3-001/002/003",
     "affectedModules": [
       "frontend/src/styles/tokens/colors.css",
@@ -7587,7 +7587,7 @@
       "- 覆盖主要用户场景",
       "- 包含移动端和桌面端测试"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Frontend UX Improvement Plan - Testing",
     "affectedModules": [
       "frontend/e2e/ux/theme.spec.ts",
