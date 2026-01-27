@@ -6843,7 +6843,7 @@
       "- 浏览器打印功能正常",
       "- 支持深色模式"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Frontend Preview",
     "affectedModules": [
       "frontend/src/components/printing/",

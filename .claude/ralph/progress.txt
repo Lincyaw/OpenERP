@@ -29124,3 +29124,101 @@ Tests verify:
 - PRINT-FE-001: Template editor frontend
 - PRINT-FE-002: Document page print button integration
 - Consider adding templates for remaining document types (SALES_ORDER, SALES_RETURN, PURCHASE_ORDER, etc.)
+
+---
+
+2025-01-28 - PRINT-FE-001: 打印预览组件实现 (Print Preview Components)
+
+=== Implementation Details ===
+
+Created the core printing frontend components for the ERP system:
+
+1. **usePrint Hook** (`frontend/src/hooks/usePrint.ts`)
+   - Custom React hook for print functionality
+   - Manages preview state, loading, errors
+   - Template loading and selection
+   - Browser print integration via iframe
+   - PDF generation support
+   - Zoom controls (50% - 200%)
+   - Copies management (1-100)
+   - Auto-loads templates by document type
+   - Auto-selects default template
+
+2. **PrintButton Component** (`frontend/src/components/printing/PrintButton.tsx`)
+   - Button that opens print preview modal
+   - Supports Ctrl+P / Cmd+P keyboard shortcut
+   - Configurable: size, type, label, icon-only mode
+   - Can be disabled
+   - Tooltip support for icon-only mode
+
+3. **PrintPreviewModal Component** (`frontend/src/components/printing/PrintPreviewModal.tsx`)
+   - Modal dialog with print preview
+   - HTML preview in sandboxed iframe
+   - Zoom controls (-, %, +)
+   - Template selector dropdown
+   - Refresh preview button
+   - Copies input with validation
+   - Print button (triggers browser print)
+   - Download PDF button
+   - Responsive paper size visualization
+   - Paper dimensions: A4, A5, 58mm, 80mm, 241mm continuous
+
+4. **Print API Service** (`frontend/src/api/printing/`)
+   - TypeScript types matching backend DTOs
+   - API functions: previewDocument, generatePDF, getTemplatesByDocType
+   - Paginated template listing
+   - Job status tracking
+
+=== Key Files Modified/Created ===
+
+| File | Lines | Description |
+|------|-------|-------------|
+| frontend/src/hooks/usePrint.ts | 165 | Print hook with state management |
+| frontend/src/hooks/usePrint.test.ts | 174 | Unit tests for hook |
+| frontend/src/components/printing/PrintButton.tsx | 130 | Print button component |
+| frontend/src/components/printing/PrintButton.test.tsx | 187 | Button tests |
+| frontend/src/components/printing/PrintPreviewModal.tsx | 403 | Preview modal component |
+| frontend/src/components/printing/PrintPreviewModal.test.tsx | 269 | Modal tests |
+| frontend/src/components/printing/index.ts | 7 | Component exports |
+| frontend/src/api/printing/types.ts | 90 | TypeScript types |
+| frontend/src/api/printing/index.ts | 100 | API service functions |
+| frontend/src/hooks/index.ts | +7 | Export usePrint |
+
+=== Verification ===
+
+- ✅ TypeScript type-check passes (`npm run type-check`)
+- ✅ All 39 unit tests pass
+  - 10 usePrint hook tests
+  - 12 PrintButton tests
+  - 17 PrintPreviewModal tests
+- ✅ Uses Semi Design UI components (`@douyinfe/semi-ui-19`, `@douyinfe/semi-icons`)
+- ✅ Uses project design tokens (CSS variables)
+- ✅ Follows project patterns (hooks, components, API services)
+
+=== Design Decisions ===
+
+1. **iframe for Print Preview**: Uses sandboxed iframe with `srcDoc` for secure HTML rendering
+2. **Paper Size Visualization**: Scales preview based on paper dimensions and zoom level
+3. **Keyboard Shortcut**: Ctrl+P/Cmd+P opens modal instead of browser default
+4. **Template Auto-selection**: Automatically selects default template on load
+5. **Semi UI Components**: Uses Modal, Button, Select, InputNumber, Spin, Typography
+
+=== API Integration ===
+
+The components integrate with backend API endpoints:
+- `POST /api/v1/print/preview` - Get HTML preview
+- `POST /api/v1/print/generate` - Generate PDF
+- `GET /api/v1/print/templates/by-doc-type/:type` - Get templates
+- `GET /api/v1/print/jobs/:id` - Get job status
+
+=== Notes ===
+
+- Components use Chinese UI text (打印, 打印预览, 缩小, 放大, etc.)
+- Follows accessibility guidelines (aria-labels, keyboard navigation)
+- Dark mode support via CSS variables
+
+=== Next Steps ===
+
+- PRINT-FE-002: Integrate PrintButton into document detail pages (SalesOrderDetail, PurchaseOrderDetail, etc.)
+- PRINT-FE-003: Template management page with Monaco editor
+- Consider adding print history/job list view

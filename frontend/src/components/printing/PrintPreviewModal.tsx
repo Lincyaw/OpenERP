@@ -1,0 +1,402 @@
+/**
+ * PrintPreviewModal Component
+ *
+ * Modal dialog for print preview with:
+ * - HTML preview in iframe
+ * - Zoom controls
+ * - Template selection
+ * - Copies setting
+ * - Browser print button
+ *
+ * @example
+ * <PrintPreviewModal
+ *   visible={isOpen}
+ *   onClose={handleClose}
+ *   documentType="SALES_ORDER"
+ *   documentId={orderId}
+ *   documentNumber={orderNumber}
+ * />
+ */
+
+import { useEffect, useCallback, useMemo } from 'react'
+import {
+  Modal,
+  Button,
+  Select,
+  InputNumber,
+  Spin,
+  Typography,
+  Space,
+  Toast,
+} from '@douyinfe/semi-ui-19'
+import { IconPrint, IconMinus, IconPlus, IconDownload, IconRefresh } from '@douyinfe/semi-icons'
+import { usePrint, ZOOM_LEVELS } from '@/hooks/usePrint'
+import { Row, Spacer } from '@/components/common/layout/Flex'
+import type { CSSProperties } from 'react'
+
+const { Text } = Typography
+
+export interface PrintPreviewModalProps {
+  /** Whether the modal is visible */
+  visible: boolean
+  /** Callback when modal is closed */
+  onClose: () => void
+  /** Document type (e.g., 'SALES_ORDER', 'SALES_DELIVERY') */
+  documentType: string
+  /** Document UUID */
+  documentId: string
+  /** Document number for display */
+  documentNumber: string
+  /** Additional data for template rendering */
+  data?: unknown
+  /** Custom title */
+  title?: string
+}
+
+// Paper size display names
+const PAPER_SIZE_LABELS: Record<string, string> = {
+  A4: 'A4 (210×297mm)',
+  A5: 'A5 (148×210mm)',
+  '58MM': '58mm 热敏纸',
+  '80MM': '80mm 热敏纸',
+  '241MM_CONTINUOUS': '241mm 连续纸',
+}
+
+// Get paper dimensions for preview scaling
+const getPaperDimensions = (
+  paperSize: string,
+  orientation: string
+): { width: number; height: number } => {
+  const sizes: Record<string, { width: number; height: number }> = {
+    A4: { width: 210, height: 297 },
+    A5: { width: 148, height: 210 },
+    '58MM': { width: 58, height: 200 },
+    '80MM': { width: 80, height: 200 },
+    '241MM_CONTINUOUS': { width: 241, height: 280 },
+  }
+
+  const size = sizes[paperSize] || sizes.A4
+
+  // Swap dimensions for landscape
+  if (orientation === 'LANDSCAPE') {
+    return { width: size.height, height: size.width }
+  }
+
+  return size
+}
+
+export function PrintPreviewModal({
+  visible,
+  onClose,
+  documentType,
+  documentId,
+  documentNumber,
+  data,
+  title,
+}: PrintPreviewModalProps) {
+  const {
+    preview,
+    isLoading,
+    error,
+    templates,
+    selectedTemplateId,
+    selectTemplate,
+    loadPreview,
+    print,
+    generatePdf,
+    copies,
+    setCopies,
+    zoom,
+    setZoom,
+    iframeRef,
+  } = usePrint({
+    documentType,
+    documentId,
+    documentNumber,
+    data,
+    autoLoad: false,
+  })
+
+  // Load preview when modal becomes visible
+  useEffect(() => {
+    if (visible && documentId) {
+      loadPreview()
+    }
+  }, [visible, documentId, loadPreview])
+
+  // Handle zoom controls
+  const handleZoomIn = useCallback(() => {
+    const currentIndex = ZOOM_LEVELS.indexOf(zoom)
+    if (currentIndex < ZOOM_LEVELS.length - 1) {
+      setZoom(ZOOM_LEVELS[currentIndex + 1])
+    }
+  }, [zoom, setZoom])
+
+  const handleZoomOut = useCallback(() => {
+    const currentIndex = ZOOM_LEVELS.indexOf(zoom)
+    if (currentIndex > 0) {
+      setZoom(ZOOM_LEVELS[currentIndex - 1])
+    }
+  }, [zoom, setZoom])
+
+  // Handle print
+  const handlePrint = useCallback(() => {
+    print()
+  }, [print])
+
+  // Handle PDF generation
+  const handleDownloadPdf = useCallback(async () => {
+    try {
+      const job = await generatePdf(copies)
+      if (job.status === 'COMPLETED' && job.pdfUrl) {
+        // Open PDF in new tab
+        window.open(job.pdfUrl, '_blank')
+        Toast.success('PDF 生成成功')
+      } else if (job.status === 'PROCESSING') {
+        Toast.info('PDF 正在生成中，请稍候...')
+      } else if (job.status === 'FAILED') {
+        Toast.error(job.errorMessage || 'PDF 生成失败')
+      }
+    } catch {
+      Toast.error('PDF 生成失败')
+    }
+  }, [generatePdf, copies])
+
+  // Handle template change
+  const handleTemplateChange = useCallback(
+    (value: string | number | (string | number)[] | Record<string, unknown> | undefined) => {
+      if (typeof value === 'string') {
+        selectTemplate(value)
+      }
+    },
+    [selectTemplate]
+  )
+
+  // Template options for select
+  const templateOptions = useMemo(
+    () =>
+      templates.map((t) => ({
+        value: t.id,
+        label: `${t.name}${t.isDefault ? ' (默认)' : ''} - ${PAPER_SIZE_LABELS[t.paperSize] || t.paperSize}`,
+      })),
+    [templates]
+  )
+
+  // Calculate iframe dimensions based on paper size and zoom
+  const iframeDimensions = useMemo(() => {
+    if (!preview) return { width: 210, height: 297 }
+    const dims = getPaperDimensions(preview.paperSize, preview.orientation)
+    return {
+      width: Math.round((dims.width * zoom) / 100),
+      height: Math.round((dims.height * zoom) / 100),
+    }
+  }, [preview, zoom])
+
+  // Generate iframe srcDoc from preview HTML
+  const iframeSrcDoc = useMemo(() => {
+    if (!preview?.html) return ''
+
+    // Wrap HTML with additional print styles
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              background: white;
+            }
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${preview.html}
+        </body>
+      </html>
+    `
+  }, [preview])
+
+  // Modal title
+  const modalTitle = title || `打印预览 - ${documentNumber}`
+
+  // Styles
+  const previewContainerStyle: CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: 'var(--spacing-4)',
+    backgroundColor: 'var(--color-neutral-100)',
+    minHeight: '500px',
+    maxHeight: 'calc(90vh - 200px)',
+    overflow: 'auto',
+    borderRadius: 'var(--spacing-1)',
+  }
+
+  const iframeWrapperStyle: CSSProperties = {
+    backgroundColor: 'white',
+    boxShadow: 'var(--shadow-lg)',
+    transition: 'width 0.2s ease, height 0.2s ease',
+  }
+
+  const iframeStyle: CSSProperties = {
+    width: `${iframeDimensions.width}mm`,
+    height: `${iframeDimensions.height}mm`,
+    border: 'none',
+    display: 'block',
+  }
+
+  const toolbarStyle: CSSProperties = {
+    padding: 'var(--spacing-3) var(--spacing-4)',
+    borderBottom: '1px solid var(--color-border-primary)',
+    backgroundColor: 'var(--color-bg-container)',
+  }
+
+  const footerStyle: CSSProperties = {
+    padding: 'var(--spacing-3) var(--spacing-4)',
+    borderTop: '1px solid var(--color-border-primary)',
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      onCancel={onClose}
+      width={900}
+      style={{ top: 20 }}
+      title={modalTitle}
+      footer={null}
+      closeOnEsc
+    >
+      {/* Toolbar */}
+      <div style={toolbarStyle}>
+        <Row align="center" gap="md">
+          {/* Template selector */}
+          {templates.length > 0 && (
+            <Select
+              value={selectedTemplateId || undefined}
+              onChange={handleTemplateChange}
+              style={{ width: 280 }}
+              placeholder="选择模板"
+              optionList={templateOptions}
+            />
+          )}
+
+          {/* Zoom controls */}
+          <Space>
+            <Button
+              icon={<IconMinus />}
+              type="tertiary"
+              size="small"
+              onClick={handleZoomOut}
+              disabled={zoom <= ZOOM_LEVELS[0]}
+              aria-label="缩小"
+            />
+            <Text style={{ minWidth: 50, textAlign: 'center' }}>{zoom}%</Text>
+            <Button
+              icon={<IconPlus />}
+              type="tertiary"
+              size="small"
+              onClick={handleZoomIn}
+              disabled={zoom >= ZOOM_LEVELS[ZOOM_LEVELS.length - 1]}
+              aria-label="放大"
+            />
+          </Space>
+
+          <Spacer />
+
+          {/* Refresh button */}
+          <Button
+            icon={<IconRefresh />}
+            type="tertiary"
+            size="small"
+            onClick={() => loadPreview()}
+            disabled={isLoading}
+            aria-label="刷新预览"
+          />
+        </Row>
+      </div>
+
+      {/* Preview area */}
+      <div style={previewContainerStyle}>
+        {isLoading ? (
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400 }}
+          >
+            <Spin size="large" tip="加载预览中..." />
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
+            <Text type="danger">{error}</Text>
+            <br />
+            <Button
+              type="primary"
+              onClick={() => loadPreview()}
+              style={{ marginTop: 'var(--spacing-4)' }}
+            >
+              重试
+            </Button>
+          </div>
+        ) : preview ? (
+          <div style={iframeWrapperStyle}>
+            <iframe
+              ref={iframeRef}
+              srcDoc={iframeSrcDoc}
+              style={iframeStyle}
+              title="打印预览"
+              sandbox="allow-same-origin allow-scripts"
+            />
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
+            <Text type="tertiary">暂无预览内容</Text>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={footerStyle}>
+        <Row align="center" gap="md">
+          {/* Copies input */}
+          <Space>
+            <Text>打印份数:</Text>
+            <InputNumber
+              value={copies}
+              onChange={(value) => setCopies(value as number)}
+              min={1}
+              max={100}
+              style={{ width: 80 }}
+            />
+          </Space>
+
+          <Spacer />
+
+          {/* Action buttons */}
+          <Space>
+            <Button onClick={onClose}>取消</Button>
+            <Button
+              icon={<IconDownload />}
+              onClick={handleDownloadPdf}
+              disabled={isLoading || !preview}
+            >
+              下载 PDF
+            </Button>
+            <Button
+              icon={<IconPrint />}
+              type="primary"
+              onClick={handlePrint}
+              disabled={isLoading || !preview}
+            >
+              打印
+            </Button>
+          </Space>
+        </Row>
+      </div>
+    </Modal>
+  )
+}

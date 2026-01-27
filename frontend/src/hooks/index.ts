@@ -49,3 +49,6 @@ export {
   type UseOrderFormOptions,
   type UseOrderFormReturn,
 } from './useOrderForm'
+
+// Print hooks
+export { usePrint, ZOOM_LEVELS, type UsePrintOptions, type UsePrintReturn } from './usePrint'
