@@ -31301,3 +31301,116 @@ github.com/stretchr/testify v1.10.0
 1. LOADGEN-011: RateLimiter implementation (prerequisite for LoadController)
 2. LOADGEN-013: LoadController (integrates RateLimiter + TrafficShaper)
 3. LOADGEN-006: DependencyGraph (uses ProducerChainGuard)
+
+2026-01-28 - LOADGEN-011 & LOADGEN-013: RateLimiter & LoadController Implementation PASSED
+
+=== Task Summary ===
+- Task ID: LOADGEN-011 (Speed Rate Limiter) + LOADGEN-013 (Load Controller)
+- Story: 速率限制器实现 + 负载控制器实现
+- Status: PASSED
+
+=== Implementation Details ===
+
+**Files Created:**
+
+1. `tools/loadgen/internal/loadctrl/ratelimiter.go` - RateLimiter Interface and Implementations
+   - RateLimiter interface with Acquire, TryAcquire, SetRate, CurrentRate, Stats
+   - TokenBucketLimiter using golang.org/x/time/rate
+   - LeakyBucketLimiter with even request spacing
+   - SlidingWindowLimiter with time-windowed tracking
+   - RateLimiterStats for monitoring
+
+2. `tools/loadgen/internal/loadctrl/workerpool.go` - Dynamic Worker Pool
+   - WorkerPool with configurable min/max/initial size
+   - Dynamic scaling via AdjustSize()
+   - Task submission with Submit() and SubmitWait()
+   - Context-aware worker management
+   - Statistics tracking
+
+3. `tools/loadgen/internal/loadctrl/metrics.go` - Metrics Collection
+   - MetricsCollector interface for latency and error tracking
+   - SlidingWindowMetrics with configurable window/bucket sizes
+   - P50/P95/P99 percentile calculations
+   - Error rate tracking
+   - Thread-safe operations
+
+4. `tools/loadgen/internal/loadctrl/controller.go` - Load Controller
+   - LoadController coordinating RateLimiter + TrafficShaper + WorkerPool + Metrics
+   - 100ms adjustment cycle (configurable)
+   - Adaptive control: auto-reduce QPS when P95 exceeds target
+   - Worker pool auto-scaling based on QPS and latency
+   - calculateOptimalWorkers() formula: Workers = QPS * AvgLatency * Buffer
+   - Thread-safe with proper mutex protection
+
+**Test Files Created:**
+- `tools/loadgen/internal/loadctrl/ratelimiter_test.go` - Rate limiter tests
+- `tools/loadgen/internal/loadctrl/workerpool_test.go` - Worker pool tests
+- `tools/loadgen/internal/loadctrl/metrics_test.go` - Metrics tests
+- `tools/loadgen/internal/loadctrl/controller_test.go` - Controller tests
+
+**Key Features:**
+
+1. **RateLimiter (LOADGEN-011)**:
+   - Token bucket (default, recommended)
+   - Leaky bucket (constant rate)
+   - Sliding window (time-based)
+   - Dynamic rate adjustment
+   - Statistics tracking
+
+2. **LoadController (LOADGEN-013)**:
+   - Every 100ms: Get target QPS from TrafficShaper → Update RateLimiter
+   - Adaptive control: P95 > target → reduce QPS by configurable factor
+   - Consecutive breach threshold to avoid flapping
+   - MinQPS floor to prevent complete starvation
+   - Worker pool auto-scaling based on Little's Law
+
+=== Verification ===
+
+**Test Results:**
+- Total Tests: All passing
+- Race Detector: PASS (no data races)
+- Coverage: 81.1%
+
+**Acceptance Criteria Verified:**
+- ✅ RateLimiter interface implemented with 3 algorithms
+- ✅ TokenBucketLimiter using golang.org/x/time/rate
+- ✅ Acquire (blocking) and TryAcquire (non-blocking)
+- ✅ SetRate dynamic adjustment
+- ✅ BurstSize configuration
+- ✅ RateLimiterStats (TotalAcquired, TotalRejected, AvgWaitTime)
+- ✅ LoadController integrates RateLimiter + TrafficShaper
+- ✅ 100ms adjustment cycle
+- ✅ Adaptive control: P95 exceeds target → auto reduce QPS
+- ✅ WorkerPool auto-scaling
+- ✅ calculateOptimalWorkers formula implemented
+
+**Code Review Status:**
+- Reviewed by code-reviewer agent
+- Fixed all CRITICAL and HIGH issues:
+  - Race condition in LeakyBucketLimiter.Acquire
+  - Slice cleanup logic in SlidingWindowLimiter
+  - Callback thread-safety in LoadController
+  - Context preservation in WorkerPool.AdjustSize
+  - Channel reuse in WorkerPool.Start
+  - Nil checks for required dependencies
+
+=== Architecture Notes ===
+
+- Thread-safe: All components use proper mutex protection
+- Immutable configuration: Copied on construction
+- Factory pattern: NewRateLimiter() dispatches to correct constructor
+- Interface-based: Easy to add new rate limiter algorithms
+- Adaptive control: Based on P95 latency with configurable threshold
+
+=== Dependencies ===
+
+Added:
+```
+golang.org/x/time v0.14.0
+```
+
+=== Next Steps ===
+
+1. LOADGEN-014: BackpressureHandler (uses MetricsCollector)
+2. LOADGEN-010: CircuitBoard (main controller)
+3. Integration testing with complete load generation system
