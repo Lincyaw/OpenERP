@@ -29674,3 +29674,107 @@ Created database migration for the Feature Flag system with three tables:
 
 - FF-BE-002: Feature Flag Domain Model and Repository
 - FF-BE-003: Feature Flag Service and Evaluation Logic
+
+================================================================================
+2025-01-28 - Task ID: FF-BE-002
+================================================================================
+=== Task: Feature Flag 领域模型和值对象 ===
+=== Status: COMPLETE ===
+
+=== Implementation Details ===
+
+Created complete DDD domain model for Feature Flag system with five files:
+
+**1. types.go - Enum Types**
+- FlagType: boolean, percentage, variant, user_segment
+- FlagStatus: enabled, disabled, archived
+- OverrideTargetType: user, tenant
+- ConditionOperator: equals, not_equals, in, not_in, contains, greater_than, less_than
+- AuditAction: created, updated, enabled, disabled, archived, override_added, override_removed
+- All types implement sql.Scanner and driver.Valuer for database operations
+- Validation methods (IsValid) and string converters
+
+**2. value_objects.go - Value Objects**
+- FlagValue: Enabled bool, Variant string, Metadata map[string]any
+  - Factory methods: NewBooleanFlagValue, NewVariantFlagValue, NewFlagValueWithMetadata
+  - Immutable operations: WithMetadata, Equals (using reflect.DeepEqual)
+- Condition: Attribute string, Operator ConditionOperator, Values []string
+  - Validates attribute, operator, and values on creation
+  - Defensive copy of values slice to maintain immutability
+- TargetingRule: RuleID, Priority, Conditions, Value, Percentage
+  - Supports percentage-based rollouts (0-100%)
+  - Immutable transformations: AddCondition, WithPriority, WithPercentage
+
+**3. entity.go - FlagOverride Entity**
+- FlagOverride: OverrideID, FlagKey, TargetType, TargetID, Value, Reason, ExpiresAt, CreatedBy
+- Supports user-level and tenant-level overrides
+- Expiration handling with IsExpired, IsActive checks
+- Methods: UpdateValue, UpdateReason, UpdateExpiresAt, Extend
+
+**4. feature_flag.go - FeatureFlag Aggregate Root**
+- Uses BaseAggregateRoot (global, not tenant-scoped - by design)
+- Fields: Key, Name, Description, Type, Status, DefaultValue, Rules, Tags, CreatedBy, UpdatedBy
+- State transitions: Enable, Disable, Archive (with domain events)
+- Rule management: AddRule, RemoveRule, UpdateRule, ClearRules (sorted by priority)
+- Tag management: SetTags, AddTag, RemoveTag (normalized, deduplicated)
+- Key validation: lowercase letters, numbers, underscores, hyphens, dots
+
+**5. events.go - Domain Events**
+- FlagCreatedEvent: Captures initial flag creation
+- FlagUpdatedEvent: Basic update info
+- FlagUpdatedEventWithDetails: Includes old/new value for default changes
+- FlagEnabledEvent: Status transition with old status
+- FlagDisabledEvent: Status transition with old status
+- FlagArchivedEvent: Status transition with old status
+- OverrideCreatedEvent: Override creation details
+- OverrideRemovedEvent: Override removal details
+- OverrideUpdatedEvent: Override value changes
+
+=== Design Decisions ===
+
+1. **Global vs Tenant-Scoped**: FeatureFlag uses BaseAggregateRoot (not TenantAggregateRoot)
+   because feature flags control application behavior globally. Tenant-specific
+   behavior is achieved through FlagOverride entities.
+
+2. **Immutability**: Value objects return copies of slices/maps to prevent external mutation.
+   FlagValue.Equals uses reflect.DeepEqual for proper comparison of metadata.
+
+3. **Event Sourcing Ready**: All state changes emit domain events for audit trail
+   and potential event sourcing integration.
+
+4. **Key Validation**: Flag keys must start with lowercase letter, contain only
+   a-z, 0-9, underscores, hyphens, and dots. Max 100 characters.
+
+=== Verification ===
+
+- ✅ All types defined with validation and SQL interface implementations
+- ✅ All value objects with proper immutability
+- ✅ FlagOverride entity with expiration handling
+- ✅ FeatureFlag aggregate root with all required methods
+- ✅ Domain events for all state changes
+- ✅ Unit test coverage: 99.1% (exceeds 80% requirement)
+- ✅ All tests pass: go test ./internal/domain/featureflag/...
+- ✅ Code review completed and issues addressed:
+    - Fixed FlagValue.Equals to use reflect.DeepEqual
+    - Added Scan/Value methods to AuditAction
+    - Added defensive copy in NewCondition
+    - Added design decision documentation for global scope
+
+=== Files Created ===
+
+1. backend/internal/domain/featureflag/types.go
+2. backend/internal/domain/featureflag/value_objects.go
+3. backend/internal/domain/featureflag/entity.go
+4. backend/internal/domain/featureflag/feature_flag.go
+5. backend/internal/domain/featureflag/events.go
+6. backend/internal/domain/featureflag/types_test.go
+7. backend/internal/domain/featureflag/value_objects_test.go
+8. backend/internal/domain/featureflag/entity_test.go
+9. backend/internal/domain/featureflag/feature_flag_test.go
+10. backend/internal/domain/featureflag/events_test.go
+
+=== Next Steps ===
+
+- FF-BE-003: Feature Flag Repository Interface
+- FF-BE-004: Feature Flag Evaluation Engine
+

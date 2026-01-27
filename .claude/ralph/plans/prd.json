@@ -8215,7 +8215,7 @@
       "- 方法实现正确的业务逻辑",
       "- 单元测试覆盖率 >= 80%"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 3.3 Domain Model",
     "affectedModules": [
       "backend/internal/domain/featureflag/types.go",
