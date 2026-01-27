@@ -366,7 +366,7 @@ func TestLoad_TelemetryConfig(t *testing.T) {
 		require.NoError(t, err)
 
 		// Default values from applyDefaults
-		assert.Equal(t, "localhost:4317", cfg.Telemetry.CollectorEndpoint)
+		assert.Equal(t, "localhost:14317", cfg.Telemetry.CollectorEndpoint)
 		assert.Equal(t, 1.0, cfg.Telemetry.SamplingRatio)
 		assert.Equal(t, "erp-backend", cfg.Telemetry.ServiceName)
 		// Enabled defaults to false unless explicitly set
@@ -376,7 +376,7 @@ func TestLoad_TelemetryConfig(t *testing.T) {
 	t.Run("loads telemetry values from env vars", func(t *testing.T) {
 		clearEnv()
 		os.Setenv("ERP_TELEMETRY_ENABLED", "true")
-		os.Setenv("ERP_TELEMETRY_COLLECTOR_ENDPOINT", "otel-collector:4317")
+		os.Setenv("ERP_TELEMETRY_COLLECTOR_ENDPOINT", "otel-collector:14317")
 		os.Setenv("ERP_TELEMETRY_SAMPLING_RATIO", "0.5")
 		os.Setenv("ERP_TELEMETRY_SERVICE_NAME", "my-erp-service")
 
@@ -384,7 +384,7 @@ func TestLoad_TelemetryConfig(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.True(t, cfg.Telemetry.Enabled)
-		assert.Equal(t, "otel-collector:4317", cfg.Telemetry.CollectorEndpoint)
+		assert.Equal(t, "otel-collector:14317", cfg.Telemetry.CollectorEndpoint)
 		assert.Equal(t, 0.5, cfg.Telemetry.SamplingRatio)
 		assert.Equal(t, "my-erp-service", cfg.Telemetry.ServiceName)
 	})

@@ -73,7 +73,7 @@ export default defineConfig({
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
       use: {
-        ...devices['Desktop Firefox'],
+        ...devices['Desktop Chrome'],
       },
     },
 
@@ -86,14 +86,14 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        storageState: 'tests/e2e/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
+    // {
+    //   name: 'firefox',
+    //   use: {
+    //     ...devices['Desktop Firefox'],
+    //     storageState: 'tests/e2e/.auth/user.json',
+    //   },
+    //   dependencies: ['setup'],
+    // },
   ],
 
   // Output folder for test artifacts

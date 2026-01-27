@@ -171,6 +171,8 @@ type ProfilingConfig struct {
 	MutexProfileFraction int  // Mutex profile fraction (default: 5, requires ProfileMutex*)
 	BlockProfileRate     int  // Block profile rate (default: 5, requires ProfileBlock*)
 	DisableGCRuns        bool // Disable GC runs in profiler (improves CPU profile, reduces heap precision)
+	// Span Profiles integration
+	SpanProfilesEnabled bool // Enable span profiles (requires Pyroscope >= 0.14.0 and telemetry.enabled=true)
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -318,6 +320,7 @@ func Load() (*Config, error) {
 				MutexProfileFraction: v.GetInt("telemetry.profiling.mutex_profile_fraction"),
 				BlockProfileRate:     v.GetInt("telemetry.profiling.block_profile_rate"),
 				DisableGCRuns:        v.GetBool("telemetry.profiling.disable_gc_runs"),
+				SpanProfilesEnabled:  v.GetBool("telemetry.profiling.span_profiles_enabled"),
 			},
 		},
 	}

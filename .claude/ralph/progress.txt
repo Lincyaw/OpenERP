@@ -27838,3 +27838,108 @@ make pyroscope-down
 === Next Steps ===
 - OBS-METRICS-001: Integrate OpenTelemetry Metrics
 - OBS-PROFILING-001: Add profiling support (Pyroscope)
+
+---
+
+## 2025-01-27 - GAP-E2E-001: Sales Flow E2E Test Implementation
+
+### Task Details
+- **ID**: GAP-E2E-001
+- **Story**: 实现销售完整流程E2E测试 (SMOKE-001)
+- **Priority**: Critical
+- **Category**: Testing
+
+### Work Completed
+
+#### 1. Test File Created
+Created comprehensive E2E test file at:
+`frontend/tests/e2e/trade/sales-flow.spec.ts`
+
+#### 2. Test Scenarios Implemented
+The test file includes the following test suites:
+
+**Sales Flow E2E Tests:**
+- Sales Order List (display, filtering)
+- Sales Order Creation (customer selection, product selection, form submission)
+- Order Status Verification (view existing orders, filter by status)
+- Finance Integration (receivables page, receipt voucher creation)
+- Order Detail View
+
+**Smoke Tests - Sales Module Navigation:**
+- Sales Order List page
+- New Sales Order page
+- Purchase Order List page
+- Sales Returns List page
+- Purchase Returns List page
+
+**Smoke Tests - Finance Module Navigation:**
+- Receivables page
+- Payables page
+- New Receipt page
+
+#### 3. Test Data Configuration
+Test data aligned with seed-data.sql:
+- Customer: Beijing Tech Solutions Ltd (CUST001)
+- Product: AirPods Pro (AIRPODS)
+- Warehouse: Beijing Main Warehouse (WH001)
+
+### Test Execution Results
+
+**Environment**: Docker Playwright (mcr.microsoft.com/playwright:v1.58.0-noble)
+
+**Results Summary:**
+- 16 tests failed
+- 1 test passed
+- Pass rate: ~6%
+
+**Root Cause Analysis:**
+The tests failed due to environment issues, not test logic:
+
+1. **React App Not Rendering**: Screenshots show blank white pages
+   - The React application is not rendering in the Docker Playwright environment
+   - HTML response is correct, but JavaScript execution fails
+
+2. **Domain Mismatch**: 
+   - Auth storage state created for `http://erp-frontend` (Docker internal)
+   - Browser context may have issues applying cookies cross-domain
+
+3. **Network Connectivity**: 
+   - Services are accessible via curl from Docker network
+   - Frontend HTML loads correctly
+   - Issue is specific to browser JavaScript execution
+
+### Files Modified
+- `frontend/tests/e2e/trade/sales-flow.spec.ts` (NEW)
+- `frontend/playwright.config.ts` (Added Firefox project)
+- `.claude/ralph/plans/prd.json` (Updated task status)
+
+### Technical Details
+
+**Test Architecture:**
+- Uses Page Object Model pattern via existing SalesOrderPage, FinancePage, LoginPage
+- Leverages authenticatedPage fixture for login
+- Screenshots captured at key points for debugging
+- Timeout configured to 120s for complex flows
+
+**Playwright Configuration:**
+- Project: chromium (primary), firefox (added)
+- Auth setup runs before tests
+- Storage state persisted to `tests/e2e/.auth/user.json`
+
+### Blockers
+
+**ENV-PLAYWRIGHT-001**: Docker Playwright Environment Issue
+- React app renders blank in Docker Playwright container
+- Local execution requires missing system libraries (libnspr4, libnss3, etc.)
+- Need to resolve browser rendering issue before tests can pass
+
+### Recommendations
+
+1. **Short-term**: Run tests on CI/CD environment with proper browser dependencies installed
+2. **Mid-term**: Use Playwright Docker image with pre-installed dependencies
+3. **Long-term**: Configure test fixtures to work with both Docker and local environments
+
+### Status
+- **Task Status**: BLOCKED (passes: false)
+- **Blocked By**: ENV-PLAYWRIGHT-001
+

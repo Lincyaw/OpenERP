@@ -19,7 +19,7 @@ func TestNewMeterProvider_Disabled(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    60 * time.Second,
 		ServiceName:       "test-service",
 	}
@@ -53,7 +53,7 @@ func TestNewMeterProvider_Enabled(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           true,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    1 * time.Second, // Short interval for testing
 		ServiceName:       "test-service",
 		Insecure:          true,
@@ -85,7 +85,7 @@ func TestMeterProvider_Meter(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    60 * time.Second,
 		ServiceName:       "test-service",
 	}
@@ -104,7 +104,7 @@ func TestMeterProvider_ForceFlush_Disabled(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    60 * time.Second,
 		ServiceName:       "test-service",
 	}
@@ -123,7 +123,7 @@ func TestMeterProvider_ShutdownTimeout(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    60 * time.Second,
 		ServiceName:       "test-service",
 	}
@@ -161,7 +161,7 @@ func TestMeterProvider_DefaultExportInterval(t *testing.T) {
 	// Create with zero export interval (should default to 60s)
 	cfg := telemetry.MetricsConfig{
 		Enabled:           true,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ExportInterval:    0, // Zero - should default to 60s
 		ServiceName:       "test-service",
 		Insecure:          true,
@@ -215,7 +215,7 @@ func TestCounter_Add(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -241,7 +241,7 @@ func TestCounter_Inc(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -268,7 +268,7 @@ func TestHistogram_Record(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -297,7 +297,7 @@ func TestHistogram_RecordDuration(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -325,7 +325,7 @@ func TestHistogram_CustomBoundaries(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -354,7 +354,7 @@ func TestHistogram_NoBoundaries(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -385,7 +385,7 @@ func TestGauge_Record(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -409,7 +409,7 @@ func TestFloatGauge_Record(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -470,7 +470,7 @@ func TestHistogram_WithHTTPDurationBuckets(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 
@@ -499,7 +499,7 @@ func TestHistogram_WithDBDurationBuckets(t *testing.T) {
 
 	cfg := telemetry.MetricsConfig{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		ServiceName:       "test-service",
 	}
 

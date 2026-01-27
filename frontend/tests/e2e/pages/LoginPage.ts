@@ -65,14 +65,29 @@ export class LoginPage extends BasePage {
    */
   async loginAndWait(username: string, password: string): Promise<void> {
     await this.login(username, password)
-    // Wait for either navigation to dashboard or error message
-    await Promise.race([
-      this.page.waitForURL('**/dashboard**', { timeout: 10000 }),
-      this.page.waitForURL('**/', { timeout: 10000 }),
-      this.page.locator(this.errorMessage).waitFor({ timeout: 10000 }),
-    ]).catch(() => {
-      // One of the conditions should have been met
-    })
+
+    // Wait for navigation away from login page
+    await this.page
+      .waitForFunction(() => !window.location.pathname.includes('/login'), { timeout: 15000 })
+      .catch(() => {
+        // Navigation might have failed - continue to check auth state
+      })
+
+    // Wait for auth state to be persisted
+    await this.page.waitForFunction(
+      () => {
+        const user = window.localStorage.getItem('user')
+        const erpAuth = window.localStorage.getItem('erp-auth')
+        if (!user || !erpAuth) return false
+        try {
+          const parsed = JSON.parse(erpAuth)
+          return parsed?.state?.user !== null && parsed?.state?.user !== undefined
+        } catch {
+          return false
+        }
+      },
+      { timeout: 10000 }
+    )
   }
 
   /**

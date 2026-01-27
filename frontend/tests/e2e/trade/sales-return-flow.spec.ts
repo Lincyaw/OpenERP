@@ -1,5 +1,5 @@
-import { test, expect, TEST_USERS } from '../fixtures'
-import { LoginPage, SalesReturnPage, SalesOrderPage, InventoryPage, FinancePage } from '../pages'
+import { test, expect } from '../fixtures'
+import { SalesReturnPage, SalesOrderPage, InventoryPage, FinancePage } from '../pages'
 
 /**
  * Sales Return Flow E2E Tests (SMOKE-003)
@@ -41,10 +41,8 @@ test.describe('Sales Return Flow (SMOKE-003)', () => {
     inventoryPage = new InventoryPage(page)
     financePage = new FinancePage(page)
 
-    // Login as admin
-    const loginPage = new LoginPage(page)
-    await loginPage.navigate()
-    await loginPage.loginAndWait(TEST_USERS.admin.username, TEST_USERS.admin.password)
+    // NOTE: Authentication is handled via storageState in playwright.config.ts
+    // The chromium project uses tests/e2e/.auth/user.json which is created by auth.setup.ts
   })
 
   test.describe('Sales Return List Page', () => {
@@ -623,10 +621,7 @@ test.describe('Complete Sales Return Lifecycle', () => {
     const _inventoryPage = new InventoryPage(page)
     const _financePage = new FinancePage(page)
 
-    // Login as admin
-    const loginPage = new LoginPage(page)
-    await loginPage.navigate()
-    await loginPage.loginAndWait(TEST_USERS.admin.username, TEST_USERS.admin.password)
+    // NOTE: Authentication is handled via storageState in playwright.config.ts
 
     // Step 1: Find a completed sales order
     await salesOrderPage.navigateToList()

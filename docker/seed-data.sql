@@ -460,13 +460,15 @@ INSERT INTO purchase_order_items (id, order_id, product_id, product_name, produc
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
--- LAYER 6: SALES RETURNS (4 total - 2 pending approval, 2 completed)
+-- LAYER 6: SALES RETURNS (5 total - 1 draft, 2 pending approval, 2 completed)
 -- ============================================================================
 
 INSERT INTO sales_returns (id, tenant_id, return_number, sales_order_id, sales_order_number, customer_id, customer_name, warehouse_id, total_refund, status, reason, remark, submitted_at, approved_at, approved_by, completed_at) VALUES
+-- Draft (1)
+('72000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', 'SR-2026-0005', '70000000-0000-0000-0000-000000000008', 'SO-2026-0008', '50000000-0000-0000-0000-000000000009', 'Zhang Xiaoli', '52000000-0000-0000-0000-000000000001', 299.0000, 'DRAFT', 'Customer request', 'Draft return for testing', NULL, NULL, NULL, NULL),
 -- Pending approval (2)
-('72000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'SR-2026-0001', '70000000-0000-0000-0000-000000000008', 'SO-2026-0008', '50000000-0000-0000-0000-000000000009', 'Zhang Xiaoli', '52000000-0000-0000-0000-000000000001', 4999.0000, 'SUBMITTED', 'Product defect', 'Screen issue on one unit', NOW() - INTERVAL '2 days', NULL, NULL, NULL),
-('72000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'SR-2026-0002', '70000000-0000-0000-0000-000000000009', 'SO-2026-0009', '50000000-0000-0000-0000-000000000010', 'Zhao Xiaojun', '52000000-0000-0000-0000-000000000003', 1799.0000, 'SUBMITTED', 'Wrong item shipped', 'Customer ordered AirPods Pro, received regular AirPods', NOW() - INTERVAL '1 day', NULL, NULL, NULL),
+('72000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'SR-2026-0001', '70000000-0000-0000-0000-000000000008', 'SO-2026-0008', '50000000-0000-0000-0000-000000000009', 'Zhang Xiaoli', '52000000-0000-0000-0000-000000000001', 4999.0000, 'PENDING', 'Product defect', 'Screen issue on one unit', NOW() - INTERVAL '2 days', NULL, NULL, NULL),
+('72000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'SR-2026-0002', '70000000-0000-0000-0000-000000000009', 'SO-2026-0009', '50000000-0000-0000-0000-000000000010', 'Zhao Xiaojun', '52000000-0000-0000-0000-000000000003', 1799.0000, 'PENDING', 'Wrong item shipped', 'Customer ordered AirPods Pro, received regular AirPods', NOW() - INTERVAL '1 day', NULL, NULL, NULL),
 -- Completed (2)
 ('72000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'SR-2026-0003', '70000000-0000-0000-0000-000000000008', 'SO-2026-0008', '50000000-0000-0000-0000-000000000009', 'Zhang Xiaoli', '52000000-0000-0000-0000-000000000001', 99.0000, 'COMPLETED', 'Change of mind', 'Customer no longer needs charger', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days', '00000000-0000-0000-0000-000000000002', NOW() - INTERVAL '3 days'),
 ('72000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', 'SR-2026-0004', '70000000-0000-0000-0000-000000000005', 'SO-2026-0005', '50000000-0000-0000-0000-000000000003', 'Shenzhen Hardware Inc', '52000000-0000-0000-0000-000000000001', 79.0000, 'COMPLETED', 'Size exchange', 'T-shirt size too small', NOW() - INTERVAL '4 days', NOW() - INTERVAL '3 days', '00000000-0000-0000-0000-000000000002', NOW() - INTERVAL '2 days')
@@ -497,8 +499,8 @@ ON CONFLICT DO NOTHING;
 -- ============================================================================
 
 INSERT INTO purchase_returns (id, tenant_id, return_number, purchase_order_id, purchase_order_number, supplier_id, supplier_name, warehouse_id, total_refund, status, reason, remark, submitted_at, approved_at, approved_by, shipped_at, completed_at) VALUES
--- Submitted (1)
-('73000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'PR-2026-0001', '71000000-0000-0000-0000-000000000004', 'PO-2026-0004', '51000000-0000-0000-0000-000000000001', 'Apple China Distribution', '52000000-0000-0000-0000-000000000002', 14000.0000, 'SUBMITTED', 'Defective units found', 'Two iPhones with screen issues', NOW() - INTERVAL '3 days', NULL, NULL, NULL, NULL),
+-- Pending (1)
+('73000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'PR-2026-0001', '71000000-0000-0000-0000-000000000004', 'PO-2026-0004', '51000000-0000-0000-0000-000000000001', 'Apple China Distribution', '52000000-0000-0000-0000-000000000002', 14000.0000, 'PENDING', 'Defective units found', 'Two iPhones with screen issues', NOW() - INTERVAL '3 days', NULL, NULL, NULL, NULL),
 -- Approved (1)
 ('73000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'PR-2026-0002', '71000000-0000-0000-0000-000000000005', 'PO-2026-0005', '51000000-0000-0000-0000-000000000003', 'Xiaomi Technology Ltd', '52000000-0000-0000-0000-000000000003', 7000.0000, 'APPROVED', 'Quality inspection failed', 'Two units failed QC', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days', '00000000-0000-0000-0000-000000000002', NULL, NULL),
 -- Completed (1)

@@ -18,7 +18,7 @@ func TestNewTracerProvider_Disabled(t *testing.T) {
 
 	cfg := telemetry.Config{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		SamplingRatio:     1.0,
 		ServiceName:       "test-service",
 	}
@@ -52,7 +52,7 @@ func TestNewTracerProvider_Enabled(t *testing.T) {
 
 	cfg := telemetry.Config{
 		Enabled:           true,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		SamplingRatio:     1.0,
 		ServiceName:       "test-service",
 	}
@@ -96,7 +96,7 @@ func TestNewTracerProvider_SamplingRatios(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := telemetry.Config{
 				Enabled:           false, // Keep disabled for unit tests
-				CollectorEndpoint: "localhost:4317",
+				CollectorEndpoint: "localhost:14317",
 				SamplingRatio:     tt.samplingRatio,
 				ServiceName:       "test-service",
 			}
@@ -118,7 +118,7 @@ func TestTracerProvider_Tracer(t *testing.T) {
 
 	cfg := telemetry.Config{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		SamplingRatio:     1.0,
 		ServiceName:       "test-service",
 	}
@@ -141,7 +141,7 @@ func TestTracerProvider_ForceFlush_Disabled(t *testing.T) {
 
 	cfg := telemetry.Config{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		SamplingRatio:     1.0,
 		ServiceName:       "test-service",
 	}
@@ -160,7 +160,7 @@ func TestTracerProvider_ShutdownTimeout(t *testing.T) {
 
 	cfg := telemetry.Config{
 		Enabled:           false,
-		CollectorEndpoint: "localhost:4317",
+		CollectorEndpoint: "localhost:14317",
 		SamplingRatio:     1.0,
 		ServiceName:       "test-service",
 	}
@@ -214,4 +214,169 @@ func TestNewTracerProvider_InvalidEndpoint(t *testing.T) {
 
 	// If creation succeeded, shutdown should still work
 	_ = tp.Shutdown(context.Background())
+}
+
+// =============================================================================
+// Span Profiles Integration Tests
+// =============================================================================
+
+func TestTracerProvider_EnableSpanProfiles_Disabled(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	cfg := telemetry.Config{
+		Enabled:           false,
+		CollectorEndpoint: "localhost:14317",
+		SamplingRatio:     1.0,
+		ServiceName:       "test-service",
+	}
+
+	tp, err := telemetry.NewTracerProvider(ctx, cfg, logger)
+	require.NoError(t, err)
+
+	// EnableSpanProfiles should succeed silently when telemetry is disabled
+	err = tp.EnableSpanProfiles()
+	assert.NoError(t, err)
+
+	// Span profiles should not be enabled
+	assert.False(t, tp.IsSpanProfilesEnabled())
+
+	err = tp.Shutdown(ctx)
+	assert.NoError(t, err)
+}
+
+func TestTracerProvider_EnableSpanProfiles_Idempotent(t *testing.T) {
+	// Skip this test in CI as it requires a real OTEL collector
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	cfg := telemetry.Config{
+		Enabled:           true,
+		CollectorEndpoint: "localhost:14317",
+		SamplingRatio:     1.0,
+		ServiceName:       "test-service-span-profiles",
+	}
+
+	tp, err := telemetry.NewTracerProvider(ctx, cfg, logger)
+	require.NoError(t, err)
+	defer func() {
+		_ = tp.Shutdown(ctx)
+	}()
+
+	// Initially span profiles should not be enabled
+	assert.False(t, tp.IsSpanProfilesEnabled())
+
+	// Enable span profiles
+	err = tp.EnableSpanProfiles()
+	assert.NoError(t, err)
+	assert.True(t, tp.IsSpanProfilesEnabled())
+
+	// Enable span profiles again should be idempotent
+	err = tp.EnableSpanProfiles()
+	assert.NoError(t, err)
+	assert.True(t, tp.IsSpanProfilesEnabled())
+}
+
+func TestTracerProvider_IsSpanProfilesEnabled_Default(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	cfg := telemetry.Config{
+		Enabled:           false,
+		CollectorEndpoint: "localhost:14317",
+		SamplingRatio:     1.0,
+		ServiceName:       "test-service",
+	}
+
+	tp, err := telemetry.NewTracerProvider(ctx, cfg, logger)
+	require.NoError(t, err)
+
+	// By default, span profiles should not be enabled
+	assert.False(t, tp.IsSpanProfilesEnabled())
+
+	err = tp.Shutdown(ctx)
+	assert.NoError(t, err)
+}
+
+func TestTracerProvider_SpanProfilesWithTracer(t *testing.T) {
+	// Skip this test in CI as it requires a real OTEL collector
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	cfg := telemetry.Config{
+		Enabled:           true,
+		CollectorEndpoint: "localhost:14317",
+		SamplingRatio:     1.0,
+		ServiceName:       "test-service-span-profiles-tracer",
+	}
+
+	tp, err := telemetry.NewTracerProvider(ctx, cfg, logger)
+	require.NoError(t, err)
+	defer func() {
+		_ = tp.Shutdown(ctx)
+	}()
+
+	// Enable span profiles
+	err = tp.EnableSpanProfiles()
+	require.NoError(t, err)
+
+	// Get a tracer and create a span
+	// After EnableSpanProfiles, the global tracer provider is wrapped
+	// so spans will have span_id as a pprof label
+	tracer := tp.Tracer("test-span-profiles")
+	_, span := tracer.Start(ctx, "test-span-with-profile")
+
+	// Simulate some work
+	time.Sleep(15 * time.Millisecond) // Ensure span is long enough for CPU profiler
+
+	span.End()
+
+	// Force flush to ensure spans are exported
+	err = tp.ForceFlush(ctx)
+	assert.NoError(t, err)
+}
+
+func TestTracerProvider_SpanProfilesConcurrentAccess(t *testing.T) {
+	logger := zaptest.NewLogger(t)
+	ctx := context.Background()
+
+	cfg := telemetry.Config{
+		Enabled:           false,
+		CollectorEndpoint: "localhost:14317",
+		SamplingRatio:     1.0,
+		ServiceName:       "test-service-concurrent",
+	}
+
+	tp, err := telemetry.NewTracerProvider(ctx, cfg, logger)
+	require.NoError(t, err)
+	defer func() {
+		_ = tp.Shutdown(ctx)
+	}()
+
+	// Test concurrent access to EnableSpanProfiles and IsSpanProfilesEnabled
+	done := make(chan struct{})
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer func() { done <- struct{}{} }()
+			_ = tp.EnableSpanProfiles()
+			_ = tp.IsSpanProfilesEnabled()
+		}()
+	}
+
+	// Wait for all goroutines
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+
+	// The state should be consistent
+	// Since telemetry is disabled, span profiles should remain disabled
+	assert.False(t, tp.IsSpanProfilesEnabled())
 }

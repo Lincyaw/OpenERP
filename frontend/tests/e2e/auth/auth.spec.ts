@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { LoginPage } from '../pages'
 import { TEST_USERS } from '../fixtures'
-import { login, logout, clearAuth, getAuthToken, reloadAndWait } from '../utils/auth'
+import { login, logout, clearAuth, reloadAndWait } from '../utils/auth'
 
 /**
  * P6-INT-002: Authentication and Authorization E2E Tests
@@ -47,9 +47,10 @@ test.describe('P6-INT-002: Authentication', () => {
       // Should redirect away from login page
       await expect(page).not.toHaveURL(/.*login.*/)
 
-      // Verify token is stored
-      const token = await getAuthToken(page)
-      expect(token).toBeTruthy()
+      // SEC-004: Token is stored in memory, not localStorage
+      // Verify login state through user data and Zustand persisted state
+      const userData = await page.evaluate(() => window.localStorage.getItem('user'))
+      expect(userData).toBeTruthy()
 
       // Take screenshot of admin dashboard
       await page.screenshot({
@@ -171,7 +172,7 @@ test.describe('P6-INT-002: Authentication', () => {
       await expect(page).not.toHaveURL(/.*login.*/)
     })
 
-    test('should clear token and redirect to login after logout', async ({ page }) => {
+    test('should clear auth state and redirect to login after logout', async ({ page }) => {
       // Login first
       await login(page, 'admin')
       await expect(page).not.toHaveURL(/.*login.*/)
@@ -188,9 +189,10 @@ test.describe('P6-INT-002: Authentication', () => {
       // Should be on login page
       await expect(page).toHaveURL(/.*login.*/)
 
-      // Token should be cleared
-      const token = await getAuthToken(page)
-      expect(token).toBeFalsy()
+      // SEC-004: Token is in memory and cleared automatically
+      // Verify auth state is cleared by checking user data
+      const userData = await page.evaluate(() => window.localStorage.getItem('user'))
+      expect(userData).toBeFalsy()
     })
   })
 
@@ -370,15 +372,20 @@ test.describe('P6-INT-002: Authentication', () => {
     // Use clean browser state for token tests
     test.use({ storageState: { cookies: [], origins: [] } })
 
-    test('should store token in localStorage after login', async ({ page }) => {
+    test('should store auth state after login', async ({ page }) => {
       const loginPage = new LoginPage(page)
       await loginPage.navigate()
       await loginPage.loginAndWait(TEST_USERS.admin.username, TEST_USERS.admin.password)
 
-      // Check localStorage for token
-      const token = await getAuthToken(page)
-      expect(token).toBeTruthy()
-      expect(typeof token).toBe('string')
+      // SEC-004: Token is no longer stored in localStorage (kept in memory)
+      // Verify auth state through user data and Zustand persisted state
+      const userData = await page.evaluate(() => window.localStorage.getItem('user'))
+      expect(userData).toBeTruthy()
+
+      const erpAuth = await page.evaluate(() => window.localStorage.getItem('erp-auth'))
+      expect(erpAuth).toBeTruthy()
+      const parsed = JSON.parse(erpAuth!)
+      expect(parsed?.state?.user).toBeTruthy()
     })
 
     test('should handle expired token gracefully', async ({ page }) => {

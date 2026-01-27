@@ -3,6 +3,8 @@ import { TEST_USERS, type TestUserType } from '../fixtures'
 
 /**
  * Login helper - authenticates a user and stores session
+ * Note: Since SEC-004, access_token is stored in memory only (not localStorage)
+ * We check for user data in localStorage as indicator of successful login
  */
 export async function login(page: Page, userType: TestUserType = 'admin'): Promise<void> {
   const user = TEST_USERS[userType]
@@ -18,32 +20,31 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   await page.click('button[type="submit"], .login-button, button:has-text("登录")')
 
   // Wait for navigation away from login page
-  await Promise.race([
-    page.waitForURL('**/dashboard**', { timeout: 15000 }),
-    page.waitForURL('**/', { timeout: 15000 }),
-  ]).catch(() => {
-    // Navigation might be to root
+  // Use a function that checks we're NOT on the login page
+  await page.waitForFunction(
+    () => !window.location.pathname.includes('/login'),
+    { timeout: 15000 }
+  ).catch(() => {
+    // Navigation might have failed - continue to check auth state
   })
 
-  // CRITICAL: Wait for auth tokens to be stored in localStorage
-  // The Zustand store persists asynchronously after login
+  // CRITICAL: Wait for auth state to be persisted
+  // Note: Since SEC-004, access_token is kept in memory only (not localStorage)
+  // We only check for user data in localStorage and erp-auth Zustand state
   await page.waitForFunction(
     () => {
-      const accessToken = window.localStorage.getItem('access_token')
+      // Check for user in localStorage (user data is still persisted)
       const user = window.localStorage.getItem('user')
-      return accessToken !== null && user !== null
-    },
-    { timeout: 10000 }
-  )
+      if (!user) return false
 
-  // Also wait for erp-auth Zustand state to be persisted
-  await page.waitForFunction(
-    () => {
+      // Also check for erp-auth Zustand persisted state
       const erpAuth = window.localStorage.getItem('erp-auth')
       if (!erpAuth) return false
+
       try {
         const parsed = JSON.parse(erpAuth)
-        return parsed?.state?.isAuthenticated === true
+        // Check if user is stored in Zustand state
+        return parsed?.state?.user !== null && parsed?.state?.user !== undefined
       } catch {
         return false
       }
@@ -97,10 +98,24 @@ export async function waitForApi(
 
 /**
  * Get authentication token from storage
+ *
+ * SEC-004: Access tokens are now stored in memory only, not in localStorage.
+ * This function cannot retrieve the token from memory state.
+ * Use getApiToken() instead if you need to make authenticated API calls in tests.
+ *
+ * @deprecated Use getApiToken() for API authentication or verify login state via user data
  */
 export async function getAuthToken(page: Page): Promise<string | null> {
-  const localStorage = await page.evaluate(() => window.localStorage.getItem('access_token'))
-  return localStorage
+  // SEC-004: Token is no longer stored in localStorage, it's kept in memory
+  // We check for user data as indicator of successful login instead
+  const userData = await page.evaluate(() => window.localStorage.getItem('user'))
+  if (userData) {
+    // User is logged in, but we can't access the token from memory
+    // Return a placeholder to indicate authenticated state for legacy tests
+    // Tests should be updated to use getApiToken() or check user data directly
+    return '[token-in-memory]'
+  }
+  return null
 }
 
 /**

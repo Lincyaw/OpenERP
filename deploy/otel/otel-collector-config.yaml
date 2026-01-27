@@ -8,8 +8,8 @@
 # development and debugging purposes.
 #
 # Endpoints:
-#   - gRPC: 0.0.0.0:4317 (for SDKs that support gRPC)
-#   - HTTP: 0.0.0.0:4318 (for SDKs that support HTTP)
+#   - gRPC: 0.0.0.0:14317 (for SDKs that support gRPC)
+#   - HTTP: 0.0.0.0:14318 (for SDKs that support HTTP)
 #
 # File outputs:
 #   - Traces:  /var/log/otel/traces.json
@@ -21,9 +21,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
+        endpoint: 0.0.0.0:14317
       http:
-        endpoint: 0.0.0.0:4318
+        endpoint: 0.0.0.0:14318
         cors:
           allowed_origins:
             - "*"

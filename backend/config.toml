@@ -179,3 +179,11 @@ mutex_profile_fraction = 5
 block_profile_rate = 5
 # Disable GC runs in profiler (improves CPU profile accuracy, reduces heap precision)
 disable_gc_runs = false
+
+# Span Profiles integration with OpenTelemetry (requires telemetry.enabled=true)
+# When enabled, each OTel span automatically gets associated CPU profile data
+# This allows jumping from a trace span directly to its CPU profile in Pyroscope
+# Requires Pyroscope server >= 0.14.0
+# NOTE: Only CPU profiling is supported for span profiles
+# NOTE: Go CPU profiler samples at 100Hz, spans shorter than 10ms may not have profile data
+span_profiles_enabled = true

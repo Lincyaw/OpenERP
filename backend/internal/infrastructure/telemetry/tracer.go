@@ -4,8 +4,10 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
+	otelpyroscope "github.com/grafana/otel-profiling-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -27,9 +29,11 @@ type Config struct {
 
 // TracerProvider wraps the OpenTelemetry TracerProvider with lifecycle management.
 type TracerProvider struct {
-	provider *sdktrace.TracerProvider
-	logger   *zap.Logger
-	config   Config
+	provider            *sdktrace.TracerProvider
+	logger              *zap.Logger
+	config              Config
+	mu                  sync.RWMutex
+	spanProfilesEnabled bool
 }
 
 // NewTracerProvider creates and configures a new TracerProvider.
@@ -105,6 +109,60 @@ func NewTracerProvider(ctx context.Context, cfg Config, logger *zap.Logger) (*Tr
 	)
 
 	return tp, nil
+}
+
+// EnableSpanProfiles wraps the TracerProvider with Pyroscope span profiles integration.
+// This allows associating CPU profiles with individual trace spans.
+//
+// IMPORTANT: This must be called AFTER the Pyroscope profiler is started.
+// The profiler must be running for span profiles to be collected.
+//
+// When enabled:
+//   - Each span automatically gets a span_id label in pprof
+//   - CPU profiles can be filtered by span_id in Pyroscope
+//   - Only CPU profiling is supported for span profiles
+//   - Spans shorter than 10ms may not have profile data (100Hz sampling rate)
+//
+// Requirements:
+//   - Telemetry must be enabled (cfg.Enabled = true)
+//   - Pyroscope server >= 0.14.0
+//   - Pyroscope profiler must be started before calling this method
+func (tp *TracerProvider) EnableSpanProfiles() error {
+	tp.mu.Lock()
+	defer tp.mu.Unlock()
+
+	if tp.provider == nil {
+		tp.logger.Debug("Cannot enable span profiles: telemetry disabled")
+		return nil
+	}
+
+	if tp.spanProfilesEnabled {
+		tp.logger.Debug("Span profiles already enabled")
+		return nil
+	}
+
+	// Wrap the underlying TracerProvider with otelpyroscope
+	// This makes every span automatically include span_id as a pprof label
+	wrappedProvider := otelpyroscope.NewTracerProvider(tp.provider)
+
+	// Update the global tracer provider to use the wrapped provider
+	otel.SetTracerProvider(wrappedProvider)
+
+	tp.spanProfilesEnabled = true
+
+	tp.logger.Info("Span profiles integration enabled",
+		zap.String("service_name", tp.config.ServiceName),
+		zap.String("note", "CPU profiles will be associated with trace spans"),
+	)
+
+	return nil
+}
+
+// IsSpanProfilesEnabled returns whether span profiles integration is enabled.
+func (tp *TracerProvider) IsSpanProfilesEnabled() bool {
+	tp.mu.RLock()
+	defer tp.mu.RUnlock()
+	return tp.spanProfilesEnabled
 }
 
 // Shutdown gracefully shuts down the tracer provider, flushing any pending spans.

@@ -5125,14 +5125,29 @@
       "- 覆盖完整销售流程从创建到收款",
       "- 验证库存、财务数据联动正确",
       "- 连续3次运行100%通过",
-      "- 生成HTML测试报告和失败截图"
+      "- 生成HTML测试报告和失败截图",
+      "",
+      "=== 实现状态 (2025-01-27) ===",
+      "测试文件已创建: frontend/tests/e2e/trade/sales-flow.spec.ts",
+      "包含测试场景:",
+      "- Sales Order List (列表展示、筛选)",
+      "- Sales Order Creation (创建订单、选择客户和商品)",
+      "- Order Status Verification (订单状态转换)",
+      "- Finance Integration (应收账款、收款单)",
+      "- Smoke Tests (模块导航测试)",
+      "",
+      "=== 环境问题 ===",
+      "Docker Playwright环境存在React应用渲染问题:",
+      "- 页面加载后显示空白",
+      "- storageState域名不匹配(erp-frontend vs localhost)",
+      "- 需要本地安装浏览器依赖运行测试"
     ],
     "passes": false,
     "specRef": "P8-001, SMOKE-001",
     "affectedModules": [
       "frontend/tests/e2e/trade/"
     ],
-    "blockedBy": []
+    "blockedBy": ["ENV-PLAYWRIGHT-001"]
   },
   {
     "id": "GAP-E2E-002",

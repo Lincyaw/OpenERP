@@ -156,12 +156,28 @@ func main() {
 		}
 	}()
 
+	// Enable span profiles integration if configured
+	// This wraps the TracerProvider with Pyroscope's otelpyroscope wrapper,
+	// allowing CPU profiles to be associated with individual trace spans.
+	// IMPORTANT: This must be done AFTER the profiler is started.
+	if cfg.Telemetry.Profiling.SpanProfilesEnabled && profiler.IsEnabled() && tracerProvider.IsEnabled() {
+		if err := tracerProvider.EnableSpanProfiles(); err != nil {
+			log.Error("Failed to enable span profiles", zap.Error(err))
+		} else {
+			log.Info("Span profiles integration enabled",
+				zap.String("note", "CPU profiles will be associated with trace spans"),
+				zap.String("limitation", "Only CPU profiling supported; spans <10ms may not have profile data"),
+			)
+		}
+	}
+
 	// Log telemetry status
 	if cfg.Telemetry.Enabled {
 		log.Info("OpenTelemetry initialized",
 			zap.Bool("tracing", tracerProvider.IsEnabled()),
 			zap.Bool("metrics", meterProvider.IsEnabled()),
 			zap.Bool("profiling", profiler.IsEnabled()),
+			zap.Bool("span_profiles", tracerProvider.IsSpanProfilesEnabled()),
 			zap.String("collector", cfg.Telemetry.CollectorEndpoint),
 		)
 	}

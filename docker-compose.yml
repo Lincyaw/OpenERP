@@ -176,6 +176,31 @@ services:
       - e2e
 
   # ---------------------------------------------------------------------------
+  # Pyroscope Profiling Server (Observability mode)
+  # ---------------------------------------------------------------------------
+  pyroscope:
+    image: grafana/pyroscope:${PYROSCOPE_VERSION:-latest}
+    container_name: erp-pyroscope
+    restart: unless-stopped
+    environment:
+      - PYROSCOPE_LOG_LEVEL=${PYROSCOPE_LOG_LEVEL:-info}
+    ports:
+      - "${PYROSCOPE_PORT:-4040}:4040"
+    volumes:
+      - pyroscope_data:/data
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4040/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - otel
+      - docker
+
+  # ---------------------------------------------------------------------------
   # OpenTelemetry Collector (Observability mode)
   # ---------------------------------------------------------------------------
   otel-collector:
@@ -188,8 +213,8 @@ services:
       - ./deploy/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
       - otel_logs:/var/log/otel
     ports:
-      - "${OTEL_GRPC_PORT:-4317}:4317"   # OTLP gRPC receiver
-      - "${OTEL_HTTP_PORT:-4318}:4318"   # OTLP HTTP receiver
+      - "${OTEL_GRPC_PORT:-14317}:14317"   # OTLP gRPC receiver
+      - "${OTEL_HTTP_PORT:-14318}:14318"   # OTLP HTTP receiver
       - "13133:13133"                     # Health check
       - "8888:8888"                        # Prometheus metrics (collector self-monitoring)
       - "55679:55679"                      # zpages (debugging)
@@ -216,3 +241,5 @@ volumes:
     name: erp-redis-data
   otel_logs:
     name: erp-otel-logs
+  pyroscope_data:
+    name: erp-pyroscope-data

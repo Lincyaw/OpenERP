@@ -191,11 +191,6 @@ export default function PlatformConfigPage() {
   // Active tab
   const [activeTab, setActiveTab] = useState<string>(PLATFORMS[0].code)
 
-  // Load configurations on mount
-  useEffect(() => {
-    loadConfigurations()
-  }, [loadConfigurations])
-
   /**
    * Load platform configurations from backend
    */
@@ -214,6 +209,11 @@ export default function PlatformConfigPage() {
       setLoading(false)
     }
   }, [t])
+
+  // Load configurations on mount
+  useEffect(() => {
+    loadConfigurations()
+  }, [loadConfigurations])
 
   /**
    * Get status for a platform

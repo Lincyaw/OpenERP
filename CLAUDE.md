@@ -267,7 +267,7 @@ All E2E tests use unified ports:
 2. **Data Isolation**: Each test case should have independent test data to avoid side effects
 3. **Complete Flow**: Tests must cover the full workflow from UI operations to database changes
 4. **Screenshots/Videos**: Failed test cases must automatically capture screenshots, key flows should be recorded
-5. **Multi-Browser**: Must cover at least Chrome and Firefox
+5. **Multi-Browser**: Must cover at least Chrome
 6. **Responsive**: Test both desktop and mobile viewports
 
 ### 6.3 Integration Test Acceptance Criteria

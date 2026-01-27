@@ -184,7 +184,7 @@ e2e: ## Run E2E tests (resets environment, runs all tests)
 	@$(MAKE) db-reset
 	@echo ""
 	@echo "$(CYAN)Starting backend and frontend...$(NC)"
-	@$(DOCKER_COMPOSE) --profile docker up -d --build
+	@$(DOCKER_COMPOSE) --profile docker up -d
 	@echo "  → Waiting for services to be healthy..."
 	@sleep 10
 	@echo ""
@@ -201,18 +201,6 @@ e2e: ## Run E2E tests (resets environment, runs all tests)
 		npx playwright test --reporter=list $(ARGS)
 	@echo ""
 	@echo "$(GREEN)E2E tests complete.$(NC)"
-
-e2e-ui: ## Run E2E tests with Playwright UI (requires local services)
-	@echo "$(CYAN)Starting Playwright UI...$(NC)"
-	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --ui
-
-e2e-debug: ## Run E2E tests in debug mode (requires local services)
-	@echo "$(CYAN)Starting Playwright in debug mode...$(NC)"
-	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --debug $(ARGS)
-
-e2e-local: ## Run E2E tests locally (no Docker, requires running services)
-	@echo "$(CYAN)Running E2E tests against local services...$(NC)"
-	@cd frontend && E2E_BASE_URL="http://localhost:$${FRONTEND_PORT:-3000}" npx playwright test --reporter=list $(ARGS)
 
 # =============================================================================
 # Other Commands
