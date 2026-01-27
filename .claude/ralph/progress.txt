@@ -26530,3 +26530,75 @@ for transaction records. This could lead to orphaned references in historical or
 === Next Steps ===
 - Consider adding database indexes on sales_order_items.product_id and purchase_order_items.product_id
 - Similar patterns can be applied to other entity deletion validations
+
+---
+
+2025-01-27 - Task ID: OBS-INFRA-001 - Deploy OpenTelemetry Collector Infrastructure
+
+=== Implementation Details ===
+
+**Summary**: Deployed OpenTelemetry Collector as a Docker service for centralized telemetry collection (traces, metrics, logs).
+
+**Files Created/Modified**:
+1. `deploy/otel/otel-collector-config.yaml` (NEW)
+   - Configured OTLP receivers (gRPC:4317, HTTP:4318)
+   - File exporters for traces, metrics, and logs with rotation
+   - Debug exporter for console output
+   - Extensions: health_check, pprof, zpages
+   - Memory limiter and batch processors
+
+2. `docker-compose.yml` (MODIFIED)
+   - Added `otel-collector` service using `otel/opentelemetry-collector-contrib:0.96.0`
+   - Volume mount for config and log output
+   - Exposed ports: 4317 (gRPC), 4318 (HTTP), 13133 (health), 8888 (metrics), 55679 (zpages)
+   - Added to `otel` and `docker` profiles
+   - Added `otel_logs` volume for persistent telemetry data
+
+3. `Makefile` (MODIFIED)
+   - `make otel-up` - Start OpenTelemetry Collector
+   - `make otel-down` - Stop OpenTelemetry Collector
+   - `make otel-logs` - View collector logs
+   - `make otel-status` - Show collector status and health
+   - Updated `make clean` to include OTEL profile and volume cleanup
+
+4. `.env.example` (MODIFIED)
+   - Added OTEL configuration section
+   - OTEL_COLLECTOR_VERSION=0.96.0
+   - OTEL_GRPC_PORT=4317 (configurable)
+   - OTEL_HTTP_PORT=4318 (configurable)
+
+**Key Design Decisions**:
+1. Used `otel/opentelemetry-collector-contrib` instead of `otel/opentelemetry-collector` for broader exporter support
+2. File exporters with rotation (100MB max, 7 days retention, 3 backups) for development debugging
+3. Debug exporter enabled for immediate feedback during development
+4. Health check extension on port 13133 for container orchestration
+5. Disabled Docker healthcheck due to distroless container image (no shell utilities available)
+6. Memory limiter configured (512MB limit, 128MB spike) to prevent OOM
+7. CORS enabled on HTTP receiver for browser-based telemetry
+
+=== Verification ===
+- [x] Docker compose config validates successfully
+- [x] `make otel-up` starts collector without errors
+- [x] Health endpoint responds: `curl http://localhost:13133/health`
+- [x] OTLP HTTP endpoint accepts traces: `curl -X POST http://localhost:4318/v1/traces`
+- [x] Prometheus metrics endpoint accessible: `http://localhost:8888/metrics`
+- [x] zpages debugging endpoint accessible: `http://localhost:55679/debug/tracez`
+- [x] `make otel-down` stops collector
+- [x] `make otel-status` shows correct status
+- [x] `make otel-logs` streams collector logs
+
+=== Notes ===
+- Port 4317 may conflict with other OTEL collectors (e.g., Phoenix). Use OTEL_GRPC_PORT/OTEL_HTTP_PORT env vars to customize.
+- The distroless container image has no shell utilities, so healthcheck is disabled. External monitoring should use the health endpoint directly.
+- File exporters write to Docker volume `erp-otel-logs`, accessible at `/var/lib/docker/volumes/erp-otel-logs/_data` on the host.
+
+=== Acceptance Criteria Met ===
+- [x] docker-compose up 后 OTEL Collector 正常启动
+- [x] 可通过 curl localhost:4318/v1/traces 验证 HTTP 端点
+- [x] 文件输出目录挂载正确 (Docker volume)
+- [x] 提供 Makefile 命令: make otel-up, make otel-logs
+
+=== Next Steps ===
+- OBS-TRACE-001: Integrate OpenTelemetry SDK into backend
+- OBS-TRACE-002: Add otelgin HTTP middleware for request tracing
+- OBS-METRICS-001: Configure Prometheus metrics pipeline

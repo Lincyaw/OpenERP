@@ -105,6 +105,8 @@ services:
       ERP_DATABASE_PASSWORD: ${DB_PASSWORD:-admin123}
       ERP_REDIS_HOST: redis
       ERP_REDIS_PORT: 6379
+      # Disable auth rate limiting for E2E tests (many parallel workers login simultaneously)
+      ERP_HTTP_AUTH_RATE_LIMIT_ENABLED: ${ERP_HTTP_AUTH_RATE_LIMIT_ENABLED:-false}
     volumes:
       - ./backend/config.toml:/app/config.toml:ro
     ports:
@@ -173,6 +175,35 @@ services:
     profiles:
       - e2e
 
+  # ---------------------------------------------------------------------------
+  # OpenTelemetry Collector (Observability mode)
+  # ---------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:${OTEL_COLLECTOR_VERSION:-0.96.0}
+    container_name: erp-otel-collector
+    restart: unless-stopped
+    command:
+      - "--config=/etc/otel-collector-config.yaml"
+    volumes:
+      - ./deploy/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+      - otel_logs:/var/log/otel
+    ports:
+      - "${OTEL_GRPC_PORT:-4317}:4317"   # OTLP gRPC receiver
+      - "${OTEL_HTTP_PORT:-4318}:4318"   # OTLP HTTP receiver
+      - "13133:13133"                     # Health check
+      - "8888:8888"                        # Prometheus metrics (collector self-monitoring)
+      - "55679:55679"                      # zpages (debugging)
+    networks:
+      - erp-network
+    # Note: OTEL Collector contrib uses a distroless image without shell utilities.
+    # Health is verified via the health_check extension exposed on port 13133.
+    # External monitoring should check: curl http://localhost:13133/health
+    healthcheck:
+      disable: true
+    profiles:
+      - otel
+      - docker
+
 networks:
   erp-network:
     driver: bridge
@@ -183,3 +214,5 @@ volumes:
     name: erp-postgres-data
   redis_data:
     name: erp-redis-data
+  otel_logs:
+    name: erp-otel-logs

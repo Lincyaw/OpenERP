@@ -9,6 +9,7 @@
         dev dev-stop dev-backend dev-frontend dev-status \
         db-migrate db-seed db-reset db-psql \
         e2e e2e-ui e2e-debug e2e-local \
+        otel-up otel-down otel-logs otel-status \
         clean logs api-docs
 
 # Default target
@@ -48,6 +49,9 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)E2E Testing:$(NC)"
 	@grep -E '^e2e.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Observability (OpenTelemetry):$(NC)"
+	@grep -E '^otel-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(GREEN)Other:$(NC)"
 	@grep -E '^(clean|logs|api-docs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
@@ -212,8 +216,47 @@ e2e-local: ## Run E2E tests locally (no Docker, requires running services)
 
 clean: ## Stop all services and remove data
 	@echo "$(CYAN)Cleaning up...$(NC)"
-	@$(DOCKER_COMPOSE) --profile docker --profile e2e --profile migrate down -v
-	@docker volume rm erp-postgres-data erp-redis-data 2>/dev/null || true
+	@$(DOCKER_COMPOSE) --profile docker --profile e2e --profile migrate --profile otel down -v
+	@docker volume rm erp-postgres-data erp-redis-data erp-otel-logs 2>/dev/null || true
 	@rm -rf logs/ bin/
 	@echo "$(GREEN)Cleanup complete.$(NC)"
+
+# =============================================================================
+# Observability (OpenTelemetry)
+# =============================================================================
+
+otel-up: ## Start OpenTelemetry Collector
+	@echo "$(CYAN)Starting OpenTelemetry Collector...$(NC)"
+	@$(DOCKER_COMPOSE) --profile otel up -d otel-collector
+	@echo ""
+	@echo "$(GREEN)OTEL Collector started!$(NC)"
+	@echo "  gRPC endpoint:   localhost:$${OTEL_GRPC_PORT:-4317}"
+	@echo "  HTTP endpoint:   localhost:$${OTEL_HTTP_PORT:-4318}"
+	@echo "  Health check:    http://localhost:13133/health"
+	@echo "  Metrics:         http://localhost:8888/metrics"
+	@echo "  zpages:          http://localhost:55679/debug/tracez"
+
+otel-down: ## Stop OpenTelemetry Collector
+	@echo "$(CYAN)Stopping OpenTelemetry Collector...$(NC)"
+	@$(DOCKER_COMPOSE) stop otel-collector
+	@echo "$(GREEN)OTEL Collector stopped.$(NC)"
+
+otel-logs: ## View OpenTelemetry Collector logs
+	@$(DOCKER_COMPOSE) logs -f otel-collector
+
+otel-status: ## Show OTEL Collector status and health
+	@echo "$(CYAN)OTEL Collector Status:$(NC)"
+	@docker inspect erp-otel-collector --format '  Container: {{.State.Status}}' 2>/dev/null || echo "  Container: Not running"
+	@echo ""
+	@curl -s http://localhost:13133/health 2>/dev/null | jq -r '"  Health: " + .status' 2>/dev/null || echo "  Health: Unavailable (collector not running or port blocked)"
+	@echo ""
+	@echo "$(CYAN)Endpoints:$(NC)"
+	@echo "  gRPC:    localhost:$${OTEL_GRPC_PORT:-4317}"
+	@echo "  HTTP:    localhost:$${OTEL_HTTP_PORT:-4318}"
+	@echo "  Health:  http://localhost:13133/health"
+	@echo "  Metrics: http://localhost:8888/metrics"
+	@echo ""
+	@echo "$(CYAN)Data volume:$(NC)"
+	@docker volume inspect erp-otel-logs --format '  {{.Mountpoint}}' 2>/dev/null || echo "  Volume not created yet"
+
 
