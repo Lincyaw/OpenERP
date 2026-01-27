@@ -369,7 +369,9 @@ export default function StockListPage() {
               </span>
               {isBelowMin && (
                 <Tooltip content={t('stock.tooltip.belowMinimum')}>
-                  <IconAlertTriangle className="warning-icon" />
+                  <span style={{ display: 'inline-flex' }}>
+                    <IconAlertTriangle className="warning-icon" />
+                  </span>
                 </Tooltip>
               )}
             </div>

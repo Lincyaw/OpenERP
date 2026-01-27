@@ -505,26 +505,30 @@ export default function PlatformSyncStatusPage() {
                     content={t('syncStatus.confirmSync.orderContent')}
                     onConfirm={() => handleManualSync(summary.code, 'ORDER')}
                   >
-                    <Button
-                      icon={<IconPlay />}
-                      loading={isSyncing && syncing?.type === 'ORDER'}
-                      disabled={isSyncing}
-                    >
-                      {t('syncStatus.syncOrders')}
-                    </Button>
+                    <span style={{ display: 'inline-flex' }}>
+                      <Button
+                        icon={<IconPlay />}
+                        loading={isSyncing && syncing?.type === 'ORDER'}
+                        disabled={isSyncing}
+                      >
+                        {t('syncStatus.syncOrders')}
+                      </Button>
+                    </span>
                   </Popconfirm>
                   <Popconfirm
                     title={t('syncStatus.confirmSync.title')}
                     content={t('syncStatus.confirmSync.inventoryContent')}
                     onConfirm={() => handleManualSync(summary.code, 'INVENTORY')}
                   >
-                    <Button
-                      icon={<IconRefresh />}
-                      loading={isSyncing && syncing?.type === 'INVENTORY'}
-                      disabled={isSyncing}
-                    >
-                      {t('syncStatus.syncInventory')}
-                    </Button>
+                    <span style={{ display: 'inline-flex' }}>
+                      <Button
+                        icon={<IconRefresh />}
+                        loading={isSyncing && syncing?.type === 'INVENTORY'}
+                        disabled={isSyncing}
+                      >
+                        {t('syncStatus.syncInventory')}
+                      </Button>
+                    </span>
                   </Popconfirm>
                 </Space>
               </div>

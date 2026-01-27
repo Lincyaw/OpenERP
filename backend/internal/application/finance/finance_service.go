@@ -7,6 +7,7 @@ import (
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -780,70 +781,83 @@ type ReconcileReceiptResult struct {
 
 // ReconcileReceipt reconciles a receipt voucher to outstanding receivables
 func (s *FinanceService) ReconcileReceipt(ctx context.Context, tenantID uuid.UUID, req ReconcileReceiptRequest) (*ReconcileReceiptResult, error) {
-	voucher, err := s.receiptVoucherRepo.FindByIDForTenant(ctx, tenantID, req.VoucherID)
-	if err != nil {
-		return nil, err
-	}
-	if voucher == nil {
-		return nil, shared.NewDomainError("NOT_FOUND", "Receipt voucher not found")
-	}
-
-	// Get outstanding receivables for the customer
-	receivables, err := s.receivableRepo.FindOutstanding(ctx, tenantID, voucher.CustomerID)
-	if err != nil {
-		return nil, err
-	}
-
-	strategyType := finance.ReconciliationStrategyType(req.StrategyType)
-	// If no strategy specified or invalid, use the effective strategy from the service
-	if !strategyType.IsValid() {
-		strategyType = s.reconciliationSvc.GetEffectiveStrategy(ctx, tenantID)
-	}
-
-	// Convert manual allocations if provided
-	var manualAllocs []finance.ManualAllocationRequest
-	for _, ma := range req.ManualAllocations {
-		manualAllocs = append(manualAllocs, finance.ManualAllocationRequest{
-			TargetID: ma.TargetID,
-			Amount:   ma.Amount,
-		})
-	}
-
-	result, err := s.reconciliationSvc.ReconcileReceipt(ctx, finance.ReconcileReceiptRequest{
-		ReceiptVoucher:    voucher,
-		Receivables:       receivables,
-		StrategyType:      strategyType,
-		ManualAllocations: manualAllocs,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Save updated voucher
-	if err := s.receiptVoucherRepo.SaveWithLock(ctx, result.ReceiptVoucher); err != nil {
-		return nil, err
-	}
-
-	// Save updated receivables
-	for i := range result.UpdatedReceivables {
-		if err := s.receivableRepo.SaveWithLock(ctx, &result.UpdatedReceivables[i]); err != nil {
-			return nil, err
+	// Wrap in profiling labels for performance analysis
+	var response *ReconcileReceiptResult
+	var operationErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.FinanceOperationLabels(telemetry.OperationReconcile, ""), func(c context.Context) {
+		voucher, err := s.receiptVoucherRepo.FindByIDForTenant(c, tenantID, req.VoucherID)
+		if err != nil {
+			operationErr = err
+			return
 		}
-	}
+		if voucher == nil {
+			operationErr = shared.NewDomainError("NOT_FOUND", "Receipt voucher not found")
+			return
+		}
 
-	// Convert to response
-	updatedReceivables := make([]AccountReceivableResponse, len(result.UpdatedReceivables))
-	for i, r := range result.UpdatedReceivables {
-		updatedReceivables[i] = *toReceivableResponse(&r)
-	}
+		// Get outstanding receivables for the customer
+		receivables, err := s.receivableRepo.FindOutstanding(c, tenantID, voucher.CustomerID)
+		if err != nil {
+			operationErr = err
+			return
+		}
 
-	return &ReconcileReceiptResult{
-		Voucher:              toReceiptVoucherResponse(result.ReceiptVoucher),
-		UpdatedReceivables:   updatedReceivables,
-		TotalReconciled:      result.TotalReconciled,
-		RemainingUnallocated: result.RemainingUnallocated,
-		FullyReconciled:      result.FullyReconciled,
-	}, nil
+		strategyType := finance.ReconciliationStrategyType(req.StrategyType)
+		// If no strategy specified or invalid, use the effective strategy from the service
+		if !strategyType.IsValid() {
+			strategyType = s.reconciliationSvc.GetEffectiveStrategy(c, tenantID)
+		}
+
+		// Convert manual allocations if provided
+		var manualAllocs []finance.ManualAllocationRequest
+		for _, ma := range req.ManualAllocations {
+			manualAllocs = append(manualAllocs, finance.ManualAllocationRequest{
+				TargetID: ma.TargetID,
+				Amount:   ma.Amount,
+			})
+		}
+
+		result, err := s.reconciliationSvc.ReconcileReceipt(c, finance.ReconcileReceiptRequest{
+			ReceiptVoucher:    voucher,
+			Receivables:       receivables,
+			StrategyType:      strategyType,
+			ManualAllocations: manualAllocs,
+		})
+		if err != nil {
+			operationErr = err
+			return
+		}
+
+		// Save updated voucher
+		if err := s.receiptVoucherRepo.SaveWithLock(c, result.ReceiptVoucher); err != nil {
+			operationErr = err
+			return
+		}
+
+		// Save updated receivables
+		for i := range result.UpdatedReceivables {
+			if err := s.receivableRepo.SaveWithLock(c, &result.UpdatedReceivables[i]); err != nil {
+				operationErr = err
+				return
+			}
+		}
+
+		// Convert to response
+		updatedReceivables := make([]AccountReceivableResponse, len(result.UpdatedReceivables))
+		for i, r := range result.UpdatedReceivables {
+			updatedReceivables[i] = *toReceivableResponse(&r)
+		}
+
+		response = &ReconcileReceiptResult{
+			Voucher:              toReceiptVoucherResponse(result.ReceiptVoucher),
+			UpdatedReceivables:   updatedReceivables,
+			TotalReconciled:      result.TotalReconciled,
+			RemainingUnallocated: result.RemainingUnallocated,
+			FullyReconciled:      result.FullyReconciled,
+		}
+	})
+
+	return response, operationErr
 }
 
 // ReconcilePaymentRequest represents a request to reconcile a payment voucher
@@ -864,70 +878,83 @@ type ReconcilePaymentResult struct {
 
 // ReconcilePayment reconciles a payment voucher to outstanding payables
 func (s *FinanceService) ReconcilePayment(ctx context.Context, tenantID uuid.UUID, req ReconcilePaymentRequest) (*ReconcilePaymentResult, error) {
-	voucher, err := s.paymentVoucherRepo.FindByIDForTenant(ctx, tenantID, req.VoucherID)
-	if err != nil {
-		return nil, err
-	}
-	if voucher == nil {
-		return nil, shared.NewDomainError("NOT_FOUND", "Payment voucher not found")
-	}
-
-	// Get outstanding payables for the supplier
-	payables, err := s.payableRepo.FindOutstanding(ctx, tenantID, voucher.SupplierID)
-	if err != nil {
-		return nil, err
-	}
-
-	strategyType := finance.ReconciliationStrategyType(req.StrategyType)
-	// If no strategy specified or invalid, use the effective strategy from the service
-	if !strategyType.IsValid() {
-		strategyType = s.reconciliationSvc.GetEffectiveStrategy(ctx, tenantID)
-	}
-
-	// Convert manual allocations if provided
-	var manualAllocs []finance.ManualAllocationRequest
-	for _, ma := range req.ManualAllocations {
-		manualAllocs = append(manualAllocs, finance.ManualAllocationRequest{
-			TargetID: ma.TargetID,
-			Amount:   ma.Amount,
-		})
-	}
-
-	result, err := s.reconciliationSvc.ReconcilePayment(ctx, finance.ReconcilePaymentRequest{
-		PaymentVoucher:    voucher,
-		Payables:          payables,
-		StrategyType:      strategyType,
-		ManualAllocations: manualAllocs,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Save updated voucher
-	if err := s.paymentVoucherRepo.SaveWithLock(ctx, result.PaymentVoucher); err != nil {
-		return nil, err
-	}
-
-	// Save updated payables
-	for i := range result.UpdatedPayables {
-		if err := s.payableRepo.SaveWithLock(ctx, &result.UpdatedPayables[i]); err != nil {
-			return nil, err
+	// Wrap in profiling labels for performance analysis
+	var response *ReconcilePaymentResult
+	var operationErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.FinanceOperationLabels(telemetry.OperationReconcile, ""), func(c context.Context) {
+		voucher, err := s.paymentVoucherRepo.FindByIDForTenant(c, tenantID, req.VoucherID)
+		if err != nil {
+			operationErr = err
+			return
 		}
-	}
+		if voucher == nil {
+			operationErr = shared.NewDomainError("NOT_FOUND", "Payment voucher not found")
+			return
+		}
 
-	// Convert to response
-	updatedPayables := make([]AccountPayableResponse, len(result.UpdatedPayables))
-	for i, p := range result.UpdatedPayables {
-		updatedPayables[i] = *toPayableResponse(&p)
-	}
+		// Get outstanding payables for the supplier
+		payables, err := s.payableRepo.FindOutstanding(c, tenantID, voucher.SupplierID)
+		if err != nil {
+			operationErr = err
+			return
+		}
 
-	return &ReconcilePaymentResult{
-		Voucher:              toPaymentVoucherResponse(result.PaymentVoucher),
-		UpdatedPayables:      updatedPayables,
-		TotalReconciled:      result.TotalReconciled,
-		RemainingUnallocated: result.RemainingUnallocated,
-		FullyReconciled:      result.FullyReconciled,
-	}, nil
+		strategyType := finance.ReconciliationStrategyType(req.StrategyType)
+		// If no strategy specified or invalid, use the effective strategy from the service
+		if !strategyType.IsValid() {
+			strategyType = s.reconciliationSvc.GetEffectiveStrategy(c, tenantID)
+		}
+
+		// Convert manual allocations if provided
+		var manualAllocs []finance.ManualAllocationRequest
+		for _, ma := range req.ManualAllocations {
+			manualAllocs = append(manualAllocs, finance.ManualAllocationRequest{
+				TargetID: ma.TargetID,
+				Amount:   ma.Amount,
+			})
+		}
+
+		result, err := s.reconciliationSvc.ReconcilePayment(c, finance.ReconcilePaymentRequest{
+			PaymentVoucher:    voucher,
+			Payables:          payables,
+			StrategyType:      strategyType,
+			ManualAllocations: manualAllocs,
+		})
+		if err != nil {
+			operationErr = err
+			return
+		}
+
+		// Save updated voucher
+		if err := s.paymentVoucherRepo.SaveWithLock(c, result.PaymentVoucher); err != nil {
+			operationErr = err
+			return
+		}
+
+		// Save updated payables
+		for i := range result.UpdatedPayables {
+			if err := s.payableRepo.SaveWithLock(c, &result.UpdatedPayables[i]); err != nil {
+				operationErr = err
+				return
+			}
+		}
+
+		// Convert to response
+		updatedPayables := make([]AccountPayableResponse, len(result.UpdatedPayables))
+		for i, p := range result.UpdatedPayables {
+			updatedPayables[i] = *toPayableResponse(&p)
+		}
+
+		response = &ReconcilePaymentResult{
+			Voucher:              toPaymentVoucherResponse(result.PaymentVoucher),
+			UpdatedPayables:      updatedPayables,
+			TotalReconciled:      result.TotalReconciled,
+			RemainingUnallocated: result.RemainingUnallocated,
+			FullyReconciled:      result.FullyReconciled,
+		}
+	})
+
+	return response, operationErr
 }
 
 // ===================== Helper Functions =====================

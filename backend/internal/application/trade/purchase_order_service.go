@@ -36,76 +36,89 @@ func (s *PurchaseOrderService) SetBusinessMetrics(bm *telemetry.BusinessMetrics)
 
 // Create creates a new purchase order
 func (s *PurchaseOrderService) Create(ctx context.Context, tenantID uuid.UUID, req CreatePurchaseOrderRequest) (*PurchaseOrderResponse, error) {
-	// Generate order number
-	orderNumber, err := s.orderRepo.GenerateOrderNumber(ctx, tenantID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create order
-	order, err := trade.NewPurchaseOrder(tenantID, orderNumber, req.SupplierID, req.SupplierName)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set warehouse if provided
-	if req.WarehouseID != nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
-			return nil, err
-		}
-	}
-
-	// Add items
-	for _, item := range req.Items {
-		unitCost := valueobject.NewMoneyCNY(item.UnitCost)
-		orderItem, err := order.AddItem(
-			item.ProductID,
-			item.ProductName,
-			item.ProductCode,
-			item.Unit,
-			item.BaseUnit,
-			item.Quantity,
-			item.ConversionRate,
-			unitCost,
-		)
+	// Wrap in profiling labels for performance analysis
+	var response *PurchaseOrderResponse
+	var createErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationCreateOrder, string(telemetry.OrderTypePurchase)), func(c context.Context) {
+		// Generate order number
+		orderNumber, err := s.orderRepo.GenerateOrderNumber(c, tenantID)
 		if err != nil {
-			return nil, err
+			createErr = err
+			return
 		}
-		if item.Remark != "" {
-			orderItem.SetRemark(item.Remark)
+
+		// Create order
+		order, err := trade.NewPurchaseOrder(tenantID, orderNumber, req.SupplierID, req.SupplierName)
+		if err != nil {
+			createErr = err
+			return
 		}
-	}
 
-	// Apply discount if provided
-	if req.Discount != nil {
-		discountMoney := valueobject.NewMoneyCNY(*req.Discount)
-		if err := order.ApplyDiscount(discountMoney); err != nil {
-			return nil, err
+		// Set warehouse if provided
+		if req.WarehouseID != nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				createErr = err
+				return
+			}
 		}
-	}
 
-	// Set remark
-	if req.Remark != "" {
-		order.SetRemark(req.Remark)
-	}
+		// Add items
+		for _, item := range req.Items {
+			unitCost := valueobject.NewMoneyCNY(item.UnitCost)
+			orderItem, err := order.AddItem(
+				item.ProductID,
+				item.ProductName,
+				item.ProductCode,
+				item.Unit,
+				item.BaseUnit,
+				item.Quantity,
+				item.ConversionRate,
+				unitCost,
+			)
+			if err != nil {
+				createErr = err
+				return
+			}
+			if item.Remark != "" {
+				orderItem.SetRemark(item.Remark)
+			}
+		}
 
-	// Set created_by if provided (from JWT context via handler)
-	if req.CreatedBy != nil {
-		order.SetCreatedBy(*req.CreatedBy)
-	}
+		// Apply discount if provided
+		if req.Discount != nil {
+			discountMoney := valueobject.NewMoneyCNY(*req.Discount)
+			if err := order.ApplyDiscount(discountMoney); err != nil {
+				createErr = err
+				return
+			}
+		}
 
-	// Save order
-	if err := s.orderRepo.Save(ctx, order); err != nil {
-		return nil, err
-	}
+		// Set remark
+		if req.Remark != "" {
+			order.SetRemark(req.Remark)
+		}
 
-	// Record business metrics
-	if s.businessMetrics != nil {
-		s.businessMetrics.RecordOrderWithAmount(ctx, tenantID, telemetry.OrderTypePurchase, order.TotalAmount)
-	}
+		// Set created_by if provided (from JWT context via handler)
+		if req.CreatedBy != nil {
+			order.SetCreatedBy(*req.CreatedBy)
+		}
 
-	response := ToPurchaseOrderResponse(order)
-	return &response, nil
+		// Save order
+		if err := s.orderRepo.Save(c, order); err != nil {
+			createErr = err
+			return
+		}
+
+		// Record business metrics
+		if s.businessMetrics != nil {
+			s.businessMetrics.RecordOrderWithAmount(c, tenantID, telemetry.OrderTypePurchase, order.TotalAmount)
+		}
+
+		resp := ToPurchaseOrderResponse(order)
+		response = &resp
+	})
+
+	return response, createErr
 }
 
 // GetByID retrieves a purchase order by ID
@@ -385,82 +398,104 @@ func (s *PurchaseOrderService) RemoveItem(ctx context.Context, tenantID, orderID
 
 // Confirm confirms a purchase order
 func (s *PurchaseOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.UUID, req ConfirmPurchaseOrderRequest) (*PurchaseOrderResponse, error) {
-	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set warehouse if provided and not already set
-	if req.WarehouseID != nil && order.WarehouseID == nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
-			return nil, err
+	// Wrap in profiling labels for performance analysis
+	var response *PurchaseOrderResponse
+	var confirmErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationConfirmOrder, string(telemetry.OrderTypePurchase)), func(c context.Context) {
+		order, err := s.orderRepo.FindByIDForTenant(c, tenantID, orderID)
+		if err != nil {
+			confirmErr = err
+			return
 		}
-	}
 
-	// Confirm order
-	if err := order.Confirm(); err != nil {
-		return nil, err
-	}
+		// Set warehouse if provided and not already set
+		if req.WarehouseID != nil && order.WarehouseID == nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				confirmErr = err
+				return
+			}
+		}
 
-	// Save with optimistic locking
-	if err := s.orderRepo.SaveWithLock(ctx, order); err != nil {
-		return nil, err
-	}
+		// Confirm order
+		if err := order.Confirm(); err != nil {
+			confirmErr = err
+			return
+		}
 
-	response := ToPurchaseOrderResponse(order)
-	return &response, nil
+		// Save with optimistic locking
+		if err := s.orderRepo.SaveWithLock(c, order); err != nil {
+			confirmErr = err
+			return
+		}
+
+		resp := ToPurchaseOrderResponse(order)
+		response = &resp
+	})
+
+	return response, confirmErr
 }
 
 // Receive processes receipt of goods for a purchase order
 // Returns the order and details of what was received
 func (s *PurchaseOrderService) Receive(ctx context.Context, tenantID, orderID uuid.UUID, req ReceivePurchaseOrderRequest) (*ReceiveResultResponse, error) {
-	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set warehouse if provided and not already set
-	if req.WarehouseID != nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
-			return nil, err
+	// Wrap in profiling labels for performance analysis
+	var response *ReceiveResultResponse
+	var receiveErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationReceiveOrder, string(telemetry.OrderTypePurchase)), func(c context.Context) {
+		order, err := s.orderRepo.FindByIDForTenant(c, tenantID, orderID)
+		if err != nil {
+			receiveErr = err
+			return
 		}
-	}
 
-	// Convert request items to domain items
-	receiveItems := make([]trade.ReceiveItem, len(req.Items))
-	for i, item := range req.Items {
-		receiveItems[i] = trade.ReceiveItem{
-			ProductID:   item.ProductID,
-			Quantity:    item.Quantity,
-			BatchNumber: item.BatchNumber,
-			ExpiryDate:  item.ExpiryDate,
+		// Set warehouse if provided and not already set
+		if req.WarehouseID != nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				receiveErr = err
+				return
+			}
 		}
-		if item.UnitCost != nil {
-			receiveItems[i].UnitCost = *item.UnitCost
+
+		// Convert request items to domain items
+		receiveItems := make([]trade.ReceiveItem, len(req.Items))
+		for i, item := range req.Items {
+			receiveItems[i] = trade.ReceiveItem{
+				ProductID:   item.ProductID,
+				Quantity:    item.Quantity,
+				BatchNumber: item.BatchNumber,
+				ExpiryDate:  item.ExpiryDate,
+			}
+			if item.UnitCost != nil {
+				receiveItems[i].UnitCost = *item.UnitCost
+			}
 		}
-	}
 
-	// Process receive
-	receivedInfos, err := order.Receive(receiveItems)
-	if err != nil {
-		return nil, err
-	}
+		// Process receive
+		receivedInfos, err := order.Receive(receiveItems)
+		if err != nil {
+			receiveErr = err
+			return
+		}
 
-	// Collect domain events before save
-	events := order.GetDomainEvents()
-	order.ClearDomainEvents()
+		// Collect domain events before save
+		events := order.GetDomainEvents()
+		order.ClearDomainEvents()
 
-	// Save with optimistic locking and events atomically (transactional outbox pattern)
-	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
-		return nil, err
-	}
+		// Save with optimistic locking and events atomically (transactional outbox pattern)
+		if err := s.orderRepo.SaveWithLockAndEvents(c, order, events); err != nil {
+			receiveErr = err
+			return
+		}
 
-	orderResponse := ToPurchaseOrderResponse(order)
-	return &ReceiveResultResponse{
-		Order:           orderResponse,
-		ReceivedItems:   ToReceivedItemResponses(receivedInfos),
-		IsFullyReceived: order.IsCompleted(),
-	}, nil
+		orderResponse := ToPurchaseOrderResponse(order)
+		response = &ReceiveResultResponse{
+			Order:           orderResponse,
+			ReceivedItems:   ToReceivedItemResponses(receivedInfos),
+			IsFullyReceived: order.IsCompleted(),
+		}
+	})
+
+	return response, receiveErr
 }
 
 // Cancel cancels a purchase order

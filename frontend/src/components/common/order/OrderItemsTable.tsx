@@ -220,7 +220,9 @@ export function OrderItemsTable<T extends OrderItemFormData>({
             onConfirm={() => onRemoveItem(record.key)}
             position="left"
           >
-            <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
+            <span style={{ display: 'inline-flex' }}>
+              <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
+            </span>
           </Popconfirm>
         ),
       },

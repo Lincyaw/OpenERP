@@ -311,7 +311,9 @@ export default function ReceivablesPage() {
             <span className="receivable-number">{(number as string) || '-'}</span>
             {isOverdue(record) && (
               <Tooltip content={t('receivables.tooltip.overdue')}>
-                <IconAlertCircle className="overdue-icon" />
+                <span style={{ display: 'inline-flex' }}>
+                  <IconAlertCircle className="overdue-icon" />
+                </span>
               </Tooltip>
             )}
           </div>

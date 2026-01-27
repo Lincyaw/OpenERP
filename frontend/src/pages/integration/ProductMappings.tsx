@@ -821,10 +821,12 @@ export default function ProductMappingsPage() {
               okText={t('common:confirm')}
               cancelText={t('common:cancel')}
             >
-              <Tag color="red" style={{ cursor: 'pointer' }}>
-                <IconUnlink style={{ marginRight: 4 }} />
-                {t('productMappings.actions.batchDelete')}
-              </Tag>
+              <span style={{ display: 'inline-flex' }}>
+                <Tag color="red" style={{ cursor: 'pointer' }}>
+                  <IconUnlink style={{ marginRight: 4 }} />
+                  {t('productMappings.actions.batchDelete')}
+                </Tag>
+              </span>
             </Popconfirm>
           </BulkActionBar>
         )}

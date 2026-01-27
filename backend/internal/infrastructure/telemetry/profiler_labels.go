@@ -25,6 +25,67 @@ const (
 	ProfilingLabelOperation = "operation"
 	// ProfilingLabelRegion is the label key for code regions (e.g., "db_query", "external_api").
 	ProfilingLabelRegion = "region"
+
+	// Business operation labels for profiling critical paths
+
+	// ProfilingLabelOrderType is the label key for order type (sales, purchase).
+	ProfilingLabelOrderType = "order_type"
+	// ProfilingLabelWarehouseType is the label key for warehouse type (physical, virtual).
+	ProfilingLabelWarehouseType = "warehouse_type"
+	// ProfilingLabelPaymentMethod is the label key for payment method (cash, wechat, alipay, bank_transfer).
+	ProfilingLabelPaymentMethod = "payment_method"
+)
+
+// Business operation names for profiling critical paths
+
+// Order operations
+const (
+	// OperationCreateOrder represents the create_order operation.
+	OperationCreateOrder = "create_order"
+	// OperationConfirmOrder represents the confirm_order operation.
+	OperationConfirmOrder = "confirm_order"
+	// OperationShipOrder represents the ship_order operation.
+	OperationShipOrder = "ship_order"
+	// OperationCancelOrder represents the cancel_order operation.
+	OperationCancelOrder = "cancel_order"
+	// OperationReceiveOrder represents the receive_order operation for purchase orders.
+	OperationReceiveOrder = "receive_order"
+)
+
+// Inventory operations
+const (
+	// OperationLockStock represents the lock_stock operation.
+	OperationLockStock = "lock_stock"
+	// OperationUnlockStock represents the unlock_stock operation.
+	OperationUnlockStock = "unlock_stock"
+	// OperationDeductStock represents the deduct_stock operation.
+	OperationDeductStock = "deduct_stock"
+	// OperationIncreaseStock represents the increase_stock operation.
+	OperationIncreaseStock = "increase_stock"
+	// OperationDecreaseStock represents the decrease_stock operation.
+	OperationDecreaseStock = "decrease_stock"
+	// OperationAdjustStock represents the adjust_stock operation.
+	OperationAdjustStock = "adjust_stock"
+)
+
+// Finance operations
+const (
+	// OperationCreateReceivable represents the create_receivable operation.
+	OperationCreateReceivable = "create_receivable"
+	// OperationCreatePayable represents the create_payable operation.
+	OperationCreatePayable = "create_payable"
+	// OperationProcessPayment represents the process_payment operation.
+	OperationProcessPayment = "process_payment"
+	// OperationReconcile represents the reconcile operation.
+	OperationReconcile = "reconcile"
+)
+
+// Warehouse types
+const (
+	// WarehouseTypePhysical represents a physical warehouse.
+	WarehouseTypePhysical = "physical"
+	// WarehouseTypeVirtual represents a virtual warehouse.
+	WarehouseTypeVirtual = "virtual"
 )
 
 // MaxLabelValueLength is the maximum allowed length for label values
@@ -293,5 +354,68 @@ func RegionLabels(region string, extraLabels map[string]string) map[string]strin
 	labels[ProfilingLabelRegion] = region
 	maps.Copy(labels, extraLabels)
 
+	return labels
+}
+
+// OrderOperationLabels creates labels for order-related operations.
+// Use for profiling sales order and purchase order operations.
+//
+// Example usage:
+//
+//	telemetry.WithProfilingLabels(ctx,
+//	    telemetry.OrderOperationLabels("create_order", "sales"),
+//	    func(c context.Context) {
+//	        // Create sales order logic
+//	    })
+func OrderOperationLabels(operation, orderType string) map[string]string {
+	labels := make(map[string]string, 2)
+	if operation != "" {
+		labels[ProfilingLabelOperation] = operation
+	}
+	if orderType != "" {
+		labels[ProfilingLabelOrderType] = orderType
+	}
+	return labels
+}
+
+// InventoryOperationLabels creates labels for inventory-related operations.
+// Use for profiling stock locking, deduction, and increase operations.
+//
+// Example usage:
+//
+//	telemetry.WithProfilingLabels(ctx,
+//	    telemetry.InventoryOperationLabels("lock_stock", "physical"),
+//	    func(c context.Context) {
+//	        // Lock stock logic
+//	    })
+func InventoryOperationLabels(operation, warehouseType string) map[string]string {
+	labels := make(map[string]string, 2)
+	if operation != "" {
+		labels[ProfilingLabelOperation] = operation
+	}
+	if warehouseType != "" {
+		labels[ProfilingLabelWarehouseType] = warehouseType
+	}
+	return labels
+}
+
+// FinanceOperationLabels creates labels for finance-related operations.
+// Use for profiling receivable creation, payment processing, and reconciliation.
+//
+// Example usage:
+//
+//	telemetry.WithProfilingLabels(ctx,
+//	    telemetry.FinanceOperationLabels("process_payment", "wechat"),
+//	    func(c context.Context) {
+//	        // Process payment logic
+//	    })
+func FinanceOperationLabels(operation, paymentMethod string) map[string]string {
+	labels := make(map[string]string, 2)
+	if operation != "" {
+		labels[ProfilingLabelOperation] = operation
+	}
+	if paymentMethod != "" {
+		labels[ProfilingLabelPaymentMethod] = paymentMethod
+	}
 	return labels
 }

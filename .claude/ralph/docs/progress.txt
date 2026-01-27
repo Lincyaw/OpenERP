@@ -789,3 +789,82 @@ When major version release is planned:
 - (Optional) Add CustomerLevel management page in admin section
 - Fix pre-existing CustomerForm test failures (button text mismatch)
 - Consider adding E2E tests for CustomerLevel API endpoints
+
+2026-01-27 - OBS-ALERT-001: Alert Rules Design Documentation (基于指标的告警规则配置)
+
+=== Task Summary ===
+Created comprehensive alerting rules design documentation for the ERP system's observability layer.
+This is a design-only task - implementation requires Prometheus deployment (future phase).
+
+=== Deliverables ===
+
+### Created Files
+- `.claude/ralph/docs/observability/alerting-rules.md` - Complete alerting rules design document
+
+### Alert Rules Documented
+
+1. **HighErrorRate** (critical)
+   - Condition: HTTP 5xx error rate > 1% over 5 minutes
+   - Metric: `http_server_request_total`
+
+2. **HighLatency** (warning)
+   - Condition: P99 latency > 2 seconds
+   - Metric: `http_server_request_duration_seconds`
+
+3. **DBPoolExhaustion** (critical)
+   - Condition: in_use / max > 90%
+   - Metrics: `db_pool_connections`, `db_pool_connections_max`
+
+4. **LowInventoryStock** (warning)
+   - Condition: > 10 products below minimum stock
+   - Metric: `erp_inventory_low_stock_count`
+
+5. **SlowDatabaseQueries** (warning)
+   - Condition: Slow query rate > 0.1/s
+   - Metric: `db_slow_query_total`
+
+6. **HighPaymentFailureRate** (critical)
+   - Condition: Payment failure rate > 5%
+   - Metric: `erp_payment_total`
+
+7. **OrderVolumeAnomaly** (info)
+   - Condition: 50% deviation from previous day
+   - Metric: `erp_order_created_total`
+
+### Additional Content
+
+- AlertManager configuration template (YAML)
+- Notification channel routing (Slack, PagerDuty, Email)
+- Inhibition rules for alert suppression
+- Metrics reference table (HTTP, Database, Business)
+- Implementation roadmap (4 phases)
+- Trade-off analysis and design decisions
+
+=== Design Decisions ===
+
+| Decision | Pros | Cons | Risk |
+|----------|------|------|------|
+| 5-minute rate windows | Smooth noise | Slower detection | 🟢 LOW |
+| P99 for latency | Catches tail latency | May be noisy | 🟡 MEDIUM |
+| Team-based routing | Clear ownership | More config | 🟢 LOW |
+| Conservative thresholds | Fewer false positives | May miss edge cases | 🟢 LOW |
+
+=== Red Flags Checked ===
+- [x] No God Objects - Alert rules are modular and independent
+- [x] No tight coupling - Rules based on existing metrics, no new dependencies
+- [x] Clear structure - Well-organized YAML with logical grouping
+- [x] No premature optimization - Conservative thresholds, can tune later
+- [x] No magic - All thresholds and conditions clearly documented
+
+=== Verification ===
+- ✅ Documentation follows Prometheus AlertManager format
+- ✅ All alert rules reference existing metrics from OBS-METRICS-002/003/004
+- ✅ AlertManager config includes routing, receivers, and inhibition
+- ✅ Implementation roadmap provides clear next steps
+
+=== Next Steps ===
+- Deploy Prometheus and AlertManager when infrastructure is ready
+- Copy alert rules from documentation to Prometheus config
+- Configure actual Slack/PagerDuty webhook URLs
+- Create Grafana dashboards with alert annotations
+- Write runbooks for each alert type

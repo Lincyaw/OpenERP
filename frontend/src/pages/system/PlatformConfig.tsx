@@ -524,7 +524,9 @@ export default function PlatformConfigPage() {
                       />
                       <Text type="tertiary">{t('platformConfig.units.minutes')}</Text>
                       <Tooltip content={t('platformConfig.hints.syncInterval')}>
-                        <IconInfoCircle style={{ color: 'var(--semi-color-text-2)' }} />
+                        <span style={{ display: 'inline-flex' }}>
+                          <IconInfoCircle style={{ color: 'var(--semi-color-text-2)' }} />
+                        </span>
                       </Tooltip>
                     </Space>
                   </div>

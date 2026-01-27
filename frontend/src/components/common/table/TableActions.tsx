@@ -155,7 +155,7 @@ export function TableActions<T>({
             cancelText={action.confirm.cancelText || t('actions.cancel')}
             onConfirm={() => handleClick(action)}
           >
-            {button}
+            <span style={{ display: 'inline-flex' }}>{button}</span>
           </Popconfirm>
         )
       }
@@ -198,13 +198,15 @@ export function TableActions<T>({
             className="table-actions-dropdown"
             getPopupContainer={() => document.body}
           >
-            <Button
-              size={size}
-              theme="borderless"
-              icon={<IconMore />}
-              data-testid="table-row-more-actions"
-              aria-label={t('actions.moreActions')}
-            />
+            <span style={{ display: 'inline-flex' }}>
+              <Button
+                size={size}
+                theme="borderless"
+                icon={<IconMore />}
+                data-testid="table-row-more-actions"
+                aria-label={t('actions.moreActions')}
+              />
+            </span>
           </Dropdown>
         )}
       </Space>

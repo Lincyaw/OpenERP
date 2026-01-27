@@ -494,13 +494,15 @@ export default function CategoriesPage() {
                 </Dropdown.Menu>
               }
             >
-              <Button
-                icon={<IconMore />}
-                size="small"
-                theme="borderless"
-                type="tertiary"
-                onClick={(e) => e.stopPropagation()}
-              />
+              <span style={{ display: 'inline-flex' }}>
+                <Button
+                  icon={<IconMore />}
+                  size="small"
+                  theme="borderless"
+                  type="tertiary"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </span>
             </Dropdown>
           </div>
         </div>

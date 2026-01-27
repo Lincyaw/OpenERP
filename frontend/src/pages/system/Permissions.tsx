@@ -122,7 +122,9 @@ export default function PermissionsPage() {
                     </Text>
                     {actionDescription && (
                       <Tooltip content={actionDescription}>
-                        <IconInfoCircle size="small" className="permission-info-icon" />
+                        <span style={{ display: 'inline-flex' }}>
+                          <IconInfoCircle size="small" className="permission-info-icon" />
+                        </span>
                       </Tooltip>
                     )}
                   </div>
@@ -135,9 +137,11 @@ export default function PermissionsPage() {
                       ))}
                       {rolesWithPermission.length > 3 && (
                         <Tooltip content={rolesWithPermission.slice(3).join(', ')}>
-                          <Tag size="small" color="grey">
-                            +{rolesWithPermission.length - 3}
-                          </Tag>
+                          <span style={{ display: 'inline-flex' }}>
+                            <Tag size="small" color="grey">
+                              +{rolesWithPermission.length - 3}
+                            </Tag>
+                          </span>
                         </Tooltip>
                       )}
                     </div>

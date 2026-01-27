@@ -68,100 +68,115 @@ func (s *BalancePaymentService) ProcessBalancePayment(
 		telemetry.SpanAttrSourceID, req.SourceID,
 	)
 
-	// Validate amount
-	if req.Amount.IsNegative() || req.Amount.IsZero() {
-		err := shared.NewDomainError("INVALID_AMOUNT", "Payment amount must be positive")
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+	// Wrap in profiling labels for performance analysis
+	var result *BalancePaymentResult
+	var operationErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.FinanceOperationLabels(telemetry.OperationProcessPayment, "balance"), func(c context.Context) {
+		// Validate amount
+		if req.Amount.IsNegative() || req.Amount.IsZero() {
+			err := shared.NewDomainError("INVALID_AMOUNT", "Payment amount must be positive")
+			telemetry.RecordError(span, err)
+			operationErr = err
+			return
+		}
 
-	// Get customer
-	customer, err := s.customerRepo.FindByIDForTenant(ctx, req.TenantID, req.CustomerID)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, fmt.Errorf("failed to get customer: %w", err)
-	}
-	if customer == nil {
-		err := shared.NewDomainError("CUSTOMER_NOT_FOUND", "Customer not found")
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		// Get customer
+		customer, err := s.customerRepo.FindByIDForTenant(c, req.TenantID, req.CustomerID)
+		if err != nil {
+			telemetry.RecordError(span, err)
+			operationErr = fmt.Errorf("failed to get customer: %w", err)
+			return
+		}
+		if customer == nil {
+			err := shared.NewDomainError("CUSTOMER_NOT_FOUND", "Customer not found")
+			telemetry.RecordError(span, err)
+			operationErr = err
+			return
+		}
 
-	// Check sufficient balance
-	if customer.Balance.LessThan(req.Amount) {
-		err := shared.NewDomainError(
-			"INSUFFICIENT_BALANCE",
-			fmt.Sprintf("Insufficient balance: available %.2f, required %.2f",
-				customer.Balance.InexactFloat64(), req.Amount.InexactFloat64()),
+		// Check sufficient balance
+		if customer.Balance.LessThan(req.Amount) {
+			err := shared.NewDomainError(
+				"INSUFFICIENT_BALANCE",
+				fmt.Sprintf("Insufficient balance: available %.2f, required %.2f",
+					customer.Balance.InexactFloat64(), req.Amount.InexactFloat64()),
+			)
+			telemetry.RecordError(span, err)
+			operationErr = err
+			return
+		}
+
+		balanceBefore := customer.Balance
+		telemetry.SetAttribute(span, "balance_before", balanceBefore.String())
+
+		// Deduct balance from customer
+		if err := customer.DeductBalance(req.Amount); err != nil {
+			telemetry.RecordError(span, err)
+			operationErr = fmt.Errorf("failed to deduct balance: %w", err)
+			return
+		}
+
+		// Create balance transaction record
+		transaction, err := partner.CreateConsumeTransaction(
+			req.TenantID,
+			req.CustomerID,
+			req.Amount,
+			balanceBefore,
+			req.SourceType,
 		)
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		if err != nil {
+			telemetry.RecordError(span, err)
+			operationErr = fmt.Errorf("failed to create transaction: %w", err)
+			return
+		}
 
-	balanceBefore := customer.Balance
-	telemetry.SetAttribute(span, "balance_before", balanceBefore.String())
+		// Set optional fields
+		if req.SourceID != "" {
+			transaction.WithSourceID(req.SourceID)
+		}
+		if req.Reference != "" {
+			transaction.WithReference(req.Reference)
+		}
+		if req.Remark != "" {
+			transaction.WithRemark(req.Remark)
+		}
+		if req.OperatorID != nil {
+			transaction.WithOperatorID(*req.OperatorID)
+		}
 
-	// Deduct balance from customer
-	if err := customer.DeductBalance(req.Amount); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, fmt.Errorf("failed to deduct balance: %w", err)
-	}
+		// Save customer (with updated balance) using optimistic locking
+		// This prevents concurrent payments from causing balance overdraft
+		if err := s.customerRepo.SaveWithLock(c, customer); err != nil {
+			telemetry.RecordError(span, err)
+			operationErr = fmt.Errorf("failed to save customer: %w", err)
+			return
+		}
 
-	// Create balance transaction record
-	transaction, err := partner.CreateConsumeTransaction(
-		req.TenantID,
-		req.CustomerID,
-		req.Amount,
-		balanceBefore,
-		req.SourceType,
-	)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, fmt.Errorf("failed to create transaction: %w", err)
-	}
+		// Save balance transaction
+		if err := s.balanceTxRepo.Create(c, transaction); err != nil {
+			telemetry.RecordError(span, err)
+			operationErr = fmt.Errorf("failed to save transaction: %w", err)
+			return
+		}
 
-	// Set optional fields
-	if req.SourceID != "" {
-		transaction.WithSourceID(req.SourceID)
-	}
-	if req.Reference != "" {
-		transaction.WithReference(req.Reference)
-	}
-	if req.Remark != "" {
-		transaction.WithRemark(req.Remark)
-	}
-	if req.OperatorID != nil {
-		transaction.WithOperatorID(*req.OperatorID)
-	}
+		// Add success event to span
+		telemetry.AddEvent(span, "balance_payment_completed",
+			"transaction_id", transaction.ID.String(),
+			"balance_after", customer.Balance.String(),
+		)
+		telemetry.SetAttribute(span, "balance_after", customer.Balance.String())
 
-	// Save customer (with updated balance) using optimistic locking
-	// This prevents concurrent payments from causing balance overdraft
-	if err := s.customerRepo.SaveWithLock(ctx, customer); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, fmt.Errorf("failed to save customer: %w", err)
-	}
+		result = &BalancePaymentResult{
+			TransactionID: transaction.ID,
+			CustomerID:    req.CustomerID,
+			Amount:        req.Amount,
+			BalanceBefore: balanceBefore,
+			BalanceAfter:  customer.Balance,
+			Success:       true,
+		}
+	})
 
-	// Save balance transaction
-	if err := s.balanceTxRepo.Create(ctx, transaction); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, fmt.Errorf("failed to save transaction: %w", err)
-	}
-
-	// Add success event to span
-	telemetry.AddEvent(span, "balance_payment_completed",
-		"transaction_id", transaction.ID.String(),
-		"balance_after", customer.Balance.String(),
-	)
-	telemetry.SetAttribute(span, "balance_after", customer.Balance.String())
-
-	return &BalancePaymentResult{
-		TransactionID: transaction.ID,
-		CustomerID:    req.CustomerID,
-		Amount:        req.Amount,
-		BalanceBefore: balanceBefore,
-		BalanceAfter:  customer.Balance,
-		Success:       true,
-	}, nil
+	return result, operationErr
 }
 
 // ValidateBalancePayment validates if a balance payment can be processed

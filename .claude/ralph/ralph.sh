@@ -250,7 +250,7 @@ Quality requirements:
 - Delegate to specialized agents when appropriate (tdd-guide, code-reviewer, security-reviewer)
 - Document all decisions and changes
 
-If ALL tasks in prd.json are complete (all passes: true), output:
+If this task is completed, output:
 <promise>COMPLETE</promise>"
 
   TEMP_RESULT=$(mktemp)

@@ -149,98 +149,112 @@ func (s *SalesOrderService) Create(ctx context.Context, tenantID uuid.UUID, req 
 		"items_count", len(req.Items),
 	)
 
-	// Generate order number
-	orderNumber, err := s.orderRepo.GenerateOrderNumber(ctx, tenantID)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
-	telemetry.SetAttribute(span, telemetry.SpanAttrOrderNumber, orderNumber)
-
-	// Create order
-	order, err := trade.NewSalesOrder(tenantID, orderNumber, req.CustomerID, req.CustomerName)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
-
-	// Set warehouse if provided
-	if req.WarehouseID != nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
-			telemetry.RecordError(span, err)
-			return nil, err
-		}
-	}
-
-	// Add items
-	for _, item := range req.Items {
-		// Validate product can be sold (not disabled/discontinued)
-		if err := s.validateProductForSale(ctx, tenantID, item.ProductID, item.ProductCode); err != nil {
-			telemetry.RecordError(span, err)
-			return nil, err
-		}
-
-		// Calculate unit price using pricing strategy if configured
-		calculatedUnitPrice := s.calculateItemPrice(ctx, tenantID, item, req.CustomerLevel, req.PricingStrategyName)
-		unitPrice := valueobject.NewMoneyCNY(calculatedUnitPrice)
-		orderItem, err := order.AddItem(
-			item.ProductID,
-			item.ProductName,
-			item.ProductCode,
-			item.Unit,
-			item.BaseUnit,
-			item.Quantity,
-			item.ConversionRate,
-			unitPrice,
-		)
+	// Wrap in profiling labels for performance analysis
+	var response *SalesOrderResponse
+	var createErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationCreateOrder, string(telemetry.OrderTypeSales)), func(c context.Context) {
+		// Generate order number
+		orderNumber, err := s.orderRepo.GenerateOrderNumber(c, tenantID)
 		if err != nil {
 			telemetry.RecordError(span, err)
-			return nil, err
+			createErr = err
+			return
 		}
-		if item.Remark != "" {
-			orderItem.SetRemark(item.Remark)
-		}
-	}
+		telemetry.SetAttribute(span, telemetry.SpanAttrOrderNumber, orderNumber)
 
-	// Apply discount if provided
-	if req.Discount != nil {
-		discountMoney := valueobject.NewMoneyCNY(*req.Discount)
-		if err := order.ApplyDiscount(discountMoney); err != nil {
+		// Create order
+		order, err := trade.NewSalesOrder(tenantID, orderNumber, req.CustomerID, req.CustomerName)
+		if err != nil {
 			telemetry.RecordError(span, err)
-			return nil, err
+			createErr = err
+			return
 		}
-	}
 
-	// Set remark
-	if req.Remark != "" {
-		order.SetRemark(req.Remark)
-	}
+		// Set warehouse if provided
+		if req.WarehouseID != nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				telemetry.RecordError(span, err)
+				createErr = err
+				return
+			}
+		}
 
-	// Set created_by if provided (from JWT context via handler)
-	if req.CreatedBy != nil {
-		order.SetCreatedBy(*req.CreatedBy)
-	}
+		// Add items
+		for _, item := range req.Items {
+			// Validate product can be sold (not disabled/discontinued)
+			if err := s.validateProductForSale(c, tenantID, item.ProductID, item.ProductCode); err != nil {
+				telemetry.RecordError(span, err)
+				createErr = err
+				return
+			}
 
-	// Save order
-	if err := s.orderRepo.Save(ctx, order); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+			// Calculate unit price using pricing strategy if configured
+			calculatedUnitPrice := s.calculateItemPrice(c, tenantID, item, req.CustomerLevel, req.PricingStrategyName)
+			unitPrice := valueobject.NewMoneyCNY(calculatedUnitPrice)
+			orderItem, err := order.AddItem(
+				item.ProductID,
+				item.ProductName,
+				item.ProductCode,
+				item.Unit,
+				item.BaseUnit,
+				item.Quantity,
+				item.ConversionRate,
+				unitPrice,
+			)
+			if err != nil {
+				telemetry.RecordError(span, err)
+				createErr = err
+				return
+			}
+			if item.Remark != "" {
+				orderItem.SetRemark(item.Remark)
+			}
+		}
 
-	// Record business metrics
-	if s.businessMetrics != nil {
-		s.businessMetrics.RecordOrderWithAmount(ctx, tenantID, telemetry.OrderTypeSales, order.TotalAmount)
-	}
+		// Apply discount if provided
+		if req.Discount != nil {
+			discountMoney := valueobject.NewMoneyCNY(*req.Discount)
+			if err := order.ApplyDiscount(discountMoney); err != nil {
+				telemetry.RecordError(span, err)
+				createErr = err
+				return
+			}
+		}
 
-	// Add final attributes to span
-	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, order.ID.String())
-	telemetry.AddEvent(span, "order_created",
-		telemetry.SpanAttrOrderID, order.ID.String(),
-		telemetry.SpanAttrOrderNumber, orderNumber,
-	)
+		// Set remark
+		if req.Remark != "" {
+			order.SetRemark(req.Remark)
+		}
 
-	response := ToSalesOrderResponse(order)
-	return &response, nil
+		// Set created_by if provided (from JWT context via handler)
+		if req.CreatedBy != nil {
+			order.SetCreatedBy(*req.CreatedBy)
+		}
+
+		// Save order
+		if err := s.orderRepo.Save(c, order); err != nil {
+			telemetry.RecordError(span, err)
+			createErr = err
+			return
+		}
+
+		// Record business metrics
+		if s.businessMetrics != nil {
+			s.businessMetrics.RecordOrderWithAmount(c, tenantID, telemetry.OrderTypeSales, order.TotalAmount)
+		}
+
+		// Add final attributes to span
+		telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, order.ID.String())
+		telemetry.AddEvent(span, "order_created",
+			telemetry.SpanAttrOrderID, order.ID.String(),
+			telemetry.SpanAttrOrderNumber, orderNumber,
+		)
+
+		resp := ToSalesOrderResponse(order)
+		response = &resp
+	})
+
+	return response, createErr
 }
 
 // GetByID retrieves a sales order by ID
@@ -491,50 +505,61 @@ func (s *SalesOrderService) Confirm(ctx context.Context, tenantID, orderID uuid.
 
 	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
 
-	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
-
-	telemetry.SetAttributes(span,
-		telemetry.SpanAttrOrderNumber, order.OrderNumber,
-		telemetry.SpanAttrCustomerID, order.CustomerID.String(),
-		"items_count", len(order.Items),
-	)
-
-	// Set warehouse if provided and not already set
-	if req.WarehouseID != nil && order.WarehouseID == nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+	// Wrap in profiling labels for performance analysis
+	var response *SalesOrderResponse
+	var confirmErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationConfirmOrder, string(telemetry.OrderTypeSales)), func(c context.Context) {
+		order, err := s.orderRepo.FindByIDForTenant(c, tenantID, orderID)
+		if err != nil {
 			telemetry.RecordError(span, err)
-			return nil, err
+			confirmErr = err
+			return
 		}
-	}
 
-	// Confirm order
-	if err := order.Confirm(); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		telemetry.SetAttributes(span,
+			telemetry.SpanAttrOrderNumber, order.OrderNumber,
+			telemetry.SpanAttrCustomerID, order.CustomerID.String(),
+			"items_count", len(order.Items),
+		)
 
-	// Collect domain events before save
-	events := order.GetDomainEvents()
-	order.ClearDomainEvents()
+		// Set warehouse if provided and not already set
+		if req.WarehouseID != nil && order.WarehouseID == nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				telemetry.RecordError(span, err)
+				confirmErr = err
+				return
+			}
+		}
 
-	// Save with optimistic locking and events atomically (transactional outbox pattern)
-	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		// Confirm order
+		if err := order.Confirm(); err != nil {
+			telemetry.RecordError(span, err)
+			confirmErr = err
+			return
+		}
 
-	telemetry.AddEvent(span, "order_confirmed",
-		telemetry.SpanAttrOrderID, orderID.String(),
-		telemetry.SpanAttrOrderStatus, string(order.Status),
-		"events_published", len(events),
-	)
+		// Collect domain events before save
+		events := order.GetDomainEvents()
+		order.ClearDomainEvents()
 
-	response := ToSalesOrderResponse(order)
-	return &response, nil
+		// Save with optimistic locking and events atomically (transactional outbox pattern)
+		if err := s.orderRepo.SaveWithLockAndEvents(c, order, events); err != nil {
+			telemetry.RecordError(span, err)
+			confirmErr = err
+			return
+		}
+
+		telemetry.AddEvent(span, "order_confirmed",
+			telemetry.SpanAttrOrderID, orderID.String(),
+			telemetry.SpanAttrOrderStatus, string(order.Status),
+			"events_published", len(events),
+		)
+
+		resp := ToSalesOrderResponse(order)
+		response = &resp
+	})
+
+	return response, confirmErr
 }
 
 // Ship marks an order as shipped
@@ -546,49 +571,60 @@ func (s *SalesOrderService) Ship(ctx context.Context, tenantID, orderID uuid.UUI
 
 	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
 
-	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
-
-	telemetry.SetAttributes(span,
-		telemetry.SpanAttrOrderNumber, order.OrderNumber,
-		telemetry.SpanAttrCustomerID, order.CustomerID.String(),
-	)
-
-	// Set warehouse if provided and not already set
-	if req.WarehouseID != nil {
-		if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+	// Wrap in profiling labels for performance analysis
+	var response *SalesOrderResponse
+	var shipErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationShipOrder, string(telemetry.OrderTypeSales)), func(c context.Context) {
+		order, err := s.orderRepo.FindByIDForTenant(c, tenantID, orderID)
+		if err != nil {
 			telemetry.RecordError(span, err)
-			return nil, err
+			shipErr = err
+			return
 		}
-	}
 
-	// Ship order
-	if err := order.Ship(); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		telemetry.SetAttributes(span,
+			telemetry.SpanAttrOrderNumber, order.OrderNumber,
+			telemetry.SpanAttrCustomerID, order.CustomerID.String(),
+		)
 
-	// Collect domain events before save
-	events := order.GetDomainEvents()
-	order.ClearDomainEvents()
+		// Set warehouse if provided and not already set
+		if req.WarehouseID != nil {
+			if err := order.SetWarehouse(*req.WarehouseID); err != nil {
+				telemetry.RecordError(span, err)
+				shipErr = err
+				return
+			}
+		}
 
-	// Save with optimistic locking and events atomically (transactional outbox pattern)
-	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		// Ship order
+		if err := order.Ship(); err != nil {
+			telemetry.RecordError(span, err)
+			shipErr = err
+			return
+		}
 
-	telemetry.AddEvent(span, "order_shipped",
-		telemetry.SpanAttrOrderID, orderID.String(),
-		telemetry.SpanAttrOrderStatus, string(order.Status),
-		"events_published", len(events),
-	)
+		// Collect domain events before save
+		events := order.GetDomainEvents()
+		order.ClearDomainEvents()
 
-	response := ToSalesOrderResponse(order)
-	return &response, nil
+		// Save with optimistic locking and events atomically (transactional outbox pattern)
+		if err := s.orderRepo.SaveWithLockAndEvents(c, order, events); err != nil {
+			telemetry.RecordError(span, err)
+			shipErr = err
+			return
+		}
+
+		telemetry.AddEvent(span, "order_shipped",
+			telemetry.SpanAttrOrderID, orderID.String(),
+			telemetry.SpanAttrOrderStatus, string(order.Status),
+			"events_published", len(events),
+		)
+
+		resp := ToSalesOrderResponse(order)
+		response = &resp
+	})
+
+	return response, shipErr
 }
 
 // Complete marks an order as completed
@@ -620,41 +656,51 @@ func (s *SalesOrderService) Cancel(ctx context.Context, tenantID, orderID uuid.U
 
 	telemetry.SetAttribute(span, telemetry.SpanAttrOrderID, orderID.String())
 
-	order, err := s.orderRepo.FindByIDForTenant(ctx, tenantID, orderID)
-	if err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+	// Wrap in profiling labels for performance analysis
+	var response *SalesOrderResponse
+	var cancelErr error
+	telemetry.WithProfilingLabels(ctx, telemetry.OrderOperationLabels(telemetry.OperationCancelOrder, string(telemetry.OrderTypeSales)), func(c context.Context) {
+		order, err := s.orderRepo.FindByIDForTenant(c, tenantID, orderID)
+		if err != nil {
+			telemetry.RecordError(span, err)
+			cancelErr = err
+			return
+		}
 
-	telemetry.SetAttributes(span,
-		telemetry.SpanAttrOrderNumber, order.OrderNumber,
-		telemetry.SpanAttrOrderStatus, string(order.Status),
-		"cancel_reason", req.Reason,
-	)
+		telemetry.SetAttributes(span,
+			telemetry.SpanAttrOrderNumber, order.OrderNumber,
+			telemetry.SpanAttrOrderStatus, string(order.Status),
+			"cancel_reason", req.Reason,
+		)
 
-	if err := order.Cancel(req.Reason); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		if err := order.Cancel(req.Reason); err != nil {
+			telemetry.RecordError(span, err)
+			cancelErr = err
+			return
+		}
 
-	// Collect domain events before save
-	// The CancelledEvent includes WasConfirmed flag to indicate if locks need release
-	events := order.GetDomainEvents()
-	order.ClearDomainEvents()
+		// Collect domain events before save
+		// The CancelledEvent includes WasConfirmed flag to indicate if locks need release
+		events := order.GetDomainEvents()
+		order.ClearDomainEvents()
 
-	// Save with optimistic locking and events atomically (transactional outbox pattern)
-	if err := s.orderRepo.SaveWithLockAndEvents(ctx, order, events); err != nil {
-		telemetry.RecordError(span, err)
-		return nil, err
-	}
+		// Save with optimistic locking and events atomically (transactional outbox pattern)
+		if err := s.orderRepo.SaveWithLockAndEvents(c, order, events); err != nil {
+			telemetry.RecordError(span, err)
+			cancelErr = err
+			return
+		}
 
-	telemetry.AddEvent(span, "order_cancelled",
-		telemetry.SpanAttrOrderID, orderID.String(),
-		"events_published", len(events),
-	)
+		telemetry.AddEvent(span, "order_cancelled",
+			telemetry.SpanAttrOrderID, orderID.String(),
+			"events_published", len(events),
+		)
 
-	response := ToSalesOrderResponse(order)
-	return &response, nil
+		resp := ToSalesOrderResponse(order)
+		response = &resp
+	})
+
+	return response, cancelErr
 }
 
 // Delete deletes a sales order (only allowed in DRAFT status)
