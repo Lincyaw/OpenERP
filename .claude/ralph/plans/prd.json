@@ -9033,7 +9033,7 @@
       "- 状态切换即时生效",
       "- 权限控制正确"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 12 Implementation Roadmap",
     "affectedModules": [
       "frontend/src/pages/admin/FeatureFlagList.tsx",

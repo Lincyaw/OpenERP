@@ -31768,3 +31768,62 @@ All loadgen tests pass:
 1. LOADGEN-030: Run actual 5-minute E2E test against ERP backend
 2. LOADGEN-010: CircuitBoard integration (main controller)
 3. CLI implementation with --warmup-only flag
+
+2025-01-28 - FF-ADMIN-001: Feature Flag 管理界面 - 列表页
+
+=== Implementation Details ===
+- Created Feature Flag API service (frontend/src/api/feature-flags/)
+  - types.ts: TypeScript types matching backend DTOs
+  - featureFlags.ts: API service with CRUD methods
+  - index.ts: Exports
+  
+- Created FeatureFlagList page (frontend/src/pages/admin/FeatureFlagList.tsx)
+  - Paginated table using DataTable component
+  - Search by key/name
+  - Filter by status (enabled/disabled/archived)
+  - Filter by type (boolean/percentage/variant/user_segment)
+  - Filter by tags (TagInput)
+  - Toggle status with Switch component
+  - Create modal with form validation
+  - Edit and Archive actions
+  
+- Added i18n translations
+  - frontend/src/locales/zh-CN/admin.json
+  - frontend/src/locales/en-US/admin.json
+  - Added 'admin' namespace to i18n config
+  
+- Added route configuration
+  - Route: /admin/feature-flags
+  - Lazy-loaded FeatureFlagListPage component
+  - Permission: TENANT_UPDATE
+
+=== Key Files Modified ===
+- frontend/src/api/feature-flags/types.ts (new)
+- frontend/src/api/feature-flags/featureFlags.ts (new)
+- frontend/src/api/feature-flags/index.ts (new)
+- frontend/src/pages/admin/FeatureFlagList.tsx (new)
+- frontend/src/pages/admin/FeatureFlagList.css (new)
+- frontend/src/locales/zh-CN/admin.json (new)
+- frontend/src/locales/en-US/admin.json (new)
+- frontend/src/i18n/config.ts (updated - added 'admin' namespace)
+- frontend/src/router/routes.tsx (updated - added admin module routes)
+- frontend/src/config/permissions.ts (updated - added admin route permissions)
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint (new files only): PASSED (0 errors, 0 warnings)
+- Prettier formatting: APPLIED
+
+=== Design Decisions ===
+1. Used existing DataTable component for consistency with other list pages
+2. Created dedicated API service layer instead of relying on auto-generated SDK (feature-flags API not yet generated)
+3. Used permission TENANT_UPDATE for admin routes (superadmin level access)
+4. Added CSS file for page-specific styles with CSS variables for theme support
+
+=== Notes ===
+- Feature Flag detail page and edit page routes added but components not yet created (FF-ADMIN-002, FF-ADMIN-003)
+- Backend Feature Flag API must be deployed for full functionality
+
+=== Next Steps ===
+- FF-ADMIN-002: Feature Flag detail page
+- FF-ADMIN-003: Feature Flag create/edit form page

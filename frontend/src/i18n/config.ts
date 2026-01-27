@@ -38,6 +38,7 @@ export const NAMESPACES = [
   'finance', // Financial management
   'system', // System settings, users, roles
   'integration', // E-commerce platform integration
+  'admin', // Admin management (feature flags, etc.)
 ] as const
 
 export type Namespace = (typeof NAMESPACES)[number]

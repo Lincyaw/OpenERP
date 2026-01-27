@@ -100,6 +100,9 @@ const PlatformConfigPage = () => lazyLoad(() => import('@/pages/system/PlatformC
 const PlatformSyncStatusPage = () => lazyLoad(() => import('@/pages/system/PlatformSyncStatus'))
 const ProductMappingsPage = () => lazyLoad(() => import('@/pages/integration/ProductMappings'))
 
+// Admin module
+const FeatureFlagListPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagList'))
+
 /**
  * Application routes with metadata
  * Routes are organized into two groups:
@@ -509,6 +512,32 @@ export const appRoutes: AppRoute[] = [
       },
     ],
   },
+
+  // Admin module
+  {
+    path: '/admin',
+    meta: {
+      title: 'Admin',
+      icon: 'IconSetting',
+      order: 8,
+      permissions: [Permissions.TENANT_UPDATE],
+    },
+    children: [
+      {
+        path: '/admin',
+        redirect: '/admin/feature-flags',
+      },
+      {
+        path: '/admin/feature-flags',
+        meta: {
+          title: 'Feature Flags',
+          icon: 'IconFlag',
+          order: 1,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
+    ],
+  },
 ]
 
 /**
@@ -580,6 +609,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return PlatformSyncStatusPage()
     case '/system/product-mappings':
       return ProductMappingsPage()
+    case '/admin/feature-flags':
+      return FeatureFlagListPage()
     default:
       return null
   }

@@ -1,0 +1,87 @@
+{
+  "featureFlags": {
+    "title": "Feature Flags",
+    "searchPlaceholder": "Search by Key or Name...",
+    "addFlag": "New Flag",
+    "statusFilter": "Status Filter",
+    "typeFilter": "Type Filter",
+    "tagsFilter": "Tags Filter",
+    "allStatus": "All Status",
+    "allTypes": "All Types",
+    "toggleStatus": "Toggle Status",
+    "clickToViewDetail": "Click to view details",
+    "columns": {
+      "key": "Key",
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "tags": "Tags",
+      "updatedAt": "Updated At"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "archived": "Archived"
+    },
+    "type": {
+      "boolean": "Boolean",
+      "percentage": "Percentage",
+      "variant": "Variant",
+      "user_segment": "User Segment"
+    },
+    "actions": {
+      "edit": "Edit",
+      "archive": "Archive"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch feature flags",
+      "createSuccess": "Feature flag created successfully",
+      "createError": "Failed to create feature flag",
+      "enableSuccess": "Feature flag enabled",
+      "enableError": "Failed to enable feature flag",
+      "disableSuccess": "Feature flag disabled",
+      "disableError": "Failed to disable feature flag",
+      "archiveSuccess": "Feature flag archived",
+      "archiveError": "Failed to archive feature flag",
+      "alreadyArchived": "Feature flag is already archived"
+    },
+    "confirm": {
+      "archiveTitle": "Confirm Archive",
+      "archiveContent": "Are you sure you want to archive feature flag \"{{key}}\"? Archived flags cannot be evaluated.",
+      "archiveOk": "Archive"
+    },
+    "createModal": {
+      "title": "Create Feature Flag"
+    },
+    "form": {
+      "key": "Key",
+      "keyPlaceholder": "Enter flag key, e.g., new_checkout_flow",
+      "keyRequired": "Key is required",
+      "keyMinError": "Key must be at least 2 characters",
+      "keyMaxError": "Key must be at most 100 characters",
+      "keyRegexError": "Key must start with lowercase letter and contain only lowercase letters, numbers, and underscores",
+      "name": "Name",
+      "namePlaceholder": "Enter feature flag name",
+      "nameRequired": "Name is required",
+      "nameMinError": "Name must be at least 2 characters",
+      "nameMaxError": "Name must be at most 200 characters",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter description (optional)",
+      "type": "Type",
+      "typePlaceholder": "Select type",
+      "typeRequired": "Type is required",
+      "tags": "Tags",
+      "tagsPlaceholder": "Enter tags and press Enter"
+    }
+  },
+  "common": {
+    "refresh": "Refresh",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close"
+  }
+}

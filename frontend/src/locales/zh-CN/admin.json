@@ -1,0 +1,87 @@
+{
+  "featureFlags": {
+    "title": "功能开关管理",
+    "searchPlaceholder": "搜索 Key 或名称...",
+    "addFlag": "新建开关",
+    "statusFilter": "状态筛选",
+    "typeFilter": "类型筛选",
+    "tagsFilter": "标签筛选",
+    "allStatus": "全部状态",
+    "allTypes": "全部类型",
+    "toggleStatus": "切换状态",
+    "clickToViewDetail": "点击查看详情",
+    "columns": {
+      "key": "Key",
+      "name": "名称",
+      "type": "类型",
+      "status": "状态",
+      "tags": "标签",
+      "updatedAt": "更新时间"
+    },
+    "status": {
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "archived": "已归档"
+    },
+    "type": {
+      "boolean": "布尔型",
+      "percentage": "百分比",
+      "variant": "多变体",
+      "user_segment": "用户分群"
+    },
+    "actions": {
+      "edit": "编辑",
+      "archive": "归档"
+    },
+    "messages": {
+      "fetchError": "获取功能开关列表失败",
+      "createSuccess": "功能开关创建成功",
+      "createError": "创建功能开关失败",
+      "enableSuccess": "功能开关已启用",
+      "enableError": "启用功能开关失败",
+      "disableSuccess": "功能开关已禁用",
+      "disableError": "禁用功能开关失败",
+      "archiveSuccess": "功能开关已归档",
+      "archiveError": "归档功能开关失败",
+      "alreadyArchived": "该功能开关已归档"
+    },
+    "confirm": {
+      "archiveTitle": "确认归档",
+      "archiveContent": "确定要归档功能开关 \"{{key}}\" 吗？归档后将无法被评估。",
+      "archiveOk": "确认归档"
+    },
+    "createModal": {
+      "title": "新建功能开关"
+    },
+    "form": {
+      "key": "Key",
+      "keyPlaceholder": "请输入功能开关 Key，如 new_checkout_flow",
+      "keyRequired": "请输入 Key",
+      "keyMinError": "Key 至少2个字符",
+      "keyMaxError": "Key 最多100个字符",
+      "keyRegexError": "Key 必须以小写字母开头，只能包含小写字母、数字和下划线",
+      "name": "名称",
+      "namePlaceholder": "请输入功能开关名称",
+      "nameRequired": "请输入名称",
+      "nameMinError": "名称至少2个字符",
+      "nameMaxError": "名称最多200个字符",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入功能开关描述（可选）",
+      "type": "类型",
+      "typePlaceholder": "请选择类型",
+      "typeRequired": "请选择类型",
+      "tags": "标签",
+      "tagsPlaceholder": "输入标签后按回车"
+    }
+  },
+  "common": {
+    "refresh": "刷新",
+    "save": "保存",
+    "cancel": "取消",
+    "create": "创建",
+    "edit": "编辑",
+    "delete": "删除",
+    "confirm": "确认",
+    "close": "关闭"
+  }
+}

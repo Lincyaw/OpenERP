@@ -274,6 +274,10 @@ export const RoutePermissions: Record<string, string[]> = {
   '/system/permissions': [Permissions.ROLE_READ],
   '/system/payment-settings': [Permissions.TENANT_UPDATE],
   '/system/platform-config': [Permissions.TENANT_UPDATE],
+
+  // Admin module
+  '/admin': [Permissions.TENANT_UPDATE],
+  '/admin/feature-flags': [Permissions.TENANT_UPDATE],
 }
 
 /**
