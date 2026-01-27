@@ -30172,3 +30172,85 @@ Modified:
 
 - FF-BE-007: Feature Flag HTTP API Handlers
 - FF-BE-009: Feature Flag Middleware (uses cache layer)
+
+2026-01-28 - Task ID: FF-BE-007 - Feature Flag HTTP API Handlers
+
+=== Implementation Details ===
+- Created feature flag HTTP handler (backend/internal/interfaces/http/handler/feature_flag.go)
+  - Handler implements all 15 API endpoints for feature flag management
+  - All handlers use consistent error handling via HandleDomainError
+  - Proper request validation using Gin binding tags
+  - Audit context extraction from JWT claims for traceability
+
+- Created audit log DTO (backend/internal/application/featureflag/dto/audit_log_dto.go)
+  - AuditLogResponse for API responses
+  - AuditLogListFilter for pagination/filtering
+  - AuditLogListResponse for paginated lists
+
+- Added GetAuditLogs method to FlagService (flag_service.go)
+  - Retrieves audit logs for a specific flag key
+  - Supports pagination via shared.Filter
+
+- Route registration in main.go:
+  - Added featureflag services initialization (FlagService, EvaluationService, OverrideService)
+  - Added FeatureFlagHandler initialization
+  - Registered all feature flag routes under /api/v1/feature-flags
+  - Applied RequirePermission middleware for authorization:
+    * feature_flag:read - List, Get operations
+    * feature_flag:create - Create flag
+    * feature_flag:update - Update, Enable, Disable flags
+    * feature_flag:delete - Archive flag
+    * feature_flag:evaluate - Evaluate, BatchEvaluate, ClientConfig
+    * feature_flag:override - Create, Delete overrides
+    * feature_flag:audit - View audit logs
+
+=== API Endpoints Implemented ===
+Flag Management (Admin):
+- GET    /api/v1/feature-flags              - List flags with pagination
+- POST   /api/v1/feature-flags              - Create new flag
+- GET    /api/v1/feature-flags/:key         - Get flag by key
+- PUT    /api/v1/feature-flags/:key         - Update flag
+- DELETE /api/v1/feature-flags/:key         - Archive flag (soft delete)
+- POST   /api/v1/feature-flags/:key/enable  - Enable flag
+- POST   /api/v1/feature-flags/:key/disable - Disable flag
+
+Evaluation (Authenticated):
+- POST   /api/v1/feature-flags/:key/evaluate      - Evaluate single flag
+- POST   /api/v1/feature-flags/evaluate-batch     - Batch evaluate flags
+- POST   /api/v1/feature-flags/client-config      - Get client configuration
+
+Override Management:
+- GET    /api/v1/feature-flags/:key/overrides     - List overrides
+- POST   /api/v1/feature-flags/:key/overrides     - Create override
+- DELETE /api/v1/feature-flags/:key/overrides/:id - Delete override
+
+Audit:
+- GET    /api/v1/feature-flags/:key/audit-logs    - View audit logs
+
+=== Verification ===
+- Build passes: go build ./... succeeds
+- Tests pass: All feature flag application tests pass (100%)
+- API docs generated: make docs generates swagger.yaml with all 15 endpoints
+- Code review: Addressed critical security feedback (added permission middleware)
+
+=== Design Decisions ===
+1. Permission model uses granular permissions (feature_flag:read, feature_flag:create, etc.)
+   rather than a single admin permission for better access control
+2. Evaluation endpoints require feature_flag:evaluate permission, allowing services
+   to evaluate flags without full admin access
+3. Override management separated from general flag management with dedicated permission
+4. Audit log access has dedicated permission for compliance requirements
+5. Context enrichment: Evaluation context is automatically enriched with JWT claims
+   (user_id, tenant_id) if not explicitly provided
+
+=== Files Modified ===
+- backend/internal/interfaces/http/handler/feature_flag.go (NEW - 746 lines)
+- backend/internal/application/featureflag/dto/audit_log_dto.go (NEW - 67 lines)
+- backend/internal/application/featureflag/flag_service.go (MODIFIED - added GetAuditLogs)
+- backend/cmd/server/main.go (MODIFIED - added services, handler, routes)
+- backend/docs/swagger.yaml (REGENERATED - includes all 15 endpoints)
+
+=== Next Steps ===
+- FF-BE-009: Feature Flag Middleware for Gin HTTP handlers
+- Consider adding rate limiting to evaluation endpoints in production
+- Consider adding unit tests for FeatureFlagHandler

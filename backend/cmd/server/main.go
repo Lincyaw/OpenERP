@@ -10,6 +10,7 @@ import (
 
 	catalogapp "github.com/erp/backend/internal/application/catalog"
 	eventapp "github.com/erp/backend/internal/application/event"
+	featureflagapp "github.com/erp/backend/internal/application/featureflag"
 	financeapp "github.com/erp/backend/internal/application/finance"
 	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
@@ -285,6 +286,11 @@ func main() {
 	otherIncomeRecordRepo := persistence.NewGormOtherIncomeRecordRepository(db.DB)
 	outboxRepo := event.NewGormOutboxRepository(db.DB)
 
+	// Feature flag repositories
+	featureFlagRepo := persistence.NewGormFeatureFlagRepository(db.DB)
+	flagOverrideRepo := persistence.NewGormFlagOverrideRepository(db.DB)
+	flagAuditLogRepo := persistence.NewGormFlagAuditLogRepository(db.DB)
+
 	// Initialize event serializer and register all event types
 	eventSerializer := event.NewEventSerializer()
 	event.RegisterAllEvents(eventSerializer)
@@ -420,6 +426,26 @@ func main() {
 	)
 	// Keep reference to strategy registry for potential future use (tenant-specific strategies)
 	_ = strategyRegistry
+
+	// Feature flag services
+	flagService := featureflagapp.NewFlagService(
+		featureFlagRepo,
+		flagAuditLogRepo,
+		outboxRepo,
+		log,
+	)
+	evaluationService := featureflagapp.NewEvaluationService(
+		featureFlagRepo,
+		flagOverrideRepo,
+		log,
+	)
+	overrideService := featureflagapp.NewOverrideService(
+		featureFlagRepo,
+		flagOverrideRepo,
+		flagAuditLogRepo,
+		outboxRepo,
+		log,
+	)
 
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
@@ -631,6 +657,7 @@ func main() {
 	expenseIncomeHandler := handler.NewExpenseIncomeHandler(expenseIncomeService)
 	financeHandler := handler.NewFinanceHandler(financeService)
 	outboxHandler := handler.NewOutboxHandler(outboxService)
+	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
@@ -1210,6 +1237,36 @@ func main() {
 	systemRoutes.POST("/outbox/dead/retry-all", outboxHandler.RetryAllDeadEntries)
 
 	r.Register(systemRoutes)
+
+	// Feature Flag domain - global resources for controlling application behavior
+	featureFlagRoutes := router.NewDomainGroup("feature-flags", "/feature-flags")
+	featureFlagRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "feature-flag service ready"})
+	})
+
+	// Feature flag management routes (admin access - requires feature_flag permissions)
+	featureFlagRoutes.GET("", middleware.RequirePermission("feature_flag:read"), featureFlagHandler.ListFlags)
+	featureFlagRoutes.POST("", middleware.RequirePermission("feature_flag:create"), featureFlagHandler.CreateFlag)
+	featureFlagRoutes.GET("/:key", middleware.RequirePermission("feature_flag:read"), featureFlagHandler.GetFlag)
+	featureFlagRoutes.PUT("/:key", middleware.RequirePermission("feature_flag:update"), featureFlagHandler.UpdateFlag)
+	featureFlagRoutes.DELETE("/:key", middleware.RequirePermission("feature_flag:delete"), featureFlagHandler.ArchiveFlag)
+	featureFlagRoutes.POST("/:key/enable", middleware.RequirePermission("feature_flag:update"), featureFlagHandler.EnableFlag)
+	featureFlagRoutes.POST("/:key/disable", middleware.RequirePermission("feature_flag:update"), featureFlagHandler.DisableFlag)
+
+	// Feature flag evaluation routes (requires feature_flag:evaluate permission)
+	featureFlagRoutes.POST("/:key/evaluate", middleware.RequirePermission("feature_flag:evaluate"), featureFlagHandler.EvaluateFlag)
+	featureFlagRoutes.POST("/evaluate-batch", middleware.RequirePermission("feature_flag:evaluate"), featureFlagHandler.BatchEvaluate)
+	featureFlagRoutes.POST("/client-config", middleware.RequirePermission("feature_flag:evaluate"), featureFlagHandler.GetClientConfig)
+
+	// Flag override management routes (admin access - requires feature_flag:override permission)
+	featureFlagRoutes.GET("/:key/overrides", middleware.RequirePermission("feature_flag:read"), featureFlagHandler.ListOverrides)
+	featureFlagRoutes.POST("/:key/overrides", middleware.RequirePermission("feature_flag:override"), featureFlagHandler.CreateOverride)
+	featureFlagRoutes.DELETE("/:key/overrides/:id", middleware.RequirePermission("feature_flag:override"), featureFlagHandler.DeleteOverride)
+
+	// Audit log routes (admin access - requires feature_flag:audit permission)
+	featureFlagRoutes.GET("/:key/audit-logs", middleware.RequirePermission("feature_flag:audit"), featureFlagHandler.GetAuditLogs)
+
+	r.Register(featureFlagRoutes)
 
 	// Setup routes
 	r.Setup()

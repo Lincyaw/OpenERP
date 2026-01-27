@@ -440,6 +440,45 @@ func (s *FlagService) publishEvents(ctx context.Context, flag *featureflag.Featu
 	return nil
 }
 
+// GetAuditLogs retrieves audit logs for a feature flag
+func (s *FlagService) GetAuditLogs(ctx context.Context, flagKey string, filter dto.AuditLogListFilter) (*dto.AuditLogListResponse, error) {
+	s.logger.Debug("Getting audit logs for flag", zap.String("flag_key", flagKey))
+
+	// Verify the flag exists
+	_, err := s.flagRepo.FindByKey(ctx, flagKey)
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return nil, shared.NewDomainError("FLAG_NOT_FOUND", "Feature flag not found")
+		}
+		s.logger.Error("Failed to find flag", zap.Error(err))
+		return nil, shared.NewDomainError("INTERNAL_ERROR", "Failed to find flag")
+	}
+
+	// Build domain filter
+	domainFilter := shared.Filter{
+		Page:     filter.Page,
+		PageSize: filter.PageSize,
+		OrderBy:  "created_at",
+		OrderDir: "desc",
+	}
+
+	// Get audit logs
+	logs, err := s.auditLogRepo.FindByFlagKey(ctx, flagKey, domainFilter)
+	if err != nil {
+		s.logger.Error("Failed to get audit logs", zap.Error(err))
+		return nil, shared.NewDomainError("INTERNAL_ERROR", "Failed to get audit logs")
+	}
+
+	// Get total count
+	total, err := s.auditLogRepo.CountByFlagKey(ctx, flagKey)
+	if err != nil {
+		s.logger.Error("Failed to count audit logs", zap.Error(err))
+		return nil, shared.NewDomainError("INTERNAL_ERROR", "Failed to count audit logs")
+	}
+
+	return dto.ToAuditLogListResponse(logs, total, filter.Page, filter.PageSize), nil
+}
+
 // flagToMap converts a flag to a map for audit logging
 func flagToMap(flag *featureflag.FeatureFlag) map[string]any {
 	return map[string]any{

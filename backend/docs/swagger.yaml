@@ -1,5 +1,66 @@
 basePath: /api/v1
 definitions:
+  dto.AuditLogListResponse:
+    properties:
+      audit_logs:
+        items:
+          $ref: '#/definitions/dto.AuditLogResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.AuditLogResponse:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      flag_key:
+        type: string
+      id:
+        type: string
+      ip_address:
+        type: string
+      new_value:
+        additionalProperties: {}
+        type: object
+      old_value:
+        additionalProperties: {}
+        type: object
+      user_agent:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.BatchEvaluateResponse:
+    properties:
+      results:
+        additionalProperties:
+          $ref: '#/definitions/dto.EvaluateFlagResponse'
+        type: object
+    type: object
+  dto.ConditionDTO:
+    properties:
+      attribute:
+        type: string
+      operator:
+        type: string
+      values:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - attribute
+    - operator
+    - values
+    type: object
   dto.ErrorInfo:
     properties:
       code:
@@ -17,6 +78,124 @@ definitions:
       timestamp:
         type: string
     type: object
+  dto.EvaluateFlagResponse:
+    properties:
+      enabled:
+        type: boolean
+      evaluated_at:
+        type: string
+      flag_version:
+        type: integer
+      key:
+        type: string
+      reason:
+        type: string
+      rule_id:
+        type: string
+      value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+      variant:
+        type: string
+    type: object
+  dto.EvaluationContextDTO:
+    properties:
+      environment:
+        type: string
+      request_id:
+        type: string
+      tenant_id:
+        type: string
+      user_attributes:
+        additionalProperties: {}
+        type: object
+      user_id:
+        type: string
+      user_plan:
+        type: string
+      user_role:
+        type: string
+    type: object
+  dto.FlagClientConfig:
+    properties:
+      enabled:
+        type: boolean
+      variant:
+        type: string
+    type: object
+  dto.FlagListResponse:
+    properties:
+      flags:
+        items:
+          $ref: '#/definitions/dto.FlagResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.FlagResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      default_value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+      description:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/dto.TargetingRuleDTO'
+        type: array
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      version:
+        type: integer
+    type: object
+  dto.FlagValueDTO:
+    properties:
+      enabled:
+        type: boolean
+      metadata:
+        additionalProperties: {}
+        type: object
+      variant:
+        type: string
+    type: object
+  dto.GetClientConfigResponse:
+    properties:
+      evaluated_at:
+        type: string
+      flags:
+        additionalProperties:
+          $ref: '#/definitions/dto.FlagClientConfig'
+        type: object
+    type: object
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
   dto.Meta:
     properties:
       page:
@@ -28,6 +207,46 @@ definitions:
       total_pages:
         type: integer
     type: object
+  dto.OverrideListResponse:
+    properties:
+      overrides:
+        items:
+          $ref: '#/definitions/dto.OverrideResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.OverrideResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      expires_at:
+        type: string
+      flag_key:
+        type: string
+      id:
+        type: string
+      is_expired:
+        type: boolean
+      reason:
+        type: string
+      target_id:
+        type: string
+      target_type:
+        type: string
+      updated_at:
+        type: string
+      value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+    type: object
   dto.Response:
     properties:
       data: {}
@@ -37,6 +256,26 @@ definitions:
         $ref: '#/definitions/dto.Meta'
       success:
         type: boolean
+    type: object
+  dto.TargetingRuleDTO:
+    properties:
+      conditions:
+        items:
+          $ref: '#/definitions/dto.ConditionDTO'
+        type: array
+      percentage:
+        maximum: 100
+        minimum: 0
+        type: integer
+      priority:
+        minimum: 0
+        type: integer
+      rule_id:
+        type: string
+      value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+    required:
+    - rule_id
     type: object
   dto.ValidationDetail:
     properties:
@@ -583,6 +822,23 @@ definitions:
         example: RECHARGE
         type: string
     type: object
+  handler.BatchEvaluateHTTPRequest:
+    description: Request body for batch evaluating feature flags
+    properties:
+      context:
+        $ref: '#/definitions/dto.EvaluationContextDTO'
+      keys:
+        example:
+        - flag1
+        - flag2
+        items:
+          type: string
+        maxItems: 100
+        minItems: 1
+        type: array
+    required:
+    - keys
+    type: object
   handler.CancelOrderRequest:
     description: Request body for cancelling an order
     properties:
@@ -876,6 +1132,12 @@ definitions:
         example: 10
         type: number
     type: object
+  handler.ClientConfigHTTPRequest:
+    description: Request body for getting client configuration
+    properties:
+      context:
+        $ref: '#/definitions/dto.EvaluationContextDTO'
+    type: object
   handler.CompleteReturnRequest:
     description: Request body for completing a return
     properties:
@@ -1108,6 +1370,48 @@ definitions:
     - description
     - incurred_at
     type: object
+  handler.CreateFlagHTTPRequest:
+    description: Request body for creating a new feature flag
+    properties:
+      default_value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+      description:
+        example: Enables the new checkout flow for users
+        type: string
+      key:
+        example: new_checkout_flow
+        maxLength: 100
+        minLength: 1
+        type: string
+      name:
+        example: New Checkout Flow
+        maxLength: 200
+        minLength: 1
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/dto.TargetingRuleDTO'
+        type: array
+      tags:
+        example:
+        - checkout
+        - experiment
+        items:
+          type: string
+        type: array
+      type:
+        enum:
+        - boolean
+        - percentage
+        - variant
+        - user_segment
+        example: boolean
+        type: string
+    required:
+    - key
+    - name
+    - type
+    type: object
   handler.CreateOtherIncomeRecordRequest:
     description: Create other income record request
     properties:
@@ -1132,6 +1436,31 @@ definitions:
     - category
     - description
     - received_at
+    type: object
+  handler.CreateOverrideHTTPRequest:
+    description: Request body for creating a flag override
+    properties:
+      expires_at:
+        example: "2024-12-31T23:59:59Z"
+        type: string
+      reason:
+        example: Testing for specific user
+        maxLength: 500
+        type: string
+      target_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      target_type:
+        enum:
+        - user
+        - tenant
+        example: user
+        type: string
+      value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+    required:
+    - target_id
+    - target_type
     type: object
   handler.CreatePaymentVoucherRequest:
     description: Request body for creating a payment voucher
@@ -1656,6 +1985,38 @@ definitions:
     - name
     - type
     type: object
+  handler.CreateTemplateRequest:
+    description: Request body for creating a new print template
+    properties:
+      content:
+        example: <html>...template content...</html>
+        type: string
+      description:
+        example: Standard template for sales orders
+        maxLength: 500
+        type: string
+      document_type:
+        example: SALES_ORDER
+        type: string
+      margins:
+        $ref: '#/definitions/handler.MarginsRequest'
+      name:
+        example: Default Sales Order Template
+        maxLength: 100
+        minLength: 1
+        type: string
+      orientation:
+        example: PORTRAIT
+        type: string
+      paper_size:
+        example: A4
+        type: string
+    required:
+    - content
+    - document_type
+    - name
+    - paper_size
+    type: object
   handler.CreateTenantRequest:
     properties:
       address:
@@ -2166,6 +2527,22 @@ definitions:
         example: RECEIVABLE_AMOUNT_MISMATCH
         type: string
     type: object
+  handler.DocumentTypeResponse:
+    description: Document type information
+    properties:
+      code:
+        example: SALES_ORDER
+        type: string
+      display_name:
+        example: 销售订单
+        type: string
+    type: object
+  handler.EvaluateFlagHTTPRequest:
+    description: Request body for evaluating a feature flag
+    properties:
+      context:
+        $ref: '#/definitions/dto.EvaluationContextDTO'
+    type: object
   handler.ExpenseActionRequest:
     description: Expense action request
     properties:
@@ -2274,6 +2651,49 @@ definitions:
       total_pending:
         example: 5
         type: integer
+    type: object
+  handler.ForceLogoutRequest:
+    properties:
+      reason:
+        maxLength: 500
+        minLength: 3
+        type: string
+      user_id:
+        type: string
+    required:
+    - reason
+    - user_id
+    type: object
+  handler.ForceLogoutResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.GeneratePDFHTTPRequest:
+    description: Request body for generating a PDF
+    properties:
+      copies:
+        example: 1
+        maximum: 100
+        minimum: 1
+        type: integer
+      data: {}
+      document_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      document_number:
+        example: SO-2024-001
+        type: string
+      document_type:
+        example: SALES_ORDER
+        type: string
+      template_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - document_id
+    - document_number
+    - document_type
     type: object
   handler.IncomeActionRequest:
     description: Income action request
@@ -2598,6 +3018,36 @@ definitions:
     - amount
     - target_id
     type: object
+  handler.MarginsRequest:
+    properties:
+      bottom:
+        example: 10
+        type: integer
+      left:
+        example: 10
+        type: integer
+      right:
+        example: 10
+        type: integer
+      top:
+        example: 10
+        type: integer
+    type: object
+  handler.MarginsResponse:
+    properties:
+      bottom:
+        example: 10
+        type: integer
+      left:
+        example: 10
+        type: integer
+      right:
+        example: 10
+        type: integer
+      top:
+        example: 10
+        type: integer
+    type: object
   handler.MarkExpensePaidRequest:
     description: Mark expense paid request
     properties:
@@ -2785,6 +3235,19 @@ definitions:
       total:
         type: integer
     type: object
+  handler.PaperSizeResponse:
+    description: Paper size information
+    properties:
+      code:
+        example: A4
+        type: string
+      height:
+        example: 297
+        type: integer
+      width:
+        example: 210
+        type: integer
+    type: object
   handler.PayableAllocationResponse:
     description: Payable allocation response
     properties:
@@ -2930,6 +3393,85 @@ definitions:
         type: string
       timestamp:
         example: "2026-01-23T12:00:00Z"
+        type: string
+    type: object
+  handler.PreviewDocumentRequest:
+    description: Request body for previewing a document
+    properties:
+      data: {}
+      document_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      document_type:
+        example: SALES_ORDER
+        type: string
+      template_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - document_id
+    - document_type
+    type: object
+  handler.PreviewHTTPResponse:
+    description: Document preview response
+    properties:
+      html:
+        type: string
+      margins:
+        $ref: '#/definitions/handler.MarginsResponse'
+      orientation:
+        example: PORTRAIT
+        type: string
+      paper_size:
+        example: A4
+        type: string
+      template_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  handler.PrintJobResponse:
+    description: Print job response
+    properties:
+      copies:
+        example: 1
+        type: integer
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      document_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      document_number:
+        example: SO-2024-001
+        type: string
+      document_type:
+        example: SALES_ORDER
+        type: string
+      error_message:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      pdf_url:
+        example: /api/v1/print/jobs/xxx/download
+        type: string
+      printed_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      printed_by:
+        example: 550e8400-e29b-41d4-a716-446655440004
+        type: string
+      status:
+        example: COMPLETED
+        type: string
+      template_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        example: "2024-01-15T10:30:00Z"
         type: string
     type: object
   handler.ProductListResponse:
@@ -4972,6 +5514,45 @@ definitions:
         example: 1.0.0
         type: string
     type: object
+  handler.TemplateResponse:
+    description: Print template response
+    properties:
+      created_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      description:
+        example: Standard template for sales orders
+        type: string
+      document_type:
+        example: SALES_ORDER
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_default:
+        example: true
+        type: boolean
+      margins:
+        $ref: '#/definitions/handler.MarginsResponse'
+      name:
+        example: Default Sales Order Template
+        type: string
+      orientation:
+        example: PORTRAIT
+        type: string
+      paper_size:
+        example: A4
+        type: string
+      status:
+        example: ACTIVE
+        type: string
+      tenant_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updated_at:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+    type: object
   handler.TenantConfigResponse:
     properties:
       cost_strategy:
@@ -5253,6 +5834,16 @@ definitions:
         example: 0
         type: integer
     type: object
+  handler.TriggerDailyAggregationRequest:
+    description: Request for triggering daily report aggregation
+    properties:
+      end_date:
+        example: "2026-01-31"
+        type: string
+      start_date:
+        example: "2026-01-01"
+        type: string
+    type: object
   handler.UnlockStockRequest:
     description: Request body for releasing locked stock
     properties:
@@ -5410,6 +6001,26 @@ definitions:
     - category
     - description
     - incurred_at
+    type: object
+  handler.UpdateFlagHTTPRequest:
+    description: Request body for updating a feature flag
+    properties:
+      default_value:
+        $ref: '#/definitions/dto.FlagValueDTO'
+      description:
+        example: Updated description
+        type: string
+      name:
+        example: Updated Name
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/dto.TargetingRuleDTO'
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
     type: object
   handler.UpdateOrderItemRequest:
     description: Request body for updating an order item
@@ -5720,6 +6331,29 @@ definitions:
       tax_id:
         example: 91440300MA5FL8L972
         maxLength: 50
+        type: string
+    type: object
+  handler.UpdateTemplateRequest:
+    description: Request body for updating a print template
+    properties:
+      content:
+        type: string
+      description:
+        example: Updated description
+        maxLength: 500
+        type: string
+      margins:
+        $ref: '#/definitions/handler.MarginsRequest'
+      name:
+        example: Updated Template Name
+        maxLength: 100
+        minLength: 1
+        type: string
+      orientation:
+        example: LANDSCAPE
+        type: string
+      paper_size:
+        example: A5
         type: string
     type: object
   handler.UpdateTenantConfigRequest:
@@ -6059,6 +6693,81 @@ info:
   title: ERP Backend API
   version: "1.0"
 paths:
+  /auth/force-logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate all sessions for a specific user. Requires user:force_logout
+        permission.
+      parameters:
+      - description: Force logout request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ForceLogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ForceLogoutResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Force logout user (Admin)
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -8548,6 +9257,1069 @@ paths:
       summary: Get product counts by status
       tags:
       - products
+  /feature-flags:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of feature flags with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - description: Filter by status
+        enum:
+        - enabled
+        - disabled
+        - archived
+        in: query
+        name: status
+        type: string
+      - description: Filter by type
+        enum:
+        - boolean
+        - percentage
+        - variant
+        - user_segment
+        in: query
+        name: type
+        type: string
+      - description: Filter by tags (comma-separated)
+        in: query
+        name: tags
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.FlagListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List feature flags
+      tags:
+      - feature-flags
+    post:
+      consumes:
+      - application/json
+      description: Create a new feature flag with the specified configuration
+      parameters:
+      - description: Flag creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateFlagHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.FlagResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new feature flag
+      tags:
+      - feature-flags
+  /feature-flags/{key}:
+    delete:
+      consumes:
+      - application/json
+      description: Archive a feature flag (soft delete). Archived flags cannot be
+        evaluated.
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Archive a feature flag
+      tags:
+      - feature-flags
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a feature flag by its unique key
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.FlagResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get feature flag by key
+      tags:
+      - feature-flags
+    put:
+      consumes:
+      - application/json
+      description: Update an existing feature flag's configuration
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Flag update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateFlagHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.FlagResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update a feature flag
+      tags:
+      - feature-flags
+  /feature-flags/{key}/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve audit logs for a specific feature flag
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      - description: Filter by action
+        in: query
+        name: action
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuditLogListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get flag audit logs
+      tags:
+      - feature-flags
+  /feature-flags/{key}/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disable an enabled feature flag
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Disable a feature flag
+      tags:
+      - feature-flags
+  /feature-flags/{key}/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enable a disabled feature flag
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Enable a feature flag
+      tags:
+      - feature-flags
+  /feature-flags/{key}/evaluate:
+    post:
+      consumes:
+      - application/json
+      description: Evaluate a single feature flag for the given context
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Evaluation context
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.EvaluateFlagHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.EvaluateFlagResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Evaluate a feature flag
+      tags:
+      - feature-flags
+  /feature-flags/{key}/overrides:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all overrides for a specific feature flag
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OverrideListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List flag overrides
+      tags:
+      - feature-flags
+    post:
+      consumes:
+      - application/json
+      description: Create a new override for a feature flag to target specific users
+        or tenants
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Override creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateOverrideHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OverrideResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a flag override
+      tags:
+      - feature-flags
+  /feature-flags/{key}/overrides/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific override by its ID
+      parameters:
+      - description: Feature flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Override ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a flag override
+      tags:
+      - feature-flags
+  /feature-flags/client-config:
+    post:
+      consumes:
+      - application/json
+      description: Get all enabled feature flags and their values for client SDK initialization
+      parameters:
+      - description: Client config request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ClientConfigHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetClientConfigResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get client configuration
+      tags:
+      - feature-flags
+  /feature-flags/evaluate-batch:
+    post:
+      consumes:
+      - application/json
+      description: Evaluate multiple feature flags at once for the given context
+      parameters:
+      - description: Batch evaluation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BatchEvaluateHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BatchEvaluateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Batch evaluate feature flags
+      tags:
+      - feature-flags
   /finance/cash-flow:
     get:
       consumes:
@@ -20511,7 +22283,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete a warehouse by ID (cannot delete default warehouse)
+      description: Delete a warehouse by ID (cannot delete default warehouse or warehouse
+        with inventory unless force=true with admin permission)
       parameters:
       - description: Tenant ID (optional for dev)
         in: header
@@ -20523,6 +22296,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: Force delete even if warehouse has inventory (requires admin
+          permission)
+        in: query
+        name: force
+        type: boolean
       produces:
       - application/json
       responses:
@@ -20539,6 +22317,15 @@ paths:
               type: object
         "401":
           description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "403":
+          description: Forbidden
           schema:
             allOf:
             - $ref: '#/definitions/dto.Response'
@@ -21358,6 +23145,1319 @@ paths:
       summary: Handle WeChat Pay refund callback
       tags:
       - payment-callbacks
+  /print/document-types:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available document types that can be printed
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.DocumentTypeResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get available document types
+      tags:
+      - print-reference
+  /print/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF for a document and create a print job
+      parameters:
+      - description: PDF generation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.GeneratePDFHTTPRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PrintJobResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Generate PDF
+      tags:
+      - print-jobs
+  /print/jobs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of print jobs
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      - description: Filter by document type
+        in: query
+        name: doc_type
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PrintJobResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List print jobs
+      tags:
+      - print-jobs
+  /print/jobs/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a print job by its ID
+      parameters:
+      - description: Job ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PrintJobResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get print job by ID
+      tags:
+      - print-jobs
+  /print/jobs/{id}/download:
+    get:
+      description: Download the PDF file for a completed print job
+      parameters:
+      - description: Job ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Download PDF
+      tags:
+      - print-jobs
+  /print/jobs/by-document/{doc_type}/{document_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve print jobs for a specific document
+      parameters:
+      - description: Document type
+        in: path
+        name: doc_type
+        required: true
+        type: string
+      - description: Document ID
+        format: uuid
+        in: path
+        name: document_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PrintJobResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get jobs by document
+      tags:
+      - print-jobs
+  /print/paper-sizes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available paper sizes for printing
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.PaperSizeResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get available paper sizes
+      tags:
+      - print-reference
+  /print/preview:
+    post:
+      consumes:
+      - application/json
+      description: Generate HTML preview for a document using a print template
+      parameters:
+      - description: Preview request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PreviewDocumentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PreviewHTTPResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Preview document as HTML
+      tags:
+      - print-preview
+  /print/templates:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of print templates
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: created_at
+        description: Order by field
+        in: query
+        name: order_by
+        type: string
+      - default: desc
+        description: Order direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_dir
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter by document type
+        in: query
+        name: doc_type
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.TemplateResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/dto.Meta'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List print templates
+      tags:
+      - print-templates
+    post:
+      consumes:
+      - application/json
+      description: Create a new print template for a specific document type
+      parameters:
+      - description: Template creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new print template
+      tags:
+      - print-templates
+  /print/templates/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing print template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Delete print template
+      tags:
+      - print-templates
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a print template by its ID
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get print template by ID
+      tags:
+      - print-templates
+    put:
+      consumes:
+      - application/json
+      description: Update an existing print template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Template update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update print template
+      tags:
+      - print-templates
+  /print/templates/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate an inactive print template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Activate template
+      tags:
+      - print-templates
+  /print/templates/{id}/content:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the HTML content of a print template for editing
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  properties:
+                    content:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get template content
+      tags:
+      - print-templates
+    put:
+      consumes:
+      - application/json
+      description: Update only the HTML content of a print template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Template content
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            content:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update template content
+      tags:
+      - print-templates
+  /print/templates/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active print template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate template
+      tags:
+      - print-templates
+  /print/templates/{id}/set-default:
+    post:
+      consumes:
+      - application/json
+      description: Set a template as the default for its document type
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.TemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Set template as default
+      tags:
+      - print-templates
+  /print/templates/by-doc-type/{doc_type}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all active templates for a specific document type
+      parameters:
+      - description: Document type
+        in: path
+        name: doc_type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/handler.TemplateResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get templates by document type
+      tags:
+      - print-templates
+  /prints/{tenant_id}/{year}/{month}/{filename}:
+    get:
+      description: Serve a PDF file from storage
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: string
+      - description: Year
+        in: path
+        name: year
+        required: true
+        type: string
+      - description: Month
+        in: path
+        name: month
+        required: true
+        type: string
+      - description: Filename
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Serve PDF file
+      tags:
+      - print-files
   /reports/finance/cash-flow:
     get:
       consumes:
@@ -22248,6 +25348,53 @@ paths:
       security:
       - BearerAuth: []
       summary: Get report scheduler status
+      tags:
+      - reports
+  /reports/scheduler/trigger:
+    post:
+      consumes:
+      - application/json
+      description: Manually triggers the daily report aggregation for a specific date
+        range
+      parameters:
+      - description: Date range (optional, defaults to yesterday)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.TriggerDailyAggregationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.RefreshReportResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/dto.ErrorInfo'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Trigger daily report aggregation
       tags:
       - reports
   /system/info:

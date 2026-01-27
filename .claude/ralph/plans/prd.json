@@ -8524,7 +8524,7 @@
       "- 权限控制正确",
       "- 响应格式符合统一规范"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 6 API Design",
     "affectedModules": [
       "backend/internal/interfaces/http/handlers/feature_flag_handler.go",
