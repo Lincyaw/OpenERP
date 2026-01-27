@@ -27,7 +27,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-erp_dev}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin123}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -77,7 +77,7 @@ services:
       - erp-network
     command: >
       -path=/migrations
-      -database "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-test123}@postgres:5432/${DB_NAME:-erp_dev}?sslmode=disable"
+      -database "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-admin123}@postgres:5432/${DB_NAME:-erp_dev}?sslmode=disable"
       up
     profiles:
       - migrate
@@ -102,7 +102,7 @@ services:
       ERP_DATABASE_PORT: 5432
       ERP_DATABASE_DBNAME: ${DB_NAME:-erp_dev}
       ERP_DATABASE_USER: ${DB_USER:-postgres}
-      ERP_DATABASE_PASSWORD: ${DB_PASSWORD:-test123}
+      ERP_DATABASE_PASSWORD: ${DB_PASSWORD:-admin123}
       ERP_REDIS_HOST: redis
       ERP_REDIS_PORT: 6379
     volumes:

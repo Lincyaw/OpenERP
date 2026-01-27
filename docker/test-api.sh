@@ -105,7 +105,7 @@ api_test() {
 # Make API request and save token from response
 login_and_get_token() {
     local url="${BASE_URL}/auth/login"
-    local body='{"username":"admin","password":"test123"}'
+    local body='{"username":"admin","password":"admin123"}'
 
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \

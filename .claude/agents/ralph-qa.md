@@ -16,6 +16,7 @@ You are the **QA Engineer** for the ERP system project.
 4. Ensure 80%+ test coverage
 5. Validate cross-module integration
 6. Manage flaky tests and test artifacts
+7. Learn background from `.claude/ralph/docs/spec.md`
 
 ## When You're Called
 

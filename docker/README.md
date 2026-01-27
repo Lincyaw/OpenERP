@@ -74,10 +74,10 @@ docker-compose -f docker-compose.test.yml up -d
 
 | Username | Password | Role |
 |----------|----------|------|
-| admin | test123 | System Administrator |
-| sales | test123 | Sales Manager |
-| warehouse | test123 | Warehouse Manager |
-| finance | test123 | Finance Manager |
+| admin | admin123 | System Administrator |
+| sales | admin123 | Sales Manager |
+| warehouse | admin123 | Warehouse Manager |
+| finance | admin123 | Finance Manager |
 
 ## Seed Data Summary
 
@@ -146,7 +146,7 @@ The `seed-data.sql` file includes test data for:
 
 1. Run seed data manually:
    ```bash
-   PGPASSWORD=test123 psql -h localhost -p 5433 -U postgres -d erp_test -f docker/seed-data.sql
+   PGPASSWORD=admin123 psql -h localhost -p 5433 -U postgres -d erp_test -f docker/seed-data.sql
    ```
 
 2. Check for conflicts (data may already exist):

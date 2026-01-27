@@ -12,10 +12,14 @@ fi
 MAX_ITER=$1
 
 LOG_DIR=".claude/ralph/logs"
+DOING_DIR=".claude/ralph/doing"
 mkdir -p "$LOG_DIR"
+mkdir -p "$DOING_DIR"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 MAIN_LOG="$LOG_DIR/ralph_${TIMESTAMP}.log"
+CURRENT_TASK_LOCK=""
+SCRIPT_PID=$$
 
 log() {
   echo "$1" | tee -a "$MAIN_LOG"
@@ -25,6 +29,75 @@ log() {
 log_stderr() {
   echo "$1" | tee -a "$MAIN_LOG" >&2
 }
+
+# Check if a task is locked by another process
+is_task_locked() {
+  local task_id=$1
+  local lock_file="$DOING_DIR/${task_id}.lock"
+
+  if [ ! -f "$lock_file" ]; then
+    return 1  # Not locked
+  fi
+
+  # Check if the process that created the lock is still running
+  local lock_pid=$(cat "$lock_file" 2>/dev/null | head -1)
+  if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+    return 0  # Locked by running process
+  else
+    # Stale lock, remove it
+    log_stderr "[Lock] 🧹 Removing stale lock for task: $task_id (PID: $lock_pid)"
+    rm -f "$lock_file"
+    return 1  # Not locked anymore
+  fi
+}
+
+# Lock a task
+lock_task() {
+  local task_id=$1
+  local lock_file="$DOING_DIR/${task_id}.lock"
+
+  # Double-check if already locked
+  if is_task_locked "$task_id"; then
+    log_stderr "[Lock] ⚠️  Task $task_id is already locked by another process"
+    return 1
+  fi
+
+  # Create lock file with PID and timestamp
+  {
+    echo "$SCRIPT_PID"
+    echo "$TIMESTAMP"
+    date "+%Y-%m-%d %H:%M:%S"
+  } > "$lock_file"
+
+  CURRENT_TASK_LOCK="$lock_file"
+  log_stderr "[Lock] 🔒 Locked task: $task_id (PID: $SCRIPT_PID)"
+  return 0
+}
+
+# Unlock a task
+unlock_task() {
+  local task_id=$1
+  local lock_file="$DOING_DIR/${task_id}.lock"
+
+  if [ -f "$lock_file" ]; then
+    rm -f "$lock_file"
+    log_stderr "[Lock] 🔓 Unlocked task: $task_id"
+  fi
+
+  CURRENT_TASK_LOCK=""
+}
+
+# Cleanup function (called on exit)
+cleanup() {
+  if [ -n "$CURRENT_TASK_LOCK" ] && [ -f "$CURRENT_TASK_LOCK" ]; then
+    local task_id=$(basename "$CURRENT_TASK_LOCK" .lock)
+    log "[Cleanup] 🧹 Releasing lock on exit: $task_id"
+    rm -f "$CURRENT_TASK_LOCK"
+  fi
+}
+
+# Trap signals to ensure cleanup
+trap cleanup EXIT INT TERM
 
 # Detect role using Claude API for intelligent routing
 detect_role() {
@@ -85,18 +158,29 @@ Your answer (just the role, no explanation):"
   echo "$role"
 }
 
-# Get next highest priority incomplete task from prd.json
+# Get next highest priority incomplete task from prd.json (excluding locked tasks)
 get_next_task_id() {
-  jq -r '
+  # Get all incomplete tasks sorted by priority
+  local tasks=$(jq -r '
     .[]
     | select(.passes == false)
     | {priority: .priority, id: .id, sort_key: (if .priority == "high" then 1 elif .priority == "medium" then 2 else 3 end)}
     | [.sort_key, .id]
     | @tsv
-  ' .claude/ralph/plans/prd.json \
-  | sort -n \
-  | head -1 \
-  | awk '{print $2}'
+  ' .claude/ralph/plans/prd.json | sort -n)
+
+  # Find first unlocked task
+  while IFS=$'\t' read -r sort_key task_id; do
+    if [ -n "$task_id" ] && ! is_task_locked "$task_id"; then
+      echo "$task_id"
+      return 0
+    else
+      log_stderr "[Scheduler] ⏭️  Skipping locked task: $task_id"
+    fi
+  done <<< "$tasks"
+
+  # No unlocked tasks found
+  echo ""
 }
 
 log "========================================"
@@ -128,6 +212,12 @@ for ((i=1; i<=MAX_ITER; i++)); do
 
   log "[Scheduler] 🎯 Selected task: $TASK_ID"
   log ""
+
+  # Try to lock the task
+  if ! lock_task "$TASK_ID"; then
+    log "[Scheduler] ⚠️  Failed to lock task $TASK_ID, skipping to next iteration"
+    continue
+  fi
 
   # Detect role
   ROLE=$(detect_role "$TASK_ID")
@@ -193,12 +283,8 @@ If ALL tasks in prd.json are complete (all passes: true), output:
   log "[Executor] ✅ Agent execution completed"
   log "[Executor] 📊 Full stream log: $ITER_JSON_LOG"
 
-  if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
-    log ""
-    log "[Scheduler] 🎉 All tasks in the PRD are complete!"
-    log "[Scheduler] 🏁 Workflow finished successfully. Exiting loop."
-    break
-  fi
+  # Unlock the task
+  unlock_task "$TASK_ID"
 
   log ""
   log "[Scheduler] ✅ Iteration $i completed."

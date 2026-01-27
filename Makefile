@@ -87,12 +87,12 @@ docker-up: ## Start all services in Docker (postgres, redis, backend, frontend)
 	@sleep 5
 	@$(MAKE) db-migrate
 	@$(MAKE) db-seed
-	@$(DOCKER_COMPOSE) --profile docker up -d --build
+	@$(DOCKER_COMPOSE) --profile docker up -d
 	@echo ""
 	@echo "$(GREEN)All services started!$(NC)"
 	@echo "  Frontend:  http://localhost:$${FRONTEND_PORT:-3000}"
 	@echo "  Backend:   http://localhost:$${BACKEND_PORT:-8080}"
-	@echo "  Login:     admin / test123"
+	@echo "  Login:     admin / admin123"
 
 docker-down: ## Stop all Docker services
 	@echo "$(CYAN)Stopping all services...$(NC)"
@@ -142,7 +142,7 @@ db-migrate: ## Run database migrations
 		-v "$(PWD)/backend/migrations:/migrations:ro" \
 		$(MIGRATE_IMAGE) \
 		-path=/migrations \
-		-database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-test123}@erp-postgres:5432/$${DB_NAME:-erp_dev}?sslmode=disable" \
+		-database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-admin123}@erp-postgres:5432/$${DB_NAME:-erp_dev}?sslmode=disable" \
 		up 2>/dev/null || echo "  Migrations may already be applied"
 	@echo "$(GREEN)Migrations complete.$(NC)"
 
