@@ -31414,3 +31414,91 @@ golang.org/x/time v0.14.0
 1. LOADGEN-014: BackpressureHandler (uses MetricsCollector)
 2. LOADGEN-010: CircuitBoard (main controller)
 3. Integration testing with complete load generation system
+
+2026-01-28 - LOADGEN-014: 背压处理器实现 (BackpressureHandler Implementation)
+
+=== Implementation Details ===
+
+**Files Created:**
+- `tools/loadgen/internal/loadctrl/backpressure.go` - BackpressureHandler implementation
+- `tools/loadgen/internal/loadctrl/backpressure_test.go` - Comprehensive tests
+
+**Key Components:**
+
+1. **BackpressureHandler Interface:**
+   - Check() - Evaluates metrics and returns action
+   - ShouldAllow() - Returns true if request should be allowed
+   - State() - Returns current backpressure state
+   - Stats() - Returns statistics
+   - SetStrategy/SetErrorThreshold/SetLatencyThreshold - Configuration updates
+   - Start/Stop - Background monitoring loop control
+
+2. **State Machine (normal → warning → critical → recovery):**
+   - Normal: Operating within thresholds
+   - Warning: Elevated metrics but below critical threshold (QPS reduced to 90%)
+   - Critical: Metrics exceed threshold, backpressure applied
+   - Recovery: Gradual traffic restoration over recovery period
+
+3. **Backpressure Strategies:**
+   - Drop: Probabilistic request dropping based on DropPercentage
+   - Reduce: QPS reduction based on ReductionFactor (default 50%)
+   - Pause: Complete request pause with CircuitOpenDuration
+   - Circuit: Circuit breaker pattern with half-open probing
+
+4. **Configuration Defaults:**
+   - ErrorRateThreshold: 10%
+   - LatencyP99Threshold: 1s
+   - WarningErrorThreshold: 5% (half of critical)
+   - RecoveryPeriod: 30s
+   - CheckInterval: 100ms
+   - ReductionFactor: 0.5
+   - DropPercentage: 0.5
+   - CircuitOpenDuration: 10s
+   - ConsecutiveBreachThreshold: 3
+
+**Thread Safety Fixes (from code review):**
+- Fixed Start/Stop race condition with controlMu mutex
+- Fixed config access race with proper locking in ShouldAllow, determineCriticalAction, shouldDrop
+- Fixed WaitGroup reuse issue by waiting inside lock
+- Added half-open circuit reset to prevent getting stuck
+- Fixed Stats() double locking
+
+=== Verification ===
+
+**Test Results:**
+- All 45+ test cases passing
+- Race detector: PASS (no data races)
+- Coverage: 84.3% (exceeds 80% requirement)
+
+**Acceptance Criteria Verified:**
+- ✅ BackpressureHandler interface implemented
+- ✅ Error rate threshold detection (default 10%)
+- ✅ P99 latency threshold detection (default 1s)
+- ✅ Backpressure strategies: drop/reduce/pause/circuit
+- ✅ State machine: normal → warning → critical → recovery
+- ✅ Recovery detection period (default 30s)
+- ✅ Tests verify strategy triggers and recovery
+- ✅ Error rate > 10% triggers backpressure
+- ✅ Traffic auto-restores after recovery period
+
+**Code Review Status:**
+- Reviewed by code-reviewer agent
+- Fixed all CRITICAL and HIGH issues:
+  - Race condition in Start/Stop lifecycle
+  - Data race on config access
+  - WaitGroup reuse issue
+  - Half-open circuit stuck state
+
+=== Architecture Notes ===
+
+- Thread-safe: Separate mutexes for state (stateMu), circuit (circuitMu), and control (controlMu)
+- Atomic statistics: Uses sync/atomic for counters
+- Config immutability pattern: Config read under lock during operations
+- Gradual recovery: Linear QPS increase from 50% to 100% over recovery period
+- Circuit breaker: Proper half-open state with probe reset
+
+=== Next Steps ===
+
+1. LOADGEN-015: WorkerPool implementation in internal/executor/
+2. LOADGEN-016: Scheduler and Executor
+3. LOADGEN-010: CircuitBoard (main controller integrating all components)
