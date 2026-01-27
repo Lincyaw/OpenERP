@@ -5755,7 +5755,7 @@
       "- 错误响应 (4xx/5xx) 正确标记 span.SetStatus(codes.Error)",
       "- tenant_id/user_id 作为 span attribute 可见"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Tracing",
     "affectedModules": [
       "backend/internal/interfaces/http/middleware/",

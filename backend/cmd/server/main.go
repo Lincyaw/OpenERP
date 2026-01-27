@@ -468,16 +468,25 @@ func main() {
 	}
 
 	// Apply middleware stack in order:
-	// 1. RequestID - Generate/propagate request ID
-	// 2. Recovery - Catch panics
-	// 3. Logger - Log requests
-	// 4. Security - Add security headers
-	// 5. CORS - Handle cross-origin requests
-	// 6. BodyLimit - Limit request body size
-	// 7. RateLimit - Apply rate limiting (if enabled)
+	// 1. Tracing - OpenTelemetry HTTP tracing (must be first to capture full request)
+	// 2. RequestID - Generate/propagate request ID
+	// 3. Recovery - Catch panics
+	// 4. Logger - Log requests
+	// 5. TracingAttributeInjector - Inject custom attributes into span
+	// 6. SpanErrorMarker - Mark spans with error status for 4xx/5xx
+	// 7. Security - Add security headers
+	// 8. CORS - Handle cross-origin requests
+	// 9. BodyLimit - Limit request body size
+	// 10. RateLimit - Apply rate limiting (if enabled)
+	engine.Use(middleware.TracingWithConfig(middleware.TracingConfig{
+		ServiceName: cfg.Telemetry.ServiceName,
+		Enabled:     cfg.Telemetry.Enabled,
+	}))
 	engine.Use(middleware.RequestID())
 	engine.Use(logger.Recovery(log))
 	engine.Use(logger.GinMiddleware(log))
+	engine.Use(middleware.TracingAttributeInjector())
+	engine.Use(middleware.SpanErrorMarker())
 	engine.Use(middleware.Secure())
 
 	// Configure CORS from config

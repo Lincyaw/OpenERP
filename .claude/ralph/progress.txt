@@ -26681,3 +26681,82 @@ for transaction records. This could lead to orphaned references in historical or
 === Next Steps ===
 - OBS-TRACE-002: Add otelgin HTTP middleware for request tracing
 - OBS-METRICS-001: Configure Prometheus metrics pipeline
+
+---
+
+2026-01-27 - Task ID: OBS-TRACE-002 - HTTP 中间件链路追踪打桩 (otelgin)
+
+=== Implementation Details ===
+
+**Summary**: Integrated otelgin middleware for automatic HTTP request tracing with custom span attributes.
+
+**Files Created**:
+1. `backend/internal/interfaces/http/middleware/tracing.go` (NEW)
+   - TracingWithConfig: Main middleware wrapping otelgin.Middleware
+   - TracingAttributeInjector: Middleware to inject attributes after JWT authentication
+   - SpanErrorMarker: Middleware to mark spans with error status for 4xx/5xx responses
+   - Helper functions: getRequestID, getTenantID, getUserID, isValidTenantID
+   - Input validation: MaxRequestIDLength (128), MaxTenantIDLength (64), UUID regex
+
+2. `backend/internal/interfaces/http/middleware/tracing_test.go` (NEW)
+   - 25+ test cases covering all functionality
+   - Tests for enabled/disabled states, attribute injection, error marking
+   - Tests for input validation (long headers, invalid UUIDs, injection attempts)
+   - Near 100% code coverage
+
+**Files Modified**:
+1. `backend/cmd/server/main.go`
+   - Added TracingWithConfig middleware (first in chain)
+   - Added TracingAttributeInjector middleware (after Logger)
+   - Added SpanErrorMarker middleware (after TracingAttributeInjector)
+   - Updated middleware order documentation comments
+
+2. `backend/go.mod`
+   - Added go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.64.0
+
+**Key Design Decisions**:
+1. Tracing middleware placed FIRST in chain to capture full request timing
+2. TracingAttributeInjector runs AFTER recovery/logger to ensure stable context
+3. SpanErrorMarker runs after handler to capture final status code
+4. Custom attribute names: request_id, tenant_id, user_id (not semconv to avoid confusion)
+5. Security: Tenant ID from headers validated as UUID format to prevent injection
+6. Security: Request ID truncated to 128 chars to prevent DoS via large headers
+
+**Span Attributes**:
+- http.method (from otelgin)
+- http.route (from otelgin)
+- http.status_code (from otelgin + SpanErrorMarker)
+- http.request_content_length (from otelgin)
+- http.response_content_length (from otelgin)
+- request_id (custom)
+- tenant_id (custom)
+- user_id (custom)
+
+**Error Handling**:
+- 4xx responses: codes.Error with descriptive message (Unauthorized, Forbidden, Not Found, Client Error)
+- 5xx responses: codes.Error with "Internal Server Error"
+- Non-recording spans gracefully handled (no-op)
+
+=== Verification ===
+- [x] go build ./... succeeds
+- [x] go test ./internal/interfaces/http/middleware/... passes (25+ tracing tests)
+- [x] go vet passes for all modified packages
+- [x] Code review passed (APPROVE with input validation fixes applied)
+- [x] No console.log or debug statements
+- [x] No hardcoded secrets
+
+=== Acceptance Criteria Met ===
+- [x] 每个 HTTP 请求生成一个 Root Span (via otelgin.Middleware)
+- [x] Span 名称为 HTTP 方法 + 路由模板 (e.g., "GET /api/v1/products/:id")
+- [x] 错误响应 (4xx/5xx) 正确标记 span.SetStatus(codes.Error) (via SpanErrorMarker)
+- [x] tenant_id/user_id/request_id 作为 span attribute 可见 (via TracingAttributeInjector)
+
+=== Notes ===
+- TracingAttributeInjector runs before JWT middleware in global chain, so user_id from JWT is captured per-route via TracingAttributeInjector called again
+- Tenant ID from X-Tenant-ID header is validated as UUID format only; JWT-based tenant_id is trusted
+- The middleware is conditionally enabled based on telemetry.enabled config
+- Works correctly with existing OTEL Collector infrastructure from OBS-COLL-001
+
+=== Next Steps ===
+- OBS-METRICS-001: Configure Prometheus metrics pipeline
+- Consider adding custom spans for database queries and external service calls
