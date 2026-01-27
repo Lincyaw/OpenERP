@@ -8277,7 +8277,7 @@
       "- 乐观锁防止并发冲突",
       "- 集成测试通过"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 4 Data Model",
     "affectedModules": [
       "backend/internal/domain/featureflag/repository.go",
