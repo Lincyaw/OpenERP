@@ -8162,7 +8162,7 @@
       "- 外键约束正确设置",
       "- down 迁移可正确回滚"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 4 Data Model",
     "affectedModules": [
       "backend/migrations/000034_create_feature_flags.up.sql",

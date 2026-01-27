@@ -29570,3 +29570,107 @@ Implemented a high-performance sharded parameter pool with ring buffer for the l
 - LOADGEN-001: CLI entry point and config loading
 - LOADGEN-002: OpenAPI parser
 - LOADGEN-006: Dependency graph and producer-consumer relationships
+
+---
+
+2025-01-28 - FF-BE-001: Feature Flag Database Migration and Base Table Structure
+
+=== Task ID: FF-BE-001 ===
+=== Status: COMPLETE ===
+
+=== Implementation Details ===
+
+Created database migration for the Feature Flag system with three tables:
+
+**Files Created:**
+
+1. **backend/migrations/000034_create_feature_flags.up.sql**
+   - feature_flags table with all required columns
+   - flag_overrides table for user/tenant-specific overrides
+   - flag_audit_logs table for tracking changes
+   - All indexes as specified
+   - Triggers, constraints, and comments
+
+2. **backend/migrations/000034_create_feature_flags.down.sql**
+   - Clean rollback dropping all three tables
+
+**Table: feature_flags**
+- id: UUID PRIMARY KEY (auto-generated)
+- key: VARCHAR(100) UNIQUE NOT NULL
+- name: VARCHAR(200) NOT NULL
+- description: TEXT
+- type: VARCHAR(20) NOT NULL with CHECK constraint (boolean/percentage/variant/user_segment)
+- status: VARCHAR(20) NOT NULL DEFAULT 'disabled' with CHECK constraint (enabled/disabled/archived)
+- default_value: JSONB NOT NULL
+- rules: JSONB
+- tags: VARCHAR(100)[] with GIN index
+- version: INTEGER NOT NULL DEFAULT 1 (optimistic locking)
+- created_at, updated_at: TIMESTAMPTZ with auto-update trigger
+- created_by, updated_by: UUID references users(id)
+
+**Table: flag_overrides**
+- id: UUID PRIMARY KEY
+- flag_key: VARCHAR(100) with FK to feature_flags(key) ON DELETE CASCADE
+- target_type: VARCHAR(20) with CHECK constraint (user/tenant)
+- target_id: UUID NOT NULL
+- value: JSONB NOT NULL
+- reason: VARCHAR(500)
+- expires_at: TIMESTAMPTZ with partial index
+- created_by: UUID references users(id)
+- created_at: TIMESTAMPTZ
+- UNIQUE constraint on (flag_key, target_type, target_id)
+
+**Table: flag_audit_logs**
+- id: UUID PRIMARY KEY
+- flag_key: VARCHAR(100) NOT NULL
+- action: VARCHAR(50) with CHECK constraint (created/updated/enabled/disabled/archived/override_added/override_removed)
+- old_value, new_value: JSONB
+- actor_id, tenant_id: UUID
+- actor_ip: VARCHAR(45)
+- created_at: TIMESTAMPTZ
+
+**Indexes Created:**
+- idx_feature_flags_status ON feature_flags(status)
+- idx_feature_flags_tags ON feature_flags USING GIN(tags)
+- idx_feature_flags_type ON feature_flags(type)
+- idx_feature_flags_created_at ON feature_flags(created_at)
+- idx_flag_overrides_target ON flag_overrides(target_type, target_id)
+- idx_flag_overrides_expires ON flag_overrides(expires_at) WHERE expires_at IS NOT NULL
+- idx_flag_overrides_flag_key ON flag_overrides(flag_key)
+- idx_flag_audit_logs_flag_key ON flag_audit_logs(flag_key)
+- idx_flag_audit_logs_created_at ON flag_audit_logs(created_at)
+- idx_flag_audit_logs_actor ON flag_audit_logs(actor_id) WHERE actor_id IS NOT NULL
+- idx_flag_audit_logs_action ON flag_audit_logs(action)
+
+=== Verification ===
+
+- ✅ make migrate-up executed successfully (version 34)
+- ✅ All three tables created with correct schema
+- ✅ All indexes created and verified
+- ✅ Foreign key constraints properly set (users references)
+- ✅ CHECK constraints for enum fields working
+- ✅ Updated_at trigger installed on feature_flags
+- ✅ Down migration tested and verified (rolled back to 33, then back up to 34)
+
+=== Design Decisions ===
+
+1. **Global unique key**: Flag keys are globally unique (not per-tenant) since feature flags control application behavior across the system
+2. **JSONB for values**: Using JSONB for default_value, rules, old_value, new_value allows flexible schema for different flag types
+3. **GIN index for tags**: Enables efficient array containment queries for tag-based filtering
+4. **Partial index on expires_at**: Only indexes non-null values for efficient expiration queries
+5. **Cascade delete on overrides**: When a flag is deleted, all its overrides are automatically removed
+6. **Audit log actions**: Extended action types to include override_added/override_removed for complete audit trail
+
+=== Acceptance Criteria Verification ===
+
+- ✅ Migration file created at backend/migrations/000034_create_feature_flags.up.sql
+- ✅ feature_flags table with all required columns and constraints
+- ✅ flag_overrides table with unique constraint and FK to feature_flags
+- ✅ flag_audit_logs table for change tracking
+- ✅ All specified indexes created
+- ✅ Down migration file created and verified
+
+=== Next Steps ===
+
+- FF-BE-002: Feature Flag Domain Model and Repository
+- FF-BE-003: Feature Flag Service and Evaluation Logic
