@@ -170,6 +170,10 @@ type AccountPayableRepository interface {
 	// CountOverdue counts overdue payables for a tenant
 	CountOverdue(ctx context.Context, tenantID uuid.UUID) (int64, error)
 
+	// CountOutstandingBySupplier counts unsettled (PENDING or PARTIAL) payables for a supplier
+	// Used for validation before supplier deletion
+	CountOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
 	// SumOutstandingBySupplier calculates total outstanding amount for a supplier
 	SumOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error)
 

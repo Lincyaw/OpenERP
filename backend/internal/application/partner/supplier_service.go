@@ -2,16 +2,21 @@ package partner
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
+	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 // SupplierService handles supplier-related business operations
 type SupplierService struct {
-	supplierRepo partner.SupplierRepository
+	supplierRepo       partner.SupplierRepository
+	accountPayableRepo finance.AccountPayableRepository // Optional: for delete validation
+	purchaseOrderRepo  trade.PurchaseOrderRepository    // Optional: for delete validation
 }
 
 // NewSupplierService creates a new SupplierService
@@ -19,6 +24,16 @@ func NewSupplierService(supplierRepo partner.SupplierRepository) *SupplierServic
 	return &SupplierService{
 		supplierRepo: supplierRepo,
 	}
+}
+
+// SetAccountPayableRepo sets the account payable repository for delete validation
+func (s *SupplierService) SetAccountPayableRepo(repo finance.AccountPayableRepository) {
+	s.accountPayableRepo = repo
+}
+
+// SetPurchaseOrderRepo sets the purchase order repository for delete validation
+func (s *SupplierService) SetPurchaseOrderRepo(repo trade.PurchaseOrderRepository) {
+	s.purchaseOrderRepo = repo
 }
 
 // Create creates a new supplier
@@ -436,13 +451,38 @@ func (s *SupplierService) Delete(ctx context.Context, tenantID, supplierID uuid.
 		return err
 	}
 
-	// Check if supplier has outstanding balance
+	// Check if supplier has outstanding balance (prepaid balance)
 	if supplier.HasBalance() {
-		return shared.NewDomainError("CANNOT_DELETE", "Cannot delete supplier with outstanding balance")
+		return shared.NewDomainError("HAS_BALANCE", fmt.Sprintf("Cannot delete supplier with balance of %.2f", supplier.Balance.InexactFloat64()))
 	}
 
-	// TODO: Check if supplier has outstanding payables or orders
-	// This should be implemented when those modules are available
+	// Check if supplier has outstanding payables (PENDING or PARTIAL status)
+	if s.accountPayableRepo != nil {
+		outstandingCount, err := s.accountPayableRepo.CountOutstandingBySupplier(ctx, tenantID, supplierID)
+		if err != nil {
+			return shared.NewDomainError("PAYABLE_CHECK_FAILED", "Failed to check outstanding payables. Please try again or contact support.")
+		}
+		if outstandingCount > 0 {
+			// Get the total outstanding amount for a more informative error message
+			outstandingAmount, _ := s.accountPayableRepo.SumOutstandingBySupplier(ctx, tenantID, supplierID)
+			return shared.NewDomainError("HAS_OUTSTANDING_PAYABLES",
+				fmt.Sprintf("Cannot delete supplier: %d outstanding payable(s) with total amount %.2f. Settle all payables first.",
+					outstandingCount, outstandingAmount.InexactFloat64()))
+		}
+	}
+
+	// Check if supplier has incomplete orders (DRAFT, CONFIRMED, or PARTIAL_RECEIVED)
+	if s.purchaseOrderRepo != nil {
+		incompleteCount, err := s.purchaseOrderRepo.CountIncompleteBySupplier(ctx, tenantID, supplierID)
+		if err != nil {
+			return shared.NewDomainError("ORDER_CHECK_FAILED", "Failed to check incomplete orders. Please try again or contact support.")
+		}
+		if incompleteCount > 0 {
+			return shared.NewDomainError("HAS_INCOMPLETE_ORDERS",
+				fmt.Sprintf("Cannot delete supplier: %d incomplete order(s) exist. Complete or cancel all orders first.",
+					incompleteCount))
+		}
+	}
 
 	return s.supplierRepo.DeleteForTenant(ctx, tenantID, supplierID)
 }

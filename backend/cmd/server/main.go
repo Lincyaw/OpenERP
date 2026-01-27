@@ -189,6 +189,8 @@ func main() {
 	customerService.SetSalesOrderRepo(salesOrderRepo)
 	customerLevelService := partnerapp.NewCustomerLevelService(customerLevelRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
+	supplierService.SetAccountPayableRepo(accountPayableRepo)
+	supplierService.SetPurchaseOrderRepo(purchaseOrderRepo)
 	warehouseService := partnerapp.NewWarehouseService(warehouseRepo, inventoryItemRepo)
 	balanceTransactionService := partnerapp.NewBalanceTransactionService(balanceTransactionRepo, customerRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)

@@ -120,6 +120,10 @@ type PurchaseOrderRepository interface {
 	// CountBySupplier counts purchase orders for a supplier
 	CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
 
+	// CountIncompleteBySupplier counts incomplete (not COMPLETED or CANCELLED) orders for a supplier
+	// Used for validation before supplier deletion
+	CountIncompleteBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error)
+
 	// CountPendingReceipt counts orders pending receipt for a tenant
 	CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error)
 

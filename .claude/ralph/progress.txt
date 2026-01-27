@@ -26368,3 +26368,60 @@ DELETE /api/v1/partner/warehouses/{id}
 
 === Next Steps ===
 - N/A - Task complete
+
+2025-01-27 - Task GAP-VAL-003: Implement supplier deletion validation for payables and orders
+
+=== Implementation Details ===
+- Added CountOutstandingBySupplier method to AccountPayableRepository interface (domain/finance/repository.go)
+- Added CountIncompleteBySupplier method to PurchaseOrderRepository interface (domain/trade/repository.go)
+- Implemented CountOutstandingBySupplier in GormAccountPayableRepository (persistence/account_payable_repository.go)
+- Implemented CountIncompleteBySupplier in GormPurchaseOrderRepository (persistence/purchase_order_repository.go)
+- Updated SupplierService with:
+  - Optional repository injectors: SetAccountPayableRepo and SetPurchaseOrderRepo
+  - Enhanced Delete method with comprehensive validation:
+    - Balance check (existing)
+    - Outstanding payables check (new)
+    - Incomplete orders check (new)
+  - Detailed error messages including count and amount for payables
+- Wired up repositories in main.go to inject validation dependencies
+
+Key Files Modified:
+- backend/internal/domain/finance/repository.go - New interface method
+- backend/internal/domain/trade/repository.go - New interface method
+- backend/internal/infrastructure/persistence/account_payable_repository.go - Implementation
+- backend/internal/infrastructure/persistence/purchase_order_repository.go - Implementation
+- backend/internal/application/partner/supplier_service.go - Delete validation logic
+- backend/cmd/server/main.go - Repository injection
+
+=== Verification ===
+- All 8 new supplier service delete tests pass
+- Full partner package tests pass (43 tests)
+- Finance package tests pass
+- Go build successful
+- No regressions in existing tests
+
+Test Cases Added:
+1. TestSupplierService_Delete_Success - Basic delete without validation repos
+2. TestSupplierService_Delete_HasBalance - Blocked when supplier has balance
+3. TestSupplierService_Delete_HasOutstandingPayables - Blocked with payables
+4. TestSupplierService_Delete_HasIncompleteOrders - Blocked with orders
+5. TestSupplierService_Delete_SuccessWithRepositoryChecks - Full validation pass
+6. TestSupplierService_Delete_PayableCheckFailed - DB error handling
+7. TestSupplierService_Delete_OrderCheckFailed - DB error handling
+8. TestSupplierService_Delete_SupplierNotFound - Not found case
+
+=== Notes ===
+- Follows same pattern as customer delete validation (GAP-VAL-002)
+- Error codes: HAS_BALANCE, HAS_OUTSTANDING_PAYABLES, HAS_INCOMPLETE_ORDERS
+- Error codes for DB failures: PAYABLE_CHECK_FAILED, ORDER_CHECK_FAILED
+- Validation is skipped gracefully if repositories are not injected (backward compatible)
+
+=== Design Decisions ===
+- Used optional repository injection pattern (setter methods) for backward compatibility
+- Added CountOutstandingBySupplier to mirror CountOutstandingByCustomer pattern
+- Status filtering for incomplete orders: NOT IN (COMPLETED, CANCELLED)
+- Status filtering for outstanding payables: IN (PENDING, PARTIAL)
+
+=== Next Steps ===
+- Similar patterns can be applied to other deletion validations
+- Consider adding integration tests for end-to-end validation

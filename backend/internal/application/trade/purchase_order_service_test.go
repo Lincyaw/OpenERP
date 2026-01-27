@@ -124,6 +124,11 @@ func (m *MockPurchaseOrderRepository) CountBySupplier(ctx context.Context, tenan
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockPurchaseOrderRepository) CountIncompleteBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, supplierID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockPurchaseOrderRepository) CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	args := m.Called(ctx, tenantID)
 	return args.Get(0).(int64), args.Error(1)

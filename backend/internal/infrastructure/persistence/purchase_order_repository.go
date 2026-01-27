@@ -517,6 +517,20 @@ func (r *GormPurchaseOrderRepository) CountBySupplier(ctx context.Context, tenan
 	return count, nil
 }
 
+// CountIncompleteBySupplier counts incomplete (not COMPLETED or CANCELLED) orders for a supplier
+// Used for validation before supplier deletion
+func (r *GormPurchaseOrderRepository) CountIncompleteBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).
+		Model(&models.PurchaseOrderModel{}).
+		Where("tenant_id = ? AND supplier_id = ? AND status NOT IN ?", tenantID, supplierID,
+			[]trade.PurchaseOrderStatus{trade.PurchaseOrderStatusCompleted, trade.PurchaseOrderStatusCancelled}).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // CountPendingReceipt counts orders pending receipt for a tenant with data scope
 func (r *GormPurchaseOrderRepository) CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error) {
 	var count int64

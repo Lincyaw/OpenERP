@@ -5409,7 +5409,7 @@
       "- 删除有未完成订单的供应商返回400错误",
       "- 错误信息包含具体数量和金额"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "业务校验规则",
     "affectedModules": [
       "backend/internal/application/partner/supplier_service.go"

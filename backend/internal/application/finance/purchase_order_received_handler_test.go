@@ -118,6 +118,11 @@ func (m *MockAccountPayableRepository) CountOverdue(ctx context.Context, tenantI
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockAccountPayableRepository) CountOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, supplierID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockAccountPayableRepository) SumOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error) {
 	args := m.Called(ctx, tenantID, supplierID)
 	return args.Get(0).(decimal.Decimal), args.Error(1)

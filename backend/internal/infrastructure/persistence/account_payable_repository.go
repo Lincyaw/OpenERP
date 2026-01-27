@@ -272,6 +272,20 @@ func (r *GormAccountPayableRepository) CountOverdue(ctx context.Context, tenantI
 	return count, nil
 }
 
+// CountOutstandingBySupplier counts unsettled (PENDING or PARTIAL) payables for a supplier
+// Used for validation before supplier deletion
+func (r *GormAccountPayableRepository) CountOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).
+		Model(&models.AccountPayableModel{}).
+		Where("tenant_id = ? AND supplier_id = ? AND status IN ?", tenantID, supplierID,
+			[]finance.PayableStatus{finance.PayableStatusPending, finance.PayableStatusPartial}).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // SumOutstandingBySupplier calculates total outstanding for a supplier
 func (r *GormAccountPayableRepository) SumOutstandingBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (decimal.Decimal, error) {
 	var result struct {
