@@ -28344,3 +28344,106 @@ Implemented business metrics collection for monitoring ERP system health.
 - OBS-ALERT-001 is now unblocked (depends on OBS-METRICS-004)
 - Configure alerting rules for business metrics thresholds
 - Create Grafana dashboards for business metric visualization
+
+---
+
+2026-01-27 - OBS-LOG-001: Zap 日志桥接到 OpenTelemetry Logs
+
+=== Implementation Details ===
+
+Implemented Zap -> OpenTelemetry logs bridge to enable exporting structured logs to OTEL Collector alongside traces and metrics.
+
+### Dependencies Added
+
+- `go.opentelemetry.io/contrib/bridges/otelzap v0.14.0` - Zap to OTEL bridge
+- `go.opentelemetry.io/otel/sdk/log v0.15.0` - OTEL Log SDK
+- `go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.15.0` - OTLP gRPC exporter for logs
+- `go.opentelemetry.io/otel/log v0.15.0` - OTEL Log API
+
+### Files Created
+
+- `backend/internal/infrastructure/telemetry/logs.go`
+  - LogsConfig struct for OTEL logs configuration
+  - LoggerProvider wrapping OTEL LoggerProvider with lifecycle management
+  - NewLoggerProvider() creates LoggerProvider with OTLP gRPC exporter
+  - ZapBridgeConfig for configuring the Zap -> OTEL bridge
+  - NewZapOTELCore() creates a zapcore.Core that bridges to OTEL
+  - levelFilterCore for filtering logs by minimum level
+  - NewBridgedLogger() combines base and OTEL cores
+  - CreateBridgedLoggerFromConfig() convenience function
+  - Helper functions for creating encoders and writers
+
+- `backend/internal/infrastructure/telemetry/logs_test.go`
+  - 24 unit tests covering all functionality
+  - Tests for disabled/enabled providers
+  - Tests for level filtering
+  - Tests for bridged logger
+  - Integration tests for full setup flow
+
+### Files Modified
+
+- `backend/internal/infrastructure/config/config.go`
+  - Added `LogsEnabled` field to TelemetryConfig struct
+  - Added config loading for `telemetry.logs_enabled`
+
+- `backend/internal/infrastructure/logger/logger.go`
+  - Added exported `ParseLevel()` function for use by telemetry package
+
+- `backend/cmd/server/main.go`
+  - Added LoggerProvider initialization
+  - Added bridged logger creation when logs_enabled=true
+  - Added logs status to telemetry status log
+
+- `backend/config.toml`
+  - Added `logs_enabled = true` configuration option
+
+### Architecture
+
+The implementation follows the existing telemetry patterns:
+
+1. **LoggerProvider**: Similar to TracerProvider and MeterProvider
+   - Wraps OTEL LoggerProvider with lifecycle management
+   - Uses OTLP gRPC exporter with batch processor
+   - Graceful shutdown with 10s timeout
+
+2. **Zap Bridge**: Uses zapcore.NewTee for dual output
+   - Base core outputs to stdout/file
+   - OTEL core bridges to OpenTelemetry
+   - Level filtering applied at OTEL core level
+
+3. **Log Mapping (via otelzap)**:
+   - `level` -> `severity` (Debug, Info, Warn, Error, Fatal)
+   - `msg` -> `body`
+   - All other fields -> `attributes`
+   - Context fields (request_id, tenant_id, user_id) preserved
+
+### Configuration
+
+```toml
+[telemetry]
+enabled = true
+logs_enabled = true  # New: Enable Zap -> OTEL logs bridge
+collector_endpoint = "localhost:14317"
+```
+
+### Verification
+
+- ✅ Go build successful for all packages
+- ✅ All 24 log bridge unit tests passing
+- ✅ Type checking passed
+- ✅ Existing tests not affected
+- ✅ Code review completed with all issues addressed
+
+### Notes
+
+- Logs are exported via gRPC to OTEL Collector port 14317
+- OTEL Collector writes logs to `/var/log/otel/logs.json`
+- Log export is async (batched), so logs may buffer briefly before export
+- Level filtering can be configured via ZapBridgeConfig.Level
+
+### Next Steps
+
+- OBS-LOG-002: Add trace/span correlation to logs (inject trace_id, span_id)
+- Configure log sampling if needed for high-volume production
+- Add Grafana Loki support as alternative log backend
+

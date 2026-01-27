@@ -122,6 +122,40 @@ func main() {
 		}
 	}()
 
+	// Initialize OpenTelemetry LoggerProvider for logs bridge (Zap -> OTEL)
+	// This enables exporting Zap logs to OTEL Collector alongside traces and metrics
+	logsProvider, err := telemetry.NewLoggerProvider(context.Background(), telemetry.LogsConfig{
+		Enabled:           cfg.Telemetry.Enabled && cfg.Telemetry.LogsEnabled,
+		CollectorEndpoint: cfg.Telemetry.CollectorEndpoint,
+		ServiceName:       cfg.Telemetry.ServiceName,
+		Insecure:          cfg.Telemetry.Insecure,
+	}, log)
+	if err != nil {
+		log.Fatal("Failed to initialize OpenTelemetry LoggerProvider", zap.Error(err))
+	}
+	defer func() {
+		if err := logsProvider.Shutdown(context.Background()); err != nil {
+			log.Error("Error shutting down logs provider", zap.Error(err))
+		}
+	}()
+
+	// Bridge existing Zap logger to OTEL if logs export is enabled
+	// This creates a combined logger that outputs to both stdout and OTEL Collector
+	if logsProvider.IsEnabled() {
+		otelCore := telemetry.NewZapOTELCore(telemetry.ZapBridgeConfig{
+			ServiceName:    cfg.Telemetry.ServiceName,
+			LoggerProvider: logsProvider,
+			Level:          logger.ParseLevel(cfg.Log.Level),
+		})
+		log = telemetry.NewBridgedLogger(log.Core(), otelCore,
+			zap.AddCaller(),
+			zap.AddStacktrace(logger.ParseLevel("error")),
+		)
+		log.Info("Zap -> OTEL logs bridge enabled",
+			zap.String("collector", cfg.Telemetry.CollectorEndpoint),
+		)
+	}
+
 	// Initialize Pyroscope continuous profiler
 	// Note: Unlike DB metrics which is non-fatal on failure, profiler initialization
 	// failure is fatal because if profiling is enabled in config but fails to start,
@@ -176,6 +210,7 @@ func main() {
 		log.Info("OpenTelemetry initialized",
 			zap.Bool("tracing", tracerProvider.IsEnabled()),
 			zap.Bool("metrics", meterProvider.IsEnabled()),
+			zap.Bool("logs", logsProvider.IsEnabled()),
 			zap.Bool("profiling", profiler.IsEnabled()),
 			zap.Bool("span_profiles", tracerProvider.IsSpanProfilesEnabled()),
 			zap.String("collector", cfg.Telemetry.CollectorEndpoint),

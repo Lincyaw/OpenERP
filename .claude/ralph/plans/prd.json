@@ -6097,7 +6097,7 @@
       "- OTEL Collector 文件中可见日志",
       "- 日志级别正确映射"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Logging",
     "affectedModules": [
       "backend/internal/infrastructure/logger/",
@@ -6183,11 +6183,14 @@
       "2. 定义告警规则文件",
       "3. 配置通知渠道 (Email/Slack/PagerDuty)",
       "",
+      "=== 完成情况 ===",
+      "已完成: 创建了完整的告警规则设计文档 .claude/ralph/docs/observability/alerting-rules.md",
+      "包含: 7个预定义告警规则、AlertManager配置模板、通知路由策略、抑制规则、实现路线图",
       "=== 验收标准 ===",
       "- 文档记录告警规则设计",
       "- 后续可直接应用到 Prometheus 环境"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Alerting",
     "affectedModules": [
       "docs/observability/alerting-rules.md"

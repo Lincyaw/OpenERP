@@ -64,6 +64,11 @@ func NewForEnvironment(env string) (*zap.Logger, error) {
 
 // parseLevel converts a string level to zapcore.Level
 func parseLevel(level string) zapcore.Level {
+	return ParseLevel(level)
+}
+
+// ParseLevel converts a string level to zapcore.Level (exported version)
+func ParseLevel(level string) zapcore.Level {
 	switch strings.ToLower(level) {
 	case "debug":
 		return zapcore.DebugLevel

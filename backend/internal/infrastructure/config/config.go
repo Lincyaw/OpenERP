@@ -141,6 +141,8 @@ type TelemetryConfig struct {
 	ServiceName           string        // Service name for traces
 	Insecure              bool          // Use insecure (non-TLS) connection (development only)
 	MetricsExportInterval time.Duration // Metrics export interval (default: 60s)
+	// Logs bridge options (Zap -> OTEL)
+	LogsEnabled bool // Enable OTEL logs bridge (exports Zap logs to OTEL Collector)
 	// Database tracing options
 	DBTraceEnabled    bool          // Enable database query tracing (otelgorm)
 	DBLogFullSQL      bool          // Log full SQL statements (dev only, disable in prod for security)
@@ -298,6 +300,7 @@ func Load() (*Config, error) {
 			ServiceName:           v.GetString("telemetry.service_name"),
 			Insecure:              v.GetBool("telemetry.insecure"),
 			MetricsExportInterval: v.GetDuration("telemetry.metrics_export_interval"),
+			LogsEnabled:           v.GetBool("telemetry.logs_enabled"),
 			DBTraceEnabled:        v.GetBool("telemetry.db_trace_enabled"),
 			DBLogFullSQL:          v.GetBool("telemetry.db_log_full_sql"),
 			DBSlowQueryThresh:     v.GetDuration("telemetry.db_slow_query_threshold"),

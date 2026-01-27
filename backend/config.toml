@@ -129,6 +129,11 @@ insecure = true
 # Default: 60s, lower values = more frequent exports but higher overhead
 metrics_export_interval = "60s"
 
+# Logs bridge (Zap -> OTEL)
+# Enable exporting Zap logs to OTEL Collector
+# When enabled, logs are output to both stdout and OTEL Collector
+logs_enabled = true
+
 # Database tracing options (otelgorm)
 # Enable database query tracing
 db_trace_enabled = true
