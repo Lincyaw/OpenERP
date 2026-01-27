@@ -10,6 +10,7 @@
         db-migrate db-seed db-reset db-psql \
         e2e e2e-ui e2e-debug e2e-local \
         otel-up otel-down otel-logs otel-status \
+        pyroscope-up pyroscope-down pyroscope-ui pyroscope-logs pyroscope-status \
         clean logs api-docs
 
 # Default target
@@ -52,6 +53,9 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Observability (OpenTelemetry):$(NC)"
 	@grep -E '^otel-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Profiling (Pyroscope):$(NC)"
+	@grep -E '^pyroscope-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(GREEN)Other:$(NC)"
 	@grep -E '^(clean|logs|api-docs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
@@ -230,8 +234,8 @@ otel-up: ## Start OpenTelemetry Collector
 	@$(DOCKER_COMPOSE) --profile otel up -d otel-collector
 	@echo ""
 	@echo "$(GREEN)OTEL Collector started!$(NC)"
-	@echo "  gRPC endpoint:   localhost:$${OTEL_GRPC_PORT:-4317}"
-	@echo "  HTTP endpoint:   localhost:$${OTEL_HTTP_PORT:-4318}"
+	@echo "  gRPC endpoint:   localhost:$${OTEL_GRPC_PORT:-14317}"
+	@echo "  HTTP endpoint:   localhost:$${OTEL_HTTP_PORT:-14318}"
 	@echo "  Health check:    http://localhost:13133/health"
 	@echo "  Metrics:         http://localhost:8888/metrics"
 	@echo "  zpages:          http://localhost:55679/debug/tracez"
@@ -251,12 +255,52 @@ otel-status: ## Show OTEL Collector status and health
 	@curl -s http://localhost:13133/health 2>/dev/null | jq -r '"  Health: " + .status' 2>/dev/null || echo "  Health: Unavailable (collector not running or port blocked)"
 	@echo ""
 	@echo "$(CYAN)Endpoints:$(NC)"
-	@echo "  gRPC:    localhost:$${OTEL_GRPC_PORT:-4317}"
-	@echo "  HTTP:    localhost:$${OTEL_HTTP_PORT:-4318}"
+	@echo "  gRPC:    localhost:$${OTEL_GRPC_PORT:-14317}"
+	@echo "  HTTP:    localhost:$${OTEL_HTTP_PORT:-14318}"
 	@echo "  Health:  http://localhost:13133/health"
 	@echo "  Metrics: http://localhost:8888/metrics"
 	@echo ""
 	@echo "$(CYAN)Data volume:$(NC)"
 	@docker volume inspect erp-otel-logs --format '  {{.Mountpoint}}' 2>/dev/null || echo "  Volume not created yet"
 
+# =============================================================================
+# Profiling (Pyroscope)
+# =============================================================================
 
+pyroscope-up: ## Start Pyroscope profiling server
+	@echo "$(CYAN)Starting Pyroscope...$(NC)"
+	@$(DOCKER_COMPOSE) --profile otel up -d pyroscope
+	@echo ""
+	@echo "$(GREEN)Pyroscope started!$(NC)"
+	@echo "  UI:       http://localhost:$${PYROSCOPE_PORT:-4040}"
+	@echo "  API:      http://localhost:$${PYROSCOPE_PORT:-4040}/api"
+	@echo ""
+	@echo "Backend connection string: http://pyroscope:4040"
+
+pyroscope-down: ## Stop Pyroscope profiling server
+	@echo "$(CYAN)Stopping Pyroscope...$(NC)"
+	@$(DOCKER_COMPOSE) stop pyroscope
+	@echo "$(GREEN)Pyroscope stopped.$(NC)"
+
+pyroscope-ui: ## Open Pyroscope UI in browser
+	@echo "$(CYAN)Opening Pyroscope UI...$(NC)"
+	@command -v xdg-open >/dev/null 2>&1 && xdg-open "http://localhost:$${PYROSCOPE_PORT:-4040}" || \
+	command -v open >/dev/null 2>&1 && open "http://localhost:$${PYROSCOPE_PORT:-4040}" || \
+	echo "Please open http://localhost:$${PYROSCOPE_PORT:-4040} in your browser"
+
+pyroscope-logs: ## View Pyroscope logs
+	@$(DOCKER_COMPOSE) logs -f pyroscope
+
+pyroscope-status: ## Show Pyroscope status and health
+	@echo "$(CYAN)Pyroscope Status:$(NC)"
+	@docker inspect erp-pyroscope --format '  Container: {{.State.Status}}' 2>/dev/null || echo "  Container: Not running"
+	@echo ""
+	@curl -s "http://localhost:$${PYROSCOPE_PORT:-4040}/ready" >/dev/null 2>&1 && echo "  Health: Ready" || echo "  Health: Not ready (pyroscope not running or port blocked)"
+	@echo ""
+	@echo "$(CYAN)Endpoints:$(NC)"
+	@echo "  UI:      http://localhost:$${PYROSCOPE_PORT:-4040}"
+	@echo "  API:     http://localhost:$${PYROSCOPE_PORT:-4040}/api"
+	@echo "  Ready:   http://localhost:$${PYROSCOPE_PORT:-4040}/ready"
+	@echo ""
+	@echo "$(CYAN)Data volume:$(NC)"
+	@docker volume inspect erp-pyroscope-data --format '  {{.Mountpoint}}' 2>/dev/null || echo "  Volume not created yet"

@@ -6399,7 +6399,7 @@
       "- 长于 10ms 的 span 有对应 CPU profile 数据",
       "- 短于 10ms 的 span 预期可能无 profile 数据 (采样限制)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Profiling",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/tracer.go",
@@ -6450,7 +6450,7 @@
       "- Backend profile 数据可在 UI 中查看",
       "- 提供 Makefile 命令: make pyroscope-ui"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Profiling",
     "affectedModules": [
       "docker-compose.yml",

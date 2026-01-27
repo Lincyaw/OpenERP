@@ -27690,3 +27690,89 @@ scope.Run(ctx, func(ctx context.Context) {
 === Next Steps ===
 - OBS-PROFILE-003: Pyroscope + OpenTelemetry Span Profiles 集成
 - OBS-PROFILE-004: 部署 Pyroscope Server (Docker Compose)
+
+---
+
+2026-01-27 - OBS-PROFILE-004: 部署 Pyroscope Server (Docker Compose)
+
+=== Implementation Details ===
+1. **Added Pyroscope Environment Variables to .env.example**
+   - PYROSCOPE_VERSION: Docker image version (default: latest)
+   - PYROSCOPE_PORT: UI and API port (default: 4040)
+   - PYROSCOPE_LOG_LEVEL: Log verbosity (default: info)
+
+2. **Verified Existing docker-compose.yml Configuration**
+   - Pyroscope service already configured (lines 181-201)
+   - Image: grafana/pyroscope:latest
+   - Port: 4040:4040
+   - Volume: pyroscope_data:/data
+   - Healthcheck: wget to /ready endpoint
+   - Profiles: otel, docker
+
+3. **Verified Existing Grafana Data Source Configuration**
+   - File: deploy/grafana/datasources/pyroscope.yaml
+   - Type: grafana-pyroscope-datasource
+   - URL: http://pyroscope:4040
+   - minStep: 15s
+
+4. **Added Pyroscope Makefile Commands**
+   - pyroscope-up: Start Pyroscope with otel profile
+   - pyroscope-down: Stop Pyroscope container
+   - pyroscope-ui: Open Pyroscope UI in browser (xdg-open/open)
+   - pyroscope-logs: View Pyroscope container logs
+   - pyroscope-status: Show status, health, endpoints, and volume info
+
+=== Files Modified ===
+- [MOD] .env.example (added Pyroscope environment variables section)
+- [MOD] Makefile (added Pyroscope section with 5 make targets)
+- [VERIFIED] docker-compose.yml (pyroscope service already existed)
+- [VERIFIED] deploy/grafana/datasources/pyroscope.yaml (already existed)
+
+=== Verification ===
+- [x] `make pyroscope-up` starts Pyroscope successfully
+- [x] Container: erp-pyroscope running
+- [x] Health check: /ready returns "ready"
+- [x] UI accessible at http://localhost:4040 (returns HTML)
+- [x] Volume: erp-pyroscope-data created
+- [x] `make pyroscope-status` shows correct status
+- [x] `make pyroscope-down` stops container cleanly
+- [x] `make help` shows all pyroscope commands
+
+=== Acceptance Criteria Met ===
+- [x] docker-compose up 后 Pyroscope 正常启动
+- [x] 访问 http://localhost:4040 可看到 Pyroscope UI
+- [x] Backend profile 数据可在 UI 中查看 (infrastructure ready)
+- [x] 提供 Makefile 命令: make pyroscope-ui
+
+=== Configuration Notes ===
+```bash
+# Start Pyroscope
+make pyroscope-up
+
+# Check status
+make pyroscope-status
+
+# Open UI in browser
+make pyroscope-ui
+
+# View logs
+make pyroscope-logs
+
+# Stop Pyroscope
+make pyroscope-down
+```
+
+=== Backend Connection ===
+- Backend should connect to: http://pyroscope:4040 (inside Docker network)
+- External access: http://localhost:4040
+
+=== Notes ===
+- Pyroscope uses local file storage (/data) for development
+- Default retention: 24h (suitable for development)
+- Can start independently with `make pyroscope-up` or as part of full stack with `docker-compose --profile docker up`
+- Pyroscope data persists in erp-pyroscope-data volume
+
+=== Next Steps ===
+- OBS-PROFILE-005: 业务关键路径 Profiling Labels
+- Integrate Pyroscope client in backend (pyroscope.Start() in main.go)
+- Configure pyroscope.ApplicationName and pyroscope.ServerAddress

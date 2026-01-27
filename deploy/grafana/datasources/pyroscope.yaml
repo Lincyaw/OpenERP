@@ -1,0 +1,24 @@
+# =============================================================================
+# Grafana Data Source Configuration for Pyroscope
+# =============================================================================
+# This file configures Pyroscope as a Grafana data source for continuous profiling.
+# Mount this file to /etc/grafana/provisioning/datasources/ in your Grafana container.
+#
+# Usage with Grafana:
+#   volumes:
+#     - ./deploy/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Pyroscope
+    type: grafana-pyroscope-datasource
+    uid: pyroscope
+    access: proxy
+    url: http://pyroscope:4040
+    isDefault: false
+    editable: true
+    jsonData:
+      # Minimum step interval for Pyroscope queries
+      minStep: '15s'
