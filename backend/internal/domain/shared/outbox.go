@@ -120,6 +120,11 @@ func (e *OutboxEntry) IsDead() bool {
 	return e.Status == OutboxStatusDead
 }
 
+// TableName specifies the table name for GORM
+func (OutboxEntry) TableName() string {
+	return "outbox_events"
+}
+
 // OutboxRepository defines the interface for outbox persistence
 type OutboxRepository interface {
 	// Save persists one or more outbox entries

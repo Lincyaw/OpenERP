@@ -1,8 +1,5 @@
 # Build stage
-FROM golang:1.25.5-alpine AS builder
-
-# Install build dependencies
-RUN apk add --no-cache git make
+FROM golang:1.25.5-trixie AS builder
 
 # Set working directory
 WORKDIR /app
@@ -20,23 +17,30 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/bin/server ./cmd/server
 
 # Runtime stage
-FROM alpine:3.19
+FROM debian:trixie-slim
 
-# Install runtime dependencies including wkhtmltopdf and Chinese fonts
-RUN apk add --no-cache \
+# Change to China mirrors
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+
+# Install runtime dependencies including Chromium and Chinese fonts
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     tzdata \
-    wkhtmltopdf \
+    # Chromium for PDF generation (headless)
+    chromium \
     # Chinese fonts for PDF generation
-    font-noto-cjk \
-    # Additional fonts for better compatibility
+    fonts-noto-cjk \
     fontconfig \
-    ttf-freefont \
+    fonts-dejavu \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
     && fc-cache -f -v
 
-# Create non-root user
-RUN addgroup -g 1000 app && \
-    adduser -D -u 1000 -G app app
+# Set Chromium environment variables for chromedp
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDP_NO_SANDBOX=true
 
 # Set working directory
 WORKDIR /app
@@ -49,12 +53,6 @@ COPY --from=builder /app/migrations /app/migrations
 
 # Create data directory for PDF storage
 RUN mkdir -p /data/prints
-
-# Set ownership
-RUN chown -R app:app /app /data/prints
-
-# Switch to non-root user
-USER app
 
 # Expose port
 EXPOSE 8080

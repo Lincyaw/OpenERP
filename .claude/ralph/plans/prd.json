@@ -6728,7 +6728,7 @@
       "- Swagger文档完整",
       "- 权限控制正常"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - API Layer",
     "affectedModules": [
       "backend/internal/interface/api/print/",

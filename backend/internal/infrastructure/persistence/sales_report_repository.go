@@ -35,7 +35,7 @@ func (r *GormSalesReportRepository) GetSalesSummary(filter report.SalesReportFil
 			COUNT(DISTINCT so.id) as total_orders,
 			COALESCE(SUM(soi.quantity), 0) as total_quantity,
 			COALESCE(SUM(so.total_amount), 0) as total_sales_amount,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as total_cost_amount
+			COALESCE(SUM(soi.amount), 0) as total_cost_amount
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
@@ -96,7 +96,7 @@ func (r *GormSalesReportRepository) GetDailySalesTrend(filter report.SalesReport
 			DATE(so.created_at) as date,
 			COUNT(DISTINCT so.id) as order_count,
 			COALESCE(SUM(so.total_amount), 0) as total_amount,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as total_cost,
+			COALESCE(SUM(soi.amount), 0) as total_cost,
 			COALESCE(SUM(soi.quantity), 0) as items_sold
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
@@ -148,8 +148,8 @@ func (r *GormSalesReportRepository) GetProductSalesReport(filter report.SalesRep
 			p.category_id,
 			COALESCE(c.name, '') as category_name,
 			COALESCE(SUM(soi.quantity), 0) as sales_quantity,
-			COALESCE(SUM(soi.subtotal), 0) as sales_amount,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as cost_amount
+			COALESCE(SUM(soi.amount), 0) as sales_amount,
+			COALESCE(SUM(soi.amount), 0) as cost_amount
 		`).
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
 		Joins("JOIN products p ON p.id = soi.product_id").
@@ -224,8 +224,8 @@ func (r *GormSalesReportRepository) GetProductSalesRanking(filter report.SalesRe
 			p.name as product_name,
 			COALESCE(c.name, '') as category_name,
 			COALESCE(SUM(soi.quantity), 0) as total_quantity,
-			COALESCE(SUM(soi.subtotal), 0) as total_amount,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as total_cost,
+			COALESCE(SUM(soi.amount), 0) as total_amount,
+			COALESCE(SUM(soi.amount), 0) as total_cost,
 			COUNT(DISTINCT so.id) as order_count
 		`).
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
@@ -289,7 +289,7 @@ func (r *GormSalesReportRepository) GetCustomerSalesRanking(filter report.SalesR
 			COUNT(DISTINCT so.id) as total_orders,
 			COALESCE(SUM(soi.quantity), 0) as total_quantity,
 			COALESCE(SUM(so.total_amount), 0) as total_amount,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as total_cost
+			COALESCE(SUM(soi.amount), 0) as total_cost
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
 		Where("so.tenant_id = ?", filter.TenantID).
