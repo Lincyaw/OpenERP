@@ -144,3 +144,52 @@ export interface AuditLogQuery {
   page_size?: number
   action?: string
 }
+
+// =====================
+// Override Types
+// =====================
+
+export type OverrideTargetType = 'user' | 'tenant'
+
+export interface Override {
+  id: string
+  flag_key: string
+  target_type: OverrideTargetType
+  target_id: string
+  target_name?: string
+  value: FlagValue
+  reason?: string
+  expires_at?: string
+  created_by?: string
+  created_by_name?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateOverrideRequest {
+  target_type: OverrideTargetType
+  target_id: string
+  value: FlagValue
+  reason?: string
+  expires_at?: string
+}
+
+export interface UpdateOverrideRequest {
+  value?: FlagValue
+  reason?: string
+  expires_at?: string
+}
+
+export interface OverrideListResponse {
+  overrides: Override[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface OverrideListQuery {
+  page?: number
+  page_size?: number
+  target_type?: OverrideTargetType
+}

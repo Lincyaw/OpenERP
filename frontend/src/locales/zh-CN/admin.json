@@ -12,6 +12,9 @@
     "allTypes": "全部类型",
     "toggleStatus": "切换状态",
     "clickToViewDetail": "点击查看详情",
+    "notFound": "功能开关未找到",
+    "notFoundDescription": "请求的功能开关不存在",
+    "backToList": "返回列表",
     "columns": {
       "key": "Key",
       "name": "名称",
@@ -59,6 +62,85 @@
     },
     "createModal": {
       "title": "新建功能开关"
+    },
+    "tabs": {
+      "configuration": "配置",
+      "overrides": "覆盖",
+      "auditLog": "审计日志"
+    },
+    "detail": {
+      "basicInfo": "基本信息",
+      "description": "描述",
+      "version": "版本",
+      "createdAt": "创建时间",
+      "ifConditions": "如果条件匹配",
+      "thenReturn": "则返回"
+    },
+    "overrides": {
+      "description": "覆盖允许您为特定用户或租户设置特定值，绕过正常的定向规则。",
+      "addOverride": "添加覆盖",
+      "addOverrideTitle": "添加覆盖",
+      "empty": "暂无覆盖",
+      "emptyDescription": "添加覆盖以为特定用户或租户设置特定值。",
+      "fetchError": "加载覆盖列表失败",
+      "createSuccess": "覆盖创建成功",
+      "createError": "创建覆盖失败",
+      "deleteSuccess": "覆盖删除成功",
+      "deleteError": "删除覆盖失败",
+      "deleteConfirmTitle": "删除覆盖",
+      "deleteConfirmContent": "确定要删除此覆盖吗？",
+      "targetType": "目标类型",
+      "targetTypes": {
+        "user": "用户",
+        "tenant": "租户"
+      },
+      "selectTargetType": "选择目标类型",
+      "targetTypeRequired": "请选择目标类型",
+      "targetId": "目标 ID",
+      "targetIdPlaceholder": "输入用户 ID 或租户 ID",
+      "targetIdRequired": "请输入目标 ID",
+      "value": "覆盖值",
+      "variantRequired": "请输入变体名称",
+      "reason": "原因",
+      "reasonPlaceholder": "为什么需要此覆盖？（可选）",
+      "expiresAt": "过期时间",
+      "expiresAtPlaceholder": "选择过期时间（可选）",
+      "noExpiration": "永不过期",
+      "expired": "已过期",
+      "createdBy": "创建人",
+      "createdAt": "创建时间",
+      "actions": "操作"
+    },
+    "auditLog": {
+      "description": "此功能开关的所有变更历史记录。",
+      "totalLogs": "共 {{count}} 条记录",
+      "empty": "暂无审计日志",
+      "emptyDescription": "此功能开关的变更将显示在此处。",
+      "fetchError": "加载审计日志失败",
+      "loadMore": "加载更多",
+      "by": "由",
+      "unknown": "未知",
+      "showDetails": "显示详情",
+      "hideDetails": "隐藏详情",
+      "old": "旧值",
+      "new": "新值",
+      "actions": {
+        "created": "创建",
+        "updated": "更新",
+        "enabled": "启用",
+        "disabled": "禁用",
+        "archived": "归档",
+        "override_created": "创建覆盖",
+        "override_deleted": "删除覆盖"
+      },
+      "fields": {
+        "name": "名称",
+        "description": "描述",
+        "default_value": "默认值",
+        "rules": "定向规则",
+        "tags": "标签",
+        "status": "状态"
+      }
     },
     "form": {
       "basicInfo": "基本信息",

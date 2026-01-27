@@ -13,6 +13,11 @@ import type {
   MessageResponse,
   AuditLogListResponse,
   AuditLogQuery,
+  Override,
+  CreateOverrideRequest,
+  UpdateOverrideRequest,
+  OverrideListResponse,
+  OverrideListQuery,
 } from './types'
 
 /**
@@ -124,6 +129,60 @@ export const getFeatureFlags = () => {
     })
   }
 
+  /**
+   * List overrides for a feature flag
+   */
+  const listOverrides = (
+    key: string,
+    query: OverrideListQuery = {}
+  ): Promise<ApiResponse<OverrideListResponse>> => {
+    return customInstance<ApiResponse<OverrideListResponse>>({
+      url: `/feature-flags/${encodeURIComponent(key)}/overrides${buildQueryString(query)}`,
+      method: 'GET',
+    })
+  }
+
+  /**
+   * Create an override for a feature flag
+   */
+  const createOverride = (
+    key: string,
+    request: CreateOverrideRequest
+  ): Promise<ApiResponse<Override>> => {
+    return customInstance<ApiResponse<Override>>({
+      url: `/feature-flags/${encodeURIComponent(key)}/overrides`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: request,
+    })
+  }
+
+  /**
+   * Update an override
+   */
+  const updateOverride = (
+    key: string,
+    overrideId: string,
+    request: UpdateOverrideRequest
+  ): Promise<ApiResponse<Override>> => {
+    return customInstance<ApiResponse<Override>>({
+      url: `/feature-flags/${encodeURIComponent(key)}/overrides/${encodeURIComponent(overrideId)}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: request,
+    })
+  }
+
+  /**
+   * Delete an override
+   */
+  const deleteOverride = (key: string, overrideId: string): Promise<ApiResponse<void>> => {
+    return customInstance<ApiResponse<void>>({
+      url: `/feature-flags/${encodeURIComponent(key)}/overrides/${encodeURIComponent(overrideId)}`,
+      method: 'DELETE',
+    })
+  }
+
   return {
     listFlags,
     getFlag,
@@ -133,6 +192,10 @@ export const getFeatureFlags = () => {
     enableFlag,
     disableFlag,
     getAuditLogs,
+    listOverrides,
+    createOverride,
+    updateOverride,
+    deleteOverride,
   }
 }
 
@@ -153,6 +216,12 @@ export type {
   AuditLog,
   AuditLogListResponse,
   AuditLogQuery,
+  Override,
+  OverrideTargetType,
+  CreateOverrideRequest,
+  UpdateOverrideRequest,
+  OverrideListResponse,
+  OverrideListQuery,
 } from './types'
 
 // Create a singleton instance for direct usage

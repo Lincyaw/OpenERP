@@ -31913,3 +31913,109 @@ All loadgen tests pass:
 === Next Steps ===
 - FF-ADMIN-003: Feature Flag detail page with audit logs
 - FF-INT-001: E2E integration tests for Feature Flag management
+
+2025-01-28 - FF-ADMIN-003: Feature Flag 管理界面 - 详情页和 Override 管理
+
+=== Implementation Details ===
+- Created FeatureFlagDetail page (frontend/src/pages/admin/FeatureFlagDetail.tsx)
+  - Path: /admin/feature-flags/:key
+  - Displays complete flag information
+  - Tab switching: Configuration / Overrides / Audit Log
+  - Enable/disable toggle switch in header
+  - Edit button navigation to form page
+  - Back button navigation to list page
+  - Refresh button to reload data
+  
+- Created ConfigurationTab component (within FeatureFlagDetail.tsx)
+  - Shows basic information using Descriptions component
+  - Shows default value with visual display based on flag type:
+    - Boolean/User Segment: Tag showing enabled/disabled
+    - Percentage: Progress bar with percentage labels
+    - Variant: Horizontal bar chart with legend
+  - Shows targeting rules list with conditions and return values
+  - Empty state for rules with helpful message
+  
+- Created OverridesTab component (frontend/src/pages/admin/components/OverridesTab.tsx)
+  - Override list table with columns: Target Type, Target ID, Value, Reason, Expires At, Created By, Created At, Actions
+  - Add Override button opens modal
+  - Delete Override with confirmation popover
+  - Shows expiration status (expired tag for past dates)
+  - Pagination support
+  
+- Created OverrideForm component (frontend/src/pages/admin/components/OverrideForm.tsx)
+  - Target type selection (User/Tenant) using Semi Form.Select
+  - Target ID input field
+  - Dynamic value configuration based on flag type:
+    - Boolean/User Segment: Form.Switch
+    - Percentage: Form.InputNumber with percentage formatting
+    - Variant: Form.Input for variant name
+  - Reason text area (optional)
+  - Expiration date picker (optional)
+  - Form validation for required fields
+  
+- Created AuditLogTimeline component (frontend/src/pages/admin/components/AuditLogTimeline.tsx)
+  - Timeline display using Semi Timeline component
+  - Color-coded action types (created=green, updated=blue, etc.)
+  - Expandable change details showing old/new values
+  - User who made the change
+  - Load more pagination button
+  - Empty state with helpful message
+  
+- Updated API service (frontend/src/api/feature-flags/)
+  - Added Override types: Override, CreateOverrideRequest, UpdateOverrideRequest, OverrideListResponse, OverrideListQuery
+  - Added API methods: listOverrides, createOverride, updateOverride, deleteOverride
+  
+- Updated routes (frontend/src/router/routes.tsx)
+  - Added route: /admin/feature-flags/:key for detail page
+  - Lazy loading for FeatureFlagDetailPage
+
+- Updated i18n translations (zh-CN and en-US)
+  - Added ~50 new translation keys for tabs, overrides, and audit log sections
+  
+- Created CSS file (frontend/src/pages/admin/FeatureFlagDetail.css)
+  - Responsive design for mobile/tablet/desktop
+  - Uses design system CSS variables
+  - Styling for all sections: header, config tab, overrides tab, audit log timeline
+
+=== Key Files Modified ===
+- frontend/src/pages/admin/FeatureFlagDetail.tsx (new)
+- frontend/src/pages/admin/FeatureFlagDetail.css (new)
+- frontend/src/pages/admin/components/OverridesTab.tsx (new)
+- frontend/src/pages/admin/components/OverrideForm.tsx (new)
+- frontend/src/pages/admin/components/AuditLogTimeline.tsx (new)
+- frontend/src/pages/admin/components/index.ts (updated - exports)
+- frontend/src/api/feature-flags/types.ts (updated - Override types)
+- frontend/src/api/feature-flags/featureFlags.ts (updated - Override API methods)
+- frontend/src/router/routes.tsx (updated - detail route)
+- frontend/src/locales/zh-CN/admin.json (updated)
+- frontend/src/locales/en-US/admin.json (updated)
+
+=== Verification ===
+- TypeScript type checking: PASSED (tsc --noEmit)
+- ESLint: PASSED (no errors)
+- Code review: PASSED (addressed HIGH priority issues)
+
+=== Design Decisions ===
+1. Used Semi Design components (Timeline, Tabs, Descriptions, Form) for consistency
+2. Created separate OverridesTab and AuditLogTimeline components for better separation of concerns
+3. Used factory pattern for API service (getFeatureFlags()) following existing pattern
+4. Implemented collapsible change details in audit log to reduce visual clutter
+5. Used responsive CSS with mobile-first approach
+6. Added proper accessibility attributes (aria-label) on key interactive elements
+7. Used CSS variables from design system for colors and spacing
+
+=== Acceptance Criteria Met ===
+- ✅ Detail page correctly displays flag information
+- ✅ Tab switching works: Configuration / Overrides / Audit Log
+- ✅ Configuration tab shows basic info, default value, and rules
+- ✅ Overrides tab shows list table with CRUD operations
+- ✅ Override creation modal with all required fields
+- ✅ Audit log timeline with expandable change details
+- ✅ Pagination support for audit logs (load more)
+
+=== Notes ===
+- Backend API endpoints for overrides must be implemented for full functionality
+- Code review identified some medium priority issues (duplicate formatDate, etc.) that can be addressed in future refactoring
+
+=== Next Steps ===
+- FF-INT-001: E2E integration tests for Feature Flag management

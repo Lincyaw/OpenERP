@@ -12,6 +12,9 @@
     "allTypes": "All Types",
     "toggleStatus": "Toggle Status",
     "clickToViewDetail": "Click to view details",
+    "notFound": "Feature flag not found",
+    "notFoundDescription": "The requested feature flag does not exist",
+    "backToList": "Back to list",
     "columns": {
       "key": "Key",
       "name": "Name",
@@ -59,6 +62,85 @@
     },
     "createModal": {
       "title": "Create Feature Flag"
+    },
+    "tabs": {
+      "configuration": "Configuration",
+      "overrides": "Overrides",
+      "auditLog": "Audit Log"
+    },
+    "detail": {
+      "basicInfo": "Basic Information",
+      "description": "Description",
+      "version": "Version",
+      "createdAt": "Created At",
+      "ifConditions": "If conditions match",
+      "thenReturn": "Then return"
+    },
+    "overrides": {
+      "description": "Overrides allow you to set specific values for individual users or tenants, bypassing the normal targeting rules.",
+      "addOverride": "Add Override",
+      "addOverrideTitle": "Add Override",
+      "empty": "No overrides",
+      "emptyDescription": "Add an override to set specific values for individual users or tenants.",
+      "fetchError": "Failed to load overrides",
+      "createSuccess": "Override created successfully",
+      "createError": "Failed to create override",
+      "deleteSuccess": "Override deleted successfully",
+      "deleteError": "Failed to delete override",
+      "deleteConfirmTitle": "Delete Override",
+      "deleteConfirmContent": "Are you sure you want to delete this override?",
+      "targetType": "Target Type",
+      "targetTypes": {
+        "user": "User",
+        "tenant": "Tenant"
+      },
+      "selectTargetType": "Select target type",
+      "targetTypeRequired": "Please select target type",
+      "targetId": "Target ID",
+      "targetIdPlaceholder": "Enter user ID or tenant ID",
+      "targetIdRequired": "Please enter target ID",
+      "value": "Override Value",
+      "variantRequired": "Please enter variant name",
+      "reason": "Reason",
+      "reasonPlaceholder": "Why is this override needed? (optional)",
+      "expiresAt": "Expires At",
+      "expiresAtPlaceholder": "Select expiration date (optional)",
+      "noExpiration": "No expiration",
+      "expired": "Expired",
+      "createdBy": "Created By",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "auditLog": {
+      "description": "History of all changes made to this feature flag.",
+      "totalLogs": "{{count}} entries",
+      "empty": "No audit logs",
+      "emptyDescription": "Changes to this feature flag will appear here.",
+      "fetchError": "Failed to load audit logs",
+      "loadMore": "Load more",
+      "by": "by",
+      "unknown": "Unknown",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details",
+      "old": "Old",
+      "new": "New",
+      "actions": {
+        "created": "Created",
+        "updated": "Updated",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "archived": "Archived",
+        "override_created": "Override Created",
+        "override_deleted": "Override Deleted"
+      },
+      "fields": {
+        "name": "Name",
+        "description": "Description",
+        "default_value": "Default Value",
+        "rules": "Targeting Rules",
+        "tags": "Tags",
+        "status": "Status"
+      }
     },
     "form": {
       "basicInfo": "Basic Information",

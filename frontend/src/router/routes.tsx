@@ -103,6 +103,7 @@ const ProductMappingsPage = () => lazyLoad(() => import('@/pages/integration/Pro
 // Admin module
 const FeatureFlagListPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagList'))
 const FeatureFlagFormPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagForm'))
+const FeatureFlagDetailPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagDetail'))
 
 /**
  * Application routes with metadata
@@ -759,6 +760,7 @@ export function getRouteObjects(): RouteObject[] {
       if (route.path === '/admin') {
         childRoutes.push(
           { path: 'feature-flags/new', element: FeatureFlagFormPage() },
+          { path: 'feature-flags/:key', element: FeatureFlagDetailPage() },
           { path: 'feature-flags/:key/edit', element: FeatureFlagFormPage() }
         )
       }

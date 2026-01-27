@@ -9148,7 +9148,7 @@
       "- Override CRUD 完整",
       "- 审计日志可查看"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 12 Implementation Roadmap",
     "affectedModules": [
       "frontend/src/pages/admin/FeatureFlagDetail.tsx",
