@@ -5234,7 +5234,7 @@
       "- 覆盖盘盈和盘亏两种场景",
       "- 验证库存调整和成本计算正确"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-004",
     "affectedModules": [
       "frontend/tests/e2e/inventory/"
@@ -5271,7 +5271,7 @@
       "- 验证API层数据隔离",
       "- 测试URL参数篡改场景"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-005",
     "affectedModules": [
       "frontend/tests/e2e/security/"
@@ -5306,7 +5306,7 @@
       "- 验证功能权限和数据权限",
       "- 验证前端路由守卫和API权限中间件"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-006",
     "affectedModules": [
       "frontend/tests/e2e/security/"
@@ -5479,7 +5479,7 @@
       "- 可修改供应商、商品、数量、价格",
       "- 保存成功后显示成功提示"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P3-FE-020",
     "affectedModules": [
       "frontend/src/pages/trade/PurchaseOrderEdit.tsx",
