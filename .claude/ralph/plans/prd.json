@@ -5713,7 +5713,7 @@
       "- 服务名称正确设置为 erp-backend",
       "- Shutdown 时 flush 所有 pending spans"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Tracing",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/tracer.go",

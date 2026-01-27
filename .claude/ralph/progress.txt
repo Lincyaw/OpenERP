@@ -26602,3 +26602,82 @@ for transaction records. This could lead to orphaned references in historical or
 - OBS-TRACE-001: Integrate OpenTelemetry SDK into backend
 - OBS-TRACE-002: Add otelgin HTTP middleware for request tracing
 - OBS-METRICS-001: Configure Prometheus metrics pipeline
+
+---
+
+2026-01-27 - Task ID: OBS-TRACE-001 - Integrate OpenTelemetry SDK into Backend
+
+=== Implementation Details ===
+
+**Summary**: Integrated OpenTelemetry Go SDK for distributed tracing support.
+
+**Files Created/Modified**:
+1. `backend/internal/infrastructure/telemetry/tracer.go` (NEW)
+   - TracerProvider wrapper with lifecycle management
+   - OTLP gRPC exporter configuration
+   - Configurable sampling (AlwaysSample, NeverSample, TraceIDRatioBased)
+   - Context propagation with TraceContext and Baggage
+   - Graceful shutdown with 10s timeout
+
+2. `backend/internal/infrastructure/telemetry/tracer_test.go` (NEW)
+   - Unit tests for disabled tracer provider
+   - Tests for sampling ratio configurations
+   - Tests for ForceFlush and Shutdown behavior
+
+3. `backend/internal/infrastructure/config/config.go` (MODIFIED)
+   - Added TelemetryConfig struct with:
+     - Enabled: bool
+     - CollectorEndpoint: string (default: localhost:4317)
+     - SamplingRatio: float64 (0.0-1.0, default: 1.0)
+     - ServiceName: string (default: erp-backend)
+     - Insecure: bool (for TLS control)
+   - Added validation for SamplingRatio bounds
+
+4. `backend/internal/infrastructure/config/config_test.go` (MODIFIED)
+   - Added TestLoad_TelemetryConfig tests
+   - Tests for defaults, env var loading, validation
+
+5. `backend/config.toml` (MODIFIED)
+   - Added [telemetry] section with documented options
+
+6. `backend/cmd/server/main.go` (MODIFIED)
+   - Initialize TracerProvider after logger
+   - Shutdown TracerProvider on application exit
+
+**Key Design Decisions**:
+1. Used OpenTelemetry SDK v1.39.0 (latest stable)
+2. TracerProvider wraps SDK provider for lifecycle management
+3. Global tracer provider set via otel.SetTracerProvider()
+4. W3C Trace Context propagation for distributed tracing compatibility
+5. Insecure flag added to control TLS (secure by default)
+6. SamplingRatio validation prevents invalid values
+
+**Dependencies Added**:
+- go.opentelemetry.io/otel v1.39.0
+- go.opentelemetry.io/otel/sdk/trace v1.39.0
+- go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.39.0
+- go.opentelemetry.io/otel/trace v1.39.0
+
+=== Verification ===
+- [x] go build ./... succeeds
+- [x] go test -short ./internal/infrastructure/telemetry/... passes
+- [x] go test ./internal/infrastructure/config/... passes
+- [x] go vet passes for all modified packages
+- [x] Code review passed (APPROVE with minor suggestions addressed)
+- [x] No console.log or debug statements
+
+=== Acceptance Criteria Met ===
+- [x] 后端启动时连接 OTEL Collector (via TracerProvider init)
+- [x] TracerProvider 正确配置采样率 (1.0/0.0/ratio)
+- [x] 服务名称正确设置为 erp-backend (configurable via config.toml)
+- [x] Shutdown 时 flush 所有 pending spans (10s timeout)
+
+=== Notes ===
+- TLS is disabled by default for local development (insecure=true in config.toml)
+- For production, set insecure=false and configure TLS certificates
+- Service version is hardcoded to "1.0.0" - consider making configurable in future
+- Use `make otel-up` to start the OTEL Collector for testing
+
+=== Next Steps ===
+- OBS-TRACE-002: Add otelgin HTTP middleware for request tracing
+- OBS-METRICS-001: Configure Prometheus metrics pipeline

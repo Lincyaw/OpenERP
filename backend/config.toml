@@ -110,3 +110,17 @@ require_auth = false
 # Allowed IP addresses (empty = allow all). Use this for IP-based restriction in production.
 # Example: ["127.0.0.1", "10.0.0.0/8", "192.168.0.0/16"]
 allowed_ips = []
+
+[telemetry]
+# Enable OpenTelemetry tracing
+enabled = true
+# OTEL Collector gRPC endpoint
+collector_endpoint = "localhost:4317"
+# Sampling ratio (0.0-1.0, 1.0 = 100% of traces)
+# Development: 1.0 (all traces), Production: consider 0.1-0.5 depending on traffic
+sampling_ratio = 1.0
+# Service name for traces (used in Jaeger, Zipkin, etc.)
+service_name = "erp-backend"
+# Use insecure (non-TLS) connection to collector
+# Set to true for local development, false for production (TLS required)
+insecure = true

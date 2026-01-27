@@ -26,6 +26,7 @@ import (
 	infraPlugin "github.com/erp/backend/internal/infrastructure/plugin"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
 	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
+	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/erp/backend/internal/interfaces/http/router"
@@ -86,6 +87,23 @@ func main() {
 		zap.String("env", cfg.App.Env),
 		zap.String("port", cfg.App.Port),
 	)
+
+	// Initialize OpenTelemetry TracerProvider
+	tracerProvider, err := telemetry.NewTracerProvider(context.Background(), telemetry.Config{
+		Enabled:           cfg.Telemetry.Enabled,
+		CollectorEndpoint: cfg.Telemetry.CollectorEndpoint,
+		SamplingRatio:     cfg.Telemetry.SamplingRatio,
+		ServiceName:       cfg.Telemetry.ServiceName,
+		Insecure:          cfg.Telemetry.Insecure,
+	}, log)
+	if err != nil {
+		log.Fatal("Failed to initialize OpenTelemetry TracerProvider", zap.Error(err))
+	}
+	defer func() {
+		if err := tracerProvider.Shutdown(context.Background()); err != nil {
+			log.Error("Error shutting down tracer provider", zap.Error(err))
+		}
+	}()
 
 	// Create GORM logger backed by zap
 	gormLogLevel := logger.MapGormLogLevel(cfg.Log.Level)

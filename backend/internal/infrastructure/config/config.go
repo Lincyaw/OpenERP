@@ -22,6 +22,7 @@ type Config struct {
 	Scheduler SchedulerConfig
 	StockLock StockLockConfig
 	Swagger   SwaggerConfig
+	Telemetry TelemetryConfig
 }
 
 // LogConfig holds logging configuration
@@ -130,6 +131,15 @@ type SwaggerConfig struct {
 	Enabled     bool     // Whether to enable Swagger endpoint
 	RequireAuth bool     // Require authentication to access Swagger
 	AllowedIPs  []string // IP whitelist (empty = allow all)
+}
+
+// TelemetryConfig holds OpenTelemetry configuration
+type TelemetryConfig struct {
+	Enabled           bool    // Whether to enable OpenTelemetry
+	CollectorEndpoint string  // OTEL Collector endpoint (e.g., "localhost:4317")
+	SamplingRatio     float64 // Sampling ratio (0.0-1.0, 1.0 = 100%)
+	ServiceName       string  // Service name for traces
+	Insecure          bool    // Use insecure (non-TLS) connection (development only)
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -247,6 +257,13 @@ func Load() (*Config, error) {
 			Enabled:     v.GetBool("swagger.enabled"),
 			RequireAuth: v.GetBool("swagger.require_auth"),
 			AllowedIPs:  v.GetStringSlice("swagger.allowed_ips"),
+		},
+		Telemetry: TelemetryConfig{
+			Enabled:           v.GetBool("telemetry.enabled"),
+			CollectorEndpoint: v.GetString("telemetry.collector_endpoint"),
+			SamplingRatio:     v.GetFloat64("telemetry.sampling_ratio"),
+			ServiceName:       v.GetString("telemetry.service_name"),
+			Insecure:          v.GetBool("telemetry.insecure"),
 		},
 	}
 
@@ -407,6 +424,18 @@ func applyDefaults(cfg *Config) {
 	}
 	// Swagger defaults: enabled by default (will be overridden by validation in production)
 	// Note: We set enabled=true here, but production validation enforces proper configuration
+
+	// Telemetry defaults
+	if cfg.Telemetry.CollectorEndpoint == "" {
+		cfg.Telemetry.CollectorEndpoint = "localhost:4317" // Default gRPC endpoint
+	}
+	if cfg.Telemetry.SamplingRatio == 0 {
+		cfg.Telemetry.SamplingRatio = 1.0 // 100% in development
+	}
+	if cfg.Telemetry.ServiceName == "" {
+		cfg.Telemetry.ServiceName = "erp-backend"
+	}
+	// Note: Insecure defaults to false for safety (TLS enabled by default)
 }
 
 // validate performs validation on the configuration
@@ -457,6 +486,11 @@ func (c *Config) validate() error {
 				return fmt.Errorf("swagger endpoint must be disabled, require authentication, or have IP restriction in production")
 			}
 		}
+	}
+
+	// Validate telemetry configuration (all environments)
+	if c.Telemetry.SamplingRatio < 0.0 || c.Telemetry.SamplingRatio > 1.0 {
+		return fmt.Errorf("telemetry.sampling_ratio must be between 0.0 and 1.0, got %f", c.Telemetry.SamplingRatio)
 	}
 
 	return nil
