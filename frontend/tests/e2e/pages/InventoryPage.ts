@@ -258,7 +258,7 @@ export class InventoryPage extends BasePage {
     warehouseName: string,
     productName: string
   ): Promise<{ available: number; locked: number; total: number } | null> {
-    await this.navigateToList()
+    await this.navigateToStockList()
     await this.filterByWarehouse(warehouseName)
     await this.page.waitForTimeout(300)
 

@@ -57,7 +57,7 @@ export class SalesReturnPage extends BasePage {
   readonly rejectReasonInput: Locator
 
   // Modal elements
-  readonly confirmModal: Locator
+  readonly modalElement: Locator
   readonly confirmModalOkButton: Locator
   readonly confirmModalCancelButton: Locator
 
@@ -111,7 +111,7 @@ export class SalesReturnPage extends BasePage {
     this.rejectReasonInput = page.locator('.semi-modal textarea')
 
     // Modal
-    this.confirmModal = page.locator('.semi-modal')
+    this.modalElement = page.locator('.semi-modal')
     this.confirmModalOkButton = page.locator('.semi-modal-footer .semi-button-primary')
     this.confirmModalCancelButton = page
       .locator('.semi-modal-footer button')
@@ -420,7 +420,7 @@ export class SalesReturnPage extends BasePage {
     await this.submitForApprovalButton.click()
 
     // Handle confirmation modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
     await this.confirmModalOkButton.click()
 
     await this.waitForToast('提交')
@@ -431,7 +431,7 @@ export class SalesReturnPage extends BasePage {
     await this.approveButton.click()
 
     // Handle approval modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
 
     if (note) {
       const noteInput = this.page.locator('.semi-modal textarea').first()
@@ -449,7 +449,7 @@ export class SalesReturnPage extends BasePage {
     await this.rejectButton.click()
 
     // Handle rejection modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
 
     const reasonInput = this.page.locator('.semi-modal textarea').first()
     if (await reasonInput.isVisible().catch(() => false)) {
@@ -480,7 +480,7 @@ export class SalesReturnPage extends BasePage {
     await this.cancelReturnButton.click()
 
     // Handle confirmation modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
 
     if (reason) {
       const reasonInput = this.page.locator('.semi-modal textarea').first()
@@ -529,7 +529,7 @@ export class SalesReturnPage extends BasePage {
     await this.clickRowAction(row, 'approve')
 
     // Handle modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
     if (note) {
       const noteInput = this.page.locator('.semi-modal textarea').first()
       if (await noteInput.isVisible().catch(() => false)) {
@@ -547,7 +547,7 @@ export class SalesReturnPage extends BasePage {
     await this.clickRowAction(row, 'reject')
 
     // Handle modal
-    await this.confirmModal.waitFor({ state: 'visible', timeout: 5000 })
+    await this.modalElement.waitFor({ state: 'visible', timeout: 5000 })
     const reasonInput = this.page.locator('.semi-modal textarea').first()
     if (await reasonInput.isVisible().catch(() => false)) {
       await reasonInput.fill(reason)

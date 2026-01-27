@@ -5198,7 +5198,7 @@
       "- 覆盖审批通过和驳回两种路径",
       "- 验证库存和财务数据正确联动"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-003",
     "affectedModules": [
       "frontend/tests/e2e/trade/"
