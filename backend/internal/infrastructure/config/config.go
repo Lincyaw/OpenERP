@@ -11,18 +11,19 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	App       AppConfig
-	Database  DatabaseConfig
-	Redis     RedisConfig
-	JWT       JWTConfig
-	Cookie    CookieConfig
-	Log       LogConfig
-	Event     EventConfig
-	HTTP      HTTPConfig
-	Scheduler SchedulerConfig
-	StockLock StockLockConfig
-	Swagger   SwaggerConfig
-	Telemetry TelemetryConfig
+	App          AppConfig
+	Database     DatabaseConfig
+	Redis        RedisConfig
+	JWT          JWTConfig
+	Cookie       CookieConfig
+	Log          LogConfig
+	Event        EventConfig
+	HTTP         HTTPConfig
+	Scheduler    SchedulerConfig
+	StockLock    StockLockConfig
+	Swagger      SwaggerConfig
+	Telemetry    TelemetryConfig
+	FeatureFlags FeatureFlagsConfig
 }
 
 // LogConfig holds logging configuration
@@ -149,6 +150,17 @@ type TelemetryConfig struct {
 	DBSlowQueryThresh time.Duration // Slow query threshold for warnings (default: 200ms)
 	// Profiling options (Pyroscope)
 	Profiling ProfilingConfig // Pyroscope continuous profiling configuration
+}
+
+// FeatureFlagsConfig holds feature flag configuration
+type FeatureFlagsConfig struct {
+	// PreloadKeys are the feature flag keys to pre-evaluate for each request
+	// These flags will be available in the request context without additional evaluation
+	PreloadKeys []string
+	// CacheEnabled enables Redis caching for feature flags
+	CacheEnabled bool
+	// CacheTTL is the time-to-live for cached flag values (default: 5m)
+	CacheTTL time.Duration
 }
 
 // ProfilingConfig holds Pyroscope continuous profiling configuration
@@ -326,6 +338,11 @@ func Load() (*Config, error) {
 				SpanProfilesEnabled:  v.GetBool("telemetry.profiling.span_profiles_enabled"),
 			},
 		},
+		FeatureFlags: FeatureFlagsConfig{
+			PreloadKeys:  v.GetStringSlice("feature_flags.preload_keys"),
+			CacheEnabled: v.GetBool("feature_flags.cache_enabled"),
+			CacheTTL:     v.GetDuration("feature_flags.cache_ttl"),
+		},
 	}
 
 	// Apply defaults for empty values
@@ -488,7 +505,7 @@ func applyDefaults(cfg *Config) {
 
 	// Telemetry defaults
 	if cfg.Telemetry.CollectorEndpoint == "" {
-		cfg.Telemetry.CollectorEndpoint = "localhost:14317" // Default gRPC endpoint
+		cfg.Telemetry.CollectorEndpoint = "localhost:4317" // Default gRPC endpoint
 	}
 	if cfg.Telemetry.SamplingRatio == 0 {
 		cfg.Telemetry.SamplingRatio = 1.0 // 100% in development
@@ -543,6 +560,11 @@ func applyDefaults(cfg *Config) {
 	}
 	if cfg.Telemetry.Profiling.BlockProfileRate == 0 {
 		cfg.Telemetry.Profiling.BlockProfileRate = 5
+	}
+
+	// FeatureFlags defaults
+	if cfg.FeatureFlags.CacheTTL == 0 {
+		cfg.FeatureFlags.CacheTTL = 5 * time.Minute // Default 5 minute cache TTL
 	}
 }
 

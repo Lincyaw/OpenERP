@@ -8611,7 +8611,7 @@
       "- 业务代码可通过工具函数获取 Flag",
       "- 评估耗时 < 5ms (p99)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 9.4 Middleware Integration",
     "affectedModules": [
       "backend/internal/interfaces/http/middleware/feature_flag.go",

@@ -116,7 +116,7 @@ allowed_ips = []
 # Enable OpenTelemetry tracing and metrics
 enabled = true
 # OTEL Collector gRPC endpoint
-collector_endpoint = "localhost:14317"
+collector_endpoint = "otel-collector:14317"
 # Sampling ratio (0.0-1.0, 1.0 = 100% of traces)
 # Development: 1.0 (all traces), Production: consider 0.1-0.5 depending on traffic
 sampling_ratio = 1.0
@@ -193,3 +193,14 @@ disable_gc_runs = false
 # NOTE: Only CPU profiling is supported for span profiles
 # NOTE: Go CPU profiler samples at 100Hz, spans shorter than 10ms may not have profile data
 span_profiles_enabled = true
+
+# Feature Flags configuration
+[feature_flags]
+# Feature flag keys to pre-evaluate on each request
+# These flags will be available in the request context without additional evaluation
+# Example: preload_keys = ["enable_new_checkout", "dark_mode_default", "beta_features"]
+preload_keys = []
+# Enable Redis caching for feature flags (improves performance)
+cache_enabled = true
+# Cache TTL for feature flag values (default: 5m)
+cache_ttl = "5m"

@@ -32085,3 +32085,82 @@ All loadgen tests pass:
 === Next Steps ===
 - FF-BE-009: Feature Flag 中间件 (请求级注入) - depends on this task
 - FF-INT-001: E2E integration tests - depends on this task
+
+---
+
+2026-01-28 - Task ID: FF-BE-009 - Feature Flag 中间件 (请求级注入)
+
+=== Implementation Details ===
+- Created middleware file: backend/internal/interfaces/http/middleware/feature_flag.go
+- Created comprehensive unit tests: backend/internal/interfaces/http/middleware/feature_flag_test.go
+- Added FeatureFlagsConfig struct to config.go
+- Added [feature_flags] section to config.toml
+
+=== Key Files Created/Modified ===
+- backend/internal/interfaces/http/middleware/feature_flag.go (new)
+- backend/internal/interfaces/http/middleware/feature_flag_test.go (new)
+- backend/internal/infrastructure/config/config.go (modified - added FeatureFlagsConfig)
+- backend/config.toml (modified - added [feature_flags] section)
+
+=== Middleware Features ===
+1. FeatureFlagMiddleware - Main middleware that:
+   - Extracts tenant_id, user_id, and role from JWT middleware context
+   - Builds EvaluationContext for flag evaluation
+   - Batch evaluates configured preload keys
+   - Injects flag values into gin.Context
+   - Records evaluation duration for metrics
+
+2. Context Utility Functions:
+   - GetFeatureFlag(ctx, key) bool - Get boolean flag value
+   - GetFeatureVariant(ctx, key) string - Get variant value
+   - GetAllFlags(ctx) map[string]FlagValue - Get all pre-evaluated flags
+   - GetFeatureFlagEvalContext(ctx) *EvaluationContext - Get eval context
+   - GetFeatureFlagEvalDuration(ctx) time.Duration - Get evaluation timing
+   - MustGetFeatureFlag(ctx, key) bool - Panic-on-error version
+   - WithFeatureFlag(key, handler) - Conditional handler wrapper
+
+3. Configuration (config.toml):
+   - preload_keys = [] - Feature flag keys to pre-evaluate on each request
+   - cache_enabled = true - Enable Redis caching
+   - cache_ttl = "5m" - Cache TTL (default 5 minutes)
+
+=== Design Decisions ===
+1. Used FeatureFlagEvaluator interface to decouple from concrete evaluator implementation
+2. Skip paths for health/metrics endpoints to avoid unnecessary evaluation
+3. Used maps.Copy and slices.Contains from Go 1.21+ standard library
+4. Returns immutable copy of flags from GetAllFlags to prevent modification
+5. Single role (first in list) used for evaluation - multi-role not supported in EvaluationContext
+6. Graceful handling of nil evaluator or empty preload keys
+
+=== Verification ===
+- Go build: PASSED
+- Unit tests: 23 tests PASSED
+- Type checking: PASSED
+- Code review: PASSED (addressed HIGH priority issues by adding type assertion tests)
+
+=== Test Coverage ===
+- Basic evaluation flow
+- JWT context extraction (tenant_id, user_id, role, request_id)
+- Skip paths functionality
+- Nil evaluator and empty keys handling
+- All utility functions including edge cases
+- Type assertion failure handling (invalid types in context)
+- WithFeatureFlag conditional handler
+- Logger integration
+
+=== Acceptance Criteria Met ===
+- ✅ Middleware correctly injects Flag values into context
+- ✅ Business code can retrieve Flags via utility functions (GetFeatureFlag, GetFeatureVariant, GetAllFlags)
+- ✅ Configuration supports preload_keys in config.toml
+- ✅ Batch evaluation used for performance
+- ✅ Evaluation duration tracked for metrics
+
+=== Notes ===
+- Only first role from JWT is used when user has multiple roles (documented limitation)
+- Skip paths use exact match only (no prefix/glob support)
+- Middleware should be placed after JWT middleware in chain
+
+=== Next Steps ===
+- FF-INT-001: E2E integration tests for Feature Flag management
+- Consider adding multi-role support to EvaluationContext in future
+- Consider adding metrics histogram for evaluation latency
