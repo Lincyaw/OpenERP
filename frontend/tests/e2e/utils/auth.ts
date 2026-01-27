@@ -21,12 +21,11 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
 
   // Wait for navigation away from login page
   // Use a function that checks we're NOT on the login page
-  await page.waitForFunction(
-    () => !window.location.pathname.includes('/login'),
-    { timeout: 15000 }
-  ).catch(() => {
-    // Navigation might have failed - continue to check auth state
-  })
+  await page
+    .waitForFunction(() => !window.location.pathname.includes('/login'), { timeout: 15000 })
+    .catch(() => {
+      // Navigation might have failed - continue to check auth state
+    })
 
   // CRITICAL: Wait for auth state to be persisted
   // Note: Since SEC-004, access_token is kept in memory only (not localStorage)
@@ -122,10 +121,24 @@ export async function getAuthToken(page: Page): Promise<string | null> {
  * Clear all authentication data
  */
 export async function clearAuth(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    window.localStorage.clear()
-    window.sessionStorage.clear()
-  })
+  try {
+    await page.evaluate(() => {
+      window.localStorage.clear()
+      window.sessionStorage.clear()
+    })
+  } catch {
+    // SecurityError may occur if page is on a different origin (e.g., about:blank)
+    // Navigate to the app first, then clear storage
+    try {
+      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 5000 })
+      await page.evaluate(() => {
+        window.localStorage.clear()
+        window.sessionStorage.clear()
+      })
+    } catch {
+      // If still failing, just continue - storage might be empty anyway
+    }
+  }
 }
 
 /**

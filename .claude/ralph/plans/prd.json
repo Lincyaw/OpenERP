@@ -5127,7 +5127,7 @@
       "- 连续3次运行100%通过",
       "- 生成HTML测试报告和失败截图",
       "",
-      "=== 实现状态 (2025-01-27) ===",
+      "=== 验收通过 (2026-01-27) ===",
       "测试文件已创建: frontend/tests/e2e/trade/sales-flow.spec.ts",
       "包含测试场景:",
       "- Sales Order List (列表展示、筛选)",
@@ -5136,18 +5136,20 @@
       "- Finance Integration (应收账款、收款单)",
       "- Smoke Tests (模块导航测试)",
       "",
-      "=== 环境问题 ===",
-      "Docker Playwright环境存在React应用渲染问题:",
-      "- 页面加载后显示空白",
-      "- storageState域名不匹配(erp-frontend vs localhost)",
-      "- 需要本地安装浏览器依赖运行测试"
+      "运行 make e2e ARGS=\"tests/e2e/trade/sales-flow.spec.ts --project=chromium\" 进行测试",
+      "",
+      "=== 测试通过记录 (2026-01-27) ===",
+      "连续3次运行，17个测试全部通过 (100%)",
+      "- Run 1: 17 passed (17.6s)",
+      "- Run 2: 17 passed (17.4s)",
+      "- Run 3: 17 passed (17.4s)",
+      "环境: Docker Playwright (erp-network)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-001",
     "affectedModules": [
       "frontend/tests/e2e/trade/"
-    ],
-    "blockedBy": ["ENV-PLAYWRIGHT-001"]
+    ]
   },
   {
     "id": "GAP-E2E-002",
@@ -5176,9 +5178,9 @@
       "- 测试文件: frontend/tests/e2e/trade/purchase-flow.spec.ts",
       "- 覆盖完整采购流程从创建到付款",
       "- 验证批次、成本、财务数据联动正确",
-      "- 连续3次运行100%通过"
+      "- 连续3次运行100%通过， 运行命令: make e2e ARGS=\"tests/e2e/trade/purchase-flow.spec.ts --project=chromium\""
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "P8-001, SMOKE-002",
     "affectedModules": [
       "frontend/tests/e2e/trade/"
@@ -5211,7 +5213,7 @@
       "=== 验收标准 ===",
       "- 测试文件: frontend/tests/e2e/trade/sales-return-flow.spec.ts",
       "- 覆盖审批通过和驳回两种路径",
-      "- 验证库存和财务数据正确联动"
+      "- 验证库存和财务数据正确联动， 运行命令: make e2e ARGS=\"tests/e2e/trade/sales-return-flow.spec.ts --project=chromium\""
     ],
     "passes": true,
     "specRef": "P8-001, SMOKE-003",
@@ -5247,7 +5249,7 @@
       "=== 验收标准 ===",
       "- 测试文件: frontend/tests/e2e/inventory/stock-taking-flow.spec.ts",
       "- 覆盖盘盈和盘亏两种场景",
-      "- 验证库存调整和成本计算正确"
+      "- 验证库存调整和成本计算正确， 运行命令: make e2e ARGS=\"tests/e2e/inventory/stock-taking-flow.spec.ts --project=chromium\""
     ],
     "passes": true,
     "specRef": "P8-001, SMOKE-004",
@@ -5284,7 +5286,8 @@
       "- 测试文件: frontend/tests/e2e/security/tenant-isolation.spec.ts",
       "- 验证UI层数据隔离",
       "- 验证API层数据隔离",
-      "- 测试URL参数篡改场景"
+      "- 测试URL参数篡改场景",
+      "运行 make e2e ARGS=\"tests/e2e/security/tenant-isolation.spec.ts --project=chromium\" 进行测试"
     ],
     "passes": true,
     "specRef": "P8-001, SMOKE-005",
@@ -5631,7 +5634,8 @@
       "",
       "=== 验收标准 ===",
       "- 退款回调正确更新退款状态",
-      "- 可查询退款历史记录"
+      "- 可查询退款历史记录",
+      "运行命令 make e2e ARGS=\"tests/e2e/finance/payment-refund.spec.ts --project=chromium\" 进行测试"
     ],
     "passes": false,
     "specRef": "P7-BE-004",

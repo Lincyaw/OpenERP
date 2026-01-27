@@ -25,8 +25,8 @@ export default defineConfig({
   // Retry on CI only
   retries: process.env.CI ? 0 : 0,
 
-  // Parallel workers: CI uses 2, local uses 16
-  workers: process.env.CI ? 32 : 32,
+  // Parallel workers: Keep low to avoid rate limiting (100 req/min API, 5 req/min auth)
+  workers: process.env.CI ? 4 : 4,
 
   // Reporter to use
   reporter: [
