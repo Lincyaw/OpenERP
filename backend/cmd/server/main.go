@@ -122,11 +122,46 @@ func main() {
 		}
 	}()
 
+	// Initialize Pyroscope continuous profiler
+	// Note: Unlike DB metrics which is non-fatal on failure, profiler initialization
+	// failure is fatal because if profiling is enabled in config but fails to start,
+	// it indicates a critical configuration or connection issue that should be fixed.
+	// When profiling is disabled (default), NewProfiler returns a no-op profiler without error.
+	profiler, err := telemetry.NewProfiler(telemetry.ProfilerConfig{
+		Enabled:              cfg.Telemetry.Profiling.Enabled,
+		ServerAddress:        cfg.Telemetry.Profiling.ServerAddress,
+		ApplicationName:      cfg.Telemetry.Profiling.ApplicationName,
+		BasicAuthUser:        cfg.Telemetry.Profiling.BasicAuthUser,
+		BasicAuthPassword:    cfg.Telemetry.Profiling.BasicAuthPassword,
+		ProfileCPU:           cfg.Telemetry.Profiling.ProfileCPU,
+		ProfileAllocObjects:  cfg.Telemetry.Profiling.ProfileAllocObjects,
+		ProfileAllocSpace:    cfg.Telemetry.Profiling.ProfileAllocSpace,
+		ProfileInuseObjects:  cfg.Telemetry.Profiling.ProfileInuseObjects,
+		ProfileInuseSpace:    cfg.Telemetry.Profiling.ProfileInuseSpace,
+		ProfileGoroutines:    cfg.Telemetry.Profiling.ProfileGoroutines,
+		ProfileMutexCount:    cfg.Telemetry.Profiling.ProfileMutexCount,
+		ProfileMutexDuration: cfg.Telemetry.Profiling.ProfileMutexDuration,
+		ProfileBlockCount:    cfg.Telemetry.Profiling.ProfileBlockCount,
+		ProfileBlockDuration: cfg.Telemetry.Profiling.ProfileBlockDuration,
+		MutexProfileFraction: cfg.Telemetry.Profiling.MutexProfileFraction,
+		BlockProfileRate:     cfg.Telemetry.Profiling.BlockProfileRate,
+		DisableGCRuns:        cfg.Telemetry.Profiling.DisableGCRuns,
+	}, log)
+	if err != nil {
+		log.Fatal("Failed to initialize Pyroscope profiler", zap.Error(err))
+	}
+	defer func() {
+		if err := profiler.Stop(); err != nil {
+			log.Error("Error stopping profiler", zap.Error(err))
+		}
+	}()
+
 	// Log telemetry status
 	if cfg.Telemetry.Enabled {
 		log.Info("OpenTelemetry initialized",
 			zap.Bool("tracing", tracerProvider.IsEnabled()),
 			zap.Bool("metrics", meterProvider.IsEnabled()),
+			zap.Bool("profiling", profiler.IsEnabled()),
 			zap.String("collector", cfg.Telemetry.CollectorEndpoint),
 		)
 	}

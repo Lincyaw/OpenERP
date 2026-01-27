@@ -9,6 +9,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/google/uuid v1.6.0
+	github.com/grafana/pyroscope-go v1.2.7
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/shopspring/decimal v1.4.0
@@ -76,6 +77,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.0 // indirect
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.9 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

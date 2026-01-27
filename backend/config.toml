@@ -115,7 +115,7 @@ allowed_ips = []
 # Enable OpenTelemetry tracing and metrics
 enabled = true
 # OTEL Collector gRPC endpoint
-collector_endpoint = "localhost:4317"
+collector_endpoint = "localhost:14317"
 # Sampling ratio (0.0-1.0, 1.0 = 100% of traces)
 # Development: 1.0 (all traces), Production: consider 0.1-0.5 depending on traffic
 sampling_ratio = 1.0
@@ -138,3 +138,44 @@ db_log_full_sql = false
 # Slow query threshold - queries exceeding this duration are marked as slow
 # Default: 200ms, adjust based on your performance requirements
 db_slow_query_threshold = "200ms"
+
+# Pyroscope continuous profiling configuration
+[telemetry.profiling]
+# Enable continuous profiling (default: false)
+# When enabled, profiles are sent to Pyroscope server for analysis
+enabled = false
+# Pyroscope server address (default: http://pyroscope:4040)
+server_address = "http://pyroscope:4040"
+# Application name for profiles (default: uses telemetry.service_name)
+application_name = "erp-backend"
+# Optional: Grafana Cloud authentication (leave empty for self-hosted Pyroscope)
+# basic_auth_user = ""
+# basic_auth_password = ""
+
+# Profile types to enable (all default to true when profiling.enabled=true)
+# CPU profiling - identifies CPU-intensive code paths
+profile_cpu = true
+# Allocation profiling - tracks memory allocations
+profile_alloc_objects = true
+profile_alloc_space = true
+# In-use memory profiling - tracks live memory
+profile_inuse_objects = true
+profile_inuse_space = true
+# Goroutine profiling - tracks goroutine creation
+profile_goroutines = true
+
+# Advanced profile types (default: false, requires runtime configuration)
+# Mutex profiling - tracks mutex contention
+profile_mutex_count = false
+profile_mutex_duration = false
+# Block profiling - tracks blocking operations
+profile_block_count = false
+profile_block_duration = false
+
+# Advanced options
+# Mutex profile fraction (default: 5, only used when mutex profiling is enabled)
+mutex_profile_fraction = 5
+# Block profile rate (default: 5, only used when block profiling is enabled)
+block_profile_rate = 5
+# Disable GC runs in profiler (improves CPU profile accuracy, reduces heap precision)
+disable_gc_runs = false

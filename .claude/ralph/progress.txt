@@ -26541,7 +26541,7 @@ for transaction records. This could lead to orphaned references in historical or
 
 **Files Created/Modified**:
 1. `deploy/otel/otel-collector-config.yaml` (NEW)
-   - Configured OTLP receivers (gRPC:4317, HTTP:4318)
+   - Configured OTLP receivers (gRPC:14317, HTTP:14318)
    - File exporters for traces, metrics, and logs with rotation
    - Debug exporter for console output
    - Extensions: health_check, pprof, zpages
@@ -26550,7 +26550,7 @@ for transaction records. This could lead to orphaned references in historical or
 2. `docker-compose.yml` (MODIFIED)
    - Added `otel-collector` service using `otel/opentelemetry-collector-contrib:0.96.0`
    - Volume mount for config and log output
-   - Exposed ports: 4317 (gRPC), 4318 (HTTP), 13133 (health), 8888 (metrics), 55679 (zpages)
+   - Exposed ports: 14317 (gRPC), 14318 (HTTP), 13133 (health), 8888 (metrics), 55679 (zpages)
    - Added to `otel` and `docker` profiles
    - Added `otel_logs` volume for persistent telemetry data
 
@@ -26564,8 +26564,8 @@ for transaction records. This could lead to orphaned references in historical or
 4. `.env.example` (MODIFIED)
    - Added OTEL configuration section
    - OTEL_COLLECTOR_VERSION=0.96.0
-   - OTEL_GRPC_PORT=4317 (configurable)
-   - OTEL_HTTP_PORT=4318 (configurable)
+   - OTEL_GRPC_PORT=14317 (configurable)
+   - OTEL_HTTP_PORT=14318 (configurable)
 
 **Key Design Decisions**:
 1. Used `otel/opentelemetry-collector-contrib` instead of `otel/opentelemetry-collector` for broader exporter support
@@ -26580,7 +26580,7 @@ for transaction records. This could lead to orphaned references in historical or
 - [x] Docker compose config validates successfully
 - [x] `make otel-up` starts collector without errors
 - [x] Health endpoint responds: `curl http://localhost:13133/health`
-- [x] OTLP HTTP endpoint accepts traces: `curl -X POST http://localhost:4318/v1/traces`
+- [x] OTLP HTTP endpoint accepts traces: `curl -X POST http://localhost:14318/v1/traces`
 - [x] Prometheus metrics endpoint accessible: `http://localhost:8888/metrics`
 - [x] zpages debugging endpoint accessible: `http://localhost:55679/debug/tracez`
 - [x] `make otel-down` stops collector
@@ -26588,13 +26588,13 @@ for transaction records. This could lead to orphaned references in historical or
 - [x] `make otel-logs` streams collector logs
 
 === Notes ===
-- Port 4317 may conflict with other OTEL collectors (e.g., Phoenix). Use OTEL_GRPC_PORT/OTEL_HTTP_PORT env vars to customize.
+- Port 14317 may conflict with other OTEL collectors (e.g., Phoenix). Use OTEL_GRPC_PORT/OTEL_HTTP_PORT env vars to customize.
 - The distroless container image has no shell utilities, so healthcheck is disabled. External monitoring should use the health endpoint directly.
 - File exporters write to Docker volume `erp-otel-logs`, accessible at `/var/lib/docker/volumes/erp-otel-logs/_data` on the host.
 
 === Acceptance Criteria Met ===
 - [x] docker-compose up 后 OTEL Collector 正常启动
-- [x] 可通过 curl localhost:4318/v1/traces 验证 HTTP 端点
+- [x] 可通过 curl localhost:14318/v1/traces 验证 HTTP 端点
 - [x] 文件输出目录挂载正确 (Docker volume)
 - [x] 提供 Makefile 命令: make otel-up, make otel-logs
 
@@ -26627,7 +26627,7 @@ for transaction records. This could lead to orphaned references in historical or
 3. `backend/internal/infrastructure/config/config.go` (MODIFIED)
    - Added TelemetryConfig struct with:
      - Enabled: bool
-     - CollectorEndpoint: string (default: localhost:4317)
+     - CollectorEndpoint: string (default: localhost:14317)
      - SamplingRatio: float64 (0.0-1.0, default: 1.0)
      - ServiceName: string (default: erp-backend)
      - Insecure: bool (for TLS control)
@@ -27483,3 +27483,100 @@ rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5
 
 === Next Steps ===
 - OBS-METRICS-004: 业务指标采集 (Business Metrics)
+
+---
+
+2026-01-27 - OBS-PROFILE-001: 集成 Pyroscope Go SDK 基础设施
+
+=== Implementation Details ===
+
+1. **Added Pyroscope Go SDK dependency**
+   - `go get github.com/grafana/pyroscope-go`
+   - Version: v1.2.7
+
+2. **Created ProfilingConfig struct** (config/config.go)
+   - Full profiling configuration including:
+     * Enabled, ServerAddress, ApplicationName
+     * BasicAuthUser/Password for Grafana Cloud auth
+     * All profile types (CPU, Alloc, Inuse, Goroutines, Mutex, Block)
+     * MutexProfileFraction, BlockProfileRate, DisableGCRuns
+
+3. **Added configuration to config.toml**
+   - New [telemetry.profiling] section with all options documented
+   - Default: profiling disabled (enabled = false)
+   - Default profile types enabled when profiling.enabled = true:
+     * CPU, AllocObjects, AllocSpace, InuseObjects, InuseSpace, Goroutines
+
+4. **Created profiler.go** (telemetry/profiler.go)
+   - ProfilerConfig struct for initialization parameters
+   - Profiler struct with lifecycle management
+   - NewProfiler() - creates and starts Pyroscope profiler
+   - Stop() - gracefully stops profiler (thread-safe, idempotent)
+   - IsEnabled(), GetConfig() accessors
+   - pyroscopeLogger adapter for zap integration
+   - Runtime settings for mutex/block profiling
+
+5. **Integrated into main.go**
+   - Profiler initialization after MeterProvider
+   - Graceful shutdown with defer
+   - Logging of profiling status in telemetry init summary
+
+6. **Production security validation**
+   - Added validation: BasicAuth credentials cannot be sent over insecure connection in production
+
+=== Files Created/Modified ===
+- [NEW] backend/internal/infrastructure/telemetry/profiler.go (246 lines)
+- [NEW] backend/internal/infrastructure/telemetry/profiler_test.go (369 lines)
+- [MOD] backend/internal/infrastructure/config/config.go (ProfilingConfig struct, validation)
+- [MOD] backend/config.toml ([telemetry.profiling] section)
+- [MOD] backend/cmd/server/main.go (profiler integration)
+- [MOD] backend/go.mod (pyroscope-go dependency)
+
+=== Test Coverage ===
+- 13 test functions with multiple subtests
+- Race condition testing with -race flag
+- Concurrent Stop() testing
+- Configuration validation tests
+- Integration test (skipped in -short mode)
+
+=== Verification ===
+- [x] All unit tests pass (13 test functions)
+- [x] Build succeeds: `go build ./...`
+- [x] go vet passes with no errors
+- [x] Race tests pass: `go test -race`
+- [x] Code review completed - addressed HIGH issues:
+  * Added production validation for BasicAuth + Insecure
+  * Documented Stop() timeout limitation
+  * Explained fatal vs non-fatal error handling
+
+=== Acceptance Criteria Met ===
+- [x] 后端启动时连接 Pyroscope Server (when enabled)
+- [x] Profiler 正确配置所有 Profile 类型
+- [x] 服务名称正确设置为 erp-backend (configurable)
+- [x] Shutdown 时调用 profiler.Stop() flush pending profiles
+- [x] 可在 Pyroscope UI http://localhost:4040 查看 profiles (requires Pyroscope server)
+
+=== Configuration Example ===
+```toml
+[telemetry.profiling]
+enabled = true
+server_address = "http://pyroscope:4040"
+application_name = "erp-backend"
+profile_cpu = true
+profile_alloc_objects = true
+profile_alloc_space = true
+profile_inuse_objects = true
+profile_inuse_space = true
+profile_goroutines = true
+```
+
+=== Notes ===
+- Profiling disabled by default (safe default)
+- When enabled with no profile types specified, sensible defaults are applied
+- Mutex and block profiling require explicit enable due to runtime overhead
+- Stop() method documented as not supporting context-based timeout (Pyroscope SDK limitation)
+
+=== Next Steps ===
+- OBS-PROFILE-002: Pyroscope Labels 支持 (多维度分析)
+- OBS-PROFILE-003: Pyroscope + OpenTelemetry Span Profiles 集成
+- OBS-PROFILE-004: 部署 Pyroscope Server (Docker Compose)

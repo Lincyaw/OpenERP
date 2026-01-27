@@ -136,7 +136,7 @@ type SwaggerConfig struct {
 // TelemetryConfig holds OpenTelemetry configuration
 type TelemetryConfig struct {
 	Enabled               bool          // Whether to enable OpenTelemetry
-	CollectorEndpoint     string        // OTEL Collector endpoint (e.g., "localhost:4317")
+	CollectorEndpoint     string        // OTEL Collector endpoint (e.g., "localhost:14317")
 	SamplingRatio         float64       // Sampling ratio (0.0-1.0, 1.0 = 100%)
 	ServiceName           string        // Service name for traces
 	Insecure              bool          // Use insecure (non-TLS) connection (development only)
@@ -145,6 +145,32 @@ type TelemetryConfig struct {
 	DBTraceEnabled    bool          // Enable database query tracing (otelgorm)
 	DBLogFullSQL      bool          // Log full SQL statements (dev only, disable in prod for security)
 	DBSlowQueryThresh time.Duration // Slow query threshold for warnings (default: 200ms)
+	// Profiling options (Pyroscope)
+	Profiling ProfilingConfig // Pyroscope continuous profiling configuration
+}
+
+// ProfilingConfig holds Pyroscope continuous profiling configuration
+type ProfilingConfig struct {
+	Enabled           bool   // Enable continuous profiling
+	ServerAddress     string // Pyroscope server address (e.g., "http://pyroscope:4040")
+	ApplicationName   string // Application name for profiles (default: ServiceName from TelemetryConfig)
+	BasicAuthUser     string // Optional: Basic auth username (for Grafana Cloud)
+	BasicAuthPassword string // Optional: Basic auth password (for Grafana Cloud)
+	// Profile types to enable
+	ProfileCPU           bool // CPU profiling (default: true)
+	ProfileAllocObjects  bool // Allocation objects profiling (default: true)
+	ProfileAllocSpace    bool // Allocation space profiling (default: true)
+	ProfileInuseObjects  bool // In-use objects profiling (default: true)
+	ProfileInuseSpace    bool // In-use space profiling (default: true)
+	ProfileGoroutines    bool // Goroutine profiling (default: true)
+	ProfileMutexCount    bool // Mutex count profiling (default: false)
+	ProfileMutexDuration bool // Mutex duration profiling (default: false)
+	ProfileBlockCount    bool // Block count profiling (default: false)
+	ProfileBlockDuration bool // Block duration profiling (default: false)
+	// Advanced options
+	MutexProfileFraction int  // Mutex profile fraction (default: 5, requires ProfileMutex*)
+	BlockProfileRate     int  // Block profile rate (default: 5, requires ProfileBlock*)
+	DisableGCRuns        bool // Disable GC runs in profiler (improves CPU profile, reduces heap precision)
 }
 
 // Load loads configuration from TOML file and environment variables
@@ -273,6 +299,26 @@ func Load() (*Config, error) {
 			DBTraceEnabled:        v.GetBool("telemetry.db_trace_enabled"),
 			DBLogFullSQL:          v.GetBool("telemetry.db_log_full_sql"),
 			DBSlowQueryThresh:     v.GetDuration("telemetry.db_slow_query_threshold"),
+			Profiling: ProfilingConfig{
+				Enabled:              v.GetBool("telemetry.profiling.enabled"),
+				ServerAddress:        v.GetString("telemetry.profiling.server_address"),
+				ApplicationName:      v.GetString("telemetry.profiling.application_name"),
+				BasicAuthUser:        v.GetString("telemetry.profiling.basic_auth_user"),
+				BasicAuthPassword:    v.GetString("telemetry.profiling.basic_auth_password"),
+				ProfileCPU:           v.GetBool("telemetry.profiling.profile_cpu"),
+				ProfileAllocObjects:  v.GetBool("telemetry.profiling.profile_alloc_objects"),
+				ProfileAllocSpace:    v.GetBool("telemetry.profiling.profile_alloc_space"),
+				ProfileInuseObjects:  v.GetBool("telemetry.profiling.profile_inuse_objects"),
+				ProfileInuseSpace:    v.GetBool("telemetry.profiling.profile_inuse_space"),
+				ProfileGoroutines:    v.GetBool("telemetry.profiling.profile_goroutines"),
+				ProfileMutexCount:    v.GetBool("telemetry.profiling.profile_mutex_count"),
+				ProfileMutexDuration: v.GetBool("telemetry.profiling.profile_mutex_duration"),
+				ProfileBlockCount:    v.GetBool("telemetry.profiling.profile_block_count"),
+				ProfileBlockDuration: v.GetBool("telemetry.profiling.profile_block_duration"),
+				MutexProfileFraction: v.GetInt("telemetry.profiling.mutex_profile_fraction"),
+				BlockProfileRate:     v.GetInt("telemetry.profiling.block_profile_rate"),
+				DisableGCRuns:        v.GetBool("telemetry.profiling.disable_gc_runs"),
+			},
 		},
 	}
 
@@ -436,7 +482,7 @@ func applyDefaults(cfg *Config) {
 
 	// Telemetry defaults
 	if cfg.Telemetry.CollectorEndpoint == "" {
-		cfg.Telemetry.CollectorEndpoint = "localhost:4317" // Default gRPC endpoint
+		cfg.Telemetry.CollectorEndpoint = "localhost:14317" // Default gRPC endpoint
 	}
 	if cfg.Telemetry.SamplingRatio == 0 {
 		cfg.Telemetry.SamplingRatio = 1.0 // 100% in development
@@ -455,6 +501,43 @@ func applyDefaults(cfg *Config) {
 		cfg.Telemetry.DBSlowQueryThresh = 200 * time.Millisecond // 200ms default as per spec
 	}
 	// Note: DBLogFullSQL defaults to false for security (disable in production)
+
+	// Profiling defaults (Pyroscope continuous profiling)
+	if cfg.Telemetry.Profiling.ServerAddress == "" {
+		cfg.Telemetry.Profiling.ServerAddress = "http://pyroscope:4040"
+	}
+	if cfg.Telemetry.Profiling.ApplicationName == "" {
+		cfg.Telemetry.Profiling.ApplicationName = cfg.Telemetry.ServiceName // Use service name as default
+	}
+	// Default profile types - enable common ones by default when profiling is enabled
+	// Note: These only take effect when Profiling.Enabled is true
+	// We use a "not explicitly set" pattern - viper returns false for unset bools,
+	// so we set sensible defaults when profiling is enabled
+	if cfg.Telemetry.Profiling.Enabled {
+		// Enable default profile types if none are explicitly set
+		// (user can still override by setting false in config)
+		if !cfg.Telemetry.Profiling.ProfileCPU &&
+			!cfg.Telemetry.Profiling.ProfileAllocObjects &&
+			!cfg.Telemetry.Profiling.ProfileAllocSpace &&
+			!cfg.Telemetry.Profiling.ProfileInuseObjects &&
+			!cfg.Telemetry.Profiling.ProfileInuseSpace &&
+			!cfg.Telemetry.Profiling.ProfileGoroutines {
+			// No profile types explicitly enabled, use defaults
+			cfg.Telemetry.Profiling.ProfileCPU = true
+			cfg.Telemetry.Profiling.ProfileAllocObjects = true
+			cfg.Telemetry.Profiling.ProfileAllocSpace = true
+			cfg.Telemetry.Profiling.ProfileInuseObjects = true
+			cfg.Telemetry.Profiling.ProfileInuseSpace = true
+			cfg.Telemetry.Profiling.ProfileGoroutines = true
+		}
+	}
+	// Mutex and block profiling defaults (only when enabled)
+	if cfg.Telemetry.Profiling.MutexProfileFraction == 0 {
+		cfg.Telemetry.Profiling.MutexProfileFraction = 5
+	}
+	if cfg.Telemetry.Profiling.BlockProfileRate == 0 {
+		cfg.Telemetry.Profiling.BlockProfileRate = 5
+	}
 }
 
 // validate performs validation on the configuration
@@ -508,6 +591,10 @@ func (c *Config) validate() error {
 		// Database tracing: full SQL logging is a security risk in production
 		if c.Telemetry.DBLogFullSQL {
 			return fmt.Errorf("telemetry.db_log_full_sql must be false in production to prevent sensitive data exposure in traces")
+		}
+		// Profiling security: basic auth credentials should not be sent over insecure connection
+		if c.Telemetry.Profiling.Enabled && c.Telemetry.Profiling.BasicAuthUser != "" && c.Telemetry.Insecure {
+			return fmt.Errorf("telemetry.profiling basic_auth credentials should not be sent over insecure connection in production")
 		}
 	}
 
