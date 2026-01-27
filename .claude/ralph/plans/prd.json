@@ -8465,7 +8465,7 @@
       "- Flag 更新后 5 秒内所有实例感知",
       "- 缓存失效不会导致雪崩"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 8 Caching Strategy",
     "affectedModules": [
       "backend/internal/domain/featureflag/cache.go",

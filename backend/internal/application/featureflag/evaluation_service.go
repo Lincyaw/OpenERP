@@ -9,15 +9,23 @@ import (
 	"go.uber.org/zap"
 )
 
+// EvaluatorInterface defines the interface for flag evaluation
+// This allows switching between cached and non-cached evaluators
+type EvaluatorInterface interface {
+	Evaluate(ctx context.Context, flagKey string, evalCtx *featureflag.EvaluationContext) featureflag.EvaluationResult
+	EvaluateBatch(ctx context.Context, flagKeys []string, evalCtx *featureflag.EvaluationContext) map[string]featureflag.EvaluationResult
+	EvaluateAll(ctx context.Context, evalCtx *featureflag.EvaluationContext) (map[string]featureflag.EvaluationResult, error)
+}
+
 // EvaluationService handles feature flag evaluation operations
 type EvaluationService struct {
 	flagRepo     featureflag.FeatureFlagRepository
 	overrideRepo featureflag.FlagOverrideRepository
-	evaluator    *featureflag.Evaluator
+	evaluator    EvaluatorInterface
 	logger       *zap.Logger
 }
 
-// NewEvaluationService creates a new evaluation service
+// NewEvaluationService creates a new evaluation service without caching
 func NewEvaluationService(
 	flagRepo featureflag.FeatureFlagRepository,
 	overrideRepo featureflag.FlagOverrideRepository,
@@ -27,6 +35,50 @@ func NewEvaluationService(
 		flagRepo:     flagRepo,
 		overrideRepo: overrideRepo,
 		evaluator:    featureflag.NewEvaluator(flagRepo, overrideRepo),
+		logger:       logger,
+	}
+}
+
+// NewCachedEvaluationService creates a new evaluation service with caching
+func NewCachedEvaluationService(
+	flagRepo featureflag.FeatureFlagRepository,
+	overrideRepo featureflag.FlagOverrideRepository,
+	cache featureflag.FlagCache,
+	logger *zap.Logger,
+) *EvaluationService {
+	cachedEvaluator := featureflag.NewCachedEvaluator(
+		flagRepo,
+		overrideRepo,
+		cache,
+		featureflag.WithCachedEvaluatorLogger(logger),
+	)
+	return &EvaluationService{
+		flagRepo:     flagRepo,
+		overrideRepo: overrideRepo,
+		evaluator:    cachedEvaluator,
+		logger:       logger,
+	}
+}
+
+// NewCachedEvaluationServiceWithConfig creates a new evaluation service with caching and custom config
+func NewCachedEvaluationServiceWithConfig(
+	flagRepo featureflag.FeatureFlagRepository,
+	overrideRepo featureflag.FlagOverrideRepository,
+	cache featureflag.FlagCache,
+	config featureflag.CacheConfig,
+	logger *zap.Logger,
+) *EvaluationService {
+	cachedEvaluator := featureflag.NewCachedEvaluator(
+		flagRepo,
+		overrideRepo,
+		cache,
+		featureflag.WithCachedEvaluatorLogger(logger),
+		featureflag.WithCachedEvaluatorConfig(config),
+	)
+	return &EvaluationService{
+		flagRepo:     flagRepo,
+		overrideRepo: overrideRepo,
+		evaluator:    cachedEvaluator,
 		logger:       logger,
 	}
 }
@@ -149,4 +201,36 @@ func (s *EvaluationService) GetVariant(ctx context.Context, key string, evalCtxD
 	}
 
 	return result.Variant, nil
+}
+
+// WarmupCache pre-populates the cache with all enabled flags
+// This should be called at application startup for optimal performance
+// Returns nil if the evaluator doesn't support caching
+func (s *EvaluationService) WarmupCache(ctx context.Context) error {
+	if cachedEval, ok := s.evaluator.(*featureflag.CachedEvaluator); ok {
+		return cachedEval.WarmupCache(ctx)
+	}
+	return nil
+}
+
+// InvalidateFlag invalidates a specific flag in the cache
+// Returns nil if the evaluator doesn't support caching
+func (s *EvaluationService) InvalidateFlag(ctx context.Context, key string) error {
+	if cachedEval, ok := s.evaluator.(*featureflag.CachedEvaluator); ok {
+		return cachedEval.InvalidateFlag(ctx, key)
+	}
+	return nil
+}
+
+// GetCacheStats returns cache statistics if available
+// Returns nil if the evaluator doesn't support caching
+func (s *EvaluationService) GetCacheStats(ctx context.Context) *featureflag.CacheStats {
+	if cachedEval, ok := s.evaluator.(*featureflag.CachedEvaluator); ok {
+		cache := cachedEval.GetCache()
+		if tieredCache, ok := cache.(featureflag.TieredFlagCache); ok {
+			stats := tieredCache.GetCacheStats(ctx)
+			return &stats
+		}
+	}
+	return nil
 }

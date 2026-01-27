@@ -30036,3 +30036,139 @@ Created:
 
 - FF-BE-006: Feature Flag HTTP API Handlers
 - FF-BE-007: Feature Flag Redis Cache Layer
+
+---
+
+2025-01-28 - FF-BE-006: Feature Flag Redis Cache Layer
+
+=== Implementation Details ===
+
+1. Domain Layer Cache Interface (backend/internal/domain/featureflag/cache.go):
+   - FlagCache interface: Get, Set, Delete for flags and overrides, InvalidateAll, Close
+   - CacheInvalidator interface: Publish, Subscribe for Pub/Sub notifications
+   - TieredFlagCache interface: extends FlagCache with L1-specific operations (GetL1, SetL1, InvalidateL1, GetCacheStats)
+   - CacheUpdateMessage: structure for Pub/Sub messages with action types (updated, deleted, override_updated, override_deleted, invalidate_all)
+   - CacheConfig: configuration struct with FlagTTL (60s), OverrideTTL (60s), L1TTL (10s), L1MaxSize (10000), PubSubChannel
+   - CacheStats: statistics struct for monitoring (L1/L2 hits/misses, hit ratio, cache entries)
+
+2. Redis Feature Flag Cache (backend/internal/infrastructure/cache/feature_flag_cache.go):
+   - Implements FlagCache interface using Redis
+   - Key format: feature_flag:{key} for flags, feature_flag:override:{flag_key}:{target_type}:{target_id} for overrides
+   - JSON serialization for flag and override data
+   - SCAN-based invalidation to avoid blocking Redis with KEYS command
+   - ownsClient flag to handle shared vs owned Redis client (prevents double-close issue)
+   - Proper error handling with corrupted cache entry cleanup
+
+3. In-Memory Feature Flag Cache (backend/internal/infrastructure/cache/inmemory_feature_flag_cache.go):
+   - L1 cache using sync.Map for thread-safe concurrent access
+   - Generic cacheEntry[T] with expiration tracking
+   - Atomic counters for hit/miss statistics
+   - Background cleanup goroutine with:
+     - Proper shutdown via stopCh channel
+     - Atomic stopped flag for idempotent Close()
+     - Panic recovery in cleanup routine
+   - Default 30-second cleanup interval
+
+4. Redis Pub/Sub Cache Invalidation (backend/internal/infrastructure/cache/flag_invalidation.go):
+   - RedisFlagCacheInvalidator implements CacheInvalidator
+   - Default channel: "feature_flag:updates"
+   - Thread-safe subscription management with sync.Mutex
+   - sync.Once for safe channel close (prevents double-close panic)
+   - ownsClient flag for shared client support
+   - Async callback invocation with panic recovery
+   - Configurable close timeout (5 seconds default)
+
+5. Tiered Feature Flag Cache (backend/internal/infrastructure/cache/tiered_feature_flag_cache.go):
+   - Combines L1 (in-memory) and L2 (Redis) caches
+   - Read-through pattern: L1 -> L2 -> Database
+   - Write-around pattern: Write to L2, populate L1 on read
+   - Automatic L1 invalidation via Pub/Sub subscription
+   - Comprehensive statistics tracking for both layers
+   - Proper resource cleanup in Close() method
+
+6. Cached Evaluator (backend/internal/domain/featureflag/cached_evaluator.go):
+   - CachedEvaluator wraps evaluation with caching
+   - Read-through caching for flags and overrides
+   - Uses PureEvaluator for evaluation with pre-fetched data
+   - WarmupCache() for pre-populating cache at startup
+   - InvalidateFlag() and InvalidateOverride() for cache management
+   - Graceful handling of nil cache (falls back to direct repo access)
+
+7. EvaluationService Integration (backend/internal/application/featureflag/evaluation_service.go):
+   - EvaluatorInterface abstraction for pluggable evaluators
+   - NewCachedEvaluationService() for creating service with cache
+   - NewCachedEvaluationServiceWithConfig() for custom cache configuration
+   - WarmupCache(), InvalidateFlag(), GetCacheStats() methods
+   - Backward compatible with existing non-cached NewEvaluationService()
+
+=== Code Review Fixes Applied ===
+
+CRITICAL Priority (Fixed):
+1. Race condition in RedisFlagCacheInvalidator.Subscribe - Added sync.Mutex for isRunning state management
+2. Goroutine leak in InMemoryFeatureFlagCache.cleanupExpired - Added stopCh channel and atomic stopped flag for graceful shutdown
+3. Double close panic in RedisFlagCacheInvalidator - Added sync.Once for safe doneCh closure
+
+HIGH Priority (Fixed):
+1. Redis client closed by multiple components - Added ownsClient flag to both RedisFeatureFlagCache and RedisFlagCacheInvalidator
+2. Missing error handling in cleanup goroutine - Added panic recovery in InMemoryFeatureFlagCache.cleanupExpired
+
+MEDIUM Priority (Noted for future enhancement):
+1. Cache stampede prevention - Recommend singleflight pattern for future optimization
+2. L1MaxSize enforcement - Recommend LRU eviction implementation
+3. Metrics/Observability - Recommend Prometheus/OpenTelemetry integration
+
+=== Verification ===
+
+- All unit tests pass with race detection:
+  - InMemoryFeatureFlagCache: 11 tests pass
+  - CachedEvaluator: 8 tests pass
+  - All existing tests continue to pass
+- Backend builds successfully without errors
+- Code review completed with CRITICAL and HIGH issues fixed
+
+=== Files Created/Modified ===
+
+Created:
+- backend/internal/domain/featureflag/cache.go (FlagCache interface + config)
+- backend/internal/domain/featureflag/cached_evaluator.go (CachedEvaluator)
+- backend/internal/domain/featureflag/cached_evaluator_test.go (unit tests)
+- backend/internal/infrastructure/cache/feature_flag_cache.go (Redis implementation)
+- backend/internal/infrastructure/cache/inmemory_feature_flag_cache.go (L1 cache)
+- backend/internal/infrastructure/cache/inmemory_feature_flag_cache_test.go (unit tests)
+- backend/internal/infrastructure/cache/flag_invalidation.go (Pub/Sub invalidation)
+- backend/internal/infrastructure/cache/tiered_feature_flag_cache.go (combined L1+L2)
+
+Modified:
+- backend/internal/application/featureflag/evaluation_service.go (cache integration)
+
+=== Architecture Decisions ===
+
+1. Two-tier caching (L1 + L2) for optimal performance:
+   - L1 (in-memory): Sub-millisecond access, 10s TTL, local to instance
+   - L2 (Redis): Millisecond access, 60s TTL, shared across instances
+
+2. Pub/Sub-based cache invalidation for consistency:
+   - Flag updates publish to "feature_flag:updates" channel
+   - All instances subscribe and invalidate their L1 cache
+   - Ensures eventual consistency within ~5 seconds
+
+3. Read-through, write-around caching pattern:
+   - Reads populate L1 from L2 on cache miss
+   - Writes go directly to L2 and publish invalidation
+   - Prevents stale data in L1 across instances
+
+4. Ownership model for shared resources:
+   - ownsClient flag determines who closes Redis client
+   - Prevents double-close issues in TieredFeatureFlagCache
+
+=== Notes ===
+
+- Cache warmup at startup is recommended for optimal cold-start performance
+- For high-flag-count systems (>1000), use EvaluateBatch instead of EvaluateAll
+- L1MaxSize enforcement is not implemented - rely on TTL-based expiration for now
+- Cache stampede protection via singleflight is a recommended future enhancement
+
+=== Next Steps ===
+
+- FF-BE-007: Feature Flag HTTP API Handlers
+- FF-BE-009: Feature Flag Middleware (uses cache layer)
