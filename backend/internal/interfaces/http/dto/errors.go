@@ -150,18 +150,22 @@ func GetHTTPStatus(code string) int {
 // LegacyErrorCodeMapping maps old error codes to new standardized codes
 // This is for backward compatibility with existing domain errors
 var LegacyErrorCodeMapping = map[string]string{
-	"NOT_FOUND":            ErrCodeNotFound,
-	"ALREADY_EXISTS":       ErrCodeAlreadyExists,
-	"INVALID_INPUT":        ErrCodeInvalidInput,
-	"INVALID_STATE":        ErrCodeInvalidState,
-	"UNAUTHORIZED":         ErrCodeUnauthorized,
-	"FORBIDDEN":            ErrCodeForbidden,
-	"CONCURRENCY_CONFLICT": ErrCodeConcurrencyConflict,
-	"INSUFFICIENT_STOCK":   ErrCodeInsufficientStock,
-	"INSUFFICIENT_BALANCE": ErrCodeInsufficientBalance,
-	"VALIDATION_ERROR":     ErrCodeValidation,
-	"BAD_REQUEST":          ErrCodeBadRequest,
-	"INTERNAL_ERROR":       ErrCodeInternal,
+	"NOT_FOUND":              ErrCodeNotFound,
+	"ALREADY_EXISTS":         ErrCodeAlreadyExists,
+	"FLAG_KEY_EXISTS":        ErrCodeAlreadyExists,
+	"FLAG_EXISTS":            ErrCodeAlreadyExists,
+	"OVERRIDE_EXISTS":        ErrCodeAlreadyExists,
+	"INVALID_INPUT":          ErrCodeInvalidInput,
+	"INVALID_STATE":          ErrCodeInvalidState,
+	"UNAUTHORIZED":           ErrCodeUnauthorized,
+	"FORBIDDEN":              ErrCodeForbidden,
+	"CONCURRENCY_CONFLICT":   ErrCodeConcurrencyConflict,
+	"OPTIMISTIC_LOCK_FAILED": ErrCodeConcurrencyConflict,
+	"INSUFFICIENT_STOCK":     ErrCodeInsufficientStock,
+	"INSUFFICIENT_BALANCE":   ErrCodeInsufficientBalance,
+	"VALIDATION_ERROR":       ErrCodeValidation,
+	"BAD_REQUEST":            ErrCodeBadRequest,
+	"INTERNAL_ERROR":         ErrCodeInternal,
 }
 
 // NormalizeErrorCode converts a legacy error code to the standardized format

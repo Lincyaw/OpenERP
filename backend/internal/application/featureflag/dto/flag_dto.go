@@ -111,6 +111,7 @@ type UpdateFlagRequest struct {
 	DefaultValue *FlagValueDTO       `json:"default_value,omitempty"`
 	Rules        *[]TargetingRuleDTO `json:"rules,omitempty"`
 	Tags         *[]string           `json:"tags,omitempty"`
+	Version      *int                `json:"version,omitempty"` // For optimistic locking
 }
 
 // FlagResponse represents a feature flag in API responses

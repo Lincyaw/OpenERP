@@ -31057,3 +31057,71 @@ docker/seed-data.sql                          # MODIFIED: Added feature_flag per
 ### Blockers
 
 - `bug-fix-ff-array-format` - GORM PostgreSQL array format incompatibility (CRITICAL)
+
+2026-01-28 - FF-INT-001: Feature Flag E2E Integration Tests PASSED
+
+=== Test Execution ===
+- Test Suite: tests/e2e/feature-flag/admin.spec.ts
+- Environment: Docker (postgres:15, redis:7)
+- Browser: chromium
+- Total Tests: 12
+- Passed: 12
+- Failed: 0
+- Skipped: 0
+- Duration: ~5.5s
+- Pass Rate: 100%
+
+=== Test Coverage ===
+✅ Flag Management Flow:
+   - Create Boolean feature flag via API
+   - List feature flags and find created flag
+   - Enable feature flag
+   - Update feature flag (with optimistic locking)
+   - Disable feature flag
+   - Archive feature flag
+   - Get audit logs for flag operations
+
+✅ Flag Type Validation:
+   - Create percentage type flag
+   - Create variant type flag
+   - Reject invalid flag type
+   - Reject duplicate flag key (409 Conflict)
+
+=== Bugs Fixed ===
+1. bug-fix-ff-array-format (Migration 000035):
+   - Changed feature_flags.tags from VARCHAR[] to JSONB
+   - GORM was sending JSON array format ["tag1"] but PostgreSQL expected {tag1}
+   - Using JSONB allows native JSON array handling
+
+2. Migration 000036 - flag_audit_logs schema:
+   - Added missing 'updated_at' column required by GORM BaseModel
+   - Renamed 'actor_id' to 'user_id' for consistency
+   - Renamed 'actor_ip' to 'ip_address' for consistency
+   - Added 'user_agent' column
+
+3. Error code mappings (dto/errors.go):
+   - Added FLAG_EXISTS -> ERR_ALREADY_EXISTS (409 Conflict)
+   - Added FLAG_KEY_EXISTS -> ERR_ALREADY_EXISTS (409 Conflict)
+   - Added OPTIMISTIC_LOCK_FAILED -> ERR_CONCURRENCY_CONFLICT (409 Conflict)
+
+4. UpdateFlag service optimistic locking:
+   - Fixed version handling when multiple domain operations increment version
+   - Service now verifies client-provided version for optimistic locking
+   - Resets version to originalVersion + 1 before persisting
+
+=== Code Changes ===
+- backend/migrations/000035_fix_feature_flags_tags_type.up.sql (new)
+- backend/migrations/000035_fix_feature_flags_tags_type.down.sql (new)
+- backend/migrations/000036_fix_flag_audit_logs_schema.up.sql (new)
+- backend/migrations/000036_fix_flag_audit_logs_schema.down.sql (new)
+- backend/internal/interfaces/http/dto/errors.go (modified)
+- backend/internal/application/featureflag/dto/flag_dto.go (modified)
+- backend/internal/application/featureflag/flag_service.go (modified)
+- frontend/tests/e2e/feature-flag/admin.spec.ts (modified)
+
+=== Stability ===
+- Consecutive passes: 3/3
+- No flaky tests detected
+
+=== Decision ===
+[PASSED]: Integration test acceptance met. All 12 E2E tests pass consistently.

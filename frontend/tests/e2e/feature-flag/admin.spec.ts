@@ -17,9 +17,12 @@ import { API_BASE_URL } from './api-utils'
 
 test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
   let authToken: string | null = null
-  const testFlagKey = `test_flag_${Date.now()}`
+  let testFlagKey: string
 
   test.beforeAll(async ({ browser }) => {
+    // Generate unique flag key at test execution time
+    testFlagKey = `test_flag_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
     // Get auth token for API calls
     const context = await browser.newContext()
     const page = await context.newPage()
@@ -27,7 +30,7 @@ test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
     await context.close()
   })
 
-  test.describe('Flag Management Flow', () => {
+  test.describe.serial('Flag Management Flow', () => {
     test('should create a Boolean feature flag via API', async ({ request }) => {
       const response = await request.post(`${API_BASE_URL}/api/v1/feature-flags`, {
         headers: {
@@ -64,9 +67,9 @@ test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
       expect(response.status()).toBe(200)
       const body = await response.json()
       expect(body.success).toBe(true)
-      expect(body.data.items).toBeDefined()
+      expect(body.data.flags).toBeDefined()
 
-      const createdFlag = body.data.items.find((f: { key: string }) => f.key === testFlagKey)
+      const createdFlag = body.data.flags.find((f: { key: string }) => f.key === testFlagKey)
       expect(createdFlag).toBeDefined()
       expect(createdFlag.name).toBe('Test Boolean Flag')
     })
@@ -96,6 +99,15 @@ test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
     })
 
     test('should update the feature flag', async ({ request }) => {
+      // First get the current version for optimistic locking
+      const getResponse = await request.get(`${API_BASE_URL}/api/v1/feature-flags/${testFlagKey}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+      const currentFlag = await getResponse.json()
+      const currentVersion = currentFlag.data.version
+
       const response = await request.put(`${API_BASE_URL}/api/v1/feature-flags/${testFlagKey}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -105,6 +117,7 @@ test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
           name: 'Updated Test Flag',
           description: 'Updated description for E2E testing',
           tags: ['test', 'e2e', 'updated'],
+          version: currentVersion,
         },
       })
 
@@ -169,10 +182,10 @@ test.describe('FF-INT-001: Feature Flag Admin (API)', () => {
       expect(response.status()).toBe(200)
       const body = await response.json()
       expect(body.success).toBe(true)
-      expect(body.data.items).toBeDefined()
+      expect(body.data.audit_logs).toBeDefined()
 
       // Should have audit logs for: created, enabled, updated, disabled, archived
-      const actions = body.data.items.map((log: { action: string }) => log.action)
+      const actions = body.data.audit_logs.map((log: { action: string }) => log.action)
       expect(actions).toContain('created')
     })
   })

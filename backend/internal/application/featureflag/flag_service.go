@@ -135,6 +135,14 @@ func (s *FlagService) UpdateFlag(ctx context.Context, key string, req dto.Update
 		return nil, shared.NewDomainError("INTERNAL_ERROR", "Failed to find flag")
 	}
 
+	// If version is provided, verify it matches for optimistic locking
+	if req.Version != nil && *req.Version != flag.Version {
+		return nil, shared.NewDomainError("OPTIMISTIC_LOCK_FAILED", "Feature flag was modified by another transaction")
+	}
+
+	// Store the original version for DB update (before any modifications)
+	originalVersion := flag.Version
+
 	// Store old values for audit log
 	oldValues := flagToMap(flag)
 
@@ -184,6 +192,10 @@ func (s *FlagService) UpdateFlag(ctx context.Context, key string, req dto.Update
 			return nil, err
 		}
 	}
+
+	// Reset version to exactly one more than original for consistent optimistic locking
+	// This handles the case where multiple domain operations each increment the version
+	flag.Version = originalVersion + 1
 
 	// Persist the flag
 	if err := s.flagRepo.Update(ctx, flag); err != nil {

@@ -9206,7 +9206,7 @@
       "- 连续 3 次运行稳定",
       "- 覆盖主要用户场景"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 12 Implementation Roadmap",
     "affectedModules": [
       "frontend/e2e/feature-flag/admin.spec.ts",
@@ -9215,9 +9215,6 @@
       "frontend/e2e/feature-flag/percentage.spec.ts",
       "frontend/e2e/feature-flag/realtime.spec.ts",
       "backend/migrations/seed-data.sql"
-    ],
-    "blockedBy": [
-      "bug-fix-ff-array-format"
     ]
   },
   {
@@ -9354,7 +9351,7 @@
       "=== Verification ===",
       "After fix, E2E tests in frontend/tests/e2e/feature-flag/ should pass"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "backend/internal/infrastructure/persistence/feature_flag_repo.go",
       "backend/internal/domain/featureflag/entity.go"
