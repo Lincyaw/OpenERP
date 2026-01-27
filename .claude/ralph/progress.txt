@@ -26149,3 +26149,58 @@ Created comprehensive E2E test suite for RBAC (Role-Based Access Control) permis
 
 === Decision ===
 [COMPLETED]: Purchase order edit page implementation complete per GAP-FE-001 requirements
+
+2025-01-27 - Task ID: GAP-VAL-001 - Implement inventory check before warehouse deletion
+
+=== Implementation Details ===
+- Added InventoryItemRepository dependency to WarehouseService for inventory checking
+- Implemented `DeleteWithOptions` method that checks for inventory items before deletion
+- Added `DeleteOptions` struct with `Force` field for admin-controlled force deletion
+- Modified Delete endpoint to support `?force=true` query parameter with admin permission check
+- Uses `warehouse:force_delete` permission for force delete operations
+- Error code `HAS_INVENTORY` returned when warehouse has inventory items
+- Error code `INVENTORY_CHECK_FAILED` returned if inventory count check fails
+- Default warehouse deletion still blocked regardless of force flag
+
+=== Key Files Modified ===
+- backend/internal/application/partner/warehouse_service.go - Added inventory check logic
+- backend/internal/interfaces/http/handler/warehouse.go - Added force delete support with permission check
+- backend/cmd/server/main.go - Updated service initialization to inject inventoryItemRepo
+- backend/tests/integration/partner_api_test.go - Updated test setup
+- backend/tests/integration/performance_test.go - Updated test setup
+- backend/internal/application/partner/warehouse_service_test.go - New file with comprehensive unit tests
+
+=== Design Decisions ===
+1. Used existing CountByWarehouse method from InventoryItemRepository (no schema changes needed)
+2. Force delete requires explicit `warehouse:force_delete` permission (typically only for admin roles)
+3. Nil inventoryItemRepo is allowed for backward compatibility (skips inventory check)
+4. Error message includes specific count of inventory items for clarity
+
+=== Verification ===
+- All unit tests pass (12 new tests for warehouse service delete functionality)
+- Build successful
+- Type checking passes
+
+=== Test Coverage ===
+- TestWarehouseService_Delete_Success_NoInventory
+- TestWarehouseService_Delete_FailsWhenHasInventory
+- TestWarehouseService_Delete_FailsWhenDefaultWarehouse
+- TestWarehouseService_Delete_FailsWhenWarehouseNotFound
+- TestWarehouseService_DeleteWithOptions_ForceDelete_Success
+- TestWarehouseService_DeleteWithOptions_ForceDeleteStillBlocksDefaultWarehouse
+- TestWarehouseService_Delete_InventoryCheckError
+- TestWarehouseService_Delete_WithNilInventoryRepo
+
+=== API Changes ===
+DELETE /api/v1/partner/warehouses/{id}
+- New query param: ?force=true (requires warehouse:force_delete permission)
+- New error response: 422 HAS_INVENTORY when warehouse has inventory items
+- New error response: 403 when force=true but missing permission
+
+=== Notes ===
+- The TODO at warehouse_service.go:365 has been removed (implemented)
+- Requires `warehouse:force_delete` permission to be added to admin roles in production
+
+=== Next Steps ===
+- Add warehouse:force_delete permission to admin role in seed data
+- Consider adding E2E test for force delete flow

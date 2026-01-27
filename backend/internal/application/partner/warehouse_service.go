@@ -2,7 +2,9 @@ package partner
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/partner"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/google/uuid"
@@ -10,14 +12,22 @@ import (
 
 // WarehouseService handles warehouse-related business operations
 type WarehouseService struct {
-	warehouseRepo partner.WarehouseRepository
+	warehouseRepo     partner.WarehouseRepository
+	inventoryItemRepo inventory.InventoryItemRepository
 }
 
 // NewWarehouseService creates a new WarehouseService
-func NewWarehouseService(warehouseRepo partner.WarehouseRepository) *WarehouseService {
+func NewWarehouseService(warehouseRepo partner.WarehouseRepository, inventoryItemRepo inventory.InventoryItemRepository) *WarehouseService {
 	return &WarehouseService{
-		warehouseRepo: warehouseRepo,
+		warehouseRepo:     warehouseRepo,
+		inventoryItemRepo: inventoryItemRepo,
 	}
+}
+
+// DeleteOptions contains options for warehouse deletion
+type DeleteOptions struct {
+	// Force allows deletion even if the warehouse has inventory (requires admin)
+	Force bool
 }
 
 // Create creates a new warehouse
@@ -349,8 +359,15 @@ func (s *WarehouseService) UpdateCode(ctx context.Context, tenantID, warehouseID
 	return &response, nil
 }
 
-// Delete deletes a warehouse
+// Delete deletes a warehouse (without force option)
 func (s *WarehouseService) Delete(ctx context.Context, tenantID, warehouseID uuid.UUID) error {
+	return s.DeleteWithOptions(ctx, tenantID, warehouseID, DeleteOptions{Force: false})
+}
+
+// DeleteWithOptions deletes a warehouse with optional force deletion
+// When force is false, deletion is blocked if the warehouse has inventory items
+// When force is true (requires admin permission checked by handler), inventory items are orphaned
+func (s *WarehouseService) DeleteWithOptions(ctx context.Context, tenantID, warehouseID uuid.UUID, opts DeleteOptions) error {
 	// Verify warehouse exists
 	warehouse, err := s.warehouseRepo.FindByIDForTenant(ctx, tenantID, warehouseID)
 	if err != nil {
@@ -362,8 +379,18 @@ func (s *WarehouseService) Delete(ctx context.Context, tenantID, warehouseID uui
 		return shared.NewDomainError("CANNOT_DELETE", "Cannot delete the default warehouse")
 	}
 
-	// TODO: Check if warehouse has inventory
-	// This should be implemented when the inventory module is available
+	// Check if warehouse has inventory items (unless force delete)
+	if !opts.Force && s.inventoryItemRepo != nil {
+		inventoryCount, err := s.inventoryItemRepo.CountByWarehouse(ctx, tenantID, warehouseID)
+		if err != nil {
+			return shared.NewDomainError("INVENTORY_CHECK_FAILED", "Failed to check warehouse inventory. Please try again or contact support.")
+		}
+
+		if inventoryCount > 0 {
+			return shared.NewDomainError("HAS_INVENTORY",
+				fmt.Sprintf("Cannot delete warehouse: %d inventory item(s) exist in this warehouse. Transfer or clear inventory first, or use force delete with admin permission.", inventoryCount))
+		}
+	}
 
 	return s.warehouseRepo.DeleteForTenant(ctx, tenantID, warehouseID)
 }

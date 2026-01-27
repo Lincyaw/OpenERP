@@ -187,7 +187,7 @@ func main() {
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	customerLevelService := partnerapp.NewCustomerLevelService(customerLevelRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
-	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
+	warehouseService := partnerapp.NewWarehouseService(warehouseRepo, inventoryItemRepo)
 	balanceTransactionService := partnerapp.NewBalanceTransactionService(balanceTransactionRepo, customerRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryItemRepo, stockBatchRepo, stockLockRepo, inventoryTxRepo)
 	stockLockExpirationService := inventoryapp.NewStockLockExpirationService(stockLockRepo, inventoryItemRepo, nil, log) // eventBus will be set later

@@ -338,7 +338,7 @@ func NewPerformanceTestServer(t *testing.T) *PerformanceTestServer {
 	productService := catalogapp.NewProductService(productRepo, categoryRepo, strategyRegistry)
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
-	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
+	warehouseService := partnerapp.NewWarehouseService(warehouseRepo, inventoryRepo)
 	inventoryService := inventoryapp.NewInventoryService(inventoryRepo, batchRepo, lockRepo, transactionRepo)
 
 	// Initialize handlers

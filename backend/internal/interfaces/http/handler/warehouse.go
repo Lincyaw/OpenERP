@@ -2,6 +2,7 @@ package handler
 
 import (
 	partnerapp "github.com/erp/backend/internal/application/partner"
+	"github.com/erp/backend/internal/interfaces/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -412,15 +413,17 @@ func (h *WarehouseHandler) UpdateCode(c *gin.Context) {
 // Delete godoc
 //
 //	@Summary		Delete a warehouse
-//	@Description	Delete a warehouse by ID (cannot delete default warehouse)
+//	@Description	Delete a warehouse by ID (cannot delete default warehouse or warehouse with inventory unless force=true with admin permission)
 //	@Tags			warehouses
 //	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path	string	true	"Warehouse ID"	format(uuid)
+//	@Param			force		query	bool	false	"Force delete even if warehouse has inventory (requires admin permission)"
 //	@Success		204
 //	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
 //	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
 //	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
 //	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
 //	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
@@ -439,7 +442,25 @@ func (h *WarehouseHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	err = h.warehouseService.Delete(c.Request.Context(), tenantID, warehouseID)
+	// Check for force delete parameter
+	forceStr := c.Query("force")
+	force := forceStr == "true" || forceStr == "1"
+
+	// If force delete is requested, check for admin permission
+	if force {
+		// Require warehouse:force_delete permission for force delete
+		// This permission should only be granted to admin roles
+		if !middleware.HasPermission(c, "warehouse:force_delete") {
+			h.Forbidden(c, "Force delete requires admin permission (warehouse:force_delete)")
+			return
+		}
+	}
+
+	opts := partnerapp.DeleteOptions{
+		Force: force,
+	}
+
+	err = h.warehouseService.DeleteWithOptions(c.Request.Context(), tenantID, warehouseID, opts)
 	if err != nil {
 		h.HandleDomainError(c, err)
 		return

@@ -5341,7 +5341,7 @@
       "- 删除无库存的仓库正常成功",
       "- 添加单元测试覆盖"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "业务校验规则",
     "affectedModules": [
       "backend/internal/application/partner/warehouse_service.go"

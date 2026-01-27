@@ -40,11 +40,12 @@ func NewPartnerTestServer(t *testing.T) *PartnerTestServer {
 	customerRepo := persistence.NewGormCustomerRepository(testDB.DB)
 	supplierRepo := persistence.NewGormSupplierRepository(testDB.DB)
 	warehouseRepo := persistence.NewGormWarehouseRepository(testDB.DB)
+	inventoryItemRepo := persistence.NewGormInventoryItemRepository(testDB.DB)
 
 	// Initialize services
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	supplierService := partnerapp.NewSupplierService(supplierRepo)
-	warehouseService := partnerapp.NewWarehouseService(warehouseRepo)
+	warehouseService := partnerapp.NewWarehouseService(warehouseRepo, inventoryItemRepo)
 
 	// Initialize handlers
 	customerHandler := handler.NewCustomerHandler(customerService)
