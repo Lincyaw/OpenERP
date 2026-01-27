@@ -271,7 +271,14 @@ func (m *MockCategoryRepository) FindByPath(ctx context.Context, tenantID uuid.U
 // Test setup helpers
 func setupTestRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
-	return gin.New()
+	router := gin.New()
+	// Add test authentication middleware that sets JWT context values
+	// Uses a default test tenant and user ID for all requests
+	router.Use(func(c *gin.Context) {
+		setJWTContext(c, uuid.MustParse("00000000-0000-0000-0000-000000000001"), uuid.New())
+		c.Next()
+	})
+	return router
 }
 
 func setupProductHandler(productRepo *MockProductRepository, categoryRepo *MockCategoryRepository) *ProductHandler {

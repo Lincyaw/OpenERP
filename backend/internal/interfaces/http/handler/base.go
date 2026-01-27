@@ -29,28 +29,21 @@ func getRequestID(c *gin.Context) string {
 }
 
 // getUserID extracts user ID from JWT claims or returns error
+// All requests must go through JWT authentication middleware to have user ID set
 func getUserID(c *gin.Context) (uuid.UUID, error) {
 	userIDStr := middleware.GetJWTUserID(c)
 	if userIDStr == "" {
-		// Fallback to header for development (will be removed in production)
-		userIDStr = c.GetHeader("X-User-ID")
-	}
-	if userIDStr == "" {
-		return uuid.Nil, errors.New("user ID not found in context")
+		return uuid.Nil, errors.New("user ID not found in context - JWT authentication required")
 	}
 	return uuid.Parse(userIDStr)
 }
 
 // getTenantID extracts tenant ID from JWT claims or returns error
+// All requests must go through JWT authentication middleware to have tenant ID set
 func getTenantID(c *gin.Context) (uuid.UUID, error) {
 	tenantIDStr := middleware.GetJWTTenantID(c)
 	if tenantIDStr == "" {
-		// Fallback to header for development
-		tenantIDStr = c.GetHeader("X-Tenant-ID")
-	}
-	if tenantIDStr == "" {
-		// Default development tenant for backwards compatibility
-		return uuid.MustParse("00000000-0000-0000-0000-000000000001"), nil
+		return uuid.Nil, errors.New("tenant ID not found in context - JWT authentication required")
 	}
 	return uuid.Parse(tenantIDStr)
 }

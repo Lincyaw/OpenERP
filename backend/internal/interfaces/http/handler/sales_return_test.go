@@ -174,6 +174,11 @@ func setupSalesReturnTestRouter() (*gin.Engine, *MockSalesReturnRepository, *Moc
 	handler := NewSalesReturnHandler(service)
 
 	router := gin.New()
+	// Add test authentication middleware that sets JWT context values
+	router.Use(func(c *gin.Context) {
+		setJWTContext(c, uuid.MustParse("00000000-0000-0000-0000-000000000001"), uuid.New())
+		c.Next()
+	})
 
 	return router, mockReturnRepo, mockOrderRepo, handler
 }

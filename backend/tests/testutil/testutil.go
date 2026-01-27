@@ -114,14 +114,14 @@ func (tc *TestContext) SetRequestID(id string) {
 	tc.Context.Set("X-Request-ID", id)
 }
 
-// SetTenantID sets a tenant ID in the context.
+// SetTenantID sets a tenant ID in the context using JWT context key.
 func (tc *TestContext) SetTenantID(id string) {
-	tc.Context.Set("X-Tenant-ID", id)
+	tc.Context.Set("jwt_tenant_id", id)
 }
 
-// SetUserID sets a user ID in the context.
+// SetUserID sets a user ID in the context using JWT context key.
 func (tc *TestContext) SetUserID(id string) {
-	tc.Context.Set("X-User-ID", id)
+	tc.Context.Set("jwt_user_id", id)
 }
 
 // SetHeader sets a header on the request.
@@ -214,5 +214,24 @@ func AssertNever(t *testing.T, condition func() bool, duration, interval time.Du
 			t.Fatalf("Condition unexpectedly became true: %v", msgAndArgs)
 		}
 		time.Sleep(interval)
+	}
+}
+
+// TestAuthMiddleware creates a Gin middleware that simulates JWT authentication for tests.
+// It reads X-Tenant-ID and X-User-ID headers and sets them as JWT context values.
+// This allows integration tests to work without actual JWT tokens.
+func TestAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Read tenant ID from header and set as JWT context value
+		if tenantID := c.GetHeader("X-Tenant-ID"); tenantID != "" {
+			c.Set("jwt_tenant_id", tenantID)
+		}
+
+		// Read user ID from header and set as JWT context value
+		if userID := c.GetHeader("X-User-ID"); userID != "" {
+			c.Set("jwt_user_id", userID)
+		}
+
+		c.Next()
 	}
 }

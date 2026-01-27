@@ -589,7 +589,7 @@ func TestInventoryHandler_GetByID_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/items/"+itemID.String(), nil)
 	c.Params = gin.Params{{Key: "id", Value: itemID.String()}}
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.GetByID(c)
 
@@ -611,7 +611,7 @@ func TestInventoryHandler_GetByID_NotFound(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/items/"+itemID.String(), nil)
 	c.Params = gin.Params{{Key: "id", Value: itemID.String()}}
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.GetByID(c)
 
@@ -620,11 +620,13 @@ func TestInventoryHandler_GetByID_NotFound(t *testing.T) {
 
 func TestInventoryHandler_GetByID_InvalidID(t *testing.T) {
 	handler, _, _, _ := setupInventoryTestHandler()
+	tenantID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/items/invalid-uuid", nil)
 	c.Params = gin.Params{{Key: "id", Value: "invalid-uuid"}}
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.GetByID(c)
 
@@ -645,7 +647,7 @@ func TestInventoryHandler_List_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/items?page=1&page_size=20", nil)
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.List(c)
 
@@ -680,7 +682,7 @@ func TestInventoryHandler_CheckAvailability_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/availability/check", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.CheckAvailability(c)
 
@@ -722,7 +724,7 @@ func TestInventoryHandler_IncreaseStock_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/stock/increase", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.IncreaseStock(c)
 
@@ -753,7 +755,7 @@ func TestInventoryHandler_IncreaseStock_InvalidSourceType(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/stock/increase", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.IncreaseStock(c)
 
@@ -785,7 +787,7 @@ func TestInventoryHandler_LockStock_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/stock/lock", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.LockStock(c)
 
@@ -827,7 +829,7 @@ func TestInventoryHandler_LockStock_InsufficientStock(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/stock/lock", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.LockStock(c)
 
@@ -856,7 +858,7 @@ func TestInventoryHandler_AdjustStock_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPost, "/inventory/stock/adjust", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.AdjustStock(c)
 
@@ -892,7 +894,7 @@ func TestInventoryHandler_SetThresholds_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodPut, "/inventory/thresholds", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.SetThresholds(c)
 
@@ -924,7 +926,7 @@ func TestInventoryHandler_ListTransactions_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/transactions?page=1&page_size=20", nil)
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.ListTransactions(c)
 
@@ -960,7 +962,7 @@ func TestInventoryHandler_GetActiveLocks_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest(http.MethodGet, "/inventory/locks?warehouse_id="+warehouseID.String()+"&product_id="+productID.String(), nil)
-	c.Request.Header.Set("X-Tenant-ID", tenantID.String())
+	setJWTContext(c, tenantID, uuid.New())
 
 	handler.GetActiveLocks(c)
 

@@ -15,6 +15,7 @@ import (
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/router"
+	"github.com/erp/backend/tests/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -52,8 +53,9 @@ func NewInventoryTestServer(t *testing.T) *InventoryTestServer {
 	// Initialize handler
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 
-	// Setup engine
+	// Setup engine with test authentication middleware
 	engine := gin.New()
+	engine.Use(testutil.TestAuthMiddleware())
 
 	// Setup routes
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))
@@ -1068,8 +1070,8 @@ func TestInventoryAPI_ConcurrentOperations(t *testing.T) {
 		err := json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
 		data := response["data"].(map[string]any)
-		assert.Equal(t, "40", data["available_quantity"])   // 100 - 60
-		assert.Equal(t, "60", data["locked_quantity"])      // 3 * 20
-		assert.Equal(t, "100", data["total_quantity"])      // unchanged
+		assert.Equal(t, "40", data["available_quantity"]) // 100 - 60
+		assert.Equal(t, "60", data["locked_quantity"])    // 3 * 20
+		assert.Equal(t, "100", data["total_quantity"])    // unchanged
 	})
 }

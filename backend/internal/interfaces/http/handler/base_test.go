@@ -10,12 +10,20 @@ import (
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/interfaces/http/dto"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func init() {
 	gin.SetMode(gin.TestMode)
+}
+
+// setJWTContext sets JWT context values for testing
+// This simulates authenticated requests without actual JWT tokens
+func setJWTContext(c *gin.Context, tenantID, userID uuid.UUID) {
+	c.Set("jwt_tenant_id", tenantID.String())
+	c.Set("jwt_user_id", userID.String())
 }
 
 func TestGetRequestID(t *testing.T) {

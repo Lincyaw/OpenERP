@@ -17,6 +17,7 @@ import (
 	infrastrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/interfaces/http/handler"
 	"github.com/erp/backend/internal/interfaces/http/router"
+	"github.com/erp/backend/tests/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -50,8 +51,9 @@ func NewTestServer(t *testing.T) *TestServer {
 	// Initialize handlers
 	productHandler := handler.NewProductHandler(productService)
 
-	// Setup engine
+	// Setup engine with test authentication middleware
 	engine := gin.New()
+	engine.Use(testutil.TestAuthMiddleware())
 
 	// Setup routes
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))

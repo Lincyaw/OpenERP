@@ -51,7 +51,7 @@ func TestTestContext_SetTenantID(t *testing.T) {
 
 	tc.SetTenantID("tenant-456")
 
-	val, exists := tc.Context.Get("X-Tenant-ID")
+	val, exists := tc.Context.Get("jwt_tenant_id")
 	assert.True(t, exists)
 	assert.Equal(t, "tenant-456", val)
 }
@@ -61,7 +61,7 @@ func TestTestContext_SetUserID(t *testing.T) {
 
 	tc.SetUserID("user-789")
 
-	val, exists := tc.Context.Get("X-User-ID")
+	val, exists := tc.Context.Get("jwt_user_id")
 	assert.True(t, exists)
 	assert.Equal(t, "user-789", val)
 }

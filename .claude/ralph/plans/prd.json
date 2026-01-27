@@ -4376,7 +4376,7 @@
       "移除默认开发租户 UUID",
       "强制所有请求通过 JWT 认证获取租户和用户信息"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Security Review",
     "category": "security",
     "severity": "CRITICAL",

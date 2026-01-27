@@ -144,6 +144,11 @@ func setupSalesOrderTestRouter() (*gin.Engine, *MockSalesOrderRepository, *Sales
 	handler := NewSalesOrderHandler(service)
 
 	router := gin.New()
+	// Add test authentication middleware that sets JWT context values
+	router.Use(func(c *gin.Context) {
+		setJWTContext(c, uuid.MustParse("00000000-0000-0000-0000-000000000001"), uuid.New())
+		c.Next()
+	})
 
 	return router, mockRepo, handler
 }
@@ -380,7 +385,7 @@ func TestSalesOrderHandler_Confirm(t *testing.T) {
 
 		mockRepo.On("FindByIDForTenant", mock.Anything, tenantID, orderID).
 			Return(testOrder, nil)
-		mockRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.SalesOrder")).
+		mockRepo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).
 			Return(nil)
 
 		req, _ := http.NewRequest(http.MethodPost, "/sales-orders/"+orderID.String()+"/confirm", nil)
@@ -437,7 +442,7 @@ func TestSalesOrderHandler_Cancel(t *testing.T) {
 
 		mockRepo.On("FindByIDForTenant", mock.Anything, tenantID, orderID).
 			Return(testOrder, nil)
-		mockRepo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.SalesOrder")).
+		mockRepo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).
 			Return(nil)
 
 		reqBody := CancelOrderRequest{
