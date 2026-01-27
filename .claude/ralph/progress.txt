@@ -28551,3 +28551,75 @@ The implementation follows existing patterns:
 - OBS-ALERT-001: Configure metric-based alerting rules
 - Consider adding trace_id to GORM logger for database query correlation
 - Add request_id propagation to downstream service calls
+
+================================================================================
+2025-01-27 - OBS-PROFILE-005: Add business critical path profiling labels
+================================================================================
+
+=== Implementation Details ===
+
+1. Extended profiler_labels.go with business-specific constants and helpers:
+   - Added operation constants for order flow (create_order, confirm_order, ship_order, cancel_order, receive_order)
+   - Added operation constants for inventory (lock_stock, unlock_stock, deduct_stock, increase_stock, decrease_stock, adjust_stock)
+   - Added operation constants for finance (create_receivable, create_payable, process_payment, reconcile)
+   - Added ProfilingLabelOrderType, ProfilingLabelWarehouseType, ProfilingLabelPaymentMethod constants
+   - Added WarehouseTypePhysical and WarehouseTypeVirtual constants
+   - Added helper functions: OrderOperationLabels(), InventoryOperationLabels(), FinanceOperationLabels()
+
+2. Added profiling labels to trade services:
+   - SalesOrderService.Create() - wrapped with create_order + sales labels
+   - SalesOrderService.Confirm() - wrapped with confirm_order + sales labels
+   - SalesOrderService.Ship() - wrapped with ship_order + sales labels
+   - SalesOrderService.Cancel() - wrapped with cancel_order + sales labels
+   - PurchaseOrderService.Create() - wrapped with create_order + purchase labels
+   - PurchaseOrderService.Confirm() - wrapped with confirm_order + purchase labels
+   - PurchaseOrderService.Receive() - wrapped with receive_order + purchase labels
+
+3. Added profiling labels to inventory services:
+   - InventoryService.IncreaseStock() - wrapped with increase_stock label
+   - InventoryService.LockStock() - wrapped with lock_stock label
+   - InventoryService.UnlockStock() - wrapped with unlock_stock label
+   - InventoryService.DeductStock() - wrapped with deduct_stock label
+   - InventoryService.DecreaseStock() - wrapped with decrease_stock label
+   - InventoryService.AdjustStock() - wrapped with adjust_stock label
+
+4. Added profiling labels to finance services:
+   - BalancePaymentService.ProcessBalancePayment() - wrapped with process_payment + balance label
+   - FinanceService.ReconcileReceipt() - wrapped with reconcile label
+   - FinanceService.ReconcilePayment() - wrapped with reconcile label
+
+5. Added unit tests for new helper functions:
+   - TestOrderOperationLabels - tests order operation label generation
+   - TestInventoryOperationLabels - tests inventory operation label generation
+   - TestFinanceOperationLabels - tests finance operation label generation
+   - TestBusinessOperationConstants - validates all constant definitions
+
+=== Key Files Modified ===
+- backend/internal/infrastructure/telemetry/profiler_labels.go (new constants and helpers)
+- backend/internal/infrastructure/telemetry/profiler_labels_test.go (new tests)
+- backend/internal/application/trade/sales_order_service.go (profiling labels)
+- backend/internal/application/trade/purchase_order_service.go (profiling labels)
+- backend/internal/application/trade/purchase_order_service_test.go (mock fixes)
+- backend/internal/application/inventory/inventory_service.go (profiling labels)
+- backend/internal/application/finance/balance_payment_service.go (profiling labels)
+- backend/internal/application/finance/finance_service.go (profiling labels)
+
+=== Verification ===
+- Build passes: go build ./...
+- All new unit tests pass
+- Profiling label helper tests pass
+- Existing profiling tests still pass
+
+=== Design Decisions ===
+1. Used empty string for warehouse_type by default since warehouse type differentiation is not commonly used
+2. Wrapped entire service method body in profiling labels to minimize overhead
+3. Used closure-based pattern (WithProfilingLabels with func callback) to ensure labels apply to all nested operations
+4. Labels applied at Application Service layer only, not Domain layer (per requirements)
+
+=== Notes ===
+- Pre-existing test failure in TestPurchaseOrderService_Create unrelated to these changes (BaseUnit validation issue)
+- Fixed mock expectations in purchase_order_service_test.go to use mock.Anything for context parameter
+
+=== Next Steps ===
+- Consider adding payment_method label when ReceiptVoucher/PaymentVoucher creation is implemented
+- May need to add warehouse_type differentiation when virtual warehouses are supported

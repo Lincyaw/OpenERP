@@ -506,3 +506,215 @@ func TestConcurrentProfilingLabels(t *testing.T) {
 		<-done
 	}
 }
+
+// TestOrderOperationLabels tests the OrderOperationLabels helper function.
+func TestOrderOperationLabels(t *testing.T) {
+	tests := []struct {
+		name        string
+		operation   string
+		orderType   string
+		expectedLen int
+	}{
+		{
+			name:        "both_fields",
+			operation:   telemetry.OperationCreateOrder,
+			orderType:   string(telemetry.OrderTypeSales),
+			expectedLen: 2,
+		},
+		{
+			name:        "only_operation",
+			operation:   telemetry.OperationConfirmOrder,
+			orderType:   "",
+			expectedLen: 1,
+		},
+		{
+			name:        "only_order_type",
+			operation:   "",
+			orderType:   string(telemetry.OrderTypePurchase),
+			expectedLen: 1,
+		},
+		{
+			name:        "both_empty",
+			operation:   "",
+			orderType:   "",
+			expectedLen: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			labels := telemetry.OrderOperationLabels(tt.operation, tt.orderType)
+			if len(labels) != tt.expectedLen {
+				t.Errorf("expected %d labels, got %d", tt.expectedLen, len(labels))
+			}
+			if tt.operation != "" {
+				if labels[telemetry.ProfilingLabelOperation] != tt.operation {
+					t.Errorf("expected operation %q, got %q", tt.operation, labels[telemetry.ProfilingLabelOperation])
+				}
+			}
+			if tt.orderType != "" {
+				if labels[telemetry.ProfilingLabelOrderType] != tt.orderType {
+					t.Errorf("expected order type %q, got %q", tt.orderType, labels[telemetry.ProfilingLabelOrderType])
+				}
+			}
+		})
+	}
+}
+
+// TestInventoryOperationLabels tests the InventoryOperationLabels helper function.
+func TestInventoryOperationLabels(t *testing.T) {
+	tests := []struct {
+		name          string
+		operation     string
+		warehouseType string
+		expectedLen   int
+	}{
+		{
+			name:          "both_fields",
+			operation:     telemetry.OperationLockStock,
+			warehouseType: telemetry.WarehouseTypePhysical,
+			expectedLen:   2,
+		},
+		{
+			name:          "only_operation",
+			operation:     telemetry.OperationDeductStock,
+			warehouseType: "",
+			expectedLen:   1,
+		},
+		{
+			name:          "only_warehouse_type",
+			operation:     "",
+			warehouseType: telemetry.WarehouseTypeVirtual,
+			expectedLen:   1,
+		},
+		{
+			name:          "both_empty",
+			operation:     "",
+			warehouseType: "",
+			expectedLen:   0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			labels := telemetry.InventoryOperationLabels(tt.operation, tt.warehouseType)
+			if len(labels) != tt.expectedLen {
+				t.Errorf("expected %d labels, got %d", tt.expectedLen, len(labels))
+			}
+			if tt.operation != "" {
+				if labels[telemetry.ProfilingLabelOperation] != tt.operation {
+					t.Errorf("expected operation %q, got %q", tt.operation, labels[telemetry.ProfilingLabelOperation])
+				}
+			}
+			if tt.warehouseType != "" {
+				if labels[telemetry.ProfilingLabelWarehouseType] != tt.warehouseType {
+					t.Errorf("expected warehouse type %q, got %q", tt.warehouseType, labels[telemetry.ProfilingLabelWarehouseType])
+				}
+			}
+		})
+	}
+}
+
+// TestFinanceOperationLabels tests the FinanceOperationLabels helper function.
+func TestFinanceOperationLabels(t *testing.T) {
+	tests := []struct {
+		name          string
+		operation     string
+		paymentMethod string
+		expectedLen   int
+	}{
+		{
+			name:          "both_fields",
+			operation:     telemetry.OperationProcessPayment,
+			paymentMethod: "wechat",
+			expectedLen:   2,
+		},
+		{
+			name:          "only_operation",
+			operation:     telemetry.OperationReconcile,
+			paymentMethod: "",
+			expectedLen:   1,
+		},
+		{
+			name:          "only_payment_method",
+			operation:     "",
+			paymentMethod: "alipay",
+			expectedLen:   1,
+		},
+		{
+			name:          "both_empty",
+			operation:     "",
+			paymentMethod: "",
+			expectedLen:   0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			labels := telemetry.FinanceOperationLabels(tt.operation, tt.paymentMethod)
+			if len(labels) != tt.expectedLen {
+				t.Errorf("expected %d labels, got %d", tt.expectedLen, len(labels))
+			}
+			if tt.operation != "" {
+				if labels[telemetry.ProfilingLabelOperation] != tt.operation {
+					t.Errorf("expected operation %q, got %q", tt.operation, labels[telemetry.ProfilingLabelOperation])
+				}
+			}
+			if tt.paymentMethod != "" {
+				if labels[telemetry.ProfilingLabelPaymentMethod] != tt.paymentMethod {
+					t.Errorf("expected payment method %q, got %q", tt.paymentMethod, labels[telemetry.ProfilingLabelPaymentMethod])
+				}
+			}
+		})
+	}
+}
+
+// TestBusinessOperationConstants tests that the business operation constants are defined correctly.
+func TestBusinessOperationConstants(t *testing.T) {
+	// Test order operations
+	orderOps := []string{
+		telemetry.OperationCreateOrder,
+		telemetry.OperationConfirmOrder,
+		telemetry.OperationShipOrder,
+		telemetry.OperationCancelOrder,
+		telemetry.OperationReceiveOrder,
+	}
+	for _, op := range orderOps {
+		if op == "" {
+			t.Error("order operation constant should not be empty")
+		}
+	}
+
+	// Test inventory operations
+	invOps := []string{
+		telemetry.OperationLockStock,
+		telemetry.OperationUnlockStock,
+		telemetry.OperationDeductStock,
+		telemetry.OperationIncreaseStock,
+		telemetry.OperationDecreaseStock,
+		telemetry.OperationAdjustStock,
+	}
+	for _, op := range invOps {
+		if op == "" {
+			t.Error("inventory operation constant should not be empty")
+		}
+	}
+
+	// Test finance operations
+	finOps := []string{
+		telemetry.OperationCreateReceivable,
+		telemetry.OperationCreatePayable,
+		telemetry.OperationProcessPayment,
+		telemetry.OperationReconcile,
+	}
+	for _, op := range finOps {
+		if op == "" {
+			t.Error("finance operation constant should not be empty")
+		}
+	}
+
+	// Test warehouse types
+	if telemetry.WarehouseTypePhysical == "" || telemetry.WarehouseTypeVirtual == "" {
+		t.Error("warehouse type constants should not be empty")
+	}
+}

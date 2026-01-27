@@ -188,8 +188,8 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 		service := NewPurchaseOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testPOTenantID).Return(testPOOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testPOTenantID).Return(testPOOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		req := CreatePurchaseOrderRequest{
 			SupplierID:   testSupplierID,
@@ -222,8 +222,8 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 		service := NewPurchaseOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testPOTenantID).Return(testPOOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testPOTenantID).Return(testPOOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		discount := decimal.NewFromInt(50)
 		req := CreatePurchaseOrderRequest{
@@ -256,8 +256,8 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 		service := NewPurchaseOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testPOTenantID).Return(testPOOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testPOTenantID).Return(testPOOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		warehouseID := testPOWarehouseID
 		req := CreatePurchaseOrderRequest{
@@ -290,7 +290,7 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 		service := NewPurchaseOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testPOTenantID).Return("", errors.New("db error"))
+		repo.On("GenerateOrderNumber", mock.Anything, testPOTenantID).Return("", errors.New("db error"))
 
 		req := CreatePurchaseOrderRequest{
 			SupplierID:   testSupplierID,
@@ -313,7 +313,7 @@ func TestPurchaseOrderService_GetByID(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		result, err := service.GetByID(ctx, testPOTenantID, order.ID)
 
@@ -328,7 +328,7 @@ func TestPurchaseOrderService_GetByID(t *testing.T) {
 		service := NewPurchaseOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, testPOOrderID).Return(nil, shared.ErrNotFound)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, testPOOrderID).Return(nil, shared.ErrNotFound)
 
 		result, err := service.GetByID(ctx, testPOTenantID, testPOOrderID)
 
@@ -410,8 +410,8 @@ func TestPurchaseOrderService_AddItem(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		req := AddPurchaseOrderItemRequest{
 			ProductID:   testPOProductID,
@@ -437,7 +437,7 @@ func TestPurchaseOrderService_AddItem(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder() // CONFIRMED status
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		req := AddPurchaseOrderItemRequest{
 			ProductID:   uuid.New(),
@@ -464,8 +464,8 @@ func TestPurchaseOrderService_Confirm(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		result, err := service.Confirm(ctx, testPOTenantID, order.ID, ConfirmPurchaseOrderRequest{})
 
@@ -483,8 +483,8 @@ func TestPurchaseOrderService_Confirm(t *testing.T) {
 
 		order := createTestPurchaseOrderWithItem()
 		warehouseID := testPOWarehouseID
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		result, err := service.Confirm(ctx, testPOTenantID, order.ID, ConfirmPurchaseOrderRequest{WarehouseID: &warehouseID})
 
@@ -502,7 +502,7 @@ func TestPurchaseOrderService_Confirm(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrder() // No items
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		result, err := service.Confirm(ctx, testPOTenantID, order.ID, ConfirmPurchaseOrderRequest{})
 
@@ -520,8 +520,8 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -551,8 +551,8 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -579,8 +579,8 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		overrideCost := decimal.NewFromInt(120) // Different from original 100
 		req := ReceivePurchaseOrderRequest{
@@ -607,8 +607,8 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		expiryDate := time.Now().AddDate(1, 0, 0) // 1 year from now
 		req := ReceivePurchaseOrderRequest{
@@ -643,7 +643,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		// Manually clear warehouse for test
 		order.WarehouseID = nil
 
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -667,7 +667,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem() // DRAFT status
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -691,7 +691,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -718,8 +718,8 @@ func TestPurchaseOrderService_Cancel(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		result, err := service.Cancel(ctx, testPOTenantID, order.ID, CancelPurchaseOrderRequest{Reason: "Supplier issue"})
 
@@ -737,8 +737,8 @@ func TestPurchaseOrderService_Cancel(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		result, err := service.Cancel(ctx, testPOTenantID, order.ID, CancelPurchaseOrderRequest{Reason: "Price changed"})
 
@@ -757,7 +757,7 @@ func TestPurchaseOrderService_Cancel(t *testing.T) {
 		// Partially receive
 		order.Receive([]trade.ReceiveItem{{ProductID: testPOProductID, Quantity: decimal.NewFromInt(5)}})
 
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		result, err := service.Cancel(ctx, testPOTenantID, order.ID, CancelPurchaseOrderRequest{Reason: "Too late"})
 
@@ -775,7 +775,7 @@ func TestPurchaseOrderService_Delete(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 		repo.On("DeleteForTenant", ctx, testPOTenantID, order.ID).Return(nil)
 
 		err := service.Delete(ctx, testPOTenantID, order.ID)
@@ -790,7 +790,7 @@ func TestPurchaseOrderService_Delete(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		err := service.Delete(ctx, testPOTenantID, order.ID)
 
@@ -836,7 +836,7 @@ func TestPurchaseOrderService_GetReceivableItems(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		result, err := service.GetReceivableItems(ctx, testPOTenantID, order.ID)
 
@@ -853,7 +853,7 @@ func TestPurchaseOrderService_GetReceivableItems(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem() // DRAFT
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		result, err := service.GetReceivableItems(ctx, testPOTenantID, order.ID)
 
@@ -871,8 +871,8 @@ func TestPurchaseOrderService_Update(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestPurchaseOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		warehouseID := testPOWarehouseID
 		newRemark := "Updated remark"
@@ -896,7 +896,7 @@ func TestPurchaseOrderService_Update(t *testing.T) {
 		ctx := context.Background()
 
 		order := createConfirmedPurchaseOrder()
-		repo.On("FindByIDForTenant", ctx, testPOTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		newRemark := "Cannot update"
 		req := UpdatePurchaseOrderRequest{

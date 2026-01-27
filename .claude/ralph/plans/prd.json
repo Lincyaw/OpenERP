@@ -6521,7 +6521,7 @@
       "- 创建订单操作的 CPU profile 可见",
       "- Labels 不显著影响性能 (< 1% overhead)"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Profiling",
     "affectedModules": [
       "backend/internal/application/trade/",
