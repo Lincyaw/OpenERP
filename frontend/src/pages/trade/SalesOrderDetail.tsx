@@ -19,6 +19,7 @@ import { Container } from '@/components/common/layout'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse, HandlerSalesOrderItemResponse } from '@/api/models'
 import { ShipOrderModal } from './components'
+import { PrintButton } from '@/components/printing'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
 import { safeToFixed, toNumber } from '@/utils'
@@ -374,6 +375,14 @@ export default function SalesOrderDetailPage() {
 
     return (
       <Space>
+        {/* Print button - always available */}
+        <PrintButton
+          documentType="SALES_ORDER"
+          documentId={order.id || ''}
+          documentNumber={order.order_number || ''}
+          label={t('orderDetail.actions.print')}
+          enableShortcut={true}
+        />
         {status === 'draft' && (
           <>
             <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>

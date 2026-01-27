@@ -275,7 +275,8 @@
         "startCounting": "Start Counting",
         "saveAll": "Save All",
         "submitApproval": "Submit for Approval",
-        "cancelTaking": "Cancel Stock Taking"
+        "cancelTaking": "Cancel Stock Taking",
+        "print": "Print"
       },
       "summary": {
         "warehouse": "Warehouse",

@@ -17,6 +17,7 @@ import {
 import { IconArrowLeft, IconEdit, IconTick, IconClose, IconBox } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { PrintButton } from '@/components/printing'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
 import type { HandlerPurchaseOrderResponse, HandlerPurchaseOrderItemResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
@@ -374,6 +375,14 @@ export default function PurchaseOrderDetailPage() {
 
     return (
       <Space>
+        {/* Print button - always available */}
+        <PrintButton
+          documentType="PURCHASE_ORDER"
+          documentId={order.id || ''}
+          documentNumber={order.order_number || ''}
+          label={t('orderDetail.actions.print')}
+          enableShortcut={true}
+        />
         {status === 'draft' && (
           <>
             <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>

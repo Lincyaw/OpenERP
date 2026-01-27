@@ -24,6 +24,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import { PrintButton } from '@/components/printing'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import type {
@@ -620,6 +621,14 @@ export default function StockTakingExecutePage() {
           </Tag>
         </div>
         <div className="header-right">
+          {/* Print button - always available */}
+          <PrintButton
+            documentType="STOCK_TAKING"
+            documentId={stockTaking.id || ''}
+            documentNumber={stockTaking.taking_number || ''}
+            label={t('stockTaking.execute.actions.print')}
+            enableShortcut={true}
+          />
           {stockTaking.status === 'DRAFT' && (
             <Button icon={<IconPlay />} type="primary" onClick={handleStartCounting}>
               {t('stockTaking.execute.actions.startCounting')}

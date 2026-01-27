@@ -6877,7 +6877,7 @@
       "- 权限控制正常",
       "- 快捷键正常"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Printing Module - Frontend Integration",
     "affectedModules": [
       "frontend/src/pages/trade/",

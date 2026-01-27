@@ -17,6 +17,7 @@ import {
 import { IconArrowLeft, IconEdit, IconTick, IconClose, IconSend } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { PrintButton } from '@/components/printing'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
 import type { HandlerSalesReturnResponse, HandlerSalesReturnItemResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
@@ -436,6 +437,14 @@ export default function SalesReturnDetailPage() {
 
     return (
       <Space>
+        {/* Print button - always available */}
+        <PrintButton
+          documentType="SALES_RETURN"
+          documentId={returnData.id || ''}
+          documentNumber={returnData.return_number || ''}
+          label={t('salesReturn.actions.print')}
+          enableShortcut={true}
+        />
         {status === 'DRAFT' && (
           <>
             <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>

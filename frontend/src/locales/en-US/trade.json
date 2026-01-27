@@ -41,7 +41,8 @@
       "receive": "Receive",
       "complete": "Complete",
       "cancel": "Cancel",
-      "delete": "Delete"
+      "delete": "Delete",
+      "print": "Print"
     },
     "modal": {
       "confirmTitle": "Confirm Order",
@@ -189,7 +190,8 @@
       "confirmOrder": "Confirm Order",
       "cancel": "Cancel",
       "ship": "Ship",
-      "complete": "Complete"
+      "complete": "Complete",
+      "print": "Print"
     },
     "messages": {
       "confirmSuccess": "Order confirmed",
@@ -380,7 +382,8 @@
       "receive": "Receive",
       "complete": "Complete",
       "cancel": "Cancel",
-      "delete": "Delete"
+      "delete": "Delete",
+      "print": "Print"
     },
     "modal": {
       "submitTitle": "Submit for Approval",

@@ -275,7 +275,8 @@
         "startCounting": "开始盘点",
         "saveAll": "保存全部",
         "submitApproval": "提交审批",
-        "cancelTaking": "取消盘点"
+        "cancelTaking": "取消盘点",
+        "print": "打印"
       },
       "summary": {
         "warehouse": "仓库",

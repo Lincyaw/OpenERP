@@ -41,7 +41,8 @@
       "receive": "收货",
       "complete": "完成",
       "cancel": "取消",
-      "delete": "删除"
+      "delete": "删除",
+      "print": "打印"
     },
     "modal": {
       "confirmTitle": "确认订单",
@@ -189,7 +190,8 @@
       "confirmOrder": "确认订单",
       "cancel": "取消",
       "ship": "发货",
-      "complete": "完成"
+      "complete": "完成",
+      "print": "打印"
     },
     "messages": {
       "confirmSuccess": "订单已确认",
@@ -380,7 +382,8 @@
       "receive": "开始收货",
       "complete": "完成",
       "cancel": "取消",
-      "delete": "删除"
+      "delete": "删除",
+      "print": "打印"
     },
     "modal": {
       "submitTitle": "提交审批",

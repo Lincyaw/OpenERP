@@ -29222,3 +29222,67 @@ The components integrate with backend API endpoints:
 - PRINT-FE-002: Integrate PrintButton into document detail pages (SalesOrderDetail, PurchaseOrderDetail, etc.)
 - PRINT-FE-003: Template management page with Monaco editor
 - Consider adding print history/job list view
+
+---
+
+2025-01-28 - PRINT-FE-002: 单据页面集成打印按钮
+
+=== Implementation Details ===
+
+Integrated PrintButton component into document detail pages and added print action to list pages.
+
+**Detail Pages Modified:**
+1. SalesOrderDetail.tsx - Added PrintButton with Ctrl+P shortcut
+2. PurchaseOrderDetail.tsx - Added PrintButton with Ctrl+P shortcut
+3. SalesReturnDetail.tsx - Added PrintButton with Ctrl+P shortcut
+4. StockTakingExecute.tsx - Added PrintButton with Ctrl+P shortcut
+
+**List Pages Modified:**
+1. SalesOrders.tsx - Added print action in row actions, PrintPreviewModal
+2. PurchaseOrders.tsx - Added print action in row actions, PrintPreviewModal
+
+**Translation Keys Added:**
+- zh-CN/trade.json: salesOrder.actions.print, orderDetail.actions.print, salesReturn.actions.print
+- en-US/trade.json: salesOrder.actions.print, orderDetail.actions.print, salesReturn.actions.print
+- zh-CN/inventory.json: stockTaking.execute.actions.print
+- en-US/inventory.json: stockTaking.execute.actions.print
+
+=== Verification ===
+
+- ✅ TypeScript type checking passes (npm run type-check)
+- ✅ Print component tests pass (29/29 tests)
+- ✅ usePrint hook tests pass (10/10 tests)
+- ✅ Code review passed with minor fixes applied
+
+=== Design Decisions ===
+
+1. **PrintButton Placement**: Placed as first action button in detail pages for easy access
+2. **Keyboard Shortcut**: Enabled only on detail pages (enableShortcut=true)
+3. **List Page Modal**: Uses PrintPreviewModal directly for row-level print action
+4. **Document Types**: Used string literals for document types (SALES_ORDER, PURCHASE_ORDER, SALES_RETURN, STOCK_TAKING)
+5. **Conditional Rendering**: PrintPreviewModal in list pages only renders when an order is selected
+6. **Safe Fallbacks**: Used `|| ''` instead of non-null assertions for documentId
+
+=== Files Modified ===
+
+- frontend/src/pages/trade/SalesOrderDetail.tsx
+- frontend/src/pages/trade/PurchaseOrderDetail.tsx
+- frontend/src/pages/trade/SalesReturnDetail.tsx
+- frontend/src/pages/inventory/StockTakingExecute.tsx
+- frontend/src/pages/trade/SalesOrders.tsx
+- frontend/src/pages/trade/PurchaseOrders.tsx
+- frontend/src/locales/zh-CN/trade.json
+- frontend/src/locales/en-US/trade.json
+- frontend/src/locales/zh-CN/inventory.json
+- frontend/src/locales/en-US/inventory.json
+
+=== Notes ===
+
+- Finance module pages (ReceiptVoucher, PaymentVoucher) were not modified as they don't currently have detail pages in the expected location
+- Can be added when those pages are implemented
+
+=== Next Steps ===
+
+- PRINT-FE-003: Template management page with Monaco editor
+- Consider adding print action to additional list pages (SalesReturns, StockTaking)
+- Add print functionality to finance module when detail pages are implemented

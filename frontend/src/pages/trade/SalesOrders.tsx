@@ -30,6 +30,7 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { ShipOrderModal } from './components'
+import { PrintPreviewModal } from '@/components/printing'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
 import './SalesOrders.css'
@@ -89,6 +90,10 @@ export default function SalesOrdersPage() {
   // Ship modal state
   const [shipModalVisible, setShipModalVisible] = useState(false)
   const [selectedOrderForShip, setSelectedOrderForShip] = useState<SalesOrder | null>(null)
+
+  // Print modal state
+  const [printModalVisible, setPrintModalVisible] = useState(false)
+  const [selectedOrderForPrint, setSelectedOrderForPrint] = useState<SalesOrder | null>(null)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -397,6 +402,12 @@ export default function SalesOrdersPage() {
     [navigate]
   )
 
+  // Handle print order
+  const handlePrint = useCallback((order: SalesOrder) => {
+    setSelectedOrderForPrint(order)
+    setPrintModalVisible(true)
+  }, [])
+
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchOrders()
@@ -510,6 +521,11 @@ export default function SalesOrdersPage() {
         onClick: handleView,
       },
       {
+        key: 'print',
+        label: t('salesOrder.actions.print'),
+        onClick: handlePrint,
+      },
+      {
         key: 'edit',
         label: t('salesOrder.actions.edit'),
         onClick: handleEdit,
@@ -553,6 +569,7 @@ export default function SalesOrdersPage() {
     ],
     [
       handleView,
+      handlePrint,
       handleEdit,
       handleConfirm,
       handleShip,
@@ -654,6 +671,20 @@ export default function SalesOrdersPage() {
           setSelectedOrderForShip(null)
         }}
       />
+
+      {/* Print Preview Modal */}
+      {selectedOrderForPrint && (
+        <PrintPreviewModal
+          visible={printModalVisible}
+          onClose={() => {
+            setPrintModalVisible(false)
+            setSelectedOrderForPrint(null)
+          }}
+          documentType="SALES_ORDER"
+          documentId={selectedOrderForPrint.id || ''}
+          documentNumber={selectedOrderForPrint.order_number || ''}
+        />
+      )}
     </Container>
   )
 }

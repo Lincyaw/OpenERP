@@ -30,6 +30,7 @@ import type {
   HandlerSupplierListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { PrintPreviewModal } from '@/components/printing'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
 import './PurchaseOrders.css'
@@ -85,6 +86,10 @@ export default function PurchaseOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [supplierFilter, setSupplierFilter] = useState<string>('')
   const [dateRange, setDateRange] = useState<[Date, Date] | null>(null)
+
+  // Print modal state
+  const [printModalVisible, setPrintModalVisible] = useState(false)
+  const [selectedOrderForPrint, setSelectedOrderForPrint] = useState<PurchaseOrder | null>(null)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -343,6 +348,12 @@ export default function PurchaseOrdersPage() {
     [navigate]
   )
 
+  // Handle print order
+  const handlePrint = useCallback((order: PurchaseOrder) => {
+    setSelectedOrderForPrint(order)
+    setPrintModalVisible(true)
+  }, [])
+
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchOrders()
@@ -474,6 +485,11 @@ export default function PurchaseOrdersPage() {
         onClick: handleView,
       },
       {
+        key: 'print',
+        label: t('salesOrder.actions.print'),
+        onClick: handlePrint,
+      },
+      {
         key: 'edit',
         label: t('salesOrder.actions.edit'),
         onClick: handleEdit,
@@ -508,7 +524,16 @@ export default function PurchaseOrdersPage() {
         hidden: (record) => record.status !== 'draft',
       },
     ],
-    [handleView, handleEdit, handleConfirm, handleReceive, handleCancel, handleDelete, t]
+    [
+      handleView,
+      handlePrint,
+      handleEdit,
+      handleConfirm,
+      handleReceive,
+      handleCancel,
+      handleDelete,
+      t,
+    ]
   )
 
   return (
@@ -580,6 +605,20 @@ export default function PurchaseOrdersPage() {
           />
         </Spin>
       </Card>
+
+      {/* Print Preview Modal */}
+      {selectedOrderForPrint && (
+        <PrintPreviewModal
+          visible={printModalVisible}
+          onClose={() => {
+            setPrintModalVisible(false)
+            setSelectedOrderForPrint(null)
+          }}
+          documentType="PURCHASE_ORDER"
+          documentId={selectedOrderForPrint.id || ''}
+          documentNumber={selectedOrderForPrint.order_number || ''}
+        />
+      )}
     </Container>
   )
 }
