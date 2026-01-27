@@ -14,20 +14,11 @@ import {
   Timeline,
   Progress,
 } from '@douyinfe/semi-ui-19'
-import {
-  IconArrowLeft,
-  IconEdit,
-  IconTick,
-  IconClose,
-  IconBox,
-} from '@douyinfe/semi-icons'
+import { IconArrowLeft, IconEdit, IconTick, IconClose, IconBox } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
-import type {
-  HandlerPurchaseOrderResponse,
-  HandlerPurchaseOrderItemResponse,
-} from '@/api/models'
+import type { HandlerPurchaseOrderResponse, HandlerPurchaseOrderItemResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
 import './PurchaseOrderDetail.css'
@@ -290,7 +281,9 @@ export default function PurchaseOrderDetailPage() {
         key: t('orderDetail.basicInfo.orderStatus'),
         value: (
           <Tag color={STATUS_TAG_COLORS[order.status || 'draft']}>
-            {t(`purchaseOrder.status.${order.status === 'partial_received' ? 'partialReceived' : order.status || 'draft'}`)}
+            {t(
+              `purchaseOrder.status.${order.status === 'partial_received' ? 'partialReceived' : order.status || 'draft'}`
+            )}
           </Tag>
         ),
       },
@@ -462,7 +455,9 @@ export default function PurchaseOrderDetailPage() {
             {t('purchaseOrderDetail.title')}
           </Title>
           <Tag color={STATUS_TAG_COLORS[order.status || 'draft']} size="large">
-            {t(`purchaseOrder.status.${order.status === 'partial_received' ? 'partialReceived' : order.status || 'draft'}`)}
+            {t(
+              `purchaseOrder.status.${order.status === 'partial_received' ? 'partialReceived' : order.status || 'draft'}`
+            )}
           </Tag>
         </div>
         <div className="header-right">{renderActions()}</div>

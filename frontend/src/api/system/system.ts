@@ -3,7 +3,15 @@
  * // Do not edit manually
  *
  */
-import type { GetSystemInfo200, GetSystemPing200 } from '.././models'
+import type {
+  GetSystemInfo200,
+  GetSystemPing200,
+  GetSystemStrategies200,
+  GetSystemStrategiesAllocation200,
+  GetSystemStrategiesBatch200,
+  GetSystemStrategiesCost200,
+  GetSystemStrategiesPricing200,
+} from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
 
@@ -24,11 +32,94 @@ export const getSystem = () => {
   const getSystemPing = (options?: SecondParameter<typeof customInstance<GetSystemPing200>>) => {
     return customInstance<GetSystemPing200>({ url: `/system/ping`, method: 'GET' }, options)
   }
-  return { getSystemInfo, getSystemPing }
+  /**
+   * Returns all registered strategies grouped by type
+   * @summary List available strategies
+   */
+  const getSystemStrategies = (
+    options?: SecondParameter<typeof customInstance<GetSystemStrategies200>>
+  ) => {
+    return customInstance<GetSystemStrategies200>(
+      { url: `/system/strategies`, method: 'GET' },
+      options
+    )
+  }
+  /**
+   * Returns all available payment allocation strategies (FIFO, etc.)
+   * @summary List payment allocation strategies
+   */
+  const getSystemStrategiesAllocation = (
+    options?: SecondParameter<typeof customInstance<GetSystemStrategiesAllocation200>>
+  ) => {
+    return customInstance<GetSystemStrategiesAllocation200>(
+      { url: `/system/strategies/allocation`, method: 'GET' },
+      options
+    )
+  }
+  /**
+   * Returns all available batch management strategies (FIFO, FEFO, etc.)
+   * @summary List batch management strategies
+   */
+  const getSystemStrategiesBatch = (
+    options?: SecondParameter<typeof customInstance<GetSystemStrategiesBatch200>>
+  ) => {
+    return customInstance<GetSystemStrategiesBatch200>(
+      { url: `/system/strategies/batch`, method: 'GET' },
+      options
+    )
+  }
+  /**
+   * Returns all available cost calculation strategies (Moving Average, FIFO, etc.)
+   * @summary List cost calculation strategies
+   */
+  const getSystemStrategiesCost = (
+    options?: SecondParameter<typeof customInstance<GetSystemStrategiesCost200>>
+  ) => {
+    return customInstance<GetSystemStrategiesCost200>(
+      { url: `/system/strategies/cost`, method: 'GET' },
+      options
+    )
+  }
+  /**
+   * Returns all available pricing strategies (Standard, Tiered, etc.)
+   * @summary List pricing strategies
+   */
+  const getSystemStrategiesPricing = (
+    options?: SecondParameter<typeof customInstance<GetSystemStrategiesPricing200>>
+  ) => {
+    return customInstance<GetSystemStrategiesPricing200>(
+      { url: `/system/strategies/pricing`, method: 'GET' },
+      options
+    )
+  }
+  return {
+    getSystemInfo,
+    getSystemPing,
+    getSystemStrategies,
+    getSystemStrategiesAllocation,
+    getSystemStrategiesBatch,
+    getSystemStrategiesCost,
+    getSystemStrategiesPricing,
+  }
 }
 export type GetSystemInfoResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemInfo']>>
 >
 export type GetSystemPingResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemPing']>>
+>
+export type GetSystemStrategiesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemStrategies']>>
+>
+export type GetSystemStrategiesAllocationResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemStrategiesAllocation']>>
+>
+export type GetSystemStrategiesBatchResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemStrategiesBatch']>>
+>
+export type GetSystemStrategiesCostResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemStrategiesCost']>>
+>
+export type GetSystemStrategiesPricingResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getSystem>['getSystemStrategiesPricing']>>
 >

@@ -78,7 +78,9 @@ export class CustomersPage extends BasePage {
     this.creditLimitInput = page.locator('input[name="credit_limit"]')
     this.sortOrderInput = page.locator('input[name="sort_order"]')
     this.notesInput = page.locator('textarea[name="notes"]')
-    this.submitButton = page.locator('button[type="submit"], button:has-text("新建"), button:has-text("保存")')
+    this.submitButton = page.locator(
+      'button[type="submit"], button:has-text("新建"), button:has-text("保存")'
+    )
     this.cancelButton = page.locator('button').filter({ hasText: '取消' })
   }
 
@@ -152,7 +154,10 @@ export class CustomersPage extends BasePage {
     // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
     // Click option using first() to get exact match
-    const option = optionList.locator('.semi-select-option').filter({ hasText: statusLabels[status] }).first()
+    const option = optionList
+      .locator('.semi-select-option')
+      .filter({ hasText: statusLabels[status] })
+      .first()
     await option.waitFor({ state: 'visible', timeout: 5000 })
     await option.click()
     await this.waitForTableLoad()
@@ -176,7 +181,10 @@ export class CustomersPage extends BasePage {
     // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
     // Click option using first() to get exact match
-    const option = optionList.locator('.semi-select-option').filter({ hasText: typeLabels[type] }).first()
+    const option = optionList
+      .locator('.semi-select-option')
+      .filter({ hasText: typeLabels[type] })
+      .first()
     await option.waitFor({ state: 'visible', timeout: 5000 })
     await option.click()
     await this.waitForTableLoad()
@@ -205,7 +213,10 @@ export class CustomersPage extends BasePage {
     // Wait a bit for animation to settle
     await this.page.waitForTimeout(300)
     // Click option using first() to get exact match
-    const option = optionList.locator('.semi-select-option').filter({ hasText: levelLabels[level] }).first()
+    const option = optionList
+      .locator('.semi-select-option')
+      .filter({ hasText: levelLabels[level] })
+      .first()
     await option.waitFor({ state: 'visible', timeout: 5000 })
     await option.click()
     await this.waitForTableLoad()
@@ -293,7 +304,9 @@ export class CustomersPage extends BasePage {
     const actionsCell = row.locator('.semi-table-row-cell').last()
 
     // First check if the action is a direct button (visible actions with text)
-    const directButton = actionsCell.locator('.table-action-button').filter({ hasText: actionLabels[action] })
+    const directButton = actionsCell
+      .locator('.table-action-button')
+      .filter({ hasText: actionLabels[action] })
     if ((await directButton.count()) > 0) {
       await directButton.click()
       return
@@ -387,7 +400,11 @@ export class CustomersPage extends BasePage {
    */
   async submitForm(): Promise<void> {
     // Find the submit button by either type or text
-    const submitBtn = this.page.locator('.form-actions button[type="submit"], .form-actions button:has-text("新建"), .form-actions button:has-text("保存")').first()
+    const submitBtn = this.page
+      .locator(
+        '.form-actions button[type="submit"], .form-actions button:has-text("新建"), .form-actions button:has-text("保存")'
+      )
+      .first()
     await submitBtn.scrollIntoViewIfNeeded()
     await submitBtn.click()
     // Wait a bit for form submission to process
@@ -408,13 +425,18 @@ export class CustomersPage extends BasePage {
     // Wait for navigation away from form page (no /new or /edit in URL)
     // or wait for success toast
     try {
-      await this.page.waitForURL((url) => {
-        const path = url.pathname
-        return path.includes('/partner/customers') &&
-               !path.includes('/new') &&
-               !path.includes('/edit') &&
-               !path.includes('/balance')
-      }, { timeout: 30000 })
+      await this.page.waitForURL(
+        (url) => {
+          const path = url.pathname
+          return (
+            path.includes('/partner/customers') &&
+            !path.includes('/new') &&
+            !path.includes('/edit') &&
+            !path.includes('/balance')
+          )
+        },
+        { timeout: 30000 }
+      )
     } catch {
       // Check if we're still on form page with an error
       const currentUrl = this.page.url()

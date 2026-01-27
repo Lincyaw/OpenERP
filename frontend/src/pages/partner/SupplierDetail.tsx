@@ -18,10 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getSuppliers } from '@/api/suppliers/suppliers'
-import type {
-  HandlerSupplierResponse,
-  HandlerSupplierResponseStatus,
-} from '@/api/models'
+import type { HandlerSupplierResponse, HandlerSupplierResponseStatus } from '@/api/models'
 import './SupplierDetail.css'
 
 const { Title, Text } = Typography
@@ -183,16 +180,17 @@ export default function SupplierDetailPage() {
       },
       {
         key: t('supplierDetail.fields.rating'),
-        value: supplier.rating !== undefined ? (
-          <div className="supplier-rating">
-            <Rating value={supplier.rating} disabled allowHalf size="small" />
-            <Text type="secondary" className="rating-text">
-              {t('suppliers.form.ratingScore', { score: supplier.rating })}
-            </Text>
-          </div>
-        ) : (
-          t('suppliers.form.ratingNotRated')
-        ),
+        value:
+          supplier.rating !== undefined ? (
+            <div className="supplier-rating">
+              <Rating value={supplier.rating} disabled allowHalf size="small" />
+              <Text type="secondary" className="rating-text">
+                {t('suppliers.form.ratingScore', { score: supplier.rating })}
+              </Text>
+            </div>
+          ) : (
+            t('suppliers.form.ratingNotRated')
+          ),
       },
     ]
 
@@ -253,9 +251,10 @@ export default function SupplierDetailPage() {
       },
       {
         key: t('supplierDetail.fields.paymentTermDays'),
-        value: supplier.payment_term_days !== undefined
-          ? `${supplier.payment_term_days} ${t('suppliers.form.creditDaysSuffix')}`
-          : '-',
+        value:
+          supplier.payment_term_days !== undefined
+            ? `${supplier.payment_term_days} ${t('suppliers.form.creditDaysSuffix')}`
+            : '-',
       },
     ]
 
@@ -346,7 +345,10 @@ export default function SupplierDetailPage() {
   if (!supplier) {
     return (
       <Container size="lg" className="supplier-detail-page">
-        <Empty title={t('supplierDetail.notExist')} description={t('supplierDetail.notExistDesc')} />
+        <Empty
+          title={t('supplierDetail.notExist')}
+          description={t('supplierDetail.notExistDesc')}
+        />
       </Container>
     )
   }

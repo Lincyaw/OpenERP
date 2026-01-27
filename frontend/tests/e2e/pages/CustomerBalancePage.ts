@@ -58,9 +58,7 @@ export class CustomerBalancePage extends BasePage {
     this.rechargeButton = page.locator('button').filter({ hasText: '充值' })
 
     // Transaction history elements
-    this.transactionTypeFilter = page.locator(
-      '.transactions-filter-container .semi-select'
-    ).first()
+    this.transactionTypeFilter = page.locator('.transactions-filter-container .semi-select').first()
     this.sourceTypeFilter = page.locator('.transactions-filter-container .semi-select').nth(1)
     this.dateRangeFilter = page.locator('.transactions-filter-container .semi-datepicker')
     this.refreshButton = page.locator('button').filter({ hasText: '刷新' })
@@ -70,7 +68,9 @@ export class CustomerBalancePage extends BasePage {
     // Recharge modal elements
     // Note: Semi Design Modal applies className to the modal wrapper which may be hidden initially
     // We need to target the visible modal content container
-    this.rechargeModal = page.locator('.semi-modal-content').filter({ has: page.locator('.recharge-modal-content') })
+    this.rechargeModal = page
+      .locator('.semi-modal-content')
+      .filter({ has: page.locator('.recharge-modal-content') })
     this.amountInput = page.locator('.recharge-modal-content .amount-input input')
     this.referenceInput = page.locator('.recharge-modal-content input').nth(1)
     this.remarkInput = page.locator('.recharge-modal-content textarea')
@@ -191,10 +191,7 @@ export class CustomerBalancePage extends BasePage {
   /**
    * Verify balance preview shows correct values
    */
-  async verifyBalancePreview(
-    currentBalance: number,
-    rechargeAmount: number
-  ): Promise<void> {
+  async verifyBalancePreview(currentBalance: number, rechargeAmount: number): Promise<void> {
     // Wait for preview to appear
     await expect(this.balancePreview).toBeVisible({ timeout: 5000 })
     const expectedAfter = currentBalance + rechargeAmount

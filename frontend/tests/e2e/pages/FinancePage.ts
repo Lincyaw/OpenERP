@@ -319,7 +319,10 @@ export class FinancePage extends BasePage {
     await this.page.waitForTimeout(1000) // Wait for API search results
 
     // Wait for option to appear and click
-    const option = this.page.locator('.semi-select-option').filter({ hasText: customerName }).first()
+    const option = this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: customerName })
+      .first()
     await option.waitFor({ state: 'visible', timeout: 8000 })
     await option.click()
     await this.page.waitForTimeout(300)
@@ -389,7 +392,10 @@ export class FinancePage extends BasePage {
     await this.page.waitForTimeout(1000) // Wait for API search results
 
     // Wait for option to appear and click
-    const option = this.page.locator('.semi-select-option').filter({ hasText: supplierName }).first()
+    const option = this.page
+      .locator('.semi-select-option')
+      .filter({ hasText: supplierName })
+      .first()
     await option.waitFor({ state: 'visible', timeout: 8000 })
     await option.click()
     await this.page.waitForTimeout(300)
@@ -691,21 +697,45 @@ export class FinancePage extends BasePage {
     await submitButton.click()
   }
 
-  async clickExpenseAction(expenseNumber: string, action: 'edit' | 'submit' | 'approve' | 'delete'): Promise<void> {
+  async clickExpenseAction(
+    expenseNumber: string,
+    action: 'edit' | 'submit' | 'approve' | 'delete'
+  ): Promise<void> {
     const row = this.page.locator('.semi-table-row').filter({ hasText: expenseNumber })
 
     // Look for action buttons or dropdown
-    const actionButton = row.locator('button, .semi-button').filter({ hasText: action === 'edit' ? '编辑' : action === 'submit' ? '提交' : action === 'approve' ? '审批' : '删除' })
+    const actionButton = row.locator('button, .semi-button').filter({
+      hasText:
+        action === 'edit'
+          ? '编辑'
+          : action === 'submit'
+            ? '提交'
+            : action === 'approve'
+              ? '审批'
+              : '删除',
+    })
 
     if (await actionButton.isVisible()) {
       await actionButton.click()
     } else {
       // Try dropdown menu
-      const moreButton = row.locator('.semi-dropdown-trigger, button').filter({ hasText: /更多|操作/ }).first()
+      const moreButton = row
+        .locator('.semi-dropdown-trigger, button')
+        .filter({ hasText: /更多|操作/ })
+        .first()
       if (await moreButton.isVisible()) {
         await moreButton.click()
         await this.page.waitForSelector('.semi-dropdown-menu', { state: 'visible' })
-        const menuItem = this.page.locator('.semi-dropdown-item').filter({ hasText: action === 'edit' ? '编辑' : action === 'submit' ? '提交' : action === 'approve' ? '审批' : '删除' })
+        const menuItem = this.page.locator('.semi-dropdown-item').filter({
+          hasText:
+            action === 'edit'
+              ? '编辑'
+              : action === 'submit'
+                ? '提交'
+                : action === 'approve'
+                  ? '审批'
+                  : '删除',
+        })
         await menuItem.click()
       }
     }
@@ -850,15 +880,6 @@ export class FinancePage extends BasePage {
     await this.waitForTableLoad()
     const rows = this.page.locator('.semi-table-tbody .semi-table-row')
     return rows.count()
-  }
-
-  async filterCashFlowByDateRange(startDate: Date, endDate: Date): Promise<void> {
-    const dateRangePicker = this.page.locator('.semi-datepicker')
-    await dateRangePicker.click()
-
-    // This is simplified - actual implementation may need date selection
-    await this.page.waitForTimeout(500)
-    await this.page.keyboard.press('Escape')
   }
 
   async filterCashFlowByType(type: 'income' | 'expense' | ''): Promise<void> {

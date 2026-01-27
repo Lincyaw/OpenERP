@@ -44,11 +44,7 @@ export function toNumber(value: unknown): number {
  * safeToFixed(null, 2, '-')   // '-'
  * ```
  */
-export function safeToFixed(
-  value: unknown,
-  decimals: number = 2,
-  fallback?: string
-): string {
+export function safeToFixed(value: unknown, decimals: number = 2, fallback?: string): string {
   if (value === null || value === undefined) {
     return fallback ?? (0).toFixed(decimals)
   }
@@ -56,8 +52,7 @@ export function safeToFixed(
   const num = toNumber(value)
   if (num === 0 && fallback !== undefined) {
     // Check if original value was actually 0 or just couldn't be converted
-    const originalWasZero =
-      value === 0 || value === '0' || value === '0.00' || value === '0.0'
+    const originalWasZero = value === 0 || value === '0' || value === '0.00' || value === '0.0'
     if (!originalWasZero) {
       return fallback
     }

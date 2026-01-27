@@ -186,10 +186,7 @@ export default function CustomerBalancePage() {
         date_to: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await balanceApi.getPartnerCustomersIdBalanceTransactions(
-        customerId,
-        params
-      )
+      const response = await balanceApi.getPartnerCustomersIdBalanceTransactions(customerId, params)
 
       if (response.success && response.data) {
         setTransactions(response.data as BalanceTransaction[])

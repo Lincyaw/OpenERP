@@ -368,7 +368,9 @@ export default function SalesReturnApprovalPage() {
         dataIndex: 'return_quantity',
         width: 100,
         align: 'right' as const,
-        render: (qty: number) => <Text className="return-quantity">{safeToFixed(qty, 2, '-')}</Text>,
+        render: (qty: number) => (
+          <Text className="return-quantity">{safeToFixed(qty, 2, '-')}</Text>
+        ),
       },
       {
         title: '单价',

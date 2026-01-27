@@ -77,7 +77,10 @@ export class SalesReturnPage extends BasePage {
     this.tableBody = page.locator('.semi-table-tbody')
 
     // Form page
-    this.orderSelect = page.locator('.semi-select').filter({ hasText: /选择销售订单|原订单/ }).first()
+    this.orderSelect = page
+      .locator('.semi-select')
+      .filter({ hasText: /选择销售订单|原订单/ })
+      .first()
     this.orderSearchInput = page.getByRole('textbox').first()
     this.customerDisplay = page.locator('.customer-info, .order-info')
     this.reasonInput = page.locator('textarea[placeholder*="退货原因"]').first()
@@ -110,7 +113,9 @@ export class SalesReturnPage extends BasePage {
     // Modal
     this.confirmModal = page.locator('.semi-modal')
     this.confirmModalOkButton = page.locator('.semi-modal-footer .semi-button-primary')
-    this.confirmModalCancelButton = page.locator('.semi-modal-footer button').filter({ hasText: '取消' })
+    this.confirmModalCancelButton = page
+      .locator('.semi-modal-footer button')
+      .filter({ hasText: '取消' })
   }
 
   // Navigation methods
@@ -275,7 +280,10 @@ export class SalesReturnPage extends BasePage {
   // Form page methods - Creating return from order
   async selectSalesOrder(orderNumber: string): Promise<void> {
     // Find order select input
-    const orderSelect = this.page.locator('.semi-select').filter({ hasText: /选择.*订单|订单/ }).first()
+    const orderSelect = this.page
+      .locator('.semi-select')
+      .filter({ hasText: /选择.*订单|订单/ })
+      .first()
     await orderSelect.click()
     await this.page.waitForTimeout(200)
 
@@ -296,12 +304,17 @@ export class SalesReturnPage extends BasePage {
   }
 
   async setReturnReason(reason: string): Promise<void> {
-    const reasonInput = this.page.locator('textarea').filter({ has: this.page.locator('[placeholder*="原因"]') }).first()
+    const reasonInput = this.page
+      .locator('textarea')
+      .filter({ has: this.page.locator('[placeholder*="原因"]') })
+      .first()
     if (await reasonInput.isVisible().catch(() => false)) {
       await reasonInput.fill(reason)
     } else {
       // Try finding by placeholder
-      const textarea = this.page.locator('textarea[placeholder*="原因"], textarea[placeholder*="退货"]').first()
+      const textarea = this.page
+        .locator('textarea[placeholder*="原因"], textarea[placeholder*="退货"]')
+        .first()
       await textarea.fill(reason)
     }
   }
@@ -349,7 +362,10 @@ export class SalesReturnPage extends BasePage {
   }
 
   async submitReturn(): Promise<void> {
-    const submitBtn = this.page.locator('button').filter({ hasText: /创建|提交|保存/ }).first()
+    const submitBtn = this.page
+      .locator('button')
+      .filter({ hasText: /创建|提交|保存/ })
+      .first()
     await submitBtn.click()
   }
 
@@ -473,7 +489,9 @@ export class SalesReturnPage extends BasePage {
       }
     }
 
-    const cancelConfirmBtn = this.page.locator('.semi-modal-footer .semi-button-primary, .semi-modal-footer .semi-button-danger')
+    const cancelConfirmBtn = this.page.locator(
+      '.semi-modal-footer .semi-button-primary, .semi-modal-footer .semi-button-danger'
+    )
     await cancelConfirmBtn.click()
 
     await this.waitForToast('取消')
@@ -587,9 +605,7 @@ export class SalesReturnPage extends BasePage {
   }
 
   async assertReturnFormDisplayed(): Promise<void> {
-    await expect(
-      this.page.locator('h4').filter({ hasText: /创建.*退货|新建.*退货/ })
-    ).toBeVisible()
+    await expect(this.page.locator('h4').filter({ hasText: /创建.*退货|新建.*退货/ })).toBeVisible()
   }
 
   async assertReturnDetailDisplayed(): Promise<void> {

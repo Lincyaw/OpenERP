@@ -263,7 +263,9 @@ export default function ProfitLossPage() {
           let result = `${params[0].axisValue}<br/>`
           params.forEach((param) => {
             const isPercent = param.seriesName.includes('率')
-            const value = isPercent ? `${safeToFixed(param.value, 1)}%` : formatCurrency(param.value)
+            const value = isPercent
+              ? `${safeToFixed(param.value, 1)}%`
+              : formatCurrency(param.value)
             result += `${param.seriesName}: ${value}<br/>`
           })
           return result

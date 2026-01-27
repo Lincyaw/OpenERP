@@ -606,7 +606,9 @@ export default function CategoriesPage() {
             ) : (
               <Empty
                 image={<IconTreeTriangleDown size="extra-large" />}
-                title={searchKeyword ? t('categories.empty.titleSearch') : t('categories.empty.title')}
+                title={
+                  searchKeyword ? t('categories.empty.titleSearch') : t('categories.empty.title')
+                }
                 description={
                   searchKeyword
                     ? t('categories.empty.descriptionSearch')
@@ -724,7 +726,9 @@ export default function CategoriesPage() {
                 </Button>
               </>
             )}
-            <Button onClick={() => setDetailModalVisible(false)}>{t('common:actions.close')}</Button>
+            <Button onClick={() => setDetailModalVisible(false)}>
+              {t('common:actions.close')}
+            </Button>
           </Space>
         }
         width={600}
@@ -735,7 +739,10 @@ export default function CategoriesPage() {
               data={[
                 { key: t('categories.detail.code'), value: detailCategory.code },
                 { key: t('categories.detail.name'), value: detailCategory.name },
-                { key: t('categories.detail.description'), value: detailCategory.description || '-' },
+                {
+                  key: t('categories.detail.description'),
+                  value: detailCategory.description || '-',
+                },
                 {
                   key: t('categories.detail.status'),
                   value:
@@ -744,7 +751,10 @@ export default function CategoriesPage() {
                       : t('categories.status.inactive'),
                 },
                 { key: t('categories.detail.level'), value: String(detailCategory.level) },
-                { key: t('categories.detail.sortOrder'), value: String(detailCategory.sort_order || 0) },
+                {
+                  key: t('categories.detail.sortOrder'),
+                  value: String(detailCategory.sort_order || 0),
+                },
                 {
                   key: t('categories.detail.childCount'),
                   value: String(detailCategory.children?.length || 0),
@@ -761,7 +771,9 @@ export default function CategoriesPage() {
             {detailCategory.children && detailCategory.children.length > 0 && (
               <div className="category-children-section">
                 <Title heading={6}>
-                  {t('categories.detail.childCategories', { count: detailCategory.children.length })}
+                  {t('categories.detail.childCategories', {
+                    count: detailCategory.children.length,
+                  })}
                 </Title>
                 <div className="category-children-list">
                   {detailCategory.children.map((child) => (

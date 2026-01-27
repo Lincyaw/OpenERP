@@ -20,7 +20,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1]
 
 export const getAuth = () => {
   /**
-   * Authenticate user with username and password
+   * Authenticate user with username and password. Returns access token in response body and sets refresh token as httpOnly cookie.
    * @summary User login
    */
   const postAuthLogin = (
@@ -38,7 +38,7 @@ export const getAuth = () => {
     )
   }
   /**
-   * Logout and invalidate the current session
+   * Logout and invalidate the current session. Clears refresh token cookie.
    * @summary User logout
    */
   const postAuthLogout = (options?: SecondParameter<typeof customInstance<PostAuthLogout200>>) => {
@@ -70,7 +70,7 @@ export const getAuth = () => {
     )
   }
   /**
-   * Get new access token using refresh token
+   * Get new access token using refresh token from httpOnly cookie. Falls back to request body for backward compatibility.
    * @summary Refresh access token
    */
   const postAuthRefresh = (

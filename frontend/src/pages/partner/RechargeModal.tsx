@@ -85,10 +85,7 @@ export default function RechargeModal({
         remark: remark || undefined,
       }
 
-      const response = await balanceApi.postPartnerCustomersIdBalanceRecharge(
-        customerId,
-        request
-      )
+      const response = await balanceApi.postPartnerCustomersIdBalanceRecharge(customerId, request)
 
       if (response.success) {
         handleClose()

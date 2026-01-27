@@ -11,7 +11,14 @@ import {
   Empty,
   Modal,
 } from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconEdit, IconPlay, IconStop, IconDelete, IconCreditCard } from '@douyinfe/semi-icons'
+import {
+  IconArrowLeft,
+  IconEdit,
+  IconPlay,
+  IconStop,
+  IconDelete,
+  IconCreditCard,
+} from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
@@ -303,7 +310,12 @@ export default function CustomerDetailPage() {
         <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
           {t('common:actions.edit')}
         </Button>
-        <Button type="primary" icon={<IconCreditCard />} onClick={handleViewBalance} disabled={actionLoading}>
+        <Button
+          type="primary"
+          icon={<IconCreditCard />}
+          onClick={handleViewBalance}
+          disabled={actionLoading}
+        >
           {t('customers.actions.balance')}
         </Button>
         {status !== 'active' && (
@@ -351,7 +363,10 @@ export default function CustomerDetailPage() {
   if (!customer) {
     return (
       <Container size="lg" className="customer-detail-page">
-        <Empty title={t('customerDetail.notExist')} description={t('customerDetail.notExistDesc')} />
+        <Empty
+          title={t('customerDetail.notExist')}
+          description={t('customerDetail.notExistDesc')}
+        />
       </Container>
     )
   }

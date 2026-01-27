@@ -53,7 +53,7 @@ func NewTestDB(t *testing.T) *TestDB {
 		"postgres:16-alpine",
 		tcpostgres.WithDatabase("erp_test"),
 		tcpostgres.WithUsername("postgres"),
-		tcpostgres.WithPassword("test123"),
+		tcpostgres.WithPassword("admin123"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -104,7 +104,7 @@ func NewSharedTestDB(t *testing.T) *TestDB {
 			"postgres:16-alpine",
 			tcpostgres.WithDatabase("erp_shared_test"),
 			tcpostgres.WithUsername("postgres"),
-			tcpostgres.WithPassword("test123"),
+			tcpostgres.WithPassword("admin123"),
 			testcontainers.WithWaitStrategy(
 				wait.ForLog("database system is ready to accept connections").
 					WithOccurrence(2).

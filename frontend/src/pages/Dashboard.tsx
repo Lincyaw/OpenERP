@@ -438,9 +438,7 @@ export default function DashboardPage() {
         COMPLETED: 'green',
         CANCELLED: 'red',
       }
-      return (
-        <Tag color={statusColors[status] || 'grey'}>{statusLabels[status] || status}</Tag>
-      )
+      return <Tag color={statusColors[status] || 'grey'}>{statusLabels[status] || status}</Tag>
     },
     [t]
   )

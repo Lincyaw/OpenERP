@@ -3,12 +3,14 @@
  * // Do not edit manually
  *
  */
+import type { HandlerRechargeRequestPaymentMethod } from './handlerRechargeRequestPaymentMethod'
 
 /**
  * Request body for recharging customer balance
  */
 export interface HandlerRechargeRequest {
   amount: number
+  payment_method: HandlerRechargeRequestPaymentMethod
   /** @maxLength 100 */
   reference?: string
   /** @maxLength 500 */
