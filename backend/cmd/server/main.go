@@ -105,6 +105,32 @@ func main() {
 		}
 	}()
 
+	// Initialize OpenTelemetry MeterProvider for metrics
+	meterProvider, err := telemetry.NewMeterProvider(context.Background(), telemetry.MetricsConfig{
+		Enabled:           cfg.Telemetry.Enabled,
+		CollectorEndpoint: cfg.Telemetry.CollectorEndpoint,
+		ExportInterval:    cfg.Telemetry.MetricsExportInterval,
+		ServiceName:       cfg.Telemetry.ServiceName,
+		Insecure:          cfg.Telemetry.Insecure,
+	}, log)
+	if err != nil {
+		log.Fatal("Failed to initialize OpenTelemetry MeterProvider", zap.Error(err))
+	}
+	defer func() {
+		if err := meterProvider.Shutdown(context.Background()); err != nil {
+			log.Error("Error shutting down meter provider", zap.Error(err))
+		}
+	}()
+
+	// Log telemetry status
+	if cfg.Telemetry.Enabled {
+		log.Info("OpenTelemetry initialized",
+			zap.Bool("tracing", tracerProvider.IsEnabled()),
+			zap.Bool("metrics", meterProvider.IsEnabled()),
+			zap.String("collector", cfg.Telemetry.CollectorEndpoint),
+		)
+	}
+
 	// Create GORM logger backed by zap
 	gormLogLevel := logger.MapGormLogLevel(cfg.Log.Level)
 	gormLog := logger.NewGormLogger(log, gormLogLevel)

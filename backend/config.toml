@@ -112,7 +112,7 @@ require_auth = false
 allowed_ips = []
 
 [telemetry]
-# Enable OpenTelemetry tracing
+# Enable OpenTelemetry tracing and metrics
 enabled = true
 # OTEL Collector gRPC endpoint
 collector_endpoint = "localhost:4317"
@@ -124,6 +124,9 @@ service_name = "erp-backend"
 # Use insecure (non-TLS) connection to collector
 # Set to true for local development, false for production (TLS required)
 insecure = true
+# Metrics export interval (how often metrics are sent to collector)
+# Default: 60s, lower values = more frequent exports but higher overhead
+metrics_export_interval = "60s"
 
 # Database tracing options (otelgorm)
 # Enable database query tracing

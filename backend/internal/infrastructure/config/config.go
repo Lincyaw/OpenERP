@@ -135,11 +135,12 @@ type SwaggerConfig struct {
 
 // TelemetryConfig holds OpenTelemetry configuration
 type TelemetryConfig struct {
-	Enabled           bool    // Whether to enable OpenTelemetry
-	CollectorEndpoint string  // OTEL Collector endpoint (e.g., "localhost:4317")
-	SamplingRatio     float64 // Sampling ratio (0.0-1.0, 1.0 = 100%)
-	ServiceName       string  // Service name for traces
-	Insecure          bool    // Use insecure (non-TLS) connection (development only)
+	Enabled               bool          // Whether to enable OpenTelemetry
+	CollectorEndpoint     string        // OTEL Collector endpoint (e.g., "localhost:4317")
+	SamplingRatio         float64       // Sampling ratio (0.0-1.0, 1.0 = 100%)
+	ServiceName           string        // Service name for traces
+	Insecure              bool          // Use insecure (non-TLS) connection (development only)
+	MetricsExportInterval time.Duration // Metrics export interval (default: 60s)
 	// Database tracing options
 	DBTraceEnabled    bool          // Enable database query tracing (otelgorm)
 	DBLogFullSQL      bool          // Log full SQL statements (dev only, disable in prod for security)
@@ -263,14 +264,15 @@ func Load() (*Config, error) {
 			AllowedIPs:  v.GetStringSlice("swagger.allowed_ips"),
 		},
 		Telemetry: TelemetryConfig{
-			Enabled:           v.GetBool("telemetry.enabled"),
-			CollectorEndpoint: v.GetString("telemetry.collector_endpoint"),
-			SamplingRatio:     v.GetFloat64("telemetry.sampling_ratio"),
-			ServiceName:       v.GetString("telemetry.service_name"),
-			Insecure:          v.GetBool("telemetry.insecure"),
-			DBTraceEnabled:    v.GetBool("telemetry.db_trace_enabled"),
-			DBLogFullSQL:      v.GetBool("telemetry.db_log_full_sql"),
-			DBSlowQueryThresh: v.GetDuration("telemetry.db_slow_query_threshold"),
+			Enabled:               v.GetBool("telemetry.enabled"),
+			CollectorEndpoint:     v.GetString("telemetry.collector_endpoint"),
+			SamplingRatio:         v.GetFloat64("telemetry.sampling_ratio"),
+			ServiceName:           v.GetString("telemetry.service_name"),
+			Insecure:              v.GetBool("telemetry.insecure"),
+			MetricsExportInterval: v.GetDuration("telemetry.metrics_export_interval"),
+			DBTraceEnabled:        v.GetBool("telemetry.db_trace_enabled"),
+			DBLogFullSQL:          v.GetBool("telemetry.db_log_full_sql"),
+			DBSlowQueryThresh:     v.GetDuration("telemetry.db_slow_query_threshold"),
 		},
 	}
 
@@ -442,6 +444,10 @@ func applyDefaults(cfg *Config) {
 	if cfg.Telemetry.ServiceName == "" {
 		cfg.Telemetry.ServiceName = "erp-backend"
 	}
+	// Metrics export interval default (60s as per spec)
+	if cfg.Telemetry.MetricsExportInterval == 0 {
+		cfg.Telemetry.MetricsExportInterval = 60 * time.Second
+	}
 	// Note: Insecure defaults to false for safety (TLS enabled by default)
 	// Database tracing defaults - enabled by default when telemetry is enabled
 	// DBTraceEnabled defaults to false (needs explicit enable)
@@ -508,6 +514,9 @@ func (c *Config) validate() error {
 	// Validate telemetry configuration (all environments)
 	if c.Telemetry.SamplingRatio < 0.0 || c.Telemetry.SamplingRatio > 1.0 {
 		return fmt.Errorf("telemetry.sampling_ratio must be between 0.0 and 1.0, got %f", c.Telemetry.SamplingRatio)
+	}
+	if c.Telemetry.MetricsExportInterval < 0 {
+		return fmt.Errorf("telemetry.metrics_export_interval cannot be negative")
 	}
 
 	return nil

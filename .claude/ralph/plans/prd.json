@@ -5889,7 +5889,7 @@
       "- 指标数据导出到 OTEL Collector",
       "- 可在 /var/log/otel/metrics.json 中看到指标"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Metrics",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/metrics.go",
