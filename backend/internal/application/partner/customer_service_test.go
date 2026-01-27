@@ -432,6 +432,11 @@ func (m *MockSalesOrderRepository) GenerateOrderNumber(ctx context.Context, tena
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockSalesOrderRepository) ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Bool(0), args.Error(1)
+}
+
 // Verify interface compliance
 var _ trade.SalesOrderRepository = (*MockSalesOrderRepository)(nil)
 

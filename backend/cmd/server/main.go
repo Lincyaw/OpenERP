@@ -182,6 +182,9 @@ func main() {
 
 	// Initialize application services
 	productService := catalogapp.NewProductService(productRepo, categoryRepo, strategyRegistry)
+	productService.SetSalesOrderRepo(salesOrderRepo)
+	productService.SetPurchaseOrderRepo(purchaseOrderRepo)
+	productService.SetInventoryRepo(inventoryItemRepo)
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 	customerService := partnerapp.NewCustomerService(customerRepo)

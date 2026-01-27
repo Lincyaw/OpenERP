@@ -144,6 +144,11 @@ func (m *MockPurchaseOrderRepository) GenerateOrderNumber(ctx context.Context, t
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockPurchaseOrderRepository) ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Bool(0), args.Error(1)
+}
+
 // Purchase Order Test helpers
 var (
 	testPOTenantID    = uuid.New()

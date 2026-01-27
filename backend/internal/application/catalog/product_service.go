@@ -8,9 +8,11 @@ import (
 	"strings"
 
 	"github.com/erp/backend/internal/domain/catalog"
+	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/domain/shared/valueobject"
+	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -23,9 +25,12 @@ type ValidationStrategyGetter interface {
 
 // ProductService handles product-related business operations
 type ProductService struct {
-	productRepo      catalog.ProductRepository
-	categoryRepo     catalog.CategoryRepository
-	strategyRegistry ValidationStrategyGetter
+	productRepo       catalog.ProductRepository
+	categoryRepo      catalog.CategoryRepository
+	strategyRegistry  ValidationStrategyGetter
+	salesOrderRepo    trade.SalesOrderRepository        // Optional: for delete validation
+	purchaseOrderRepo trade.PurchaseOrderRepository     // Optional: for delete validation
+	inventoryRepo     inventory.InventoryItemRepository // Optional: for delete validation
 }
 
 // NewProductService creates a new ProductService
@@ -39,6 +44,21 @@ func NewProductService(
 		categoryRepo:     categoryRepo,
 		strategyRegistry: strategyRegistry,
 	}
+}
+
+// SetSalesOrderRepo sets the sales order repository for delete validation
+func (s *ProductService) SetSalesOrderRepo(repo trade.SalesOrderRepository) {
+	s.salesOrderRepo = repo
+}
+
+// SetPurchaseOrderRepo sets the purchase order repository for delete validation
+func (s *ProductService) SetPurchaseOrderRepo(repo trade.PurchaseOrderRepository) {
+	s.purchaseOrderRepo = repo
+}
+
+// SetInventoryRepo sets the inventory repository for delete validation
+func (s *ProductService) SetInventoryRepo(repo inventory.InventoryItemRepository) {
+	s.inventoryRepo = repo
 }
 
 // Create creates a new product
@@ -379,15 +399,59 @@ func (s *ProductService) UpdateCode(ctx context.Context, tenantID, productID uui
 }
 
 // Delete deletes a product
+// It validates that the product has no transaction records before deletion.
+// If transaction records exist, it suggests using Deactivate/Discontinue instead.
 func (s *ProductService) Delete(ctx context.Context, tenantID, productID uuid.UUID) error {
 	// Verify product exists
-	_, err := s.productRepo.FindByIDForTenant(ctx, tenantID, productID)
+	product, err := s.productRepo.FindByIDForTenant(ctx, tenantID, productID)
 	if err != nil {
 		return err
 	}
 
-	// TODO: Check if product is used in any transactions (orders, inventory, etc.)
-	// This should be implemented when those modules are available
+	// Check if product has sales order records
+	if s.salesOrderRepo != nil {
+		hasSalesOrders, err := s.salesOrderRepo.ExistsByProduct(ctx, tenantID, productID)
+		if err != nil {
+			return shared.NewDomainError("SALES_ORDER_CHECK_FAILED",
+				"Failed to check sales order records. Please try again or contact support.")
+		}
+		if hasSalesOrders {
+			return shared.NewDomainError("HAS_SALES_ORDERS",
+				fmt.Sprintf("Cannot delete product '%s': it has been used in sales orders. "+
+					"Please use Deactivate or Discontinue instead to preserve historical data.",
+					product.Name))
+		}
+	}
+
+	// Check if product has purchase order records
+	if s.purchaseOrderRepo != nil {
+		hasPurchaseOrders, err := s.purchaseOrderRepo.ExistsByProduct(ctx, tenantID, productID)
+		if err != nil {
+			return shared.NewDomainError("PURCHASE_ORDER_CHECK_FAILED",
+				"Failed to check purchase order records. Please try again or contact support.")
+		}
+		if hasPurchaseOrders {
+			return shared.NewDomainError("HAS_PURCHASE_ORDERS",
+				fmt.Sprintf("Cannot delete product '%s': it has been used in purchase orders. "+
+					"Please use Deactivate or Discontinue instead to preserve historical data.",
+					product.Name))
+		}
+	}
+
+	// Check if product has inventory records
+	if s.inventoryRepo != nil {
+		inventoryCount, err := s.inventoryRepo.CountByProduct(ctx, tenantID, productID)
+		if err != nil {
+			return shared.NewDomainError("INVENTORY_CHECK_FAILED",
+				"Failed to check inventory records. Please try again or contact support.")
+		}
+		if inventoryCount > 0 {
+			return shared.NewDomainError("HAS_INVENTORY_RECORDS",
+				fmt.Sprintf("Cannot delete product '%s': it has %d inventory record(s). "+
+					"Please use Deactivate or Discontinue instead to preserve historical data.",
+					product.Name, inventoryCount))
+		}
+	}
 
 	return s.productRepo.DeleteForTenant(ctx, tenantID, productID)
 }

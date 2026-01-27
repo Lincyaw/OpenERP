@@ -5443,7 +5443,7 @@
       "- 错误信息建议使用禁用功能",
       "- 无交易记录的商品可正常删除"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "业务校验规则",
     "affectedModules": [
       "backend/internal/application/catalog/product_service.go"

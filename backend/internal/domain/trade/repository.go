@@ -66,6 +66,10 @@ type SalesOrderRepository interface {
 
 	// GenerateOrderNumber generates a unique order number for a tenant
 	GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+
+	// ExistsByProduct checks if any sales order items exist for a product
+	// Used for validation before product deletion
+	ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error)
 }
 
 // PurchaseOrderRepository defines the interface for purchase order persistence
@@ -132,6 +136,10 @@ type PurchaseOrderRepository interface {
 
 	// GenerateOrderNumber generates a unique order number for a tenant
 	GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error)
+
+	// ExistsByProduct checks if any purchase order items exist for a product
+	// Used for validation before product deletion
+	ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error)
 }
 
 // SalesReturnRepository defines the interface for sales return persistence

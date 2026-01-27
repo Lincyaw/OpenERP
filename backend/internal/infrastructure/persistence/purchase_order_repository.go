@@ -619,6 +619,21 @@ func (r *GormPurchaseOrderRepository) GenerateOrderNumber(ctx context.Context, t
 	return orderNumber, nil
 }
 
+// ExistsByProduct checks if any purchase order items exist for a product
+// Used for validation before product deletion
+func (r *GormPurchaseOrderRepository) ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
+	var count int64
+	// Query purchase_order_items joined with purchase_orders to filter by tenant
+	if err := r.db.WithContext(ctx).
+		Table("purchase_order_items").
+		Joins("JOIN purchase_orders ON purchase_orders.id = purchase_order_items.order_id").
+		Where("purchase_orders.tenant_id = ? AND purchase_order_items.product_id = ?", tenantID, productID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 // applyFilter applies filter options to the query
 func (r *GormPurchaseOrderRepository) applyFilter(query *gorm.DB, filter shared.Filter) *gorm.DB {
 	query = r.applyFilterWithoutPagination(query, filter)

@@ -2,11 +2,14 @@ package catalog
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/erp/backend/internal/domain/catalog"
+	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/domain/shared/strategy"
+	"github.com/erp/backend/internal/domain/trade"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -259,6 +262,402 @@ func (m *MockCategoryRepository) FindByPath(ctx context.Context, tenantID uuid.U
 	}
 	return args.Get(0).(*catalog.Category), args.Error(1)
 }
+
+// MockSalesOrderRepositoryForProduct is a mock for SalesOrderRepository used in product delete validation
+type MockSalesOrderRepositoryForProduct struct {
+	mock.Mock
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByID(ctx context.Context, id uuid.UUID) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) SaveWithLockAndEvents(ctx context.Context, order *trade.SalesOrder, events []shared.DomainEvent) error {
+	args := m.Called(ctx, order, events)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (*trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByCustomer(ctx context.Context, tenantID, customerID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, customerID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, status, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.SalesOrder, error) {
+	args := m.Called(ctx, tenantID, warehouseID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.SalesOrder), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) Save(ctx context.Context, order *trade.SalesOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) SaveWithLock(ctx context.Context, order *trade.SalesOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
+	args := m.Called(ctx, tenantID, id)
+	return args.Error(0)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.OrderStatus) (int64, error) {
+	args := m.Called(ctx, tenantID, status)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) CountByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) CountIncompleteByCustomer(ctx context.Context, tenantID, customerID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, customerID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
+	args := m.Called(ctx, tenantID)
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockSalesOrderRepositoryForProduct) ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Bool(0), args.Error(1)
+}
+
+var _ trade.SalesOrderRepository = (*MockSalesOrderRepositoryForProduct)(nil)
+
+// MockPurchaseOrderRepositoryForProduct is a mock for PurchaseOrderRepository used in product delete validation
+type MockPurchaseOrderRepositoryForProduct struct {
+	mock.Mock
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindByID(ctx context.Context, id uuid.UUID) (*trade.PurchaseOrder, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (*trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, supplierID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindByStatus(ctx context.Context, tenantID uuid.UUID, status trade.PurchaseOrderStatus, filter shared.Filter) ([]trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, status, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, warehouseID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) FindPendingReceipt(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]trade.PurchaseOrder, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]trade.PurchaseOrder), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) Save(ctx context.Context, order *trade.PurchaseOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) SaveWithLock(ctx context.Context, order *trade.PurchaseOrder) error {
+	args := m.Called(ctx, order)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) SaveWithLockAndEvents(ctx context.Context, order *trade.PurchaseOrder, events []shared.DomainEvent) error {
+	args := m.Called(ctx, order, events)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
+	args := m.Called(ctx, tenantID, id)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) CountByStatus(ctx context.Context, tenantID uuid.UUID, status trade.PurchaseOrderStatus) (int64, error) {
+	args := m.Called(ctx, tenantID, status)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) CountBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, supplierID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) CountIncompleteBySupplier(ctx context.Context, tenantID, supplierID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, supplierID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) CountPendingReceipt(ctx context.Context, tenantID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) ExistsByOrderNumber(ctx context.Context, tenantID uuid.UUID, orderNumber string) (bool, error) {
+	args := m.Called(ctx, tenantID, orderNumber)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) GenerateOrderNumber(ctx context.Context, tenantID uuid.UUID) (string, error) {
+	args := m.Called(ctx, tenantID)
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockPurchaseOrderRepositoryForProduct) ExistsByProduct(ctx context.Context, tenantID, productID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Bool(0), args.Error(1)
+}
+
+var _ trade.PurchaseOrderRepository = (*MockPurchaseOrderRepositoryForProduct)(nil)
+
+// MockInventoryItemRepositoryForProduct is a mock for InventoryItemRepository used in product delete validation
+type MockInventoryItemRepositoryForProduct struct {
+	mock.Mock
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByID(ctx context.Context, id uuid.UUID) (*inventory.InventoryItem, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByWarehouseAndProduct(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (*inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, warehouseID, productID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, warehouseID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByProduct(ctx context.Context, tenantID, productID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, productID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindBelowMinimum(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindWithAvailableStock(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) FindByIDs(ctx context.Context, tenantID uuid.UUID, ids []uuid.UUID) ([]inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, ids)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.InventoryItem), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) Save(ctx context.Context, item *inventory.InventoryItem) error {
+	args := m.Called(ctx, item)
+	return args.Error(0)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) SaveWithLock(ctx context.Context, item *inventory.InventoryItem) error {
+	args := m.Called(ctx, item)
+	return args.Error(0)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error {
+	args := m.Called(ctx, tenantID, id)
+	return args.Error(0)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error) {
+	args := m.Called(ctx, tenantID, filter)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) CountByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, warehouseID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) CountByProduct(ctx context.Context, tenantID, productID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) SumQuantityByProduct(ctx context.Context, tenantID, productID uuid.UUID) (decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID, productID)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) SumValueByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID) (decimal.Decimal, error) {
+	args := m.Called(ctx, tenantID, warehouseID)
+	return args.Get(0).(decimal.Decimal), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) ExistsByWarehouseAndProduct(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, tenantID, warehouseID, productID)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockInventoryItemRepositoryForProduct) GetOrCreate(ctx context.Context, tenantID, warehouseID, productID uuid.UUID) (*inventory.InventoryItem, error) {
+	args := m.Called(ctx, tenantID, warehouseID, productID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*inventory.InventoryItem), args.Error(1)
+}
+
+var _ inventory.InventoryItemRepository = (*MockInventoryItemRepositoryForProduct)(nil)
 
 // Test helper functions
 func newTestTenantID() uuid.UUID {
@@ -1118,4 +1517,221 @@ func TestToValidationError(t *testing.T) {
 	assert.Equal(t, "VALIDATION_FAILED", domainErr.Code)
 	assert.Contains(t, domainErr.Message, "name: Name is required")
 	assert.Contains(t, domainErr.Message, "price: Price must be positive")
+}
+
+// =========================================================================
+// Tests for Product Delete Validation (GAP-VAL-004)
+// =========================================================================
+
+func TestProductService_Delete_HasSalesOrders(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(true, nil)
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "HAS_SALES_ORDERS", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "sales orders")
+	assert.Contains(t, domainErr.Message, "Deactivate or Discontinue")
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_HasPurchaseOrders(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	mockPurchaseOrderRepo := new(MockPurchaseOrderRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+	service.SetPurchaseOrderRepo(mockPurchaseOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockPurchaseOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(true, nil)
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "HAS_PURCHASE_ORDERS", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "purchase orders")
+	assert.Contains(t, domainErr.Message, "Deactivate or Discontinue")
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+	mockPurchaseOrderRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_HasInventoryRecords(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	mockPurchaseOrderRepo := new(MockPurchaseOrderRepositoryForProduct)
+	mockInventoryRepo := new(MockInventoryItemRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+	service.SetPurchaseOrderRepo(mockPurchaseOrderRepo)
+	service.SetInventoryRepo(mockInventoryRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockPurchaseOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockInventoryRepo.On("CountByProduct", ctx, tenantID, productID).Return(int64(3), nil)
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "HAS_INVENTORY_RECORDS", domainErr.Code)
+	assert.Contains(t, domainErr.Message, "3 inventory record(s)")
+	assert.Contains(t, domainErr.Message, "Deactivate or Discontinue")
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+	mockPurchaseOrderRepo.AssertExpectations(t)
+	mockInventoryRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_SuccessWithRepositoryChecks(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	mockPurchaseOrderRepo := new(MockPurchaseOrderRepositoryForProduct)
+	mockInventoryRepo := new(MockInventoryItemRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+	service.SetPurchaseOrderRepo(mockPurchaseOrderRepo)
+	service.SetInventoryRepo(mockInventoryRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockPurchaseOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockInventoryRepo.On("CountByProduct", ctx, tenantID, productID).Return(int64(0), nil)
+	mockProductRepo.On("DeleteForTenant", ctx, tenantID, productID).Return(nil)
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.NoError(t, err)
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+	mockPurchaseOrderRepo.AssertExpectations(t)
+	mockInventoryRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_SalesOrderCheckFailed(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, errors.New("db error"))
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "SALES_ORDER_CHECK_FAILED", domainErr.Code)
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_PurchaseOrderCheckFailed(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	mockPurchaseOrderRepo := new(MockPurchaseOrderRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+	service.SetPurchaseOrderRepo(mockPurchaseOrderRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockPurchaseOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, errors.New("db error"))
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "PURCHASE_ORDER_CHECK_FAILED", domainErr.Code)
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+	mockPurchaseOrderRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_InventoryCheckFailed(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+	mockSalesOrderRepo := new(MockSalesOrderRepositoryForProduct)
+	mockPurchaseOrderRepo := new(MockPurchaseOrderRepositoryForProduct)
+	mockInventoryRepo := new(MockInventoryItemRepositoryForProduct)
+	service.SetSalesOrderRepo(mockSalesOrderRepo)
+	service.SetPurchaseOrderRepo(mockPurchaseOrderRepo)
+	service.SetInventoryRepo(mockInventoryRepo)
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+	product := createTestProduct(tenantID)
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockSalesOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockPurchaseOrderRepo.On("ExistsByProduct", ctx, tenantID, productID).Return(false, nil)
+	mockInventoryRepo.On("CountByProduct", ctx, tenantID, productID).Return(int64(0), errors.New("db error"))
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	var domainErr *shared.DomainError
+	assert.ErrorAs(t, err, &domainErr)
+	assert.Equal(t, "INVENTORY_CHECK_FAILED", domainErr.Code)
+	mockProductRepo.AssertExpectations(t)
+	mockSalesOrderRepo.AssertExpectations(t)
+	mockPurchaseOrderRepo.AssertExpectations(t)
+	mockInventoryRepo.AssertExpectations(t)
+}
+
+func TestProductService_Delete_ProductNotFound(t *testing.T) {
+	service, mockProductRepo, _, _ := newTestProductService()
+
+	ctx := context.Background()
+	tenantID := newTestTenantID()
+	productID := newTestProductID()
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(nil, shared.ErrNotFound)
+
+	err := service.Delete(ctx, tenantID, productID)
+
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, shared.ErrNotFound)
+	mockProductRepo.AssertExpectations(t)
 }

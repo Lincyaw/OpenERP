@@ -26425,3 +26425,108 @@ Test Cases Added:
 === Next Steps ===
 - Similar patterns can be applied to other deletion validations
 - Consider adding integration tests for end-to-end validation
+
+2025-01-27 - Task GAP-VAL-004: Implement product deletion validation for transaction records
+
+=== Background ===
+Gap analysis identified a TODO at product_service.go:389 where product deletion was not checking
+for transaction records. This could lead to orphaned references in historical orders and inventory.
+
+=== Implementation Details ===
+1. **Domain Repository Interface (trade/repository.go):**
+   - Added ExistsByProduct(ctx, tenantID, productID) method to SalesOrderRepository interface
+   - Added ExistsByProduct(ctx, tenantID, productID) method to PurchaseOrderRepository interface
+   - These check if any order items reference the product
+
+2. **Infrastructure Implementation (persistence/):**
+   - Implemented ExistsByProduct in GormSalesOrderRepository
+     - Joins sales_order_items with sales_orders to filter by tenant_id
+     - Uses parameterized queries to prevent SQL injection
+   - Implemented ExistsByProduct in GormPurchaseOrderRepository
+     - Same pattern as sales orders
+
+3. **Application Service (catalog/product_service.go):**
+   - Updated ProductService struct with optional repository dependencies:
+     - salesOrderRepo: trade.SalesOrderRepository
+     - purchaseOrderRepo: trade.PurchaseOrderRepository
+     - inventoryRepo: inventory.InventoryItemRepository
+   - Added setter methods for optional injection (backward compatible)
+   - Updated Delete method with comprehensive validation:
+     a. Check sales order items
+     b. Check purchase order items
+     c. Check inventory items
+   - Error codes: HAS_SALES_ORDERS, HAS_PURCHASE_ORDERS, HAS_INVENTORY_RECORDS
+   - DB error codes: SALES_ORDER_CHECK_FAILED, PURCHASE_ORDER_CHECK_FAILED, INVENTORY_CHECK_FAILED
+
+4. **Wire-up (main.go):**
+   - Injected salesOrderRepo, purchaseOrderRepo, and inventoryItemRepo into ProductService
+
+5. **Test Coverage (product_service_test.go):**
+   - Added MockSalesOrderRepositoryForProduct with all interface methods
+   - Added MockPurchaseOrderRepositoryForProduct with all interface methods
+   - Added MockInventoryItemRepositoryForProduct with all interface methods
+   - New tests:
+     - TestProductService_Delete_HasSalesOrders
+     - TestProductService_Delete_HasPurchaseOrders
+     - TestProductService_Delete_HasInventoryRecords
+     - TestProductService_Delete_SuccessWithRepositoryChecks
+     - TestProductService_Delete_SalesOrderCheckFailed
+     - TestProductService_Delete_PurchaseOrderCheckFailed
+     - TestProductService_Delete_InventoryCheckFailed
+     - TestProductService_Delete_ProductNotFound
+
+6. **Mock Updates (various test files):**
+   - Added ExistsByProduct mock method to MockSalesOrderRepository in:
+     - sales_order_service_test.go
+     - customer_service_test.go
+     - sales_order_test.go (handler)
+   - Added ExistsByProduct mock method to MockPurchaseOrderRepository in:
+     - purchase_order_service_test.go
+     - supplier_service_test.go
+
+=== Files Modified ===
+- backend/internal/domain/trade/repository.go
+- backend/internal/infrastructure/persistence/sales_order_repository.go
+- backend/internal/infrastructure/persistence/purchase_order_repository.go
+- backend/internal/application/catalog/product_service.go
+- backend/internal/application/catalog/product_service_test.go
+- backend/cmd/server/main.go
+- backend/internal/application/trade/sales_order_service_test.go
+- backend/internal/application/trade/purchase_order_service_test.go
+- backend/internal/application/partner/customer_service_test.go
+- backend/internal/application/partner/supplier_service_test.go
+- backend/internal/interfaces/http/handler/sales_order_test.go
+
+=== Verification ===
+- [x] Build passes: go build ./...
+- [x] Unit tests pass: go test ./internal/application/catalog/... -v
+- [x] Code review passed (agent: code-reviewer)
+- [x] DDD patterns followed (interface at domain, implementation at infrastructure)
+- [x] Tenant isolation maintained (all queries filter by tenant_id)
+- [x] Error handling comprehensive with user-friendly messages
+- [x] SQL injection prevention (parameterized queries)
+
+=== Code Review Summary ===
+- Status: APPROVED with minor suggestions
+- No CRITICAL or HIGH issues
+- Suggestions for future consideration:
+  - Consider using LIMIT(1) for EXISTS-style queries (minor performance optimization)
+  - Consider adding index documentation for product_id columns in order_items tables
+  - Consider parallelizing validation checks for performance-critical paths
+
+=== Design Decisions ===
+- Used optional repository injection pattern (setter methods) for backward compatibility
+- Validation is skipped gracefully if repositories are not injected
+- Error messages suggest using Deactivate/Discontinue as alternatives to deletion
+- Sequential validation checks (simplicity over parallelism)
+
+=== Acceptance Criteria Met ===
+- [x] Deleting product with sales order records returns 400 with HAS_SALES_ORDERS error
+- [x] Deleting product with purchase order records returns 400 with HAS_PURCHASE_ORDERS error
+- [x] Deleting product with inventory records returns 400 with HAS_INVENTORY_RECORDS error
+- [x] Error message suggests using Deactivate/Discontinue functionality
+- [x] Products with no transaction records can be deleted normally
+
+=== Next Steps ===
+- Consider adding database indexes on sales_order_items.product_id and purchase_order_items.product_id
+- Similar patterns can be applied to other entity deletion validations
