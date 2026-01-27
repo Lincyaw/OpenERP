@@ -60,20 +60,18 @@ export class SalesOrderPage extends BasePage {
   constructor(page: Page) {
     super(page)
 
-    // List page
-    this.pageTitle = page.locator('h4').filter({ hasText: '销售订单' })
-    this.newOrderButton = page.locator('button').filter({ hasText: '新建订单' })
-    this.refreshButton = page.locator('button').filter({ hasText: '刷新' })
-    this.statusFilter = page
-      .locator('.semi-select')
-      .filter({ hasText: /状态|全部状态/ })
-      .first()
-    this.customerFilter = page
-      .locator('.semi-select')
-      .filter({ hasText: /客户|全部客户/ })
-      .first()
-    this.dateRangeFilter = page.locator('.semi-datepicker-range')
-    this.searchInput = page.locator('input[placeholder*="搜索订单编号"]')
+    // List page - use class context for better specificity
+    this.pageTitle = page.locator('.sales-orders-header h4').first()
+    this.newOrderButton = page
+      .locator('.table-toolbar-right button')
+      .filter({ hasText: '新建订单' })
+    this.refreshButton = page.locator('.table-toolbar-right button').filter({ hasText: '刷新' })
+    // Status filter is in .table-toolbar-filters, NOT the first .semi-select on page
+    this.statusFilter = page.locator('.table-toolbar-filters .semi-select').first()
+    this.customerFilter = page.locator('.table-toolbar-filters .semi-select').nth(1)
+    this.dateRangeFilter = page.locator('.table-toolbar-filters .semi-datepicker')
+    // Search input uses class from TableToolbar
+    this.searchInput = page.locator('.table-toolbar-search input')
     this.tableRows = page.locator('.semi-table-tbody .semi-table-row')
     this.tableBody = page.locator('.semi-table-tbody')
 
@@ -126,6 +124,8 @@ export class SalesOrderPage extends BasePage {
   async navigateToList(): Promise<void> {
     await this.goto('/trade/sales')
     await this.waitForPageLoad()
+    // Wait for table toolbar to render
+    await this.page.locator('.table-toolbar').waitFor({ state: 'visible', timeout: 15000 })
     await this.waitForTableLoad()
   }
 
@@ -151,22 +151,27 @@ export class SalesOrderPage extends BasePage {
   }
 
   async search(orderNumber: string): Promise<void> {
-    await this.searchInput.fill(orderNumber)
+    const searchInput = this.page.locator('.table-toolbar-search input')
+    await searchInput.fill(orderNumber)
     await this.page.waitForTimeout(500) // Debounce
     await this.waitForTableLoad()
   }
 
   async clearSearch(): Promise<void> {
-    await this.searchInput.clear()
+    const searchInput = this.page.locator('.table-toolbar-search input')
+    await searchInput.clear()
     await this.page.waitForTimeout(500)
     await this.waitForTableLoad()
   }
 
   async filterByStatus(status: string): Promise<void> {
-    // Click status filter dropdown
-    const statusSelect = this.page.locator('.semi-select').first()
+    // Use the specific filters container
+    const statusSelect = this.page.locator('.table-toolbar-filters .semi-select').first()
     await statusSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
+
+    // Wait for dropdown to appear
+    await this.page.locator('.semi-select-option-list').waitFor({ state: 'visible', timeout: 5000 })
 
     // Map status to Chinese labels
     const statusLabels: Record<string, string> = {
@@ -185,10 +190,13 @@ export class SalesOrderPage extends BasePage {
   }
 
   async filterByCustomer(customerName: string): Promise<void> {
-    // Find customer filter (second select typically)
-    const customerSelect = this.page.locator('.semi-select').nth(1)
+    // Use the specific filters container
+    const customerSelect = this.page.locator('.table-toolbar-filters .semi-select').nth(1)
     await customerSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
+
+    // Wait for dropdown to appear
+    await this.page.locator('.semi-select-option-list').waitFor({ state: 'visible', timeout: 5000 })
 
     if (customerName) {
       await this.page.locator('.semi-select-option').filter({ hasText: customerName }).click()

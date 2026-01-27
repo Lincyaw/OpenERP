@@ -14,7 +14,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Toast } from '@douyinfe/semi-ui-19'
 import { useAuthStore } from '@/store'
-import { setupAutoRefresh } from '@/services/token-refresh'
+import { setupAutoRefresh, refreshAccessToken } from '@/services/token-refresh'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -36,11 +36,42 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const initialize = useAuthStore((state) => state.initialize)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isLoading = useAuthStore((state) => state.isLoading)
+  const user = useAuthStore((state) => state.user)
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const setLoading = useAuthStore((state) => state.setLoading)
+  const logout = useAuthStore((state) => state.logout)
 
   // Initialize auth state from localStorage
   useEffect(() => {
     initialize()
   }, [initialize])
+
+  // Attempt token refresh when user exists but no access token (e.g., after page refresh)
+  useEffect(() => {
+    // Only attempt refresh if:
+    // - Still loading (initial state after initialize)
+    // - User exists (was previously logged in)
+    // - No access token (lost on page refresh since it's memory-only)
+    if (isLoading && user && !accessToken) {
+      const attemptRefresh = async () => {
+        try {
+          const newToken = await refreshAccessToken()
+          if (!newToken) {
+            // Refresh failed, clear loading state and let guards redirect to login
+            setLoading(false)
+          }
+          // If refresh succeeded, the store will be updated by refreshAccessToken
+          // and isLoading will be set appropriately
+        } catch {
+          // Refresh failed, logout and clear loading state
+          logout()
+          setLoading(false)
+        }
+      }
+      attemptRefresh()
+    }
+  }, [isLoading, user, accessToken, setLoading, logout])
 
   // Set up automatic token refresh when authenticated
   useEffect(() => {

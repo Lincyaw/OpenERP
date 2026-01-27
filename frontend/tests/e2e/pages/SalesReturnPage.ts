@@ -64,15 +64,19 @@ export class SalesReturnPage extends BasePage {
   constructor(page: Page) {
     super(page)
 
-    // List page
-    this.pageTitle = page.locator('h4').filter({ hasText: '销售退货' })
-    this.newReturnButton = page.locator('button').filter({ hasText: '新建退货' })
-    this.approvalButton = page.locator('button').filter({ hasText: '审批' })
-    this.refreshButton = page.locator('button').filter({ hasText: '刷新' })
-    this.statusFilter = page.locator('.semi-select').first()
-    this.customerFilter = page.locator('.semi-select').nth(1)
-    this.dateRangeFilter = page.locator('.semi-datepicker-range')
-    this.searchInput = page.locator('input[placeholder*="搜索退货单"]')
+    // List page - use class context for better specificity
+    this.pageTitle = page.locator('.sales-returns-header h4, .sales-return-form-header h4').first()
+    this.newReturnButton = page
+      .locator('.table-toolbar-right button')
+      .filter({ hasText: '新建退货' })
+    this.approvalButton = page.locator('.table-toolbar-right button').filter({ hasText: '审批' })
+    this.refreshButton = page.locator('.table-toolbar-right button').filter({ hasText: '刷新' })
+    // Status filter is in .table-toolbar-filters, NOT the first .semi-select on page
+    this.statusFilter = page.locator('.table-toolbar-filters .semi-select').first()
+    this.customerFilter = page.locator('.table-toolbar-filters .semi-select').nth(1)
+    this.dateRangeFilter = page.locator('.table-toolbar-filters .semi-datepicker')
+    // Search input uses class from TableToolbar
+    this.searchInput = page.locator('.table-toolbar-search input')
     this.tableRows = page.locator('.semi-table-tbody .semi-table-row')
     this.tableBody = page.locator('.semi-table-tbody')
 
@@ -122,6 +126,8 @@ export class SalesReturnPage extends BasePage {
   async navigateToList(): Promise<void> {
     await this.goto('/trade/sales-returns')
     await this.waitForPageLoad()
+    // Wait for table toolbar to render
+    await this.page.locator('.table-toolbar').waitFor({ state: 'visible', timeout: 15000 })
     await this.waitForTableLoad()
   }
 
@@ -147,23 +153,27 @@ export class SalesReturnPage extends BasePage {
   }
 
   async search(returnNumber: string): Promise<void> {
-    const searchInput = this.page.locator('input[placeholder*="搜索"]').first()
+    const searchInput = this.page.locator('.table-toolbar-search input')
     await searchInput.fill(returnNumber)
     await this.page.waitForTimeout(500) // Debounce
     await this.waitForTableLoad()
   }
 
   async clearSearch(): Promise<void> {
-    const searchInput = this.page.locator('input[placeholder*="搜索"]').first()
+    const searchInput = this.page.locator('.table-toolbar-search input')
     await searchInput.clear()
     await this.page.waitForTimeout(500)
     await this.waitForTableLoad()
   }
 
   async filterByStatus(status: string): Promise<void> {
-    const statusSelect = this.page.locator('.semi-select').first()
+    // Use the specific filters container
+    const statusSelect = this.page.locator('.table-toolbar-filters .semi-select').first()
     await statusSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
+
+    // Wait for dropdown to appear
+    await this.page.locator('.semi-select-option-list').waitFor({ state: 'visible', timeout: 5000 })
 
     const statusLabels: Record<string, string> = {
       '': '全部状态',
@@ -182,9 +192,12 @@ export class SalesReturnPage extends BasePage {
   }
 
   async filterByCustomer(customerName: string): Promise<void> {
-    const customerSelect = this.page.locator('.semi-select').nth(1)
+    const customerSelect = this.page.locator('.table-toolbar-filters .semi-select').nth(1)
     await customerSelect.click()
-    await this.page.waitForTimeout(200)
+    await this.page.waitForTimeout(300)
+
+    // Wait for dropdown to appear
+    await this.page.locator('.semi-select-option-list').waitFor({ state: 'visible', timeout: 5000 })
 
     if (customerName) {
       await this.page.locator('.semi-select-option').filter({ hasText: customerName }).click()
@@ -601,11 +614,12 @@ export class SalesReturnPage extends BasePage {
 
   // Assertions
   async assertReturnListDisplayed(): Promise<void> {
-    await expect(this.page.locator('h4').filter({ hasText: '销售退货' })).toBeVisible()
+    // Wait for page load with specific header element
+    await expect(this.page.locator('.sales-returns-header h4')).toBeVisible({ timeout: 15000 })
   }
 
   async assertReturnFormDisplayed(): Promise<void> {
-    await expect(this.page.locator('h4').filter({ hasText: /创建.*退货|新建.*退货/ })).toBeVisible()
+    await expect(this.page.locator('.sales-return-form-header h4')).toBeVisible({ timeout: 15000 })
   }
 
   async assertReturnDetailDisplayed(): Promise<void> {

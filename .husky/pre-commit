@@ -80,7 +80,7 @@ if [ "$RUN_E2E" = true ]; then
     # Start test environment
     echo "  → Starting test environment..."
     docker compose -f docker-compose.test.yml down -v 2>/dev/null || true
-    docker compose -f docker-compose.test.yml up -d --build
+    docker compose -f docker-compose.test.yml up -d
     
     # Wait for services to be healthy
     echo "  → Waiting for services to be ready..."

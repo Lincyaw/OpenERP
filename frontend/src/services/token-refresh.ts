@@ -171,7 +171,7 @@ export async function refreshAccessToken(): Promise<string | null> {
  * @returns New access token or null if refresh failed
  */
 async function performRefresh(): Promise<string | null> {
-  const { setTokens, setUser, logout } = useAuthStore.getState()
+  const { setTokens, setUser, logout, setLoading } = useAuthStore.getState()
 
   try {
     // Send empty body - refresh token is sent via httpOnly cookie automatically
@@ -184,6 +184,7 @@ async function performRefresh(): Promise<string | null> {
     if (!response.success || !response.data) {
       // Refresh failed, logout user
       logout()
+      setLoading(false)
       redirectToLogin(getTokenExpiredMessage())
       return null
     }
@@ -206,15 +207,20 @@ async function performRefresh(): Promise<string | null> {
         }
       }
 
+      // Mark loading as complete after successful refresh
+      setLoading(false)
+
       return token.access_token
     }
 
     logout()
+    setLoading(false)
     redirectToLogin(getTokenExpiredMessage())
     return null
   } catch {
     // Refresh failed, logout user
     logout()
+    setLoading(false)
     redirectToLogin(getTokenExpiredMessage())
     return null
   }

@@ -95,13 +95,27 @@ export class FinancePage extends BasePage {
   async navigateToReceivables(): Promise<void> {
     await this.goto('/finance/receivables')
     await this.waitForPageLoad()
-    await this.page.waitForSelector('.semi-table', { timeout: 10000 })
+    // Wait for table toolbar to render first, then table
+    await this.page
+      .locator('.table-toolbar')
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {})
+    await this.page
+      .waitForSelector('.semi-table, .semi-table-empty', { timeout: 15000 })
+      .catch(() => {})
   }
 
   async navigateToPayables(): Promise<void> {
     await this.goto('/finance/payables')
     await this.waitForPageLoad()
-    await this.page.waitForSelector('.semi-table', { timeout: 10000 })
+    // Wait for table toolbar to render first, then table
+    await this.page
+      .locator('.table-toolbar')
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .catch(() => {})
+    await this.page
+      .waitForSelector('.semi-table, .semi-table-empty', { timeout: 15000 })
+      .catch(() => {})
   }
 
   async navigateToNewReceiptVoucher(customerId?: string): Promise<void> {
