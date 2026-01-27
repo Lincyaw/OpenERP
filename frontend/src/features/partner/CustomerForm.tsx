@@ -19,7 +19,11 @@ import {
 import { Container } from '@/components/common/layout'
 import { getCustomers } from '@/api/customers/customers'
 import { getCustomerLevels } from '@/api/customer-levels/customer-levels'
-import type { HandlerCustomerResponse, HandlerCustomerLevelListResponse } from '@/api/models'
+import type {
+  HandlerCustomerResponse,
+  HandlerCustomerLevelListResponse,
+  HandlerUpdateCustomerRequestLevel,
+} from '@/api/models'
 import './CustomerForm.css'
 
 const { Title } = Typography
@@ -276,7 +280,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
       const response = await api.putPartnerCustomersId(customerId, {
         name: data.name,
         short_name: data.short_name,
-        level: data.level,
+        level: data.level as HandlerUpdateCustomerRequestLevel | undefined,
         contact_name: data.contact_name,
         phone: data.phone,
         email: data.email,
@@ -390,7 +394,6 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
                   options={CUSTOMER_LEVEL_OPTIONS}
                   allowClear
                   disabled={levelsLoading}
-                  loading={levelsLoading}
                 />
                 <div /> {/* Empty placeholder for grid alignment */}
               </FormRow>

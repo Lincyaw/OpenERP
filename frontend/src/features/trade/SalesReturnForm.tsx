@@ -128,7 +128,7 @@ export function SalesReturnForm() {
     [t]
   )
 
-  const ORDER_STATUS_LABELS = useMemo(
+  const ORDER_STATUS_LABELS: Record<string, string> = useMemo(
     () => ({
       DRAFT: t('salesOrder.status.draft'),
       CONFIRMED: t('salesOrder.status.confirmed'),

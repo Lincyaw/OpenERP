@@ -17,7 +17,7 @@ import {
   Popconfirm,
   Modal,
   Timeline,
-} from '@douyinfe/semi-ui'
+} from '@douyinfe/semi-ui-19'
 import {
   IconTick,
   IconClose,
@@ -27,7 +27,7 @@ import {
   IconClock,
   IconAlertCircle,
 } from '@douyinfe/semi-icons'
-import type { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
+import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
 import { Container } from '@/components/common/layout'
 import './PlatformSyncStatus.css'
 
@@ -278,7 +278,10 @@ export default function PlatformSyncStatusPage() {
     (status?: SyncStatus) => {
       if (!status) return <Tag color="grey">{t('syncStatus.status.unknown')}</Tag>
 
-      const configs: Record<SyncStatus, { color: string; icon: React.ReactNode }> = {
+      const configs: Record<
+        SyncStatus,
+        { color: 'blue' | 'green' | 'red' | 'grey'; icon: React.ReactNode }
+      > = {
         PENDING: { color: 'blue', icon: <IconClock /> },
         RUNNING: { color: 'blue', icon: <IconRefresh spin /> },
         SUCCESS: { color: 'green', icon: <IconTick /> },
@@ -289,7 +292,7 @@ export default function PlatformSyncStatusPage() {
       const config = configs[status]
       return (
         <Tag color={config.color} prefixIcon={config.icon}>
-          {t(`syncStatus.status.${status.toLowerCase()}`)}
+          {t(`syncStatus.status.${status.toLowerCase()}`) as string}
         </Tag>
       )
     },
@@ -301,7 +304,7 @@ export default function PlatformSyncStatusPage() {
    */
   const getSyncTypeLabel = useCallback(
     (type: SyncType): string => {
-      return t(`syncStatus.syncTypes.${type.toLowerCase()}`)
+      return t(`syncStatus.syncTypes.${type.toLowerCase()}`) as string
     },
     [t]
   )
@@ -311,7 +314,7 @@ export default function PlatformSyncStatusPage() {
    */
   const getPlatformName = useCallback(
     (code: PlatformCode): string => {
-      return t(`syncStatus.platforms.${code}`)
+      return t(`syncStatus.platforms.${code}`) as string
     },
     [t]
   )
@@ -389,7 +392,7 @@ export default function PlatformSyncStatusPage() {
       width: 100,
       render: (trigger: 'AUTO' | 'MANUAL') => (
         <Tag color={trigger === 'MANUAL' ? 'blue' : 'grey'}>
-          {t(`syncStatus.trigger.${trigger.toLowerCase()}`)}
+          {t(`syncStatus.trigger.${trigger.toLowerCase()}`) as string}
         </Tag>
       ),
     },
@@ -568,7 +571,7 @@ export default function PlatformSyncStatusPage() {
             },
             {
               key: t('syncStatus.columns.triggeredBy'),
-              value: t(`syncStatus.trigger.${detailRecord.triggeredBy.toLowerCase()}`),
+              value: t(`syncStatus.trigger.${detailRecord.triggeredBy.toLowerCase()}`) as string,
             },
             {
               key: t('syncStatus.columns.startedAt'),

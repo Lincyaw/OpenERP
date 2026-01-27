@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
-import { z, ZodSchema } from 'zod'
+import { z } from 'zod'
+import type { ZodSchema } from 'zod'
 
 /**
  * Base order item type for form management

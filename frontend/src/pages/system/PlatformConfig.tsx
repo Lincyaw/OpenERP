@@ -6,7 +6,6 @@ import {
   Toast,
   Tabs,
   TabPane,
-  Form,
   Switch,
   Button,
   Banner,
@@ -16,6 +15,8 @@ import {
   Descriptions,
   InputNumber,
   Tooltip,
+  Input,
+  TextArea,
 } from '@douyinfe/semi-ui-19'
 import {
   IconTick,
@@ -412,46 +413,48 @@ export default function PlatformConfigPage() {
               </Space>
             </div>
 
-            <Form labelPosition="left" labelWidth={140}>
-              <Form.Input
-                field="appKey"
-                label={t('platformConfig.fields.appKey')}
-                placeholder={t('platformConfig.placeholders.appKey')}
-                value={config.appKey}
-                onChange={(value) => handleConfigChange(platform.code, 'appKey', value)}
-                rules={[{ required: true }]}
-              />
-              <Form.Input
-                field="appSecret"
-                label={t('platformConfig.fields.appSecret')}
-                placeholder={t('platformConfig.placeholders.appSecret')}
-                value={config.appSecret}
-                onChange={(value) => handleConfigChange(platform.code, 'appSecret', value)}
-                mode={showSecret ? undefined : 'password'}
-                suffix={
-                  <Button
-                    icon={showSecret ? <IconEyeClosed /> : <IconEyeOpened />}
-                    theme="borderless"
-                    onClick={() => toggleSecretVisibility(platform.code)}
-                  />
-                }
-                rules={[{ required: true }]}
-              />
-              <Form.Input
-                field="shopId"
-                label={t('platformConfig.fields.shopId')}
-                placeholder={t('platformConfig.placeholders.shopId')}
-                value={config.shopId}
-                onChange={(value) => handleConfigChange(platform.code, 'shopId', value)}
-              />
-              <Form.Input
-                field="shopName"
-                label={t('platformConfig.fields.shopName')}
-                placeholder={t('platformConfig.placeholders.shopName')}
-                value={config.shopName}
-                onChange={(value) => handleConfigChange(platform.code, 'shopName', value)}
-              />
-            </Form>
+            <div className="form-fields">
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.appKey')}</label>
+                <Input
+                  placeholder={t('platformConfig.placeholders.appKey')}
+                  value={config.appKey}
+                  onChange={(value) => handleConfigChange(platform.code, 'appKey', value)}
+                />
+              </div>
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.appSecret')}</label>
+                <Input
+                  placeholder={t('platformConfig.placeholders.appSecret')}
+                  value={config.appSecret}
+                  onChange={(value) => handleConfigChange(platform.code, 'appSecret', value)}
+                  mode={showSecret ? undefined : 'password'}
+                  suffix={
+                    <Button
+                      icon={showSecret ? <IconEyeClosed /> : <IconEyeOpened />}
+                      theme="borderless"
+                      onClick={() => toggleSecretVisibility(platform.code)}
+                    />
+                  }
+                />
+              </div>
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.shopId')}</label>
+                <Input
+                  placeholder={t('platformConfig.placeholders.shopId')}
+                  value={config.shopId}
+                  onChange={(value) => handleConfigChange(platform.code, 'shopId', value)}
+                />
+              </div>
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.shopName')}</label>
+                <Input
+                  placeholder={t('platformConfig.placeholders.shopName')}
+                  value={config.shopName}
+                  onChange={(value) => handleConfigChange(platform.code, 'shopName', value)}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Token Section */}
@@ -463,42 +466,51 @@ export default function PlatformConfigPage() {
               className="form-banner"
             />
 
-            <Form labelPosition="left" labelWidth={140}>
-              <Form.TextArea
-                field="accessToken"
-                label={t('platformConfig.fields.accessToken')}
-                placeholder={t('platformConfig.placeholders.accessToken')}
-                value={config.accessToken}
-                onChange={(value) => handleConfigChange(platform.code, 'accessToken', value)}
-                rows={3}
-              />
-              <Form.TextArea
-                field="refreshToken"
-                label={t('platformConfig.fields.refreshToken')}
-                placeholder={t('platformConfig.placeholders.refreshToken')}
-                value={config.refreshToken}
-                onChange={(value) => handleConfigChange(platform.code, 'refreshToken', value)}
-                rows={3}
-              />
-            </Form>
+            <div className="form-fields">
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.accessToken')}</label>
+                <TextArea
+                  placeholder={t('platformConfig.placeholders.accessToken')}
+                  value={config.accessToken}
+                  onChange={(value) => handleConfigChange(platform.code, 'accessToken', value)}
+                  rows={3}
+                />
+              </div>
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.refreshToken')}</label>
+                <TextArea
+                  placeholder={t('platformConfig.placeholders.refreshToken')}
+                  value={config.refreshToken}
+                  onChange={(value) => handleConfigChange(platform.code, 'refreshToken', value)}
+                  rows={3}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Sync Settings Section */}
           <div className="form-section">
             <Title heading={5}>{t('platformConfig.sections.syncSettings')}</Title>
 
-            <Form labelPosition="left" labelWidth={140}>
-              <Form.Switch
-                field="syncEnabled"
-                label={t('platformConfig.fields.syncEnabled')}
-                checked={config.syncEnabled}
-                onChange={(checked) => handleConfigChange(platform.code, 'syncEnabled', checked)}
-                extraText={t('platformConfig.hints.syncEnabled')}
-              />
+            <div className="form-fields">
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.syncEnabled')}</label>
+                <div>
+                  <Switch
+                    checked={config.syncEnabled}
+                    onChange={(checked) =>
+                      handleConfigChange(platform.code, 'syncEnabled', checked)
+                    }
+                  />
+                  <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                    {t('platformConfig.hints.syncEnabled')}
+                  </Text>
+                </div>
+              </div>
               {config.syncEnabled && (
                 <>
-                  <div className="form-inline-field">
-                    <Form.Label>{t('platformConfig.fields.syncInterval')}</Form.Label>
+                  <div className="form-field-row">
+                    <label className="form-label">{t('platformConfig.fields.syncInterval')}</label>
                     <Space>
                       <InputNumber
                         value={config.syncIntervalMinutes}
@@ -516,58 +528,80 @@ export default function PlatformConfigPage() {
                       </Tooltip>
                     </Space>
                   </div>
-                  <Form.Switch
-                    field="inventorySyncEnabled"
-                    label={t('platformConfig.fields.inventorySync')}
-                    checked={config.inventorySyncEnabled}
-                    onChange={(checked) =>
-                      handleConfigChange(platform.code, 'inventorySyncEnabled', checked)
-                    }
-                    extraText={t('platformConfig.hints.inventorySync')}
-                  />
-                  <Form.Switch
-                    field="orderAutoImport"
-                    label={t('platformConfig.fields.orderAutoImport')}
-                    checked={config.orderAutoImport}
-                    onChange={(checked) =>
-                      handleConfigChange(platform.code, 'orderAutoImport', checked)
-                    }
-                    extraText={t('platformConfig.hints.orderAutoImport')}
-                  />
+                  <div className="form-field-row">
+                    <label className="form-label">{t('platformConfig.fields.inventorySync')}</label>
+                    <div>
+                      <Switch
+                        checked={config.inventorySyncEnabled}
+                        onChange={(checked) =>
+                          handleConfigChange(platform.code, 'inventorySyncEnabled', checked)
+                        }
+                      />
+                      <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                        {t('platformConfig.hints.inventorySync')}
+                      </Text>
+                    </div>
+                  </div>
+                  <div className="form-field-row">
+                    <label className="form-label">
+                      {t('platformConfig.fields.orderAutoImport')}
+                    </label>
+                    <div>
+                      <Switch
+                        checked={config.orderAutoImport}
+                        onChange={(checked) =>
+                          handleConfigChange(platform.code, 'orderAutoImport', checked)
+                        }
+                      />
+                      <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                        {t('platformConfig.hints.orderAutoImport')}
+                      </Text>
+                    </div>
+                  </div>
                 </>
               )}
-            </Form>
+            </div>
           </div>
 
           {/* Callback/Webhook Section */}
           <div className="form-section">
             <Title heading={5}>{t('platformConfig.sections.callbacks')}</Title>
 
-            <Form labelPosition="left" labelWidth={140}>
-              <Form.Input
-                field="notifyUrl"
-                label={t('platformConfig.fields.notifyUrl')}
-                placeholder={t('platformConfig.placeholders.notifyUrl')}
-                value={config.notifyUrl}
-                onChange={(value) => handleConfigChange(platform.code, 'notifyUrl', value)}
-                extraText={t('platformConfig.hints.notifyUrl')}
-              />
-            </Form>
+            <div className="form-fields">
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.notifyUrl')}</label>
+                <div>
+                  <Input
+                    placeholder={t('platformConfig.placeholders.notifyUrl')}
+                    value={config.notifyUrl}
+                    onChange={(value) => handleConfigChange(platform.code, 'notifyUrl', value)}
+                  />
+                  <Text type="tertiary" size="small" style={{ marginTop: 4, display: 'block' }}>
+                    {t('platformConfig.hints.notifyUrl')}
+                  </Text>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Environment Section */}
           <div className="form-section">
             <Title heading={5}>{t('platformConfig.sections.environment')}</Title>
 
-            <Form labelPosition="left" labelWidth={140}>
-              <Form.Switch
-                field="isSandbox"
-                label={t('platformConfig.fields.sandbox')}
-                checked={config.isSandbox}
-                onChange={(checked) => handleConfigChange(platform.code, 'isSandbox', checked)}
-                extraText={t('platformConfig.hints.sandbox')}
-              />
-            </Form>
+            <div className="form-fields">
+              <div className="form-field-row">
+                <label className="form-label">{t('platformConfig.fields.sandbox')}</label>
+                <div>
+                  <Switch
+                    checked={config.isSandbox}
+                    onChange={(checked) => handleConfigChange(platform.code, 'isSandbox', checked)}
+                  />
+                  <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                    {t('platformConfig.hints.sandbox')}
+                  </Text>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Status Summary */}

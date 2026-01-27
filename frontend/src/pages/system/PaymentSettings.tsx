@@ -6,13 +6,15 @@ import {
   Toast,
   Tabs,
   TabPane,
-  Form,
   Switch,
   Button,
   Banner,
   Spin,
   Space,
   Tag,
+  Input,
+  TextArea,
+  Select,
 } from '@douyinfe/semi-ui-19'
 import {
   IconTick,
@@ -367,117 +369,133 @@ export default function PaymentSettingsPage() {
             </Space>
           </div>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Input
-              field="mchId"
-              label={t('paymentSettings.wechat.mchId')}
-              placeholder={t('paymentSettings.wechat.mchIdPlaceholder')}
-              value={wechatConfig.mchId}
-              onChange={(value) => handleWechatChange('mchId', value)}
-              rules={[{ required: true }]}
-            />
-            <Form.Input
-              field="appId"
-              label={t('paymentSettings.wechat.appId')}
-              placeholder={t('paymentSettings.wechat.appIdPlaceholder')}
-              value={wechatConfig.appId}
-              onChange={(value) => handleWechatChange('appId', value)}
-              rules={[{ required: true }]}
-            />
-            <Form.Input
-              field="apiKey"
-              label={t('paymentSettings.wechat.apiKey')}
-              placeholder={t('paymentSettings.wechat.apiKeyPlaceholder')}
-              value={wechatConfig.apiKey}
-              onChange={(value) => handleWechatChange('apiKey', value)}
-              mode={showWechatApiKey ? undefined : 'password'}
-              suffix={
-                <Button
-                  icon={showWechatApiKey ? <IconEyeClosed /> : <IconEyeOpened />}
-                  theme="borderless"
-                  onClick={() => setShowWechatApiKey(!showWechatApiKey)}
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.mchId')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.mchIdPlaceholder')}
+                value={wechatConfig.mchId}
+                onChange={(value) => handleWechatChange('mchId', value)}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.appId')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.appIdPlaceholder')}
+                value={wechatConfig.appId}
+                onChange={(value) => handleWechatChange('appId', value)}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.apiKey')}</label>
+              <div>
+                <Input
+                  placeholder={t('paymentSettings.wechat.apiKeyPlaceholder')}
+                  value={wechatConfig.apiKey}
+                  onChange={(value) => handleWechatChange('apiKey', value)}
+                  mode={showWechatApiKey ? undefined : 'password'}
+                  suffix={
+                    <Button
+                      icon={showWechatApiKey ? <IconEyeClosed /> : <IconEyeOpened />}
+                      theme="borderless"
+                      onClick={() => setShowWechatApiKey(!showWechatApiKey)}
+                    />
+                  }
                 />
-              }
-              rules={[{ required: true }]}
-              extraText={t('paymentSettings.wechat.apiKeyHint')}
-            />
-            <Form.Input
-              field="serialNo"
-              label={t('paymentSettings.wechat.serialNo')}
-              placeholder={t('paymentSettings.wechat.serialNoPlaceholder')}
-              value={wechatConfig.serialNo}
-              onChange={(value) => handleWechatChange('serialNo', value)}
-              rules={[{ required: true }]}
-            />
-          </Form>
+                <Text type="tertiary" size="small" style={{ marginTop: 4, display: 'block' }}>
+                  {t('paymentSettings.wechat.apiKeyHint')}
+                </Text>
+              </div>
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.serialNo')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.serialNoPlaceholder')}
+                value={wechatConfig.serialNo}
+                onChange={(value) => handleWechatChange('serialNo', value)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.wechat.certificates')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.TextArea
-              field="privateKey"
-              label={t('paymentSettings.wechat.privateKey')}
-              placeholder={t('paymentSettings.wechat.privateKeyPlaceholder')}
-              value={wechatConfig.privateKey}
-              onChange={(value) => handleWechatChange('privateKey', value)}
-              rows={6}
-              rules={[{ required: true }]}
-              extraText={t('paymentSettings.wechat.privateKeyHint')}
-            />
-            <Form.TextArea
-              field="wechatCert"
-              label={t('paymentSettings.wechat.wechatCert')}
-              placeholder={t('paymentSettings.wechat.wechatCertPlaceholder')}
-              value={wechatConfig.wechatCert}
-              onChange={(value) => handleWechatChange('wechatCert', value)}
-              rows={6}
-            />
-            <Form.Input
-              field="wechatCertSerialNo"
-              label={t('paymentSettings.wechat.wechatCertSerialNo')}
-              placeholder={t('paymentSettings.wechat.wechatCertSerialNoPlaceholder')}
-              value={wechatConfig.wechatCertSerialNo}
-              onChange={(value) => handleWechatChange('wechatCertSerialNo', value)}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.privateKey')}</label>
+              <div>
+                <TextArea
+                  placeholder={t('paymentSettings.wechat.privateKeyPlaceholder')}
+                  value={wechatConfig.privateKey}
+                  onChange={(value) => handleWechatChange('privateKey', value)}
+                  rows={6}
+                />
+                <Text type="tertiary" size="small" style={{ marginTop: 4, display: 'block' }}>
+                  {t('paymentSettings.wechat.privateKeyHint')}
+                </Text>
+              </div>
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.wechatCert')}</label>
+              <TextArea
+                placeholder={t('paymentSettings.wechat.wechatCertPlaceholder')}
+                value={wechatConfig.wechatCert}
+                onChange={(value) => handleWechatChange('wechatCert', value)}
+                rows={6}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.wechatCertSerialNo')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.wechatCertSerialNoPlaceholder')}
+                value={wechatConfig.wechatCertSerialNo}
+                onChange={(value) => handleWechatChange('wechatCertSerialNo', value)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.wechat.callbacks')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Input
-              field="notifyUrl"
-              label={t('paymentSettings.wechat.notifyUrl')}
-              placeholder={t('paymentSettings.wechat.notifyUrlPlaceholder')}
-              value={wechatConfig.notifyUrl}
-              onChange={(value) => handleWechatChange('notifyUrl', value)}
-              rules={[{ required: true }]}
-            />
-            <Form.Input
-              field="refundNotifyUrl"
-              label={t('paymentSettings.wechat.refundNotifyUrl')}
-              placeholder={t('paymentSettings.wechat.refundNotifyUrlPlaceholder')}
-              value={wechatConfig.refundNotifyUrl}
-              onChange={(value) => handleWechatChange('refundNotifyUrl', value)}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.notifyUrl')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.notifyUrlPlaceholder')}
+                value={wechatConfig.notifyUrl}
+                onChange={(value) => handleWechatChange('notifyUrl', value)}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.refundNotifyUrl')}</label>
+              <Input
+                placeholder={t('paymentSettings.wechat.refundNotifyUrlPlaceholder')}
+                value={wechatConfig.refundNotifyUrl}
+                onChange={(value) => handleWechatChange('refundNotifyUrl', value)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.environment')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Switch
-              field="isSandbox"
-              label={t('paymentSettings.wechat.sandbox')}
-              checked={wechatConfig.isSandbox}
-              onChange={(checked) => handleWechatChange('isSandbox', checked)}
-              extraText={t('paymentSettings.wechat.sandboxHint')}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.wechat.sandbox')}</label>
+              <div>
+                <Switch
+                  checked={wechatConfig.isSandbox}
+                  onChange={(checked) => handleWechatChange('isSandbox', checked)}
+                />
+                <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                  {t('paymentSettings.wechat.sandboxHint')}
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="form-actions">
@@ -534,89 +552,104 @@ export default function PaymentSettingsPage() {
             </Space>
           </div>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Input
-              field="appId"
-              label={t('paymentSettings.alipay.appId')}
-              placeholder={t('paymentSettings.alipay.appIdPlaceholder')}
-              value={alipayConfig.appId}
-              onChange={(value) => handleAlipayChange('appId', value)}
-              rules={[{ required: true }]}
-            />
-            <Form.Select
-              field="signType"
-              label={t('paymentSettings.alipay.signType')}
-              value={alipayConfig.signType}
-              onChange={(value) => handleAlipayChange('signType', value as 'RSA2' | 'RSA')}
-              optionList={[
-                { label: 'RSA2 (Recommended)', value: 'RSA2' },
-                { label: 'RSA', value: 'RSA' },
-              ]}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.appId')}</label>
+              <Input
+                placeholder={t('paymentSettings.alipay.appIdPlaceholder')}
+                value={alipayConfig.appId}
+                onChange={(value) => handleAlipayChange('appId', value)}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.signType')}</label>
+              <Select
+                value={alipayConfig.signType}
+                onChange={(value) => handleAlipayChange('signType', value as 'RSA2' | 'RSA')}
+                optionList={[
+                  { label: 'RSA2 (Recommended)', value: 'RSA2' },
+                  { label: 'RSA', value: 'RSA' },
+                ]}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.alipay.keys')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.TextArea
-              field="privateKey"
-              label={t('paymentSettings.alipay.privateKey')}
-              placeholder={t('paymentSettings.alipay.privateKeyPlaceholder')}
-              value={alipayConfig.privateKey}
-              onChange={(value) => handleAlipayChange('privateKey', value)}
-              rows={6}
-              rules={[{ required: true }]}
-              extraText={t('paymentSettings.alipay.privateKeyHint')}
-            />
-            <Form.TextArea
-              field="alipayPublicKey"
-              label={t('paymentSettings.alipay.alipayPublicKey')}
-              placeholder={t('paymentSettings.alipay.alipayPublicKeyPlaceholder')}
-              value={alipayConfig.alipayPublicKey}
-              onChange={(value) => handleAlipayChange('alipayPublicKey', value)}
-              rows={6}
-              rules={[{ required: true }]}
-              extraText={t('paymentSettings.alipay.alipayPublicKeyHint')}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.privateKey')}</label>
+              <div>
+                <TextArea
+                  placeholder={t('paymentSettings.alipay.privateKeyPlaceholder')}
+                  value={alipayConfig.privateKey}
+                  onChange={(value) => handleAlipayChange('privateKey', value)}
+                  rows={6}
+                />
+                <Text type="tertiary" size="small" style={{ marginTop: 4, display: 'block' }}>
+                  {t('paymentSettings.alipay.privateKeyHint')}
+                </Text>
+              </div>
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.alipayPublicKey')}</label>
+              <div>
+                <TextArea
+                  placeholder={t('paymentSettings.alipay.alipayPublicKeyPlaceholder')}
+                  value={alipayConfig.alipayPublicKey}
+                  onChange={(value) => handleAlipayChange('alipayPublicKey', value)}
+                  rows={6}
+                />
+                <Text type="tertiary" size="small" style={{ marginTop: 4, display: 'block' }}>
+                  {t('paymentSettings.alipay.alipayPublicKeyHint')}
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.alipay.callbacks')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Input
-              field="notifyUrl"
-              label={t('paymentSettings.alipay.notifyUrl')}
-              placeholder={t('paymentSettings.alipay.notifyUrlPlaceholder')}
-              value={alipayConfig.notifyUrl}
-              onChange={(value) => handleAlipayChange('notifyUrl', value)}
-              rules={[{ required: true }]}
-            />
-            <Form.Input
-              field="returnUrl"
-              label={t('paymentSettings.alipay.returnUrl')}
-              placeholder={t('paymentSettings.alipay.returnUrlPlaceholder')}
-              value={alipayConfig.returnUrl}
-              onChange={(value) => handleAlipayChange('returnUrl', value)}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.notifyUrl')}</label>
+              <Input
+                placeholder={t('paymentSettings.alipay.notifyUrlPlaceholder')}
+                value={alipayConfig.notifyUrl}
+                onChange={(value) => handleAlipayChange('notifyUrl', value)}
+              />
+            </div>
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.returnUrl')}</label>
+              <Input
+                placeholder={t('paymentSettings.alipay.returnUrlPlaceholder')}
+                value={alipayConfig.returnUrl}
+                onChange={(value) => handleAlipayChange('returnUrl', value)}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
           <Title heading={5}>{t('paymentSettings.environment')}</Title>
 
-          <Form labelPosition="left" labelWidth={140}>
-            <Form.Switch
-              field="isSandbox"
-              label={t('paymentSettings.alipay.sandbox')}
-              checked={alipayConfig.isSandbox}
-              onChange={(checked) => handleAlipayChange('isSandbox', checked)}
-              extraText={t('paymentSettings.alipay.sandboxHint')}
-            />
-          </Form>
+          <div className="form-fields">
+            <div className="form-field-row">
+              <label className="form-label">{t('paymentSettings.alipay.sandbox')}</label>
+              <div>
+                <Switch
+                  checked={alipayConfig.isSandbox}
+                  onChange={(checked) => handleAlipayChange('isSandbox', checked)}
+                />
+                <Text type="tertiary" size="small" style={{ marginLeft: 8 }}>
+                  {t('paymentSettings.alipay.sandboxHint')}
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="form-actions">

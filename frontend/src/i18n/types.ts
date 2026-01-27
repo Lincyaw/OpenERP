@@ -4,8 +4,6 @@
  * This file provides TypeScript type declarations for type-safe translation keys.
  */
 
-import type { Namespace } from './config'
-
 /**
  * Common namespace translation keys
  */
@@ -459,12 +457,13 @@ export interface TranslationKeys {
   inventory: Record<string, string>
   finance: Record<string, string>
   system: Record<string, string>
+  integration: Record<string, string>
 }
 
 /**
  * Type-safe translation key for a specific namespace
  */
-export type TranslationKey<N extends Namespace> = keyof TranslationKeys[N]
+export type TranslationKey<N extends keyof TranslationKeys> = keyof TranslationKeys[N]
 
 /**
  * Interpolation parameters type

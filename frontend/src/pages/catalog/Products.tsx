@@ -247,12 +247,12 @@ export default function ProductsPage() {
       // All failed
       Toast.error(t('products.messages.batchActivateError'))
     } else {
-      // Partial success
+      // Partial success - use type assertion for interpolation with dynamic keys
       Toast.warning(
-        t('products.messages.batchActivatePartial', {
-          successCount,
-          failureCount,
-        })
+        (t as (key: string, options?: Record<string, unknown>) => string)(
+          'products.messages.batchActivatePartial',
+          { successCount, failureCount }
+        )
       )
     }
 
@@ -276,12 +276,12 @@ export default function ProductsPage() {
       // All failed
       Toast.error(t('products.messages.batchDeactivateError'))
     } else {
-      // Partial success
+      // Partial success - use type assertion for interpolation with dynamic keys
       Toast.warning(
-        t('products.messages.batchDeactivatePartial', {
-          successCount,
-          failureCount,
-        })
+        (t as (key: string, options?: Record<string, unknown>) => string)(
+          'products.messages.batchDeactivatePartial',
+          { successCount, failureCount }
+        )
       )
     }
 

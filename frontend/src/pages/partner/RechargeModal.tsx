@@ -9,9 +9,10 @@ import {
   Toast,
   Typography,
   Descriptions,
+  Select,
 } from '@douyinfe/semi-ui-19'
 import { getBalance } from '@/api/balance/balance'
-import type { HandlerRechargeRequest } from '@/api/models'
+import type { HandlerRechargeRequest, HandlerRechargeRequestPaymentMethod } from '@/api/models'
 import { useFormatters } from '@/hooks/useFormatters'
 import './RechargeModal.css'
 
@@ -49,6 +50,7 @@ export default function RechargeModal({
 
   // Form state
   const [amount, setAmount] = useState<number | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<HandlerRechargeRequestPaymentMethod>('CASH')
   const [reference, setReference] = useState('')
   const [remark, setRemark] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -64,6 +66,7 @@ export default function RechargeModal({
   // Reset form when modal closes
   const handleClose = useCallback(() => {
     setAmount(null)
+    setPaymentMethod('CASH')
     setReference('')
     setRemark('')
     onClose()
@@ -81,6 +84,7 @@ export default function RechargeModal({
     try {
       const request: HandlerRechargeRequest = {
         amount,
+        payment_method: paymentMethod,
         reference: reference || undefined,
         remark: remark || undefined,
       }
@@ -98,7 +102,7 @@ export default function RechargeModal({
     } finally {
       setSubmitting(false)
     }
-  }, [amount, reference, remark, customerId, balanceApi, handleClose, onSuccess, t])
+  }, [amount, paymentMethod, reference, remark, customerId, balanceApi, handleClose, onSuccess, t])
 
   // Handle amount change
   const handleAmountChange = useCallback((value: number | string) => {
@@ -146,6 +150,20 @@ export default function RechargeModal({
               style={{ width: '100%' }}
               size="large"
               className="amount-input"
+            />
+          </Form.Slot>
+
+          <Form.Slot label={`${t('balance.rechargeModal.paymentMethod')} *`}>
+            <Select
+              value={paymentMethod}
+              onChange={(value) => setPaymentMethod(value as HandlerRechargeRequestPaymentMethod)}
+              optionList={[
+                { label: t('balance.paymentMethods.CASH'), value: 'CASH' },
+                { label: t('balance.paymentMethods.WECHAT'), value: 'WECHAT' },
+                { label: t('balance.paymentMethods.ALIPAY'), value: 'ALIPAY' },
+                { label: t('balance.paymentMethods.BANK'), value: 'BANK' },
+              ]}
+              style={{ width: '100%' }}
             />
           </Form.Slot>
 

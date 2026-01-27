@@ -9,7 +9,6 @@ import {
   Modal,
   Spin,
   Tag,
-  Form,
   Checkbox,
   Empty,
   Popconfirm,
@@ -120,7 +119,7 @@ type MappingRow = ProductMapping & Record<string, unknown>
  * - Edit/delete existing mappings
  */
 export default function ProductMappingsPage() {
-  const { t } = useTranslation(['integration', 'common'])
+  const { t } = useTranslation(['integration', 'common'] as const)
   const { formatDate } = useFormatters()
 
   // Data states
@@ -707,7 +706,7 @@ export default function ProductMappingsPage() {
         render: (date: unknown) => {
           const dateStr = date as string | undefined
           if (!dateStr) return <Text type="tertiary">-</Text>
-          return formatDate(new Date(dateStr), 'datetime')
+          return formatDate(new Date(dateStr), 'medium')
         },
       },
       {
@@ -863,68 +862,71 @@ export default function ProductMappingsPage() {
         width={600}
         className="mapping-modal"
       >
-        <Form labelPosition="left" labelWidth={120}>
+        <div className="mapping-form">
           {/* Platform Selection */}
-          <Form.Select
-            field="platform"
-            label={t('productMappings.fields.platform')}
-            value={selectedPlatform}
-            onChange={(value) => {
-              setSelectedPlatform(value as PlatformCode)
-              setSelectedPlatformProduct(null)
-              setPlatformProductOptions([])
-            }}
-            optionList={PLATFORMS.map((p) => ({ label: p.name, value: p.code }))}
-            disabled={!!editingMapping}
-            style={{ width: '100%' }}
-          />
+          <div className="form-field-row">
+            <label className="form-label">{t('productMappings.fields.platform')}</label>
+            <Select
+              value={selectedPlatform}
+              onChange={(value) => {
+                setSelectedPlatform(value as PlatformCode)
+                setSelectedPlatformProduct(null)
+                setPlatformProductOptions([])
+              }}
+              optionList={PLATFORMS.map((p) => ({ label: p.name, value: p.code }))}
+              disabled={!!editingMapping}
+              style={{ width: '100%' }}
+            />
+          </div>
 
           {/* Local Product Selection */}
-          <Form.Select
-            field="localProduct"
-            label={t('productMappings.fields.localProduct')}
-            placeholder={t('productMappings.placeholders.searchLocalProduct')}
-            value={selectedLocalProduct?.id}
-            onSearch={(keyword) => searchLocalProducts(keyword)}
-            onChange={(value) => {
-              const product = localProductOptions.find((p) => p.id === value)
-              setSelectedLocalProduct(product || null)
-            }}
-            optionList={localProductOptions.map((p) => ({
-              label: `${p.code} - ${p.name}`,
-              value: p.id,
-            }))}
-            loading={searchingLocal}
-            filter={false}
-            remote
-            showClear
-            disabled={!!editingMapping}
-            style={{ width: '100%' }}
-            prefix={<IconSearch />}
-          />
+          <div className="form-field-row">
+            <label className="form-label">{t('productMappings.fields.localProduct')}</label>
+            <Select
+              placeholder={t('productMappings.placeholders.searchLocalProduct')}
+              value={selectedLocalProduct?.id}
+              onSearch={(keyword) => searchLocalProducts(keyword)}
+              onChange={(value) => {
+                const product = localProductOptions.find((p) => p.id === value)
+                setSelectedLocalProduct(product || null)
+              }}
+              optionList={localProductOptions.map((p) => ({
+                label: `${p.code} - ${p.name}`,
+                value: p.id,
+              }))}
+              loading={searchingLocal}
+              filter={false}
+              remote
+              showClear
+              disabled={!!editingMapping}
+              style={{ width: '100%' }}
+              prefix={<IconSearch />}
+            />
+          </div>
 
           {/* Platform Product Selection */}
-          <Form.Select
-            field="platformProduct"
-            label={t('productMappings.fields.platformProduct')}
-            placeholder={t('productMappings.placeholders.searchPlatformProduct')}
-            value={selectedPlatformProduct?.id}
-            onSearch={(keyword) => searchPlatformProducts(keyword, selectedPlatform)}
-            onChange={(value) => {
-              const product = platformProductOptions.find((p) => p.id === value)
-              setSelectedPlatformProduct(product || null)
-            }}
-            optionList={platformProductOptions.map((p) => ({
-              label: `${p.sku} - ${p.title}`,
-              value: p.id,
-            }))}
-            loading={searchingPlatform}
-            filter={false}
-            remote
-            showClear
-            style={{ width: '100%' }}
-            prefix={<IconSearch />}
-          />
+          <div className="form-field-row">
+            <label className="form-label">{t('productMappings.fields.platformProduct')}</label>
+            <Select
+              placeholder={t('productMappings.placeholders.searchPlatformProduct')}
+              value={selectedPlatformProduct?.id}
+              onSearch={(keyword) => searchPlatformProducts(keyword, selectedPlatform)}
+              onChange={(value) => {
+                const product = platformProductOptions.find((p) => p.id === value)
+                setSelectedPlatformProduct(product || null)
+              }}
+              optionList={platformProductOptions.map((p) => ({
+                label: `${p.sku} - ${p.title}`,
+                value: p.id,
+              }))}
+              loading={searchingPlatform}
+              filter={false}
+              remote
+              showClear
+              style={{ width: '100%' }}
+              prefix={<IconSearch />}
+            />
+          </div>
 
           {/* Sync Settings */}
           <div className="sync-settings-section">
@@ -934,19 +936,19 @@ export default function ProductMappingsPage() {
             <Space vertical align="start">
               <Checkbox
                 checked={syncPriceEnabled}
-                onChange={(e) => setSyncPriceEnabled(e.target.checked)}
+                onChange={(e) => setSyncPriceEnabled(e.target.checked ?? false)}
               >
                 {t('productMappings.fields.syncPrice')}
               </Checkbox>
               <Checkbox
                 checked={syncInventoryEnabled}
-                onChange={(e) => setSyncInventoryEnabled(e.target.checked)}
+                onChange={(e) => setSyncInventoryEnabled(e.target.checked ?? false)}
               >
                 {t('productMappings.fields.syncInventory')}
               </Checkbox>
             </Space>
           </div>
-        </Form>
+        </div>
       </Modal>
 
       {/* Batch Mapping Modal */}
@@ -963,16 +965,15 @@ export default function ProductMappingsPage() {
         <div className="batch-mapping-content">
           {/* Platform Selection */}
           <div className="batch-platform-section">
-            <Form labelPosition="left" labelWidth={100}>
-              <Form.Select
-                field="batchPlatform"
-                label={t('productMappings.fields.platform')}
+            <div className="form-field-row">
+              <label className="form-label">{t('productMappings.fields.platform')}</label>
+              <Select
                 value={batchPlatform}
                 onChange={handleBatchPlatformChange}
                 optionList={PLATFORMS.map((p) => ({ label: p.name, value: p.code }))}
                 style={{ width: 200 }}
               />
-            </Form>
+            </div>
           </div>
 
           {/* Sync Settings */}
@@ -980,13 +981,13 @@ export default function ProductMappingsPage() {
             <Space>
               <Checkbox
                 checked={batchSyncPrice}
-                onChange={(e) => setBatchSyncPrice(e.target.checked)}
+                onChange={(e) => setBatchSyncPrice(e.target.checked ?? false)}
               >
                 {t('productMappings.fields.syncPrice')}
               </Checkbox>
               <Checkbox
                 checked={batchSyncInventory}
-                onChange={(e) => setBatchSyncInventory(e.target.checked)}
+                onChange={(e) => setBatchSyncInventory(e.target.checked ?? false)}
               >
                 {t('productMappings.fields.syncInventory')}
               </Checkbox>
