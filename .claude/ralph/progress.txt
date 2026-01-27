@@ -28623,3 +28623,91 @@ The implementation follows existing patterns:
 === Next Steps ===
 - Consider adding payment_method label when ReceiptVoucher/PaymentVoucher creation is implemented
 - May need to add warehouse_type differentiation when virtual warehouses are supported
+
+================================================================================
+2025-01-27 - PRINT-BE-001: 打印模块领域设计与基础架构
+================================================================================
+
+=== Implementation Details ===
+
+Created the `printing` domain module at `backend/internal/domain/printing/` with full DDD implementation:
+
+**Files Created:**
+1. `doc.go` - Package documentation for the printing bounded context
+2. `enums.go` - Domain enumerations:
+   - `DocType` - Document types (SALES_ORDER, SALES_DELIVERY, SALES_RECEIPT, SALES_RETURN, PURCHASE_ORDER, PURCHASE_RECEIVING, PURCHASE_RETURN, RECEIPT_VOUCHER, PAYMENT_VOUCHER, STOCK_TAKING)
+   - `PaperSize` - Paper sizes (A4, A5, RECEIPT_58MM, RECEIPT_80MM, CONTINUOUS_241) with dimensions and helper methods
+   - `Orientation` - Page orientation (PORTRAIT, LANDSCAPE)
+   - `TemplateStatus` - Template status (ACTIVE, INACTIVE)
+   - `JobStatus` - Print job status (PENDING, RENDERING, COMPLETED, FAILED) with state transition validation
+
+3. `value_objects.go` - Value objects:
+   - `Margins` - Page margins (top, right, bottom, left) with validation and factory methods
+
+4. `print_template.go` - PrintTemplate aggregate root:
+   - Full CRUD operations
+   - Validation for name, content, paper size, doc type
+   - Status management (Activate/Deactivate)
+   - Default template management (SetAsDefault/UnsetDefault)
+   - Auto-adjusts margins for receipt paper sizes
+   - Domain events emission
+
+5. `print_job.go` - PrintJob entity:
+   - Job lifecycle management (StartRendering, Complete, Fail)
+   - State transition validation
+   - Status check helpers (IsPending, IsRendering, IsCompleted, IsFailed, IsTerminal)
+   - Domain events emission
+
+6. `events.go` - Domain events:
+   - PrintTemplateCreatedEvent, PrintTemplateUpdatedEvent, PrintTemplateStatusChangedEvent, PrintTemplateSetAsDefaultEvent, PrintTemplateDeletedEvent
+   - PrintJobCreatedEvent, PrintJobStatusChangedEvent, PrintJobCompletedEvent, PrintJobFailedEvent
+
+7. `repository.go` - Repository interfaces:
+   - PrintTemplateRepository - CRUD, FindByDocType, FindDefault, FindActiveByDocType, ExistsByDocTypeAndName, ClearDefaultForDocType
+   - PrintJobRepository - CRUD, FindByDocument, FindRecent, FindPending, CountByStatus, DeleteOlderThan
+   - Filter types for templates and jobs
+
+**Test Files Created:**
+1. `enums_test.go` - Tests for all enumerations (DocType, PaperSize, Orientation, TemplateStatus, JobStatus)
+2. `value_objects_test.go` - Tests for Margins value object
+3. `print_template_test.go` - Comprehensive tests for PrintTemplate aggregate
+4. `print_job_test.go` - Comprehensive tests for PrintJob entity
+
+=== Verification ===
+- ✅ All code compiles successfully (`go build ./...`)
+- ✅ All 72 unit tests passing (`go test ./internal/domain/printing/... -v`)
+- ✅ Multi-tenant support via TenantAggregateRoot
+- ✅ Domain events properly emitted for all state changes
+- ✅ Repository interfaces follow existing project patterns
+
+=== Design Decisions ===
+1. **TenantAggregateRoot**: Both PrintTemplate and PrintJob extend TenantAggregateRoot for multi-tenant isolation
+2. **State Transitions**: JobStatus includes transition validation to ensure valid state machine flow
+3. **Receipt Paper Handling**: Auto-adjusts margins to minimal values (2mm) for receipt paper sizes
+4. **Default Template Logic**: Only active templates can be set as default; default templates cannot be deactivated
+5. **Domain Events**: Comprehensive event emission for audit and integration purposes
+
+=== Key Files Modified ===
+- backend/internal/domain/printing/doc.go (new)
+- backend/internal/domain/printing/enums.go (new)
+- backend/internal/domain/printing/value_objects.go (new)
+- backend/internal/domain/printing/print_template.go (new)
+- backend/internal/domain/printing/print_job.go (new)
+- backend/internal/domain/printing/events.go (new)
+- backend/internal/domain/printing/repository.go (new)
+- backend/internal/domain/printing/enums_test.go (new)
+- backend/internal/domain/printing/value_objects_test.go (new)
+- backend/internal/domain/printing/print_template_test.go (new)
+- backend/internal/domain/printing/print_job_test.go (new)
+
+=== Notes ===
+- This task establishes the domain foundation for the printing module
+- Subsequent tasks (PRINT-BE-002 through PRINT-BE-006) will build on this foundation:
+  - PRINT-BE-002: PDF generation engine (wkhtmltopdf)
+  - PRINT-BE-003: Template engine and data binding
+  - PRINT-BE-004: Print service API implementation
+  - PRINT-BE-005/006: Default print templates
+
+=== Next Steps ===
+- PRINT-BE-002: Implement PDF generation engine with wkhtmltopdf
+- PRINT-BE-003: Implement template engine with Go html/template

@@ -6531,5 +6531,513 @@
     "blockedBy": [
       "OBS-PROFILE-002"
     ]
+  },
+  {
+    "id": "PRINT-BE-001",
+    "story": "打印模块领域设计与基础架构",
+    "priority": "high",
+    "category": "backend",
+    "requirements": [
+      "=== 背景 ===",
+      "实现单据打印功能，支持销售发货单、采购入库单、收款单等核心业务单据的打印。",
+      "采用PDF生成方案，支持浏览器打印和本地打印代理两种模式。",
+      "",
+      "=== 领域模型设计 ===",
+      "1. 创建 printing 领域模块: backend/internal/domain/printing/",
+      "",
+      "2. PrintTemplate 聚合根 (打印模板):",
+      "   - id: UUID",
+      "   - tenantId: UUID (多租户支持)",
+      "   - documentType: DocType (单据类型枚举)",
+      "   - name: string (模板名称)",
+      "   - description: string (模板描述)",
+      "   - content: string (HTML模板内容)",
+      "   - paperSize: PaperSize (A4/A5/RECEIPT_58MM/RECEIPT_80MM/CONTINUOUS)",
+      "   - orientation: Orientation (PORTRAIT/LANDSCAPE)",
+      "   - margins: Margins (上下左右边距)",
+      "   - isDefault: bool (是否为该类型默认模板)",
+      "   - status: TemplateStatus (ACTIVE/INACTIVE)",
+      "   - version: int (模板版本)",
+      "   - createdAt/updatedAt: timestamp",
+      "",
+      "3. PrintJob 实体 (打印任务):",
+      "   - id: UUID",
+      "   - tenantId: UUID",
+      "   - templateId: UUID",
+      "   - documentType: DocType",
+      "   - documentId: UUID (关联的单据ID)",
+      "   - documentNumber: string (单据编号)",
+      "   - status: JobStatus (PENDING/RENDERING/COMPLETED/FAILED)",
+      "   - copies: int (打印份数)",
+      "   - printerName: string (打印机名称，可选)",
+      "   - pdfUrl: string (生成的PDF URL)",
+      "   - errorMessage: string (错误信息)",
+      "   - printedAt: timestamp",
+      "   - printedBy: UUID (打印人)",
+      "",
+      "4. DocType 枚举 (单据类型):",
+      "   - SALES_ORDER: 销售订单",
+      "   - SALES_DELIVERY: 销售发货单/送货单",
+      "   - SALES_RECEIPT: 销售收据/小票",
+      "   - SALES_RETURN: 销售退货单",
+      "   - PURCHASE_ORDER: 采购订单",
+      "   - PURCHASE_RECEIVING: 采购入库单",
+      "   - PURCHASE_RETURN: 采购退货单",
+      "   - RECEIPT_VOUCHER: 收款单",
+      "   - PAYMENT_VOUCHER: 付款单",
+      "   - STOCK_TAKING: 盘点单",
+      "",
+      "5. PaperSize 枚举:",
+      "   - A4: 210mm x 297mm",
+      "   - A5: 148mm x 210mm",
+      "   - RECEIPT_58MM: 58mm热敏小票",
+      "   - RECEIPT_80MM: 80mm热敏小票",
+      "   - CONTINUOUS_241: 241mm连续纸(针式)",
+      "",
+      "=== Repository 接口 ===",
+      "- PrintTemplateRepository: CRUD + FindByDocType + FindDefault",
+      "- PrintJobRepository: CRUD + FindByDocument + FindRecent",
+      "",
+      "=== 验收标准 ===",
+      "- 领域模型代码完整，通过单元测试",
+      "- Repository接口定义清晰",
+      "- 支持多租户隔离"
+    ],
+    "passes": true,
+    "specRef": "Printing Module - Domain Layer",
+    "affectedModules": [
+      "backend/internal/domain/printing/"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "PRINT-BE-002",
+    "story": "PDF生成引擎实现 (wkhtmltopdf)",
+    "priority": "high",
+    "category": "backend",
+    "requirements": [
+      "=== 背景 ===",
+      "实现PDF生成引擎，将HTML模板渲染为PDF文件。",
+      "",
+      "=== 技术选型 ===",
+      "使用 wkhtmltopdf 生成PDF:",
+      "- 轻量、独立二进制，适合容器部署",
+      "- CSS支持良好",
+      "- 备选: chromedp (需要Chrome)",
+      "",
+      "=== 实现要求 ===",
+      "1. 创建 PDFRenderer 接口:",
+      "   type PDFRenderer interface {",
+      "       Render(ctx context.Context, req RenderRequest) (*RenderResult, error)",
+      "   }",
+      "",
+      "2. WkhtmltopdfRenderer 实现:",
+      "   - 调用 wkhtmltopdf 命令行",
+      "   - 支持纸张尺寸配置",
+      "   - 支持页眉页脚",
+      "   - 超时控制 (默认30秒)",
+      "",
+      "3. PDF存储:",
+      "   - 生成的PDF保存到文件系统",
+      "   - 路径: /data/prints/{tenant_id}/{year}/{month}/{job_id}.pdf",
+      "   - 支持配置保留期限，自动清理过期文件",
+      "",
+      "=== Docker支持 ===",
+      "- 在Dockerfile中安装wkhtmltopdf和中文字体",
+      "",
+      "=== 验收标准 ===",
+      "- 能从HTML生成PDF",
+      "- 支持中文字体",
+      "- PDF尺寸正确",
+      "- 渲染性能 < 3秒/页"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - PDF Engine",
+    "affectedModules": [
+      "backend/internal/infrastructure/printing/",
+      "backend/Dockerfile"
+    ],
+    "blockedBy": [
+      "PRINT-BE-001"
+    ]
+  },
+  {
+    "id": "PRINT-BE-003",
+    "story": "模板引擎与数据绑定",
+    "priority": "high",
+    "category": "backend",
+    "requirements": [
+      "=== 背景 ===",
+      "实现模板引擎，将业务数据绑定到HTML模板。",
+      "",
+      "=== 实现要求 ===",
+      "1. 使用 Go html/template 标准库",
+      "",
+      "2. 创建 TemplateEngine 服务",
+      "",
+      "3. 数据提供者接口 (每种单据一个):",
+      "   - SalesOrderDataProvider",
+      "   - SalesDeliveryDataProvider",
+      "   - PurchaseOrderDataProvider",
+      "   - ReceiptVoucherDataProvider 等",
+      "",
+      "4. 模板函数扩展:",
+      "   - formatMoney: 金额格式化",
+      "   - formatDate: 日期格式化",
+      "   - moneyToChinese: 金额转中文大写",
+      "",
+      "=== 验收标准 ===",
+      "- 模板能正确渲染数据",
+      "- 支持循环、条件判断",
+      "- 自定义函数正常工作"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Template Engine",
+    "affectedModules": [
+      "backend/internal/application/printing/",
+      "backend/internal/infrastructure/printing/"
+    ],
+    "blockedBy": [
+      "PRINT-BE-001"
+    ]
+  },
+  {
+    "id": "PRINT-BE-004",
+    "story": "打印服务API实现",
+    "priority": "high",
+    "category": "backend",
+    "requirements": [
+      "=== 背景 ===",
+      "实现打印相关的API端点。",
+      "",
+      "=== API 设计 ===",
+      "1. GET /api/v1/print/{docType}/{documentId}/preview - 预览HTML",
+      "2. POST /api/v1/print/{docType}/{documentId}/pdf - 生成PDF",
+      "3. GET /api/v1/print/jobs/{jobId}/download - 下载PDF",
+      "4. GET /api/v1/print/jobs - 打印任务列表",
+      "5. CRUD /api/v1/print/templates - 模板管理",
+      "6. GET /api/v1/print/document-types - 可用单据类型",
+      "",
+      "=== 权限控制 ===",
+      "- print:preview - 预览权限",
+      "- print:generate - 生成PDF权限",
+      "- print:template_manage - 模板管理权限",
+      "",
+      "=== 验收标准 ===",
+      "- API遵循RESTful规范",
+      "- Swagger文档完整",
+      "- 权限控制正常"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - API Layer",
+    "affectedModules": [
+      "backend/internal/interface/api/print/",
+      "backend/internal/application/printing/"
+    ],
+    "blockedBy": [
+      "PRINT-BE-002",
+      "PRINT-BE-003"
+    ]
+  },
+  {
+    "id": "PRINT-BE-005",
+    "story": "默认打印模板实现 (P0核心)",
+    "priority": "high",
+    "category": "backend",
+    "requirements": [
+      "=== P0 核心模板 ===",
+      "",
+      "1. 销售发货单/送货单 (SALES_DELIVERY):",
+      "   - 尺寸: A4/A5/CONTINUOUS_241",
+      "   - 内容: 客户信息、商品明细、数量、金额、签收栏",
+      "   - 支持多联打印",
+      "",
+      "2. 销售收据 (SALES_RECEIPT):",
+      "   - 尺寸: RECEIPT_58MM/RECEIPT_80MM/A5",
+      "   - 内容: 店铺信息、商品清单、合计、支付方式",
+      "   - 紧凑布局，适合热敏打印",
+      "",
+      "3. 采购入库单 (PURCHASE_RECEIVING):",
+      "   - 尺寸: A4/CONTINUOUS_241",
+      "   - 内容: 供应商信息、商品明细、批次号、签字栏",
+      "",
+      "=== 模板设计规范 ===",
+      "- 使用 CSS Grid/Flexbox 布局",
+      "- 支持打印媒体查询 @media print",
+      "- 表格边框清晰",
+      "- 预留签字/盖章区域",
+      "",
+      "=== 验收标准 ===",
+      "- P0模板全部完成",
+      "- 不同纸张尺寸正常显示",
+      "- 中英文混排正常"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Default Templates",
+    "affectedModules": [
+      "backend/internal/infrastructure/printing/templates/",
+      "backend/migrations/"
+    ],
+    "blockedBy": [
+      "PRINT-BE-003"
+    ]
+  },
+  {
+    "id": "PRINT-BE-006",
+    "story": "扩展打印模板实现 (P1/P2)",
+    "priority": "medium",
+    "category": "backend",
+    "requirements": [
+      "=== P1 扩展模板 ===",
+      "1. 销售订单确认单 (SALES_ORDER) - A4",
+      "2. 采购订单 (PURCHASE_ORDER) - A4",
+      "3. 收款单 (RECEIPT_VOUCHER) - A5",
+      "",
+      "=== P2 可选模板 ===",
+      "4. 付款单 (PAYMENT_VOUCHER)",
+      "5. 盘点单 (STOCK_TAKING)",
+      "6. 销售退货单 (SALES_RETURN)",
+      "7. 采购退货单 (PURCHASE_RETURN)",
+      "",
+      "=== 验收标准 ===",
+      "- P1模板完成",
+      "- P2模板至少完成2个"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Extended Templates",
+    "affectedModules": [
+      "backend/internal/infrastructure/printing/templates/"
+    ],
+    "blockedBy": [
+      "PRINT-BE-005"
+    ]
+  },
+  {
+    "id": "PRINT-FE-001",
+    "story": "打印预览组件实现",
+    "priority": "high",
+    "category": "frontend",
+    "requirements": [
+      "=== 组件设计 ===",
+      "",
+      "1. PrintPreviewModal 组件:",
+      "   - 加载打印预览HTML",
+      "   - 支持缩放查看",
+      "   - 选择纸张尺寸/模板",
+      "   - 设置打印份数",
+      "",
+      "2. PrintButton 组件:",
+      "   - 点击打开预览弹窗",
+      "   - 支持快捷键 Ctrl+P",
+      "",
+      "3. 浏览器打印实现:",
+      "   - 使用 iframe 加载HTML",
+      "   - 调用 iframe.contentWindow.print()",
+      "",
+      "=== UI 设计 ===",
+      "- 使用 Semi Design Modal",
+      "- 工具栏: 缩放、纸张、份数、打印按钮",
+      "",
+      "=== 验收标准 ===",
+      "- 预览正常显示",
+      "- 浏览器打印功能正常",
+      "- 支持深色模式"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Frontend Preview",
+    "affectedModules": [
+      "frontend/src/components/printing/",
+      "frontend/src/hooks/usePrint.ts"
+    ],
+    "blockedBy": [
+      "PRINT-BE-004"
+    ]
+  },
+  {
+    "id": "PRINT-FE-002",
+    "story": "单据页面集成打印按钮",
+    "priority": "high",
+    "category": "frontend",
+    "requirements": [
+      "=== 集成位置 ===",
+      "1. 销售订单详情页 - 打印订单/发货单/收据",
+      "2. 采购订单详情页 - 打印采购单/入库单",
+      "3. 收款单详情页 - 打印收据",
+      "4. 付款单详情页 - 打印凭证",
+      "5. 盘点单详情页 - 打印盘点表",
+      "",
+      "=== 列表页快捷打印 ===",
+      "- 操作列添加打印图标按钮",
+      "",
+      "=== 快捷键 ===",
+      "- 详情页 Ctrl+P 触发默认打印",
+      "",
+      "=== 验收标准 ===",
+      "- 各单据页面打印入口完整",
+      "- 权限控制正常",
+      "- 快捷键正常"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Frontend Integration",
+    "affectedModules": [
+      "frontend/src/pages/trade/",
+      "frontend/src/pages/finance/",
+      "frontend/src/pages/inventory/"
+    ],
+    "blockedBy": [
+      "PRINT-FE-001"
+    ]
+  },
+  {
+    "id": "PRINT-FE-003",
+    "story": "模板管理页面",
+    "priority": "medium",
+    "category": "frontend",
+    "requirements": [
+      "=== 页面功能 ===",
+      "1. 模板列表页 (/settings/print-templates)",
+      "   - 按单据类型分组",
+      "   - 操作: 预览、编辑、设为默认",
+      "",
+      "2. 模板编辑页:",
+      "   - 基本信息编辑",
+      "   - HTML模板编辑器 (Monaco)",
+      "   - 实时预览面板",
+      "",
+      "=== 验收标准 ===",
+      "- 模板CRUD功能完整",
+      "- 代码编辑器语法高亮"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Template Management",
+    "affectedModules": [
+      "frontend/src/pages/settings/print-templates/"
+    ],
+    "blockedBy": [
+      "PRINT-FE-001"
+    ]
+  },
+  {
+    "id": "PRINT-AGENT-001",
+    "story": "本地打印代理协议设计",
+    "priority": "medium",
+    "category": "design",
+    "requirements": [
+      "=== 背景 ===",
+      "设计本地打印代理协议，支持静默打印（即录即打）。",
+      "",
+      "=== 通信协议 ===",
+      "WebSocket: ws://localhost:19100",
+      "",
+      "=== API 设计 ===",
+      "1. GET /printers - 获取打印机列表",
+      "2. POST /print - 提交打印任务 (pdfUrl/pdfBase64, printerName, copies, silent)",
+      "3. GET /jobs/{jobId} - 查询任务状态",
+      "4. GET /health - 健康检查",
+      "",
+      "=== 安全 ===",
+      "- 仅监听 localhost",
+      "- CORS 限制域名",
+      "",
+      "=== 验收标准 ===",
+      "- 协议文档完整"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Local Agent Protocol",
+    "affectedModules": [
+      "docs/print-agent-protocol.md"
+    ],
+    "blockedBy": []
+  },
+  {
+    "id": "PRINT-AGENT-002",
+    "story": "本地打印代理实现 (Go)",
+    "priority": "low",
+    "category": "tools",
+    "requirements": [
+      "=== 技术选型 ===",
+      "- 语言: Go",
+      "- HTTP: net/http 或 gin",
+      "- WebSocket: gorilla/websocket",
+      "- GUI: systray (系统托盘)",
+      "",
+      "=== 功能 ===",
+      "1. 检测可用打印机",
+      "2. 接收PDF打印任务",
+      "3. 调用系统打印命令",
+      "4. 系统托盘 (状态、设置、退出)",
+      "",
+      "=== 平台支持 ===",
+      "- Windows: 优先",
+      "- macOS/Linux: 使用 lp/lpr",
+      "",
+      "=== 验收标准 ===",
+      "- Windows版本可用",
+      "- 静默打印成功",
+      "- 内存 < 30MB"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Local Agent",
+    "affectedModules": [
+      "tools/print-agent/"
+    ],
+    "blockedBy": [
+      "PRINT-AGENT-001"
+    ]
+  },
+  {
+    "id": "PRINT-FE-004",
+    "story": "前端本地代理集成",
+    "priority": "low",
+    "category": "frontend",
+    "requirements": [
+      "=== 实现 ===",
+      "1. PrintAgentService: 检测代理、获取打印机、提交任务",
+      "2. 代理未运行时降级为浏览器打印",
+      "3. 设置页面: 默认打印机、代理下载链接",
+      "",
+      "=== 验收标准 ===",
+      "- 代理检测正常",
+      "- 静默打印功能完整",
+      "- 降级方案正常"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Frontend Agent",
+    "affectedModules": [
+      "frontend/src/services/printAgent.ts",
+      "frontend/src/pages/settings/print-settings/"
+    ],
+    "blockedBy": [
+      "PRINT-AGENT-002",
+      "PRINT-FE-002"
+    ]
+  },
+  {
+    "id": "PRINT-INT-001",
+    "story": "打印模块集成测试与E2E",
+    "priority": "medium",
+    "category": "testing",
+    "requirements": [
+      "=== 后端测试 ===",
+      "1. PDF生成测试 - 各模板正确生成",
+      "2. API测试 - 预览、生成、模板CRUD",
+      "",
+      "=== E2E测试 ===",
+      "1. 打开订单详情 -> 点击打印 -> 验证预览",
+      "2. 点击生成PDF -> 验证下载",
+      "",
+      "=== 验收标准 ===",
+      "- 后端覆盖率 > 80%",
+      "- E2E测试通过"
+    ],
+    "passes": false,
+    "specRef": "Printing Module - Testing",
+    "affectedModules": [
+      "backend/internal/application/printing/*_test.go",
+      "frontend/e2e/printing/"
+    ],
+    "blockedBy": [
+      "PRINT-FE-002"
+    ]
   }
 ]
