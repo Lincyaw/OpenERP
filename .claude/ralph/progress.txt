@@ -27580,3 +27580,113 @@ profile_goroutines = true
 - OBS-PROFILE-002: Pyroscope Labels 支持 (多维度分析)
 - OBS-PROFILE-003: Pyroscope + OpenTelemetry Span Profiles 集成
 - OBS-PROFILE-004: 部署 Pyroscope Server (Docker Compose)
+
+---
+
+2026-01-27 - OBS-PROFILE-002: Pyroscope Labels 支持 (多维度分析)
+
+=== Implementation Details ===
+
+1. **Verified Existing Implementation (profiler_labels.go)**
+   - Full implementation already present with comprehensive features
+   - WithProfilingLabels() using pyroscope.TagWrapper
+   - WithPprofLabels() using Go native pprof.Do API
+   - ProfilingScope builder pattern for incremental label building
+   - HTTPRequestLabels(), OperationLabels(), RegionLabels() helper functions
+   - Label constants: controller, route, method, tenant_id, operation, region
+   - High cardinality label filtering (user_id, request_id, order_id, etc.)
+   - Label key sanitization (snake_case, max length truncation)
+
+2. **Verified HTTP Middleware (profiling.go)**
+   - ProfilingConfig with Enabled, SkipPaths, SkipPathPrefixes
+   - DefaultProfilingConfig() with sensible defaults
+   - Profiling() and ProfilingWithConfig() middleware functions
+   - extractProfilingLabels() extracts controller, route, method, tenant_id
+   - extractControllerFromRoute() derives controller from route pattern
+   - getTenantIDForProfiling() gets tenant from JWT or tenant middleware
+   - ProfilingAttributeInjector() for post-auth label injection
+
+3. **Created Unit Tests (profiler_labels_test.go)**
+   - 26+ test functions with multiple subtests
+   - Tests for empty labels, basic labels, high cardinality filtering
+   - Tests for value truncation, empty value handling
+   - Tests for ProfilingScope builder pattern
+   - Tests for HTTPRequestLabels, OperationLabels, RegionLabels
+   - Tests for label key sanitization
+   - Tests for nested labels and concurrent access
+   - Tests for immutability and context propagation
+
+4. **Created Middleware Tests (profiling_test.go)**
+   - 20+ test functions with subtests
+   - Tests for config defaults and disabled state
+   - Tests for skip paths and skip path prefixes
+   - Tests for HTTP methods (GET, POST, PUT, DELETE, PATCH)
+   - Tests for tenant ID from JWT and tenant middleware
+   - Tests for middleware chaining and context preservation
+   - Tests for wrong type handling and empty values
+
+5. **Code Review Fixes Applied**
+   - Added defensive copy in WithProfilingLabels() to prevent race conditions
+   - Added defensive copy in WithPprofLabels() for consistency
+   - Added documentation warning about HighCardinalityLabels mutability
+   - Added documentation about tenant_id cardinality considerations
+
+=== Files Created/Modified ===
+- [NEW] backend/internal/infrastructure/telemetry/profiler_labels_test.go (509 lines)
+- [NEW] backend/internal/interfaces/http/middleware/profiling_test.go (540 lines)
+- [MOD] backend/internal/infrastructure/telemetry/profiler_labels.go (defensive copy fix)
+
+=== Test Coverage ===
+- profiler_labels.go: 26+ test functions covering all public APIs
+- profiling.go: 20+ test functions covering middleware behavior
+- All tests pass including concurrent access tests
+- Race condition protection verified
+
+=== Verification ===
+- [x] All unit tests pass (46+ test functions)
+- [x] Build succeeds: `go build ./...`
+- [x] go vet passes with no errors
+- [x] Code review completed - addressed HIGH issue:
+  * Added defensive copy to prevent map mutation race conditions
+  * Documented HighCardinalityLabels immutability requirement
+  * Noted tenant_id cardinality considerations
+
+=== Acceptance Criteria Met ===
+- [x] 可在 Pyroscope UI 中按 controller 筛选 profiles
+- [x] 可按 tenant_id 分析不同租户的性能差异
+- [x] Labels 不包含高基数值 (filtered by HighCardinalityLabels)
+- [x] 嵌套 Labels 正确显示层级关系 (via nested WithProfilingLabels)
+
+=== Configuration Example ===
+```go
+// HTTP Middleware adds labels automatically
+telemetry.WithProfilingLabels(ctx, map[string]string{
+    telemetry.ProfilingLabelController: "ProductHandler",
+    telemetry.ProfilingLabelRoute:      "/api/v1/products/:id",
+    telemetry.ProfilingLabelMethod:     "GET",
+    telemetry.ProfilingLabelTenantID:   "tenant-123",
+}, func(ctx context.Context) {
+    // Your code here - will be profiled with labels
+})
+
+// Or use the builder pattern
+scope := telemetry.NewProfilingScope(nil)
+scope.WithController("ProductHandler").
+    WithRoute("/api/v1/products").
+    WithMethod("GET").
+    WithTenantID("tenant-123")
+scope.Run(ctx, func(ctx context.Context) {
+    // Your code here
+})
+```
+
+=== Notes ===
+- Labels are sanitized to snake_case before sending to Pyroscope
+- Values longer than 128 characters are truncated
+- High cardinality labels (user_id, request_id, etc.) are silently filtered
+- Both pyroscope.TagWrapper and pprof.Do APIs are supported
+- Middleware skips health check and metrics endpoints by default
+
+=== Next Steps ===
+- OBS-PROFILE-003: Pyroscope + OpenTelemetry Span Profiles 集成
+- OBS-PROFILE-004: 部署 Pyroscope Server (Docker Compose)

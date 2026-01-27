@@ -6317,7 +6317,7 @@
       "- Labels 不包含高基数值",
       "- 嵌套 Labels 正确显示层级关系"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Observability - Profiling",
     "affectedModules": [
       "backend/internal/infrastructure/telemetry/profiler_labels.go",
