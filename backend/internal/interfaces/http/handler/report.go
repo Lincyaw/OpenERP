@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"maps"
+	"slices"
 	"time"
 
 	reportapp "github.com/erp/backend/internal/application/report"
@@ -15,6 +17,7 @@ type ReportHandler struct {
 	BaseHandler
 	reportService      *reportapp.ReportService
 	aggregationService *reportapp.ReportAggregationService
+	cronScheduler      *scheduler.ReportCronScheduler
 }
 
 // NewReportHandler creates a new ReportHandler
@@ -27,6 +30,11 @@ func NewReportHandler(reportService *reportapp.ReportService) *ReportHandler {
 // SetAggregationService sets the aggregation service for manual refresh
 func (h *ReportHandler) SetAggregationService(aggService *reportapp.ReportAggregationService) {
 	h.aggregationService = aggService
+}
+
+// SetCronScheduler sets the cron scheduler for status reporting
+func (h *ReportHandler) SetCronScheduler(cronScheduler *scheduler.ReportCronScheduler) {
+	h.cronScheduler = cronScheduler
 }
 
 // ===================== Request DTOs =====================
@@ -1105,14 +1113,7 @@ func (h *ReportHandler) RefreshReport(c *gin.Context) {
 	// Validate report type
 	reportType := scheduler.ReportType(req.ReportType)
 	validTypes := scheduler.AllReportTypes()
-	isValid := false
-	for _, rt := range validTypes {
-		if rt == reportType {
-			isValid = true
-			break
-		}
-	}
-	if !isValid {
+	if !slices.Contains(validTypes, reportType) {
 		h.BadRequest(c, "Invalid report_type. Valid types: SALES_SUMMARY, SALES_DAILY_TREND, INVENTORY_SUMMARY, PNL_MONTHLY, PRODUCT_RANKING, CUSTOMER_RANKING")
 		return
 	}
@@ -1195,10 +1196,91 @@ func (h *ReportHandler) RefreshAllReports(c *gin.Context) {
 // @Security     BearerAuth
 // @Router       /reports/scheduler/status [get]
 func (h *ReportHandler) GetSchedulerStatus(c *gin.Context) {
-	status := map[string]interface{}{
+	status := map[string]any{
 		"enabled":            h.aggregationService != nil,
 		"available_types":    scheduler.AllReportTypes(),
-		"supported_schedule": "Daily at 2:00 AM",
+		"supported_schedule": "Daily",
 	}
+
+	// Include cron scheduler details if available
+	if h.cronScheduler != nil {
+		cronStatus := h.cronScheduler.GetStatus()
+		maps.Copy(status, cronStatus)
+	}
+
 	h.Success(c, status)
+}
+
+// TriggerDailyAggregationRequest defines the request for triggering daily aggregation
+// @Description Request for triggering daily report aggregation
+type TriggerDailyAggregationRequest struct {
+	StartDate string `json:"start_date" example:"2026-01-01"`
+	EndDate   string `json:"end_date" example:"2026-01-31"`
+}
+
+// TriggerDailyAggregation godoc
+// @Summary      Trigger daily report aggregation
+// @Description  Manually triggers the daily report aggregation for a specific date range
+// @Tags         reports
+// @Accept       json
+// @Produce      json
+// @Param        request body TriggerDailyAggregationRequest false "Date range (optional, defaults to yesterday)"
+// @Success      200 {object} dto.Response{data=RefreshReportResponse}
+// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Security     BearerAuth
+// @Router       /reports/scheduler/trigger [post]
+func (h *ReportHandler) TriggerDailyAggregation(c *gin.Context) {
+	if h.cronScheduler == nil {
+		h.InternalError(c, "Report cron scheduler not configured")
+		return
+	}
+
+	var req TriggerDailyAggregationRequest
+	if err := c.ShouldBindJSON(&req); err != nil && err.Error() != "EOF" {
+		h.BadRequest(c, err.Error())
+		return
+	}
+
+	// If dates provided, trigger for specific tenant with date range
+	if req.StartDate != "" && req.EndDate != "" {
+		tenantID, err := getTenantID(c)
+		if err != nil {
+			h.BadRequest(c, "Invalid tenant ID")
+			return
+		}
+
+		startDate, err := time.Parse("2006-01-02", req.StartDate)
+		if err != nil {
+			h.BadRequest(c, "start_date: Invalid date format, expected YYYY-MM-DD")
+			return
+		}
+
+		endDate, err := time.Parse("2006-01-02", req.EndDate)
+		if err != nil {
+			h.BadRequest(c, "end_date: Invalid date format, expected YYYY-MM-DD")
+			return
+		}
+		endDate = endDate.Add(24*time.Hour - time.Second)
+
+		if err := h.cronScheduler.TriggerTenantAggregation(c.Request.Context(), tenantID, startDate, endDate); err != nil {
+			h.HandleError(c, err)
+			return
+		}
+
+		h.Success(c, RefreshReportResponse{
+			Message: "Report aggregation triggered for specified date range",
+		})
+		return
+	}
+
+	// Otherwise trigger full daily aggregation for all tenants
+	if err := h.cronScheduler.TriggerManualRun(c.Request.Context()); err != nil {
+		h.HandleError(c, err)
+		return
+	}
+
+	h.Success(c, RefreshReportResponse{
+		Message: "Daily report aggregation triggered for all tenants",
+	})
 }

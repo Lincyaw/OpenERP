@@ -26872,3 +26872,61 @@ db_slow_query_threshold = "200ms"
 === Next Steps ===
 - OBS-TRACE-004: 应用层业务流程打桩 (if exists)
 - OBS-METRICS-001: Configure Prometheus metrics pipeline
+
+2026-01-27 - GAP-RPT-001: 完善报表ETL聚合管道
+
+=== Implementation Details ===
+1. Created ReportCronScheduler for daily cron-based report aggregation
+   - File: backend/internal/infrastructure/scheduler/report_cron_scheduler.go
+   - Runs at configurable time (default: 2:00 AM daily)
+   - Iterates all active tenants and schedules aggregation jobs
+
+2. Key features implemented:
+   - Cron-based scheduling with minute-level precision
+   - Multi-tenant support via TenantRepository.FindActive()
+   - Database persistence for job status tracking (SchedulerJobRepository)
+   - Manual trigger API via POST /reports/scheduler/trigger
+   - Scheduler status API via GET /reports/scheduler/status
+
+3. Files modified:
+   - backend/internal/infrastructure/scheduler/report_cron_scheduler.go (NEW)
+   - backend/internal/infrastructure/scheduler/report_cron_scheduler_test.go (NEW)
+   - backend/internal/interfaces/http/handler/report.go (added trigger endpoint)
+   - backend/cmd/server/main.go (wired cron scheduler)
+
+=== Technical Decisions ===
+- Used background context in TriggerManualRun to avoid premature cancellation
+- Added mutex protection for lastRunAt/nextRunAt to prevent data races
+- Used strings.Fields for cron parsing instead of custom implementation
+- Added hour/minute range validation (0-23 hours, 0-59 minutes)
+
+=== Code Review Findings Addressed ===
+- CRITICAL: Fixed race condition on lastRunAt/nextRunAt with mutex
+- CRITICAL: Fixed context leak in TriggerManualRun using background context
+- HIGH: Added error logging for RecordJobStart failures
+- MEDIUM: Used constant cronTickerInterval instead of magic number
+
+=== Verification ===
+- [x] All tests pass: go test ./internal/infrastructure/scheduler/... -v
+- [x] Race detector clean: go test -race ./internal/infrastructure/scheduler/...
+- [x] Build succeeds: go build ./...
+- [x] Code reviewed with code-reviewer agent
+
+=== API Endpoints ===
+- GET /api/v1/reports/scheduler/status - Get scheduler status
+- POST /api/v1/reports/scheduler/trigger - Manually trigger aggregation
+
+=== Configuration ===
+```toml
+[scheduler]
+enabled = true
+daily_cron_schedule = "0 2 * * *"  # 2am daily
+max_concurrent_jobs = 3
+job_timeout = "30m"
+retry_attempts = 3
+```
+
+=== Next Steps ===
+- Monitor scheduler in production
+- Consider adding supplier/warehouse dimension aggregation tables
+- Add job completion callback for better tracking

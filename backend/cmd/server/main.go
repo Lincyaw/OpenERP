@@ -356,25 +356,48 @@ func main() {
 	// Inject pricing strategy provider into sales order service
 	salesOrderService.SetPricingProvider(strategyRegistry)
 
-	// Initialize report scheduler (if enabled)
+	// Initialize report cron scheduler (if enabled)
+	// This runs daily report aggregation at the configured cron time (default: 2 AM)
+	var reportCronScheduler *scheduler.ReportCronScheduler
 	if cfg.Scheduler.Enabled {
-		schedulerConfig := scheduler.SchedulerConfig{
+		// Parse cron schedule
+		cronHour, cronMinute, _ := scheduler.ParseCronSchedule(cfg.Scheduler.DailyCronSchedule)
+
+		cronConfig := scheduler.ReportCronSchedulerConfig{
 			Enabled:           cfg.Scheduler.Enabled,
+			CronHour:          cronHour,
+			CronMinute:        cronMinute,
+			DailyCronSchedule: cfg.Scheduler.DailyCronSchedule,
 			MaxConcurrentJobs: cfg.Scheduler.MaxConcurrentJobs,
 			JobTimeout:        cfg.Scheduler.JobTimeout,
 			RetryAttempts:     cfg.Scheduler.RetryAttempts,
 			RetryDelay:        cfg.Scheduler.RetryDelay,
 		}
-		reportScheduler := scheduler.NewScheduler(schedulerConfig, reportAggregationService, log)
-		if err := reportScheduler.Start(context.Background()); err != nil {
-			log.Fatal("Failed to start report scheduler", zap.Error(err))
+
+		// Create scheduler job repository for persistence
+		schedulerJobRepo := scheduler.NewSchedulerJobRepository(db.DB)
+
+		// Create cron scheduler
+		reportCronScheduler = scheduler.NewReportCronScheduler(
+			cronConfig,
+			reportAggregationService,
+			tenantRepo,
+			schedulerJobRepo,
+			log,
+		)
+
+		if err := reportCronScheduler.Start(context.Background()); err != nil {
+			log.Fatal("Failed to start report cron scheduler", zap.Error(err))
 		}
 		defer func() {
-			if err := reportScheduler.Stop(context.Background()); err != nil {
-				log.Error("Error stopping report scheduler", zap.Error(err))
+			if err := reportCronScheduler.Stop(context.Background()); err != nil {
+				log.Error("Error stopping report cron scheduler", zap.Error(err))
 			}
 		}()
-		log.Info("Report scheduler started",
+		log.Info("Report cron scheduler started",
+			zap.String("cron_schedule", cfg.Scheduler.DailyCronSchedule),
+			zap.Int("cron_hour", cronHour),
+			zap.Int("cron_minute", cronMinute),
 			zap.Int("max_concurrent_jobs", cfg.Scheduler.MaxConcurrentJobs),
 			zap.Duration("job_timeout", cfg.Scheduler.JobTimeout),
 		)
@@ -446,6 +469,9 @@ func main() {
 	tenantHandler := handler.NewTenantHandler(tenantService)
 	reportHandler := handler.NewReportHandler(reportService)
 	reportHandler.SetAggregationService(reportAggregationService)
+	if reportCronScheduler != nil {
+		reportHandler.SetCronScheduler(reportCronScheduler)
+	}
 	paymentCallbackHandler := handler.NewPaymentCallbackHandler(paymentCallbackService)
 	expenseIncomeHandler := handler.NewExpenseIncomeHandler(expenseIncomeService)
 	financeHandler := handler.NewFinanceHandler(financeService)
@@ -921,6 +947,7 @@ func main() {
 	reportRoutes.POST("/refresh", reportHandler.RefreshReport)
 	reportRoutes.POST("/refresh/all", reportHandler.RefreshAllReports)
 	reportRoutes.GET("/scheduler/status", reportHandler.GetSchedulerStatus)
+	reportRoutes.POST("/scheduler/trigger", reportHandler.TriggerDailyAggregation)
 
 	// Identity domain (authentication, users, roles) - public routes
 	authRoutes := router.NewDomainGroup("auth", "/auth")
