@@ -29953,3 +29953,86 @@ Successfully implemented the Feature Flag Evaluation Engine with the following c
 
 - FF-BE-005: Feature Flag HTTP API Handlers
 - FF-BE-006: Feature Flag Redis Cache Layer
+
+---
+
+2025-01-28 - FF-BE-005: Feature Flag 应用服务层 (Application Service Layer)
+
+=== Implementation Details ===
+
+1. DTO Definitions (backend/internal/application/featureflag/dto/):
+   - flag_dto.go: FlagValueDTO, ConditionDTO, TargetingRuleDTO, CreateFlagRequest, UpdateFlagRequest, FlagResponse, FlagListFilter, FlagListResponse with conversion functions
+   - evaluation_dto.go: EvaluationContextDTO, EvaluateFlagRequest/Response, BatchEvaluateRequest/Response, GetClientConfigRequest/Response
+   - override_dto.go: CreateOverrideRequest, UpdateOverrideRequest, OverrideResponse, OverrideListFilter, OverrideListResponse, CleanupExpiredOverridesResponse
+   - dto_test.go: Comprehensive unit tests for all DTO conversions
+
+2. Flag Management Service (flag_service.go):
+   - CreateFlag: Creates new flags with validation, sets status to disabled by default
+   - UpdateFlag: Updates name, description, rules, default value, tags
+   - GetFlag: Retrieves flag by key with error handling
+   - ListFlags: Paginated list with status, tag, type, and search filters
+   - EnableFlag/DisableFlag/ArchiveFlag: State transitions with audit logging
+   - AuditContext: Captures user ID, IP address, user agent for audit logs
+   - Domain event publishing via outbox pattern
+
+3. Flag Evaluation Service (evaluation_service.go):
+   - Evaluate: Single flag evaluation with context
+   - BatchEvaluate: Multiple flags in one call
+   - GetClientConfig: Evaluate all enabled flags for client config
+   - IsEnabled/GetVariant: Convenience methods
+   - Uses domain Evaluator for consistent evaluation logic
+
+4. Override Management Service (override_service.go):
+   - CreateOverride: Creates user/tenant level overrides with expiration
+   - ListOverrides: Paginated list of overrides per flag
+   - GetOverride: Single override by ID
+   - DeleteOverride: Removes override with audit logging
+   - CleanupExpiredOverrides: Batch cleanup of expired overrides
+   - Domain event publishing for override changes
+
+=== Code Review Fixes Applied ===
+
+HIGH Priority:
+- Fixed error comparison: Changed `err == shared.ErrNotFound` to `errors.Is(err, shared.ErrNotFound)` in flag_service.go and override_service.go (proper error wrapping support)
+
+MEDIUM Priority:
+- Added nil check to ToFlagResponse and ToOverrideResponse (prevent nil pointer dereference)
+- Added pageSize validation to ToFlagListResponse and ToOverrideListResponse (prevent division by zero)
+
+Noted for Handler Layer (CRITICAL):
+- Transaction support will be handled at HTTP handler level
+- Authorization checks will be implemented in handlers
+
+=== Verification ===
+
+- All 31 unit tests pass with race detection
+- Coverage: 63.1% for services, 96.6% for DTOs
+- Backend builds successfully without errors
+- Code review completed with fixes applied
+
+=== Files Created/Modified ===
+
+Created:
+- backend/internal/application/featureflag/dto/flag_dto.go
+- backend/internal/application/featureflag/dto/evaluation_dto.go
+- backend/internal/application/featureflag/dto/override_dto.go
+- backend/internal/application/featureflag/dto/dto_test.go
+- backend/internal/application/featureflag/flag_service.go
+- backend/internal/application/featureflag/flag_service_test.go
+- backend/internal/application/featureflag/evaluation_service.go
+- backend/internal/application/featureflag/evaluation_service_test.go
+- backend/internal/application/featureflag/override_service.go
+- backend/internal/application/featureflag/override_service_test.go
+
+=== Notes ===
+
+- Services follow DDD application service patterns observed in existing codebase (user_service.go)
+- AuditContext is used consistently across all mutating operations
+- Domain events are published to outbox for reliable delivery
+- Evaluation service delegates to domain Evaluator for consistency
+- Override service handles both user and tenant level overrides
+
+=== Next Steps ===
+
+- FF-BE-006: Feature Flag HTTP API Handlers
+- FF-BE-007: Feature Flag Redis Cache Layer

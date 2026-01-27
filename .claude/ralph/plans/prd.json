@@ -8406,7 +8406,7 @@
       "- 审计日志记录所有变更",
       "- 领域事件正确发布"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 3.2 Component Responsibilities",
     "affectedModules": [
       "backend/internal/application/featureflag/dto/",
