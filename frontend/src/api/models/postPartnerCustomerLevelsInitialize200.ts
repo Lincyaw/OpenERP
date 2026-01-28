@@ -3,8 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostPartnerCustomerLevelsInitialize200 = DtoResponse & {
-  data?: { [key: string]: string }
+export type PostPartnerCustomerLevelsInitialize200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

@@ -3,8 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetReportsSchedulerStatus200 = DtoResponse & {
-  data?: { [key: string]: unknown }
+export type GetReportsSchedulerStatus200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

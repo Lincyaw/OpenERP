@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerPermissionListResponse } from './handlerPermissionListResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetIdentityPermissions200 = DtoResponse & {
-  data?: HandlerPermissionListResponse
+export type GetIdentityPermissions200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

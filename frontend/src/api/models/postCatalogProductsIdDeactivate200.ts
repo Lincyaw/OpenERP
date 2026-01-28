@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerProductResponse } from './handlerProductResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostCatalogProductsIdDeactivate200 = DtoResponse & {
-  data?: HandlerProductResponse
+export type PostCatalogProductsIdDeactivate200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

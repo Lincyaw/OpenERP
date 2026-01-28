@@ -4,27 +4,34 @@
  *
  */
 import type {
+  DeleteTradeSalesOrdersIdBody,
   DeleteTradeSalesOrdersIdItemsItemId200,
+  DeleteTradeSalesOrdersIdItemsItemIdBody,
   GetTradeSalesOrders200,
+  GetTradeSalesOrdersBody,
   GetTradeSalesOrdersId200,
+  GetTradeSalesOrdersIdBody,
   GetTradeSalesOrdersNumberOrderNumber200,
+  GetTradeSalesOrdersNumberOrderNumberBody,
   GetTradeSalesOrdersParams,
   GetTradeSalesOrdersStatsSummary200,
-  HandlerAddOrderItemRequest,
-  HandlerCancelOrderRequest,
-  HandlerConfirmOrderRequest,
-  HandlerCreateSalesOrderRequest,
-  HandlerShipOrderRequest,
-  HandlerUpdateOrderItemRequest,
-  HandlerUpdateSalesOrderRequest,
+  GetTradeSalesOrdersStatsSummaryBody,
   PostTradeSalesOrders201,
+  PostTradeSalesOrdersBody,
   PostTradeSalesOrdersIdCancel200,
+  PostTradeSalesOrdersIdCancelBody,
   PostTradeSalesOrdersIdComplete200,
+  PostTradeSalesOrdersIdCompleteBody,
   PostTradeSalesOrdersIdConfirm200,
+  PostTradeSalesOrdersIdConfirmBody,
   PostTradeSalesOrdersIdItems200,
+  PostTradeSalesOrdersIdItemsBody,
   PostTradeSalesOrdersIdShip200,
+  PostTradeSalesOrdersIdShipBody,
   PutTradeSalesOrdersId200,
+  PutTradeSalesOrdersIdBody,
   PutTradeSalesOrdersIdItemsItemId200,
+  PutTradeSalesOrdersIdItemsItemIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -37,11 +44,17 @@ export const getSalesOrders = () => {
    * @summary List sales orders
    */
   const getTradeSalesOrders = (
+    getTradeSalesOrdersBody: GetTradeSalesOrdersBody,
     params?: GetTradeSalesOrdersParams,
     options?: SecondParameter<typeof customInstance<GetTradeSalesOrders200>>
   ) => {
     return customInstance<GetTradeSalesOrders200>(
-      { url: `/trade/sales-orders`, method: 'GET', params },
+      {
+        url: `/trade/sales-orders`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -50,7 +63,7 @@ export const getSalesOrders = () => {
    * @summary Create a new sales order
    */
   const postTradeSalesOrders = (
-    handlerCreateSalesOrderRequest: HandlerCreateSalesOrderRequest,
+    postTradeSalesOrdersBody: PostTradeSalesOrdersBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrders201>>
   ) => {
     return customInstance<PostTradeSalesOrders201>(
@@ -58,7 +71,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateSalesOrderRequest,
+        data: postTradeSalesOrdersBody,
       },
       options
     )
@@ -69,9 +82,18 @@ export const getSalesOrders = () => {
    */
   const deleteTradeSalesOrdersId = (
     id: string,
+    deleteTradeSalesOrdersIdBody: DeleteTradeSalesOrdersIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/trade/sales-orders/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/trade/sales-orders/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradeSalesOrdersIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a sales order by its ID
@@ -79,10 +101,15 @@ export const getSalesOrders = () => {
    */
   const getTradeSalesOrdersId = (
     id: string,
+    getTradeSalesOrdersIdBody: GetTradeSalesOrdersIdBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesOrdersId200>>
   ) => {
     return customInstance<GetTradeSalesOrdersId200>(
-      { url: `/trade/sales-orders/${id}`, method: 'GET' },
+      {
+        url: `/trade/sales-orders/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -92,7 +119,7 @@ export const getSalesOrders = () => {
    */
   const putTradeSalesOrdersId = (
     id: string,
-    handlerUpdateSalesOrderRequest: HandlerUpdateSalesOrderRequest,
+    putTradeSalesOrdersIdBody: PutTradeSalesOrdersIdBody,
     options?: SecondParameter<typeof customInstance<PutTradeSalesOrdersId200>>
   ) => {
     return customInstance<PutTradeSalesOrdersId200>(
@@ -100,7 +127,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateSalesOrderRequest,
+        data: putTradeSalesOrdersIdBody,
       },
       options
     )
@@ -111,7 +138,7 @@ export const getSalesOrders = () => {
    */
   const postTradeSalesOrdersIdCancel = (
     id: string,
-    handlerCancelOrderRequest: HandlerCancelOrderRequest,
+    postTradeSalesOrdersIdCancelBody: PostTradeSalesOrdersIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrdersIdCancel200>>
   ) => {
     return customInstance<PostTradeSalesOrdersIdCancel200>(
@@ -119,7 +146,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelOrderRequest,
+        data: postTradeSalesOrdersIdCancelBody,
       },
       options
     )
@@ -130,10 +157,16 @@ export const getSalesOrders = () => {
    */
   const postTradeSalesOrdersIdComplete = (
     id: string,
+    postTradeSalesOrdersIdCompleteBody: PostTradeSalesOrdersIdCompleteBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrdersIdComplete200>>
   ) => {
     return customInstance<PostTradeSalesOrdersIdComplete200>(
-      { url: `/trade/sales-orders/${id}/complete`, method: 'POST' },
+      {
+        url: `/trade/sales-orders/${id}/complete`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postTradeSalesOrdersIdCompleteBody,
+      },
       options
     )
   }
@@ -143,7 +176,7 @@ export const getSalesOrders = () => {
    */
   const postTradeSalesOrdersIdConfirm = (
     id: string,
-    handlerConfirmOrderRequest: HandlerConfirmOrderRequest,
+    postTradeSalesOrdersIdConfirmBody: PostTradeSalesOrdersIdConfirmBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrdersIdConfirm200>>
   ) => {
     return customInstance<PostTradeSalesOrdersIdConfirm200>(
@@ -151,7 +184,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}/confirm`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerConfirmOrderRequest,
+        data: postTradeSalesOrdersIdConfirmBody,
       },
       options
     )
@@ -162,7 +195,7 @@ export const getSalesOrders = () => {
    */
   const postTradeSalesOrdersIdItems = (
     id: string,
-    handlerAddOrderItemRequest: HandlerAddOrderItemRequest,
+    postTradeSalesOrdersIdItemsBody: PostTradeSalesOrdersIdItemsBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrdersIdItems200>>
   ) => {
     return customInstance<PostTradeSalesOrdersIdItems200>(
@@ -170,7 +203,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}/items`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAddOrderItemRequest,
+        data: postTradeSalesOrdersIdItemsBody,
       },
       options
     )
@@ -182,10 +215,16 @@ export const getSalesOrders = () => {
   const deleteTradeSalesOrdersIdItemsItemId = (
     id: string,
     itemId: string,
+    deleteTradeSalesOrdersIdItemsItemIdBody: DeleteTradeSalesOrdersIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<DeleteTradeSalesOrdersIdItemsItemId200>>
   ) => {
     return customInstance<DeleteTradeSalesOrdersIdItemsItemId200>(
-      { url: `/trade/sales-orders/${id}/items/${itemId}`, method: 'DELETE' },
+      {
+        url: `/trade/sales-orders/${id}/items/${itemId}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradeSalesOrdersIdItemsItemIdBody,
+      },
       options
     )
   }
@@ -196,7 +235,7 @@ export const getSalesOrders = () => {
   const putTradeSalesOrdersIdItemsItemId = (
     id: string,
     itemId: string,
-    handlerUpdateOrderItemRequest: HandlerUpdateOrderItemRequest,
+    putTradeSalesOrdersIdItemsItemIdBody: PutTradeSalesOrdersIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<PutTradeSalesOrdersIdItemsItemId200>>
   ) => {
     return customInstance<PutTradeSalesOrdersIdItemsItemId200>(
@@ -204,7 +243,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}/items/${itemId}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateOrderItemRequest,
+        data: putTradeSalesOrdersIdItemsItemIdBody,
       },
       options
     )
@@ -215,7 +254,7 @@ export const getSalesOrders = () => {
    */
   const postTradeSalesOrdersIdShip = (
     id: string,
-    handlerShipOrderRequest: HandlerShipOrderRequest,
+    postTradeSalesOrdersIdShipBody: PostTradeSalesOrdersIdShipBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesOrdersIdShip200>>
   ) => {
     return customInstance<PostTradeSalesOrdersIdShip200>(
@@ -223,7 +262,7 @@ export const getSalesOrders = () => {
         url: `/trade/sales-orders/${id}/ship`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerShipOrderRequest,
+        data: postTradeSalesOrdersIdShipBody,
       },
       options
     )
@@ -234,10 +273,15 @@ export const getSalesOrders = () => {
    */
   const getTradeSalesOrdersNumberOrderNumber = (
     orderNumber: string,
+    getTradeSalesOrdersNumberOrderNumberBody: GetTradeSalesOrdersNumberOrderNumberBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesOrdersNumberOrderNumber200>>
   ) => {
     return customInstance<GetTradeSalesOrdersNumberOrderNumber200>(
-      { url: `/trade/sales-orders/number/${orderNumber}`, method: 'GET' },
+      {
+        url: `/trade/sales-orders/number/${orderNumber}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -246,10 +290,15 @@ export const getSalesOrders = () => {
    * @summary Get order status summary
    */
   const getTradeSalesOrdersStatsSummary = (
+    getTradeSalesOrdersStatsSummaryBody: GetTradeSalesOrdersStatsSummaryBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesOrdersStatsSummary200>>
   ) => {
     return customInstance<GetTradeSalesOrdersStatsSummary200>(
-      { url: `/trade/sales-orders/stats/summary`, method: 'GET' },
+      {
+        url: `/trade/sales-orders/stats/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

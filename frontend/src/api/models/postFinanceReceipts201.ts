@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerReceiptVoucherResponse } from './handlerReceiptVoucherResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostFinanceReceipts201 = DtoResponse & {
-  data?: HandlerReceiptVoucherResponse
+export type PostFinanceReceipts201 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

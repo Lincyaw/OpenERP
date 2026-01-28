@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerConvertUnitResponse } from './handlerConvertUnitResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostCatalogProductsIdUnitsConvert200 = DtoResponse & {
-  data?: HandlerConvertUnitResponse
+export type PostCatalogProductsIdUnitsConvert200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

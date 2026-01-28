@@ -4,25 +4,33 @@
  *
  */
 import type {
+  DeleteFinanceExpensesIdBody,
   DtoResponse,
   GetFinanceCashFlow200,
+  GetFinanceCashFlowBody,
   GetFinanceCashFlowParams,
   GetFinanceExpenses200,
+  GetFinanceExpensesBody,
   GetFinanceExpensesId200,
+  GetFinanceExpensesIdBody,
   GetFinanceExpensesParams,
   GetFinanceExpensesSummary200,
+  GetFinanceExpensesSummaryBody,
   GetFinanceExpensesSummaryParams,
-  HandlerCreateExpenseRecordRequest,
-  HandlerExpenseActionRequest,
-  HandlerMarkExpensePaidRequest,
-  HandlerUpdateExpenseRecordRequest,
   PostFinanceExpenses201,
+  PostFinanceExpensesBody,
   PostFinanceExpensesIdApprove200,
+  PostFinanceExpensesIdApproveBody,
   PostFinanceExpensesIdCancel200,
+  PostFinanceExpensesIdCancelBody,
   PostFinanceExpensesIdPay200,
+  PostFinanceExpensesIdPayBody,
   PostFinanceExpensesIdReject200,
+  PostFinanceExpensesIdRejectBody,
   PostFinanceExpensesIdSubmit200,
+  PostFinanceExpensesIdSubmitBody,
   PutFinanceExpensesId200,
+  PutFinanceExpensesIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -35,11 +43,17 @@ export const getExpenses = () => {
    * @summary Get cash flow summary
    */
   const getFinanceCashFlow = (
+    getFinanceCashFlowBody: GetFinanceCashFlowBody,
     params?: GetFinanceCashFlowParams,
     options?: SecondParameter<typeof customInstance<GetFinanceCashFlow200>>
   ) => {
     return customInstance<GetFinanceCashFlow200>(
-      { url: `/finance/cash-flow`, method: 'GET', params },
+      {
+        url: `/finance/cash-flow`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -48,11 +62,17 @@ export const getExpenses = () => {
    * @summary List expense records
    */
   const getFinanceExpenses = (
+    getFinanceExpensesBody: GetFinanceExpensesBody,
     params?: GetFinanceExpensesParams,
     options?: SecondParameter<typeof customInstance<GetFinanceExpenses200>>
   ) => {
     return customInstance<GetFinanceExpenses200>(
-      { url: `/finance/expenses`, method: 'GET', params },
+      {
+        url: `/finance/expenses`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -61,7 +81,7 @@ export const getExpenses = () => {
    * @summary Create expense record
    */
   const postFinanceExpenses = (
-    handlerCreateExpenseRecordRequest: HandlerCreateExpenseRecordRequest,
+    postFinanceExpensesBody: PostFinanceExpensesBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpenses201>>
   ) => {
     return customInstance<PostFinanceExpenses201>(
@@ -69,7 +89,7 @@ export const getExpenses = () => {
         url: `/finance/expenses`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateExpenseRecordRequest,
+        data: postFinanceExpensesBody,
       },
       options
     )
@@ -80,10 +100,16 @@ export const getExpenses = () => {
    */
   const deleteFinanceExpensesId = (
     id: string,
+    deleteFinanceExpensesIdBody: DeleteFinanceExpensesIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
-      { url: `/finance/expenses/${id}`, method: 'DELETE' },
+      {
+        url: `/finance/expenses/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteFinanceExpensesIdBody,
+      },
       options
     )
   }
@@ -93,10 +119,15 @@ export const getExpenses = () => {
    */
   const getFinanceExpensesId = (
     id: string,
+    getFinanceExpensesIdBody: GetFinanceExpensesIdBody,
     options?: SecondParameter<typeof customInstance<GetFinanceExpensesId200>>
   ) => {
     return customInstance<GetFinanceExpensesId200>(
-      { url: `/finance/expenses/${id}`, method: 'GET' },
+      {
+        url: `/finance/expenses/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -106,7 +137,7 @@ export const getExpenses = () => {
    */
   const putFinanceExpensesId = (
     id: string,
-    handlerUpdateExpenseRecordRequest: HandlerUpdateExpenseRecordRequest,
+    putFinanceExpensesIdBody: PutFinanceExpensesIdBody,
     options?: SecondParameter<typeof customInstance<PutFinanceExpensesId200>>
   ) => {
     return customInstance<PutFinanceExpensesId200>(
@@ -114,7 +145,7 @@ export const getExpenses = () => {
         url: `/finance/expenses/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateExpenseRecordRequest,
+        data: putFinanceExpensesIdBody,
       },
       options
     )
@@ -125,7 +156,7 @@ export const getExpenses = () => {
    */
   const postFinanceExpensesIdApprove = (
     id: string,
-    handlerExpenseActionRequest: HandlerExpenseActionRequest,
+    postFinanceExpensesIdApproveBody: PostFinanceExpensesIdApproveBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpensesIdApprove200>>
   ) => {
     return customInstance<PostFinanceExpensesIdApprove200>(
@@ -133,7 +164,7 @@ export const getExpenses = () => {
         url: `/finance/expenses/${id}/approve`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerExpenseActionRequest,
+        data: postFinanceExpensesIdApproveBody,
       },
       options
     )
@@ -144,7 +175,7 @@ export const getExpenses = () => {
    */
   const postFinanceExpensesIdCancel = (
     id: string,
-    handlerExpenseActionRequest: HandlerExpenseActionRequest,
+    postFinanceExpensesIdCancelBody: PostFinanceExpensesIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpensesIdCancel200>>
   ) => {
     return customInstance<PostFinanceExpensesIdCancel200>(
@@ -152,7 +183,7 @@ export const getExpenses = () => {
         url: `/finance/expenses/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerExpenseActionRequest,
+        data: postFinanceExpensesIdCancelBody,
       },
       options
     )
@@ -163,7 +194,7 @@ export const getExpenses = () => {
    */
   const postFinanceExpensesIdPay = (
     id: string,
-    handlerMarkExpensePaidRequest: HandlerMarkExpensePaidRequest,
+    postFinanceExpensesIdPayBody: PostFinanceExpensesIdPayBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpensesIdPay200>>
   ) => {
     return customInstance<PostFinanceExpensesIdPay200>(
@@ -171,7 +202,7 @@ export const getExpenses = () => {
         url: `/finance/expenses/${id}/pay`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerMarkExpensePaidRequest,
+        data: postFinanceExpensesIdPayBody,
       },
       options
     )
@@ -182,7 +213,7 @@ export const getExpenses = () => {
    */
   const postFinanceExpensesIdReject = (
     id: string,
-    handlerExpenseActionRequest: HandlerExpenseActionRequest,
+    postFinanceExpensesIdRejectBody: PostFinanceExpensesIdRejectBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpensesIdReject200>>
   ) => {
     return customInstance<PostFinanceExpensesIdReject200>(
@@ -190,7 +221,7 @@ export const getExpenses = () => {
         url: `/finance/expenses/${id}/reject`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerExpenseActionRequest,
+        data: postFinanceExpensesIdRejectBody,
       },
       options
     )
@@ -201,10 +232,16 @@ export const getExpenses = () => {
    */
   const postFinanceExpensesIdSubmit = (
     id: string,
+    postFinanceExpensesIdSubmitBody: PostFinanceExpensesIdSubmitBody,
     options?: SecondParameter<typeof customInstance<PostFinanceExpensesIdSubmit200>>
   ) => {
     return customInstance<PostFinanceExpensesIdSubmit200>(
-      { url: `/finance/expenses/${id}/submit`, method: 'POST' },
+      {
+        url: `/finance/expenses/${id}/submit`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postFinanceExpensesIdSubmitBody,
+      },
       options
     )
   }
@@ -213,11 +250,17 @@ export const getExpenses = () => {
    * @summary Get expenses summary
    */
   const getFinanceExpensesSummary = (
+    getFinanceExpensesSummaryBody: GetFinanceExpensesSummaryBody,
     params?: GetFinanceExpensesSummaryParams,
     options?: SecondParameter<typeof customInstance<GetFinanceExpensesSummary200>>
   ) => {
     return customInstance<GetFinanceExpensesSummary200>(
-      { url: `/finance/expenses/summary`, method: 'GET', params },
+      {
+        url: `/finance/expenses/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }

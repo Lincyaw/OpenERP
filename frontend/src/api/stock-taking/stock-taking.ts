@@ -4,34 +4,43 @@
  *
  */
 import type {
+  DeleteInventoryStockTakingsIdBody,
   DeleteInventoryStockTakingsIdItemsProductId200,
+  DeleteInventoryStockTakingsIdItemsProductIdBody,
   GetInventoryStockTakings200,
+  GetInventoryStockTakingsBody,
   GetInventoryStockTakingsByNumberTakingNumber200,
+  GetInventoryStockTakingsByNumberTakingNumberBody,
   GetInventoryStockTakingsId200,
+  GetInventoryStockTakingsIdBody,
   GetInventoryStockTakingsIdProgress200,
+  GetInventoryStockTakingsIdProgressBody,
   GetInventoryStockTakingsParams,
   GetInventoryStockTakingsPendingApproval200,
+  GetInventoryStockTakingsPendingApprovalBody,
   GetInventoryStockTakingsPendingApprovalParams,
-  HandlerAddStockTakingItemRequest,
-  HandlerAddStockTakingItemsRequest,
-  HandlerApproveStockTakingRequest,
-  HandlerCancelStockTakingRequest,
-  HandlerCreateStockTakingRequest,
-  HandlerRecordCountRequest,
-  HandlerRecordCountsRequest,
-  HandlerRejectStockTakingRequest,
-  HandlerUpdateStockTakingRequest,
   PostInventoryStockTakings201,
+  PostInventoryStockTakingsBody,
   PostInventoryStockTakingsIdApprove200,
+  PostInventoryStockTakingsIdApproveBody,
   PostInventoryStockTakingsIdCancel200,
+  PostInventoryStockTakingsIdCancelBody,
   PostInventoryStockTakingsIdCount200,
+  PostInventoryStockTakingsIdCountBody,
   PostInventoryStockTakingsIdCounts200,
+  PostInventoryStockTakingsIdCountsBody,
   PostInventoryStockTakingsIdItems200,
+  PostInventoryStockTakingsIdItemsBody,
   PostInventoryStockTakingsIdItemsBulk200,
+  PostInventoryStockTakingsIdItemsBulkBody,
   PostInventoryStockTakingsIdReject200,
+  PostInventoryStockTakingsIdRejectBody,
   PostInventoryStockTakingsIdStart200,
+  PostInventoryStockTakingsIdStartBody,
   PostInventoryStockTakingsIdSubmit200,
+  PostInventoryStockTakingsIdSubmitBody,
   PutInventoryStockTakingsId200,
+  PutInventoryStockTakingsIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -44,11 +53,17 @@ export const getStockTaking = () => {
    * @summary List stock takings
    */
   const getInventoryStockTakings = (
+    getInventoryStockTakingsBody: GetInventoryStockTakingsBody,
     params?: GetInventoryStockTakingsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryStockTakings200>>
   ) => {
     return customInstance<GetInventoryStockTakings200>(
-      { url: `/inventory/stock-takings`, method: 'GET', params },
+      {
+        url: `/inventory/stock-takings`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -57,7 +72,7 @@ export const getStockTaking = () => {
    * @summary Create stock taking
    */
   const postInventoryStockTakings = (
-    handlerCreateStockTakingRequest: HandlerCreateStockTakingRequest,
+    postInventoryStockTakingsBody: PostInventoryStockTakingsBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakings201>>
   ) => {
     return customInstance<PostInventoryStockTakings201>(
@@ -65,7 +80,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateStockTakingRequest,
+        data: postInventoryStockTakingsBody,
       },
       options
     )
@@ -76,10 +91,16 @@ export const getStockTaking = () => {
    */
   const deleteInventoryStockTakingsId = (
     id: string,
+    deleteInventoryStockTakingsIdBody: DeleteInventoryStockTakingsIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
     return customInstance<void>(
-      { url: `/inventory/stock-takings/${id}`, method: 'DELETE' },
+      {
+        url: `/inventory/stock-takings/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteInventoryStockTakingsIdBody,
+      },
       options
     )
   }
@@ -89,10 +110,15 @@ export const getStockTaking = () => {
    */
   const getInventoryStockTakingsId = (
     id: string,
+    getInventoryStockTakingsIdBody: GetInventoryStockTakingsIdBody,
     options?: SecondParameter<typeof customInstance<GetInventoryStockTakingsId200>>
   ) => {
     return customInstance<GetInventoryStockTakingsId200>(
-      { url: `/inventory/stock-takings/${id}`, method: 'GET' },
+      {
+        url: `/inventory/stock-takings/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -102,7 +128,7 @@ export const getStockTaking = () => {
    */
   const putInventoryStockTakingsId = (
     id: string,
-    handlerUpdateStockTakingRequest: HandlerUpdateStockTakingRequest,
+    putInventoryStockTakingsIdBody: PutInventoryStockTakingsIdBody,
     options?: SecondParameter<typeof customInstance<PutInventoryStockTakingsId200>>
   ) => {
     return customInstance<PutInventoryStockTakingsId200>(
@@ -110,7 +136,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateStockTakingRequest,
+        data: putInventoryStockTakingsIdBody,
       },
       options
     )
@@ -121,7 +147,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdApprove = (
     id: string,
-    handlerApproveStockTakingRequest: HandlerApproveStockTakingRequest,
+    postInventoryStockTakingsIdApproveBody: PostInventoryStockTakingsIdApproveBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdApprove200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdApprove200>(
@@ -129,7 +155,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/approve`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerApproveStockTakingRequest,
+        data: postInventoryStockTakingsIdApproveBody,
       },
       options
     )
@@ -140,7 +166,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdCancel = (
     id: string,
-    handlerCancelStockTakingRequest: HandlerCancelStockTakingRequest,
+    postInventoryStockTakingsIdCancelBody: PostInventoryStockTakingsIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdCancel200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdCancel200>(
@@ -148,7 +174,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelStockTakingRequest,
+        data: postInventoryStockTakingsIdCancelBody,
       },
       options
     )
@@ -159,7 +185,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdCount = (
     id: string,
-    handlerRecordCountRequest: HandlerRecordCountRequest,
+    postInventoryStockTakingsIdCountBody: PostInventoryStockTakingsIdCountBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdCount200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdCount200>(
@@ -167,7 +193,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/count`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRecordCountRequest,
+        data: postInventoryStockTakingsIdCountBody,
       },
       options
     )
@@ -178,7 +204,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdCounts = (
     id: string,
-    handlerRecordCountsRequest: HandlerRecordCountsRequest,
+    postInventoryStockTakingsIdCountsBody: PostInventoryStockTakingsIdCountsBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdCounts200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdCounts200>(
@@ -186,7 +212,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/counts`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRecordCountsRequest,
+        data: postInventoryStockTakingsIdCountsBody,
       },
       options
     )
@@ -197,7 +223,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdItems = (
     id: string,
-    handlerAddStockTakingItemRequest: HandlerAddStockTakingItemRequest,
+    postInventoryStockTakingsIdItemsBody: PostInventoryStockTakingsIdItemsBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdItems200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdItems200>(
@@ -205,7 +231,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/items`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAddStockTakingItemRequest,
+        data: postInventoryStockTakingsIdItemsBody,
       },
       options
     )
@@ -217,10 +243,16 @@ export const getStockTaking = () => {
   const deleteInventoryStockTakingsIdItemsProductId = (
     id: string,
     productId: string,
+    deleteInventoryStockTakingsIdItemsProductIdBody: DeleteInventoryStockTakingsIdItemsProductIdBody,
     options?: SecondParameter<typeof customInstance<DeleteInventoryStockTakingsIdItemsProductId200>>
   ) => {
     return customInstance<DeleteInventoryStockTakingsIdItemsProductId200>(
-      { url: `/inventory/stock-takings/${id}/items/${productId}`, method: 'DELETE' },
+      {
+        url: `/inventory/stock-takings/${id}/items/${productId}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteInventoryStockTakingsIdItemsProductIdBody,
+      },
       options
     )
   }
@@ -230,7 +262,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdItemsBulk = (
     id: string,
-    handlerAddStockTakingItemsRequest: HandlerAddStockTakingItemsRequest,
+    postInventoryStockTakingsIdItemsBulkBody: PostInventoryStockTakingsIdItemsBulkBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdItemsBulk200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdItemsBulk200>(
@@ -238,7 +270,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/items/bulk`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAddStockTakingItemsRequest,
+        data: postInventoryStockTakingsIdItemsBulkBody,
       },
       options
     )
@@ -249,10 +281,15 @@ export const getStockTaking = () => {
    */
   const getInventoryStockTakingsIdProgress = (
     id: string,
+    getInventoryStockTakingsIdProgressBody: GetInventoryStockTakingsIdProgressBody,
     options?: SecondParameter<typeof customInstance<GetInventoryStockTakingsIdProgress200>>
   ) => {
     return customInstance<GetInventoryStockTakingsIdProgress200>(
-      { url: `/inventory/stock-takings/${id}/progress`, method: 'GET' },
+      {
+        url: `/inventory/stock-takings/${id}/progress`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -262,7 +299,7 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdReject = (
     id: string,
-    handlerRejectStockTakingRequest: HandlerRejectStockTakingRequest,
+    postInventoryStockTakingsIdRejectBody: PostInventoryStockTakingsIdRejectBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdReject200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdReject200>(
@@ -270,7 +307,7 @@ export const getStockTaking = () => {
         url: `/inventory/stock-takings/${id}/reject`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRejectStockTakingRequest,
+        data: postInventoryStockTakingsIdRejectBody,
       },
       options
     )
@@ -281,10 +318,16 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdStart = (
     id: string,
+    postInventoryStockTakingsIdStartBody: PostInventoryStockTakingsIdStartBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdStart200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdStart200>(
-      { url: `/inventory/stock-takings/${id}/start`, method: 'POST' },
+      {
+        url: `/inventory/stock-takings/${id}/start`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postInventoryStockTakingsIdStartBody,
+      },
       options
     )
   }
@@ -294,10 +337,16 @@ export const getStockTaking = () => {
    */
   const postInventoryStockTakingsIdSubmit = (
     id: string,
+    postInventoryStockTakingsIdSubmitBody: PostInventoryStockTakingsIdSubmitBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockTakingsIdSubmit200>>
   ) => {
     return customInstance<PostInventoryStockTakingsIdSubmit200>(
-      { url: `/inventory/stock-takings/${id}/submit`, method: 'POST' },
+      {
+        url: `/inventory/stock-takings/${id}/submit`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postInventoryStockTakingsIdSubmitBody,
+      },
       options
     )
   }
@@ -307,12 +356,17 @@ export const getStockTaking = () => {
    */
   const getInventoryStockTakingsByNumberTakingNumber = (
     takingNumber: string,
+    getInventoryStockTakingsByNumberTakingNumberBody: GetInventoryStockTakingsByNumberTakingNumberBody,
     options?: SecondParameter<
       typeof customInstance<GetInventoryStockTakingsByNumberTakingNumber200>
     >
   ) => {
     return customInstance<GetInventoryStockTakingsByNumberTakingNumber200>(
-      { url: `/inventory/stock-takings/by-number/${takingNumber}`, method: 'GET' },
+      {
+        url: `/inventory/stock-takings/by-number/${takingNumber}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -321,11 +375,17 @@ export const getStockTaking = () => {
    * @summary List stock takings pending approval
    */
   const getInventoryStockTakingsPendingApproval = (
+    getInventoryStockTakingsPendingApprovalBody: GetInventoryStockTakingsPendingApprovalBody,
     params?: GetInventoryStockTakingsPendingApprovalParams,
     options?: SecondParameter<typeof customInstance<GetInventoryStockTakingsPendingApproval200>>
   ) => {
     return customInstance<GetInventoryStockTakingsPendingApproval200>(
-      { url: `/inventory/stock-takings/pending-approval`, method: 'GET', params },
+      {
+        url: `/inventory/stock-takings/pending-approval`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }

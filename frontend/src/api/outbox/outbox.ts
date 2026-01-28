@@ -5,11 +5,16 @@
  */
 import type {
   GetSystemOutboxDead200,
+  GetSystemOutboxDeadBody,
   GetSystemOutboxDeadParams,
   GetSystemOutboxId200,
+  GetSystemOutboxIdBody,
   GetSystemOutboxStats200,
+  GetSystemOutboxStatsBody,
   PostSystemOutboxDeadRetryAll200,
+  PostSystemOutboxDeadRetryAllBody,
   PostSystemOutboxIdRetry200,
+  PostSystemOutboxIdRetryBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -23,10 +28,15 @@ export const getOutbox = () => {
    */
   const getSystemOutboxId = (
     id: string,
+    getSystemOutboxIdBody: GetSystemOutboxIdBody,
     options?: SecondParameter<typeof customInstance<GetSystemOutboxId200>>
   ) => {
     return customInstance<GetSystemOutboxId200>(
-      { url: `/system/outbox/${id}`, method: 'GET' },
+      {
+        url: `/system/outbox/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -36,10 +46,16 @@ export const getOutbox = () => {
    */
   const postSystemOutboxIdRetry = (
     id: string,
+    postSystemOutboxIdRetryBody: PostSystemOutboxIdRetryBody,
     options?: SecondParameter<typeof customInstance<PostSystemOutboxIdRetry200>>
   ) => {
     return customInstance<PostSystemOutboxIdRetry200>(
-      { url: `/system/outbox/${id}/retry`, method: 'POST' },
+      {
+        url: `/system/outbox/${id}/retry`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postSystemOutboxIdRetryBody,
+      },
       options
     )
   }
@@ -48,11 +64,17 @@ export const getOutbox = () => {
    * @summary List dead letter entries
    */
   const getSystemOutboxDead = (
+    getSystemOutboxDeadBody: GetSystemOutboxDeadBody,
     params?: GetSystemOutboxDeadParams,
     options?: SecondParameter<typeof customInstance<GetSystemOutboxDead200>>
   ) => {
     return customInstance<GetSystemOutboxDead200>(
-      { url: `/system/outbox/dead`, method: 'GET', params },
+      {
+        url: `/system/outbox/dead`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -61,10 +83,16 @@ export const getOutbox = () => {
    * @summary Retry all dead letter entries
    */
   const postSystemOutboxDeadRetryAll = (
+    postSystemOutboxDeadRetryAllBody: PostSystemOutboxDeadRetryAllBody,
     options?: SecondParameter<typeof customInstance<PostSystemOutboxDeadRetryAll200>>
   ) => {
     return customInstance<PostSystemOutboxDeadRetryAll200>(
-      { url: `/system/outbox/dead/retry-all`, method: 'POST' },
+      {
+        url: `/system/outbox/dead/retry-all`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postSystemOutboxDeadRetryAllBody,
+      },
       options
     )
   }
@@ -73,10 +101,15 @@ export const getOutbox = () => {
    * @summary Get outbox statistics
    */
   const getSystemOutboxStats = (
+    getSystemOutboxStatsBody: GetSystemOutboxStatsBody,
     options?: SecondParameter<typeof customInstance<GetSystemOutboxStats200>>
   ) => {
     return customInstance<GetSystemOutboxStats200>(
-      { url: `/system/outbox/stats`, method: 'GET' },
+      {
+        url: `/system/outbox/stats`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

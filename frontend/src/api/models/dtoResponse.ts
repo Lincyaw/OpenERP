@@ -5,8 +5,9 @@
  */
 import type { DtoErrorInfo } from './dtoErrorInfo'
 import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export interface DtoResponse {
+export type DtoResponse = Error & {
   data?: unknown
   error?: DtoErrorInfo
   meta?: DtoMeta

@@ -4,8 +4,12 @@
  *
  */
 import type { DtoErrorInfo } from './dtoErrorInfo'
-import type { DtoResponse } from './dtoResponse'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PutCatalogProductsIdCode500 = DtoResponse & {
+export type PutCatalogProductsIdCode500 = Error & {
+  data?: unknown
   error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

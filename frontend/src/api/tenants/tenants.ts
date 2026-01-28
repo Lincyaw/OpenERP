@@ -4,24 +4,33 @@
  *
  */
 import type {
+  DeleteIdentityTenantsIdBody,
   DtoResponse,
   GetIdentityTenants200,
+  GetIdentityTenantsBody,
   GetIdentityTenantsCodeCode200,
+  GetIdentityTenantsCodeCodeBody,
   GetIdentityTenantsId200,
+  GetIdentityTenantsIdBody,
   GetIdentityTenantsParams,
   GetIdentityTenantsStats200,
+  GetIdentityTenantsStatsBody,
   GetIdentityTenantsStatsCount200,
-  HandlerCreateTenantRequest,
-  HandlerSetTenantPlanRequest,
-  HandlerUpdateTenantConfigRequest,
-  HandlerUpdateTenantRequest,
+  GetIdentityTenantsStatsCountBody,
   PostIdentityTenants201,
+  PostIdentityTenantsBody,
   PostIdentityTenantsIdActivate200,
+  PostIdentityTenantsIdActivateBody,
   PostIdentityTenantsIdDeactivate200,
+  PostIdentityTenantsIdDeactivateBody,
   PostIdentityTenantsIdSuspend200,
+  PostIdentityTenantsIdSuspendBody,
   PutIdentityTenantsId200,
+  PutIdentityTenantsIdBody,
   PutIdentityTenantsIdConfig200,
+  PutIdentityTenantsIdConfigBody,
   PutIdentityTenantsIdPlan200,
+  PutIdentityTenantsIdPlanBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -34,11 +43,17 @@ export const getTenants = () => {
    * @summary List tenants
    */
   const getIdentityTenants = (
+    getIdentityTenantsBody: GetIdentityTenantsBody,
     params?: GetIdentityTenantsParams,
     options?: SecondParameter<typeof customInstance<GetIdentityTenants200>>
   ) => {
     return customInstance<GetIdentityTenants200>(
-      { url: `/identity/tenants`, method: 'GET', params },
+      {
+        url: `/identity/tenants`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -47,7 +62,7 @@ export const getTenants = () => {
    * @summary Create a new tenant
    */
   const postIdentityTenants = (
-    handlerCreateTenantRequest: HandlerCreateTenantRequest,
+    postIdentityTenantsBody: PostIdentityTenantsBody,
     options?: SecondParameter<typeof customInstance<PostIdentityTenants201>>
   ) => {
     return customInstance<PostIdentityTenants201>(
@@ -55,7 +70,7 @@ export const getTenants = () => {
         url: `/identity/tenants`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateTenantRequest,
+        data: postIdentityTenantsBody,
       },
       options
     )
@@ -66,10 +81,16 @@ export const getTenants = () => {
    */
   const deleteIdentityTenantsId = (
     id: string,
+    deleteIdentityTenantsIdBody: DeleteIdentityTenantsIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
-      { url: `/identity/tenants/${id}`, method: 'DELETE' },
+      {
+        url: `/identity/tenants/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteIdentityTenantsIdBody,
+      },
       options
     )
   }
@@ -79,10 +100,15 @@ export const getTenants = () => {
    */
   const getIdentityTenantsId = (
     id: string,
+    getIdentityTenantsIdBody: GetIdentityTenantsIdBody,
     options?: SecondParameter<typeof customInstance<GetIdentityTenantsId200>>
   ) => {
     return customInstance<GetIdentityTenantsId200>(
-      { url: `/identity/tenants/${id}`, method: 'GET' },
+      {
+        url: `/identity/tenants/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -92,7 +118,7 @@ export const getTenants = () => {
    */
   const putIdentityTenantsId = (
     id: string,
-    handlerUpdateTenantRequest: HandlerUpdateTenantRequest,
+    putIdentityTenantsIdBody: PutIdentityTenantsIdBody,
     options?: SecondParameter<typeof customInstance<PutIdentityTenantsId200>>
   ) => {
     return customInstance<PutIdentityTenantsId200>(
@@ -100,7 +126,7 @@ export const getTenants = () => {
         url: `/identity/tenants/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateTenantRequest,
+        data: putIdentityTenantsIdBody,
       },
       options
     )
@@ -111,10 +137,16 @@ export const getTenants = () => {
    */
   const postIdentityTenantsIdActivate = (
     id: string,
+    postIdentityTenantsIdActivateBody: PostIdentityTenantsIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostIdentityTenantsIdActivate200>>
   ) => {
     return customInstance<PostIdentityTenantsIdActivate200>(
-      { url: `/identity/tenants/${id}/activate`, method: 'POST' },
+      {
+        url: `/identity/tenants/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityTenantsIdActivateBody,
+      },
       options
     )
   }
@@ -124,7 +156,7 @@ export const getTenants = () => {
    */
   const putIdentityTenantsIdConfig = (
     id: string,
-    handlerUpdateTenantConfigRequest: HandlerUpdateTenantConfigRequest,
+    putIdentityTenantsIdConfigBody: PutIdentityTenantsIdConfigBody,
     options?: SecondParameter<typeof customInstance<PutIdentityTenantsIdConfig200>>
   ) => {
     return customInstance<PutIdentityTenantsIdConfig200>(
@@ -132,7 +164,7 @@ export const getTenants = () => {
         url: `/identity/tenants/${id}/config`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateTenantConfigRequest,
+        data: putIdentityTenantsIdConfigBody,
       },
       options
     )
@@ -143,10 +175,16 @@ export const getTenants = () => {
    */
   const postIdentityTenantsIdDeactivate = (
     id: string,
+    postIdentityTenantsIdDeactivateBody: PostIdentityTenantsIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostIdentityTenantsIdDeactivate200>>
   ) => {
     return customInstance<PostIdentityTenantsIdDeactivate200>(
-      { url: `/identity/tenants/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/identity/tenants/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityTenantsIdDeactivateBody,
+      },
       options
     )
   }
@@ -156,7 +194,7 @@ export const getTenants = () => {
    */
   const putIdentityTenantsIdPlan = (
     id: string,
-    handlerSetTenantPlanRequest: HandlerSetTenantPlanRequest,
+    putIdentityTenantsIdPlanBody: PutIdentityTenantsIdPlanBody,
     options?: SecondParameter<typeof customInstance<PutIdentityTenantsIdPlan200>>
   ) => {
     return customInstance<PutIdentityTenantsIdPlan200>(
@@ -164,7 +202,7 @@ export const getTenants = () => {
         url: `/identity/tenants/${id}/plan`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetTenantPlanRequest,
+        data: putIdentityTenantsIdPlanBody,
       },
       options
     )
@@ -175,10 +213,16 @@ export const getTenants = () => {
    */
   const postIdentityTenantsIdSuspend = (
     id: string,
+    postIdentityTenantsIdSuspendBody: PostIdentityTenantsIdSuspendBody,
     options?: SecondParameter<typeof customInstance<PostIdentityTenantsIdSuspend200>>
   ) => {
     return customInstance<PostIdentityTenantsIdSuspend200>(
-      { url: `/identity/tenants/${id}/suspend`, method: 'POST' },
+      {
+        url: `/identity/tenants/${id}/suspend`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityTenantsIdSuspendBody,
+      },
       options
     )
   }
@@ -188,10 +232,15 @@ export const getTenants = () => {
    */
   const getIdentityTenantsCodeCode = (
     code: string,
+    getIdentityTenantsCodeCodeBody: GetIdentityTenantsCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetIdentityTenantsCodeCode200>>
   ) => {
     return customInstance<GetIdentityTenantsCodeCode200>(
-      { url: `/identity/tenants/code/${code}`, method: 'GET' },
+      {
+        url: `/identity/tenants/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -200,10 +249,15 @@ export const getTenants = () => {
    * @summary Get tenant statistics
    */
   const getIdentityTenantsStats = (
+    getIdentityTenantsStatsBody: GetIdentityTenantsStatsBody,
     options?: SecondParameter<typeof customInstance<GetIdentityTenantsStats200>>
   ) => {
     return customInstance<GetIdentityTenantsStats200>(
-      { url: `/identity/tenants/stats`, method: 'GET' },
+      {
+        url: `/identity/tenants/stats`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -212,10 +266,15 @@ export const getTenants = () => {
    * @summary Get tenant count
    */
   const getIdentityTenantsStatsCount = (
+    getIdentityTenantsStatsCountBody: GetIdentityTenantsStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetIdentityTenantsStatsCount200>>
   ) => {
     return customInstance<GetIdentityTenantsStatsCount200>(
-      { url: `/identity/tenants/stats/count`, method: 'GET' },
+      {
+        url: `/identity/tenants/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

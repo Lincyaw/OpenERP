@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerStrategyInfo } from './handlerStrategyInfo'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetSystemStrategiesAllocation200 = DtoResponse & {
-  data?: HandlerStrategyInfo[]
+export type GetSystemStrategiesAllocation200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

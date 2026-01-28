@@ -4,22 +4,31 @@
  *
  */
 import type {
+  DeleteCatalogProductsIdBody,
   GetCatalogCategoriesCategoryIdProducts200,
+  GetCatalogCategoriesCategoryIdProductsBody,
   GetCatalogCategoriesCategoryIdProductsParams,
   GetCatalogProducts200,
+  GetCatalogProductsBody,
   GetCatalogProductsCodeCode200,
+  GetCatalogProductsCodeCodeBody,
   GetCatalogProductsId200,
+  GetCatalogProductsIdBody,
   GetCatalogProductsParams,
   GetCatalogProductsStatsCount200,
-  HandlerCreateProductRequest,
-  HandlerUpdateProductCodeRequest,
-  HandlerUpdateProductRequest,
+  GetCatalogProductsStatsCountBody,
   PostCatalogProducts201,
+  PostCatalogProductsBody,
   PostCatalogProductsIdActivate200,
+  PostCatalogProductsIdActivateBody,
   PostCatalogProductsIdDeactivate200,
+  PostCatalogProductsIdDeactivateBody,
   PostCatalogProductsIdDiscontinue200,
+  PostCatalogProductsIdDiscontinueBody,
   PutCatalogProductsId200,
+  PutCatalogProductsIdBody,
   PutCatalogProductsIdCode200,
+  PutCatalogProductsIdCodeBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -33,11 +42,17 @@ export const getProducts = () => {
    */
   const getCatalogCategoriesCategoryIdProducts = (
     categoryId: string,
+    getCatalogCategoriesCategoryIdProductsBody: GetCatalogCategoriesCategoryIdProductsBody,
     params?: GetCatalogCategoriesCategoryIdProductsParams,
     options?: SecondParameter<typeof customInstance<GetCatalogCategoriesCategoryIdProducts200>>
   ) => {
     return customInstance<GetCatalogCategoriesCategoryIdProducts200>(
-      { url: `/catalog/categories/${categoryId}/products`, method: 'GET', params },
+      {
+        url: `/catalog/categories/${categoryId}/products`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -46,11 +61,17 @@ export const getProducts = () => {
    * @summary List products
    */
   const getCatalogProducts = (
+    getCatalogProductsBody: GetCatalogProductsBody,
     params?: GetCatalogProductsParams,
     options?: SecondParameter<typeof customInstance<GetCatalogProducts200>>
   ) => {
     return customInstance<GetCatalogProducts200>(
-      { url: `/catalog/products`, method: 'GET', params },
+      {
+        url: `/catalog/products`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -59,7 +80,7 @@ export const getProducts = () => {
    * @summary Create a new product
    */
   const postCatalogProducts = (
-    handlerCreateProductRequest: HandlerCreateProductRequest,
+    postCatalogProductsBody: PostCatalogProductsBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProducts201>>
   ) => {
     return customInstance<PostCatalogProducts201>(
@@ -67,7 +88,7 @@ export const getProducts = () => {
         url: `/catalog/products`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateProductRequest,
+        data: postCatalogProductsBody,
       },
       options
     )
@@ -78,9 +99,18 @@ export const getProducts = () => {
    */
   const deleteCatalogProductsId = (
     id: string,
+    deleteCatalogProductsIdBody: DeleteCatalogProductsIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/catalog/products/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/catalog/products/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteCatalogProductsIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a product by its ID
@@ -88,10 +118,15 @@ export const getProducts = () => {
    */
   const getCatalogProductsId = (
     id: string,
+    getCatalogProductsIdBody: GetCatalogProductsIdBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsId200>>
   ) => {
     return customInstance<GetCatalogProductsId200>(
-      { url: `/catalog/products/${id}`, method: 'GET' },
+      {
+        url: `/catalog/products/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -101,7 +136,7 @@ export const getProducts = () => {
    */
   const putCatalogProductsId = (
     id: string,
-    handlerUpdateProductRequest: HandlerUpdateProductRequest,
+    putCatalogProductsIdBody: PutCatalogProductsIdBody,
     options?: SecondParameter<typeof customInstance<PutCatalogProductsId200>>
   ) => {
     return customInstance<PutCatalogProductsId200>(
@@ -109,7 +144,7 @@ export const getProducts = () => {
         url: `/catalog/products/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateProductRequest,
+        data: putCatalogProductsIdBody,
       },
       options
     )
@@ -120,10 +155,16 @@ export const getProducts = () => {
    */
   const postCatalogProductsIdActivate = (
     id: string,
+    postCatalogProductsIdActivateBody: PostCatalogProductsIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProductsIdActivate200>>
   ) => {
     return customInstance<PostCatalogProductsIdActivate200>(
-      { url: `/catalog/products/${id}/activate`, method: 'POST' },
+      {
+        url: `/catalog/products/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postCatalogProductsIdActivateBody,
+      },
       options
     )
   }
@@ -133,7 +174,7 @@ export const getProducts = () => {
    */
   const putCatalogProductsIdCode = (
     id: string,
-    handlerUpdateProductCodeRequest: HandlerUpdateProductCodeRequest,
+    putCatalogProductsIdCodeBody: PutCatalogProductsIdCodeBody,
     options?: SecondParameter<typeof customInstance<PutCatalogProductsIdCode200>>
   ) => {
     return customInstance<PutCatalogProductsIdCode200>(
@@ -141,7 +182,7 @@ export const getProducts = () => {
         url: `/catalog/products/${id}/code`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateProductCodeRequest,
+        data: putCatalogProductsIdCodeBody,
       },
       options
     )
@@ -152,10 +193,16 @@ export const getProducts = () => {
    */
   const postCatalogProductsIdDeactivate = (
     id: string,
+    postCatalogProductsIdDeactivateBody: PostCatalogProductsIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProductsIdDeactivate200>>
   ) => {
     return customInstance<PostCatalogProductsIdDeactivate200>(
-      { url: `/catalog/products/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/catalog/products/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postCatalogProductsIdDeactivateBody,
+      },
       options
     )
   }
@@ -165,10 +212,16 @@ export const getProducts = () => {
    */
   const postCatalogProductsIdDiscontinue = (
     id: string,
+    postCatalogProductsIdDiscontinueBody: PostCatalogProductsIdDiscontinueBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProductsIdDiscontinue200>>
   ) => {
     return customInstance<PostCatalogProductsIdDiscontinue200>(
-      { url: `/catalog/products/${id}/discontinue`, method: 'POST' },
+      {
+        url: `/catalog/products/${id}/discontinue`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postCatalogProductsIdDiscontinueBody,
+      },
       options
     )
   }
@@ -178,10 +231,15 @@ export const getProducts = () => {
    */
   const getCatalogProductsCodeCode = (
     code: string,
+    getCatalogProductsCodeCodeBody: GetCatalogProductsCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsCodeCode200>>
   ) => {
     return customInstance<GetCatalogProductsCodeCode200>(
-      { url: `/catalog/products/code/${code}`, method: 'GET' },
+      {
+        url: `/catalog/products/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -190,10 +248,15 @@ export const getProducts = () => {
    * @summary Get product counts by status
    */
   const getCatalogProductsStatsCount = (
+    getCatalogProductsStatsCountBody: GetCatalogProductsStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsStatsCount200>>
   ) => {
     return customInstance<GetCatalogProductsStatsCount200>(
-      { url: `/catalog/products/stats/count`, method: 'GET' },
+      {
+        url: `/catalog/products/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

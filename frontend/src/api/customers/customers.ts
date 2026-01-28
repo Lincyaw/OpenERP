@@ -4,25 +4,34 @@
  *
  */
 import type {
+  DeletePartnerCustomersIdBody,
   GetPartnerCustomers200,
+  GetPartnerCustomersBody,
   GetPartnerCustomersCodeCode200,
+  GetPartnerCustomersCodeCodeBody,
   GetPartnerCustomersId200,
+  GetPartnerCustomersIdBody,
   GetPartnerCustomersParams,
   GetPartnerCustomersStatsCount200,
-  HandlerBalanceOperationRequest,
-  HandlerCreateCustomerRequest,
-  HandlerSetLevelRequest,
-  HandlerUpdateCustomerCodeRequest,
-  HandlerUpdateCustomerRequest,
+  GetPartnerCustomersStatsCountBody,
   PostPartnerCustomers201,
+  PostPartnerCustomersBody,
   PostPartnerCustomersIdActivate200,
+  PostPartnerCustomersIdActivateBody,
   PostPartnerCustomersIdBalanceAdd200,
+  PostPartnerCustomersIdBalanceAddBody,
   PostPartnerCustomersIdBalanceDeduct200,
+  PostPartnerCustomersIdBalanceDeductBody,
   PostPartnerCustomersIdDeactivate200,
+  PostPartnerCustomersIdDeactivateBody,
   PostPartnerCustomersIdSuspend200,
+  PostPartnerCustomersIdSuspendBody,
   PutPartnerCustomersId200,
+  PutPartnerCustomersIdBody,
   PutPartnerCustomersIdCode200,
+  PutPartnerCustomersIdCodeBody,
   PutPartnerCustomersIdLevel200,
+  PutPartnerCustomersIdLevelBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -35,11 +44,17 @@ export const getCustomers = () => {
    * @summary List customers
    */
   const getPartnerCustomers = (
+    getPartnerCustomersBody: GetPartnerCustomersBody,
     params?: GetPartnerCustomersParams,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomers200>>
   ) => {
     return customInstance<GetPartnerCustomers200>(
-      { url: `/partner/customers`, method: 'GET', params },
+      {
+        url: `/partner/customers`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -48,7 +63,7 @@ export const getCustomers = () => {
    * @summary Create a new customer
    */
   const postPartnerCustomers = (
-    handlerCreateCustomerRequest: HandlerCreateCustomerRequest,
+    postPartnerCustomersBody: PostPartnerCustomersBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomers201>>
   ) => {
     return customInstance<PostPartnerCustomers201>(
@@ -56,7 +71,7 @@ export const getCustomers = () => {
         url: `/partner/customers`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateCustomerRequest,
+        data: postPartnerCustomersBody,
       },
       options
     )
@@ -67,9 +82,18 @@ export const getCustomers = () => {
    */
   const deletePartnerCustomersId = (
     id: string,
+    deletePartnerCustomersIdBody: DeletePartnerCustomersIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/partner/customers/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/partner/customers/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deletePartnerCustomersIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a customer by its ID
@@ -77,10 +101,15 @@ export const getCustomers = () => {
    */
   const getPartnerCustomersId = (
     id: string,
+    getPartnerCustomersIdBody: GetPartnerCustomersIdBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersId200>>
   ) => {
     return customInstance<GetPartnerCustomersId200>(
-      { url: `/partner/customers/${id}`, method: 'GET' },
+      {
+        url: `/partner/customers/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -90,7 +119,7 @@ export const getCustomers = () => {
    */
   const putPartnerCustomersId = (
     id: string,
-    handlerUpdateCustomerRequest: HandlerUpdateCustomerRequest,
+    putPartnerCustomersIdBody: PutPartnerCustomersIdBody,
     options?: SecondParameter<typeof customInstance<PutPartnerCustomersId200>>
   ) => {
     return customInstance<PutPartnerCustomersId200>(
@@ -98,7 +127,7 @@ export const getCustomers = () => {
         url: `/partner/customers/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateCustomerRequest,
+        data: putPartnerCustomersIdBody,
       },
       options
     )
@@ -109,10 +138,16 @@ export const getCustomers = () => {
    */
   const postPartnerCustomersIdActivate = (
     id: string,
+    postPartnerCustomersIdActivateBody: PostPartnerCustomersIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdActivate200>>
   ) => {
     return customInstance<PostPartnerCustomersIdActivate200>(
-      { url: `/partner/customers/${id}/activate`, method: 'POST' },
+      {
+        url: `/partner/customers/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomersIdActivateBody,
+      },
       options
     )
   }
@@ -122,7 +157,7 @@ export const getCustomers = () => {
    */
   const postPartnerCustomersIdBalanceAdd = (
     id: string,
-    handlerBalanceOperationRequest: HandlerBalanceOperationRequest,
+    postPartnerCustomersIdBalanceAddBody: PostPartnerCustomersIdBalanceAddBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceAdd200>>
   ) => {
     return customInstance<PostPartnerCustomersIdBalanceAdd200>(
@@ -130,7 +165,7 @@ export const getCustomers = () => {
         url: `/partner/customers/${id}/balance/add`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerBalanceOperationRequest,
+        data: postPartnerCustomersIdBalanceAddBody,
       },
       options
     )
@@ -141,7 +176,7 @@ export const getCustomers = () => {
    */
   const postPartnerCustomersIdBalanceDeduct = (
     id: string,
-    handlerBalanceOperationRequest: HandlerBalanceOperationRequest,
+    postPartnerCustomersIdBalanceDeductBody: PostPartnerCustomersIdBalanceDeductBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceDeduct200>>
   ) => {
     return customInstance<PostPartnerCustomersIdBalanceDeduct200>(
@@ -149,7 +184,7 @@ export const getCustomers = () => {
         url: `/partner/customers/${id}/balance/deduct`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerBalanceOperationRequest,
+        data: postPartnerCustomersIdBalanceDeductBody,
       },
       options
     )
@@ -160,7 +195,7 @@ export const getCustomers = () => {
    */
   const putPartnerCustomersIdCode = (
     id: string,
-    handlerUpdateCustomerCodeRequest: HandlerUpdateCustomerCodeRequest,
+    putPartnerCustomersIdCodeBody: PutPartnerCustomersIdCodeBody,
     options?: SecondParameter<typeof customInstance<PutPartnerCustomersIdCode200>>
   ) => {
     return customInstance<PutPartnerCustomersIdCode200>(
@@ -168,7 +203,7 @@ export const getCustomers = () => {
         url: `/partner/customers/${id}/code`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateCustomerCodeRequest,
+        data: putPartnerCustomersIdCodeBody,
       },
       options
     )
@@ -179,10 +214,16 @@ export const getCustomers = () => {
    */
   const postPartnerCustomersIdDeactivate = (
     id: string,
+    postPartnerCustomersIdDeactivateBody: PostPartnerCustomersIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdDeactivate200>>
   ) => {
     return customInstance<PostPartnerCustomersIdDeactivate200>(
-      { url: `/partner/customers/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/partner/customers/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomersIdDeactivateBody,
+      },
       options
     )
   }
@@ -192,7 +233,7 @@ export const getCustomers = () => {
    */
   const putPartnerCustomersIdLevel = (
     id: string,
-    handlerSetLevelRequest: HandlerSetLevelRequest,
+    putPartnerCustomersIdLevelBody: PutPartnerCustomersIdLevelBody,
     options?: SecondParameter<typeof customInstance<PutPartnerCustomersIdLevel200>>
   ) => {
     return customInstance<PutPartnerCustomersIdLevel200>(
@@ -200,7 +241,7 @@ export const getCustomers = () => {
         url: `/partner/customers/${id}/level`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetLevelRequest,
+        data: putPartnerCustomersIdLevelBody,
       },
       options
     )
@@ -211,10 +252,16 @@ export const getCustomers = () => {
    */
   const postPartnerCustomersIdSuspend = (
     id: string,
+    postPartnerCustomersIdSuspendBody: PostPartnerCustomersIdSuspendBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdSuspend200>>
   ) => {
     return customInstance<PostPartnerCustomersIdSuspend200>(
-      { url: `/partner/customers/${id}/suspend`, method: 'POST' },
+      {
+        url: `/partner/customers/${id}/suspend`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomersIdSuspendBody,
+      },
       options
     )
   }
@@ -224,10 +271,15 @@ export const getCustomers = () => {
    */
   const getPartnerCustomersCodeCode = (
     code: string,
+    getPartnerCustomersCodeCodeBody: GetPartnerCustomersCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersCodeCode200>>
   ) => {
     return customInstance<GetPartnerCustomersCodeCode200>(
-      { url: `/partner/customers/code/${code}`, method: 'GET' },
+      {
+        url: `/partner/customers/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -236,10 +288,15 @@ export const getCustomers = () => {
    * @summary Get customer counts by status
    */
   const getPartnerCustomersStatsCount = (
+    getPartnerCustomersStatsCountBody: GetPartnerCustomersStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersStatsCount200>>
   ) => {
     return customInstance<GetPartnerCustomersStatsCount200>(
-      { url: `/partner/customers/stats/count`, method: 'GET' },
+      {
+        url: `/partner/customers/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

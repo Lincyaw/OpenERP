@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerOutboxEntryResponse } from './handlerOutboxEntryResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostSystemOutboxIdRetry200 = DtoResponse & {
-  data?: HandlerOutboxEntryResponse
+export type PostSystemOutboxIdRetry200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

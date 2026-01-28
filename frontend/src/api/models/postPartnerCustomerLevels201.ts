@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerCustomerLevelResponse } from './handlerCustomerLevelResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostPartnerCustomerLevels201 = DtoResponse & {
-  data?: HandlerCustomerLevelResponse
+export type PostPartnerCustomerLevels201 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

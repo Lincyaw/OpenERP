@@ -6,35 +6,46 @@
 import type {
   GetInventoryItems200,
   GetInventoryItemsAlertsLowStock200,
+  GetInventoryItemsAlertsLowStockBody,
   GetInventoryItemsAlertsLowStockParams,
+  GetInventoryItemsBody,
   GetInventoryItemsId200,
+  GetInventoryItemsIdBody,
   GetInventoryItemsIdTransactions200,
+  GetInventoryItemsIdTransactionsBody,
   GetInventoryItemsIdTransactionsParams,
   GetInventoryItemsLookup200,
+  GetInventoryItemsLookupBody,
   GetInventoryItemsLookupParams,
   GetInventoryItemsParams,
   GetInventoryLocks200,
+  GetInventoryLocksBody,
   GetInventoryLocksId200,
+  GetInventoryLocksIdBody,
   GetInventoryLocksParams,
   GetInventoryProductsProductIdItems200,
+  GetInventoryProductsProductIdItemsBody,
   GetInventoryProductsProductIdItemsParams,
   GetInventoryTransactions200,
+  GetInventoryTransactionsBody,
   GetInventoryTransactionsId200,
+  GetInventoryTransactionsIdBody,
   GetInventoryTransactionsParams,
   GetInventoryWarehousesWarehouseIdItems200,
+  GetInventoryWarehousesWarehouseIdItemsBody,
   GetInventoryWarehousesWarehouseIdItemsParams,
-  HandlerAdjustStockRequest,
-  HandlerCheckAvailabilityRequest,
-  HandlerDeductStockRequest,
-  HandlerIncreaseStockRequest,
-  HandlerLockStockRequest,
-  HandlerSetThresholdsRequest,
-  HandlerUnlockStockRequest,
   PostInventoryAvailabilityCheck200,
+  PostInventoryAvailabilityCheckBody,
   PostInventoryStockAdjust200,
+  PostInventoryStockAdjustBody,
+  PostInventoryStockDeductBody,
   PostInventoryStockIncrease200,
+  PostInventoryStockIncreaseBody,
   PostInventoryStockLock200,
+  PostInventoryStockLockBody,
+  PostInventoryStockUnlockBody,
   PutInventoryThresholds200,
+  PutInventoryThresholdsBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -47,7 +58,7 @@ export const getInventory = () => {
    * @summary Check stock availability
    */
   const postInventoryAvailabilityCheck = (
-    handlerCheckAvailabilityRequest: HandlerCheckAvailabilityRequest,
+    postInventoryAvailabilityCheckBody: PostInventoryAvailabilityCheckBody,
     options?: SecondParameter<typeof customInstance<PostInventoryAvailabilityCheck200>>
   ) => {
     return customInstance<PostInventoryAvailabilityCheck200>(
@@ -55,7 +66,7 @@ export const getInventory = () => {
         url: `/inventory/availability/check`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCheckAvailabilityRequest,
+        data: postInventoryAvailabilityCheckBody,
       },
       options
     )
@@ -65,11 +76,17 @@ export const getInventory = () => {
    * @summary List inventory items
    */
   const getInventoryItems = (
+    getInventoryItemsBody: GetInventoryItemsBody,
     params?: GetInventoryItemsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryItems200>>
   ) => {
     return customInstance<GetInventoryItems200>(
-      { url: `/inventory/items`, method: 'GET', params },
+      {
+        url: `/inventory/items`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -79,10 +96,15 @@ export const getInventory = () => {
    */
   const getInventoryItemsId = (
     id: string,
+    getInventoryItemsIdBody: GetInventoryItemsIdBody,
     options?: SecondParameter<typeof customInstance<GetInventoryItemsId200>>
   ) => {
     return customInstance<GetInventoryItemsId200>(
-      { url: `/inventory/items/${id}`, method: 'GET' },
+      {
+        url: `/inventory/items/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -92,11 +114,17 @@ export const getInventory = () => {
    */
   const getInventoryItemsIdTransactions = (
     id: string,
+    getInventoryItemsIdTransactionsBody: GetInventoryItemsIdTransactionsBody,
     params?: GetInventoryItemsIdTransactionsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryItemsIdTransactions200>>
   ) => {
     return customInstance<GetInventoryItemsIdTransactions200>(
-      { url: `/inventory/items/${id}/transactions`, method: 'GET', params },
+      {
+        url: `/inventory/items/${id}/transactions`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -105,11 +133,17 @@ export const getInventory = () => {
    * @summary List inventory below minimum threshold
    */
   const getInventoryItemsAlertsLowStock = (
+    getInventoryItemsAlertsLowStockBody: GetInventoryItemsAlertsLowStockBody,
     params?: GetInventoryItemsAlertsLowStockParams,
     options?: SecondParameter<typeof customInstance<GetInventoryItemsAlertsLowStock200>>
   ) => {
     return customInstance<GetInventoryItemsAlertsLowStock200>(
-      { url: `/inventory/items/alerts/low-stock`, method: 'GET', params },
+      {
+        url: `/inventory/items/alerts/low-stock`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -118,11 +152,17 @@ export const getInventory = () => {
    * @summary Get inventory by warehouse and product
    */
   const getInventoryItemsLookup = (
+    getInventoryItemsLookupBody: GetInventoryItemsLookupBody,
     params: GetInventoryItemsLookupParams,
     options?: SecondParameter<typeof customInstance<GetInventoryItemsLookup200>>
   ) => {
     return customInstance<GetInventoryItemsLookup200>(
-      { url: `/inventory/items/lookup`, method: 'GET', params },
+      {
+        url: `/inventory/items/lookup`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -131,11 +171,17 @@ export const getInventory = () => {
    * @summary Get active locks
    */
   const getInventoryLocks = (
+    getInventoryLocksBody: GetInventoryLocksBody,
     params: GetInventoryLocksParams,
     options?: SecondParameter<typeof customInstance<GetInventoryLocks200>>
   ) => {
     return customInstance<GetInventoryLocks200>(
-      { url: `/inventory/locks`, method: 'GET', params },
+      {
+        url: `/inventory/locks`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -145,10 +191,15 @@ export const getInventory = () => {
    */
   const getInventoryLocksId = (
     id: string,
+    getInventoryLocksIdBody: GetInventoryLocksIdBody,
     options?: SecondParameter<typeof customInstance<GetInventoryLocksId200>>
   ) => {
     return customInstance<GetInventoryLocksId200>(
-      { url: `/inventory/locks/${id}`, method: 'GET' },
+      {
+        url: `/inventory/locks/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -158,11 +209,17 @@ export const getInventory = () => {
    */
   const getInventoryProductsProductIdItems = (
     productId: string,
+    getInventoryProductsProductIdItemsBody: GetInventoryProductsProductIdItemsBody,
     params?: GetInventoryProductsProductIdItemsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryProductsProductIdItems200>>
   ) => {
     return customInstance<GetInventoryProductsProductIdItems200>(
-      { url: `/inventory/products/${productId}/items`, method: 'GET', params },
+      {
+        url: `/inventory/products/${productId}/items`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -171,7 +228,7 @@ export const getInventory = () => {
    * @summary Adjust stock
    */
   const postInventoryStockAdjust = (
-    handlerAdjustStockRequest: HandlerAdjustStockRequest,
+    postInventoryStockAdjustBody: PostInventoryStockAdjustBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockAdjust200>>
   ) => {
     return customInstance<PostInventoryStockAdjust200>(
@@ -179,7 +236,7 @@ export const getInventory = () => {
         url: `/inventory/stock/adjust`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAdjustStockRequest,
+        data: postInventoryStockAdjustBody,
       },
       options
     )
@@ -189,7 +246,7 @@ export const getInventory = () => {
    * @summary Deduct stock
    */
   const postInventoryStockDeduct = (
-    handlerDeductStockRequest: HandlerDeductStockRequest,
+    postInventoryStockDeductBody: PostInventoryStockDeductBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
     return customInstance<void>(
@@ -197,7 +254,7 @@ export const getInventory = () => {
         url: `/inventory/stock/deduct`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerDeductStockRequest,
+        data: postInventoryStockDeductBody,
       },
       options
     )
@@ -207,7 +264,7 @@ export const getInventory = () => {
    * @summary Increase stock
    */
   const postInventoryStockIncrease = (
-    handlerIncreaseStockRequest: HandlerIncreaseStockRequest,
+    postInventoryStockIncreaseBody: PostInventoryStockIncreaseBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockIncrease200>>
   ) => {
     return customInstance<PostInventoryStockIncrease200>(
@@ -215,7 +272,7 @@ export const getInventory = () => {
         url: `/inventory/stock/increase`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerIncreaseStockRequest,
+        data: postInventoryStockIncreaseBody,
       },
       options
     )
@@ -225,7 +282,7 @@ export const getInventory = () => {
    * @summary Lock stock
    */
   const postInventoryStockLock = (
-    handlerLockStockRequest: HandlerLockStockRequest,
+    postInventoryStockLockBody: PostInventoryStockLockBody,
     options?: SecondParameter<typeof customInstance<PostInventoryStockLock200>>
   ) => {
     return customInstance<PostInventoryStockLock200>(
@@ -233,7 +290,7 @@ export const getInventory = () => {
         url: `/inventory/stock/lock`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerLockStockRequest,
+        data: postInventoryStockLockBody,
       },
       options
     )
@@ -243,7 +300,7 @@ export const getInventory = () => {
    * @summary Unlock stock
    */
   const postInventoryStockUnlock = (
-    handlerUnlockStockRequest: HandlerUnlockStockRequest,
+    postInventoryStockUnlockBody: PostInventoryStockUnlockBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
     return customInstance<void>(
@@ -251,7 +308,7 @@ export const getInventory = () => {
         url: `/inventory/stock/unlock`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUnlockStockRequest,
+        data: postInventoryStockUnlockBody,
       },
       options
     )
@@ -261,7 +318,7 @@ export const getInventory = () => {
    * @summary Set inventory thresholds
    */
   const putInventoryThresholds = (
-    handlerSetThresholdsRequest: HandlerSetThresholdsRequest,
+    putInventoryThresholdsBody: PutInventoryThresholdsBody,
     options?: SecondParameter<typeof customInstance<PutInventoryThresholds200>>
   ) => {
     return customInstance<PutInventoryThresholds200>(
@@ -269,7 +326,7 @@ export const getInventory = () => {
         url: `/inventory/thresholds`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetThresholdsRequest,
+        data: putInventoryThresholdsBody,
       },
       options
     )
@@ -279,11 +336,17 @@ export const getInventory = () => {
    * @summary List inventory transactions
    */
   const getInventoryTransactions = (
+    getInventoryTransactionsBody: GetInventoryTransactionsBody,
     params?: GetInventoryTransactionsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryTransactions200>>
   ) => {
     return customInstance<GetInventoryTransactions200>(
-      { url: `/inventory/transactions`, method: 'GET', params },
+      {
+        url: `/inventory/transactions`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -293,10 +356,15 @@ export const getInventory = () => {
    */
   const getInventoryTransactionsId = (
     id: string,
+    getInventoryTransactionsIdBody: GetInventoryTransactionsIdBody,
     options?: SecondParameter<typeof customInstance<GetInventoryTransactionsId200>>
   ) => {
     return customInstance<GetInventoryTransactionsId200>(
-      { url: `/inventory/transactions/${id}`, method: 'GET' },
+      {
+        url: `/inventory/transactions/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -306,11 +374,17 @@ export const getInventory = () => {
    */
   const getInventoryWarehousesWarehouseIdItems = (
     warehouseId: string,
+    getInventoryWarehousesWarehouseIdItemsBody: GetInventoryWarehousesWarehouseIdItemsBody,
     params?: GetInventoryWarehousesWarehouseIdItemsParams,
     options?: SecondParameter<typeof customInstance<GetInventoryWarehousesWarehouseIdItems200>>
   ) => {
     return customInstance<GetInventoryWarehousesWarehouseIdItems200>(
-      { url: `/inventory/warehouses/${warehouseId}/items`, method: 'GET', params },
+      {
+        url: `/inventory/warehouses/${warehouseId}/items`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }

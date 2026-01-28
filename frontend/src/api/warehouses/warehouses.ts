@@ -4,21 +4,31 @@
  *
  */
 import type {
+  DeletePartnerWarehousesIdBody,
+  DeletePartnerWarehousesIdParams,
   GetPartnerWarehouses200,
+  GetPartnerWarehousesBody,
   GetPartnerWarehousesCodeCode200,
+  GetPartnerWarehousesCodeCodeBody,
   GetPartnerWarehousesDefault200,
+  GetPartnerWarehousesDefaultBody,
   GetPartnerWarehousesId200,
+  GetPartnerWarehousesIdBody,
   GetPartnerWarehousesParams,
   GetPartnerWarehousesStatsCount200,
-  HandlerCreateWarehouseRequest,
-  HandlerUpdateWarehouseCodeRequest,
-  HandlerUpdateWarehouseRequest,
+  GetPartnerWarehousesStatsCountBody,
   PostPartnerWarehouses201,
+  PostPartnerWarehousesBody,
   PostPartnerWarehousesIdDisable200,
+  PostPartnerWarehousesIdDisableBody,
   PostPartnerWarehousesIdEnable200,
+  PostPartnerWarehousesIdEnableBody,
   PostPartnerWarehousesIdSetDefault200,
+  PostPartnerWarehousesIdSetDefaultBody,
   PutPartnerWarehousesId200,
+  PutPartnerWarehousesIdBody,
   PutPartnerWarehousesIdCode200,
+  PutPartnerWarehousesIdCodeBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -31,11 +41,17 @@ export const getWarehouses = () => {
    * @summary List warehouses
    */
   const getPartnerWarehouses = (
+    getPartnerWarehousesBody: GetPartnerWarehousesBody,
     params?: GetPartnerWarehousesParams,
     options?: SecondParameter<typeof customInstance<GetPartnerWarehouses200>>
   ) => {
     return customInstance<GetPartnerWarehouses200>(
-      { url: `/partner/warehouses`, method: 'GET', params },
+      {
+        url: `/partner/warehouses`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -44,7 +60,7 @@ export const getWarehouses = () => {
    * @summary Create a new warehouse
    */
   const postPartnerWarehouses = (
-    handlerCreateWarehouseRequest: HandlerCreateWarehouseRequest,
+    postPartnerWarehousesBody: PostPartnerWarehousesBody,
     options?: SecondParameter<typeof customInstance<PostPartnerWarehouses201>>
   ) => {
     return customInstance<PostPartnerWarehouses201>(
@@ -52,20 +68,31 @@ export const getWarehouses = () => {
         url: `/partner/warehouses`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateWarehouseRequest,
+        data: postPartnerWarehousesBody,
       },
       options
     )
   }
   /**
-   * Delete a warehouse by ID (cannot delete default warehouse)
+   * Delete a warehouse by ID (cannot delete default warehouse or warehouse with inventory unless force=true with admin permission)
    * @summary Delete a warehouse
    */
   const deletePartnerWarehousesId = (
     id: string,
+    deletePartnerWarehousesIdBody: DeletePartnerWarehousesIdBody,
+    params?: DeletePartnerWarehousesIdParams,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/partner/warehouses/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/partner/warehouses/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deletePartnerWarehousesIdBody,
+        params,
+      },
+      options
+    )
   }
   /**
    * Retrieve a warehouse by its ID
@@ -73,10 +100,15 @@ export const getWarehouses = () => {
    */
   const getPartnerWarehousesId = (
     id: string,
+    getPartnerWarehousesIdBody: GetPartnerWarehousesIdBody,
     options?: SecondParameter<typeof customInstance<GetPartnerWarehousesId200>>
   ) => {
     return customInstance<GetPartnerWarehousesId200>(
-      { url: `/partner/warehouses/${id}`, method: 'GET' },
+      {
+        url: `/partner/warehouses/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -86,7 +118,7 @@ export const getWarehouses = () => {
    */
   const putPartnerWarehousesId = (
     id: string,
-    handlerUpdateWarehouseRequest: HandlerUpdateWarehouseRequest,
+    putPartnerWarehousesIdBody: PutPartnerWarehousesIdBody,
     options?: SecondParameter<typeof customInstance<PutPartnerWarehousesId200>>
   ) => {
     return customInstance<PutPartnerWarehousesId200>(
@@ -94,7 +126,7 @@ export const getWarehouses = () => {
         url: `/partner/warehouses/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateWarehouseRequest,
+        data: putPartnerWarehousesIdBody,
       },
       options
     )
@@ -105,7 +137,7 @@ export const getWarehouses = () => {
    */
   const putPartnerWarehousesIdCode = (
     id: string,
-    handlerUpdateWarehouseCodeRequest: HandlerUpdateWarehouseCodeRequest,
+    putPartnerWarehousesIdCodeBody: PutPartnerWarehousesIdCodeBody,
     options?: SecondParameter<typeof customInstance<PutPartnerWarehousesIdCode200>>
   ) => {
     return customInstance<PutPartnerWarehousesIdCode200>(
@@ -113,7 +145,7 @@ export const getWarehouses = () => {
         url: `/partner/warehouses/${id}/code`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateWarehouseCodeRequest,
+        data: putPartnerWarehousesIdCodeBody,
       },
       options
     )
@@ -124,10 +156,16 @@ export const getWarehouses = () => {
    */
   const postPartnerWarehousesIdDisable = (
     id: string,
+    postPartnerWarehousesIdDisableBody: PostPartnerWarehousesIdDisableBody,
     options?: SecondParameter<typeof customInstance<PostPartnerWarehousesIdDisable200>>
   ) => {
     return customInstance<PostPartnerWarehousesIdDisable200>(
-      { url: `/partner/warehouses/${id}/disable`, method: 'POST' },
+      {
+        url: `/partner/warehouses/${id}/disable`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerWarehousesIdDisableBody,
+      },
       options
     )
   }
@@ -137,10 +175,16 @@ export const getWarehouses = () => {
    */
   const postPartnerWarehousesIdEnable = (
     id: string,
+    postPartnerWarehousesIdEnableBody: PostPartnerWarehousesIdEnableBody,
     options?: SecondParameter<typeof customInstance<PostPartnerWarehousesIdEnable200>>
   ) => {
     return customInstance<PostPartnerWarehousesIdEnable200>(
-      { url: `/partner/warehouses/${id}/enable`, method: 'POST' },
+      {
+        url: `/partner/warehouses/${id}/enable`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerWarehousesIdEnableBody,
+      },
       options
     )
   }
@@ -150,10 +194,16 @@ export const getWarehouses = () => {
    */
   const postPartnerWarehousesIdSetDefault = (
     id: string,
+    postPartnerWarehousesIdSetDefaultBody: PostPartnerWarehousesIdSetDefaultBody,
     options?: SecondParameter<typeof customInstance<PostPartnerWarehousesIdSetDefault200>>
   ) => {
     return customInstance<PostPartnerWarehousesIdSetDefault200>(
-      { url: `/partner/warehouses/${id}/set-default`, method: 'POST' },
+      {
+        url: `/partner/warehouses/${id}/set-default`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerWarehousesIdSetDefaultBody,
+      },
       options
     )
   }
@@ -163,10 +213,15 @@ export const getWarehouses = () => {
    */
   const getPartnerWarehousesCodeCode = (
     code: string,
+    getPartnerWarehousesCodeCodeBody: GetPartnerWarehousesCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetPartnerWarehousesCodeCode200>>
   ) => {
     return customInstance<GetPartnerWarehousesCodeCode200>(
-      { url: `/partner/warehouses/code/${code}`, method: 'GET' },
+      {
+        url: `/partner/warehouses/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -175,10 +230,15 @@ export const getWarehouses = () => {
    * @summary Get default warehouse
    */
   const getPartnerWarehousesDefault = (
+    getPartnerWarehousesDefaultBody: GetPartnerWarehousesDefaultBody,
     options?: SecondParameter<typeof customInstance<GetPartnerWarehousesDefault200>>
   ) => {
     return customInstance<GetPartnerWarehousesDefault200>(
-      { url: `/partner/warehouses/default`, method: 'GET' },
+      {
+        url: `/partner/warehouses/default`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -187,10 +247,15 @@ export const getWarehouses = () => {
    * @summary Get warehouse counts by status
    */
   const getPartnerWarehousesStatsCount = (
+    getPartnerWarehousesStatsCountBody: GetPartnerWarehousesStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetPartnerWarehousesStatsCount200>>
   ) => {
     return customInstance<GetPartnerWarehousesStatsCount200>(
-      { url: `/partner/warehouses/stats/count`, method: 'GET' },
+      {
+        url: `/partner/warehouses/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

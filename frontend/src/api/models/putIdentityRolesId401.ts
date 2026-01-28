@@ -4,8 +4,12 @@
  *
  */
 import type { DtoErrorInfo } from './dtoErrorInfo'
-import type { DtoResponse } from './dtoResponse'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PutIdentityRolesId401 = DtoResponse & {
+export type PutIdentityRolesId401 = Error & {
+  data?: unknown
   error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

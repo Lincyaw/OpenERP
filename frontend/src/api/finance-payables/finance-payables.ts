@@ -5,9 +5,12 @@
  */
 import type {
   GetFinancePayables200,
+  GetFinancePayablesBody,
   GetFinancePayablesId200,
+  GetFinancePayablesIdBody,
   GetFinancePayablesParams,
   GetFinancePayablesSummary200,
+  GetFinancePayablesSummaryBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -20,11 +23,17 @@ export const getFinancePayables = () => {
    * @summary List account payables
    */
   const getFinancePayables = (
+    getFinancePayablesBody: GetFinancePayablesBody,
     params?: GetFinancePayablesParams,
     options?: SecondParameter<typeof customInstance<GetFinancePayables200>>
   ) => {
     return customInstance<GetFinancePayables200>(
-      { url: `/finance/payables`, method: 'GET', params },
+      {
+        url: `/finance/payables`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -34,10 +43,15 @@ export const getFinancePayables = () => {
    */
   const getFinancePayablesId = (
     id: string,
+    getFinancePayablesIdBody: GetFinancePayablesIdBody,
     options?: SecondParameter<typeof customInstance<GetFinancePayablesId200>>
   ) => {
     return customInstance<GetFinancePayablesId200>(
-      { url: `/finance/payables/${id}`, method: 'GET' },
+      {
+        url: `/finance/payables/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -46,10 +60,15 @@ export const getFinancePayables = () => {
    * @summary Get payables summary
    */
   const getFinancePayablesSummary = (
+    getFinancePayablesSummaryBody: GetFinancePayablesSummaryBody,
     options?: SecondParameter<typeof customInstance<GetFinancePayablesSummary200>>
   ) => {
     return customInstance<GetFinancePayablesSummary200>(
-      { url: `/finance/payables/summary`, method: 'GET' },
+      {
+        url: `/finance/payables/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

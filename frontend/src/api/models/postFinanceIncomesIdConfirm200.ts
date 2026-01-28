@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerOtherIncomeRecordResponse } from './handlerOtherIncomeRecordResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostFinanceIncomesIdConfirm200 = DtoResponse & {
-  data?: HandlerOtherIncomeRecordResponse
+export type PostFinanceIncomesIdConfirm200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

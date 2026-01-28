@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerInventoryValueByWarehouseResponse } from './handlerInventoryValueByWarehouseResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetReportsInventoryValueByWarehouse200 = DtoResponse & {
-  data?: HandlerInventoryValueByWarehouseResponse[]
+export type GetReportsInventoryValueByWarehouse200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

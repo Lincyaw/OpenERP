@@ -4,17 +4,22 @@
  *
  */
 import type {
+  DeleteCatalogProductsIdUnitsUnitIdBody,
   DtoResponse,
   GetCatalogProductsIdUnits200,
+  GetCatalogProductsIdUnitsBody,
   GetCatalogProductsIdUnitsDefaultPurchase200,
+  GetCatalogProductsIdUnitsDefaultPurchaseBody,
   GetCatalogProductsIdUnitsDefaultSales200,
+  GetCatalogProductsIdUnitsDefaultSalesBody,
   GetCatalogProductsIdUnitsUnitId200,
-  HandlerConvertUnitRequest,
-  HandlerCreateProductUnitRequest,
-  HandlerUpdateProductUnitRequest,
+  GetCatalogProductsIdUnitsUnitIdBody,
   PostCatalogProductsIdUnits201,
+  PostCatalogProductsIdUnitsBody,
   PostCatalogProductsIdUnitsConvert200,
+  PostCatalogProductsIdUnitsConvertBody,
   PutCatalogProductsIdUnitsUnitId200,
+  PutCatalogProductsIdUnitsUnitIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -28,10 +33,15 @@ export const getProductUnits = () => {
    */
   const getCatalogProductsIdUnits = (
     id: string,
+    getCatalogProductsIdUnitsBody: GetCatalogProductsIdUnitsBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnits200>>
   ) => {
     return customInstance<GetCatalogProductsIdUnits200>(
-      { url: `/catalog/products/${id}/units`, method: 'GET' },
+      {
+        url: `/catalog/products/${id}/units`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -41,7 +51,7 @@ export const getProductUnits = () => {
    */
   const postCatalogProductsIdUnits = (
     id: string,
-    handlerCreateProductUnitRequest: HandlerCreateProductUnitRequest,
+    postCatalogProductsIdUnitsBody: PostCatalogProductsIdUnitsBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProductsIdUnits201>>
   ) => {
     return customInstance<PostCatalogProductsIdUnits201>(
@@ -49,7 +59,7 @@ export const getProductUnits = () => {
         url: `/catalog/products/${id}/units`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateProductUnitRequest,
+        data: postCatalogProductsIdUnitsBody,
       },
       options
     )
@@ -61,10 +71,16 @@ export const getProductUnits = () => {
   const deleteCatalogProductsIdUnitsUnitId = (
     id: string,
     unitId: string,
+    deleteCatalogProductsIdUnitsUnitIdBody: DeleteCatalogProductsIdUnitsUnitIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
-      { url: `/catalog/products/${id}/units/${unitId}`, method: 'DELETE' },
+      {
+        url: `/catalog/products/${id}/units/${unitId}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteCatalogProductsIdUnitsUnitIdBody,
+      },
       options
     )
   }
@@ -75,10 +91,15 @@ export const getProductUnits = () => {
   const getCatalogProductsIdUnitsUnitId = (
     id: string,
     unitId: string,
+    getCatalogProductsIdUnitsUnitIdBody: GetCatalogProductsIdUnitsUnitIdBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsUnitId200>>
   ) => {
     return customInstance<GetCatalogProductsIdUnitsUnitId200>(
-      { url: `/catalog/products/${id}/units/${unitId}`, method: 'GET' },
+      {
+        url: `/catalog/products/${id}/units/${unitId}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -89,7 +110,7 @@ export const getProductUnits = () => {
   const putCatalogProductsIdUnitsUnitId = (
     id: string,
     unitId: string,
-    handlerUpdateProductUnitRequest: HandlerUpdateProductUnitRequest,
+    putCatalogProductsIdUnitsUnitIdBody: PutCatalogProductsIdUnitsUnitIdBody,
     options?: SecondParameter<typeof customInstance<PutCatalogProductsIdUnitsUnitId200>>
   ) => {
     return customInstance<PutCatalogProductsIdUnitsUnitId200>(
@@ -97,7 +118,7 @@ export const getProductUnits = () => {
         url: `/catalog/products/${id}/units/${unitId}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateProductUnitRequest,
+        data: putCatalogProductsIdUnitsUnitIdBody,
       },
       options
     )
@@ -108,7 +129,7 @@ export const getProductUnits = () => {
    */
   const postCatalogProductsIdUnitsConvert = (
     id: string,
-    handlerConvertUnitRequest: HandlerConvertUnitRequest,
+    postCatalogProductsIdUnitsConvertBody: PostCatalogProductsIdUnitsConvertBody,
     options?: SecondParameter<typeof customInstance<PostCatalogProductsIdUnitsConvert200>>
   ) => {
     return customInstance<PostCatalogProductsIdUnitsConvert200>(
@@ -116,7 +137,7 @@ export const getProductUnits = () => {
         url: `/catalog/products/${id}/units/convert`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerConvertUnitRequest,
+        data: postCatalogProductsIdUnitsConvertBody,
       },
       options
     )
@@ -127,10 +148,15 @@ export const getProductUnits = () => {
    */
   const getCatalogProductsIdUnitsDefaultPurchase = (
     id: string,
+    getCatalogProductsIdUnitsDefaultPurchaseBody: GetCatalogProductsIdUnitsDefaultPurchaseBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsDefaultPurchase200>>
   ) => {
     return customInstance<GetCatalogProductsIdUnitsDefaultPurchase200>(
-      { url: `/catalog/products/${id}/units/default-purchase`, method: 'GET' },
+      {
+        url: `/catalog/products/${id}/units/default-purchase`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -140,10 +166,15 @@ export const getProductUnits = () => {
    */
   const getCatalogProductsIdUnitsDefaultSales = (
     id: string,
+    getCatalogProductsIdUnitsDefaultSalesBody: GetCatalogProductsIdUnitsDefaultSalesBody,
     options?: SecondParameter<typeof customInstance<GetCatalogProductsIdUnitsDefaultSales200>>
   ) => {
     return customInstance<GetCatalogProductsIdUnitsDefaultSales200>(
-      { url: `/catalog/products/${id}/units/default-sales`, method: 'GET' },
+      {
+        url: `/catalog/products/${id}/units/default-sales`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

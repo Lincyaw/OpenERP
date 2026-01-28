@@ -4,8 +4,12 @@
  *
  */
 import type { DtoErrorInfo } from './dtoErrorInfo'
-import type { DtoResponse } from './dtoResponse'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostPartnerCustomerLevelsIdSetDefault404 = DtoResponse & {
+export type PostPartnerCustomerLevelsIdSetDefault404 = Error & {
+  data?: unknown
   error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

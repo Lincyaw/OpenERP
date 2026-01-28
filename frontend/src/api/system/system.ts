@@ -5,12 +5,19 @@
  */
 import type {
   GetSystemInfo200,
+  GetSystemInfoBody,
   GetSystemPing200,
+  GetSystemPingBody,
   GetSystemStrategies200,
   GetSystemStrategiesAllocation200,
+  GetSystemStrategiesAllocationBody,
   GetSystemStrategiesBatch200,
+  GetSystemStrategiesBatchBody,
+  GetSystemStrategiesBody,
   GetSystemStrategiesCost200,
+  GetSystemStrategiesCostBody,
   GetSystemStrategiesPricing200,
+  GetSystemStrategiesPricingBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -22,25 +29,38 @@ export const getSystem = () => {
    * Returns basic system information including version and uptime
    * @summary Get system information
    */
-  const getSystemInfo = (options?: SecondParameter<typeof customInstance<GetSystemInfo200>>) => {
-    return customInstance<GetSystemInfo200>({ url: `/system/info`, method: 'GET' }, options)
+  const getSystemInfo = (
+    getSystemInfoBody: GetSystemInfoBody,
+    options?: SecondParameter<typeof customInstance<GetSystemInfo200>>
+  ) => {
+    return customInstance<GetSystemInfo200>(
+      { url: `/system/info`, method: 'GET', headers: { 'Content-Type': 'application/json' } },
+      options
+    )
   }
   /**
    * Simple ping endpoint to check if the API is responsive
    * @summary Ping the API
    */
-  const getSystemPing = (options?: SecondParameter<typeof customInstance<GetSystemPing200>>) => {
-    return customInstance<GetSystemPing200>({ url: `/system/ping`, method: 'GET' }, options)
+  const getSystemPing = (
+    getSystemPingBody: GetSystemPingBody,
+    options?: SecondParameter<typeof customInstance<GetSystemPing200>>
+  ) => {
+    return customInstance<GetSystemPing200>(
+      { url: `/system/ping`, method: 'GET', headers: { 'Content-Type': 'application/json' } },
+      options
+    )
   }
   /**
    * Returns all registered strategies grouped by type
    * @summary List available strategies
    */
   const getSystemStrategies = (
+    getSystemStrategiesBody: GetSystemStrategiesBody,
     options?: SecondParameter<typeof customInstance<GetSystemStrategies200>>
   ) => {
     return customInstance<GetSystemStrategies200>(
-      { url: `/system/strategies`, method: 'GET' },
+      { url: `/system/strategies`, method: 'GET', headers: { 'Content-Type': 'application/json' } },
       options
     )
   }
@@ -49,10 +69,15 @@ export const getSystem = () => {
    * @summary List payment allocation strategies
    */
   const getSystemStrategiesAllocation = (
+    getSystemStrategiesAllocationBody: GetSystemStrategiesAllocationBody,
     options?: SecondParameter<typeof customInstance<GetSystemStrategiesAllocation200>>
   ) => {
     return customInstance<GetSystemStrategiesAllocation200>(
-      { url: `/system/strategies/allocation`, method: 'GET' },
+      {
+        url: `/system/strategies/allocation`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -61,10 +86,15 @@ export const getSystem = () => {
    * @summary List batch management strategies
    */
   const getSystemStrategiesBatch = (
+    getSystemStrategiesBatchBody: GetSystemStrategiesBatchBody,
     options?: SecondParameter<typeof customInstance<GetSystemStrategiesBatch200>>
   ) => {
     return customInstance<GetSystemStrategiesBatch200>(
-      { url: `/system/strategies/batch`, method: 'GET' },
+      {
+        url: `/system/strategies/batch`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -73,10 +103,15 @@ export const getSystem = () => {
    * @summary List cost calculation strategies
    */
   const getSystemStrategiesCost = (
+    getSystemStrategiesCostBody: GetSystemStrategiesCostBody,
     options?: SecondParameter<typeof customInstance<GetSystemStrategiesCost200>>
   ) => {
     return customInstance<GetSystemStrategiesCost200>(
-      { url: `/system/strategies/cost`, method: 'GET' },
+      {
+        url: `/system/strategies/cost`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -85,10 +120,15 @@ export const getSystem = () => {
    * @summary List pricing strategies
    */
   const getSystemStrategiesPricing = (
+    getSystemStrategiesPricingBody: GetSystemStrategiesPricingBody,
     options?: SecondParameter<typeof customInstance<GetSystemStrategiesPricing200>>
   ) => {
     return customInstance<GetSystemStrategiesPricing200>(
-      { url: `/system/strategies/pricing`, method: 'GET' },
+      {
+        url: `/system/strategies/pricing`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

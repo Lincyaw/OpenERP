@@ -4,19 +4,28 @@
  *
  */
 import type {
+  DeletePartnerCustomerLevelsIdBody,
   GetPartnerCustomerLevels200,
+  GetPartnerCustomerLevelsBody,
   GetPartnerCustomerLevelsCodeCode200,
+  GetPartnerCustomerLevelsCodeCodeBody,
   GetPartnerCustomerLevelsDefault200,
+  GetPartnerCustomerLevelsDefaultBody,
   GetPartnerCustomerLevelsId200,
+  GetPartnerCustomerLevelsIdBody,
   GetPartnerCustomerLevelsParams,
-  HandlerCreateCustomerLevelRequest,
-  HandlerUpdateCustomerLevelRequest,
   PostPartnerCustomerLevels201,
+  PostPartnerCustomerLevelsBody,
   PostPartnerCustomerLevelsIdActivate200,
+  PostPartnerCustomerLevelsIdActivateBody,
   PostPartnerCustomerLevelsIdDeactivate200,
+  PostPartnerCustomerLevelsIdDeactivateBody,
   PostPartnerCustomerLevelsIdSetDefault200,
+  PostPartnerCustomerLevelsIdSetDefaultBody,
   PostPartnerCustomerLevelsInitialize200,
+  PostPartnerCustomerLevelsInitializeBody,
   PutPartnerCustomerLevelsId200,
+  PutPartnerCustomerLevelsIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -29,11 +38,17 @@ export const getCustomerLevels = () => {
    * @summary List customer levels
    */
   const getPartnerCustomerLevels = (
+    getPartnerCustomerLevelsBody: GetPartnerCustomerLevelsBody,
     params?: GetPartnerCustomerLevelsParams,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomerLevels200>>
   ) => {
     return customInstance<GetPartnerCustomerLevels200>(
-      { url: `/partner/customer-levels`, method: 'GET', params },
+      {
+        url: `/partner/customer-levels`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -42,7 +57,7 @@ export const getCustomerLevels = () => {
    * @summary Create a new customer level
    */
   const postPartnerCustomerLevels = (
-    handlerCreateCustomerLevelRequest: HandlerCreateCustomerLevelRequest,
+    postPartnerCustomerLevelsBody: PostPartnerCustomerLevelsBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomerLevels201>>
   ) => {
     return customInstance<PostPartnerCustomerLevels201>(
@@ -50,7 +65,7 @@ export const getCustomerLevels = () => {
         url: `/partner/customer-levels`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateCustomerLevelRequest,
+        data: postPartnerCustomerLevelsBody,
       },
       options
     )
@@ -61,10 +76,16 @@ export const getCustomerLevels = () => {
    */
   const deletePartnerCustomerLevelsId = (
     id: string,
+    deletePartnerCustomerLevelsIdBody: DeletePartnerCustomerLevelsIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
     return customInstance<void>(
-      { url: `/partner/customer-levels/${id}`, method: 'DELETE' },
+      {
+        url: `/partner/customer-levels/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deletePartnerCustomerLevelsIdBody,
+      },
       options
     )
   }
@@ -74,10 +95,15 @@ export const getCustomerLevels = () => {
    */
   const getPartnerCustomerLevelsId = (
     id: string,
+    getPartnerCustomerLevelsIdBody: GetPartnerCustomerLevelsIdBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomerLevelsId200>>
   ) => {
     return customInstance<GetPartnerCustomerLevelsId200>(
-      { url: `/partner/customer-levels/${id}`, method: 'GET' },
+      {
+        url: `/partner/customer-levels/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -87,7 +113,7 @@ export const getCustomerLevels = () => {
    */
   const putPartnerCustomerLevelsId = (
     id: string,
-    handlerUpdateCustomerLevelRequest: HandlerUpdateCustomerLevelRequest,
+    putPartnerCustomerLevelsIdBody: PutPartnerCustomerLevelsIdBody,
     options?: SecondParameter<typeof customInstance<PutPartnerCustomerLevelsId200>>
   ) => {
     return customInstance<PutPartnerCustomerLevelsId200>(
@@ -95,7 +121,7 @@ export const getCustomerLevels = () => {
         url: `/partner/customer-levels/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateCustomerLevelRequest,
+        data: putPartnerCustomerLevelsIdBody,
       },
       options
     )
@@ -106,10 +132,16 @@ export const getCustomerLevels = () => {
    */
   const postPartnerCustomerLevelsIdActivate = (
     id: string,
+    postPartnerCustomerLevelsIdActivateBody: PostPartnerCustomerLevelsIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomerLevelsIdActivate200>>
   ) => {
     return customInstance<PostPartnerCustomerLevelsIdActivate200>(
-      { url: `/partner/customer-levels/${id}/activate`, method: 'POST' },
+      {
+        url: `/partner/customer-levels/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomerLevelsIdActivateBody,
+      },
       options
     )
   }
@@ -119,10 +151,16 @@ export const getCustomerLevels = () => {
    */
   const postPartnerCustomerLevelsIdDeactivate = (
     id: string,
+    postPartnerCustomerLevelsIdDeactivateBody: PostPartnerCustomerLevelsIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomerLevelsIdDeactivate200>>
   ) => {
     return customInstance<PostPartnerCustomerLevelsIdDeactivate200>(
-      { url: `/partner/customer-levels/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/partner/customer-levels/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomerLevelsIdDeactivateBody,
+      },
       options
     )
   }
@@ -132,10 +170,16 @@ export const getCustomerLevels = () => {
    */
   const postPartnerCustomerLevelsIdSetDefault = (
     id: string,
+    postPartnerCustomerLevelsIdSetDefaultBody: PostPartnerCustomerLevelsIdSetDefaultBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomerLevelsIdSetDefault200>>
   ) => {
     return customInstance<PostPartnerCustomerLevelsIdSetDefault200>(
-      { url: `/partner/customer-levels/${id}/set-default`, method: 'POST' },
+      {
+        url: `/partner/customer-levels/${id}/set-default`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomerLevelsIdSetDefaultBody,
+      },
       options
     )
   }
@@ -145,10 +189,15 @@ export const getCustomerLevels = () => {
    */
   const getPartnerCustomerLevelsCodeCode = (
     code: string,
+    getPartnerCustomerLevelsCodeCodeBody: GetPartnerCustomerLevelsCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomerLevelsCodeCode200>>
   ) => {
     return customInstance<GetPartnerCustomerLevelsCodeCode200>(
-      { url: `/partner/customer-levels/code/${code}`, method: 'GET' },
+      {
+        url: `/partner/customer-levels/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -157,10 +206,15 @@ export const getCustomerLevels = () => {
    * @summary Get default customer level
    */
   const getPartnerCustomerLevelsDefault = (
+    getPartnerCustomerLevelsDefaultBody: GetPartnerCustomerLevelsDefaultBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomerLevelsDefault200>>
   ) => {
     return customInstance<GetPartnerCustomerLevelsDefault200>(
-      { url: `/partner/customer-levels/default`, method: 'GET' },
+      {
+        url: `/partner/customer-levels/default`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -169,10 +223,16 @@ export const getCustomerLevels = () => {
    * @summary Initialize default customer levels
    */
   const postPartnerCustomerLevelsInitialize = (
+    postPartnerCustomerLevelsInitializeBody: PostPartnerCustomerLevelsInitializeBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomerLevelsInitialize200>>
   ) => {
     return customInstance<PostPartnerCustomerLevelsInitialize200>(
-      { url: `/partner/customer-levels/initialize`, method: 'POST' },
+      {
+        url: `/partner/customer-levels/initialize`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerCustomerLevelsInitializeBody,
+      },
       options
     )
   }

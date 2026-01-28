@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerInventoryTurnoverResponse } from './handlerInventoryTurnoverResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetReportsInventorySlowMoving200 = DtoResponse & {
-  data?: HandlerInventoryTurnoverResponse[]
+export type GetReportsInventorySlowMoving200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

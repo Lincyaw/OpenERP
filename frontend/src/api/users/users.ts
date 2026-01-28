@@ -4,23 +4,30 @@
  *
  */
 import type {
+  DeleteIdentityUsersIdBody,
   DtoResponse,
   GetIdentityUsers200,
+  GetIdentityUsersBody,
   GetIdentityUsersId200,
+  GetIdentityUsersIdBody,
   GetIdentityUsersParams,
   GetIdentityUsersStatsCount200,
-  HandlerAssignRolesRequest,
-  HandlerCreateUserRequest,
-  HandlerLockUserRequest,
-  HandlerResetPasswordRequest,
-  HandlerUpdateUserRequest,
+  GetIdentityUsersStatsCountBody,
   PostIdentityUsers201,
+  PostIdentityUsersBody,
   PostIdentityUsersIdActivate200,
+  PostIdentityUsersIdActivateBody,
   PostIdentityUsersIdDeactivate200,
+  PostIdentityUsersIdDeactivateBody,
   PostIdentityUsersIdLock200,
+  PostIdentityUsersIdLockBody,
+  PostIdentityUsersIdResetPasswordBody,
   PostIdentityUsersIdUnlock200,
+  PostIdentityUsersIdUnlockBody,
   PutIdentityUsersId200,
+  PutIdentityUsersIdBody,
   PutIdentityUsersIdRoles200,
+  PutIdentityUsersIdRolesBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -33,11 +40,17 @@ export const getUsers = () => {
    * @summary List users
    */
   const getIdentityUsers = (
+    getIdentityUsersBody: GetIdentityUsersBody,
     params?: GetIdentityUsersParams,
     options?: SecondParameter<typeof customInstance<GetIdentityUsers200>>
   ) => {
     return customInstance<GetIdentityUsers200>(
-      { url: `/identity/users`, method: 'GET', params },
+      {
+        url: `/identity/users`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -46,7 +59,7 @@ export const getUsers = () => {
    * @summary Create a new user
    */
   const postIdentityUsers = (
-    handlerCreateUserRequest: HandlerCreateUserRequest,
+    postIdentityUsersBody: PostIdentityUsersBody,
     options?: SecondParameter<typeof customInstance<PostIdentityUsers201>>
   ) => {
     return customInstance<PostIdentityUsers201>(
@@ -54,7 +67,7 @@ export const getUsers = () => {
         url: `/identity/users`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateUserRequest,
+        data: postIdentityUsersBody,
       },
       options
     )
@@ -65,9 +78,18 @@ export const getUsers = () => {
    */
   const deleteIdentityUsersId = (
     id: string,
+    deleteIdentityUsersIdBody: DeleteIdentityUsersIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
-    return customInstance<DtoResponse>({ url: `/identity/users/${id}`, method: 'DELETE' }, options)
+    return customInstance<DtoResponse>(
+      {
+        url: `/identity/users/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteIdentityUsersIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a user by their ID
@@ -75,10 +97,15 @@ export const getUsers = () => {
    */
   const getIdentityUsersId = (
     id: string,
+    getIdentityUsersIdBody: GetIdentityUsersIdBody,
     options?: SecondParameter<typeof customInstance<GetIdentityUsersId200>>
   ) => {
     return customInstance<GetIdentityUsersId200>(
-      { url: `/identity/users/${id}`, method: 'GET' },
+      {
+        url: `/identity/users/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -88,7 +115,7 @@ export const getUsers = () => {
    */
   const putIdentityUsersId = (
     id: string,
-    handlerUpdateUserRequest: HandlerUpdateUserRequest,
+    putIdentityUsersIdBody: PutIdentityUsersIdBody,
     options?: SecondParameter<typeof customInstance<PutIdentityUsersId200>>
   ) => {
     return customInstance<PutIdentityUsersId200>(
@@ -96,7 +123,7 @@ export const getUsers = () => {
         url: `/identity/users/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateUserRequest,
+        data: putIdentityUsersIdBody,
       },
       options
     )
@@ -107,10 +134,16 @@ export const getUsers = () => {
    */
   const postIdentityUsersIdActivate = (
     id: string,
+    postIdentityUsersIdActivateBody: PostIdentityUsersIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostIdentityUsersIdActivate200>>
   ) => {
     return customInstance<PostIdentityUsersIdActivate200>(
-      { url: `/identity/users/${id}/activate`, method: 'POST' },
+      {
+        url: `/identity/users/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityUsersIdActivateBody,
+      },
       options
     )
   }
@@ -120,10 +153,16 @@ export const getUsers = () => {
    */
   const postIdentityUsersIdDeactivate = (
     id: string,
+    postIdentityUsersIdDeactivateBody: PostIdentityUsersIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostIdentityUsersIdDeactivate200>>
   ) => {
     return customInstance<PostIdentityUsersIdDeactivate200>(
-      { url: `/identity/users/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/identity/users/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityUsersIdDeactivateBody,
+      },
       options
     )
   }
@@ -133,7 +172,7 @@ export const getUsers = () => {
    */
   const postIdentityUsersIdLock = (
     id: string,
-    handlerLockUserRequest: HandlerLockUserRequest,
+    postIdentityUsersIdLockBody: PostIdentityUsersIdLockBody,
     options?: SecondParameter<typeof customInstance<PostIdentityUsersIdLock200>>
   ) => {
     return customInstance<PostIdentityUsersIdLock200>(
@@ -141,7 +180,7 @@ export const getUsers = () => {
         url: `/identity/users/${id}/lock`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerLockUserRequest,
+        data: postIdentityUsersIdLockBody,
       },
       options
     )
@@ -152,7 +191,7 @@ export const getUsers = () => {
    */
   const postIdentityUsersIdResetPassword = (
     id: string,
-    handlerResetPasswordRequest: HandlerResetPasswordRequest,
+    postIdentityUsersIdResetPasswordBody: PostIdentityUsersIdResetPasswordBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
@@ -160,7 +199,7 @@ export const getUsers = () => {
         url: `/identity/users/${id}/reset-password`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerResetPasswordRequest,
+        data: postIdentityUsersIdResetPasswordBody,
       },
       options
     )
@@ -171,7 +210,7 @@ export const getUsers = () => {
    */
   const putIdentityUsersIdRoles = (
     id: string,
-    handlerAssignRolesRequest: HandlerAssignRolesRequest,
+    putIdentityUsersIdRolesBody: PutIdentityUsersIdRolesBody,
     options?: SecondParameter<typeof customInstance<PutIdentityUsersIdRoles200>>
   ) => {
     return customInstance<PutIdentityUsersIdRoles200>(
@@ -179,7 +218,7 @@ export const getUsers = () => {
         url: `/identity/users/${id}/roles`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAssignRolesRequest,
+        data: putIdentityUsersIdRolesBody,
       },
       options
     )
@@ -190,10 +229,16 @@ export const getUsers = () => {
    */
   const postIdentityUsersIdUnlock = (
     id: string,
+    postIdentityUsersIdUnlockBody: PostIdentityUsersIdUnlockBody,
     options?: SecondParameter<typeof customInstance<PostIdentityUsersIdUnlock200>>
   ) => {
     return customInstance<PostIdentityUsersIdUnlock200>(
-      { url: `/identity/users/${id}/unlock`, method: 'POST' },
+      {
+        url: `/identity/users/${id}/unlock`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityUsersIdUnlockBody,
+      },
       options
     )
   }
@@ -202,10 +247,15 @@ export const getUsers = () => {
    * @summary Get user count
    */
   const getIdentityUsersStatsCount = (
+    getIdentityUsersStatsCountBody: GetIdentityUsersStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetIdentityUsersStatsCount200>>
   ) => {
     return customInstance<GetIdentityUsersStatsCount200>(
-      { url: `/identity/users/stats/count`, method: 'GET' },
+      {
+        url: `/identity/users/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerInventoryValueByCategoryResponse } from './handlerInventoryValueByCategoryResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetReportsInventoryValueByCategory200 = DtoResponse & {
-  data?: HandlerInventoryValueByCategoryResponse[]
+export type GetReportsInventoryValueByCategory200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

@@ -3,11 +3,13 @@
  * // Do not edit manually
  *
  */
+import type { DtoErrorInfo } from './dtoErrorInfo'
 import type { DtoMeta } from './dtoMeta'
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerWarehouseListResponse } from './handlerWarehouseListResponse'
+import type { Error } from './error'
 
-export type GetPartnerWarehouses200 = DtoResponse & {
-  data?: HandlerWarehouseListResponse[]
+export type GetPartnerWarehouses200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
   meta?: DtoMeta
+  success?: boolean
 }

@@ -4,31 +4,38 @@
  *
  */
 import type {
+  DeleteTradeSalesReturnsIdBody,
   DeleteTradeSalesReturnsIdItemsItemId200,
+  DeleteTradeSalesReturnsIdItemsItemIdBody,
   GetTradeSalesReturns200,
+  GetTradeSalesReturnsBody,
   GetTradeSalesReturnsId200,
+  GetTradeSalesReturnsIdBody,
   GetTradeSalesReturnsNumberReturnNumber200,
+  GetTradeSalesReturnsNumberReturnNumberBody,
   GetTradeSalesReturnsParams,
   GetTradeSalesReturnsStatsSummary200,
-  HandlerAddReturnItemRequest,
-  HandlerApproveReturnRequest,
-  HandlerCancelReturnRequest,
-  HandlerCompleteReturnRequest,
-  HandlerCreateSalesReturnRequest,
-  HandlerReceiveReturnRequest,
-  HandlerRejectReturnRequest,
-  HandlerUpdateReturnItemRequest,
-  HandlerUpdateSalesReturnRequest,
+  GetTradeSalesReturnsStatsSummaryBody,
   PostTradeSalesReturns201,
+  PostTradeSalesReturnsBody,
   PostTradeSalesReturnsIdApprove200,
+  PostTradeSalesReturnsIdApproveBody,
   PostTradeSalesReturnsIdCancel200,
+  PostTradeSalesReturnsIdCancelBody,
   PostTradeSalesReturnsIdComplete200,
+  PostTradeSalesReturnsIdCompleteBody,
   PostTradeSalesReturnsIdItems200,
+  PostTradeSalesReturnsIdItemsBody,
   PostTradeSalesReturnsIdReceive200,
+  PostTradeSalesReturnsIdReceiveBody,
   PostTradeSalesReturnsIdReject200,
+  PostTradeSalesReturnsIdRejectBody,
   PostTradeSalesReturnsIdSubmit200,
+  PostTradeSalesReturnsIdSubmitBody,
   PutTradeSalesReturnsId200,
+  PutTradeSalesReturnsIdBody,
   PutTradeSalesReturnsIdItemsItemId200,
+  PutTradeSalesReturnsIdItemsItemIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -41,11 +48,17 @@ export const getSalesReturns = () => {
    * @summary List sales returns
    */
   const getTradeSalesReturns = (
+    getTradeSalesReturnsBody: GetTradeSalesReturnsBody,
     params?: GetTradeSalesReturnsParams,
     options?: SecondParameter<typeof customInstance<GetTradeSalesReturns200>>
   ) => {
     return customInstance<GetTradeSalesReturns200>(
-      { url: `/trade/sales-returns`, method: 'GET', params },
+      {
+        url: `/trade/sales-returns`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -54,7 +67,7 @@ export const getSalesReturns = () => {
    * @summary Create a new sales return
    */
   const postTradeSalesReturns = (
-    handlerCreateSalesReturnRequest: HandlerCreateSalesReturnRequest,
+    postTradeSalesReturnsBody: PostTradeSalesReturnsBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturns201>>
   ) => {
     return customInstance<PostTradeSalesReturns201>(
@@ -62,7 +75,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateSalesReturnRequest,
+        data: postTradeSalesReturnsBody,
       },
       options
     )
@@ -73,9 +86,18 @@ export const getSalesReturns = () => {
    */
   const deleteTradeSalesReturnsId = (
     id: string,
+    deleteTradeSalesReturnsIdBody: DeleteTradeSalesReturnsIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/trade/sales-returns/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/trade/sales-returns/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradeSalesReturnsIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a sales return by its ID
@@ -83,10 +105,15 @@ export const getSalesReturns = () => {
    */
   const getTradeSalesReturnsId = (
     id: string,
+    getTradeSalesReturnsIdBody: GetTradeSalesReturnsIdBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesReturnsId200>>
   ) => {
     return customInstance<GetTradeSalesReturnsId200>(
-      { url: `/trade/sales-returns/${id}`, method: 'GET' },
+      {
+        url: `/trade/sales-returns/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -96,7 +123,7 @@ export const getSalesReturns = () => {
    */
   const putTradeSalesReturnsId = (
     id: string,
-    handlerUpdateSalesReturnRequest: HandlerUpdateSalesReturnRequest,
+    putTradeSalesReturnsIdBody: PutTradeSalesReturnsIdBody,
     options?: SecondParameter<typeof customInstance<PutTradeSalesReturnsId200>>
   ) => {
     return customInstance<PutTradeSalesReturnsId200>(
@@ -104,7 +131,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateSalesReturnRequest,
+        data: putTradeSalesReturnsIdBody,
       },
       options
     )
@@ -115,7 +142,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdApprove = (
     id: string,
-    handlerApproveReturnRequest: HandlerApproveReturnRequest,
+    postTradeSalesReturnsIdApproveBody: PostTradeSalesReturnsIdApproveBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdApprove200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdApprove200>(
@@ -123,7 +150,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/approve`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerApproveReturnRequest,
+        data: postTradeSalesReturnsIdApproveBody,
       },
       options
     )
@@ -134,7 +161,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdCancel = (
     id: string,
-    handlerCancelReturnRequest: HandlerCancelReturnRequest,
+    postTradeSalesReturnsIdCancelBody: PostTradeSalesReturnsIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdCancel200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdCancel200>(
@@ -142,7 +169,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelReturnRequest,
+        data: postTradeSalesReturnsIdCancelBody,
       },
       options
     )
@@ -153,7 +180,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdComplete = (
     id: string,
-    handlerCompleteReturnRequest: HandlerCompleteReturnRequest,
+    postTradeSalesReturnsIdCompleteBody: PostTradeSalesReturnsIdCompleteBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdComplete200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdComplete200>(
@@ -161,7 +188,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/complete`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCompleteReturnRequest,
+        data: postTradeSalesReturnsIdCompleteBody,
       },
       options
     )
@@ -172,7 +199,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdItems = (
     id: string,
-    handlerAddReturnItemRequest: HandlerAddReturnItemRequest,
+    postTradeSalesReturnsIdItemsBody: PostTradeSalesReturnsIdItemsBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdItems200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdItems200>(
@@ -180,7 +207,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/items`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAddReturnItemRequest,
+        data: postTradeSalesReturnsIdItemsBody,
       },
       options
     )
@@ -192,10 +219,16 @@ export const getSalesReturns = () => {
   const deleteTradeSalesReturnsIdItemsItemId = (
     id: string,
     itemId: string,
+    deleteTradeSalesReturnsIdItemsItemIdBody: DeleteTradeSalesReturnsIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<DeleteTradeSalesReturnsIdItemsItemId200>>
   ) => {
     return customInstance<DeleteTradeSalesReturnsIdItemsItemId200>(
-      { url: `/trade/sales-returns/${id}/items/${itemId}`, method: 'DELETE' },
+      {
+        url: `/trade/sales-returns/${id}/items/${itemId}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradeSalesReturnsIdItemsItemIdBody,
+      },
       options
     )
   }
@@ -206,7 +239,7 @@ export const getSalesReturns = () => {
   const putTradeSalesReturnsIdItemsItemId = (
     id: string,
     itemId: string,
-    handlerUpdateReturnItemRequest: HandlerUpdateReturnItemRequest,
+    putTradeSalesReturnsIdItemsItemIdBody: PutTradeSalesReturnsIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<PutTradeSalesReturnsIdItemsItemId200>>
   ) => {
     return customInstance<PutTradeSalesReturnsIdItemsItemId200>(
@@ -214,7 +247,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/items/${itemId}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateReturnItemRequest,
+        data: putTradeSalesReturnsIdItemsItemIdBody,
       },
       options
     )
@@ -225,7 +258,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdReceive = (
     id: string,
-    handlerReceiveReturnRequest: HandlerReceiveReturnRequest,
+    postTradeSalesReturnsIdReceiveBody: PostTradeSalesReturnsIdReceiveBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdReceive200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdReceive200>(
@@ -233,7 +266,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/receive`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerReceiveReturnRequest,
+        data: postTradeSalesReturnsIdReceiveBody,
       },
       options
     )
@@ -244,7 +277,7 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdReject = (
     id: string,
-    handlerRejectReturnRequest: HandlerRejectReturnRequest,
+    postTradeSalesReturnsIdRejectBody: PostTradeSalesReturnsIdRejectBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdReject200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdReject200>(
@@ -252,7 +285,7 @@ export const getSalesReturns = () => {
         url: `/trade/sales-returns/${id}/reject`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRejectReturnRequest,
+        data: postTradeSalesReturnsIdRejectBody,
       },
       options
     )
@@ -263,10 +296,16 @@ export const getSalesReturns = () => {
    */
   const postTradeSalesReturnsIdSubmit = (
     id: string,
+    postTradeSalesReturnsIdSubmitBody: PostTradeSalesReturnsIdSubmitBody,
     options?: SecondParameter<typeof customInstance<PostTradeSalesReturnsIdSubmit200>>
   ) => {
     return customInstance<PostTradeSalesReturnsIdSubmit200>(
-      { url: `/trade/sales-returns/${id}/submit`, method: 'POST' },
+      {
+        url: `/trade/sales-returns/${id}/submit`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postTradeSalesReturnsIdSubmitBody,
+      },
       options
     )
   }
@@ -276,10 +315,15 @@ export const getSalesReturns = () => {
    */
   const getTradeSalesReturnsNumberReturnNumber = (
     returnNumber: string,
+    getTradeSalesReturnsNumberReturnNumberBody: GetTradeSalesReturnsNumberReturnNumberBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesReturnsNumberReturnNumber200>>
   ) => {
     return customInstance<GetTradeSalesReturnsNumberReturnNumber200>(
-      { url: `/trade/sales-returns/number/${returnNumber}`, method: 'GET' },
+      {
+        url: `/trade/sales-returns/number/${returnNumber}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -288,10 +332,15 @@ export const getSalesReturns = () => {
    * @summary Get return status summary
    */
   const getTradeSalesReturnsStatsSummary = (
+    getTradeSalesReturnsStatsSummaryBody: GetTradeSalesReturnsStatsSummaryBody,
     options?: SecondParameter<typeof customInstance<GetTradeSalesReturnsStatsSummary200>>
   ) => {
     return customInstance<GetTradeSalesReturnsStatsSummary200>(
-      { url: `/trade/sales-returns/stats/summary`, method: 'GET' },
+      {
+        url: `/trade/sales-returns/stats/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

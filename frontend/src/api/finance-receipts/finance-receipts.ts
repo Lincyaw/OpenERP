@@ -5,15 +5,18 @@
  */
 import type {
   GetFinanceReceipts200,
+  GetFinanceReceiptsBody,
   GetFinanceReceiptsId200,
+  GetFinanceReceiptsIdBody,
   GetFinanceReceiptsParams,
-  HandlerCancelVoucherRequest,
-  HandlerCreateReceiptVoucherRequest,
-  HandlerReconcileRequest,
   PostFinanceReceipts201,
+  PostFinanceReceiptsBody,
   PostFinanceReceiptsIdCancel200,
+  PostFinanceReceiptsIdCancelBody,
   PostFinanceReceiptsIdConfirm200,
+  PostFinanceReceiptsIdConfirmBody,
   PostFinanceReceiptsIdReconcile200,
+  PostFinanceReceiptsIdReconcileBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -26,11 +29,17 @@ export const getFinanceReceipts = () => {
    * @summary List receipt vouchers
    */
   const getFinanceReceipts = (
+    getFinanceReceiptsBody: GetFinanceReceiptsBody,
     params?: GetFinanceReceiptsParams,
     options?: SecondParameter<typeof customInstance<GetFinanceReceipts200>>
   ) => {
     return customInstance<GetFinanceReceipts200>(
-      { url: `/finance/receipts`, method: 'GET', params },
+      {
+        url: `/finance/receipts`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -39,7 +48,7 @@ export const getFinanceReceipts = () => {
    * @summary Create a receipt voucher
    */
   const postFinanceReceipts = (
-    handlerCreateReceiptVoucherRequest: HandlerCreateReceiptVoucherRequest,
+    postFinanceReceiptsBody: PostFinanceReceiptsBody,
     options?: SecondParameter<typeof customInstance<PostFinanceReceipts201>>
   ) => {
     return customInstance<PostFinanceReceipts201>(
@@ -47,7 +56,7 @@ export const getFinanceReceipts = () => {
         url: `/finance/receipts`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateReceiptVoucherRequest,
+        data: postFinanceReceiptsBody,
       },
       options
     )
@@ -58,10 +67,15 @@ export const getFinanceReceipts = () => {
    */
   const getFinanceReceiptsId = (
     id: string,
+    getFinanceReceiptsIdBody: GetFinanceReceiptsIdBody,
     options?: SecondParameter<typeof customInstance<GetFinanceReceiptsId200>>
   ) => {
     return customInstance<GetFinanceReceiptsId200>(
-      { url: `/finance/receipts/${id}`, method: 'GET' },
+      {
+        url: `/finance/receipts/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -71,7 +85,7 @@ export const getFinanceReceipts = () => {
    */
   const postFinanceReceiptsIdCancel = (
     id: string,
-    handlerCancelVoucherRequest: HandlerCancelVoucherRequest,
+    postFinanceReceiptsIdCancelBody: PostFinanceReceiptsIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostFinanceReceiptsIdCancel200>>
   ) => {
     return customInstance<PostFinanceReceiptsIdCancel200>(
@@ -79,7 +93,7 @@ export const getFinanceReceipts = () => {
         url: `/finance/receipts/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelVoucherRequest,
+        data: postFinanceReceiptsIdCancelBody,
       },
       options
     )
@@ -90,10 +104,16 @@ export const getFinanceReceipts = () => {
    */
   const postFinanceReceiptsIdConfirm = (
     id: string,
+    postFinanceReceiptsIdConfirmBody: PostFinanceReceiptsIdConfirmBody,
     options?: SecondParameter<typeof customInstance<PostFinanceReceiptsIdConfirm200>>
   ) => {
     return customInstance<PostFinanceReceiptsIdConfirm200>(
-      { url: `/finance/receipts/${id}/confirm`, method: 'POST' },
+      {
+        url: `/finance/receipts/${id}/confirm`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postFinanceReceiptsIdConfirmBody,
+      },
       options
     )
   }
@@ -103,7 +123,7 @@ export const getFinanceReceipts = () => {
    */
   const postFinanceReceiptsIdReconcile = (
     id: string,
-    handlerReconcileRequest: HandlerReconcileRequest,
+    postFinanceReceiptsIdReconcileBody: PostFinanceReceiptsIdReconcileBody,
     options?: SecondParameter<typeof customInstance<PostFinanceReceiptsIdReconcile200>>
   ) => {
     return customInstance<PostFinanceReceiptsIdReconcile200>(
@@ -111,7 +131,7 @@ export const getFinanceReceipts = () => {
         url: `/finance/receipts/${id}/reconcile`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerReconcileRequest,
+        data: postFinanceReceiptsIdReconcileBody,
       },
       options
     )

@@ -5,15 +5,18 @@
  */
 import type {
   GetFinancePayments200,
+  GetFinancePaymentsBody,
   GetFinancePaymentsId200,
+  GetFinancePaymentsIdBody,
   GetFinancePaymentsParams,
-  HandlerCancelVoucherRequest,
-  HandlerCreatePaymentVoucherRequest,
-  HandlerReconcileRequest,
   PostFinancePayments201,
+  PostFinancePaymentsBody,
   PostFinancePaymentsIdCancel200,
+  PostFinancePaymentsIdCancelBody,
   PostFinancePaymentsIdConfirm200,
+  PostFinancePaymentsIdConfirmBody,
   PostFinancePaymentsIdReconcile200,
+  PostFinancePaymentsIdReconcileBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -26,11 +29,17 @@ export const getFinancePayments = () => {
    * @summary List payment vouchers
    */
   const getFinancePayments = (
+    getFinancePaymentsBody: GetFinancePaymentsBody,
     params?: GetFinancePaymentsParams,
     options?: SecondParameter<typeof customInstance<GetFinancePayments200>>
   ) => {
     return customInstance<GetFinancePayments200>(
-      { url: `/finance/payments`, method: 'GET', params },
+      {
+        url: `/finance/payments`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -39,7 +48,7 @@ export const getFinancePayments = () => {
    * @summary Create a payment voucher
    */
   const postFinancePayments = (
-    handlerCreatePaymentVoucherRequest: HandlerCreatePaymentVoucherRequest,
+    postFinancePaymentsBody: PostFinancePaymentsBody,
     options?: SecondParameter<typeof customInstance<PostFinancePayments201>>
   ) => {
     return customInstance<PostFinancePayments201>(
@@ -47,7 +56,7 @@ export const getFinancePayments = () => {
         url: `/finance/payments`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreatePaymentVoucherRequest,
+        data: postFinancePaymentsBody,
       },
       options
     )
@@ -58,10 +67,15 @@ export const getFinancePayments = () => {
    */
   const getFinancePaymentsId = (
     id: string,
+    getFinancePaymentsIdBody: GetFinancePaymentsIdBody,
     options?: SecondParameter<typeof customInstance<GetFinancePaymentsId200>>
   ) => {
     return customInstance<GetFinancePaymentsId200>(
-      { url: `/finance/payments/${id}`, method: 'GET' },
+      {
+        url: `/finance/payments/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -71,7 +85,7 @@ export const getFinancePayments = () => {
    */
   const postFinancePaymentsIdCancel = (
     id: string,
-    handlerCancelVoucherRequest: HandlerCancelVoucherRequest,
+    postFinancePaymentsIdCancelBody: PostFinancePaymentsIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostFinancePaymentsIdCancel200>>
   ) => {
     return customInstance<PostFinancePaymentsIdCancel200>(
@@ -79,7 +93,7 @@ export const getFinancePayments = () => {
         url: `/finance/payments/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelVoucherRequest,
+        data: postFinancePaymentsIdCancelBody,
       },
       options
     )
@@ -90,10 +104,16 @@ export const getFinancePayments = () => {
    */
   const postFinancePaymentsIdConfirm = (
     id: string,
+    postFinancePaymentsIdConfirmBody: PostFinancePaymentsIdConfirmBody,
     options?: SecondParameter<typeof customInstance<PostFinancePaymentsIdConfirm200>>
   ) => {
     return customInstance<PostFinancePaymentsIdConfirm200>(
-      { url: `/finance/payments/${id}/confirm`, method: 'POST' },
+      {
+        url: `/finance/payments/${id}/confirm`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postFinancePaymentsIdConfirmBody,
+      },
       options
     )
   }
@@ -103,7 +123,7 @@ export const getFinancePayments = () => {
    */
   const postFinancePaymentsIdReconcile = (
     id: string,
-    handlerReconcileRequest: HandlerReconcileRequest,
+    postFinancePaymentsIdReconcileBody: PostFinancePaymentsIdReconcileBody,
     options?: SecondParameter<typeof customInstance<PostFinancePaymentsIdReconcile200>>
   ) => {
     return customInstance<PostFinancePaymentsIdReconcile200>(
@@ -111,7 +131,7 @@ export const getFinancePayments = () => {
         url: `/finance/payments/${id}/reconcile`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerReconcileRequest,
+        data: postFinancePaymentsIdReconcileBody,
       },
       options
     )

@@ -4,22 +4,31 @@
  *
  */
 import type {
+  DeleteIdentityRolesIdBody,
   DtoResponse,
   GetIdentityPermissions200,
+  GetIdentityPermissionsBody,
   GetIdentityRoles200,
+  GetIdentityRolesBody,
   GetIdentityRolesCodeCode200,
+  GetIdentityRolesCodeCodeBody,
   GetIdentityRolesId200,
+  GetIdentityRolesIdBody,
   GetIdentityRolesParams,
   GetIdentityRolesStatsCount200,
+  GetIdentityRolesStatsCountBody,
   GetIdentityRolesSystem200,
-  HandlerCreateRoleRequest,
-  HandlerSetPermissionsRequest,
-  HandlerUpdateRoleRequest,
+  GetIdentityRolesSystemBody,
   PostIdentityRoles201,
+  PostIdentityRolesBody,
   PostIdentityRolesIdDisable200,
+  PostIdentityRolesIdDisableBody,
   PostIdentityRolesIdEnable200,
+  PostIdentityRolesIdEnableBody,
   PutIdentityRolesId200,
+  PutIdentityRolesIdBody,
   PutIdentityRolesIdPermissions200,
+  PutIdentityRolesIdPermissionsBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -32,10 +41,15 @@ export const getRoles = () => {
    * @summary Get all available permissions
    */
   const getIdentityPermissions = (
+    getIdentityPermissionsBody: GetIdentityPermissionsBody,
     options?: SecondParameter<typeof customInstance<GetIdentityPermissions200>>
   ) => {
     return customInstance<GetIdentityPermissions200>(
-      { url: `/identity/permissions`, method: 'GET' },
+      {
+        url: `/identity/permissions`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -44,11 +58,17 @@ export const getRoles = () => {
    * @summary List roles
    */
   const getIdentityRoles = (
+    getIdentityRolesBody: GetIdentityRolesBody,
     params?: GetIdentityRolesParams,
     options?: SecondParameter<typeof customInstance<GetIdentityRoles200>>
   ) => {
     return customInstance<GetIdentityRoles200>(
-      { url: `/identity/roles`, method: 'GET', params },
+      {
+        url: `/identity/roles`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -57,7 +77,7 @@ export const getRoles = () => {
    * @summary Create a new role
    */
   const postIdentityRoles = (
-    handlerCreateRoleRequest: HandlerCreateRoleRequest,
+    postIdentityRolesBody: PostIdentityRolesBody,
     options?: SecondParameter<typeof customInstance<PostIdentityRoles201>>
   ) => {
     return customInstance<PostIdentityRoles201>(
@@ -65,7 +85,7 @@ export const getRoles = () => {
         url: `/identity/roles`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateRoleRequest,
+        data: postIdentityRolesBody,
       },
       options
     )
@@ -76,9 +96,18 @@ export const getRoles = () => {
    */
   const deleteIdentityRolesId = (
     id: string,
+    deleteIdentityRolesIdBody: DeleteIdentityRolesIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
-    return customInstance<DtoResponse>({ url: `/identity/roles/${id}`, method: 'DELETE' }, options)
+    return customInstance<DtoResponse>(
+      {
+        url: `/identity/roles/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteIdentityRolesIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a role by its ID
@@ -86,10 +115,15 @@ export const getRoles = () => {
    */
   const getIdentityRolesId = (
     id: string,
+    getIdentityRolesIdBody: GetIdentityRolesIdBody,
     options?: SecondParameter<typeof customInstance<GetIdentityRolesId200>>
   ) => {
     return customInstance<GetIdentityRolesId200>(
-      { url: `/identity/roles/${id}`, method: 'GET' },
+      {
+        url: `/identity/roles/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -99,7 +133,7 @@ export const getRoles = () => {
    */
   const putIdentityRolesId = (
     id: string,
-    handlerUpdateRoleRequest: HandlerUpdateRoleRequest,
+    putIdentityRolesIdBody: PutIdentityRolesIdBody,
     options?: SecondParameter<typeof customInstance<PutIdentityRolesId200>>
   ) => {
     return customInstance<PutIdentityRolesId200>(
@@ -107,7 +141,7 @@ export const getRoles = () => {
         url: `/identity/roles/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateRoleRequest,
+        data: putIdentityRolesIdBody,
       },
       options
     )
@@ -118,10 +152,16 @@ export const getRoles = () => {
    */
   const postIdentityRolesIdDisable = (
     id: string,
+    postIdentityRolesIdDisableBody: PostIdentityRolesIdDisableBody,
     options?: SecondParameter<typeof customInstance<PostIdentityRolesIdDisable200>>
   ) => {
     return customInstance<PostIdentityRolesIdDisable200>(
-      { url: `/identity/roles/${id}/disable`, method: 'POST' },
+      {
+        url: `/identity/roles/${id}/disable`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityRolesIdDisableBody,
+      },
       options
     )
   }
@@ -131,10 +171,16 @@ export const getRoles = () => {
    */
   const postIdentityRolesIdEnable = (
     id: string,
+    postIdentityRolesIdEnableBody: PostIdentityRolesIdEnableBody,
     options?: SecondParameter<typeof customInstance<PostIdentityRolesIdEnable200>>
   ) => {
     return customInstance<PostIdentityRolesIdEnable200>(
-      { url: `/identity/roles/${id}/enable`, method: 'POST' },
+      {
+        url: `/identity/roles/${id}/enable`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postIdentityRolesIdEnableBody,
+      },
       options
     )
   }
@@ -144,7 +190,7 @@ export const getRoles = () => {
    */
   const putIdentityRolesIdPermissions = (
     id: string,
-    handlerSetPermissionsRequest: HandlerSetPermissionsRequest,
+    putIdentityRolesIdPermissionsBody: PutIdentityRolesIdPermissionsBody,
     options?: SecondParameter<typeof customInstance<PutIdentityRolesIdPermissions200>>
   ) => {
     return customInstance<PutIdentityRolesIdPermissions200>(
@@ -152,7 +198,7 @@ export const getRoles = () => {
         url: `/identity/roles/${id}/permissions`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetPermissionsRequest,
+        data: putIdentityRolesIdPermissionsBody,
       },
       options
     )
@@ -163,10 +209,15 @@ export const getRoles = () => {
    */
   const getIdentityRolesCodeCode = (
     code: string,
+    getIdentityRolesCodeCodeBody: GetIdentityRolesCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetIdentityRolesCodeCode200>>
   ) => {
     return customInstance<GetIdentityRolesCodeCode200>(
-      { url: `/identity/roles/code/${code}`, method: 'GET' },
+      {
+        url: `/identity/roles/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -175,10 +226,15 @@ export const getRoles = () => {
    * @summary Get role count
    */
   const getIdentityRolesStatsCount = (
+    getIdentityRolesStatsCountBody: GetIdentityRolesStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetIdentityRolesStatsCount200>>
   ) => {
     return customInstance<GetIdentityRolesStatsCount200>(
-      { url: `/identity/roles/stats/count`, method: 'GET' },
+      {
+        url: `/identity/roles/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -187,10 +243,15 @@ export const getRoles = () => {
    * @summary Get system roles
    */
   const getIdentityRolesSystem = (
+    getIdentityRolesSystemBody: GetIdentityRolesSystemBody,
     options?: SecondParameter<typeof customInstance<GetIdentityRolesSystem200>>
   ) => {
     return customInstance<GetIdentityRolesSystem200>(
-      { url: `/identity/roles/system`, method: 'GET' },
+      {
+        url: `/identity/roles/system`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

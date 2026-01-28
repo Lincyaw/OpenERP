@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerExpenseSummaryResponse } from './handlerExpenseSummaryResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetFinanceExpensesSummary200 = DtoResponse & {
-  data?: HandlerExpenseSummaryResponse
+export type GetFinanceExpensesSummary200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

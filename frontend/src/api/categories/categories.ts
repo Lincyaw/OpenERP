@@ -4,20 +4,28 @@
  *
  */
 import type {
+  DeleteCatalogCategoriesIdBody,
   GetCatalogCategories200,
+  GetCatalogCategoriesBody,
   GetCatalogCategoriesId200,
+  GetCatalogCategoriesIdBody,
   GetCatalogCategoriesIdChildren200,
+  GetCatalogCategoriesIdChildrenBody,
   GetCatalogCategoriesParams,
   GetCatalogCategoriesRoots200,
+  GetCatalogCategoriesRootsBody,
   GetCatalogCategoriesTree200,
-  HandlerCreateCategoryRequest,
-  HandlerMoveCategoryRequest,
-  HandlerUpdateCategoryRequest,
+  GetCatalogCategoriesTreeBody,
   PostCatalogCategories201,
+  PostCatalogCategoriesBody,
   PostCatalogCategoriesIdActivate200,
+  PostCatalogCategoriesIdActivateBody,
   PostCatalogCategoriesIdDeactivate200,
+  PostCatalogCategoriesIdDeactivateBody,
   PostCatalogCategoriesIdMove200,
+  PostCatalogCategoriesIdMoveBody,
   PutCatalogCategoriesId200,
+  PutCatalogCategoriesIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -30,11 +38,17 @@ export const getCategories = () => {
    * @summary List categories
    */
   const getCatalogCategories = (
+    getCatalogCategoriesBody: GetCatalogCategoriesBody,
     params?: GetCatalogCategoriesParams,
     options?: SecondParameter<typeof customInstance<GetCatalogCategories200>>
   ) => {
     return customInstance<GetCatalogCategories200>(
-      { url: `/catalog/categories`, method: 'GET', params },
+      {
+        url: `/catalog/categories`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -43,7 +57,7 @@ export const getCategories = () => {
    * @summary Create a new category
    */
   const postCatalogCategories = (
-    handlerCreateCategoryRequest: HandlerCreateCategoryRequest,
+    postCatalogCategoriesBody: PostCatalogCategoriesBody,
     options?: SecondParameter<typeof customInstance<PostCatalogCategories201>>
   ) => {
     return customInstance<PostCatalogCategories201>(
@@ -51,7 +65,7 @@ export const getCategories = () => {
         url: `/catalog/categories`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateCategoryRequest,
+        data: postCatalogCategoriesBody,
       },
       options
     )
@@ -62,9 +76,18 @@ export const getCategories = () => {
    */
   const deleteCatalogCategoriesId = (
     id: string,
+    deleteCatalogCategoriesIdBody: DeleteCatalogCategoriesIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/catalog/categories/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/catalog/categories/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteCatalogCategoriesIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a category by its ID
@@ -72,10 +95,15 @@ export const getCategories = () => {
    */
   const getCatalogCategoriesId = (
     id: string,
+    getCatalogCategoriesIdBody: GetCatalogCategoriesIdBody,
     options?: SecondParameter<typeof customInstance<GetCatalogCategoriesId200>>
   ) => {
     return customInstance<GetCatalogCategoriesId200>(
-      { url: `/catalog/categories/${id}`, method: 'GET' },
+      {
+        url: `/catalog/categories/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -85,7 +113,7 @@ export const getCategories = () => {
    */
   const putCatalogCategoriesId = (
     id: string,
-    handlerUpdateCategoryRequest: HandlerUpdateCategoryRequest,
+    putCatalogCategoriesIdBody: PutCatalogCategoriesIdBody,
     options?: SecondParameter<typeof customInstance<PutCatalogCategoriesId200>>
   ) => {
     return customInstance<PutCatalogCategoriesId200>(
@@ -93,7 +121,7 @@ export const getCategories = () => {
         url: `/catalog/categories/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateCategoryRequest,
+        data: putCatalogCategoriesIdBody,
       },
       options
     )
@@ -104,10 +132,16 @@ export const getCategories = () => {
    */
   const postCatalogCategoriesIdActivate = (
     id: string,
+    postCatalogCategoriesIdActivateBody: PostCatalogCategoriesIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostCatalogCategoriesIdActivate200>>
   ) => {
     return customInstance<PostCatalogCategoriesIdActivate200>(
-      { url: `/catalog/categories/${id}/activate`, method: 'POST' },
+      {
+        url: `/catalog/categories/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postCatalogCategoriesIdActivateBody,
+      },
       options
     )
   }
@@ -117,10 +151,15 @@ export const getCategories = () => {
    */
   const getCatalogCategoriesIdChildren = (
     id: string,
+    getCatalogCategoriesIdChildrenBody: GetCatalogCategoriesIdChildrenBody,
     options?: SecondParameter<typeof customInstance<GetCatalogCategoriesIdChildren200>>
   ) => {
     return customInstance<GetCatalogCategoriesIdChildren200>(
-      { url: `/catalog/categories/${id}/children`, method: 'GET' },
+      {
+        url: `/catalog/categories/${id}/children`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -130,10 +169,16 @@ export const getCategories = () => {
    */
   const postCatalogCategoriesIdDeactivate = (
     id: string,
+    postCatalogCategoriesIdDeactivateBody: PostCatalogCategoriesIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostCatalogCategoriesIdDeactivate200>>
   ) => {
     return customInstance<PostCatalogCategoriesIdDeactivate200>(
-      { url: `/catalog/categories/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/catalog/categories/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postCatalogCategoriesIdDeactivateBody,
+      },
       options
     )
   }
@@ -143,7 +188,7 @@ export const getCategories = () => {
    */
   const postCatalogCategoriesIdMove = (
     id: string,
-    handlerMoveCategoryRequest: HandlerMoveCategoryRequest,
+    postCatalogCategoriesIdMoveBody: PostCatalogCategoriesIdMoveBody,
     options?: SecondParameter<typeof customInstance<PostCatalogCategoriesIdMove200>>
   ) => {
     return customInstance<PostCatalogCategoriesIdMove200>(
@@ -151,7 +196,7 @@ export const getCategories = () => {
         url: `/catalog/categories/${id}/move`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerMoveCategoryRequest,
+        data: postCatalogCategoriesIdMoveBody,
       },
       options
     )
@@ -161,10 +206,15 @@ export const getCategories = () => {
    * @summary Get root categories
    */
   const getCatalogCategoriesRoots = (
+    getCatalogCategoriesRootsBody: GetCatalogCategoriesRootsBody,
     options?: SecondParameter<typeof customInstance<GetCatalogCategoriesRoots200>>
   ) => {
     return customInstance<GetCatalogCategoriesRoots200>(
-      { url: `/catalog/categories/roots`, method: 'GET' },
+      {
+        url: `/catalog/categories/roots`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -173,10 +223,15 @@ export const getCategories = () => {
    * @summary Get category tree
    */
   const getCatalogCategoriesTree = (
+    getCatalogCategoriesTreeBody: GetCatalogCategoriesTreeBody,
     options?: SecondParameter<typeof customInstance<GetCatalogCategoriesTree200>>
   ) => {
     return customInstance<GetCatalogCategoriesTree200>(
-      { url: `/catalog/categories/tree`, method: 'GET' },
+      {
+        url: `/catalog/categories/tree`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

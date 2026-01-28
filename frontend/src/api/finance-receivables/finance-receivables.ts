@@ -5,9 +5,12 @@
  */
 import type {
   GetFinanceReceivables200,
+  GetFinanceReceivablesBody,
   GetFinanceReceivablesId200,
+  GetFinanceReceivablesIdBody,
   GetFinanceReceivablesParams,
   GetFinanceReceivablesSummary200,
+  GetFinanceReceivablesSummaryBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -20,11 +23,17 @@ export const getFinanceReceivables = () => {
    * @summary List account receivables
    */
   const getFinanceReceivables = (
+    getFinanceReceivablesBody: GetFinanceReceivablesBody,
     params?: GetFinanceReceivablesParams,
     options?: SecondParameter<typeof customInstance<GetFinanceReceivables200>>
   ) => {
     return customInstance<GetFinanceReceivables200>(
-      { url: `/finance/receivables`, method: 'GET', params },
+      {
+        url: `/finance/receivables`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -34,10 +43,15 @@ export const getFinanceReceivables = () => {
    */
   const getFinanceReceivablesId = (
     id: string,
+    getFinanceReceivablesIdBody: GetFinanceReceivablesIdBody,
     options?: SecondParameter<typeof customInstance<GetFinanceReceivablesId200>>
   ) => {
     return customInstance<GetFinanceReceivablesId200>(
-      { url: `/finance/receivables/${id}`, method: 'GET' },
+      {
+        url: `/finance/receivables/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -46,10 +60,15 @@ export const getFinanceReceivables = () => {
    * @summary Get receivables summary
    */
   const getFinanceReceivablesSummary = (
+    getFinanceReceivablesSummaryBody: GetFinanceReceivablesSummaryBody,
     options?: SecondParameter<typeof customInstance<GetFinanceReceivablesSummary200>>
   ) => {
     return customInstance<GetFinanceReceivablesSummary200>(
-      { url: `/finance/receivables/summary`, method: 'GET' },
+      {
+        url: `/finance/receivables/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

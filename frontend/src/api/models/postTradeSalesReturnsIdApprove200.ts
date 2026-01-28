@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerSalesReturnResponse } from './handlerSalesReturnResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type PostTradeSalesReturnsIdApprove200 = DtoResponse & {
-  data?: HandlerSalesReturnResponse
+export type PostTradeSalesReturnsIdApprove200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

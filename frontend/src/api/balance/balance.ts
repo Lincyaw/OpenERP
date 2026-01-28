@@ -5,14 +5,18 @@
  */
 import type {
   GetPartnerBalanceTransactionsId200,
+  GetPartnerBalanceTransactionsIdBody,
   GetPartnerCustomersIdBalance200,
+  GetPartnerCustomersIdBalanceBody,
   GetPartnerCustomersIdBalanceSummary200,
+  GetPartnerCustomersIdBalanceSummaryBody,
   GetPartnerCustomersIdBalanceTransactions200,
+  GetPartnerCustomersIdBalanceTransactionsBody,
   GetPartnerCustomersIdBalanceTransactionsParams,
-  HandlerAdjustRequest,
-  HandlerRechargeRequest,
   PostPartnerCustomersIdBalanceAdjust201,
+  PostPartnerCustomersIdBalanceAdjustBody,
   PostPartnerCustomersIdBalanceRecharge201,
+  PostPartnerCustomersIdBalanceRechargeBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -26,10 +30,15 @@ export const getBalance = () => {
    */
   const getPartnerBalanceTransactionsId = (
     id: string,
+    getPartnerBalanceTransactionsIdBody: GetPartnerBalanceTransactionsIdBody,
     options?: SecondParameter<typeof customInstance<GetPartnerBalanceTransactionsId200>>
   ) => {
     return customInstance<GetPartnerBalanceTransactionsId200>(
-      { url: `/partner/balance/transactions/${id}`, method: 'GET' },
+      {
+        url: `/partner/balance/transactions/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -39,10 +48,15 @@ export const getBalance = () => {
    */
   const getPartnerCustomersIdBalance = (
     id: string,
+    getPartnerCustomersIdBalanceBody: GetPartnerCustomersIdBalanceBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalance200>>
   ) => {
     return customInstance<GetPartnerCustomersIdBalance200>(
-      { url: `/partner/customers/${id}/balance`, method: 'GET' },
+      {
+        url: `/partner/customers/${id}/balance`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -52,7 +66,7 @@ export const getBalance = () => {
    */
   const postPartnerCustomersIdBalanceAdjust = (
     id: string,
-    handlerAdjustRequest: HandlerAdjustRequest,
+    postPartnerCustomersIdBalanceAdjustBody: PostPartnerCustomersIdBalanceAdjustBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceAdjust201>>
   ) => {
     return customInstance<PostPartnerCustomersIdBalanceAdjust201>(
@@ -60,7 +74,7 @@ export const getBalance = () => {
         url: `/partner/customers/${id}/balance/adjust`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAdjustRequest,
+        data: postPartnerCustomersIdBalanceAdjustBody,
       },
       options
     )
@@ -71,7 +85,7 @@ export const getBalance = () => {
    */
   const postPartnerCustomersIdBalanceRecharge = (
     id: string,
-    handlerRechargeRequest: HandlerRechargeRequest,
+    postPartnerCustomersIdBalanceRechargeBody: PostPartnerCustomersIdBalanceRechargeBody,
     options?: SecondParameter<typeof customInstance<PostPartnerCustomersIdBalanceRecharge201>>
   ) => {
     return customInstance<PostPartnerCustomersIdBalanceRecharge201>(
@@ -79,7 +93,7 @@ export const getBalance = () => {
         url: `/partner/customers/${id}/balance/recharge`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRechargeRequest,
+        data: postPartnerCustomersIdBalanceRechargeBody,
       },
       options
     )
@@ -90,10 +104,15 @@ export const getBalance = () => {
    */
   const getPartnerCustomersIdBalanceSummary = (
     id: string,
+    getPartnerCustomersIdBalanceSummaryBody: GetPartnerCustomersIdBalanceSummaryBody,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalanceSummary200>>
   ) => {
     return customInstance<GetPartnerCustomersIdBalanceSummary200>(
-      { url: `/partner/customers/${id}/balance/summary`, method: 'GET' },
+      {
+        url: `/partner/customers/${id}/balance/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -103,11 +122,17 @@ export const getBalance = () => {
    */
   const getPartnerCustomersIdBalanceTransactions = (
     id: string,
+    getPartnerCustomersIdBalanceTransactionsBody: GetPartnerCustomersIdBalanceTransactionsBody,
     params?: GetPartnerCustomersIdBalanceTransactionsParams,
     options?: SecondParameter<typeof customInstance<GetPartnerCustomersIdBalanceTransactions200>>
   ) => {
     return customInstance<GetPartnerCustomersIdBalanceTransactions200>(
-      { url: `/partner/customers/${id}/balance/transactions`, method: 'GET', params },
+      {
+        url: `/partner/customers/${id}/balance/transactions`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }

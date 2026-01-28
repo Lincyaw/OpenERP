@@ -3,9 +3,13 @@
  * // Do not edit manually
  *
  */
-import type { DtoResponse } from './dtoResponse'
-import type { HandlerCategoryListResponse } from './handlerCategoryListResponse'
+import type { DtoErrorInfo } from './dtoErrorInfo'
+import type { DtoMeta } from './dtoMeta'
+import type { Error } from './error'
 
-export type GetCatalogCategoriesIdChildren200 = DtoResponse & {
-  data?: HandlerCategoryListResponse[]
+export type GetCatalogCategoriesIdChildren200 = Error & {
+  data?: unknown
+  error?: DtoErrorInfo
+  meta?: DtoMeta
+  success?: boolean
 }

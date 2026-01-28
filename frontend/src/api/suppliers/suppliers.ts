@@ -4,24 +4,32 @@
  *
  */
 import type {
+  DeletePartnerSuppliersIdBody,
   GetPartnerSuppliers200,
+  GetPartnerSuppliersBody,
   GetPartnerSuppliersCodeCode200,
+  GetPartnerSuppliersCodeCodeBody,
   GetPartnerSuppliersId200,
+  GetPartnerSuppliersIdBody,
   GetPartnerSuppliersParams,
   GetPartnerSuppliersStatsCount200,
-  HandlerCreateSupplierRequest,
-  HandlerSetPaymentTermsRequest,
-  HandlerSetRatingRequest,
-  HandlerUpdateSupplierCodeRequest,
-  HandlerUpdateSupplierRequest,
+  GetPartnerSuppliersStatsCountBody,
   PostPartnerSuppliers201,
+  PostPartnerSuppliersBody,
   PostPartnerSuppliersIdActivate200,
+  PostPartnerSuppliersIdActivateBody,
   PostPartnerSuppliersIdBlock200,
+  PostPartnerSuppliersIdBlockBody,
   PostPartnerSuppliersIdDeactivate200,
+  PostPartnerSuppliersIdDeactivateBody,
   PutPartnerSuppliersId200,
+  PutPartnerSuppliersIdBody,
   PutPartnerSuppliersIdCode200,
+  PutPartnerSuppliersIdCodeBody,
   PutPartnerSuppliersIdPaymentTerms200,
+  PutPartnerSuppliersIdPaymentTermsBody,
   PutPartnerSuppliersIdRating200,
+  PutPartnerSuppliersIdRatingBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -34,11 +42,17 @@ export const getSuppliers = () => {
    * @summary List suppliers
    */
   const getPartnerSuppliers = (
+    getPartnerSuppliersBody: GetPartnerSuppliersBody,
     params?: GetPartnerSuppliersParams,
     options?: SecondParameter<typeof customInstance<GetPartnerSuppliers200>>
   ) => {
     return customInstance<GetPartnerSuppliers200>(
-      { url: `/partner/suppliers`, method: 'GET', params },
+      {
+        url: `/partner/suppliers`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -47,7 +61,7 @@ export const getSuppliers = () => {
    * @summary Create a new supplier
    */
   const postPartnerSuppliers = (
-    handlerCreateSupplierRequest: HandlerCreateSupplierRequest,
+    postPartnerSuppliersBody: PostPartnerSuppliersBody,
     options?: SecondParameter<typeof customInstance<PostPartnerSuppliers201>>
   ) => {
     return customInstance<PostPartnerSuppliers201>(
@@ -55,7 +69,7 @@ export const getSuppliers = () => {
         url: `/partner/suppliers`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateSupplierRequest,
+        data: postPartnerSuppliersBody,
       },
       options
     )
@@ -66,9 +80,18 @@ export const getSuppliers = () => {
    */
   const deletePartnerSuppliersId = (
     id: string,
+    deletePartnerSuppliersIdBody: DeletePartnerSuppliersIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/partner/suppliers/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/partner/suppliers/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deletePartnerSuppliersIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a supplier by its ID
@@ -76,10 +99,15 @@ export const getSuppliers = () => {
    */
   const getPartnerSuppliersId = (
     id: string,
+    getPartnerSuppliersIdBody: GetPartnerSuppliersIdBody,
     options?: SecondParameter<typeof customInstance<GetPartnerSuppliersId200>>
   ) => {
     return customInstance<GetPartnerSuppliersId200>(
-      { url: `/partner/suppliers/${id}`, method: 'GET' },
+      {
+        url: `/partner/suppliers/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -89,7 +117,7 @@ export const getSuppliers = () => {
    */
   const putPartnerSuppliersId = (
     id: string,
-    handlerUpdateSupplierRequest: HandlerUpdateSupplierRequest,
+    putPartnerSuppliersIdBody: PutPartnerSuppliersIdBody,
     options?: SecondParameter<typeof customInstance<PutPartnerSuppliersId200>>
   ) => {
     return customInstance<PutPartnerSuppliersId200>(
@@ -97,7 +125,7 @@ export const getSuppliers = () => {
         url: `/partner/suppliers/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateSupplierRequest,
+        data: putPartnerSuppliersIdBody,
       },
       options
     )
@@ -108,10 +136,16 @@ export const getSuppliers = () => {
    */
   const postPartnerSuppliersIdActivate = (
     id: string,
+    postPartnerSuppliersIdActivateBody: PostPartnerSuppliersIdActivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerSuppliersIdActivate200>>
   ) => {
     return customInstance<PostPartnerSuppliersIdActivate200>(
-      { url: `/partner/suppliers/${id}/activate`, method: 'POST' },
+      {
+        url: `/partner/suppliers/${id}/activate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerSuppliersIdActivateBody,
+      },
       options
     )
   }
@@ -121,10 +155,16 @@ export const getSuppliers = () => {
    */
   const postPartnerSuppliersIdBlock = (
     id: string,
+    postPartnerSuppliersIdBlockBody: PostPartnerSuppliersIdBlockBody,
     options?: SecondParameter<typeof customInstance<PostPartnerSuppliersIdBlock200>>
   ) => {
     return customInstance<PostPartnerSuppliersIdBlock200>(
-      { url: `/partner/suppliers/${id}/block`, method: 'POST' },
+      {
+        url: `/partner/suppliers/${id}/block`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerSuppliersIdBlockBody,
+      },
       options
     )
   }
@@ -134,7 +174,7 @@ export const getSuppliers = () => {
    */
   const putPartnerSuppliersIdCode = (
     id: string,
-    handlerUpdateSupplierCodeRequest: HandlerUpdateSupplierCodeRequest,
+    putPartnerSuppliersIdCodeBody: PutPartnerSuppliersIdCodeBody,
     options?: SecondParameter<typeof customInstance<PutPartnerSuppliersIdCode200>>
   ) => {
     return customInstance<PutPartnerSuppliersIdCode200>(
@@ -142,7 +182,7 @@ export const getSuppliers = () => {
         url: `/partner/suppliers/${id}/code`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateSupplierCodeRequest,
+        data: putPartnerSuppliersIdCodeBody,
       },
       options
     )
@@ -153,10 +193,16 @@ export const getSuppliers = () => {
    */
   const postPartnerSuppliersIdDeactivate = (
     id: string,
+    postPartnerSuppliersIdDeactivateBody: PostPartnerSuppliersIdDeactivateBody,
     options?: SecondParameter<typeof customInstance<PostPartnerSuppliersIdDeactivate200>>
   ) => {
     return customInstance<PostPartnerSuppliersIdDeactivate200>(
-      { url: `/partner/suppliers/${id}/deactivate`, method: 'POST' },
+      {
+        url: `/partner/suppliers/${id}/deactivate`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPartnerSuppliersIdDeactivateBody,
+      },
       options
     )
   }
@@ -166,7 +212,7 @@ export const getSuppliers = () => {
    */
   const putPartnerSuppliersIdPaymentTerms = (
     id: string,
-    handlerSetPaymentTermsRequest: HandlerSetPaymentTermsRequest,
+    putPartnerSuppliersIdPaymentTermsBody: PutPartnerSuppliersIdPaymentTermsBody,
     options?: SecondParameter<typeof customInstance<PutPartnerSuppliersIdPaymentTerms200>>
   ) => {
     return customInstance<PutPartnerSuppliersIdPaymentTerms200>(
@@ -174,7 +220,7 @@ export const getSuppliers = () => {
         url: `/partner/suppliers/${id}/payment-terms`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetPaymentTermsRequest,
+        data: putPartnerSuppliersIdPaymentTermsBody,
       },
       options
     )
@@ -185,7 +231,7 @@ export const getSuppliers = () => {
    */
   const putPartnerSuppliersIdRating = (
     id: string,
-    handlerSetRatingRequest: HandlerSetRatingRequest,
+    putPartnerSuppliersIdRatingBody: PutPartnerSuppliersIdRatingBody,
     options?: SecondParameter<typeof customInstance<PutPartnerSuppliersIdRating200>>
   ) => {
     return customInstance<PutPartnerSuppliersIdRating200>(
@@ -193,7 +239,7 @@ export const getSuppliers = () => {
         url: `/partner/suppliers/${id}/rating`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerSetRatingRequest,
+        data: putPartnerSuppliersIdRatingBody,
       },
       options
     )
@@ -204,10 +250,15 @@ export const getSuppliers = () => {
    */
   const getPartnerSuppliersCodeCode = (
     code: string,
+    getPartnerSuppliersCodeCodeBody: GetPartnerSuppliersCodeCodeBody,
     options?: SecondParameter<typeof customInstance<GetPartnerSuppliersCodeCode200>>
   ) => {
     return customInstance<GetPartnerSuppliersCodeCode200>(
-      { url: `/partner/suppliers/code/${code}`, method: 'GET' },
+      {
+        url: `/partner/suppliers/code/${code}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -216,10 +267,15 @@ export const getSuppliers = () => {
    * @summary Get supplier counts by status
    */
   const getPartnerSuppliersStatsCount = (
+    getPartnerSuppliersStatsCountBody: GetPartnerSuppliersStatsCountBody,
     options?: SecondParameter<typeof customInstance<GetPartnerSuppliersStatsCount200>>
   ) => {
     return customInstance<GetPartnerSuppliersStatsCount200>(
-      { url: `/partner/suppliers/stats/count`, method: 'GET' },
+      {
+        url: `/partner/suppliers/stats/count`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

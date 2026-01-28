@@ -4,21 +4,26 @@
  *
  */
 import type {
+  DeleteFinanceIncomesIdBody,
   DtoResponse,
   GetFinanceIncomes200,
+  GetFinanceIncomesBody,
   GetFinanceIncomesId200,
+  GetFinanceIncomesIdBody,
   GetFinanceIncomesParams,
   GetFinanceIncomesSummary200,
+  GetFinanceIncomesSummaryBody,
   GetFinanceIncomesSummaryParams,
-  HandlerCreateOtherIncomeRecordRequest,
-  HandlerIncomeActionRequest,
-  HandlerMarkIncomeReceivedRequest,
-  HandlerUpdateOtherIncomeRecordRequest,
   PostFinanceIncomes201,
+  PostFinanceIncomesBody,
   PostFinanceIncomesIdCancel200,
+  PostFinanceIncomesIdCancelBody,
   PostFinanceIncomesIdConfirm200,
+  PostFinanceIncomesIdConfirmBody,
   PostFinanceIncomesIdReceive200,
+  PostFinanceIncomesIdReceiveBody,
   PutFinanceIncomesId200,
+  PutFinanceIncomesIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -31,11 +36,17 @@ export const getIncomes = () => {
    * @summary List other income records
    */
   const getFinanceIncomes = (
+    getFinanceIncomesBody: GetFinanceIncomesBody,
     params?: GetFinanceIncomesParams,
     options?: SecondParameter<typeof customInstance<GetFinanceIncomes200>>
   ) => {
     return customInstance<GetFinanceIncomes200>(
-      { url: `/finance/incomes`, method: 'GET', params },
+      {
+        url: `/finance/incomes`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -44,7 +55,7 @@ export const getIncomes = () => {
    * @summary Create other income record
    */
   const postFinanceIncomes = (
-    handlerCreateOtherIncomeRecordRequest: HandlerCreateOtherIncomeRecordRequest,
+    postFinanceIncomesBody: PostFinanceIncomesBody,
     options?: SecondParameter<typeof customInstance<PostFinanceIncomes201>>
   ) => {
     return customInstance<PostFinanceIncomes201>(
@@ -52,7 +63,7 @@ export const getIncomes = () => {
         url: `/finance/incomes`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreateOtherIncomeRecordRequest,
+        data: postFinanceIncomesBody,
       },
       options
     )
@@ -63,9 +74,18 @@ export const getIncomes = () => {
    */
   const deleteFinanceIncomesId = (
     id: string,
+    deleteFinanceIncomesIdBody: DeleteFinanceIncomesIdBody,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
-    return customInstance<DtoResponse>({ url: `/finance/incomes/${id}`, method: 'DELETE' }, options)
+    return customInstance<DtoResponse>(
+      {
+        url: `/finance/incomes/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteFinanceIncomesIdBody,
+      },
+      options
+    )
   }
   /**
    * Get a single income record by its ID
@@ -73,10 +93,15 @@ export const getIncomes = () => {
    */
   const getFinanceIncomesId = (
     id: string,
+    getFinanceIncomesIdBody: GetFinanceIncomesIdBody,
     options?: SecondParameter<typeof customInstance<GetFinanceIncomesId200>>
   ) => {
     return customInstance<GetFinanceIncomesId200>(
-      { url: `/finance/incomes/${id}`, method: 'GET' },
+      {
+        url: `/finance/incomes/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -86,7 +111,7 @@ export const getIncomes = () => {
    */
   const putFinanceIncomesId = (
     id: string,
-    handlerUpdateOtherIncomeRecordRequest: HandlerUpdateOtherIncomeRecordRequest,
+    putFinanceIncomesIdBody: PutFinanceIncomesIdBody,
     options?: SecondParameter<typeof customInstance<PutFinanceIncomesId200>>
   ) => {
     return customInstance<PutFinanceIncomesId200>(
@@ -94,7 +119,7 @@ export const getIncomes = () => {
         url: `/finance/incomes/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdateOtherIncomeRecordRequest,
+        data: putFinanceIncomesIdBody,
       },
       options
     )
@@ -105,7 +130,7 @@ export const getIncomes = () => {
    */
   const postFinanceIncomesIdCancel = (
     id: string,
-    handlerIncomeActionRequest: HandlerIncomeActionRequest,
+    postFinanceIncomesIdCancelBody: PostFinanceIncomesIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostFinanceIncomesIdCancel200>>
   ) => {
     return customInstance<PostFinanceIncomesIdCancel200>(
@@ -113,7 +138,7 @@ export const getIncomes = () => {
         url: `/finance/incomes/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerIncomeActionRequest,
+        data: postFinanceIncomesIdCancelBody,
       },
       options
     )
@@ -124,10 +149,16 @@ export const getIncomes = () => {
    */
   const postFinanceIncomesIdConfirm = (
     id: string,
+    postFinanceIncomesIdConfirmBody: PostFinanceIncomesIdConfirmBody,
     options?: SecondParameter<typeof customInstance<PostFinanceIncomesIdConfirm200>>
   ) => {
     return customInstance<PostFinanceIncomesIdConfirm200>(
-      { url: `/finance/incomes/${id}/confirm`, method: 'POST' },
+      {
+        url: `/finance/incomes/${id}/confirm`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postFinanceIncomesIdConfirmBody,
+      },
       options
     )
   }
@@ -137,7 +168,7 @@ export const getIncomes = () => {
    */
   const postFinanceIncomesIdReceive = (
     id: string,
-    handlerMarkIncomeReceivedRequest: HandlerMarkIncomeReceivedRequest,
+    postFinanceIncomesIdReceiveBody: PostFinanceIncomesIdReceiveBody,
     options?: SecondParameter<typeof customInstance<PostFinanceIncomesIdReceive200>>
   ) => {
     return customInstance<PostFinanceIncomesIdReceive200>(
@@ -145,7 +176,7 @@ export const getIncomes = () => {
         url: `/finance/incomes/${id}/receive`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerMarkIncomeReceivedRequest,
+        data: postFinanceIncomesIdReceiveBody,
       },
       options
     )
@@ -155,11 +186,17 @@ export const getIncomes = () => {
    * @summary Get incomes summary
    */
   const getFinanceIncomesSummary = (
+    getFinanceIncomesSummaryBody: GetFinanceIncomesSummaryBody,
     params?: GetFinanceIncomesSummaryParams,
     options?: SecondParameter<typeof customInstance<GetFinanceIncomesSummary200>>
   ) => {
     return customInstance<GetFinanceIncomesSummary200>(
-      { url: `/finance/incomes/summary`, method: 'GET', params },
+      {
+        url: `/finance/incomes/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }

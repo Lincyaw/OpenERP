@@ -5,11 +5,14 @@
  */
 import type {
   GetFinanceTrialBalanceAuditLogs200,
+  GetFinanceTrialBalanceAuditLogsBody,
   GetFinanceTrialBalanceAuditLogsParams,
   GetFinanceTrialBalanceQuickCheck200,
+  GetFinanceTrialBalanceQuickCheckBody,
   GetFinanceTrialBalanceReconciliationReport200,
-  HandlerTrialBalanceCheckRequest,
+  GetFinanceTrialBalanceReconciliationReportBody,
   PostFinanceTrialBalanceCheck200,
+  PostFinanceTrialBalanceCheckBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -22,11 +25,17 @@ export const getFinanceTrialBalance = () => {
    * @summary Get trial balance audit logs
    */
   const getFinanceTrialBalanceAuditLogs = (
+    getFinanceTrialBalanceAuditLogsBody: GetFinanceTrialBalanceAuditLogsBody,
     params?: GetFinanceTrialBalanceAuditLogsParams,
     options?: SecondParameter<typeof customInstance<GetFinanceTrialBalanceAuditLogs200>>
   ) => {
     return customInstance<GetFinanceTrialBalanceAuditLogs200>(
-      { url: `/finance/trial-balance/audit-logs`, method: 'GET', params },
+      {
+        url: `/finance/trial-balance/audit-logs`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -35,7 +44,7 @@ export const getFinanceTrialBalance = () => {
    * @summary Perform trial balance check
    */
   const postFinanceTrialBalanceCheck = (
-    handlerTrialBalanceCheckRequest: HandlerTrialBalanceCheckRequest,
+    postFinanceTrialBalanceCheckBody: PostFinanceTrialBalanceCheckBody,
     options?: SecondParameter<typeof customInstance<PostFinanceTrialBalanceCheck200>>
   ) => {
     return customInstance<PostFinanceTrialBalanceCheck200>(
@@ -43,7 +52,7 @@ export const getFinanceTrialBalance = () => {
         url: `/finance/trial-balance/check`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerTrialBalanceCheckRequest,
+        data: postFinanceTrialBalanceCheckBody,
       },
       options
     )
@@ -53,10 +62,15 @@ export const getFinanceTrialBalance = () => {
    * @summary Quick balance check
    */
   const getFinanceTrialBalanceQuickCheck = (
+    getFinanceTrialBalanceQuickCheckBody: GetFinanceTrialBalanceQuickCheckBody,
     options?: SecondParameter<typeof customInstance<GetFinanceTrialBalanceQuickCheck200>>
   ) => {
     return customInstance<GetFinanceTrialBalanceQuickCheck200>(
-      { url: `/finance/trial-balance/quick-check`, method: 'GET' },
+      {
+        url: `/finance/trial-balance/quick-check`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -65,10 +79,15 @@ export const getFinanceTrialBalance = () => {
    * @summary Get reconciliation report
    */
   const getFinanceTrialBalanceReconciliationReport = (
+    getFinanceTrialBalanceReconciliationReportBody: GetFinanceTrialBalanceReconciliationReportBody,
     options?: SecondParameter<typeof customInstance<GetFinanceTrialBalanceReconciliationReport200>>
   ) => {
     return customInstance<GetFinanceTrialBalanceReconciliationReport200>(
-      { url: `/finance/trial-balance/reconciliation-report`, method: 'GET' },
+      {
+        url: `/finance/trial-balance/reconciliation-report`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }

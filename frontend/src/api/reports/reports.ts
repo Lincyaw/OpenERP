@@ -5,38 +5,55 @@
  */
 import type {
   GetReportsFinanceCashFlow200,
+  GetReportsFinanceCashFlowBody,
   GetReportsFinanceCashFlowItems200,
+  GetReportsFinanceCashFlowItemsBody,
   GetReportsFinanceCashFlowItemsParams,
   GetReportsFinanceCashFlowParams,
   GetReportsFinanceMonthlyTrend200,
+  GetReportsFinanceMonthlyTrendBody,
   GetReportsFinanceMonthlyTrendParams,
   GetReportsFinanceProfitByProduct200,
+  GetReportsFinanceProfitByProductBody,
   GetReportsFinanceProfitByProductParams,
   GetReportsFinanceProfitLoss200,
+  GetReportsFinanceProfitLossBody,
   GetReportsFinanceProfitLossParams,
   GetReportsInventorySlowMoving200,
+  GetReportsInventorySlowMovingBody,
   GetReportsInventorySlowMovingParams,
   GetReportsInventorySummary200,
+  GetReportsInventorySummaryBody,
   GetReportsInventorySummaryParams,
   GetReportsInventoryTurnover200,
+  GetReportsInventoryTurnoverBody,
   GetReportsInventoryTurnoverParams,
   GetReportsInventoryValueByCategory200,
+  GetReportsInventoryValueByCategoryBody,
   GetReportsInventoryValueByCategoryParams,
   GetReportsInventoryValueByWarehouse200,
+  GetReportsInventoryValueByWarehouseBody,
   GetReportsInventoryValueByWarehouseParams,
   GetReportsSalesCustomersRanking200,
+  GetReportsSalesCustomersRankingBody,
   GetReportsSalesCustomersRankingParams,
   GetReportsSalesDailyTrend200,
+  GetReportsSalesDailyTrendBody,
   GetReportsSalesDailyTrendParams,
   GetReportsSalesProductsRanking200,
+  GetReportsSalesProductsRankingBody,
   GetReportsSalesProductsRankingParams,
   GetReportsSalesSummary200,
+  GetReportsSalesSummaryBody,
   GetReportsSalesSummaryParams,
   GetReportsSchedulerStatus200,
-  HandlerRefreshAllReportsRequest,
-  HandlerRefreshReportRequest,
+  GetReportsSchedulerStatusBody,
   PostReportsRefresh200,
   PostReportsRefreshAll200,
+  PostReportsRefreshAllBody,
+  PostReportsRefreshBody,
+  PostReportsSchedulerTrigger200,
+  PostReportsSchedulerTriggerBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -49,11 +66,17 @@ export const getReports = () => {
    * @summary Get cash flow statement
    */
   const getReportsFinanceCashFlow = (
+    getReportsFinanceCashFlowBody: GetReportsFinanceCashFlowBody,
     params: GetReportsFinanceCashFlowParams,
     options?: SecondParameter<typeof customInstance<GetReportsFinanceCashFlow200>>
   ) => {
     return customInstance<GetReportsFinanceCashFlow200>(
-      { url: `/reports/finance/cash-flow`, method: 'GET', params },
+      {
+        url: `/reports/finance/cash-flow`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -62,11 +85,17 @@ export const getReports = () => {
    * @summary Get cash flow items
    */
   const getReportsFinanceCashFlowItems = (
+    getReportsFinanceCashFlowItemsBody: GetReportsFinanceCashFlowItemsBody,
     params: GetReportsFinanceCashFlowItemsParams,
     options?: SecondParameter<typeof customInstance<GetReportsFinanceCashFlowItems200>>
   ) => {
     return customInstance<GetReportsFinanceCashFlowItems200>(
-      { url: `/reports/finance/cash-flow/items`, method: 'GET', params },
+      {
+        url: `/reports/finance/cash-flow/items`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -75,11 +104,17 @@ export const getReports = () => {
    * @summary Get monthly profit trend
    */
   const getReportsFinanceMonthlyTrend = (
+    getReportsFinanceMonthlyTrendBody: GetReportsFinanceMonthlyTrendBody,
     params: GetReportsFinanceMonthlyTrendParams,
     options?: SecondParameter<typeof customInstance<GetReportsFinanceMonthlyTrend200>>
   ) => {
     return customInstance<GetReportsFinanceMonthlyTrend200>(
-      { url: `/reports/finance/monthly-trend`, method: 'GET', params },
+      {
+        url: `/reports/finance/monthly-trend`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -88,11 +123,17 @@ export const getReports = () => {
    * @summary Get profit by product
    */
   const getReportsFinanceProfitByProduct = (
+    getReportsFinanceProfitByProductBody: GetReportsFinanceProfitByProductBody,
     params: GetReportsFinanceProfitByProductParams,
     options?: SecondParameter<typeof customInstance<GetReportsFinanceProfitByProduct200>>
   ) => {
     return customInstance<GetReportsFinanceProfitByProduct200>(
-      { url: `/reports/finance/profit-by-product`, method: 'GET', params },
+      {
+        url: `/reports/finance/profit-by-product`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -101,11 +142,17 @@ export const getReports = () => {
    * @summary Get profit and loss statement
    */
   const getReportsFinanceProfitLoss = (
+    getReportsFinanceProfitLossBody: GetReportsFinanceProfitLossBody,
     params: GetReportsFinanceProfitLossParams,
     options?: SecondParameter<typeof customInstance<GetReportsFinanceProfitLoss200>>
   ) => {
     return customInstance<GetReportsFinanceProfitLoss200>(
-      { url: `/reports/finance/profit-loss`, method: 'GET', params },
+      {
+        url: `/reports/finance/profit-loss`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -114,11 +161,17 @@ export const getReports = () => {
    * @summary Get slow moving products
    */
   const getReportsInventorySlowMoving = (
+    getReportsInventorySlowMovingBody: GetReportsInventorySlowMovingBody,
     params: GetReportsInventorySlowMovingParams,
     options?: SecondParameter<typeof customInstance<GetReportsInventorySlowMoving200>>
   ) => {
     return customInstance<GetReportsInventorySlowMoving200>(
-      { url: `/reports/inventory/slow-moving`, method: 'GET', params },
+      {
+        url: `/reports/inventory/slow-moving`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -127,11 +180,17 @@ export const getReports = () => {
    * @summary Get inventory summary
    */
   const getReportsInventorySummary = (
+    getReportsInventorySummaryBody: GetReportsInventorySummaryBody,
     params: GetReportsInventorySummaryParams,
     options?: SecondParameter<typeof customInstance<GetReportsInventorySummary200>>
   ) => {
     return customInstance<GetReportsInventorySummary200>(
-      { url: `/reports/inventory/summary`, method: 'GET', params },
+      {
+        url: `/reports/inventory/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -140,11 +199,17 @@ export const getReports = () => {
    * @summary Get inventory turnover
    */
   const getReportsInventoryTurnover = (
+    getReportsInventoryTurnoverBody: GetReportsInventoryTurnoverBody,
     params: GetReportsInventoryTurnoverParams,
     options?: SecondParameter<typeof customInstance<GetReportsInventoryTurnover200>>
   ) => {
     return customInstance<GetReportsInventoryTurnover200>(
-      { url: `/reports/inventory/turnover`, method: 'GET', params },
+      {
+        url: `/reports/inventory/turnover`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -153,11 +218,17 @@ export const getReports = () => {
    * @summary Get inventory value by category
    */
   const getReportsInventoryValueByCategory = (
+    getReportsInventoryValueByCategoryBody: GetReportsInventoryValueByCategoryBody,
     params: GetReportsInventoryValueByCategoryParams,
     options?: SecondParameter<typeof customInstance<GetReportsInventoryValueByCategory200>>
   ) => {
     return customInstance<GetReportsInventoryValueByCategory200>(
-      { url: `/reports/inventory/value-by-category`, method: 'GET', params },
+      {
+        url: `/reports/inventory/value-by-category`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -166,11 +237,17 @@ export const getReports = () => {
    * @summary Get inventory value by warehouse
    */
   const getReportsInventoryValueByWarehouse = (
+    getReportsInventoryValueByWarehouseBody: GetReportsInventoryValueByWarehouseBody,
     params: GetReportsInventoryValueByWarehouseParams,
     options?: SecondParameter<typeof customInstance<GetReportsInventoryValueByWarehouse200>>
   ) => {
     return customInstance<GetReportsInventoryValueByWarehouse200>(
-      { url: `/reports/inventory/value-by-warehouse`, method: 'GET', params },
+      {
+        url: `/reports/inventory/value-by-warehouse`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -179,7 +256,7 @@ export const getReports = () => {
    * @summary Manually refresh a report cache
    */
   const postReportsRefresh = (
-    handlerRefreshReportRequest: HandlerRefreshReportRequest,
+    postReportsRefreshBody: PostReportsRefreshBody,
     options?: SecondParameter<typeof customInstance<PostReportsRefresh200>>
   ) => {
     return customInstance<PostReportsRefresh200>(
@@ -187,7 +264,7 @@ export const getReports = () => {
         url: `/reports/refresh`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRefreshReportRequest,
+        data: postReportsRefreshBody,
       },
       options
     )
@@ -197,7 +274,7 @@ export const getReports = () => {
    * @summary Refresh all report caches
    */
   const postReportsRefreshAll = (
-    handlerRefreshAllReportsRequest: HandlerRefreshAllReportsRequest,
+    postReportsRefreshAllBody: PostReportsRefreshAllBody,
     options?: SecondParameter<typeof customInstance<PostReportsRefreshAll200>>
   ) => {
     return customInstance<PostReportsRefreshAll200>(
@@ -205,7 +282,7 @@ export const getReports = () => {
         url: `/reports/refresh/all`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRefreshAllReportsRequest,
+        data: postReportsRefreshAllBody,
       },
       options
     )
@@ -215,11 +292,17 @@ export const getReports = () => {
    * @summary Get customer sales ranking
    */
   const getReportsSalesCustomersRanking = (
+    getReportsSalesCustomersRankingBody: GetReportsSalesCustomersRankingBody,
     params: GetReportsSalesCustomersRankingParams,
     options?: SecondParameter<typeof customInstance<GetReportsSalesCustomersRanking200>>
   ) => {
     return customInstance<GetReportsSalesCustomersRanking200>(
-      { url: `/reports/sales/customers/ranking`, method: 'GET', params },
+      {
+        url: `/reports/sales/customers/ranking`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -228,11 +311,17 @@ export const getReports = () => {
    * @summary Get daily sales trend
    */
   const getReportsSalesDailyTrend = (
+    getReportsSalesDailyTrendBody: GetReportsSalesDailyTrendBody,
     params: GetReportsSalesDailyTrendParams,
     options?: SecondParameter<typeof customInstance<GetReportsSalesDailyTrend200>>
   ) => {
     return customInstance<GetReportsSalesDailyTrend200>(
-      { url: `/reports/sales/daily-trend`, method: 'GET', params },
+      {
+        url: `/reports/sales/daily-trend`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -241,11 +330,17 @@ export const getReports = () => {
    * @summary Get product sales ranking
    */
   const getReportsSalesProductsRanking = (
+    getReportsSalesProductsRankingBody: GetReportsSalesProductsRankingBody,
     params: GetReportsSalesProductsRankingParams,
     options?: SecondParameter<typeof customInstance<GetReportsSalesProductsRanking200>>
   ) => {
     return customInstance<GetReportsSalesProductsRanking200>(
-      { url: `/reports/sales/products/ranking`, method: 'GET', params },
+      {
+        url: `/reports/sales/products/ranking`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -254,11 +349,17 @@ export const getReports = () => {
    * @summary Get sales summary
    */
   const getReportsSalesSummary = (
+    getReportsSalesSummaryBody: GetReportsSalesSummaryBody,
     params: GetReportsSalesSummaryParams,
     options?: SecondParameter<typeof customInstance<GetReportsSalesSummary200>>
   ) => {
     return customInstance<GetReportsSalesSummary200>(
-      { url: `/reports/sales/summary`, method: 'GET', params },
+      {
+        url: `/reports/sales/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -267,10 +368,33 @@ export const getReports = () => {
    * @summary Get report scheduler status
    */
   const getReportsSchedulerStatus = (
+    getReportsSchedulerStatusBody: GetReportsSchedulerStatusBody,
     options?: SecondParameter<typeof customInstance<GetReportsSchedulerStatus200>>
   ) => {
     return customInstance<GetReportsSchedulerStatus200>(
-      { url: `/reports/scheduler/status`, method: 'GET' },
+      {
+        url: `/reports/scheduler/status`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
+      options
+    )
+  }
+  /**
+   * Manually triggers the daily report aggregation for a specific date range
+   * @summary Trigger daily report aggregation
+   */
+  const postReportsSchedulerTrigger = (
+    postReportsSchedulerTriggerBody: PostReportsSchedulerTriggerBody,
+    options?: SecondParameter<typeof customInstance<PostReportsSchedulerTrigger200>>
+  ) => {
+    return customInstance<PostReportsSchedulerTrigger200>(
+      {
+        url: `/reports/scheduler/trigger`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postReportsSchedulerTriggerBody,
+      },
       options
     )
   }
@@ -292,6 +416,7 @@ export const getReports = () => {
     getReportsSalesProductsRanking,
     getReportsSalesSummary,
     getReportsSchedulerStatus,
+    postReportsSchedulerTrigger,
   }
 }
 export type GetReportsFinanceCashFlowResult = NonNullable<
@@ -344,4 +469,7 @@ export type GetReportsSalesSummaryResult = NonNullable<
 >
 export type GetReportsSchedulerStatusResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getReports>['getReportsSchedulerStatus']>>
+>
+export type PostReportsSchedulerTriggerResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getReports>['postReportsSchedulerTrigger']>>
 >

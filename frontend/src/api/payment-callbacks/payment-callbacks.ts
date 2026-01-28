@@ -3,7 +3,12 @@
  * // Do not edit manually
  *
  */
-import type { PostPaymentCallbackWechat200, PostPaymentCallbackWechatRefund200 } from '.././models'
+import type {
+  PostPaymentCallbackWechat200,
+  PostPaymentCallbackWechatBody,
+  PostPaymentCallbackWechatRefund200,
+  PostPaymentCallbackWechatRefundBody,
+} from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
 
@@ -14,18 +19,41 @@ export const getPaymentCallbacks = () => {
    * Receive and process payment notification from Alipay
    * @summary Handle Alipay payment callback
    */
-  const postPaymentCallbackAlipay = (options?: SecondParameter<typeof customInstance<string>>) => {
-    return customInstance<string>({ url: `/payment/callback/alipay`, method: 'POST' }, options)
+  const postPaymentCallbackAlipay = (
+    postPaymentCallbackAlipayBody: string,
+    options?: SecondParameter<typeof customInstance<string>>
+  ) => {
+    const formUrlEncoded = new URLSearchParams()
+    formUrlEncoded.append('data', postPaymentCallbackAlipayBody)
+
+    return customInstance<string>(
+      {
+        url: `/payment/callback/alipay`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: formUrlEncoded,
+      },
+      options
+    )
   }
   /**
    * Receive and process refund notification from Alipay
    * @summary Handle Alipay refund callback
    */
   const postPaymentCallbackAlipayRefund = (
+    postPaymentCallbackAlipayRefundBody: string,
     options?: SecondParameter<typeof customInstance<string>>
   ) => {
+    const formUrlEncoded = new URLSearchParams()
+    formUrlEncoded.append('data', postPaymentCallbackAlipayRefundBody)
+
     return customInstance<string>(
-      { url: `/payment/callback/alipay/refund`, method: 'POST' },
+      {
+        url: `/payment/callback/alipay/refund`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: formUrlEncoded,
+      },
       options
     )
   }
@@ -34,10 +62,16 @@ export const getPaymentCallbacks = () => {
    * @summary Handle WeChat Pay payment callback
    */
   const postPaymentCallbackWechat = (
+    postPaymentCallbackWechatBody: PostPaymentCallbackWechatBody,
     options?: SecondParameter<typeof customInstance<PostPaymentCallbackWechat200>>
   ) => {
     return customInstance<PostPaymentCallbackWechat200>(
-      { url: `/payment/callback/wechat`, method: 'POST' },
+      {
+        url: `/payment/callback/wechat`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPaymentCallbackWechatBody,
+      },
       options
     )
   }
@@ -46,10 +80,16 @@ export const getPaymentCallbacks = () => {
    * @summary Handle WeChat Pay refund callback
    */
   const postPaymentCallbackWechatRefund = (
+    postPaymentCallbackWechatRefundBody: PostPaymentCallbackWechatRefundBody,
     options?: SecondParameter<typeof customInstance<PostPaymentCallbackWechatRefund200>>
   ) => {
     return customInstance<PostPaymentCallbackWechatRefund200>(
-      { url: `/payment/callback/wechat/refund`, method: 'POST' },
+      {
+        url: `/payment/callback/wechat/refund`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postPaymentCallbackWechatRefundBody,
+      },
       options
     )
   }

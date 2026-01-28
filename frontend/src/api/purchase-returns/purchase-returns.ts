@@ -4,30 +4,38 @@
  *
  */
 import type {
+  DeleteTradePurchaseReturnsIdBody,
   DeleteTradePurchaseReturnsIdItemsItemId200,
+  DeleteTradePurchaseReturnsIdItemsItemIdBody,
   GetTradePurchaseReturns200,
+  GetTradePurchaseReturnsBody,
   GetTradePurchaseReturnsId200,
+  GetTradePurchaseReturnsIdBody,
   GetTradePurchaseReturnsNumberReturnNumber200,
+  GetTradePurchaseReturnsNumberReturnNumberBody,
   GetTradePurchaseReturnsParams,
   GetTradePurchaseReturnsStatsSummary200,
-  HandlerAddPurchaseReturnItemRequest,
-  HandlerApprovePurchaseReturnRequest,
-  HandlerCancelPurchaseReturnRequest,
-  HandlerCreatePurchaseReturnRequest,
-  HandlerRejectPurchaseReturnRequest,
-  HandlerShipPurchaseReturnRequest,
-  HandlerUpdatePurchaseReturnItemRequest,
-  HandlerUpdatePurchaseReturnRequest,
+  GetTradePurchaseReturnsStatsSummaryBody,
   PostTradePurchaseReturns201,
+  PostTradePurchaseReturnsBody,
   PostTradePurchaseReturnsIdApprove200,
+  PostTradePurchaseReturnsIdApproveBody,
   PostTradePurchaseReturnsIdCancel200,
+  PostTradePurchaseReturnsIdCancelBody,
   PostTradePurchaseReturnsIdComplete200,
+  PostTradePurchaseReturnsIdCompleteBody,
   PostTradePurchaseReturnsIdItems200,
+  PostTradePurchaseReturnsIdItemsBody,
   PostTradePurchaseReturnsIdReject200,
+  PostTradePurchaseReturnsIdRejectBody,
   PostTradePurchaseReturnsIdShip200,
+  PostTradePurchaseReturnsIdShipBody,
   PostTradePurchaseReturnsIdSubmit200,
+  PostTradePurchaseReturnsIdSubmitBody,
   PutTradePurchaseReturnsId200,
+  PutTradePurchaseReturnsIdBody,
   PutTradePurchaseReturnsIdItemsItemId200,
+  PutTradePurchaseReturnsIdItemsItemIdBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -40,11 +48,17 @@ export const getPurchaseReturns = () => {
    * @summary List purchase returns
    */
   const getTradePurchaseReturns = (
+    getTradePurchaseReturnsBody: GetTradePurchaseReturnsBody,
     params?: GetTradePurchaseReturnsParams,
     options?: SecondParameter<typeof customInstance<GetTradePurchaseReturns200>>
   ) => {
     return customInstance<GetTradePurchaseReturns200>(
-      { url: `/trade/purchase-returns`, method: 'GET', params },
+      {
+        url: `/trade/purchase-returns`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        params,
+      },
       options
     )
   }
@@ -53,7 +67,7 @@ export const getPurchaseReturns = () => {
    * @summary Create a new purchase return
    */
   const postTradePurchaseReturns = (
-    handlerCreatePurchaseReturnRequest: HandlerCreatePurchaseReturnRequest,
+    postTradePurchaseReturnsBody: PostTradePurchaseReturnsBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturns201>>
   ) => {
     return customInstance<PostTradePurchaseReturns201>(
@@ -61,7 +75,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCreatePurchaseReturnRequest,
+        data: postTradePurchaseReturnsBody,
       },
       options
     )
@@ -72,9 +86,18 @@ export const getPurchaseReturns = () => {
    */
   const deleteTradePurchaseReturnsId = (
     id: string,
+    deleteTradePurchaseReturnsIdBody: DeleteTradePurchaseReturnsIdBody,
     options?: SecondParameter<typeof customInstance<void>>
   ) => {
-    return customInstance<void>({ url: `/trade/purchase-returns/${id}`, method: 'DELETE' }, options)
+    return customInstance<void>(
+      {
+        url: `/trade/purchase-returns/${id}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradePurchaseReturnsIdBody,
+      },
+      options
+    )
   }
   /**
    * Retrieve a purchase return by its ID
@@ -82,10 +105,15 @@ export const getPurchaseReturns = () => {
    */
   const getTradePurchaseReturnsId = (
     id: string,
+    getTradePurchaseReturnsIdBody: GetTradePurchaseReturnsIdBody,
     options?: SecondParameter<typeof customInstance<GetTradePurchaseReturnsId200>>
   ) => {
     return customInstance<GetTradePurchaseReturnsId200>(
-      { url: `/trade/purchase-returns/${id}`, method: 'GET' },
+      {
+        url: `/trade/purchase-returns/${id}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -95,7 +123,7 @@ export const getPurchaseReturns = () => {
    */
   const putTradePurchaseReturnsId = (
     id: string,
-    handlerUpdatePurchaseReturnRequest: HandlerUpdatePurchaseReturnRequest,
+    putTradePurchaseReturnsIdBody: PutTradePurchaseReturnsIdBody,
     options?: SecondParameter<typeof customInstance<PutTradePurchaseReturnsId200>>
   ) => {
     return customInstance<PutTradePurchaseReturnsId200>(
@@ -103,7 +131,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdatePurchaseReturnRequest,
+        data: putTradePurchaseReturnsIdBody,
       },
       options
     )
@@ -114,7 +142,7 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdApprove = (
     id: string,
-    handlerApprovePurchaseReturnRequest: HandlerApprovePurchaseReturnRequest,
+    postTradePurchaseReturnsIdApproveBody: PostTradePurchaseReturnsIdApproveBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdApprove200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdApprove200>(
@@ -122,7 +150,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/approve`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerApprovePurchaseReturnRequest,
+        data: postTradePurchaseReturnsIdApproveBody,
       },
       options
     )
@@ -133,7 +161,7 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdCancel = (
     id: string,
-    handlerCancelPurchaseReturnRequest: HandlerCancelPurchaseReturnRequest,
+    postTradePurchaseReturnsIdCancelBody: PostTradePurchaseReturnsIdCancelBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdCancel200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdCancel200>(
@@ -141,7 +169,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/cancel`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerCancelPurchaseReturnRequest,
+        data: postTradePurchaseReturnsIdCancelBody,
       },
       options
     )
@@ -152,10 +180,16 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdComplete = (
     id: string,
+    postTradePurchaseReturnsIdCompleteBody: PostTradePurchaseReturnsIdCompleteBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdComplete200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdComplete200>(
-      { url: `/trade/purchase-returns/${id}/complete`, method: 'POST' },
+      {
+        url: `/trade/purchase-returns/${id}/complete`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postTradePurchaseReturnsIdCompleteBody,
+      },
       options
     )
   }
@@ -165,7 +199,7 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdItems = (
     id: string,
-    handlerAddPurchaseReturnItemRequest: HandlerAddPurchaseReturnItemRequest,
+    postTradePurchaseReturnsIdItemsBody: PostTradePurchaseReturnsIdItemsBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdItems200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdItems200>(
@@ -173,7 +207,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/items`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerAddPurchaseReturnItemRequest,
+        data: postTradePurchaseReturnsIdItemsBody,
       },
       options
     )
@@ -185,10 +219,16 @@ export const getPurchaseReturns = () => {
   const deleteTradePurchaseReturnsIdItemsItemId = (
     id: string,
     itemId: string,
+    deleteTradePurchaseReturnsIdItemsItemIdBody: DeleteTradePurchaseReturnsIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<DeleteTradePurchaseReturnsIdItemsItemId200>>
   ) => {
     return customInstance<DeleteTradePurchaseReturnsIdItemsItemId200>(
-      { url: `/trade/purchase-returns/${id}/items/${itemId}`, method: 'DELETE' },
+      {
+        url: `/trade/purchase-returns/${id}/items/${itemId}`,
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        data: deleteTradePurchaseReturnsIdItemsItemIdBody,
+      },
       options
     )
   }
@@ -199,7 +239,7 @@ export const getPurchaseReturns = () => {
   const putTradePurchaseReturnsIdItemsItemId = (
     id: string,
     itemId: string,
-    handlerUpdatePurchaseReturnItemRequest: HandlerUpdatePurchaseReturnItemRequest,
+    putTradePurchaseReturnsIdItemsItemIdBody: PutTradePurchaseReturnsIdItemsItemIdBody,
     options?: SecondParameter<typeof customInstance<PutTradePurchaseReturnsIdItemsItemId200>>
   ) => {
     return customInstance<PutTradePurchaseReturnsIdItemsItemId200>(
@@ -207,7 +247,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/items/${itemId}`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerUpdatePurchaseReturnItemRequest,
+        data: putTradePurchaseReturnsIdItemsItemIdBody,
       },
       options
     )
@@ -218,7 +258,7 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdReject = (
     id: string,
-    handlerRejectPurchaseReturnRequest: HandlerRejectPurchaseReturnRequest,
+    postTradePurchaseReturnsIdRejectBody: PostTradePurchaseReturnsIdRejectBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdReject200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdReject200>(
@@ -226,7 +266,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/reject`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerRejectPurchaseReturnRequest,
+        data: postTradePurchaseReturnsIdRejectBody,
       },
       options
     )
@@ -237,7 +277,7 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdShip = (
     id: string,
-    handlerShipPurchaseReturnRequest: HandlerShipPurchaseReturnRequest,
+    postTradePurchaseReturnsIdShipBody: PostTradePurchaseReturnsIdShipBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdShip200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdShip200>(
@@ -245,7 +285,7 @@ export const getPurchaseReturns = () => {
         url: `/trade/purchase-returns/${id}/ship`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: handlerShipPurchaseReturnRequest,
+        data: postTradePurchaseReturnsIdShipBody,
       },
       options
     )
@@ -256,10 +296,16 @@ export const getPurchaseReturns = () => {
    */
   const postTradePurchaseReturnsIdSubmit = (
     id: string,
+    postTradePurchaseReturnsIdSubmitBody: PostTradePurchaseReturnsIdSubmitBody,
     options?: SecondParameter<typeof customInstance<PostTradePurchaseReturnsIdSubmit200>>
   ) => {
     return customInstance<PostTradePurchaseReturnsIdSubmit200>(
-      { url: `/trade/purchase-returns/${id}/submit`, method: 'POST' },
+      {
+        url: `/trade/purchase-returns/${id}/submit`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: postTradePurchaseReturnsIdSubmitBody,
+      },
       options
     )
   }
@@ -269,10 +315,15 @@ export const getPurchaseReturns = () => {
    */
   const getTradePurchaseReturnsNumberReturnNumber = (
     returnNumber: string,
+    getTradePurchaseReturnsNumberReturnNumberBody: GetTradePurchaseReturnsNumberReturnNumberBody,
     options?: SecondParameter<typeof customInstance<GetTradePurchaseReturnsNumberReturnNumber200>>
   ) => {
     return customInstance<GetTradePurchaseReturnsNumberReturnNumber200>(
-      { url: `/trade/purchase-returns/number/${returnNumber}`, method: 'GET' },
+      {
+        url: `/trade/purchase-returns/number/${returnNumber}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
@@ -281,10 +332,15 @@ export const getPurchaseReturns = () => {
    * @summary Get return status summary
    */
   const getTradePurchaseReturnsStatsSummary = (
+    getTradePurchaseReturnsStatsSummaryBody: GetTradePurchaseReturnsStatsSummaryBody,
     options?: SecondParameter<typeof customInstance<GetTradePurchaseReturnsStatsSummary200>>
   ) => {
     return customInstance<GetTradePurchaseReturnsStatsSummary200>(
-      { url: `/trade/purchase-returns/stats/summary`, method: 'GET' },
+      {
+        url: `/trade/purchase-returns/stats/summary`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
       options
     )
   }
