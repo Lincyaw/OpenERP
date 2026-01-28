@@ -26,7 +26,7 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getInventory } from '@/api/inventory/inventory'
+import { listInventories, adjustStockInventory } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
@@ -79,7 +79,6 @@ export default function StockAdjustPage() {
   const [searchParams] = useSearchParams()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase } = useFormatters()
-  const inventoryApi = useMemo(() => getInventory(), [])
 
   // Wrapper function to handle undefined values
   const formatCurrency = useCallback(
@@ -209,12 +208,12 @@ export default function StockAdjustPage() {
 
     setLoadingInventory(true)
     try {
-      const response = await inventoryApi.listInventories({
+      const response = await listInventories({
         warehouse_id: warehouseId,
         product_id: productId,
       })
-      if (response.success && response.data) {
-        const item = response.data as HandlerInventoryItemResponse
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const item = response.data.data as HandlerInventoryItemResponse
         setInventoryItem(item)
         // Set actual quantity to current total if not already set
         if (actualQuantity === undefined || actualQuantity === 0) {
@@ -230,7 +229,7 @@ export default function StockAdjustPage() {
     } finally {
       setLoadingInventory(false)
     }
-  }, [warehouseId, productId, inventoryApi, actualQuantity, setValue])
+  }, [warehouseId, productId, actualQuantity, setValue])
 
   // Fetch warehouses and products on mount
   useEffect(() => {
@@ -247,7 +246,7 @@ export default function StockAdjustPage() {
 
   // Handle form submission
   const onSubmit = async (data: StockAdjustFormData) => {
-    const response = await inventoryApi.adjustStockInventory({
+    const response = await adjustStockInventory({
       warehouse_id: data.warehouse_id,
       product_id: data.product_id,
       actual_quantity: data.actual_quantity,
@@ -256,13 +255,13 @@ export default function StockAdjustPage() {
       source_id: data.source_id || undefined,
     })
 
-    if (!response.success) {
+    if (response.status !== 200 || !response.data.success) {
       // Check for specific error codes and provide user-friendly messages
-      const errorCode = response.error?.code
+      const errorCode = response.data.error?.code
       if (errorCode === 'HAS_LOCKED_STOCK') {
         throw new Error(t('adjust.messages.hasLockedStock'))
       }
-      throw new Error(response.error?.message || t('adjust.messages.error'))
+      throw new Error(response.data.error?.message || t('adjust.messages.error'))
     }
   }
 

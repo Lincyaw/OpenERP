@@ -24,7 +24,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getInventory } from '@/api/inventory/inventory'
+import { listInventoryBelowMinimum, setThresholdsInventory } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
@@ -85,7 +85,6 @@ export default function StockAlertsPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatDate: formatDateBase } = useFormatters()
-  const inventoryApi = useMemo(() => getInventory(), [])
 
   // Wrapper function to handle undefined values
   const formatDate = useCallback(
@@ -186,11 +185,11 @@ export default function StockAlertsPage() {
           : 'desc') as ListInventoryBelowMinimumOrderDir,
       }
 
-      const response = await inventoryApi.listInventoryBelowMinimum(params)
+      const response = await listInventoryBelowMinimum(params)
 
-      if (response.success && response.data) {
+      if (response.status === 200 && response.data.success && response.data.data) {
         // Client-side filtering by search keyword (product name)
-        let items = response.data as InventoryItem[]
+        let items = response.data.data as InventoryItem[]
         if (searchKeyword && productMap.size > 0) {
           const keyword = searchKeyword.toLowerCase()
           items = items.filter((item) => {
@@ -199,12 +198,12 @@ export default function StockAlertsPage() {
           })
         }
         setAlertList(items)
-        if (response.meta) {
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -214,7 +213,6 @@ export default function StockAlertsPage() {
       setLoading(false)
     }
   }, [
-    inventoryApi,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -304,9 +302,9 @@ export default function StockAlertsPage() {
           max_quantity: values.max_quantity,
         }
 
-        const response = await inventoryApi.setThresholdsInventory(request)
+        const response = await setThresholdsInventory(request)
 
-        if (response.success) {
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('alerts.messages.setThresholdSuccess'))
           handleThresholdModalClose()
           fetchAlerts()
@@ -319,7 +317,7 @@ export default function StockAlertsPage() {
         setThresholdSaving(false)
       }
     },
-    [selectedItem, inventoryApi, t, handleThresholdModalClose, fetchAlerts]
+    [selectedItem, t, handleThresholdModalClose, fetchAlerts]
   )
 
   // Refresh handler
