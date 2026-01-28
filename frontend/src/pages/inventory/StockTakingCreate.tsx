@@ -29,7 +29,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { listWarehouses } from '@/api/warehouses/warehouses'
-import { getInventory } from '@/api/inventory/inventory'
+import { listInventoryByWarehouse } from '@/api/inventory/inventory'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import type {
   HandlerWarehouseListResponse,
@@ -86,7 +86,6 @@ export default function StockTakingCreatePage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase } = useFormatters()
-  const inventoryApi = useMemo(() => getInventory(), [])
   const stockTakingApi = useMemo(() => getStockTaking(), [])
   const { user } = useAuthStore()
 
@@ -194,19 +193,19 @@ export default function StockTakingCreatePage() {
     setLoadingInventory(true)
     try {
       // Use the warehouse-specific endpoint with path parameter
-      const response = await inventoryApi.listInventoryByWarehouse(warehouseId, {
+      const response = await listInventoryByWarehouse(warehouseId, {
         page_size: 500,
         has_stock: true,
       })
-      if (response.success && response.data) {
-        setInventoryItems(response.data as ExtendedInventoryItem[])
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setInventoryItems(response.data.data as ExtendedInventoryItem[])
       }
     } catch {
       Toast.error(t('stockTaking.create.messages.fetchInventoryError'))
     } finally {
       setLoadingInventory(false)
     }
-  }, [warehouseId, inventoryApi])
+  }, [warehouseId, t])
 
   useEffect(() => {
     fetchWarehouses()

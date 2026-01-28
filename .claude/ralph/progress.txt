@@ -33147,3 +33147,85 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 - Continue with other API migration tasks if any
 - Address pre-existing test failures in authStore.test.ts separately
 
+
+---
+
+2026-01-28 - Task ID: RQ-MIG-005 - React Query Migration: Inventory Module
+
+=== Implementation Details ===
+- Migrated 4 source files from `getInventory` factory pattern to direct function imports
+- Updated response handling to use axios response format (response.status === 200 && response.data.success && response.data.data)
+
+=== Files Modified ===
+**Source Files:**
+1. src/pages/inventory/StockDetail.tsx
+   - Changed import from `getInventory` to `getInventoryById, listInventoryTransactionsByItem`
+   - Removed `useMemo(() => getInventory(), [])` factory pattern
+   - Updated `fetchInventoryItem` to use direct `getInventoryById(id)` call
+   - Updated `fetchTransactions` to use direct `listInventoryTransactionsByItem(id, params)` call
+   - Updated response handling to axios format
+
+2. src/pages/inventory/StockList.tsx
+   - Changed import from `getInventory` to `listInventories`
+   - Removed `useMemo(() => getInventory(), [])` factory pattern
+   - Updated `fetchInventory` to use direct `listInventories(params, { signal })` call
+   - Updated response handling to axios format
+   - Removed `inventoryApi` from dependency array
+
+3. src/pages/inventory/StockTakingCreate.tsx
+   - Changed import from `getInventory` to `listInventoryByWarehouse`
+   - Removed `useMemo(() => getInventory(), [])` factory pattern
+   - Updated `fetchInventory` to use direct `listInventoryByWarehouse(warehouseId, params)` call
+   - Updated response handling to axios format
+   - Removed `inventoryApi` from dependency array
+
+4. src/pages/inventory/StockTransactions.tsx
+   - Changed import from `getInventory` to `getInventoryById, listInventoryTransactionsByItem`
+   - Removed `useMemo(() => getInventory(), [])` factory pattern
+   - Updated `fetchInventoryItem` to use direct `getInventoryById(id)` call
+   - Updated `fetchTransactions` to use direct `listInventoryTransactionsByItem(id, params)` call
+   - Updated response handling to axios format
+
+=== Already Migrated Files (verified) ===
+- src/pages/Dashboard.tsx - Uses `listInventoryBelowMinimum` (already migrated)
+- src/pages/inventory/StockAdjust.tsx - Uses `listInventories, adjustStockInventory` (already migrated)
+- src/pages/inventory/StockAlerts.tsx - Uses `listInventoryBelowMinimum, setThresholdsInventory` (already migrated)
+
+=== Migration Pattern ===
+**Before (Factory Pattern):**
+```typescript
+import { getInventory } from '@/api/inventory/inventory'
+const inventoryApi = useMemo(() => getInventory(), [])
+const response = await inventoryApi.getInventoryById(id)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { getInventoryById, listInventoryTransactionsByItem } from '@/api/inventory/inventory'
+const response = await getInventoryById(id)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== API Functions Used ===
+- `getInventoryById` - Get single inventory item by ID
+- `listInventories` - List all inventory items with filters
+- `listInventoryByWarehouse` - List inventory items for a specific warehouse
+- `listInventoryTransactionsByItem` - List transactions for a specific inventory item
+- `listInventoryBelowMinimum` - List inventory items below minimum threshold
+- `adjustStockInventory` - Adjust stock quantity
+- `setThresholdsInventory` - Set min/max thresholds
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getInventory` factory imports in source files
+- All affected files use correct direct function imports
+
+=== Notes ===
+- Test files still use old factory mock pattern (noted for future updates)
+- The new API pattern wraps data in axios response format (response.data.success, response.data.data)
+- Removed unused `useMemo` imports where applicable
+
+=== Next Steps ===
+- Continue with RQ-MIG-006 (Categories Module) or other remaining migration tasks
+- Consider updating test files to match new pattern in future iterations

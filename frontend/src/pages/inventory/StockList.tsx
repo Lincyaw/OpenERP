@@ -12,7 +12,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getInventory } from '@/api/inventory/inventory'
+import { listInventories } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
@@ -64,7 +64,6 @@ export default function StockListPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
-  const inventoryApi = useMemo(() => getInventory(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -183,16 +182,16 @@ export default function StockListPage() {
           params.has_stock = false
         }
 
-        const response = await inventoryApi.listInventories(params, { signal })
+        const response = await listInventories(params, { signal })
 
-        if (response.success && response.data) {
-          setInventoryList(response.data as InventoryItem[])
-          if (response.meta) {
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setInventoryList(response.data.data as InventoryItem[])
+          if (response.data.meta) {
             setPaginationMeta({
-              page: response.meta.page || 1,
-              page_size: response.meta.page_size || 20,
-              total: response.meta.total || 0,
-              total_pages: response.meta.total_pages || 1,
+              page: response.data.meta.page || 1,
+              page_size: response.data.meta.page_size || 20,
+              total: response.data.meta.total || 0,
+              total_pages: response.data.meta.total_pages || 1,
             })
           }
         }
@@ -204,7 +203,6 @@ export default function StockListPage() {
       }
     },
     [
-      inventoryApi,
       state.pagination.page,
       state.pagination.pageSize,
       state.sort,

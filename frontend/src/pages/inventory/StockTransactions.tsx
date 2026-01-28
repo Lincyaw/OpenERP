@@ -14,7 +14,7 @@ import { IconArrowLeft, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
-import { getInventory } from '@/api/inventory/inventory'
+import { getInventoryById, listInventoryTransactionsByItem } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
@@ -154,7 +154,6 @@ function formatDateToISO(date: Date | null): string | undefined {
 export default function StockTransactionsPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const inventoryApi = useMemo(() => getInventory(), [])
 
   // State for inventory item info (for header display)
   const [inventoryItem, setInventoryItem] = useState<HandlerInventoryItemResponse | null>(null)
@@ -182,14 +181,14 @@ export default function StockTransactionsPage() {
     if (!id) return
 
     try {
-      const response = await inventoryApi.getInventoryById(id)
-      if (response.success && response.data) {
-        setInventoryItem(response.data as HandlerInventoryItemResponse)
+      const response = await getInventoryById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setInventoryItem(response.data.data as HandlerInventoryItemResponse)
       }
     } catch {
       // Silently fail - header info is supplementary
     }
-  }, [id, inventoryApi])
+  }, [id])
 
   // Fetch warehouse name
   const fetchWarehouseName = useCallback(async () => {
@@ -258,16 +257,16 @@ export default function StockTransactionsPage() {
         params.end_date = formatDateToISO(dateRange[1])
       }
 
-      const response = await inventoryApi.listInventoryTransactionsByItem(id, params)
+      const response = await listInventoryTransactionsByItem(id, params)
 
-      if (response.success && response.data) {
-        setTransactions(response.data as Transaction[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setTransactions(response.data.data as Transaction[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -276,7 +275,7 @@ export default function StockTransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, inventoryApi, state.pagination, state.sort, transactionTypeFilter, dateRange])
+  }, [id, state.pagination, state.sort, transactionTypeFilter, dateRange])
 
   // Fetch inventory item on mount
   useEffect(() => {
