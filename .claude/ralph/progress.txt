@@ -33255,3 +33255,73 @@ After code review, additional fixes were made:
 - TypeScript check (npm run type-check): PASSED
 - No remaining `getInventory` factory pattern in source files
 - All pre-commit hooks passed for all commits
+
+2026-01-28 - RQ-MIG-006: React Query Migration - Categories Module
+
+=== Implementation Details ===
+- Migrated src/pages/catalog/Categories.tsx from factory pattern to React Query hooks
+- Replaced `getCategories` factory import with direct React Query hook imports:
+  - `useGetCategoryTree` - For fetching category tree data
+  - `useCreateCategory` - For creating new categories
+  - `useUpdateCategory` - For updating existing categories
+  - `useDeleteCategory` - For deleting categories
+  - `useActivateCategory` - For activating categories
+  - `useDeactivateCategory` - For deactivating categories
+  - `useMoveCategory` - For drag-and-drop category reordering
+  - `getGetCategoryTreeQueryKey` - For query invalidation
+- Added `useQueryClient` from @tanstack/react-query for cache invalidation
+- Removed unused imports: `useEffect`, `useMemo`
+
+=== Key Changes ===
+**Before (Factory Pattern):**
+```typescript
+import { getCategories } from '@/api/categories/categories'
+const api = useMemo(() => getCategories(), [])
+const response = await api.getCategoryTree()
+if (response.success && response.data) { ... }
+```
+
+**After (React Query Hooks):**
+```typescript
+import { useGetCategoryTree, useCreateCategory, ... } from '@/api/categories/categories'
+import { useQueryClient } from '@tanstack/react-query'
+
+const { data: categoryTreeResponse, isLoading, refetch } = useGetCategoryTree({
+  query: {
+    select: (response) => {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        return response.data.data
+      }
+      return []
+    },
+  },
+})
+
+// Mutations use .mutate() with onSuccess/onError callbacks
+createCategoryMutation.mutate({ data: request }, {
+  onSuccess: (response) => {
+    if (response.status === 201 && response.data.success) { ... }
+  },
+})
+```
+
+=== Response Handling Pattern ===
+- Query responses: `response.status === 200 && response.data.success && response.data.data`
+- Create responses: `response.status === 201 && response.data.success`
+- Delete responses: `response.status === 204`
+- Error responses: `response.data as { error?: { message?: string } }`
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getCategories` factory imports in Categories.tsx
+- All mutation hooks properly configured with callbacks
+
+=== Notes ===
+- Removed manual loading state management (replaced by `isLoading` from useQuery)
+- Removed manual `useEffect` for initial fetch (React Query handles this automatically)
+- Modal loading state now derived from mutation `isPending` states
+- Query invalidation uses `getGetCategoryTreeQueryKey()` for type-safe cache management
+
+=== Next Steps ===
+- Continue with remaining React Query migration tasks
+- Consider adding optimistic updates for better UX in future iterations

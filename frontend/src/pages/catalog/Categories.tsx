@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import {
   Card,
   Typography,
@@ -29,7 +29,17 @@ import {
 } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
-import { getCategories } from '@/api/categories/categories'
+import {
+  useGetCategoryTree,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+  useActivateCategory,
+  useDeactivateCategory,
+  useMoveCategory,
+  getGetCategoryTreeQueryKey,
+} from '@/api/categories/categories'
+import { useQueryClient } from '@tanstack/react-query'
 import type {
   HandlerCategoryTreeNode,
   HandlerCreateCategoryRequest,
@@ -149,12 +159,35 @@ function buildNodeMap(nodes: CategoryNode[]): Map<string, CategoryNode> {
  */
 export default function CategoriesPage() {
   const { t } = useTranslation(['catalog', 'common'])
-  const api = useMemo(() => getCategories(), [])
+  const queryClient = useQueryClient()
 
-  // State for data
-  const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
-  const [loading, setLoading] = useState(false)
-  const [nodeMap, setNodeMap] = useState<Map<string, CategoryNode>>(new Map())
+  // React Query hooks for data fetching
+  const {
+    data: categoryTreeResponse,
+    isLoading: loading,
+    refetch: refetchCategoryTree,
+  } = useGetCategoryTree({
+    query: {
+      select: (response) => {
+        if (response.status === 200 && response.data.success && response.data.data) {
+          return (response.data.data as CategoryNode[]) || []
+        }
+        return []
+      },
+    },
+  })
+
+  // Mutation hooks
+  const createCategoryMutation = useCreateCategory()
+  const updateCategoryMutation = useUpdateCategory()
+  const deleteCategoryMutation = useDeleteCategory()
+  const activateCategoryMutation = useActivateCategory()
+  const deactivateCategoryMutation = useDeactivateCategory()
+  const moveCategoryMutation = useMoveCategory()
+
+  // Derived state from query
+  const categoryTree = useMemo(() => categoryTreeResponse || [], [categoryTreeResponse])
+  const nodeMap = useMemo(() => buildNodeMap(categoryTree), [categoryTree])
 
   // Search state
   const [searchKeyword, setSearchKeyword] = useState('')
@@ -167,7 +200,6 @@ export default function CategoriesPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [editingCategory, setEditingCategory] = useState<CategoryNode | null>(null)
   const [parentCategory, setParentCategory] = useState<CategoryNode | null>(null)
-  const [modalLoading, setModalLoading] = useState(false)
 
   // Detail modal state
   const [detailModalVisible, setDetailModalVisible] = useState(false)
@@ -176,32 +208,13 @@ export default function CategoriesPage() {
   // Form ref
   const formApiRef = useRef<FormApi | null>(null)
 
-  // Fetch category tree
-  const fetchCategoryTree = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await api.getCategoryTree()
+  // Modal loading state from mutations
+  const modalLoading = createCategoryMutation.isPending || updateCategoryMutation.isPending
 
-      if (response.success && response.data) {
-        const tree = (response.data as CategoryNode[]) || []
-        setCategoryTree(tree)
-        setNodeMap(buildNodeMap(tree))
-
-        // Auto-expand first level
-        const rootKeys = tree.map((node) => node.id)
-        setExpandedKeys(rootKeys)
-      }
-    } catch {
-      Toast.error(t('categories.messages.fetchError'))
-    } finally {
-      setLoading(false)
-    }
-  }, [api, t])
-
-  // Fetch on mount
-  useEffect(() => {
-    fetchCategoryTree()
-  }, [fetchCategoryTree])
+  // Invalidate query helper
+  const invalidateCategoryTree = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: getGetCategoryTreeQueryKey() })
+  }, [queryClient])
 
   // Convert to tree data for Semi Tree component
   const treeData = useMemo(() => {
@@ -271,7 +284,6 @@ export default function CategoriesPage() {
     try {
       await formApiRef.current.validate()
       const values = formApiRef.current.getValues()
-      setModalLoading(true)
 
       if (modalMode === 'create') {
         const request: HandlerCreateCategoryRequest = {
@@ -281,39 +293,65 @@ export default function CategoriesPage() {
           parent_id: parentCategory?.id || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : 0,
         }
-        const response = await api.createCategory(request)
-        if (response.success) {
-          Toast.success(t('categories.messages.createSuccess'))
-          setModalVisible(false)
-          fetchCategoryTree()
-        } else {
-          Toast.error(response.error?.message || t('categories.messages.createError'))
-        }
+        createCategoryMutation.mutate(
+          { data: request },
+          {
+            onSuccess: (response) => {
+              if (response.status === 201 && response.data.success) {
+                Toast.success(t('categories.messages.createSuccess'))
+                setModalVisible(false)
+                invalidateCategoryTree()
+              } else {
+                const errorData = response.data as { error?: { message?: string } }
+                Toast.error(errorData.error?.message || t('categories.messages.createError'))
+              }
+            },
+            onError: () => {
+              Toast.error(t('categories.messages.createError'))
+            },
+          }
+        )
       } else if (editingCategory) {
         const request: HandlerUpdateCategoryRequest = {
           name: values.name,
           description: values.description || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : undefined,
         }
-        const response = await api.updateCategory(editingCategory.id, request)
-        if (response.success) {
-          Toast.success(t('categories.messages.updateSuccess'))
-          setModalVisible(false)
-          fetchCategoryTree()
-        } else {
-          Toast.error(response.error?.message || t('categories.messages.updateError'))
-        }
+        updateCategoryMutation.mutate(
+          { id: editingCategory.id, data: request },
+          {
+            onSuccess: (response) => {
+              if (response.status === 200 && response.data.success) {
+                Toast.success(t('categories.messages.updateSuccess'))
+                setModalVisible(false)
+                invalidateCategoryTree()
+              } else {
+                const errorData = response.data as { error?: { message?: string } }
+                Toast.error(errorData.error?.message || t('categories.messages.updateError'))
+              }
+            },
+            onError: () => {
+              Toast.error(t('categories.messages.updateError'))
+            },
+          }
+        )
       }
     } catch {
       // Validation failed
-    } finally {
-      setModalLoading(false)
     }
-  }, [modalMode, editingCategory, parentCategory, api, fetchCategoryTree, t])
+  }, [
+    modalMode,
+    editingCategory,
+    parentCategory,
+    createCategoryMutation,
+    updateCategoryMutation,
+    invalidateCategoryTree,
+    t,
+  ])
 
   // Handle delete category
   const handleDelete = useCallback(
-    async (category: CategoryNode) => {
+    (category: CategoryNode) => {
       if (category.children && category.children.length > 0) {
         Toast.warning(t('categories.messages.hasChildren'))
         return
@@ -326,40 +364,55 @@ export default function CategoriesPage() {
         cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'danger' },
         onOk: async () => {
-          try {
-            await api.deleteCategory(category.id)
-            Toast.success(t('categories.messages.deleteSuccess', { name: category.name }))
-            fetchCategoryTree()
-          } catch {
-            Toast.error(t('categories.messages.deleteError'))
-          }
+          deleteCategoryMutation.mutate(
+            { id: category.id },
+            {
+              onSuccess: (response) => {
+                if (response.status === 204) {
+                  Toast.success(t('categories.messages.deleteSuccess', { name: category.name }))
+                  invalidateCategoryTree()
+                } else {
+                  Toast.error(t('categories.messages.deleteError'))
+                }
+              },
+              onError: () => {
+                Toast.error(t('categories.messages.deleteError'))
+              },
+            }
+          )
         },
       })
     },
-    [api, fetchCategoryTree, t]
+    [deleteCategoryMutation, invalidateCategoryTree, t]
   )
 
   // Handle activate category
   const handleActivate = useCallback(
-    async (category: CategoryNode) => {
-      try {
-        const response = await api.activateCategory(category.id)
-        if (response.success) {
-          Toast.success(t('categories.messages.activateSuccess', { name: category.name }))
-          fetchCategoryTree()
-        } else {
-          Toast.error(response.error?.message || t('categories.messages.activateError'))
+    (category: CategoryNode) => {
+      activateCategoryMutation.mutate(
+        { id: category.id, data: {} },
+        {
+          onSuccess: (response) => {
+            if (response.status === 200 && response.data.success) {
+              Toast.success(t('categories.messages.activateSuccess', { name: category.name }))
+              invalidateCategoryTree()
+            } else {
+              const errorData = response.data as { error?: { message?: string } }
+              Toast.error(errorData.error?.message || t('categories.messages.activateError'))
+            }
+          },
+          onError: () => {
+            Toast.error(t('categories.messages.activateError'))
+          },
         }
-      } catch {
-        Toast.error(t('categories.messages.activateError'))
-      }
+      )
     },
-    [api, fetchCategoryTree, t]
+    [activateCategoryMutation, invalidateCategoryTree, t]
   )
 
   // Handle deactivate category
   const handleDeactivate = useCallback(
-    async (category: CategoryNode) => {
+    (category: CategoryNode) => {
       Modal.confirm({
         title: t('categories.confirm.deactivateTitle'),
         content: t('categories.confirm.deactivateContent', { name: category.name }),
@@ -367,26 +420,32 @@ export default function CategoriesPage() {
         cancelText: t('common:actions.cancel'),
         okButtonProps: { type: 'warning' },
         onOk: async () => {
-          try {
-            const response = await api.deactivateCategory(category.id)
-            if (response.success) {
-              Toast.success(t('categories.messages.deactivateSuccess', { name: category.name }))
-              fetchCategoryTree()
-            } else {
-              Toast.error(response.error?.message || t('categories.messages.deactivateError'))
+          deactivateCategoryMutation.mutate(
+            { id: category.id, data: {} },
+            {
+              onSuccess: (response) => {
+                if (response.status === 200 && response.data.success) {
+                  Toast.success(t('categories.messages.deactivateSuccess', { name: category.name }))
+                  invalidateCategoryTree()
+                } else {
+                  const errorData = response.data as { error?: { message?: string } }
+                  Toast.error(errorData.error?.message || t('categories.messages.deactivateError'))
+                }
+              },
+              onError: () => {
+                Toast.error(t('categories.messages.deactivateError'))
+              },
             }
-          } catch {
-            Toast.error(t('categories.messages.deactivateError'))
-          }
+          )
         },
       })
     },
-    [api, fetchCategoryTree, t]
+    [deactivateCategoryMutation, invalidateCategoryTree, t]
   )
 
   // Handle drag and drop
   const handleDrop = useCallback(
-    async (info: OnDragProps) => {
+    (info: OnDragProps) => {
       const { dragNode, node, dropPosition } = info
       const dragKey = dragNode.key as string
       const dropKey = node.key as string
@@ -408,22 +467,26 @@ export default function CategoriesPage() {
 
       // Only call API if parent changed
       if (dragData.parent_id !== newParentId) {
-        try {
-          const response = await api.moveCategory(dragKey, {
-            parent_id: newParentId,
-          })
-          if (response.success) {
-            Toast.success(t('categories.messages.moveSuccess'))
-            fetchCategoryTree()
-          } else {
-            Toast.error(response.error?.message || t('categories.messages.moveError'))
+        moveCategoryMutation.mutate(
+          { id: dragKey, data: { parent_id: newParentId } },
+          {
+            onSuccess: (response) => {
+              if (response.status === 200 && response.data.success) {
+                Toast.success(t('categories.messages.moveSuccess'))
+                invalidateCategoryTree()
+              } else {
+                const errorData = response.data as { error?: { message?: string } }
+                Toast.error(errorData.error?.message || t('categories.messages.moveError'))
+              }
+            },
+            onError: () => {
+              Toast.error(t('categories.messages.moveError'))
+            },
           }
-        } catch {
-          Toast.error(t('categories.messages.moveError'))
-        }
+        )
       }
     },
-    [api, fetchCategoryTree, nodeMap, t]
+    [moveCategoryMutation, invalidateCategoryTree, nodeMap, t]
   )
 
   // Handle expand change
@@ -521,8 +584,8 @@ export default function CategoriesPage() {
 
   // Refresh handler
   const handleRefresh = useCallback(() => {
-    fetchCategoryTree()
-  }, [fetchCategoryTree])
+    refetchCategoryTree()
+  }, [refetchCategoryTree])
 
   // Expand/collapse all
   const handleExpandAll = useCallback(() => {
