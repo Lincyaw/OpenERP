@@ -26,7 +26,14 @@ import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { PrintButton } from '@/components/printing'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getStockTaking } from '@/api/stock-taking/stock-taking'
+import {
+  getStockTakingById,
+  startCountingStockTaking,
+  recordStockTakingCount,
+  recordCountsStockTaking,
+  submitForApprovalStockTaking,
+  cancelStockTaking,
+} from '@/api/stock-taking/stock-taking'
 import type {
   HandlerStockTakingResponse,
   HandlerStockTakingItemResponse,
@@ -77,7 +84,6 @@ export default function StockTakingExecutePage() {
   const { id } = useParams<{ id: string }>()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
-  const stockTakingApi = useMemo(() => getStockTaking(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -120,12 +126,12 @@ export default function StockTakingExecutePage() {
 
     setLoading(true)
     try {
-      const response = await stockTakingApi.getStockTakingById(id)
-      if (response.success && response.data) {
-        setStockTaking(response.data)
+      const response = await getStockTakingById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setStockTaking(response.data.data)
         // Initialize local items from fetched data
         const newLocalItems = new Map<string, LocalItemState>()
-        response.data.items?.forEach((item) => {
+        response.data.data.items?.forEach((item: HandlerStockTakingItemResponse) => {
           if (item.product_id) {
             // Convert string to number (API may return decimal as string)
             const actualQty =
@@ -151,7 +157,7 @@ export default function StockTakingExecutePage() {
     } finally {
       setLoading(false)
     }
-  }, [id, stockTakingApi, navigate])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchStockTaking()
@@ -167,17 +173,17 @@ export default function StockTakingExecutePage() {
     if (!id) return
 
     try {
-      const response = await stockTakingApi.startStockTaking(id)
-      if (response.success && response.data) {
+      const response = await startCountingStockTaking(id, {})
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(t('stockTaking.execute.messages.startSuccess'))
-        setStockTaking(response.data)
+        setStockTaking(response.data.data)
       } else {
-        Toast.error(response.error?.message || t('stockTaking.execute.messages.startError'))
+        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.startError'))
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.startError'))
     }
-  }, [id, stockTakingApi, t])
+  }, [id, t])
 
   // Handle local quantity change
   const handleQuantityChange = useCallback((productId: string, value: number | string) => {
@@ -230,10 +236,10 @@ export default function StockTakingExecutePage() {
           remark: localItem.remark || undefined,
         }
 
-        const response = await stockTakingApi.recordStockTakingCount(id, request)
-        if (response.success && response.data) {
+        const response = await recordStockTakingCount(id, request)
+        if (response.status === 200 && response.data.success && response.data.data) {
           Toast.success(t('stockTaking.execute.messages.saveSuccess'))
-          setStockTaking(response.data)
+          setStockTaking(response.data.data)
           // Update local item as not dirty
           setLocalItems((prev) => {
             const newMap = new Map(prev)
@@ -247,13 +253,13 @@ export default function StockTakingExecutePage() {
             return newMap
           })
         } else {
-          Toast.error(response.error?.message || t('stockTaking.execute.messages.saveError'))
+          Toast.error(response.data.error?.message || t('stockTaking.execute.messages.saveError'))
         }
       } catch {
         Toast.error(t('stockTaking.execute.messages.saveError'))
       }
     },
-    [id, localItems, stockTakingApi, t]
+    [id, localItems, t]
   )
 
   // Save all dirty items
@@ -277,12 +283,12 @@ export default function StockTakingExecutePage() {
         remark: item.remark || undefined,
       }))
 
-      const response = await stockTakingApi.batchRecordCounts(id, { counts })
-      if (response.success && response.data) {
+      const response = await recordCountsStockTaking(id, { counts })
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(
           t('stockTaking.execute.messages.saveAllSuccess', { count: dirtyItems.length })
         )
-        setStockTaking(response.data)
+        setStockTaking(response.data.data)
         // Clear dirty flags
         setLocalItems((prev) => {
           const newMap = new Map(prev)
@@ -295,14 +301,14 @@ export default function StockTakingExecutePage() {
           return newMap
         })
       } else {
-        Toast.error(response.error?.message || t('stockTaking.execute.messages.saveAllError'))
+        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.saveAllError'))
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.saveAllError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, localItems, stockTakingApi, t])
+  }, [id, localItems, t])
 
   // Handle submit for approval
   const handleSubmitForApproval = useCallback(async () => {
@@ -310,20 +316,20 @@ export default function StockTakingExecutePage() {
 
     setSubmitting(true)
     try {
-      const response = await stockTakingApi.submitStockTaking(id)
-      if (response.success && response.data) {
+      const response = await submitForApprovalStockTaking(id, {})
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(t('stockTaking.execute.messages.submitSuccess'))
-        setStockTaking(response.data)
+        setStockTaking(response.data.data)
         setShowSubmitModal(false)
       } else {
-        Toast.error(response.error?.message || t('stockTaking.execute.messages.submitError'))
+        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.submitError'))
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.submitError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, stockTakingApi, t])
+  }, [id, t])
 
   // Handle cancel
   const handleCancel = useCallback(async () => {
@@ -331,23 +337,23 @@ export default function StockTakingExecutePage() {
 
     setSubmitting(true)
     try {
-      const response = await stockTakingApi.cancelStockTaking(id, {
+      const response = await cancelStockTaking(id, {
         reason: cancelReason || undefined,
       })
-      if (response.success && response.data) {
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(t('stockTaking.execute.messages.cancelSuccess'))
-        setStockTaking(response.data)
+        setStockTaking(response.data.data)
         setShowCancelModal(false)
         setCancelReason('')
       } else {
-        Toast.error(response.error?.message || t('stockTaking.execute.messages.cancelError'))
+        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.cancelError'))
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.cancelError'))
     } finally {
       setSubmitting(false)
     }
-  }, [id, cancelReason, stockTakingApi, t])
+  }, [id, cancelReason, t])
 
   // Calculate local difference for an item
   const calculateDifference = useCallback(

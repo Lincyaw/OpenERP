@@ -33644,3 +33644,79 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-012: React Query Migration - Stock Taking Module
+
+=== Implementation Details ===
+- Migrated 2 files from getStockTaking factory pattern to direct function imports
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+- Fixed implicit 'any' type error by adding explicit type annotation for forEach callback parameter
+
+**Files Updated:**
+1. src/pages/inventory/StockTakingList.tsx
+2. src/pages/inventory/StockTakingExecute.tsx
+
+**Note:** src/pages/inventory/StockTakingCreate.tsx was already migrated (uses createStockTaking, addItemsStockTaking directly)
+
+=== Key Changes ===
+
+**StockTakingList.tsx:**
+- Replaced `getStockTaking` factory with direct import: `listStockTakings`
+- Removed `stockTakingApi` useMemo factory pattern
+- Updated response handling:
+  - `response.status === 200 && response.data.success && response.data.data`
+  - Pagination meta: `response.data.meta` instead of `response.meta`
+
+**StockTakingExecute.tsx:**
+- Replaced `getStockTaking` factory with direct imports:
+  - `getStockTakingById` - fetch stock taking details
+  - `startCountingStockTaking` - start counting process
+  - `recordStockTakingCount` - save single item count
+  - `recordCountsStockTaking` - batch save counts
+  - `submitForApprovalStockTaking` - submit for approval
+  - `cancelStockTaking` - cancel stock taking
+- Removed `stockTakingApi` useMemo factory pattern
+- Updated all response handling to new axios format
+- Fixed implicit 'any' type by adding `HandlerStockTakingItemResponse` type annotation to forEach callback
+- Added empty object `{}` as required body parameter for `startCountingStockTaking` and `submitForApprovalStockTaking`
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const stockTakingApi = useMemo(() => getStockTaking(), [])
+const response = await stockTakingApi.getStockTakingById(id)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { getStockTakingById } from '@/api/stock-taking/stock-taking'
+const response = await getStockTakingById(id)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== API Method Mapping ===
+| Old Factory Method | New Direct Import |
+|---|---|
+| stockTakingApi.listStockTakings() | listStockTakings() |
+| stockTakingApi.getStockTakingById() | getStockTakingById() |
+| stockTakingApi.startStockTaking() | startCountingStockTaking() |
+| stockTakingApi.recordStockTakingCount() | recordStockTakingCount() |
+| stockTakingApi.batchRecordCounts() | recordCountsStockTaking() |
+| stockTakingApi.submitStockTaking() | submitForApprovalStockTaking() |
+| stockTakingApi.cancelStockTaking() | cancelStockTaking() |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getStockTaking` factory imports in affected files
+- All API calls properly updated to new response format
+- Implicit 'any' type error fixed with explicit type annotation
+
+=== Notes ===
+- Status codes: 200 for GET/PUT/POST actions, 201 for POST create, 204 for DELETE
+- Error responses accessed via `response.data.error?.message`
+- Some API functions require empty object `{}` as body parameter even when no data is needed
+- Removed unused `useMemo` import from StockTakingList.tsx (no longer needed for factory)
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

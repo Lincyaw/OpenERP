@@ -12,7 +12,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getStockTaking } from '@/api/stock-taking/stock-taking'
+import { listStockTakings } from '@/api/stock-taking/stock-taking'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerStockTakingListResponse,
@@ -65,7 +65,6 @@ export default function StockTakingListPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
-  const stockTakingApi = useMemo(() => getStockTaking(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -149,16 +148,16 @@ export default function StockTakingListPage() {
         order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as ListStockTakingsOrderDir,
       }
 
-      const response = await stockTakingApi.listStockTakings(params)
+      const response = await listStockTakings(params)
 
-      if (response.success && response.data) {
-        setStockTakingList(response.data as StockTakingItem[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setStockTakingList(response.data.data as StockTakingItem[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -168,13 +167,13 @@ export default function StockTakingListPage() {
       setLoading(false)
     }
   }, [
-    stockTakingApi,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
     searchKeyword,
     warehouseFilter,
     statusFilter,
+    t,
   ])
 
   // Fetch warehouses on mount

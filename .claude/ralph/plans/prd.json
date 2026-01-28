@@ -9868,7 +9868,7 @@
       "- Implicit any type errors fixed",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/inventory/StockTakingCreate.tsx",
       "src/pages/inventory/StockTakingExecute.tsx",
