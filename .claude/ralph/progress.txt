@@ -36269,3 +36269,88 @@ Acceptance Criteria Verified:
 - Continue with LOADGEN-008 or other remaining tasks
 - Integration with the workflow executor component
 ================================================================================
+
+2026-01-29 - LOADGEN-008: 请求构建器实现 (RequestBuilder Implementation)
+
+=== Task Summary ===
+Implemented the RequestBuilder for the LoadGen tool with comprehensive support for
+building HTTP requests from EndpointUnit configurations using parameters from the pool.
+
+=== Implementation Details ===
+
+1. Extended RequestBuilder Types (request.go)
+   - InputPin - Rich typed input parameter with location, type, schema, JSONPath
+   - SchemaInfo - Schema information for complex body structures  
+   - ExtendedEndpointUnit - Endpoint with typed InputPins for explicit parameter handling
+
+2. Core RequestBuilder Methods Enhanced
+   - BuildRequestFromExtended() - Builds HTTP request from ExtendedEndpointUnit
+   - buildPathFromPins() - Path parameter replacement with {param} and :param support
+   - buildQueryFromPins() - Query string construction with array value support
+   - buildBodyFromPins() - JSON body construction with nested object/array support
+   - getValueForPin() - Value retrieval from pool with fallback to defaults
+
+3. Complex Body Structure Support
+   - setNestedValue() - Sets values at nested JSON paths like "shipping.address.city"
+   - parseJSONPath() - Parses paths like "items[0].product_id" into components
+   - applySchemaDefaults() - Applies default values from schema definitions
+   - Support for nested objects, arrays, and deeply nested paths
+
+4. Sales Order Specific Implementation
+   - BuildSalesOrderFromPool() - Builds complete POST /trade/sales-orders request
+   - buildOrderItems() - Constructs order items array from pool values
+   - buildShippingAddress() - Builds shipping address from individual components
+
+5. Test Files Created
+   - request_extended_test.go - Comprehensive tests for extended functionality
+     - Path parameter tests (single, multiple, special chars, colon-style)
+     - Query parameter tests (single, multiple, optional, required)
+     - Header parameter tests (auth headers, custom headers)
+     - Body parameter tests (simple, numeric, nested, arrays)
+     - Sales order acceptance tests
+     - JSON path parsing tests
+     - Schema defaults tests
+
+=== Key Files Modified ===
+- tools/loadgen/internal/executor/request.go - Extended with ~750 lines of new code
+- tools/loadgen/internal/executor/request_extended_test.go - NEW (58 tests)
+
+=== Verification ===
+
+Test Results:
+- All 58 executor tests pass (100% pass rate)
+- Coverage: 83.4% (above 80% requirement)
+
+Test Commands:
+- go test ./internal/executor/... -v -count=1
+- go test ./internal/executor/... -coverprofile=coverage.out
+
+Acceptance Criteria Verified:
+✅ 实现 internal/executor/request.go RequestBuilder - Extended implementation complete
+✅ 根据 EndpointUnit 的 InputPins 构建请求 - BuildRequestFromExtended handles rich InputPins
+✅ path 参数替换到 URL 中 - buildPathFromPins with {param} and :param support
+✅ query 参数添加到查询字符串 - buildQueryFromPins with array value support
+✅ body 参数设置到 JSON body - buildBodyFromPins with nested structure support
+✅ header 参数设置到请求头 - Header pins properly handled
+✅ 从 ParameterPool 获取参数值填充请求 - getValueForPin with fallbacks
+✅ 支持复杂 body 结构（嵌套对象、数组） - setNestedValue, parseJSONPath
+✅ 编写测试覆盖各种参数组合 - 58 comprehensive tests
+✅ 验收标准：正确构建 POST /trade/sales-orders 请求 - TestAcceptanceCriteria_SalesOrderRequest
+
+=== Code Review Results ===
+- Approval Status: APPROVED with minor suggestions
+- No CRITICAL issues found
+- One HIGH issue fixed (missing file newline)
+- Several MEDIUM suggestions noted for future optimization
+
+=== Notes ===
+- The implementation supports both simple circuit.SemanticType[] InputPins (existing)
+  and rich executor.InputPin[] with explicit locations (new ExtendedEndpointUnit)
+- JSONPath parsing supports nested objects (a.b.c) and arrays (items[0].name)
+- buildShippingAddress() can accept either structured address or individual fields
+- The BuildSalesOrderFromPool() demonstrates building complex nested requests
+
+=== Next Steps ===
+- Continue with LOADGEN-009 (ProducerChainGuard) or other remaining tasks
+- Integration with workflow executor for end-to-end request execution
+================================================================================

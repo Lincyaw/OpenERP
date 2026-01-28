@@ -7742,7 +7742,7 @@
       "编写测试覆盖各种参数组合",
       "验收标准：正确构建 POST /trade/sales-orders 请求"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-009",
