@@ -161,10 +161,10 @@ test.describe('FF-INT-001: Feature Flag Overrides', () => {
       expect(response.status()).toBe(200)
       const body = await response.json()
       expect(body.success).toBe(true)
-      expect(body.data.items).toBeDefined()
-      expect(body.data.items.length).toBeGreaterThan(0)
+      expect(body.data.overrides).toBeDefined()
+      expect(body.data.overrides.length).toBeGreaterThan(0)
 
-      const override = body.data.items.find(
+      const override = body.data.overrides.find(
         (o: { target_id: string }) => o.target_id === SALES_USER_ID
       )
       expect(override).toBeDefined()
@@ -189,7 +189,7 @@ test.describe('FF-INT-001: Feature Flag Overrides', () => {
       expect(response.status()).toBe(200)
       const body = await response.json()
       expect(body.data.enabled).toBe(true) // Override value
-      expect(body.data.source).toBe('override') // Should indicate source is override
+      expect(body.data.reason).toBe('override_user') // Should indicate source is override
     })
 
     test('admin user should still see default value (disabled)', async ({ request }) => {

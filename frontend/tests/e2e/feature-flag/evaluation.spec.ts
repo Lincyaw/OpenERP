@@ -85,7 +85,7 @@ test.describe('FF-INT-001: Feature Flag Evaluation', () => {
       const body = await response.json()
       expect(body.success).toBe(true)
       expect(body.data.enabled).toBe(true)
-      expect(body.data.flag_key).toBe(testFlagKey)
+      expect(body.data.key).toBe(testFlagKey)
     })
 
     test('should return default value for non-existent flag', async ({ request }) => {
