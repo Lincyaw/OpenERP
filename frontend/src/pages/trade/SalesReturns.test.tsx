@@ -21,11 +21,18 @@ import { Toast, Modal } from '@douyinfe/semi-ui-19'
 
 // Mock the API modules
 vi.mock('@/api/sales-returns/sales-returns', () => ({
-  getSalesReturns: vi.fn(),
+  listSalesReturns: vi.fn(),
+  deleteSalesReturn: vi.fn(),
+  submitSalesReturn: vi.fn(),
+  approveSalesReturn: vi.fn(),
+  rejectSalesReturn: vi.fn(),
+  completeSalesReturn: vi.fn(),
+  receiveSalesReturn: vi.fn(),
+  cancelSalesReturn: vi.fn(),
 }))
 
 vi.mock('@/api/customers/customers', () => ({
-  getCustomers: vi.fn(),
+  listCustomers: vi.fn(),
 }))
 
 // Mock react-router-dom's useNavigate
@@ -159,73 +166,75 @@ const mockSalesReturns = [
   },
 ]
 
-// Mock API response helpers
-const createMockReturnListResponse = (
-  returns = mockSalesReturns,
-  total = mockSalesReturns.length
-) => ({
-  success: true,
-  data: returns,
-  meta: {
-    total,
-    page: 1,
-    page_size: 20,
-    total_pages: Math.ceil(total / 20),
-  },
-})
-
-const createMockCustomerListResponse = (customers = mockCustomers) => ({
-  success: true,
-  data: customers,
-  meta: {
-    total: customers.length,
-    page: 1,
-    page_size: 100,
-    total_pages: 1,
-  },
-})
-
 describe('SalesReturnsPage', () => {
-  let mockSalesReturnApiInstance: {
-    listSalesReturns: ReturnType<typeof vi.fn>
-    postTradeSalesReturnsIdSubmit: ReturnType<typeof vi.fn>
-    postTradeSalesReturnsIdApprove: ReturnType<typeof vi.fn>
-    postTradeSalesReturnsIdReject: ReturnType<typeof vi.fn>
-    postTradeSalesReturnsIdComplete: ReturnType<typeof vi.fn>
-    postTradeSalesReturnsIdCancel: ReturnType<typeof vi.fn>
-    deleteTradeSalesReturnsId: ReturnType<typeof vi.fn>
-  }
-
-  let mockCustomerApiInstance: {
-    listCustomers: ReturnType<typeof vi.fn>
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
 
-    // Setup mock sales return API
-    mockSalesReturnApiInstance = {
-      listSalesReturns: vi.fn().mockResolvedValue(createMockReturnListResponse()),
-      postTradeSalesReturnsIdSubmit: vi.fn().mockResolvedValue({ success: true }),
-      postTradeSalesReturnsIdApprove: vi.fn().mockResolvedValue({ success: true }),
-      postTradeSalesReturnsIdReject: vi.fn().mockResolvedValue({ success: true }),
-      postTradeSalesReturnsIdComplete: vi.fn().mockResolvedValue({ success: true }),
-      postTradeSalesReturnsIdCancel: vi.fn().mockResolvedValue({ success: true }),
-      deleteTradeSalesReturnsId: vi.fn().mockResolvedValue({ success: true }),
-    }
+    // Setup mock sales return API responses
+    vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValue({
+      status: 200,
+      data: {
+        success: true,
+        data: mockSalesReturns,
+        meta: {
+          total: mockSalesReturns.length,
+          page: 1,
+          page_size: 20,
+          total_pages: 1,
+        },
+      },
+    } as never)
+
+    vi.mocked(salesReturnsApi.submitSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.approveSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.rejectSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.completeSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.receiveSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.cancelSalesReturn).mockResolvedValue({
+      status: 200,
+      data: { success: true },
+    } as never)
+
+    vi.mocked(salesReturnsApi.deleteSalesReturn).mockResolvedValue({
+      status: 204,
+      data: { success: true },
+    } as never)
 
     // Setup mock customer API
-    mockCustomerApiInstance = {
-      listCustomers: vi.fn().mockResolvedValue(createMockCustomerListResponse()),
-    }
-
-    vi.mocked(salesReturnsApi.getSalesReturns).mockReturnValue(
-      mockSalesReturnApiInstance as unknown as ReturnType<typeof salesReturnsApi.getSalesReturns>
-    )
-    vi.mocked(customersApi.getCustomers).mockReturnValue(
-      mockCustomerApiInstance as unknown as ReturnType<typeof customersApi.getCustomers>
-    )
+    vi.mocked(customersApi.listCustomers).mockResolvedValue({
+      status: 200,
+      data: {
+        success: true,
+        data: mockCustomers,
+        meta: {
+          total: mockCustomers.length,
+          page: 1,
+          page_size: 100,
+          total_pages: 1,
+        },
+      },
+    } as never)
   })
 
   describe('Page Layout', () => {
@@ -276,7 +285,7 @@ describe('SalesReturnsPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockSalesReturnApiInstance.listSalesReturns).toHaveBeenCalled()
+        expect(salesReturnsApi.listSalesReturns).toHaveBeenCalled()
       })
 
       // Verify return numbers are displayed
@@ -505,9 +514,7 @@ describe('SalesReturnsPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when return list API fails', async () => {
-      mockSalesReturnApiInstance.listSalesReturns.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
@@ -517,14 +524,24 @@ describe('SalesReturnsPage', () => {
     })
 
     it('should handle empty return list gracefully', async () => {
-      mockSalesReturnApiInstance.listSalesReturns.mockResolvedValueOnce(
-        createMockReturnListResponse([], 0)
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValueOnce({
+        status: 200,
+        data: {
+          success: true,
+          data: [],
+          meta: {
+            total: 0,
+            page: 1,
+            page_size: 20,
+            total_pages: 0,
+          },
+        },
+      } as never)
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
       await waitFor(() => {
-        expect(mockSalesReturnApiInstance.listSalesReturns).toHaveBeenCalled()
+        expect(salesReturnsApi.listSalesReturns).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -532,7 +549,7 @@ describe('SalesReturnsPage', () => {
     })
 
     it('should handle customer API failure gracefully', async () => {
-      mockCustomerApiInstance.listCustomers.mockRejectedValueOnce(new Error('Network error'))
+      vi.mocked(customersApi.listCustomers).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
@@ -548,7 +565,7 @@ describe('SalesReturnsPage', () => {
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
       await waitFor(() => {
-        expect(mockSalesReturnApiInstance.listSalesReturns).toHaveBeenCalledWith(
+        expect(salesReturnsApi.listSalesReturns).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -561,7 +578,7 @@ describe('SalesReturnsPage', () => {
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
       await waitFor(() => {
-        expect(mockSalesReturnApiInstance.listSalesReturns).toHaveBeenCalledWith(
+        expect(salesReturnsApi.listSalesReturns).toHaveBeenCalledWith(
           expect.objectContaining({
             order_by: 'created_at',
             order_dir: 'desc',
@@ -574,7 +591,7 @@ describe('SalesReturnsPage', () => {
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
       await waitFor(() => {
-        expect(mockCustomerApiInstance.listCustomers).toHaveBeenCalledWith(
+        expect(customersApi.listCustomers).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
           })
@@ -592,13 +609,13 @@ describe('SalesReturnsPage', () => {
       })
 
       // Clear mock to track new call
-      mockSalesReturnApiInstance.listSalesReturns.mockClear()
+      vi.mocked(salesReturnsApi.listSalesReturns).mockClear()
 
       const refreshButton = screen.getByText('刷新')
       await user.click(refreshButton)
 
       await waitFor(() => {
-        expect(mockSalesReturnApiInstance.listSalesReturns).toHaveBeenCalled()
+        expect(salesReturnsApi.listSalesReturns).toHaveBeenCalled()
       })
     })
   })
@@ -611,9 +628,19 @@ describe('SalesReturnsPage', () => {
         status: 'DRAFT',
       }
 
-      mockSalesReturnApiInstance.listSalesReturns.mockResolvedValueOnce(
-        createMockReturnListResponse([draftReturn], 1)
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValueOnce({
+        status: 200,
+        data: {
+          success: true,
+          data: [draftReturn],
+          meta: {
+            total: 1,
+            page: 1,
+            page_size: 20,
+            total_pages: 1,
+          },
+        },
+      } as never)
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
@@ -634,9 +661,19 @@ describe('SalesReturnsPage', () => {
         status: 'PENDING',
       }
 
-      mockSalesReturnApiInstance.listSalesReturns.mockResolvedValueOnce(
-        createMockReturnListResponse([pendingReturn], 1)
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValueOnce({
+        status: 200,
+        data: {
+          success: true,
+          data: [pendingReturn],
+          meta: {
+            total: 1,
+            page: 1,
+            page_size: 20,
+            total_pages: 1,
+          },
+        },
+      } as never)
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
@@ -659,9 +696,19 @@ describe('SalesReturnsPage', () => {
         status: 'APPROVED',
       }
 
-      mockSalesReturnApiInstance.listSalesReturns.mockResolvedValueOnce(
-        createMockReturnListResponse([approvedReturn], 1)
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValueOnce({
+        status: 200,
+        data: {
+          success: true,
+          data: [approvedReturn],
+          meta: {
+            total: 1,
+            page: 1,
+            page_size: 20,
+            total_pages: 1,
+          },
+        },
+      } as never)
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 
@@ -683,9 +730,19 @@ describe('SalesReturnsPage', () => {
         status: 'COMPLETED',
       }
 
-      mockSalesReturnApiInstance.listSalesReturns.mockResolvedValueOnce(
-        createMockReturnListResponse([completedReturn], 1)
-      )
+      vi.mocked(salesReturnsApi.listSalesReturns).mockResolvedValueOnce({
+        status: 200,
+        data: {
+          success: true,
+          data: [completedReturn],
+          meta: {
+            total: 1,
+            page: 1,
+            page_size: 20,
+            total_pages: 1,
+          },
+        },
+      } as never)
 
       renderWithProviders(<SalesReturnsPage />, { route: '/trade/sales-returns' })
 

@@ -33518,3 +33518,73 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2026-01-28 - RQ-MIG-010: React Query Migration - Sales Returns Module
+
+=== Implementation Details ===
+- Migrated 4 files from getSalesReturns factory pattern to direct function imports
+- Updated 1 test file to match new API mocking pattern
+
+**Files Updated:**
+1. src/pages/trade/SalesReturns.tsx
+2. src/pages/trade/SalesReturnDetail.tsx
+3. src/pages/trade/SalesReturnApproval.tsx
+4. src/features/trade/SalesReturnForm.tsx
+5. src/pages/trade/SalesReturns.test.tsx
+
+=== Key Changes ===
+
+**SalesReturns.tsx:**
+- Replaced `getSalesReturns` factory with direct imports: `listSalesReturns`, `deleteSalesReturn`, `submitSalesReturn`, `approveSalesReturn`, `rejectSalesReturn`, `completeSalesReturn`, `receiveSalesReturn`, `cancelSalesReturn`
+- Removed `salesReturnApi` useMemo factory pattern
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+- Removed `useMemo` import as it's no longer needed
+
+**SalesReturnDetail.tsx:**
+- Replaced `getSalesReturns` factory with direct imports: `getSalesReturnById`, `submitSalesReturn`, `approveSalesReturn`, `rejectSalesReturn`, `completeSalesReturn`, `receiveSalesReturn`, `cancelSalesReturn`
+- Removed `salesReturnApi` useMemo factory pattern
+- Updated response handling to new axios format
+
+**SalesReturnApproval.tsx:**
+- Replaced `getSalesReturns` factory with direct imports: `listSalesReturns`, `getSalesReturnById`, `approveSalesReturn`, `rejectSalesReturn`
+- Removed `salesReturnApi` useMemo factory pattern
+- Updated response handling to new axios format
+
+**SalesReturnForm.tsx:**
+- Replaced `getSalesReturns` factory with direct import: `createSalesReturn`
+- Removed `salesReturnApi` useMemo factory pattern
+- Updated response handling: check `response.status !== 201` for create operations
+
+**SalesReturns.test.tsx:**
+- Updated mock setup from factory pattern to direct function mocks
+- Changed from `vi.mocked(salesReturnsApi.getSalesReturns).mockReturnValue(...)` to individual function mocks
+- Updated response format to match new axios response structure with `status` and `data` wrapper
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const salesReturnApi = useMemo(() => getSalesReturns(), [])
+const response = await salesReturnApi.listSalesReturns(params)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { listSalesReturns } from '@/api/sales-returns/sales-returns'
+const response = await listSalesReturns(params)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getSalesReturns` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Removed unused `useMemo` imports where applicable
+- Status codes: 200 for GET/PUT, 201 for POST create, 204 for DELETE
+- Error responses accessed via `response.data.error?.message`
+- Test file updated to use direct function mocks instead of factory instance mocks
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

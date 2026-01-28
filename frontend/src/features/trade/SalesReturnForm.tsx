@@ -18,7 +18,7 @@ import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
-import { getSalesReturns } from '@/api/sales-returns/sales-returns'
+import { createSalesReturn } from '@/api/sales-returns/sales-returns'
 import { listSalesOrders, getSalesOrderById } from '@/api/sales-orders/sales-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
@@ -140,8 +140,6 @@ export function SalesReturnForm() {
   )
 
   const returnFormSchema = useMemo(() => createReturnFormSchema(t), [t])
-
-  const salesReturnApi = useMemo(() => getSalesReturns(), [])
 
   // Form state
   const [formData, setFormData] = useState<ReturnFormData>({
@@ -467,7 +465,7 @@ export function SalesReturnForm() {
         (item) => item.selected && item.return_quantity > 0
       )
 
-      const response = await salesReturnApi.createSalesReturn({
+      const response = await createSalesReturn({
         sales_order_id: formData.sales_order_id,
         warehouse_id: formData.warehouse_id,
         reason: formData.reason,
@@ -480,8 +478,8 @@ export function SalesReturnForm() {
         })),
       })
 
-      if (!response.success) {
-        throw new Error(response.error?.message || t('salesReturnForm.messages.createFailed'))
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('salesReturnForm.messages.createFailed'))
       }
 
       Toast.success(t('salesReturnForm.messages.createSuccess'))
@@ -493,7 +491,7 @@ export function SalesReturnForm() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, salesReturnApi, navigate, validateForm, t])
+  }, [formData, navigate, validateForm, t])
 
   // Handle cancel
   const handleCancel = useCallback(() => {

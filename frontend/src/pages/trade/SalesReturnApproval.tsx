@@ -20,7 +20,12 @@ import {
 import { IconArrowLeft, IconTick, IconClose, IconSearch, IconRefresh } from '@douyinfe/semi-icons'
 import { useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
-import { getSalesReturns } from '@/api/sales-returns/sales-returns'
+import {
+  listSalesReturns,
+  getSalesReturnById,
+  approveSalesReturn,
+  rejectSalesReturn,
+} from '@/api/sales-returns/sales-returns'
 import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesReturnResponse,
@@ -105,7 +110,6 @@ function formatDateTime(dateStr?: string): string {
  */
 export default function SalesReturnApprovalPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const salesReturnApi = useMemo(() => getSalesReturns(), [])
 
   // View mode: 'list' or 'detail'
   const [viewMode, setViewMode] = useState<'list' | 'detail'>(
@@ -171,40 +175,37 @@ export default function SalesReturnApprovalPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await salesReturnApi.listSalesReturns(params)
-      if (response.success && response.data) {
-        setReturnList(response.data)
+      const response = await listSalesReturns(params)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setReturnList(response.data.data)
       }
     } catch {
       Toast.error('获取待审批列表失败')
     } finally {
       setListLoading(false)
     }
-  }, [salesReturnApi, searchKeyword, customerFilter, dateRange])
+  }, [searchKeyword, customerFilter, dateRange])
 
   // Fetch return detail
-  const fetchReturnDetail = useCallback(
-    async (id: string) => {
-      setDetailLoading(true)
-      try {
-        const response = await salesReturnApi.getSalesReturnById(id)
-        if (response.success && response.data) {
-          setSelectedReturn(response.data)
-        } else {
-          Toast.error('退货单不存在')
-          setViewMode('list')
-          setSelectedReturnId(null)
-        }
-      } catch {
-        Toast.error('获取退货单详情失败')
+  const fetchReturnDetail = useCallback(async (id: string) => {
+    setDetailLoading(true)
+    try {
+      const response = await getSalesReturnById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSelectedReturn(response.data.data)
+      } else {
+        Toast.error('退货单不存在')
         setViewMode('list')
         setSelectedReturnId(null)
-      } finally {
-        setDetailLoading(false)
       }
-    },
-    [salesReturnApi]
-  )
+    } catch {
+      Toast.error('获取退货单详情失败')
+      setViewMode('list')
+      setSelectedReturnId(null)
+    } finally {
+      setDetailLoading(false)
+    }
+  }, [])
 
   // Initial fetch
   useEffect(() => {
@@ -260,7 +261,7 @@ export default function SalesReturnApprovalPage() {
 
     setActionLoading(true)
     try {
-      await salesReturnApi.approveSalesReturn(selectedReturn.id, {
+      await approveSalesReturn(selectedReturn.id, {
         note: approvalNote || undefined,
       })
       Toast.success(`退货单 "${selectedReturn.return_number}" 已审批通过`)
@@ -271,7 +272,7 @@ export default function SalesReturnApprovalPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [selectedReturn, salesReturnApi, approvalNote, handleBackToList])
+  }, [selectedReturn, approvalNote, handleBackToList])
 
   // Handle reject confirm
   const handleRejectConfirm = useCallback(async () => {
@@ -284,7 +285,7 @@ export default function SalesReturnApprovalPage() {
 
     setActionLoading(true)
     try {
-      await salesReturnApi.rejectSalesReturn(selectedReturn.id, {
+      await rejectSalesReturn(selectedReturn.id, {
         reason: rejectionReason,
       })
       Toast.success(`退货单 "${selectedReturn.return_number}" 已拒绝`)
@@ -295,7 +296,7 @@ export default function SalesReturnApprovalPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [selectedReturn, salesReturnApi, rejectionReason, handleBackToList])
+  }, [selectedReturn, rejectionReason, handleBackToList])
 
   // Handle search
   const handleSearch = useCallback((value: string) => {

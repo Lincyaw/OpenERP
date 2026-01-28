@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Card,
   Typography,
@@ -20,7 +20,16 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getSalesReturns } from '@/api/sales-returns/sales-returns'
+import {
+  listSalesReturns,
+  deleteSalesReturn,
+  submitSalesReturn,
+  approveSalesReturn,
+  rejectSalesReturn,
+  completeSalesReturn,
+  receiveSalesReturn,
+  cancelSalesReturn,
+} from '@/api/sales-returns/sales-returns'
 import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesReturnListResponse,
@@ -83,7 +92,6 @@ export default function SalesReturnsPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate } = useFormatters()
-  const salesReturnApi = useMemo(() => getSalesReturns(), [])
 
   // State for data
   const [returnList, setReturnList] = useState<SalesReturn[]>([])
@@ -168,16 +176,16 @@ export default function SalesReturnsPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await salesReturnApi.listSalesReturns(params)
+      const response = await listSalesReturns(params)
 
-      if (response.success && response.data) {
-        setReturnList(response.data as SalesReturn[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setReturnList(response.data.data as SalesReturn[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -187,7 +195,6 @@ export default function SalesReturnsPage() {
       setLoading(false)
     }
   }, [
-    salesReturnApi,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -262,7 +269,7 @@ export default function SalesReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesReturnApi.submitSalesReturn(returnItem.id!)
+            await submitSalesReturn(returnItem.id!)
             Toast.success(t('salesReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {
@@ -271,7 +278,7 @@ export default function SalesReturnsPage() {
         },
       })
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle approve return
@@ -285,7 +292,7 @@ export default function SalesReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesReturnApi.approveSalesReturn(returnItem.id!, { note: '' })
+            await approveSalesReturn(returnItem.id!, { note: '' })
             Toast.success(t('salesReturn.messages.approveSuccess'))
             fetchReturns()
           } catch {
@@ -294,7 +301,7 @@ export default function SalesReturnsPage() {
         },
       })
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle reject return
@@ -309,7 +316,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.rejectSalesReturn(returnItem.id!, {
+            await rejectSalesReturn(returnItem.id!, {
               reason: t('salesReturn.actions.reject'),
             })
             Toast.success(t('salesReturn.messages.rejectSuccess'))
@@ -320,7 +327,7 @@ export default function SalesReturnsPage() {
         },
       })
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle complete return
@@ -328,14 +335,14 @@ export default function SalesReturnsPage() {
     async (returnItem: SalesReturn) => {
       if (!returnItem.id) return
       try {
-        await salesReturnApi.completeSalesReturn(returnItem.id!, {})
+        await completeSalesReturn(returnItem.id!, {})
         Toast.success(t('salesReturn.messages.completeSuccess'))
         fetchReturns()
       } catch {
         Toast.error(t('salesReturn.messages.completeError'))
       }
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle receive returned goods (start receiving)
@@ -343,14 +350,14 @@ export default function SalesReturnsPage() {
     async (returnItem: SalesReturn) => {
       if (!returnItem.id) return
       try {
-        await salesReturnApi.receiveSalesReturn(returnItem.id!, {})
+        await receiveSalesReturn(returnItem.id!, {})
         Toast.success(t('salesReturn.messages.receiveSuccess'))
         fetchReturns()
       } catch {
         Toast.error(t('salesReturn.messages.receiveError'))
       }
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle cancel return
@@ -365,7 +372,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.cancelSalesReturn(returnItem.id!, {
+            await cancelSalesReturn(returnItem.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(t('salesReturn.messages.cancelSuccess'))
@@ -376,7 +383,7 @@ export default function SalesReturnsPage() {
         },
       })
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle delete return
@@ -391,7 +398,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.deleteSalesReturn(returnItem.id!)
+            await deleteSalesReturn(returnItem.id!)
             Toast.success(t('salesReturn.messages.deleteSuccess'))
             fetchReturns()
           } catch {
@@ -400,7 +407,7 @@ export default function SalesReturnsPage() {
         },
       })
     },
-    [salesReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle view return

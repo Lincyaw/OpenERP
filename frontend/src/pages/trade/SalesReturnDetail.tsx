@@ -18,7 +18,15 @@ import { IconArrowLeft, IconEdit, IconTick, IconClose, IconSend } from '@douyinf
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { PrintButton } from '@/components/printing'
-import { getSalesReturns } from '@/api/sales-returns/sales-returns'
+import {
+  getSalesReturnById,
+  submitSalesReturn,
+  approveSalesReturn,
+  rejectSalesReturn,
+  completeSalesReturn,
+  receiveSalesReturn,
+  cancelSalesReturn,
+} from '@/api/sales-returns/sales-returns'
 import type { HandlerSalesReturnResponse, HandlerSalesReturnItemResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -66,7 +74,6 @@ export default function SalesReturnDetailPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDateTime } = useFormatters()
-  const salesReturnApi = useMemo(() => getSalesReturns(), [])
 
   const [returnData, setReturnData] = useState<HandlerSalesReturnResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -86,9 +93,9 @@ export default function SalesReturnDetailPage() {
 
     setLoading(true)
     try {
-      const response = await salesReturnApi.getSalesReturnById(id)
-      if (response.success && response.data) {
-        setReturnData(response.data)
+      const response = await getSalesReturnById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setReturnData(response.data.data)
       } else {
         Toast.error(t('salesReturnDetail.messages.notExist'))
         navigate('/trade/sales-returns')
@@ -99,7 +106,7 @@ export default function SalesReturnDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, salesReturnApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchReturn()
@@ -116,7 +123,7 @@ export default function SalesReturnDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesReturnApi.submitSalesReturn(returnData.id!)
+          await submitSalesReturn(returnData.id!)
           Toast.success(t('salesReturn.messages.submitSuccess'))
           fetchReturn()
         } catch {
@@ -126,14 +133,14 @@ export default function SalesReturnDetailPage() {
         }
       },
     })
-  }, [returnData, salesReturnApi, fetchReturn, t])
+  }, [returnData, fetchReturn, t])
 
   // Handle approve return
   const handleApprove = useCallback(async () => {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.approveSalesReturn(returnData.id, { note: approvalNote })
+      await approveSalesReturn(returnData.id, { note: approvalNote })
       Toast.success(t('salesReturn.messages.approveSuccess'))
       setApproveModalVisible(false)
       setApprovalNote('')
@@ -143,7 +150,7 @@ export default function SalesReturnDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [returnData, salesReturnApi, fetchReturn, approvalNote, t])
+  }, [returnData, fetchReturn, approvalNote, t])
 
   // Handle reject return
   const handleReject = useCallback(async () => {
@@ -154,7 +161,7 @@ export default function SalesReturnDetailPage() {
     }
     setActionLoading(true)
     try {
-      await salesReturnApi.rejectSalesReturn(returnData.id, { reason: rejectReason })
+      await rejectSalesReturn(returnData.id, { reason: rejectReason })
       Toast.success(t('salesReturn.messages.rejectSuccess'))
       setRejectModalVisible(false)
       setRejectReason('')
@@ -164,7 +171,7 @@ export default function SalesReturnDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [returnData, salesReturnApi, fetchReturn, rejectReason, t])
+  }, [returnData, fetchReturn, rejectReason, t])
 
   // Handle complete return
   const handleComplete = useCallback(async () => {
@@ -177,7 +184,7 @@ export default function SalesReturnDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesReturnApi.completeSalesReturn(returnData.id!, {})
+          await completeSalesReturn(returnData.id!, {})
           Toast.success(t('salesReturn.messages.completeSuccess'))
           fetchReturn()
         } catch {
@@ -187,14 +194,14 @@ export default function SalesReturnDetailPage() {
         }
       },
     })
-  }, [returnData, salesReturnApi, fetchReturn, t])
+  }, [returnData, fetchReturn, t])
 
   // Handle receive returned goods (start receiving)
   const handleReceive = useCallback(async () => {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.receiveSalesReturn(returnData.id!, {})
+      await receiveSalesReturn(returnData.id!, {})
       Toast.success(t('salesReturn.messages.receiveSuccess'))
       fetchReturn()
     } catch {
@@ -202,14 +209,14 @@ export default function SalesReturnDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [returnData, salesReturnApi, fetchReturn, t])
+  }, [returnData, fetchReturn, t])
 
   // Handle cancel return
   const handleCancel = useCallback(async () => {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.cancelSalesReturn(returnData.id, {
+      await cancelSalesReturn(returnData.id, {
         reason: cancelReason || t('common.userCancel'),
       })
       Toast.success(t('salesReturn.messages.cancelSuccess'))
@@ -221,7 +228,7 @@ export default function SalesReturnDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [returnData, salesReturnApi, fetchReturn, cancelReason, t])
+  }, [returnData, fetchReturn, cancelReason, t])
 
   // Handle edit return
   const handleEdit = useCallback(() => {
