@@ -32489,3 +32489,99 @@ Addressed code review findings:
 3. HIGH: Added concurrent access tests for Registry and SequenceGenerator
 4. Tests pass with -race flag
 
+
+2025-01-28 - LOADGEN-020: Enhanced Weighted Selector Implementation
+
+=== Implementation Details ===
+
+**Task:** Implement WeightedSelector for load generator endpoint selection
+
+**Files Created:**
+- tools/loadgen/internal/selector/weighted.go (677 lines)
+- tools/loadgen/internal/selector/weighted_test.go (950 lines)
+
+**Features Implemented:**
+
+1. **WeightedSelector struct** with thread-safe design:
+   - Uses sync.RWMutex for concurrent access
+   - Uses crypto/rand for secure random selection
+   - Binary search (O(log n)) for efficient weighted selection
+
+2. **Global readWriteRatio support:**
+   - Configurable ratio (0.0 to 1.0) for read/write balance
+   - Default: 0.8 (80% read, 20% write)
+   - Supports explicit 0.0 for 100% writes via ReadWriteRatioSet flag
+
+3. **Category-level weights:**
+   - Categories map[string]int for weight multipliers
+   - Example: {"catalog": 3, "trade": 1} makes catalog 3x more frequent
+
+4. **Endpoint-level weights:**
+   - Weights map[string]int for per-endpoint overrides
+   - Highest priority - overrides base weight entirely
+
+5. **Operation type weights:**
+   - Operations map[OperationType]int for GET/POST/PUT/DELETE/PATCH
+   - Applied as multiplier to effective weight
+
+6. **Category ratio override:**
+   - CategoryRatios map[string]float64 for per-category read/write ratio
+   - Overrides global ReadWriteRatio for specific categories
+
+7. **Additional features:**
+   - SelectRead() / SelectWrite() for forced operation type
+   - SelectByCategory() for category-specific selection
+   - SelectByOperation() for operation-specific selection
+   - Overflow protection (caps at max int32)
+   - Deterministic pool ordering via sorted endpoint names
+
+=== Weight Calculation Formula ===
+```
+effectiveWeight = baseWeight * categoryMultiplier * operationMultiplier
+```
+Where:
+- baseWeight = endpoint-specific override OR endpoint.BaseWeight (default: 1)
+- categoryMultiplier = Categories[endpoint.Category] (default: 1)
+- operationMultiplier = Operations[endpoint.Operation()] (default: 1)
+
+=== Configuration Example ===
+```yaml
+weightedSelector:
+  readWriteRatio: 0.8  # 80% read, 20% write
+  categories:
+    catalog: 3
+    trade: 1
+  categoryRatios:
+    catalog: 0.9  # Override to 90% read for catalog
+  weights:
+    list-products: 10
+  operations:
+    GET: 5
+    POST: 1
+```
+
+=== Verification ===
+- [x] All unit tests pass (27 test cases)
+- [x] Test coverage: 91.4%
+- [x] Race detection: PASS (go test -race)
+- [x] Distribution accuracy: < 5% error on 1000 iterations (acceptance criteria met)
+- [x] Code review completed - addressed overflow protection and deterministic ordering
+
+**Test Results (Statistical Validation):**
+- 80% read ratio: 0.70% error
+- 50% read ratio: 0.30% error
+- 20% read ratio: 1.90% error
+- 90% read ratio: 0.40% error
+- 100% read ratio: 0.00% error (exact)
+- 0% read ratio: 0.00% error (exact)
+- High-volume (10000 iterations): 0.84% error
+
+=== Notes ===
+- Thread-safe for concurrent endpoint selection
+- Uses crypto/rand for cryptographically secure randomness
+- Supports dynamic configuration updates via UpdateConfig()
+- Duplicate endpoint registration silently overwrites (documented behavior)
+
+=== Next Steps ===
+- LOADGEN-021: Time-based weight scheduling
+- Integration with request builder for endpoint selection during load test
