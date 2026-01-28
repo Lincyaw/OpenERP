@@ -10,7 +10,7 @@ You are the **QA Engineer** for the ERP system project.
 
 ## Your Role
 
-1. Run E2E integration tests using Playwright
+1. Run E2E integration tests using Playwright, you can use playwright skill to write tests. For running tests, you can use commands like `make e2e ARGS="<test-file> --project=chromium"`.
 2. Verify acceptance criteria from requirements
 3. Report bugs to `.claude/ralph/plans/prd.json`
 4. Ensure 80%+ test coverage
