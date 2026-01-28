@@ -36510,3 +36510,82 @@ Acceptance Criteria Verified:
 === Next Steps ===
 - LOADGEN-017: Metrics collection and console output
 - Consider splitting scheduler.go into smaller files
+
+================================================================================
+
+2026-01-29 - LOADGEN-017: Metrics Collection and Console Output
+
+=== Implementation Details ===
+- Implemented internal/metrics/collector.go (485 lines)
+  - MetricsCollector with thread-safe statistics aggregation
+  - Atomic counters for total/success/failed requests and bytes
+  - Latency distribution: min, avg, p50, p95, p99, max
+  - Sliding window sampling for latencies (keeps recent samples for current performance view)
+  - Per-endpoint statistics with separate latency samples
+  - Status code distribution tracking
+  - Configurable max latencies (default: 100000 samples)
+  - Start/Stop timestamps for duration calculation
+  - GetCurrentQPS() for real-time throughput
+  - Snapshot() returns point-in-time metrics for reporting
+
+- Implemented internal/metrics/console.go (620 lines)
+  - Real-time console output with refreshable display
+  - Progress bar with percentage and elapsed time
+  - Animated spinner for indefinite duration tests
+  - Traffic shaping phase display (via callback function)
+  - Color-coded output (ANSI escape codes with disable option)
+  - Main stats: requests, QPS, success rate
+  - Latency stats: min, avg, p50, p95, p99, max
+  - Status code distribution with visual bars
+  - Per-endpoint breakdown (top N by request count)
+  - PrintFinalReport() for comprehensive test summary
+  - Latency histogram visualization in final report
+
+=== Key Design Decisions ===
+1. Sliding window for latency samples (recent performance > historical average)
+2. RWMutex for read-heavy latency access pattern
+3. Separate per-endpoint mutex to minimize contention
+4. maps.Copy for efficient status code copying
+5. Configurable color output (UseColors flag)
+6. Consistent success rate thresholds (99% green, 95% yellow, <95% red)
+7. Extracted magic numbers to named constants
+
+=== Code Review Fixes Applied ===
+- Changed latencyMu from Mutex to RWMutex for read-heavy pattern
+- Removed misleading "reservoir sampling" comment (it's sliding window)
+- Removed unused `remaining` variable
+- Unified success rate color thresholds
+- Extracted magic numbers to constants (defaultMaxLatencies, defaultEndpointMaxLatencies)
+
+=== Verification ===
+
+Test Results:
+- All 18 tests pass (100% pass rate)
+- Coverage: 86.0% (above 80% requirement)
+- Race detector: clean (no data races)
+
+Test Commands:
+- go test ./internal/metrics/... -v -count=1
+- go test ./internal/metrics/... -cover
+- go test -race ./internal/metrics/...
+
+Acceptance Criteria Verified:
+✅ 实现 internal/metrics/collector.go MetricsCollector - Complete
+✅ 收集：请求总数、成功/失败数、延迟分布（min/avg/p50/p95/p99/max）- Complete
+✅ 按端点分组统计 - Per-endpoint stats with separate latency percentiles
+✅ 实现 internal/metrics/console.go 控制台输出 - Complete with ANSI colors
+✅ 实时显示进度条、QPS、成功率、延迟 - Real-time updates with configurable interval
+✅ 显示当前流量整形阶段（rising/peak/falling/trough）- Via shaperPhaseFunc callback
+✅ 测试结束后输出完整报告 - PrintFinalReport with comprehensive summary
+✅ 编写测试验证统计准确性 - 18 tests including statistical accuracy verification
+✅ 验收标准：控制台输出清晰易读，统计数据准确 - Color-coded, formatted output
+
+=== Files Created ===
+- tools/loadgen/internal/metrics/collector.go (NEW ~485 lines)
+- tools/loadgen/internal/metrics/console.go (NEW ~620 lines)
+- tools/loadgen/internal/metrics/collector_test.go (NEW ~590 lines)
+
+=== Next Steps ===
+- LOADGEN-018: Integration with executor and main runner
+- Consider adding Prometheus/OpenTelemetry export support
+- Consider JSON report output format option
