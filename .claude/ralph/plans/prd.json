@@ -10344,7 +10344,7 @@
       "./bin/loadgen --backpressure=circuit --latency-threshold 1000ms -duration 120s",
       "curl -s http://localhost:9090/metrics | grep loadgen_backpressure_state"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-007",

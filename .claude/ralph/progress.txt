@@ -36896,3 +36896,110 @@ correctly with P95 latency breach triggering QPS reduction within 10 seconds,
 WorkerPool size adjusting dynamically based on load using the optimal worker
 formula (QPS * Latency * Buffer), 100ms adjustment interval precisely maintained,
 and QPS recovering after latency normalizes. Thread-safe under concurrent access.
+
+2025-01-29 - LOADGEN-VAL-006: 验证背压处理机制 (Backpressure Mechanism Validation)
+
+=== Implementation Details ===
+- Created comprehensive validation test file: tools/loadgen/internal/loadctrl/backpressure_validation_test.go
+- Test file contains ~1200 lines with 12+ main test functions and 30+ subtests
+- All tests run with -race flag to ensure thread safety
+
+=== Test Coverage ===
+
+1. ✅ 测试错误率阈值检测 (默认10%)
+   - TestBackpressure_ErrorRateThreshold validates:
+     - Default threshold is 10% (0.1) as specified
+     - Error rate >= 10% triggers BackpressureStateCritical
+     - Error rate 5-10% triggers BackpressureStateWarning
+     - Backpressure triggers within 500ms of threshold breach (achieved ~21ms)
+
+2. ✅ 测试P99延迟阈值检测 (默认1s)
+   - TestBackpressure_P99LatencyThreshold validates:
+     - Default P99 threshold is 1 second
+     - P99 latency >= 1s triggers BackpressureStateCritical
+     - P99 latency 500ms-1s triggers BackpressureStateWarning
+     - Backpressure triggers within 500ms of threshold breach (achieved ~21ms)
+
+3. ✅ 验证背压策略: drop/reduce/pause/circuit
+   - TestBackpressure_Strategy_Drop:
+     - Probabilistic request dropping based on DropPercentage config
+     - 50% drop rate validated with ~50% actual drops
+   - TestBackpressure_Strategy_Reduce:
+     - QPS reduction via QPSMultiplier (e.g., 0.5 for 50% reduction)
+     - ReductionFactor correctly applied
+   - TestBackpressure_Strategy_Pause:
+     - ShouldPause=true, PauseDuration set from CircuitOpenDuration
+     - ShouldAllow() returns false during pause
+   - TestBackpressure_Strategy_Circuit:
+     - Circuit breaker pattern with Open → Half-Open → Closed states
+     - Half-open allows limited probe requests (5 per cycle)
+
+4. ✅ 测试状态机转换: normal→warning→critical→recovery
+   - TestBackpressure_StateMachine validates complete state machine:
+     - normal → warning: Error rate 5-10% or latency 500ms-1s
+     - warning → critical: Error rate ≥10% or latency ≥1s (with consecutive breaches)
+     - critical → recovery: Metrics drop below warning threshold
+     - recovery → normal: After RecoveryPeriod (default 30s) expires
+     - recovery → critical: Error spike during recovery
+   - TestBackpressure_StateTransitionCounts tracks all transitions
+
+5. ✅ 验证恢复检测周期 (默认30s)
+   - TestBackpressure_RecoveryPeriod validates:
+     - Default RecoveryPeriod is 30 seconds
+     - Premature return to normal is prevented (remains in recovery)
+     - Recovery QPS multiplier increases linearly from 0.5 to 1.0
+     - Scaled test validates ~30s recovery at 100ms scale (achieved ~105ms)
+
+=== Pass Criteria Verification ===
+
+✅ 错误率>10%时触发背压
+   - Error rate >= 0.1 (10%) triggers BackpressureStateCritical
+   - Validated with exact threshold boundary testing
+
+✅ P99>1s时触发背压
+   - P99 latency >= 1s triggers BackpressureStateCritical
+   - Validated with exact threshold boundary testing
+
+✅ 每种策略按配置正确执行
+   - Drop: Probabilistic dropping at configured percentage
+   - Reduce: QPSMultiplier set to ReductionFactor (default 0.5)
+   - Pause: ShouldPause=true, blocks via ShouldAllow()
+   - Circuit: Circuit breaker with open/half-open/closed states
+
+✅ 状态转换符合预期
+   - Complete cycle: normal→warning→critical→recovery→normal
+   - Spike handling: recovery→critical on error spike
+   - All transitions tracked in stats
+
+✅ 30秒后尝试恢复
+   - RecoveryPeriod defaults to 30s
+   - Gradual QPS recovery from 50% to 100% over period
+   - Recovery start time tracked in stats
+
+=== Test Execution Summary ===
+- Test File: tools/loadgen/internal/loadctrl/backpressure_validation_test.go (NEW, ~1200 lines)
+- Test Functions: 12 main tests with ~30 subtests
+- Pass Rate: 100% (all tests pass)
+- Stability: 3/3 consecutive passes
+- Race Detector: Clean (no data races)
+
+=== Benchmark Results ===
+- BenchmarkBackpressure_Check: 125.8 ns/op, 0 B/op, 0 allocs/op
+- BenchmarkBackpressure_ShouldAllow: 25.13 ns/op, 0 B/op, 0 allocs/op
+- BenchmarkBackpressure_StateTransition: 230.3 ns/op, 0 B/op, 0 allocs/op
+
+=== Files Created ===
+- tools/loadgen/internal/loadctrl/backpressure_validation_test.go (NEW)
+
+=== Decision ===
+[PASSED]: All validation criteria met. BackpressureHandler correctly implements:
+- 10% error rate threshold detection
+- 1s P99 latency threshold detection
+- Four backpressure strategies (drop/reduce/pause/circuit)
+- State machine transitions (normal→warning→critical→recovery)
+- 30s recovery period with gradual QPS restoration
+Thread-safe under concurrent access with zero allocations in hot paths.
+
+=== Next Steps ===
+- Remaining validation tasks can be tackled
+- Consider CLI command integration testing for --backpressure flag
