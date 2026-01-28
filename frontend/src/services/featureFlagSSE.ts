@@ -124,8 +124,6 @@ export function createFeatureFlagSSE(options: FeatureFlagSSEOptions = {}): Featu
   let reconnectAttempts = 0
   let reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null
   let heartbeatTimeoutId: ReturnType<typeof setTimeout> | null = null
-  // Note: lastHeartbeat kept for potential future monitoring/debugging use
-  let _lastHeartbeat: number | null = null
 
   // Helper to update and notify state change
   const setState = (newState: SSEConnectionState, error?: Error) => {
@@ -266,7 +264,6 @@ export function createFeatureFlagSSE(options: FeatureFlagSSEOptions = {}): Featu
       eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data)
-          _lastHeartbeat = data.timestamp
           onHeartbeat?.(data.timestamp)
           resetHeartbeatTimeout()
         } catch (e) {
@@ -303,7 +300,6 @@ export function createFeatureFlagSSE(options: FeatureFlagSSEOptions = {}): Featu
 
     setState('disconnected')
     reconnectAttempts = 0
-    _lastHeartbeat = null
   }
 
   // Get current state

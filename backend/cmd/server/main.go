@@ -35,7 +35,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	_ "github.com/erp/backend/docs"
+	_ "github.com/erp/backend/docs" // OpenAPI 3.1 generated docs
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -52,8 +52,8 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@host		localhost:8080
-//	@BasePath	/api/v1
+//	@servers.url			http://localhost:8080/api/v1
+//	@servers.description	Development server
 
 //	@securityDefinitions.apikey	BearerAuth
 //	@in							header

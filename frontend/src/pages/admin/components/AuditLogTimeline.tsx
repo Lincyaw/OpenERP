@@ -13,6 +13,7 @@ import {
 import { IconChevronDown, IconChevronUp } from '@douyinfe/semi-icons'
 import { getFeatureFlags } from '@/api/feature-flags'
 import type { AuditLog } from '@/api/feature-flags'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 
 const { Text } = Typography
 
@@ -34,7 +35,7 @@ function formatDate(dateStr: string, locale: string): string {
 /**
  * Get color for action type
  */
-function getActionColor(action: string): string {
+function getActionColor(action: string): TagColor {
   switch (action.toLowerCase()) {
     case 'created':
       return 'green'
@@ -225,7 +226,7 @@ function AuditLogItem({ log }: AuditLogItemProps) {
     <div className="audit-log-item">
       <div className="audit-log-item-header">
         <Tag color={getActionColor(log.action)}>
-          {t(`featureFlags.auditLog.actions.${log.action.toLowerCase()}`, log.action)}
+          {String(t(`featureFlags.auditLog.actions.${log.action.toLowerCase()}`, log.action))}
         </Tag>
         <Text type="secondary" size="small">
           {t('featureFlags.auditLog.by', 'by')}{' '}
@@ -292,7 +293,7 @@ function ChangesDisplay({ changes }: ChangesDisplayProps) {
       {Object.entries(changes).map(([key, value]) => (
         <div key={key} className="change-item">
           <Text strong className="change-field">
-            {t(`featureFlags.auditLog.fields.${key}`, key)}:
+            {String(t(`featureFlags.auditLog.fields.${key}`, key))}:
           </Text>
           {isOldNewPair(value) ? (
             <div className="change-values">

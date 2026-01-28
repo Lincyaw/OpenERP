@@ -164,7 +164,7 @@ get_next_task_id() {
   local tasks=$(jq -r '
     .[]
     | select(.passes == false)
-    | {priority: .priority, id: .id, sort_key: (if .priority == "high" then 1 elif .priority == "medium" then 2 else 3 end)}
+    | {priority: .priority, id: .id, sort_key: (if .priority == "critical" then 1 elif .priority == "high" then 2 elif .priority == "medium" then 3 else 4 end)}
     | [.sort_key, .id]
     | @tsv
   ' .claude/ralph/plans/prd.json | sort -n)

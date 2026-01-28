@@ -5,6 +5,7 @@ import { IconUser, IconLock } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store'
 import { getAuth } from '@/api/auth'
+import { resetRedirectFlag } from '@/services/token-refresh'
 import type { User } from '@/store/types'
 import type { AxiosError } from 'axios'
 
@@ -83,6 +84,9 @@ export default function LoginPage() {
 
       // Use auth store to login with tokens
       login(user, token.access_token ?? '', token.refresh_token ?? '')
+
+      // Reset redirect flag so future session expirations can redirect again
+      resetRedirectFlag()
 
       Toast.success({ content: t('login.success') })
 

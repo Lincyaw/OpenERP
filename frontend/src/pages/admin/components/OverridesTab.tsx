@@ -15,6 +15,7 @@ import {
 } from '@douyinfe/semi-ui-19'
 import { IconPlus, IconDelete, IconRefresh } from '@douyinfe/semi-icons'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import { getFeatureFlags } from '@/api/feature-flags'
 import type { Override, FlagType, OverrideTargetType } from '@/api/feature-flags'
 import { OverrideForm } from './OverrideForm'
@@ -47,7 +48,7 @@ function isExpired(expiresAt: string | undefined): boolean {
 /**
  * Get target type color
  */
-function getTargetTypeColor(type: OverrideTargetType): string {
+function getTargetTypeColor(type: OverrideTargetType): TagColor {
   switch (type) {
     case 'user':
       return 'blue'

@@ -207,7 +207,7 @@ export function VariantEditor({ watch, setValue }: VariantEditorProps) {
                 value={variant.weight}
                 onChange={(val) => handleWeightChange(index, val as number)}
                 formatter={(val) => `${val}%`}
-                parser={(val) => (val ? Number(val.replace('%', '')) : 0)}
+                parser={(val) => (val ? String(Number(val.replace('%', ''))) : '0')}
               />
             </div>
 

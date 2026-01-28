@@ -25,6 +25,7 @@ import type {
   TargetingRule,
   FlagValue,
 } from '@/api/feature-flags'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import { OverridesTab } from './components/OverridesTab'
 import { AuditLogTimeline } from './components/AuditLogTimeline'
 import './FeatureFlagDetail.css'
@@ -34,7 +35,7 @@ const { Title, Text } = Typography
 /**
  * Get color for flag type badge
  */
-function getTypeColor(type: FlagType): string {
+function getTypeColor(type: FlagType): TagColor {
   switch (type) {
     case 'boolean':
       return 'blue'
@@ -52,7 +53,7 @@ function getTypeColor(type: FlagType): string {
 /**
  * Get color for flag status
  */
-function getStatusColor(status: FlagStatus): string {
+function getStatusColor(status: FlagStatus): TagColor {
   switch (status) {
     case 'enabled':
       return 'green'
@@ -513,7 +514,9 @@ function RulesDisplay({ rules, type }: RulesDisplayProps) {
                 <div key={condIndex} className="condition-display">
                   {condIndex > 0 && <Tag size="small">AND</Tag>}
                   <Tag color="light-blue">
-                    {t(`featureFlags.form.attributes.${condition.attribute}`, condition.attribute)}
+                    {String(
+                      t(`featureFlags.form.attributes.${condition.attribute}`, condition.attribute)
+                    )}
                   </Tag>
                   <Text>{getOperatorLabel(condition.operator)}</Text>
                   <Tag color="amber">{condition.values.join(', ')}</Tag>

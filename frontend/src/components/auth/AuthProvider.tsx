@@ -11,7 +11,7 @@
  * - Cleans up refresh timer on unmount
  */
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Toast } from '@douyinfe/semi-ui-19'
 import { useAuthStore } from '@/store'
 import { setupAutoRefresh, refreshAccessToken } from '@/services/token-refresh'
@@ -42,6 +42,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setLoading = useAuthStore((state) => state.setLoading)
   const logout = useAuthStore((state) => state.logout)
 
+  // Track if we've already attempted a refresh to prevent infinite loops
+  const hasAttemptedRefresh = useRef(false)
+
   // Initialize auth state from localStorage
   useEffect(() => {
     initialize()
@@ -53,19 +56,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // - Still loading (initial state after initialize)
     // - User exists (was previously logged in)
     // - No access token (lost on page refresh since it's memory-only)
-    if (isLoading && user && !accessToken) {
+    // - Haven't already attempted a refresh this session
+    if (isLoading && user && !accessToken && !hasAttemptedRefresh.current) {
+      hasAttemptedRefresh.current = true
+
       const attemptRefresh = async () => {
         try {
           const newToken = await refreshAccessToken()
           if (!newToken) {
-            // Refresh failed, clear loading state and let guards redirect to login
+            // Refresh failed, clear loading state
+            // Don't call logout() here - refreshAccessToken already does that
+            // Just ensure loading is false so guards can redirect
             setLoading(false)
           }
           // If refresh succeeded, the store will be updated by refreshAccessToken
           // and isLoading will be set appropriately
         } catch {
-          // Refresh failed, logout and clear loading state
-          logout()
+          // Refresh failed, just clear loading state
+          // refreshAccessToken already handles logout
           setLoading(false)
         }
       }

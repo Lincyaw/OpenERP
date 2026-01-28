@@ -44,8 +44,11 @@ const { Title, Text } = Typography
 // Flag type values
 const FLAG_TYPES = ['boolean', 'percentage', 'variant', 'user_segment'] as const
 
+// Helper type for translation function
+type TranslateFunc = (key: string, fallback?: string) => string
+
 // Form validation schema
-const createFlagFormSchema = (t: (key: string, fallback?: string) => string, isEditMode: boolean) =>
+const createFlagFormSchema = (t: TranslateFunc, isEditMode: boolean) =>
   z
     .object({
       key: isEditMode
@@ -139,7 +142,16 @@ export default function FeatureFlagFormPage() {
   )
 
   // Create schema with translated validation messages
-  const flagFormSchema = useMemo(() => createFlagFormSchema(t, isEditMode), [t, isEditMode])
+  // Create a wrapper function for translation that matches the expected signature
+  const translateForSchema: TranslateFunc = (key, fallback) => {
+    const result = t(key, { defaultValue: fallback })
+    return typeof result === 'string' ? result : (fallback ?? key)
+  }
+  const flagFormSchema = useMemo(
+    () => createFlagFormSchema(translateForSchema, isEditMode),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, isEditMode]
+  )
 
   // Default form values
   const defaultValues: Partial<FlagFormData> = useMemo(
@@ -537,7 +549,7 @@ function PercentageSlider({ setValue, watch, label }: PercentageSliderProps) {
           value={value}
           onChange={(val) => setValue('defaultPercentage', val as number)}
           formatter={(val) => `${val}%`}
-          parser={(val) => (val ? Number(val.replace('%', '')) : 0)}
+          parser={(val) => (val ? String(Number(val.replace('%', ''))) : '0')}
           style={{ width: 100, marginLeft: 16 }}
         />
       </div>

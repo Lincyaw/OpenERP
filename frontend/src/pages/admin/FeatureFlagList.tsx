@@ -33,6 +33,7 @@ import type {
   FlagStatus,
   CreateFlagRequest,
 } from '@/api/feature-flags'
+import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import './FeatureFlagList.css'
 
 const { Title, Text } = Typography
@@ -58,7 +59,7 @@ function formatDate(dateStr: string | undefined, locale: string): string {
 /**
  * Get color for flag type badge
  */
-function getTypeColor(type: FlagType): string {
+function getTypeColor(type: FlagType): TagColor {
   switch (type) {
     case 'boolean':
       return 'blue'
@@ -76,7 +77,7 @@ function getTypeColor(type: FlagType): string {
 /**
  * Get color for flag status
  */
-function getStatusColor(status: FlagStatus): string {
+function getStatusColor(status: FlagStatus): TagColor {
   switch (status) {
     case 'enabled':
       return 'green'

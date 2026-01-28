@@ -57,9 +57,9 @@ RUN mkdir -p /data/prints
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check (use -q -O /dev/null instead of --spider to send GET request)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+    CMD wget -q -O /dev/null http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["/app/server"]

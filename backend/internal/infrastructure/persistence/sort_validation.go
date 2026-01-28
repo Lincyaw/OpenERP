@@ -193,15 +193,15 @@ var SalesOrderSortFields = map[string]bool{
 	"created_at":      true,
 	"updated_at":      true,
 	"order_number":    true,
-	"order_date":      true,
 	"customer_id":     true,
 	"customer_name":   true,
 	"status":          true,
 	"total_amount":    true,
-	"paid_amount":     true,
-	"due_date":        true,
-	"payment_status":  true,
-	"delivery_status": true,
+	"discount_amount": true,
+	"payable_amount":  true,
+	"confirmed_at":    true,
+	"shipped_at":      true,
+	"completed_at":    true,
 }
 
 // SalesReturnSortFields contains allowed sort fields for sales returns
@@ -221,19 +221,18 @@ var SalesReturnSortFields = map[string]bool{
 
 // PurchaseOrderSortFields contains allowed sort fields for purchase orders
 var PurchaseOrderSortFields = map[string]bool{
-	"id":             true,
-	"created_at":     true,
-	"updated_at":     true,
-	"order_number":   true,
-	"order_date":     true,
-	"supplier_id":    true,
-	"supplier_name":  true,
-	"status":         true,
-	"total_amount":   true,
-	"paid_amount":    true,
-	"due_date":       true,
-	"payment_status": true,
-	"receive_status": true,
+	"id":              true,
+	"created_at":      true,
+	"updated_at":      true,
+	"order_number":    true,
+	"supplier_id":     true,
+	"supplier_name":   true,
+	"status":          true,
+	"total_amount":    true,
+	"discount_amount": true,
+	"payable_amount":  true,
+	"confirmed_at":    true,
+	"completed_at":    true,
 }
 
 // PurchaseReturnSortFields contains allowed sort fields for purchase returns

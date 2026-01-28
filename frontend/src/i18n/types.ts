@@ -218,6 +218,40 @@ export interface ValidationTranslations {
   confirm: string
   passwordStrength: string
   invalidFormat: string
+  // Error summary
+  'errorSummary.title': string
+  'errorSummary.single': string
+  'errorSummary.multiple': string
+  'errorSummary.screenReaderAnnounce': string
+  // Field labels
+  'fieldLabels.name': string
+  'fieldLabels.code': string
+  'fieldLabels.email': string
+  'fieldLabels.phone': string
+  'fieldLabels.password': string
+  'fieldLabels.confirmPassword': string
+  'fieldLabels.address': string
+  'fieldLabels.description': string
+  'fieldLabels.remark': string
+  'fieldLabels.price': string
+  'fieldLabels.quantity': string
+  'fieldLabels.amount': string
+  'fieldLabels.date': string
+  'fieldLabels.startDate': string
+  'fieldLabels.endDate': string
+  'fieldLabels.category': string
+  'fieldLabels.status': string
+  'fieldLabels.type': string
+  'fieldLabels.sku': string
+  'fieldLabels.barcode': string
+  'fieldLabels.unit': string
+  'fieldLabels.warehouse': string
+  'fieldLabels.customer': string
+  'fieldLabels.supplier': string
+  'fieldLabels.contact': string
+  'fieldLabels.contactPhone': string
+  // Index signature for additional keys
+  [key: string]: string
 }
 
 /**
@@ -458,6 +492,7 @@ export interface TranslationKeys {
   finance: Record<string, string>
   system: Record<string, string>
   integration: Record<string, string>
+  admin: Record<string, string>
 }
 
 /**

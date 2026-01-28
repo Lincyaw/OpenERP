@@ -90,7 +90,7 @@ setup: ## Initialize project (run after git clone)
 
 docker-up: ## Start all services in Docker (postgres, redis, backend, frontend)
 	@echo "$(CYAN)Starting all services in Docker...$(NC)"
-	@$(DOCKER_COMPOSE) up -d postgres redis
+	@$(DOCKER_COMPOSE) --profile otel up -d postgres redis otel-collector
 	@echo "  → Waiting for database..."
 	@sleep 5
 	@$(MAKE) db-migrate
@@ -206,10 +206,15 @@ e2e: ## Run E2E tests (resets environment, runs all tests)
 # Other Commands
 # =============================================================================
 
-clean: ## Stop all services and remove data
+clean: ## Stop all services and remove data (with orphan cleanup)
 	@echo "$(CYAN)Cleaning up...$(NC)"
-	@$(DOCKER_COMPOSE) --profile docker --profile e2e --profile migrate --profile otel down -v
-	@docker volume rm erp-postgres-data erp-redis-data erp-otel-logs 2>/dev/null || true
+	@$(DOCKER_COMPOSE) --profile docker --profile e2e --profile migrate --profile otel down -v --remove-orphans
+	@echo "  → Removing orphan containers..."
+	@docker container rm -f erp-backend erp-frontend erp-pyroscope erp-otel-collector erp-migrate erp-postgres erp-redis erp-playwright 2>/dev/null || true
+	@echo "  → Removing erp-network..."
+	@docker network rm erp-network 2>/dev/null || true
+	@echo "  → Removing volumes..."
+	@docker volume rm erp-postgres-data erp-redis-data erp-otel-logs erp-pyroscope-data 2>/dev/null || true
 	@rm -rf logs/ bin/
 	@echo "$(GREEN)Cleanup complete.$(NC)"
 

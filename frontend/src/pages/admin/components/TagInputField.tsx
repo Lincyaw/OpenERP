@@ -54,7 +54,6 @@ export function TagInputField<
           htmlFor={name}
         >
           <TagInput
-            id={name}
             placeholder={placeholder}
             disabled={disabled}
             maxTagCount={maxTagCount}

@@ -184,7 +184,7 @@ export function OverrideForm({
             min={0}
             max={100}
             formatter={(val) => `${val}%`}
-            parser={(val) => (val ? Number(val.replace('%', '')) : 0)}
+            parser={(val) => (val ? String(Number(val.replace('%', ''))) : '0')}
             style={{ width: 120 }}
           />
         )}
@@ -224,7 +224,7 @@ export function OverrideForm({
         )}
         type="dateTime"
         style={{ width: '100%' }}
-        disabledDate={(date) => date && date < new Date()}
+        disabledDate={(date) => (date ? date < new Date() : false)}
       />
 
       {/* Actions */}

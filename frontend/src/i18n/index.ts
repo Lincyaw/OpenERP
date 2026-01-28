@@ -43,6 +43,8 @@ import zhCNSystem from '../locales/zh-CN/system.json'
 import enUSSystem from '../locales/en-US/system.json'
 import zhCNIntegration from '../locales/zh-CN/integration.json'
 import enUSIntegration from '../locales/en-US/integration.json'
+import zhCNAdmin from '../locales/zh-CN/admin.json'
+import enUSAdmin from '../locales/en-US/admin.json'
 
 /**
  * Translation resources
@@ -62,6 +64,7 @@ const resources = {
     finance: zhCNFinance,
     system: zhCNSystem,
     integration: zhCNIntegration,
+    admin: zhCNAdmin,
   },
   'en-US': {
     common: enUSCommon,
@@ -74,6 +77,7 @@ const resources = {
     finance: enUSFinance,
     system: enUSSystem,
     integration: enUSIntegration,
+    admin: enUSAdmin,
   },
 }
 

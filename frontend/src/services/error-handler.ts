@@ -18,26 +18,28 @@ import i18n from '@/i18n'
 /**
  * Error types that can be detected from API responses
  */
-export enum ErrorType {
+export const ErrorType = {
   /** Network connectivity issues (no internet, DNS failure, CORS) */
-  NETWORK = 'NETWORK',
+  NETWORK: 'NETWORK',
   /** Authentication failed (401) - token expired or invalid */
-  AUTH = 'AUTH',
+  AUTH: 'AUTH',
   /** Permission denied (403) - user lacks required permissions */
-  PERMISSION = 'PERMISSION',
+  PERMISSION: 'PERMISSION',
   /** Validation error (400, 422) - invalid request data */
-  VALIDATION = 'VALIDATION',
+  VALIDATION: 'VALIDATION',
   /** Resource not found (404) */
-  NOT_FOUND = 'NOT_FOUND',
+  NOT_FOUND: 'NOT_FOUND',
   /** Conflict error (409) - duplicate data, concurrent modification */
-  CONFLICT = 'CONFLICT',
+  CONFLICT: 'CONFLICT',
   /** Rate limited (429) - too many requests */
-  RATE_LIMIT = 'RATE_LIMIT',
+  RATE_LIMIT: 'RATE_LIMIT',
   /** Server error (500+) - internal server issues */
-  SERVER = 'SERVER',
+  SERVER: 'SERVER',
   /** Unknown or unclassified error */
-  UNKNOWN = 'UNKNOWN',
-}
+  UNKNOWN: 'UNKNOWN',
+} as const
+
+export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType]
 
 /**
  * Error details extracted from API response
@@ -131,7 +133,8 @@ export function detectErrorType(statusCode?: number): ErrorType {
  */
 function getErrorMessage(type: ErrorType): string {
   const key = `errors.${type.toLowerCase()}.message`
-  return i18n.t(key, { ns: 'common' })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return String((i18n as any).t(key, { ns: 'common' }))
 }
 
 /**
@@ -142,7 +145,8 @@ function getErrorMessage(type: ErrorType): string {
  */
 function getErrorSuggestion(type: ErrorType): string {
   const key = `errors.${type.toLowerCase()}.suggestion`
-  return i18n.t(key, { ns: 'common' })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return String((i18n as any).t(key, { ns: 'common' }))
 }
 
 /**
@@ -152,7 +156,8 @@ function getErrorSuggestion(type: ErrorType): string {
  * @returns Whether the operation can be retried
  */
 function isRetryable(type: ErrorType): boolean {
-  return [ErrorType.NETWORK, ErrorType.SERVER, ErrorType.RATE_LIMIT].includes(type)
+  const retryableTypes: ErrorType[] = [ErrorType.NETWORK, ErrorType.SERVER, ErrorType.RATE_LIMIT]
+  return retryableTypes.includes(type)
 }
 
 /**
@@ -162,7 +167,8 @@ function isRetryable(type: ErrorType): boolean {
  * @returns Whether to show support contact info
  */
 function shouldShowContactSupport(type: ErrorType): boolean {
-  return [ErrorType.SERVER, ErrorType.UNKNOWN].includes(type)
+  const supportTypes: ErrorType[] = [ErrorType.SERVER, ErrorType.UNKNOWN]
+  return supportTypes.includes(type)
 }
 
 /**
@@ -256,7 +262,8 @@ function showErrorToast(details: ErrorDetails, duration: number = 5): void {
     fullMessage += `\n${suggestion}`
   }
   if (showContactSupport) {
-    fullMessage += `\n${i18n.t('errors.contactSupport', { ns: 'common' })}`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fullMessage += `\n${String((i18n as any).t('errors.contactSupport', { ns: 'common' }))}`
   }
 
   // Use appropriate toast type based on error severity

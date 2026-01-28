@@ -112,7 +112,7 @@ export function FormErrorSummary<T extends FieldValues = FieldValues>({
     return flattened.map(({ field, message }) => ({
       field,
       message,
-      label: fieldLabels[field] || t(`fieldLabels.${field}`, { defaultValue: field }),
+      label: fieldLabels[field] || String(t(`fieldLabels.${field}`, { defaultValue: field })),
     }))
   }, [errors, fieldLabels, t])
 
@@ -124,8 +124,8 @@ export function FormErrorSummary<T extends FieldValues = FieldValues>({
     if (hasErrors && announceRef.current) {
       const announcement =
         errorCount === 1
-          ? t('errorSummary.single')
-          : t('errorSummary.screenReaderAnnounce', { count: errorCount })
+          ? (t('errorSummary.single') as string)
+          : (t('errorSummary.screenReaderAnnounce', { count: errorCount }) as string)
 
       // Use a setTimeout to ensure the announcement is made after render
       const timer = setTimeout(() => {
@@ -214,11 +214,11 @@ export function FormErrorSummary<T extends FieldValues = FieldValues>({
           fullMode={false}
           title={
             <span id={titleId} className="form-error-summary__title">
-              {t('errorSummary.title')}
+              {t('errorSummary.title') as string}
               <span className="form-error-summary__count">
                 {errorCount === 1
-                  ? t('errorSummary.single')
-                  : t('errorSummary.multiple', { count: errorCount })}
+                  ? (t('errorSummary.single') as string)
+                  : (t('errorSummary.multiple', { count: errorCount }) as string)}
               </span>
             </span>
           }
@@ -240,7 +240,7 @@ export function FormErrorSummary<T extends FieldValues = FieldValues>({
               ))}
               {hiddenCount > 0 && (
                 <li className="form-error-summary__more">
-                  {t('errorSummary.multiple', { count: hiddenCount })}
+                  {t('errorSummary.multiple', { count: hiddenCount }) as string}
                 </li>
               )}
             </ul>

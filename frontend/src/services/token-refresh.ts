@@ -18,17 +18,9 @@
 
 import { getAuth } from '@/api/auth'
 import { useAuthStore } from '@/store'
-import i18n from '@/i18n'
 
 // Create auth API instance
 const authApi = getAuth()
-
-/**
- * Get translated message for token expiration
- */
-function getTokenExpiredMessage(): string {
-  return i18n.t('auth:token.expired')
-}
 
 // Token expiration buffer (refresh 1 minute before expiry)
 const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000
@@ -36,6 +28,9 @@ const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000
 // Track refresh state
 let isRefreshing = false
 let refreshPromise: Promise<string | null> | null = null
+
+// Track if we've already tried to redirect to prevent infinite loops
+let hasRedirected = false
 
 /**
  * Decode JWT token to get expiration time
@@ -168,6 +163,10 @@ export async function refreshAccessToken(): Promise<string | null> {
  * It's stored as an httpOnly cookie and sent automatically by the browser.
  * The backend reads the token from the cookie, not from the request body.
  *
+ * IMPORTANT: This function does NOT call redirectToLogin() on failure.
+ * The caller (response interceptor) is responsible for handling redirect
+ * to prevent multiple redirects causing infinite loops.
+ *
  * @returns New access token or null if refresh failed
  */
 async function performRefresh(): Promise<string | null> {
@@ -182,10 +181,10 @@ async function performRefresh(): Promise<string | null> {
     })
 
     if (!response.success || !response.data) {
-      // Refresh failed, logout user
+      // Refresh failed, logout user but DON'T redirect here
+      // Let the caller handle redirect to avoid double redirects
       logout()
       setLoading(false)
-      redirectToLogin(getTokenExpiredMessage())
       return null
     }
 
@@ -213,24 +212,37 @@ async function performRefresh(): Promise<string | null> {
       return token.access_token
     }
 
+    // No access token in response, logout but DON'T redirect
     logout()
     setLoading(false)
-    redirectToLogin(getTokenExpiredMessage())
     return null
   } catch {
-    // Refresh failed, logout user
+    // Refresh failed, logout user but DON'T redirect
+    // Let the caller handle redirect to avoid double redirects
     logout()
     setLoading(false)
-    redirectToLogin(getTokenExpiredMessage())
     return null
   }
 }
 
 /**
  * Redirect to login page with an optional message
+ * Includes protection against redirect loops.
  * @param message Optional message to display on login page
  */
 export function redirectToLogin(message?: string): void {
+  // Prevent redirect loops - only redirect once per session
+  if (hasRedirected) {
+    return
+  }
+
+  // Check if we're already on the login page
+  if (window.location.pathname === '/login') {
+    return
+  }
+
+  hasRedirected = true
+
   // Store message for login page to display
   if (message) {
     sessionStorage.setItem('auth_redirect_message', message)
@@ -244,6 +256,13 @@ export function redirectToLogin(message?: string): void {
 
   // Redirect to login
   window.location.href = '/login'
+}
+
+/**
+ * Reset the redirect flag (call this after successful login)
+ */
+export function resetRedirectFlag(): void {
+  hasRedirected = false
 }
 
 /**

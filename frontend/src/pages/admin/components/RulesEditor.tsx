@@ -294,7 +294,7 @@ function RuleItem({
     () =>
       COMMON_ATTRIBUTES.map((attr) => ({
         value: attr.value,
-        label: t(`featureFlags.form.attributes.${attr.value}`, attr.label),
+        label: String(t(`featureFlags.form.attributes.${attr.value}`, attr.label)),
       })),
     [t]
   )
@@ -456,7 +456,7 @@ function RuleValueEditor({ flagType, value, percentage, onChange }: RuleValueEdi
           value={percentage}
           onChange={(val) => onChange({ ...value, enabled: true }, val as number)}
           formatter={(val) => `${val}%`}
-          parser={(val) => (val ? Number(val.replace('%', '')) : 0)}
+          parser={(val) => (val ? String(Number(val.replace('%', ''))) : '0')}
           style={{ width: 100 }}
         />
         <Text type="tertiary">{t('featureFlags.form.ofMatchingUsers', 'of matching users')}</Text>

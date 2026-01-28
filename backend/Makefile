@@ -180,24 +180,24 @@ ci: fmt-check lint docs-check test-coverage-ci
 dev-deps:
 	@echo "Installing development dependencies..."
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/swaggo/swag/v2/cmd/swag@latest
 	@echo "Development dependencies installed."
 
 # API documentation targets
 docs:
 	@echo "Generating OpenAPI documentation..."
 	@if ! command -v swag > /dev/null 2>&1; then \
-		echo "swag not installed. Run: go install github.com/swaggo/swag/cmd/swag@latest"; \
+		echo "swag not installed. Run: go install github.com/swaggo/swag/v2/cmd/swag@latest"; \
 		exit 1; \
 	fi
-	swag init -g cmd/server/main.go -o docs --outputTypes yaml,json,go
+	swag init -g cmd/server/main.go -o docs --outputTypes yaml,json,go --v3.1
 	@echo "OpenAPI documentation generated in docs/"
 
 docs-check:
 	@echo "Checking if OpenAPI docs are up-to-date..."
 	@mkdir -p /tmp/docs-check
 	@cp docs/swagger.yaml /tmp/docs-check/swagger.yaml.old 2>/dev/null || true
-	@swag init -g cmd/server/main.go -o /tmp/docs-check --outputTypes yaml
+	@swag init -g cmd/server/main.go -o /tmp/docs-check --outputTypes yaml --v3.1
 	@if ! diff -q docs/swagger.yaml /tmp/docs-check/swagger.yaml > /dev/null 2>&1; then \
 		echo "ERROR: OpenAPI docs are out of date. Run 'make docs' to regenerate."; \
 		rm -rf /tmp/docs-check; \
