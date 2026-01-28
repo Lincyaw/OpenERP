@@ -2,10 +2,19 @@ package dto
 
 import "time"
 
-// Response represents a standard API response
+// Response represents a standard API response (non-generic, for internal use)
 type Response struct {
 	Success bool       `json:"success"`
 	Data    any        `json:"data,omitempty"`
+	Error   *ErrorInfo `json:"error,omitempty"`
+	Meta    *Meta      `json:"meta,omitempty"`
+}
+
+// APIResponse represents a generic API response for OpenAPI documentation
+// @Description Standard API response wrapper with typed data field
+type APIResponse[T any] struct {
+	Success bool       `json:"success"`
+	Data    T          `json:"data,omitempty"`
 	Error   *ErrorInfo `json:"error,omitempty"`
 	Meta    *Meta      `json:"meta,omitempty"`
 }

@@ -2,6 +2,7 @@ package handler
 
 // WarehouseResponse represents a warehouse in API responses
 // @Description Warehouse details returned by the API
+// @name HandlerWarehouseResponse
 type WarehouseResponse struct {
 	ID          string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID    string `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -30,6 +31,7 @@ type WarehouseResponse struct {
 
 // WarehouseListResponse represents a warehouse list item
 // @Description Warehouse list item with basic information
+// @name HandlerWarehouseListResponse
 type WarehouseListResponse struct {
 	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code      string `json:"code" example:"WH-001"`
@@ -46,6 +48,7 @@ type WarehouseListResponse struct {
 
 // WarehouseCountResponse represents warehouse count statistics
 // @Description Warehouse counts by status
+// @name HandlerWarehouseCountResponse
 type WarehouseCountResponse struct {
 	Enabled  int64 `json:"enabled" example:"3"`
 	Disabled int64 `json:"disabled" example:"1"`

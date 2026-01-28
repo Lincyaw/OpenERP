@@ -53,14 +53,15 @@ type StrategiesResponse struct {
 	Validation []StrategyInfo `json:"validation"`
 }
 
+
 // ListStrategies godoc
+// @ID           listSystemStrategies
 // @Summary      List available strategies
 // @Description  Returns all registered strategies grouped by type
 // @Tags         system
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=StrategiesResponse}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[StrategiesResponse]
+// @Failure      500 {object} ErrorResponse
 // @Router       /system/strategies [get]
 func (h *StrategyHandler) ListStrategies(c *gin.Context) {
 	response := StrategiesResponse{
@@ -174,56 +175,60 @@ func (h *StrategyHandler) buildValidationStrategies() []StrategyInfo {
 	return result
 }
 
+
 // GetBatchStrategies godoc
+// @ID           getSystemBatchStrategies
 // @Summary      List batch management strategies
 // @Description  Returns all available batch management strategies (FIFO, FEFO, etc.)
 // @Tags         system
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=[]StrategyInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]StrategyInfo]
+// @Failure      500 {object} ErrorResponse
 // @Router       /system/strategies/batch [get]
 func (h *StrategyHandler) GetBatchStrategies(c *gin.Context) {
 	strategies := h.buildBatchStrategies()
 	c.JSON(http.StatusOK, dto.NewSuccessResponse(strategies))
 }
 
+
 // GetCostStrategies godoc
+// @ID           getSystemCostStrategies
 // @Summary      List cost calculation strategies
 // @Description  Returns all available cost calculation strategies (Moving Average, FIFO, etc.)
 // @Tags         system
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=[]StrategyInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]StrategyInfo]
+// @Failure      500 {object} ErrorResponse
 // @Router       /system/strategies/cost [get]
 func (h *StrategyHandler) GetCostStrategies(c *gin.Context) {
 	strategies := h.buildCostStrategies()
 	c.JSON(http.StatusOK, dto.NewSuccessResponse(strategies))
 }
 
+
 // GetPricingStrategies godoc
+// @ID           getSystemPricingStrategies
 // @Summary      List pricing strategies
 // @Description  Returns all available pricing strategies (Standard, Tiered, etc.)
 // @Tags         system
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=[]StrategyInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]StrategyInfo]
+// @Failure      500 {object} ErrorResponse
 // @Router       /system/strategies/pricing [get]
 func (h *StrategyHandler) GetPricingStrategies(c *gin.Context) {
 	strategies := h.buildPricingStrategies()
 	c.JSON(http.StatusOK, dto.NewSuccessResponse(strategies))
 }
 
+
 // GetAllocationStrategies godoc
+// @ID           getSystemAllocationStrategies
 // @Summary      List payment allocation strategies
 // @Description  Returns all available payment allocation strategies (FIFO, etc.)
 // @Tags         system
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=[]StrategyInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]StrategyInfo]
+// @Failure      500 {object} ErrorResponse
 // @Router       /system/strategies/allocation [get]
 func (h *StrategyHandler) GetAllocationStrategies(c *gin.Context) {
 	strategies := h.buildAllocationStrategies()

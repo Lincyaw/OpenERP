@@ -64,17 +64,19 @@ type UpdateProductCodeRequest struct {
 //	@Summary		Create a new product
 //	@Description	Create a new product in the catalog
 //	@Tags			products
-//	@Accept			json
-//	@Produce		json
-//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
-//	@Param			request		body		CreateProductRequest	true	"Product creation request"
-//	@Success		201			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Security		BearerAuth
-//	@Router			/catalog/products [post]
+//
+// @ID           createProduct
+// @Accept			json
+// @Produce		json
+// @Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+// @Param			request		body		CreateProductRequest	true	"Product creation request"
+// @Success		201			{object}	APIResponse[ProductResponse]
+// @Failure		400			{object}	ErrorResponse
+// @Failure		401			{object}	ErrorResponse
+// @Failure		409			{object}	ErrorResponse
+// @Failure		500			{object}	ErrorResponse
+// @Security		BearerAuth
+// @Router			/catalog/products [post]
 func (h *ProductHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -140,19 +142,19 @@ func (h *ProductHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
+// @ID           getProductById
 //
 //	@Summary		Get product by ID
 //	@Description	Retrieve a product by its ID
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Product ID"	format(uuid)
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id} [get]
 func (h *ProductHandler) GetByID(c *gin.Context) {
@@ -178,19 +180,19 @@ func (h *ProductHandler) GetByID(c *gin.Context) {
 }
 
 // GetByCode godoc
+// @ID           getProductByCode
 //
 //	@Summary		Get product by code
 //	@Description	Retrieve a product by its code
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			code		path		string	true	"Product Code"
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/code/{code} [get]
 func (h *ProductHandler) GetByCode(c *gin.Context) {
@@ -216,11 +218,11 @@ func (h *ProductHandler) GetByCode(c *gin.Context) {
 }
 
 // List godoc
+// @ID           listProducts
 //
 //	@Summary		List products
 //	@Description	Retrieve a paginated list of products with optional filtering
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			search		query		string	false	"Search term (name, code, barcode)"
@@ -234,10 +236,10 @@ func (h *ProductHandler) GetByCode(c *gin.Context) {
 //	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
 //	@Param			order_by	query		string	false	"Order by field"	default(sort_order)
 //	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(asc)
-//	@Success		200			{object}	dto.Response{data=[]ProductListResponse,meta=dto.Meta}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]ProductListResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products [get]
 func (h *ProductHandler) List(c *gin.Context) {
@@ -271,6 +273,7 @@ func (h *ProductHandler) List(c *gin.Context) {
 }
 
 // Update godoc
+// @ID           updateProduct
 //
 //	@Summary		Update a product
 //	@Description	Update an existing product's details
@@ -280,12 +283,12 @@ func (h *ProductHandler) List(c *gin.Context) {
 //	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string					true	"Product ID"	format(uuid)
 //	@Param			request		body		UpdateProductRequest	true	"Product update request"
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		409			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id} [put]
 func (h *ProductHandler) Update(c *gin.Context) {
@@ -353,6 +356,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 }
 
 // UpdateCode godoc
+// @ID           updateProductCode
 //
 //	@Summary		Update product code
 //	@Description	Update a product's code (SKU)
@@ -362,12 +366,12 @@ func (h *ProductHandler) Update(c *gin.Context) {
 //	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string						true	"Product ID"	format(uuid)
 //	@Param			request		body		UpdateProductCodeRequest	true	"New product code"
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		409			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id}/code [put]
 func (h *ProductHandler) UpdateCode(c *gin.Context) {
@@ -399,19 +403,19 @@ func (h *ProductHandler) UpdateCode(c *gin.Context) {
 }
 
 // Delete godoc
+// @ID           deleteProduct
 //
 //	@Summary		Delete a product
 //	@Description	Delete a product by ID
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path	string	true	"Product ID"	format(uuid)
 //	@Success		204
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id} [delete]
 func (h *ProductHandler) Delete(c *gin.Context) {
@@ -437,6 +441,7 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 }
 
 // Activate godoc
+// @ID           activateProduct
 //
 //	@Summary		Activate a product
 //	@Description	Activate an inactive product
@@ -445,12 +450,12 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Product ID"	format(uuid)
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		422			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id}/activate [post]
 func (h *ProductHandler) Activate(c *gin.Context) {
@@ -476,6 +481,7 @@ func (h *ProductHandler) Activate(c *gin.Context) {
 }
 
 // Deactivate godoc
+// @ID           deactivateProduct
 //
 //	@Summary		Deactivate a product
 //	@Description	Deactivate an active product
@@ -484,12 +490,12 @@ func (h *ProductHandler) Activate(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Product ID"	format(uuid)
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		422			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id}/deactivate [post]
 func (h *ProductHandler) Deactivate(c *gin.Context) {
@@ -515,6 +521,7 @@ func (h *ProductHandler) Deactivate(c *gin.Context) {
 }
 
 // Discontinue godoc
+// @ID           discontinueProduct
 //
 //	@Summary		Discontinue a product
 //	@Description	Discontinue a product (cannot be reactivated)
@@ -523,12 +530,12 @@ func (h *ProductHandler) Deactivate(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Product ID"	format(uuid)
-//	@Success		200			{object}	dto.Response{data=ProductResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ProductResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		422			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/{id}/discontinue [post]
 func (h *ProductHandler) Discontinue(c *gin.Context) {
@@ -562,17 +569,17 @@ type CountByStatusResponse struct {
 }
 
 // CountByStatus godoc
+// @ID           countProductByStatus
 //
 //	@Summary		Get product counts by status
 //	@Description	Get the count of products grouped by status
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
-//	@Success		200			{object}	dto.Response{data=CountByStatusResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[CountByStatusResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/products/stats/count [get]
 func (h *ProductHandler) CountByStatus(c *gin.Context) {
@@ -599,11 +606,11 @@ func (h *ProductHandler) CountByStatus(c *gin.Context) {
 }
 
 // GetByCategory godoc
+// @ID           getProductByCategory
 //
 //	@Summary		Get products by category
 //	@Description	Retrieve products belonging to a specific category
 //	@Tags			products
-//	@Accept			json
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			category_id	path		string	true	"Category ID"	format(uuid)
@@ -613,11 +620,11 @@ func (h *ProductHandler) CountByStatus(c *gin.Context) {
 //	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
 //	@Param			order_by	query		string	false	"Order by field"	default(sort_order)
 //	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(asc)
-//	@Success		200			{object}	dto.Response{data=[]ProductListResponse,meta=dto.Meta}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]ProductListResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/catalog/categories/{category_id}/products [get]
 func (h *ProductHandler) GetByCategory(c *gin.Context) {

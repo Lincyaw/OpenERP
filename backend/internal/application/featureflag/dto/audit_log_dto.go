@@ -8,6 +8,7 @@ import (
 )
 
 // AuditLogResponse represents a feature flag audit log entry in API responses
+// @name FeatureFlagAuditLogResponse
 type AuditLogResponse struct {
 	ID        uuid.UUID      `json:"id"`
 	FlagKey   string         `json:"flag_key"`
@@ -21,6 +22,7 @@ type AuditLogResponse struct {
 }
 
 // ToAuditLogResponse converts domain FlagAuditLog to AuditLogResponse
+// @name FeatureFlagAuditLogListFilter
 func ToAuditLogResponse(log *featureflag.FlagAuditLog) *AuditLogResponse {
 	if log == nil {
 		return nil
@@ -46,6 +48,7 @@ type AuditLogListFilter struct {
 }
 
 // AuditLogListResponse represents a paginated list of audit logs
+// @name FeatureFlagAuditLogListFilter
 type AuditLogListResponse struct {
 	AuditLogs  []AuditLogResponse `json:"audit_logs"`
 	Total      int64              `json:"total"`

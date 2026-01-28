@@ -80,7 +80,9 @@ type ConvertUnitResponse struct {
 	ToUnitCode   string  `json:"to_unit_code" example:"pcs"`
 }
 
+
 // Create godoc
+// @ID           createProductUnit
 // @Summary      Create a product unit
 // @Description  Create a new alternate unit for a product
 // @Tags         product-units
@@ -89,11 +91,11 @@ type ConvertUnitResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
 // @Param        request body CreateProductUnitRequest true "Product unit creation request"
-// @Success      201 {object} dto.Response{data=ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      409 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      201 {object} APIResponse[ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      409 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units [post]
 func (h *ProductUnitHandler) Create(c *gin.Context) {
@@ -143,19 +145,20 @@ func (h *ProductUnitHandler) Create(c *gin.Context) {
 	h.Created(c, unit)
 }
 
+
 // GetByID godoc
+// @ID           getProductUnitById
 // @Summary      Get product unit by ID
 // @Description  Retrieve a product unit by its ID
 // @Tags         product-units
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
 // @Param        unit_id path string true "Unit ID" format(uuid)
-// @Success      200 {object} dto.Response{data=ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/{unit_id} [get]
 func (h *ProductUnitHandler) GetByID(c *gin.Context) {
@@ -180,18 +183,19 @@ func (h *ProductUnitHandler) GetByID(c *gin.Context) {
 	h.Success(c, unit)
 }
 
+
 // List godoc
+// @ID           listProductUnits
 // @Summary      List product units
 // @Description  List all alternate units for a product
 // @Tags         product-units
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
-// @Success      200 {object} dto.Response{data=[]ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units [get]
 func (h *ProductUnitHandler) List(c *gin.Context) {
@@ -216,7 +220,9 @@ func (h *ProductUnitHandler) List(c *gin.Context) {
 	h.Success(c, units)
 }
 
+
 // Update godoc
+// @ID           updateProductUnit
 // @Summary      Update product unit
 // @Description  Update an existing product unit
 // @Tags         product-units
@@ -226,10 +232,10 @@ func (h *ProductUnitHandler) List(c *gin.Context) {
 // @Param        id path string true "Product ID" format(uuid)
 // @Param        unit_id path string true "Unit ID" format(uuid)
 // @Param        request body UpdateProductUnitRequest true "Product unit update request"
-// @Success      200 {object} dto.Response{data=ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/{unit_id} [put]
 func (h *ProductUnitHandler) Update(c *gin.Context) {
@@ -281,19 +287,20 @@ func (h *ProductUnitHandler) Update(c *gin.Context) {
 	h.Success(c, unit)
 }
 
+
 // Delete godoc
+// @ID           deleteProductUnit
 // @Summary      Delete product unit
 // @Description  Delete a product unit
 // @Tags         product-units
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
 // @Param        unit_id path string true "Unit ID" format(uuid)
-// @Success      200 {object} dto.Response
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} SuccessResponse
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/{unit_id} [delete]
 func (h *ProductUnitHandler) Delete(c *gin.Context) {
@@ -317,7 +324,9 @@ func (h *ProductUnitHandler) Delete(c *gin.Context) {
 	h.Success(c, dto.MessageResponse{Message: "Product unit deleted successfully"})
 }
 
+
 // Convert godoc
+// @ID           convertProductUnit
 // @Summary      Convert quantity between units
 // @Description  Convert quantity from one unit to another for a product
 // @Tags         product-units
@@ -326,10 +335,10 @@ func (h *ProductUnitHandler) Delete(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
 // @Param        request body ConvertUnitRequest true "Unit conversion request"
-// @Success      200 {object} dto.Response{data=ConvertUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ConvertUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/convert [post]
 func (h *ProductUnitHandler) Convert(c *gin.Context) {
@@ -367,18 +376,19 @@ func (h *ProductUnitHandler) Convert(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GetDefaultPurchaseUnit godoc
+// @ID           getProductUnitDefaultPurchaseUnit
 // @Summary      Get default purchase unit
 // @Description  Get the default purchase unit for a product
 // @Tags         product-units
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
-// @Success      200 {object} dto.Response{data=ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/default-purchase [get]
 func (h *ProductUnitHandler) GetDefaultPurchaseUnit(c *gin.Context) {
@@ -403,18 +413,19 @@ func (h *ProductUnitHandler) GetDefaultPurchaseUnit(c *gin.Context) {
 	h.Success(c, unit)
 }
 
+
 // GetDefaultSalesUnit godoc
+// @ID           getProductUnitDefaultSalesUnit
 // @Summary      Get default sales unit
 // @Description  Get the default sales unit for a product
 // @Tags         product-units
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Product ID" format(uuid)
-// @Success      200 {object} dto.Response{data=ProductUnitResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ProductUnitResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/products/{id}/units/default-sales [get]
 func (h *ProductUnitHandler) GetDefaultSalesUnit(c *gin.Context) {

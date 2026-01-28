@@ -101,35 +101,35 @@ type ReceiveReturnRequest struct {
 // SalesReturnResponse represents a sales return in API responses
 // @Description Sales return response
 type SalesReturnResponse struct {
-	ID               string                   `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	TenantID         string                   `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ReturnNumber     string                   `json:"return_number" example:"SR-2026-00001"`
-	SalesOrderID     string                   `json:"sales_order_id" example:"550e8400-e29b-41d4-a716-446655440020"`
-	SalesOrderNumber string                   `json:"sales_order_number" example:"SO-2026-00001"`
-	CustomerID       string                   `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	CustomerName     string                   `json:"customer_name" example:"张三"`
-	WarehouseID      *string                  `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ID               string                    `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	TenantID         string                    `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ReturnNumber     string                    `json:"return_number" example:"SR-2026-00001"`
+	SalesOrderID     string                    `json:"sales_order_id" example:"550e8400-e29b-41d4-a716-446655440020"`
+	SalesOrderNumber string                    `json:"sales_order_number" example:"SO-2026-00001"`
+	CustomerID       string                    `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	CustomerName     string                    `json:"customer_name" example:"张三"`
+	WarehouseID      *string                   `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
 	Items            []SalesReturnItemResponse `json:"items"`
-	ItemCount        int                      `json:"item_count" example:"2"`
-	TotalQuantity    float64                  `json:"total_quantity" example:"8"`
-	TotalRefund      float64                  `json:"total_refund" example:"799.92"`
-	Status           string                   `json:"status" example:"draft"`
-	Reason           string                   `json:"reason,omitempty" example:"商品质量问题"`
-	Remark           string                   `json:"remark,omitempty" example:"备注信息"`
-	SubmittedAt      *time.Time               `json:"submitted_at,omitempty"`
-	ApprovedAt       *time.Time               `json:"approved_at,omitempty"`
-	ApprovedBy       *string                  `json:"approved_by,omitempty"`
-	ApprovalNote     string                   `json:"approval_note,omitempty"`
-	RejectedAt       *time.Time               `json:"rejected_at,omitempty"`
-	RejectedBy       *string                  `json:"rejected_by,omitempty"`
-	RejectionReason  string                   `json:"rejection_reason,omitempty"`
-	ReceivedAt       *time.Time               `json:"received_at,omitempty"`
-	CompletedAt      *time.Time               `json:"completed_at,omitempty"`
-	CancelledAt      *time.Time               `json:"cancelled_at,omitempty"`
-	CancelReason     string                   `json:"cancel_reason,omitempty"`
-	CreatedAt        time.Time                `json:"created_at"`
-	UpdatedAt        time.Time                `json:"updated_at"`
-	Version          int                      `json:"version" example:"1"`
+	ItemCount        int                       `json:"item_count" example:"2"`
+	TotalQuantity    float64                   `json:"total_quantity" example:"8"`
+	TotalRefund      float64                   `json:"total_refund" example:"799.92"`
+	Status           string                    `json:"status" example:"draft"`
+	Reason           string                    `json:"reason,omitempty" example:"商品质量问题"`
+	Remark           string                    `json:"remark,omitempty" example:"备注信息"`
+	SubmittedAt      *time.Time                `json:"submitted_at,omitempty"`
+	ApprovedAt       *time.Time                `json:"approved_at,omitempty"`
+	ApprovedBy       *string                   `json:"approved_by,omitempty"`
+	ApprovalNote     string                    `json:"approval_note,omitempty"`
+	RejectedAt       *time.Time                `json:"rejected_at,omitempty"`
+	RejectedBy       *string                   `json:"rejected_by,omitempty"`
+	RejectionReason  string                    `json:"rejection_reason,omitempty"`
+	ReceivedAt       *time.Time                `json:"received_at,omitempty"`
+	CompletedAt      *time.Time                `json:"completed_at,omitempty"`
+	CancelledAt      *time.Time                `json:"cancelled_at,omitempty"`
+	CancelReason     string                    `json:"cancel_reason,omitempty"`
+	CreatedAt        time.Time                 `json:"created_at"`
+	UpdatedAt        time.Time                 `json:"updated_at"`
+	Version          int                       `json:"version" example:"1"`
 }
 
 // SalesReturnListResponse represents a sales return in list responses
@@ -175,18 +175,20 @@ type SalesReturnItemResponse struct {
 // ReturnStatusSummaryResponse represents return count summary by status
 // @Description Return status summary response
 type ReturnStatusSummaryResponse struct {
-	Draft           int64   `json:"draft" example:"3"`
-	Pending         int64   `json:"pending" example:"5"`
-	Approved        int64   `json:"approved" example:"2"`
-	Receiving       int64   `json:"receiving" example:"1"`
-	Rejected        int64   `json:"rejected" example:"1"`
-	Completed       int64   `json:"completed" example:"50"`
-	Cancelled       int64   `json:"cancelled" example:"2"`
-	Total           int64   `json:"total" example:"63"`
-	PendingApproval int64   `json:"pending_approval" example:"5"`
+	Draft           int64 `json:"draft" example:"3"`
+	Pending         int64 `json:"pending" example:"5"`
+	Approved        int64 `json:"approved" example:"2"`
+	Receiving       int64 `json:"receiving" example:"1"`
+	Rejected        int64 `json:"rejected" example:"1"`
+	Completed       int64 `json:"completed" example:"50"`
+	Cancelled       int64 `json:"cancelled" example:"2"`
+	Total           int64 `json:"total" example:"63"`
+	PendingApproval int64 `json:"pending_approval" example:"5"`
 }
 
+
 // Create godoc
+// @ID           createSalesReturn
 // @Summary      Create a new sales return
 // @Description  Create a new sales return from an existing sales order
 // @Tags         sales-returns
@@ -194,12 +196,12 @@ type ReturnStatusSummaryResponse struct {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateSalesReturnRequest true "Sales return creation request"
-// @Success      201 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      201 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns [post]
 func (h *SalesReturnHandler) Create(c *gin.Context) {
@@ -270,19 +272,20 @@ func (h *SalesReturnHandler) Create(c *gin.Context) {
 	h.Created(c, toSalesReturnResponse(sr))
 }
 
+
 // GetByID godoc
+// @ID           getSalesReturnById
 // @Summary      Get sales return by ID
 // @Description  Retrieve a sales return by its ID
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id} [get]
 func (h *SalesReturnHandler) GetByID(c *gin.Context) {
@@ -307,19 +310,20 @@ func (h *SalesReturnHandler) GetByID(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // GetByReturnNumber godoc
+// @ID           getSalesReturnByReturnNumber
 // @Summary      Get sales return by return number
 // @Description  Retrieve a sales return by its return number
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        return_number path string true "Return Number" example:"SR-2026-00001"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/number/{return_number} [get]
 func (h *SalesReturnHandler) GetByReturnNumber(c *gin.Context) {
@@ -344,11 +348,12 @@ func (h *SalesReturnHandler) GetByReturnNumber(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // List godoc
+// @ID           listSalesReturns
 // @Summary      List sales returns
 // @Description  Retrieve a paginated list of sales returns with optional filtering
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        search query string false "Search term (return number, customer name, order number)"
@@ -365,10 +370,10 @@ func (h *SalesReturnHandler) GetByReturnNumber(c *gin.Context) {
 // @Param        page_size query int false "Page size" default(20) maximum(100)
 // @Param        order_by query string false "Order by field" default(created_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} dto.Response{data=[]SalesReturnListResponse,meta=dto.Meta}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]SalesReturnListResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns [get]
 func (h *SalesReturnHandler) List(c *gin.Context) {
@@ -401,7 +406,9 @@ func (h *SalesReturnHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, toSalesReturnListResponses(returns), total, filter.Page, filter.PageSize)
 }
 
+
 // Update godoc
+// @ID           updateSalesReturn
 // @Summary      Update a sales return
 // @Description  Update a sales return (only allowed in DRAFT status)
 // @Tags         sales-returns
@@ -410,12 +417,12 @@ func (h *SalesReturnHandler) List(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body UpdateSalesReturnRequest true "Sales return update request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id} [put]
 func (h *SalesReturnHandler) Update(c *gin.Context) {
@@ -467,20 +474,21 @@ func (h *SalesReturnHandler) Update(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Delete godoc
+// @ID           deleteSalesReturn
 // @Summary      Delete a sales return
 // @Description  Delete a sales return (only allowed in DRAFT status)
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id} [delete]
 func (h *SalesReturnHandler) Delete(c *gin.Context) {
@@ -505,7 +513,9 @@ func (h *SalesReturnHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
+
 // AddItem godoc
+// @ID           addSalesReturnItem
 // @Summary      Add item to sales return
 // @Description  Add a new item to a sales return (only allowed in DRAFT status)
 // @Tags         sales-returns
@@ -514,12 +524,12 @@ func (h *SalesReturnHandler) Delete(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body AddReturnItemRequest true "Return item to add"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/items [post]
 func (h *SalesReturnHandler) AddItem(c *gin.Context) {
@@ -563,7 +573,9 @@ func (h *SalesReturnHandler) AddItem(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // UpdateItem godoc
+// @ID           updateSalesReturnItem
 // @Summary      Update return item
 // @Description  Update an item in a sales return (only allowed in DRAFT status)
 // @Tags         sales-returns
@@ -573,12 +585,12 @@ func (h *SalesReturnHandler) AddItem(c *gin.Context) {
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        item_id path string true "Return Item ID" format(uuid)
 // @Param        request body UpdateReturnItemRequest true "Return item update request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/items/{item_id} [put]
 func (h *SalesReturnHandler) UpdateItem(c *gin.Context) {
@@ -625,21 +637,22 @@ func (h *SalesReturnHandler) UpdateItem(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // RemoveItem godoc
+// @ID           removeSalesReturnItem
 // @Summary      Remove item from sales return
 // @Description  Remove an item from a sales return (only allowed in DRAFT status)
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        item_id path string true "Return Item ID" format(uuid)
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/items/{item_id} [delete]
 func (h *SalesReturnHandler) RemoveItem(c *gin.Context) {
@@ -670,7 +683,9 @@ func (h *SalesReturnHandler) RemoveItem(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Submit godoc
+// @ID           submitSalesReturn
 // @Summary      Submit a sales return for approval
 // @Description  Submit a sales return for approval (transitions from DRAFT to PENDING)
 // @Tags         sales-returns
@@ -678,12 +693,12 @@ func (h *SalesReturnHandler) RemoveItem(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/submit [post]
 func (h *SalesReturnHandler) Submit(c *gin.Context) {
@@ -708,7 +723,9 @@ func (h *SalesReturnHandler) Submit(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Approve godoc
+// @ID           approveSalesReturn
 // @Summary      Approve a sales return
 // @Description  Approve a sales return (transitions from PENDING to APPROVED)
 // @Tags         sales-returns
@@ -717,12 +734,12 @@ func (h *SalesReturnHandler) Submit(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body ApproveReturnRequest false "Approval request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/approve [post]
 func (h *SalesReturnHandler) Approve(c *gin.Context) {
@@ -762,7 +779,9 @@ func (h *SalesReturnHandler) Approve(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Receive godoc
+// @ID           receiveSalesReturn
 // @Summary      Receive returned goods
 // @Description  Start receiving returned goods into warehouse (transitions from APPROVED to RECEIVING)
 // @Tags         sales-returns
@@ -771,12 +790,12 @@ func (h *SalesReturnHandler) Approve(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body ReceiveReturnRequest false "Receive return request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/receive [post]
 func (h *SalesReturnHandler) Receive(c *gin.Context) {
@@ -816,7 +835,9 @@ func (h *SalesReturnHandler) Receive(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Reject godoc
+// @ID           rejectSalesReturn
 // @Summary      Reject a sales return
 // @Description  Reject a sales return (transitions from PENDING to REJECTED)
 // @Tags         sales-returns
@@ -825,12 +846,12 @@ func (h *SalesReturnHandler) Receive(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body RejectReturnRequest true "Rejection request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/reject [post]
 func (h *SalesReturnHandler) Reject(c *gin.Context) {
@@ -872,7 +893,9 @@ func (h *SalesReturnHandler) Reject(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Complete godoc
+// @ID           completeSalesReturn
 // @Summary      Complete a sales return
 // @Description  Mark a sales return as completed (transitions from APPROVED to COMPLETED)
 // @Tags         sales-returns
@@ -881,12 +904,12 @@ func (h *SalesReturnHandler) Reject(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body CompleteReturnRequest false "Complete return request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/complete [post]
 func (h *SalesReturnHandler) Complete(c *gin.Context) {
@@ -926,7 +949,9 @@ func (h *SalesReturnHandler) Complete(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // Cancel godoc
+// @ID           cancelSalesReturn
 // @Summary      Cancel a sales return
 // @Description  Cancel a sales return (from DRAFT, PENDING, or APPROVED status)
 // @Tags         sales-returns
@@ -935,12 +960,12 @@ func (h *SalesReturnHandler) Complete(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)
 // @Param        request body CancelReturnRequest true "Cancel return request"
-// @Success      200 {object} dto.Response{data=SalesReturnResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[SalesReturnResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/{id}/cancel [post]
 func (h *SalesReturnHandler) Cancel(c *gin.Context) {
@@ -975,17 +1000,18 @@ func (h *SalesReturnHandler) Cancel(c *gin.Context) {
 	h.Success(c, toSalesReturnResponse(sr))
 }
 
+
 // GetStatusSummary godoc
+// @ID           getSalesReturnStatusSummary
 // @Summary      Get return status summary
 // @Description  Get count of returns by status for dashboard
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} dto.Response{data=ReturnStatusSummaryResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[ReturnStatusSummaryResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/sales-returns/stats/summary [get]
 func (h *SalesReturnHandler) GetStatusSummary(c *gin.Context) {

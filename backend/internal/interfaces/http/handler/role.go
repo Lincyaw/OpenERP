@@ -22,19 +22,21 @@ func NewRoleHandler(roleService *identity.RoleService) *RoleHandler {
 	}
 }
 
+
 // Create godoc
+// @ID           createRole
 // @Summary      Create a new role
 // @Description  Create a new role in the system
 // @Tags         roles
 // @Accept       json
 // @Produce      json
 // @Param        request body CreateRoleRequest true "Role creation request"
-// @Success      201 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      403 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      201 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      403 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles [post]
 func (h *RoleHandler) Create(c *gin.Context) {
@@ -82,18 +84,19 @@ func (h *RoleHandler) Create(c *gin.Context) {
 	h.Created(c, toRoleResponse(role))
 }
 
+
 // GetByID godoc
+// @ID           getRoleById
 // @Summary      Get a role by ID
 // @Description  Retrieve a role by its ID
 // @Tags         roles
-// @Accept       json
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id} [get]
 func (h *RoleHandler) GetByID(c *gin.Context) {
@@ -112,18 +115,19 @@ func (h *RoleHandler) GetByID(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // GetByCode godoc
+// @ID           getRoleByCode
 // @Summary      Get a role by code
 // @Description  Retrieve a role by its code
 // @Tags         roles
-// @Accept       json
 // @Produce      json
 // @Param        code path string true "Role code"
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/code/{code} [get]
 func (h *RoleHandler) GetByCode(c *gin.Context) {
@@ -154,21 +158,22 @@ func (h *RoleHandler) GetByCode(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // List godoc
+// @ID           listRoles
 // @Summary      List roles
 // @Description  Get a paginated list of roles
 // @Tags         roles
-// @Accept       json
 // @Produce      json
 // @Param        keyword query string false "Search keyword"
 // @Param        is_enabled query bool false "Filter by enabled status"
 // @Param        is_system_role query bool false "Filter by system role"
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Items per page" default(20) maximum(100)
-// @Success      200 {object} dto.Response{data=RoleListResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleListResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles [get]
 func (h *RoleHandler) List(c *gin.Context) {
@@ -215,7 +220,9 @@ func (h *RoleHandler) List(c *gin.Context) {
 	h.Success(c, toRoleListResponse(result))
 }
 
+
 // Update godoc
+// @ID           updateRole
 // @Summary      Update a role
 // @Description  Update a role's information
 // @Tags         roles
@@ -223,12 +230,12 @@ func (h *RoleHandler) List(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
 // @Param        request body UpdateRoleRequest true "Role update request"
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id} [put]
 func (h *RoleHandler) Update(c *gin.Context) {
@@ -260,19 +267,20 @@ func (h *RoleHandler) Update(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // Delete godoc
+// @ID           deleteRole
 // @Summary      Delete a role
 // @Description  Delete a role from the system
 // @Tags         roles
-// @Accept       json
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
-// @Success      200 {object} dto.Response
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} SuccessResponse
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id} [delete]
 func (h *RoleHandler) Delete(c *gin.Context) {
@@ -290,19 +298,21 @@ func (h *RoleHandler) Delete(c *gin.Context) {
 	h.Success(c, dto.MessageResponse{Message: "Role deleted successfully"})
 }
 
+
 // Enable godoc
+// @ID           enableRole
 // @Summary      Enable a role
 // @Description  Enable a role
 // @Tags         roles
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id}/enable [post]
 func (h *RoleHandler) Enable(c *gin.Context) {
@@ -321,19 +331,21 @@ func (h *RoleHandler) Enable(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // Disable godoc
+// @ID           disableRole
 // @Summary      Disable a role
 // @Description  Disable a role
 // @Tags         roles
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id}/disable [post]
 func (h *RoleHandler) Disable(c *gin.Context) {
@@ -352,7 +364,9 @@ func (h *RoleHandler) Disable(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // SetPermissions godoc
+// @ID           setPermissionsRole
 // @Summary      Set role permissions
 // @Description  Set permissions for a role (replaces existing permissions)
 // @Tags         roles
@@ -360,12 +374,12 @@ func (h *RoleHandler) Disable(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Role ID" format(uuid)
 // @Param        request body SetPermissionsRequest true "Permissions"
-// @Success      200 {object} dto.Response{data=RoleResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[RoleResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/{id}/permissions [put]
 func (h *RoleHandler) SetPermissions(c *gin.Context) {
@@ -390,15 +404,16 @@ func (h *RoleHandler) SetPermissions(c *gin.Context) {
 	h.Success(c, toRoleResponse(role))
 }
 
+
 // GetPermissions godoc
+// @ID           getRolePermissions
 // @Summary      Get all available permissions
 // @Description  Get all available permission codes
 // @Tags         roles
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=PermissionListResponse}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[PermissionListResponse]
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/permissions [get]
 func (h *RoleHandler) GetPermissions(c *gin.Context) {
@@ -428,15 +443,16 @@ func (h *RoleHandler) GetPermissions(c *gin.Context) {
 	h.Success(c, PermissionListResponse{Permissions: permissions})
 }
 
+
 // GetSystemRoles godoc
+// @ID           getRoleSystemRoles
 // @Summary      Get system roles
 // @Description  Get all system roles
 // @Tags         roles
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=[]RoleResponse}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]RoleResponse]
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/system [get]
 func (h *RoleHandler) GetSystemRoles(c *gin.Context) {
@@ -466,15 +482,16 @@ func (h *RoleHandler) GetSystemRoles(c *gin.Context) {
 	h.Success(c, responses)
 }
 
+
 // Count godoc
+// @ID           countRoles
 // @Summary      Get role count
 // @Description  Get the total number of roles
 // @Tags         roles
-// @Accept       json
 // @Produce      json
-// @Success      200 {object} dto.Response{data=object{count=int64}}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[CountData]
+// @Failure      401 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/roles/stats/count [get]
 func (h *RoleHandler) Count(c *gin.Context) {

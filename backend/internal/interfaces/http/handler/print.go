@@ -158,7 +158,9 @@ type PaperSizeResponse struct {
 	Height int    `json:"height" example:"297"`
 }
 
+
 // CreateTemplate godoc
+// @ID           createPrintTemplateTemplate
 //
 //	@Summary		Create a new print template
 //	@Description	Create a new print template for a specific document type
@@ -166,11 +168,11 @@ type PaperSizeResponse struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CreateTemplateRequest	true	"Template creation request"
-//	@Success		201		{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[TemplateResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		409		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates [post]
 func (h *PrintHandler) CreateTemplate(c *gin.Context) {
@@ -213,19 +215,20 @@ func (h *PrintHandler) CreateTemplate(c *gin.Context) {
 	h.Created(c, result)
 }
 
+
 // GetTemplate godoc
+// @ID           getPrintTemplateTemplate
 //
 //	@Summary		Get print template by ID
 //	@Description	Retrieve a print template by its ID
 //	@Tags			print-templates
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[TemplateResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id} [get]
 func (h *PrintHandler) GetTemplate(c *gin.Context) {
@@ -250,12 +253,13 @@ func (h *PrintHandler) GetTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // ListTemplates godoc
+// @ID           listPrintTemplateTemplates
 //
 //	@Summary		List print templates
 //	@Description	Retrieve a paginated list of print templates
 //	@Tags			print-templates
-//	@Accept			json
 //	@Produce		json
 //	@Param			page		query		int		false	"Page number"		default(1)
 //	@Param			page_size	query		int		false	"Page size"			default(20)
@@ -264,10 +268,10 @@ func (h *PrintHandler) GetTemplate(c *gin.Context) {
 //	@Param			search		query		string	false	"Search term"
 //	@Param			doc_type	query		string	false	"Filter by document type"
 //	@Param			status		query		string	false	"Filter by status"
-//	@Success		200			{object}	dto.Response{data=[]TemplateResponse,meta=dto.Meta}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]TemplateResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates [get]
 func (h *PrintHandler) ListTemplates(c *gin.Context) {
@@ -306,7 +310,9 @@ func (h *PrintHandler) ListTemplates(c *gin.Context) {
 	h.SuccessWithMeta(c, result.Items, result.Total, result.Page, result.Size)
 }
 
+
 // UpdateTemplate godoc
+// @ID           updatePrintTemplateTemplate
 //
 //	@Summary		Update print template
 //	@Description	Update an existing print template
@@ -315,12 +321,12 @@ func (h *PrintHandler) ListTemplates(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string					true	"Template ID"	format(uuid)
 //	@Param			request	body		UpdateTemplateRequest	true	"Template update request"
-//	@Success		200		{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[TemplateResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		409		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id} [put]
 func (h *PrintHandler) UpdateTemplate(c *gin.Context) {
@@ -368,20 +374,21 @@ func (h *PrintHandler) UpdateTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // DeleteTemplate godoc
+// @ID           deletePrintTemplateTemplate
 //
 //	@Summary		Delete print template
 //	@Description	Delete an existing print template
 //	@Tags			print-templates
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path	string	true	"Template ID"	format(uuid)
 //	@Success		204	"No Content"
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id} [delete]
 func (h *PrintHandler) DeleteTemplate(c *gin.Context) {
@@ -405,7 +412,9 @@ func (h *PrintHandler) DeleteTemplate(c *gin.Context) {
 	h.NoContent(c)
 }
 
+
 // SetDefaultTemplate godoc
+// @ID           setDefaultTemplatePrintTemplate
 //
 //	@Summary		Set template as default
 //	@Description	Set a template as the default for its document type
@@ -413,12 +422,12 @@ func (h *PrintHandler) DeleteTemplate(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[TemplateResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id}/set-default [post]
 func (h *PrintHandler) SetDefaultTemplate(c *gin.Context) {
@@ -443,7 +452,9 @@ func (h *PrintHandler) SetDefaultTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // ActivateTemplate godoc
+// @ID           activateTemplatePrintTemplate
 //
 //	@Summary		Activate template
 //	@Description	Activate an inactive print template
@@ -451,12 +462,12 @@ func (h *PrintHandler) SetDefaultTemplate(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[TemplateResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id}/activate [post]
 func (h *PrintHandler) ActivateTemplate(c *gin.Context) {
@@ -481,7 +492,9 @@ func (h *PrintHandler) ActivateTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // DeactivateTemplate godoc
+// @ID           deactivateTemplatePrintTemplate
 //
 //	@Summary		Deactivate template
 //	@Description	Deactivate an active print template
@@ -489,12 +502,12 @@ func (h *PrintHandler) ActivateTemplate(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[TemplateResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id}/deactivate [post]
 func (h *PrintHandler) DeactivateTemplate(c *gin.Context) {
@@ -519,18 +532,19 @@ func (h *PrintHandler) DeactivateTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GetTemplatesByDocType godoc
+// @ID           getPrintTemplateTemplatesByDocType
 //
 //	@Summary		Get templates by document type
 //	@Description	Retrieve all active templates for a specific document type
 //	@Tags			print-templates
-//	@Accept			json
 //	@Produce		json
 //	@Param			doc_type	path		string	true	"Document type"
-//	@Success		200			{object}	dto.Response{data=[]TemplateResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]TemplateResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/by-doc-type/{doc_type} [get]
 func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
@@ -559,7 +573,13 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 // Print Preview and PDF Generation Endpoints
 // =============================================================================
 
+
+// =============================================================================
+// Print Preview and PDF Generation Endpoints
+// =============================================================================
+
 // PreviewDocument godoc
+// @ID           previewDocumentPrintPreview
 //
 //	@Summary		Preview document as HTML
 //	@Description	Generate HTML preview for a document using a print template
@@ -567,12 +587,12 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		PreviewDocumentRequest	true	"Preview request"
-//	@Success		200		{object}	dto.Response{data=PreviewHTTPResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[PreviewHTTPResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		422		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/preview [post]
 func (h *PrintHandler) PreviewDocument(c *gin.Context) {
@@ -618,7 +638,9 @@ func (h *PrintHandler) PreviewDocument(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GeneratePDF godoc
+// @ID           generatePDFPrintJob
 //
 //	@Summary		Generate PDF
 //	@Description	Generate a PDF for a document and create a print job
@@ -626,12 +648,12 @@ func (h *PrintHandler) PreviewDocument(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		GeneratePDFHTTPRequest	true	"PDF generation request"
-//	@Success		201		{object}	dto.Response{data=PrintJobResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[PrintJobResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		422		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/generate [post]
 func (h *PrintHandler) GeneratePDF(c *gin.Context) {
@@ -689,19 +711,24 @@ func (h *PrintHandler) GeneratePDF(c *gin.Context) {
 // Print Job Endpoints
 // =============================================================================
 
+
+// =============================================================================
+// Print Job Endpoints
+// =============================================================================
+
 // GetJob godoc
+// @ID           getPrintJobJob
 //
 //	@Summary		Get print job by ID
 //	@Description	Retrieve a print job by its ID
 //	@Tags			print-jobs
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Job ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=PrintJobResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[PrintJobResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/{id} [get]
 func (h *PrintHandler) GetJob(c *gin.Context) {
@@ -726,12 +753,13 @@ func (h *PrintHandler) GetJob(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // ListJobs godoc
+// @ID           listPrintJobJobs
 //
 //	@Summary		List print jobs
 //	@Description	Retrieve a paginated list of print jobs
 //	@Tags			print-jobs
-//	@Accept			json
 //	@Produce		json
 //	@Param			page		query		int		false	"Page number"		default(1)
 //	@Param			page_size	query		int		false	"Page size"			default(20)
@@ -739,10 +767,10 @@ func (h *PrintHandler) GetJob(c *gin.Context) {
 //	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
 //	@Param			doc_type	query		string	false	"Filter by document type"
 //	@Param			status		query		string	false	"Filter by status"
-//	@Success		200			{object}	dto.Response{data=[]PrintJobResponse,meta=dto.Meta}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]PrintJobResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs [get]
 func (h *PrintHandler) ListJobs(c *gin.Context) {
@@ -780,19 +808,20 @@ func (h *PrintHandler) ListJobs(c *gin.Context) {
 	h.SuccessWithMeta(c, result.Items, result.Total, result.Page, result.Size)
 }
 
+
 // GetJobsByDocument godoc
+// @ID           getPrintJobJobsByDocument
 //
 //	@Summary		Get jobs by document
 //	@Description	Retrieve print jobs for a specific document
 //	@Tags			print-jobs
-//	@Accept			json
 //	@Produce		json
 //	@Param			doc_type	path		string	true	"Document type"
 //	@Param			document_id	path		string	true	"Document ID"	format(uuid)
-//	@Success		200			{object}	dto.Response{data=[]PrintJobResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[[]PrintJobResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/by-document/{doc_type}/{document_id} [get]
 func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
@@ -823,7 +852,9 @@ func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // DownloadPDF godoc
+// @ID           downloadPDFPrintJob
 //
 //	@Summary		Download PDF
 //	@Description	Download the PDF file for a completed print job
@@ -831,10 +862,10 @@ func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
 //	@Produce		application/pdf
 //	@Param			id	path		string	true	"Job ID"	format(uuid)
 //	@Success		200	{file}		binary	"PDF file"
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/{id}/download [get]
 func (h *PrintHandler) DownloadPDF(c *gin.Context) {
@@ -883,14 +914,19 @@ func (h *PrintHandler) DownloadPDF(c *gin.Context) {
 // Reference Data Endpoints
 // =============================================================================
 
+
+// =============================================================================
+// Reference Data Endpoints
+// =============================================================================
+
 // GetDocumentTypes godoc
+// @ID           getPrintReferenceDocumentTypes
 //
 //	@Summary		Get available document types
 //	@Description	Retrieve all available document types that can be printed
 //	@Tags			print-reference
-//	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	dto.Response{data=[]DocumentTypeResponse}
+//	@Success		200	{object}	APIResponse[[]DocumentTypeResponse]
 //	@Security		BearerAuth
 //	@Router			/print/document-types [get]
 func (h *PrintHandler) GetDocumentTypes(c *gin.Context) {
@@ -898,14 +934,15 @@ func (h *PrintHandler) GetDocumentTypes(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GetPaperSizes godoc
+// @ID           getPrintReferencePaperSizes
 //
 //	@Summary		Get available paper sizes
 //	@Description	Retrieve all available paper sizes for printing
 //	@Tags			print-reference
-//	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	dto.Response{data=[]PaperSizeResponse}
+//	@Success		200	{object}	APIResponse[[]PaperSizeResponse]
 //	@Security		BearerAuth
 //	@Router			/print/paper-sizes [get]
 func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
@@ -913,19 +950,20 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GetTemplateContent godoc
+// @ID           getPrintTemplateTemplateContent
 //
 //	@Summary		Get template content
 //	@Description	Retrieve the HTML content of a print template for editing
 //	@Tags			print-templates
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	dto.Response{data=object{content=string}}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[ContentData]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id}/content [get]
 func (h *PrintHandler) GetTemplateContent(c *gin.Context) {
@@ -953,7 +991,9 @@ func (h *PrintHandler) GetTemplateContent(c *gin.Context) {
 	})
 }
 
+
 // UpdateTemplateContent godoc
+// @ID           updatePrintTemplateTemplateContent
 //
 //	@Summary		Update template content
 //	@Description	Update only the HTML content of a print template
@@ -962,11 +1002,11 @@ func (h *PrintHandler) GetTemplateContent(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string								true	"Template ID"	format(uuid)
 //	@Param			request	body		object{content=string}				true	"Template content"
-//	@Success		200		{object}	dto.Response{data=TemplateResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[TemplateResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/{id}/content [put]
 func (h *PrintHandler) UpdateTemplateContent(c *gin.Context) {
@@ -1003,7 +1043,9 @@ func (h *PrintHandler) UpdateTemplateContent(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // ServePDF godoc
+// @ID           servePDFPrintFile
 //
 //	@Summary		Serve PDF file
 //	@Description	Serve a PDF file from storage
@@ -1014,9 +1056,9 @@ func (h *PrintHandler) UpdateTemplateContent(c *gin.Context) {
 //	@Param			month		path		string	true	"Month"
 //	@Param			filename	path		string	true	"Filename"
 //	@Success		200			{file}		binary	"PDF file"
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/prints/{tenant_id}/{year}/{month}/{filename} [get]
 func (h *PrintHandler) ServePDF(c *gin.Context, storage interface {

@@ -79,7 +79,9 @@ type BalanceSummaryResponse struct {
 	TotalRefund    float64 `json:"total_refund" example:"0.00"`
 }
 
+
 // Recharge godoc
+// @ID           rechargeBalance
 // @Summary      Recharge customer balance
 // @Description  Add funds to a customer's prepaid balance
 // @Tags         balance
@@ -88,12 +90,12 @@ type BalanceSummaryResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer ID" format(uuid)
 // @Param        request body RechargeRequest true "Recharge request"
-// @Success      201 {object} dto.Response{data=BalanceTransactionResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      201 {object} APIResponse[BalanceTransactionResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customers/{id}/balance/recharge [post]
 func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
@@ -144,7 +146,9 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 	h.Created(c, transaction)
 }
 
+
 // Adjust godoc
+// @ID           adjustBalance
 // @Summary      Adjust customer balance
 // @Description  Manually adjust a customer's balance (increase or decrease)
 // @Tags         balance
@@ -153,12 +157,12 @@ func (h *BalanceTransactionHandler) Recharge(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer ID" format(uuid)
 // @Param        request body AdjustRequest true "Adjust request"
-// @Success      201 {object} dto.Response{data=BalanceTransactionResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      422 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      201 {object} APIResponse[BalanceTransactionResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customers/{id}/balance/adjust [post]
 func (h *BalanceTransactionHandler) Adjust(c *gin.Context) {
@@ -208,19 +212,20 @@ func (h *BalanceTransactionHandler) Adjust(c *gin.Context) {
 	h.Created(c, transaction)
 }
 
+
 // GetBalance godoc
+// @ID           getBalanceBalance
 // @Summary      Get customer balance
 // @Description  Get the current balance for a customer
 // @Tags         balance
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} dto.Response{data=object{balance=number}}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[BalanceData]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customers/{id}/balance [get]
 func (h *BalanceTransactionHandler) GetBalance(c *gin.Context) {
@@ -248,19 +253,20 @@ func (h *BalanceTransactionHandler) GetBalance(c *gin.Context) {
 	})
 }
 
+
 // GetBalanceSummary godoc
+// @ID           getBalanceBalanceSummary
 // @Summary      Get customer balance summary
 // @Description  Get balance summary including total recharge, consume, and refund
 // @Tags         balance
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} dto.Response{data=BalanceSummaryResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[BalanceSummaryResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customers/{id}/balance/summary [get]
 func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
@@ -285,11 +291,12 @@ func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 	h.Success(c, summary)
 }
 
+
 // ListTransactions godoc
+// @ID           listBalanceTransactions
 // @Summary      List balance transactions
 // @Description  List balance transactions for a customer with optional filtering
 // @Tags         balance
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer ID" format(uuid)
@@ -299,11 +306,11 @@ func (h *BalanceTransactionHandler) GetBalanceSummary(c *gin.Context) {
 // @Param        date_to query string false "End date (YYYY-MM-DD)"
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Success      200 {object} dto.Response{data=[]BalanceTransactionResponse,meta=dto.Meta}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[[]BalanceTransactionResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customers/{id}/balance/transactions [get]
 func (h *BalanceTransactionHandler) ListTransactions(c *gin.Context) {
@@ -358,19 +365,20 @@ func (h *BalanceTransactionHandler) ListTransactions(c *gin.Context) {
 	h.SuccessWithMeta(c, transactions, total, filter.Page, filter.PageSize)
 }
 
+
 // GetTransaction godoc
+// @ID           getBalanceTransaction
 // @Summary      Get balance transaction by ID
 // @Description  Get a specific balance transaction by its ID
 // @Tags         balance
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Transaction ID" format(uuid)
-// @Success      200 {object} dto.Response{data=BalanceTransactionResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      404 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
+// @Success      200 {object} APIResponse[BalanceTransactionResponse]
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      500 {object} ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/balance/transactions/{id} [get]
 func (h *BalanceTransactionHandler) GetTransaction(c *gin.Context) {

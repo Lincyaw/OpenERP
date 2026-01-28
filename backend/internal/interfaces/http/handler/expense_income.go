@@ -233,12 +233,15 @@ type ExpenseIncomeCashFlowItem struct {
 
 // ===================== Expense Handlers =====================
 
+
+// ===================== Expense Handlers =====================
+
 // ListExpenses godoc
+// @ID           listExpensExpenses
 //
 //	@Summary		List expense records
 //	@Description	Get a paginated list of expense records
 //	@Tags			expenses
-//	@Accept			json
 //	@Produce		json
 //	@Param			search			query		string	false	"Search keyword"
 //	@Param			category		query		string	false	"Filter by category"	Enums(RENT, UTILITIES, SALARY, OFFICE, TRAVEL, MARKETING, EQUIPMENT, MAINTENANCE, INSURANCE, TAX, OTHER)
@@ -248,10 +251,10 @@ type ExpenseIncomeCashFlowItem struct {
 //	@Param			to_date			query		string	false	"Filter to date (YYYY-MM-DD)"
 //	@Param			page			query		int		false	"Page number"			default(1)
 //	@Param			page_size		query		int		false	"Page size"				default(20)
-//	@Success		200				{object}	dto.Response{data=[]ExpenseRecordResponse}
-//	@Failure		400				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500				{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200				{object}	APIResponse[[]ExpenseRecordResponse]
+//	@Failure		400				{object}	ErrorResponse
+//	@Failure		401				{object}	ErrorResponse
+//	@Failure		500				{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses [get]
 func (h *ExpenseIncomeHandler) ListExpenses(c *gin.Context) {
@@ -319,19 +322,20 @@ func (h *ExpenseIncomeHandler) ListExpenses(c *gin.Context) {
 	h.SuccessWithMeta(c, response, total, filter.Page, filter.PageSize)
 }
 
+
 // GetExpense godoc
+// @ID           getExpensExpense
 //
 //	@Summary		Get expense record by ID
 //	@Description	Get a single expense record by its ID
 //	@Tags			expenses
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Expense ID"
-//	@Success		200	{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id} [get]
 func (h *ExpenseIncomeHandler) GetExpense(c *gin.Context) {
@@ -356,7 +360,9 @@ func (h *ExpenseIncomeHandler) GetExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // CreateExpense godoc
+// @ID           createExpensExpense
 //
 //	@Summary		Create expense record
 //	@Description	Create a new expense record
@@ -364,10 +370,10 @@ func (h *ExpenseIncomeHandler) GetExpense(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CreateExpenseRecordRequest	true	"Expense creation request"
-//	@Success		201		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses [post]
 func (h *ExpenseIncomeHandler) CreateExpense(c *gin.Context) {
@@ -409,7 +415,9 @@ func (h *ExpenseIncomeHandler) CreateExpense(c *gin.Context) {
 	})
 }
 
+
 // UpdateExpense godoc
+// @ID           updateExpensExpense
 //
 //	@Summary		Update expense record
 //	@Description	Update an existing expense record (only draft status)
@@ -418,11 +426,11 @@ func (h *ExpenseIncomeHandler) CreateExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string						true	"Expense ID"
 //	@Param			request	body		UpdateExpenseRecordRequest	true	"Expense update request"
-//	@Success		200		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id} [put]
 func (h *ExpenseIncomeHandler) UpdateExpense(c *gin.Context) {
@@ -462,19 +470,20 @@ func (h *ExpenseIncomeHandler) UpdateExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // DeleteExpense godoc
+// @ID           deleteExpensExpense
 //
 //	@Summary		Delete expense record
 //	@Description	Delete an expense record (soft delete, only draft status)
 //	@Tags			expenses
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Expense ID"
-//	@Success		200	{object}	dto.Response
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success      200 {object} SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id} [delete]
 func (h *ExpenseIncomeHandler) DeleteExpense(c *gin.Context) {
@@ -498,7 +507,9 @@ func (h *ExpenseIncomeHandler) DeleteExpense(c *gin.Context) {
 	h.Success(c, nil)
 }
 
+
 // SubmitExpense godoc
+// @ID           submitExpenseExpens
 //
 //	@Summary		Submit expense for approval
 //	@Description	Submit an expense record for approval
@@ -506,11 +517,11 @@ func (h *ExpenseIncomeHandler) DeleteExpense(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Expense ID"
-//	@Success		200	{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id}/submit [post]
 func (h *ExpenseIncomeHandler) SubmitExpense(c *gin.Context) {
@@ -541,7 +552,9 @@ func (h *ExpenseIncomeHandler) SubmitExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // ApproveExpense godoc
+// @ID           approveExpenseExpens
 //
 //	@Summary		Approve expense
 //	@Description	Approve an expense record
@@ -550,11 +563,11 @@ func (h *ExpenseIncomeHandler) SubmitExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string					true	"Expense ID"
 //	@Param			request	body		ExpenseActionRequest	false	"Approval remark"
-//	@Success		200		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id}/approve [post]
 func (h *ExpenseIncomeHandler) ApproveExpense(c *gin.Context) {
@@ -588,7 +601,9 @@ func (h *ExpenseIncomeHandler) ApproveExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // RejectExpense godoc
+// @ID           rejectExpenseExpens
 //
 //	@Summary		Reject expense
 //	@Description	Reject an expense record
@@ -597,11 +612,11 @@ func (h *ExpenseIncomeHandler) ApproveExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string					true	"Expense ID"
 //	@Param			request	body		ExpenseActionRequest	true	"Rejection reason"
-//	@Success		200		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id}/reject [post]
 func (h *ExpenseIncomeHandler) RejectExpense(c *gin.Context) {
@@ -638,7 +653,9 @@ func (h *ExpenseIncomeHandler) RejectExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // CancelExpense godoc
+// @ID           cancelExpenseExpens
 //
 //	@Summary		Cancel expense
 //	@Description	Cancel an expense record
@@ -647,11 +664,11 @@ func (h *ExpenseIncomeHandler) RejectExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string					true	"Expense ID"
 //	@Param			request	body		ExpenseActionRequest	true	"Cancel reason"
-//	@Success		200		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id}/cancel [post]
 func (h *ExpenseIncomeHandler) CancelExpense(c *gin.Context) {
@@ -688,7 +705,9 @@ func (h *ExpenseIncomeHandler) CancelExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // MarkExpensePaid godoc
+// @ID           markExpensePaidExpens
 //
 //	@Summary		Mark expense as paid
 //	@Description	Mark an approved expense as paid
@@ -697,11 +716,11 @@ func (h *ExpenseIncomeHandler) CancelExpense(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string					true	"Expense ID"
 //	@Param			request	body		MarkExpensePaidRequest	true	"Payment method"
-//	@Success		200		{object}	dto.Response{data=ExpenseRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[ExpenseRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/{id}/pay [post]
 func (h *ExpenseIncomeHandler) MarkExpensePaid(c *gin.Context) {
@@ -732,19 +751,20 @@ func (h *ExpenseIncomeHandler) MarkExpensePaid(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
+
 // GetExpensesSummary godoc
+// @ID           getExpensExpensesSummary
 //
 //	@Summary		Get expenses summary
 //	@Description	Get expense statistics summary
 //	@Tags			expenses
-//	@Accept			json
 //	@Produce		json
 //	@Param			from_date	query		string	false	"From date (YYYY-MM-DD)"
 //	@Param			to_date		query		string	false	"To date (YYYY-MM-DD)"
-//	@Success		200			{object}	dto.Response{data=ExpenseSummaryResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[ExpenseSummaryResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/expenses/summary [get]
 func (h *ExpenseIncomeHandler) GetExpensesSummary(c *gin.Context) {
@@ -801,12 +821,15 @@ func (h *ExpenseIncomeHandler) GetExpensesSummary(c *gin.Context) {
 
 // ===================== Other Income Handlers =====================
 
+
+// ===================== Other Income Handlers =====================
+
 // ListIncomes godoc
+// @ID           listIncomeIncomes
 //
 //	@Summary		List other income records
 //	@Description	Get a paginated list of other income records
 //	@Tags			incomes
-//	@Accept			json
 //	@Produce		json
 //	@Param			search			query		string	false	"Search keyword"
 //	@Param			category		query		string	false	"Filter by category"	Enums(INVESTMENT, SUBSIDY, INTEREST, RENTAL, REFUND, COMPENSATION, ASSET_DISPOSAL, OTHER)
@@ -816,10 +839,10 @@ func (h *ExpenseIncomeHandler) GetExpensesSummary(c *gin.Context) {
 //	@Param			to_date			query		string	false	"Filter to date (YYYY-MM-DD)"
 //	@Param			page			query		int		false	"Page number"			default(1)
 //	@Param			page_size		query		int		false	"Page size"				default(20)
-//	@Success		200				{object}	dto.Response{data=[]OtherIncomeRecordResponse}
-//	@Failure		400				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500				{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200				{object}	APIResponse[[]OtherIncomeRecordResponse]
+//	@Failure		400				{object}	ErrorResponse
+//	@Failure		401				{object}	ErrorResponse
+//	@Failure		500				{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes [get]
 func (h *ExpenseIncomeHandler) ListIncomes(c *gin.Context) {
@@ -886,19 +909,20 @@ func (h *ExpenseIncomeHandler) ListIncomes(c *gin.Context) {
 	h.SuccessWithMeta(c, response, total, filter.Page, filter.PageSize)
 }
 
+
 // GetIncome godoc
+// @ID           getIncomeIncome
 //
 //	@Summary		Get other income record by ID
 //	@Description	Get a single income record by its ID
 //	@Tags			incomes
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Income ID"
-//	@Success		200	{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id} [get]
 func (h *ExpenseIncomeHandler) GetIncome(c *gin.Context) {
@@ -923,7 +947,9 @@ func (h *ExpenseIncomeHandler) GetIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
+
 // CreateIncome godoc
+// @ID           createIncomeIncome
 //
 //	@Summary		Create other income record
 //	@Description	Create a new other income record
@@ -931,10 +957,10 @@ func (h *ExpenseIncomeHandler) GetIncome(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CreateOtherIncomeRecordRequest	true	"Income creation request"
-//	@Success		201		{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes [post]
 func (h *ExpenseIncomeHandler) CreateIncome(c *gin.Context) {
@@ -976,7 +1002,9 @@ func (h *ExpenseIncomeHandler) CreateIncome(c *gin.Context) {
 	})
 }
 
+
 // UpdateIncome godoc
+// @ID           updateIncomeIncome
 //
 //	@Summary		Update other income record
 //	@Description	Update an existing income record (only draft status)
@@ -985,11 +1013,11 @@ func (h *ExpenseIncomeHandler) CreateIncome(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string							true	"Income ID"
 //	@Param			request	body		UpdateOtherIncomeRecordRequest	true	"Income update request"
-//	@Success		200		{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id} [put]
 func (h *ExpenseIncomeHandler) UpdateIncome(c *gin.Context) {
@@ -1029,19 +1057,20 @@ func (h *ExpenseIncomeHandler) UpdateIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
+
 // DeleteIncome godoc
+// @ID           deleteIncomeIncome
 //
 //	@Summary		Delete other income record
 //	@Description	Delete an income record (soft delete, only draft status)
 //	@Tags			incomes
-//	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Income ID"
-//	@Success		200	{object}	dto.Response
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success      200 {object} SuccessResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id} [delete]
 func (h *ExpenseIncomeHandler) DeleteIncome(c *gin.Context) {
@@ -1065,7 +1094,9 @@ func (h *ExpenseIncomeHandler) DeleteIncome(c *gin.Context) {
 	h.Success(c, nil)
 }
 
+
 // ConfirmIncome godoc
+// @ID           confirmIncomeIncome
 //
 //	@Summary		Confirm income record
 //	@Description	Confirm an income record
@@ -1073,11 +1104,11 @@ func (h *ExpenseIncomeHandler) DeleteIncome(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Income ID"
-//	@Success		200	{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id}/confirm [post]
 func (h *ExpenseIncomeHandler) ConfirmIncome(c *gin.Context) {
@@ -1108,7 +1139,9 @@ func (h *ExpenseIncomeHandler) ConfirmIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
+
 // CancelIncome godoc
+// @ID           cancelIncomeIncome
 //
 //	@Summary		Cancel income record
 //	@Description	Cancel an income record
@@ -1117,11 +1150,11 @@ func (h *ExpenseIncomeHandler) ConfirmIncome(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string				true	"Income ID"
 //	@Param			request	body		IncomeActionRequest	true	"Cancel reason"
-//	@Success		200		{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id}/cancel [post]
 func (h *ExpenseIncomeHandler) CancelIncome(c *gin.Context) {
@@ -1158,7 +1191,9 @@ func (h *ExpenseIncomeHandler) CancelIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
+
 // MarkIncomeReceived godoc
+// @ID           markIncomeReceivedIncome
 //
 //	@Summary		Mark income as received
 //	@Description	Mark a confirmed income as received
@@ -1167,11 +1202,11 @@ func (h *ExpenseIncomeHandler) CancelIncome(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string						true	"Income ID"
 //	@Param			request	body		MarkIncomeReceivedRequest	true	"Payment method"
-//	@Success		200		{object}	dto.Response{data=OtherIncomeRecordResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[OtherIncomeRecordResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/{id}/receive [post]
 func (h *ExpenseIncomeHandler) MarkIncomeReceived(c *gin.Context) {
@@ -1202,19 +1237,20 @@ func (h *ExpenseIncomeHandler) MarkIncomeReceived(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
+
 // GetIncomesSummary godoc
+// @ID           getIncomeIncomesSummary
 //
 //	@Summary		Get incomes summary
 //	@Description	Get income statistics summary
 //	@Tags			incomes
-//	@Accept			json
 //	@Produce		json
 //	@Param			from_date	query		string	false	"From date (YYYY-MM-DD)"
 //	@Param			to_date		query		string	false	"To date (YYYY-MM-DD)"
-//	@Success		200			{object}	dto.Response{data=IncomeSummaryResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[IncomeSummaryResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/incomes/summary [get]
 func (h *ExpenseIncomeHandler) GetIncomesSummary(c *gin.Context) {
@@ -1267,20 +1303,21 @@ func (h *ExpenseIncomeHandler) GetIncomesSummary(c *gin.Context) {
 	h.Success(c, response)
 }
 
+
 // GetCashFlow godoc
+// @ID           getExpensCashFlow
 //
 //	@Summary		Get cash flow summary
 //	@Description	Get combined expense and income cash flow summary
 //	@Tags			expenses
-//	@Accept			json
 //	@Produce		json
 //	@Param			from_date		query		string	false	"From date (YYYY-MM-DD)"
 //	@Param			to_date			query		string	false	"To date (YYYY-MM-DD)"
 //	@Param			include_items	query		bool	false	"Include individual items"
-//	@Success		200				{object}	dto.Response{data=CashFlowSummaryResponse}
-//	@Failure		400				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401				{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500				{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200				{object}	APIResponse[CashFlowSummaryResponse]
+//	@Failure		400				{object}	ErrorResponse
+//	@Failure		401				{object}	ErrorResponse
+//	@Failure		500				{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/finance/cash-flow [get]
 func (h *ExpenseIncomeHandler) GetCashFlow(c *gin.Context) {

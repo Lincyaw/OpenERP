@@ -118,12 +118,17 @@ func (h *FeatureFlagHandler) extractAuditContext(c *gin.Context) featureflagapp.
 // Flag Management Handlers
 // ============================================================================
 
+
+// ============================================================================
+// Flag Management Handlers
+// ============================================================================
+
 // ListFlags godoc
+// @ID           listFeatureFlagFlags
 //
 //	@Summary		List feature flags
 //	@Description	Retrieve a paginated list of feature flags with optional filtering
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			page		query		int		false	"Page number"			default(1)
 //	@Param			page_size	query		int		false	"Page size"				default(20)	maximum(100)
@@ -131,11 +136,11 @@ func (h *FeatureFlagHandler) extractAuditContext(c *gin.Context) featureflagapp.
 //	@Param			type		query		string	false	"Filter by type"		Enums(boolean, percentage, variant, user_segment)
 //	@Param			tags		query		string	false	"Filter by tags (comma-separated)"
 //	@Param			search		query		string	false	"Search term"
-//	@Success		200			{object}	dto.Response{data=dto.FlagListResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[dto.FlagListResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		403			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags [get]
 func (h *FeatureFlagHandler) ListFlags(c *gin.Context) {
@@ -162,7 +167,9 @@ func (h *FeatureFlagHandler) ListFlags(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // CreateFlag godoc
+// @ID           createFeatureFlagFlag
 //
 //	@Summary		Create a new feature flag
 //	@Description	Create a new feature flag with the specified configuration
@@ -170,12 +177,12 @@ func (h *FeatureFlagHandler) ListFlags(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CreateFlagHTTPRequest	true	"Flag creation request"
-//	@Success		201		{object}	dto.Response{data=dto.FlagResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[dto.FlagResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		403		{object}	ErrorResponse
+//	@Failure		409		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags [post]
 func (h *FeatureFlagHandler) CreateFlag(c *gin.Context) {
@@ -207,20 +214,21 @@ func (h *FeatureFlagHandler) CreateFlag(c *gin.Context) {
 	h.Created(c, result)
 }
 
+
 // GetFlag godoc
+// @ID           getFeatureFlagFlag
 //
 //	@Summary		Get feature flag by key
 //	@Description	Retrieve a feature flag by its unique key
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			key	path		string	true	"Feature flag key"
-//	@Success		200	{object}	dto.Response{data=dto.FlagResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[dto.FlagResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		403	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key} [get]
 func (h *FeatureFlagHandler) GetFlag(c *gin.Context) {
@@ -239,7 +247,9 @@ func (h *FeatureFlagHandler) GetFlag(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // UpdateFlag godoc
+// @ID           updateFeatureFlagFlag
 //
 //	@Summary		Update a feature flag
 //	@Description	Update an existing feature flag's configuration
@@ -248,12 +258,12 @@ func (h *FeatureFlagHandler) GetFlag(c *gin.Context) {
 //	@Produce		json
 //	@Param			key		path		string					true	"Feature flag key"
 //	@Param			request	body		UpdateFlagHTTPRequest	true	"Flag update request"
-//	@Success		200		{object}	dto.Response{data=dto.FlagResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[dto.FlagResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		403		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key} [put]
 func (h *FeatureFlagHandler) UpdateFlag(c *gin.Context) {
@@ -290,20 +300,21 @@ func (h *FeatureFlagHandler) UpdateFlag(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // ArchiveFlag godoc
+// @ID           archiveFlagFeatureFlag
 //
 //	@Summary		Archive a feature flag
 //	@Description	Archive a feature flag (soft delete). Archived flags cannot be evaluated.
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			key	path	string	true	"Feature flag key"
 //	@Success		204
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		403	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key} [delete]
 func (h *FeatureFlagHandler) ArchiveFlag(c *gin.Context) {
@@ -323,7 +334,9 @@ func (h *FeatureFlagHandler) ArchiveFlag(c *gin.Context) {
 	h.NoContent(c)
 }
 
+
 // EnableFlag godoc
+// @ID           enableFlagFeatureFlag
 //
 //	@Summary		Enable a feature flag
 //	@Description	Enable a disabled feature flag
@@ -331,13 +344,13 @@ func (h *FeatureFlagHandler) ArchiveFlag(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			key	path		string	true	"Feature flag key"
-//	@Success		200	{object}	dto.Response{data=dto.MessageResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[dto.MessageResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		403	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/enable [post]
 func (h *FeatureFlagHandler) EnableFlag(c *gin.Context) {
@@ -357,7 +370,9 @@ func (h *FeatureFlagHandler) EnableFlag(c *gin.Context) {
 	h.Success(c, httpdto.MessageResponse{Message: "Feature flag enabled successfully"})
 }
 
+
 // DisableFlag godoc
+// @ID           disableFlagFeatureFlag
 //
 //	@Summary		Disable a feature flag
 //	@Description	Disable an enabled feature flag
@@ -365,13 +380,13 @@ func (h *FeatureFlagHandler) EnableFlag(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			key	path		string	true	"Feature flag key"
-//	@Success		200	{object}	dto.Response{data=dto.MessageResponse}
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		422	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200	{object}	APIResponse[dto.MessageResponse]
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		403	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		422	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/disable [post]
 func (h *FeatureFlagHandler) DisableFlag(c *gin.Context) {
@@ -395,7 +410,13 @@ func (h *FeatureFlagHandler) DisableFlag(c *gin.Context) {
 // Evaluation Handlers
 // ============================================================================
 
+
+// ============================================================================
+// Evaluation Handlers
+// ============================================================================
+
 // EvaluateFlag godoc
+// @ID           evaluateFlagFeatureFlag
 //
 //	@Summary		Evaluate a feature flag
 //	@Description	Evaluate a single feature flag for the given context
@@ -404,11 +425,11 @@ func (h *FeatureFlagHandler) DisableFlag(c *gin.Context) {
 //	@Produce		json
 //	@Param			key		path		string					true	"Feature flag key"
 //	@Param			request	body		EvaluateFlagHTTPRequest	true	"Evaluation context"
-//	@Success		200		{object}	dto.Response{data=dto.EvaluateFlagResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[dto.EvaluateFlagResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/evaluate [post]
 func (h *FeatureFlagHandler) EvaluateFlag(c *gin.Context) {
@@ -436,7 +457,9 @@ func (h *FeatureFlagHandler) EvaluateFlag(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // BatchEvaluate godoc
+// @ID           batchEvaluateFeatureFlag
 //
 //	@Summary		Batch evaluate feature flags
 //	@Description	Evaluate multiple feature flags at once for the given context
@@ -444,10 +467,10 @@ func (h *FeatureFlagHandler) EvaluateFlag(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		BatchEvaluateHTTPRequest	true	"Batch evaluation request"
-//	@Success		200		{object}	dto.Response{data=dto.BatchEvaluateResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[dto.BatchEvaluateResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/evaluate-batch [post]
 func (h *FeatureFlagHandler) BatchEvaluate(c *gin.Context) {
@@ -469,7 +492,9 @@ func (h *FeatureFlagHandler) BatchEvaluate(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // GetClientConfig godoc
+// @ID           getFeatureFlagClientConfig
 //
 //	@Summary		Get client configuration
 //	@Description	Get all enabled feature flags and their values for client SDK initialization
@@ -477,10 +502,10 @@ func (h *FeatureFlagHandler) BatchEvaluate(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		ClientConfigHTTPRequest	true	"Client config request"
-//	@Success		200		{object}	dto.Response{data=dto.GetClientConfigResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200		{object}	APIResponse[dto.GetClientConfigResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/client-config [post]
 func (h *FeatureFlagHandler) GetClientConfig(c *gin.Context) {
@@ -525,22 +550,27 @@ func (h *FeatureFlagHandler) enrichEvaluationContext(c *gin.Context, ctx dto.Eva
 // Override Handlers
 // ============================================================================
 
+
+// ============================================================================
+// Override Handlers
+// ============================================================================
+
 // ListOverrides godoc
+// @ID           listFeatureFlagOverrides
 //
 //	@Summary		List flag overrides
 //	@Description	Retrieve all overrides for a specific feature flag
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			key			path		string	true	"Feature flag key"
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			page_size	query		int		false	"Page size"		default(20)	maximum(100)
-//	@Success		200			{object}	dto.Response{data=dto.OverrideListResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[dto.OverrideListResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		403			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/overrides [get]
 func (h *FeatureFlagHandler) ListOverrides(c *gin.Context) {
@@ -573,7 +603,9 @@ func (h *FeatureFlagHandler) ListOverrides(c *gin.Context) {
 	h.Success(c, result)
 }
 
+
 // CreateOverride godoc
+// @ID           createFeatureFlagOverride
 //
 //	@Summary		Create a flag override
 //	@Description	Create a new override for a feature flag to target specific users or tenants
@@ -582,13 +614,13 @@ func (h *FeatureFlagHandler) ListOverrides(c *gin.Context) {
 //	@Produce		json
 //	@Param			key		path		string						true	"Feature flag key"
 //	@Param			request	body		CreateOverrideHTTPRequest	true	"Override creation request"
-//	@Success		201		{object}	dto.Response{data=dto.OverrideResponse}
-//	@Failure		400		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		409		{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500		{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		201		{object}	APIResponse[dto.OverrideResponse]
+//	@Failure		400		{object}	ErrorResponse
+//	@Failure		401		{object}	ErrorResponse
+//	@Failure		403		{object}	ErrorResponse
+//	@Failure		404		{object}	ErrorResponse
+//	@Failure		409		{object}	ErrorResponse
+//	@Failure		500		{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/overrides [post]
 func (h *FeatureFlagHandler) CreateOverride(c *gin.Context) {
@@ -640,21 +672,22 @@ func (h *FeatureFlagHandler) CreateOverride(c *gin.Context) {
 	h.Created(c, result)
 }
 
+
 // DeleteOverride godoc
+// @ID           deleteFeatureFlagOverride
 //
 //	@Summary		Delete a flag override
 //	@Description	Delete a specific override by its ID
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			key	path	string	true	"Feature flag key"
 //	@Param			id	path	string	true	"Override ID"	format(uuid)
 //	@Success		204
-//	@Failure		400	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		403	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Failure		500	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/overrides/{id} [delete]
 func (h *FeatureFlagHandler) DeleteOverride(c *gin.Context) {
@@ -689,23 +722,28 @@ func (h *FeatureFlagHandler) DeleteOverride(c *gin.Context) {
 // Audit Log Handlers
 // ============================================================================
 
+
+// ============================================================================
+// Audit Log Handlers
+// ============================================================================
+
 // GetAuditLogs godoc
+// @ID           getFeatureFlagAuditLogs
 //
 //	@Summary		Get flag audit logs
 //	@Description	Retrieve audit logs for a specific feature flag
 //	@Tags			feature-flags
-//	@Accept			json
 //	@Produce		json
 //	@Param			key			path		string	true	"Feature flag key"
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			page_size	query		int		false	"Page size"		default(20)	maximum(100)
 //	@Param			action		query		string	false	"Filter by action"
-//	@Success		200			{object}	dto.Response{data=dto.AuditLogListResponse}
-//	@Failure		400			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		401			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		403			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		404			{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		500			{object}	dto.Response{error=dto.ErrorInfo}
+//	@Success		200			{object}	APIResponse[dto.AuditLogListResponse]
+//	@Failure		400			{object}	ErrorResponse
+//	@Failure		401			{object}	ErrorResponse
+//	@Failure		403			{object}	ErrorResponse
+//	@Failure		404			{object}	ErrorResponse
+//	@Failure		500			{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/{key}/audit-logs [get]
 func (h *FeatureFlagHandler) GetAuditLogs(c *gin.Context) {

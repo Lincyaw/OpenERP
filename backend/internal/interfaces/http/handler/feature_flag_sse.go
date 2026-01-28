@@ -244,15 +244,17 @@ func (h *FeatureFlagSSEHandler) sendHeartbeats() {
 	}
 }
 
+
 // Stream godoc
+// @ID           streamFeatureFlag
 //
 //	@Summary		Subscribe to feature flag updates via SSE
 //	@Description	Establishes a Server-Sent Events connection for real-time feature flag updates
 //	@Tags			feature-flags
 //	@Produce		text/event-stream
 //	@Success		200	{string}	string	"SSE stream"
-//	@Failure		401	{object}	dto.Response{error=dto.ErrorInfo}
-//	@Failure		503	{object}	dto.Response{error=dto.ErrorInfo}
+//	@Failure		401	{object}	ErrorResponse
+//	@Failure		503	{object}	ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feature-flags/stream [get]
 func (h *FeatureFlagSSEHandler) Stream(c *gin.Context) {
