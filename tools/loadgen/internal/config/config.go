@@ -76,6 +76,33 @@ type Config struct {
 	// DataGenerators configures data generators for semantic types.
 	// The key is the semantic type (e.g., "common.code", "common.name").
 	DataGenerators map[string]GeneratorConfig `yaml:"dataGenerators,omitempty" json:"dataGenerators,omitempty"`
+
+	// SemanticOverrides allows explicit semantic type assignments.
+	// Keys can be:
+	// - Exact field name: "customer_id"
+	// - Endpoint-scoped: "/customers:id"
+	// - Tag-scoped: "customers:id"
+	// - Wildcard: "*.customer_id"
+	SemanticOverrides map[string]string `yaml:"semanticOverrides,omitempty" json:"semanticOverrides,omitempty"`
+
+	// InferenceConfig configures the semantic type inference engine.
+	InferenceConfig *InferenceConfig `yaml:"inference,omitempty" json:"inference,omitempty"`
+}
+
+// InferenceConfig configures the semantic type inference engine.
+type InferenceConfig struct {
+	// Enabled controls whether inference is enabled.
+	// Default: true
+	Enabled *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+
+	// MinConfidence is the minimum confidence threshold (0.0-1.0).
+	// Inferences below this threshold are rejected.
+	// Default: 0.7
+	MinConfidence float64 `yaml:"minConfidence,omitempty" json:"minConfidence,omitempty"`
+
+	// DryRun outputs inference results without applying them.
+	// Default: false
+	DryRun bool `yaml:"dryRun,omitempty" json:"dryRun,omitempty"`
 }
 
 // TargetConfig holds target system configuration.

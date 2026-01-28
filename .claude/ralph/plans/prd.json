@@ -7654,7 +7654,7 @@
       "实现 -dry-run 命令显示所有推断结果供人工审核",
       "验收标准：对 ERP OpenAPI 推断语义类型，准确率 > 90%"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-004",

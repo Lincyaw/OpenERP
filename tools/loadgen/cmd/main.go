@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/example/erp/tools/loadgen/internal/circuit"
 	"github.com/example/erp/tools/loadgen/internal/config"
 	"github.com/example/erp/tools/loadgen/internal/parser"
 )
@@ -23,16 +24,18 @@ var (
 
 // CLI flags
 var (
-	configPath  string
-	duration    time.Duration
-	concurrency int
-	qps         float64
-	verbose     bool
-	list        bool
-	validate    bool
-	dryRun      bool
-	showVersion bool
-	openapiPath string
+	configPath    string
+	duration      time.Duration
+	concurrency   int
+	qps           float64
+	verbose       bool
+	list          bool
+	validate      bool
+	dryRun        bool
+	showVersion   bool
+	openapiPath   string
+	inferDryRun   bool
+	minConfidence float64
 )
 
 func init() {
@@ -58,6 +61,10 @@ func init() {
 	flag.BoolVar(&validate, "validate", false, "Validate configuration and exit")
 	flag.BoolVar(&dryRun, "dry-run", false, "Parse config and show execution plan without running")
 	flag.BoolVar(&showVersion, "version", false, "Show version information")
+
+	// Inference flags
+	flag.BoolVar(&inferDryRun, "infer", false, "Run semantic type inference on OpenAPI spec (dry-run mode)")
+	flag.Float64Var(&minConfidence, "min-confidence", 0.7, "Minimum confidence threshold for inference (0.0-1.0)")
 
 	// Custom usage
 	flag.Usage = printUsage
@@ -454,6 +461,12 @@ func handleOpenAPIMode() {
 		os.Exit(1)
 	}
 
+	// Handle inference dry-run mode
+	if inferDryRun {
+		printInferenceResults(spec)
+		os.Exit(0)
+	}
+
 	if list {
 		printOpenAPIEndpointList(spec)
 		os.Exit(0)
@@ -588,6 +601,153 @@ func printOpenAPIEndpointList(spec *parser.OpenAPISpec) {
 				fmt.Printf(" (in %s)", scheme.In)
 			}
 			fmt.Println()
+		}
+	}
+}
+
+// printInferenceResults runs semantic type inference and displays results
+func printInferenceResults(spec *parser.OpenAPISpec) {
+	fmt.Printf("=== Semantic Type Inference Results ===\n")
+	fmt.Printf("OpenAPI: '%s' (v%s)\n", spec.Title, spec.Version)
+	fmt.Printf("Minimum Confidence: %.0f%%\n", minConfidence*100)
+	fmt.Println()
+
+	// Create inference engine
+	engine := parser.NewSemanticInferenceEngine()
+	engine.SetMinConfidence(minConfidence)
+
+	// Run inference on all endpoints
+	registry := engine.InferSpec(spec)
+
+	// Calculate and display statistics
+	stats := parser.CalculateStats(registry)
+
+	fmt.Printf("=== Summary ===\n")
+	fmt.Printf("Total Fields:        %d\n", stats.TotalFields)
+	fmt.Printf("Inferred Fields:     %d (%.1f%%)\n", stats.InferredFields,
+		float64(stats.InferredFields)/float64(stats.TotalFields)*100)
+	fmt.Printf("Unknown Fields:      %d (%.1f%%)\n", stats.UnknownFields,
+		float64(stats.UnknownFields)/float64(stats.TotalFields)*100)
+	fmt.Printf("High Confidence:     %d (>=90%%)\n", stats.HighConfidence)
+	fmt.Printf("Medium Confidence:   %d (70-89%%)\n", stats.MediumConfidence)
+	fmt.Printf("Low Confidence:      %d (<70%%)\n", stats.LowConfidence)
+	fmt.Printf("Estimated Accuracy:  %.1f%%\n", stats.AccuracyEstimate)
+	fmt.Println()
+
+	// Display by source
+	fmt.Printf("=== By Inference Source ===\n")
+	for source, count := range stats.BySource {
+		fmt.Printf("  %-20s %d\n", source+":", count)
+	}
+	fmt.Println()
+
+	// Display by category
+	fmt.Printf("=== By Semantic Category ===\n")
+	for category, count := range stats.ByCategory {
+		fmt.Printf("  %-20s %d\n", category+":", count)
+	}
+	fmt.Println()
+
+	// Verbose mode: show all inferences
+	if verbose {
+		fmt.Printf("=== Detailed Inference Results ===\n\n")
+
+		// Group by endpoint
+		endpointPins := make(map[string][]*circuit.Pin)
+		for _, pin := range registry.AllPins {
+			key := pin.Location.EndpointMethod + " " + pin.Location.EndpointPath
+			endpointPins[key] = append(endpointPins[key], pin)
+		}
+
+		// Sort endpoints
+		endpoints := make([]string, 0, len(endpointPins))
+		for ep := range endpointPins {
+			endpoints = append(endpoints, ep)
+		}
+		sort.Strings(endpoints)
+
+		for _, ep := range endpoints {
+			pins := endpointPins[ep]
+			fmt.Printf("--- %s ---\n", ep)
+
+			// Separate inputs and outputs
+			var inputs, outputs []*circuit.Pin
+			for _, pin := range pins {
+				if pin.IsInput() {
+					inputs = append(inputs, pin)
+				} else {
+					outputs = append(outputs, pin)
+				}
+			}
+
+			if len(inputs) > 0 {
+				fmt.Printf("  Inputs:\n")
+				for _, pin := range inputs {
+					confidence := fmt.Sprintf("%.0f%%", pin.InferenceConfidence*100)
+					fmt.Printf("    %-25s -> %-30s [%s, %s]\n",
+						pin.Name, pin.SemanticType, confidence, pin.InferenceSource)
+				}
+			}
+
+			if len(outputs) > 0 {
+				fmt.Printf("  Outputs:\n")
+				for _, pin := range outputs {
+					confidence := fmt.Sprintf("%.0f%%", pin.InferenceConfidence*100)
+					fmt.Printf("    %-25s -> %-30s [%s, %s]\n",
+						pin.Name, pin.SemanticType, confidence, pin.InferenceSource)
+				}
+			}
+			fmt.Println()
+		}
+	}
+
+	// Show connections
+	connections := registry.GetConnections()
+	fmt.Printf("=== Producer-Consumer Connections ===\n")
+	fmt.Printf("Total Connections: %d\n", len(connections))
+
+	if verbose && len(connections) > 0 {
+		// Group by semantic type
+		connByType := make(map[circuit.SemanticType][]circuit.PinConnection)
+		for _, conn := range connections {
+			connByType[conn.Producer.SemanticType] = append(connByType[conn.Producer.SemanticType], conn)
+		}
+
+		fmt.Println()
+		for semType, conns := range connByType {
+			fmt.Printf("  %s (%d connections):\n", semType, len(conns))
+			shown := min(3, len(conns))
+			for i := 0; i < shown; i++ {
+				conn := conns[i]
+				fmt.Printf("    %s %s -> %s %s\n",
+					conn.Producer.Location.EndpointMethod,
+					conn.Producer.Location.EndpointPath,
+					conn.Consumer.Location.EndpointMethod,
+					conn.Consumer.Location.EndpointPath)
+			}
+			if len(conns) > shown {
+				fmt.Printf("    ... and %d more\n", len(conns)-shown)
+			}
+		}
+	}
+
+	// Show unconnected pins
+	unconnectedInputs := registry.GetUnconnectedInputs()
+	unconnectedOutputs := registry.GetUnconnectedOutputs()
+
+	fmt.Println()
+	fmt.Printf("=== Unconnected Pins ===\n")
+	fmt.Printf("Unconnected Inputs:  %d (need producers)\n", len(unconnectedInputs))
+	fmt.Printf("Unconnected Outputs: %d (no consumers)\n", len(unconnectedOutputs))
+
+	if verbose && len(unconnectedInputs) > 0 {
+		fmt.Println("\nUnconnected Input Types (need data generators):")
+		typeCount := make(map[circuit.SemanticType]int)
+		for _, pin := range unconnectedInputs {
+			typeCount[pin.SemanticType]++
+		}
+		for semType, count := range typeCount {
+			fmt.Printf("  %-30s %d\n", semType, count)
 		}
 	}
 }

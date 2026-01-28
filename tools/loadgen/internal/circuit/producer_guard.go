@@ -20,9 +20,7 @@ var (
 	ErrGuardClosed = errors.New("producer chain: guard is closed")
 )
 
-// SemanticType represents the semantic classification of a parameter.
-// Used to categorize and connect input/output pins automatically.
-type SemanticType string
+// Note: SemanticType is defined in semantic.go
 
 // ProducerChainGuardConfig holds configuration for the guard.
 type ProducerChainGuardConfig struct {
