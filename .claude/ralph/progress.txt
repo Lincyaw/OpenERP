@@ -34455,3 +34455,116 @@ Total Connections: 1185933
 - LOADGEN-004: Parameter Pool Core Implementation
 - LOADGEN-006: Dependency Graph and Producer-Consumer Relationships
 - Use PinRegistry connections to build execution plans
+
+2025-01-28 - LOADGEN-004: 参数池核心实现 (Parameter Pool Core Implementation)
+
+=== Implementation Details ===
+
+**New Files Created:**
+1. `tools/loadgen/internal/pool/value.go` - ParameterValue structure with helper methods
+   - `ParameterValue` type alias for `Value` (backward compatibility)
+   - `NewParameterValue()` and `NewParameterValueWithTTL()` constructors
+   - `IsExpired()`, `IsExpiredAt()`, `TTL()` methods for expiration checking
+   - `Clone()` method for creating deep copies
+
+2. `tools/loadgen/internal/pool/simple.go` - SimpleParameterPool implementation
+   - Basic non-sharded parameter pool for testing and low-concurrency scenarios
+   - Implements full `ParameterPool` interface
+   - Thread-safe with proper mutex protection
+   - FIFO eviction when at capacity
+   - Periodic cleanup goroutine for expired values
+
+3. `tools/loadgen/internal/pool/value_test.go` - Tests for value.go
+   - Tests for constructors, expiration methods, TTL, and Clone
+
+4. `tools/loadgen/internal/pool/simple_test.go` - Comprehensive tests for SimpleParameterPool
+   - Basic CRUD operations
+   - TTL and expiration handling
+   - Eviction behavior
+   - Concurrent read/write tests
+   - Concurrent cleanup tests
+   - Metadata storage verification
+
+**Key Features Implemented:**
+- ✅ ParameterValue structure in value.go
+- ✅ ParameterPool interface (already existed in pool.go)
+- ✅ SimpleParameterPool with Add, Get, GetRandom (via Get), GetAll
+- ✅ Semantic type storage and retrieval
+- ✅ Metadata storage (source endpoint, response path, request ID)
+- ✅ TTL expiration mechanism with DefaultTTL configuration
+- ✅ Cleanup periodic cleanup of expired values
+- ✅ Stats method returning pool statistics
+- ✅ Concurrent safety tests with race detector
+
+=== Design Decisions ===
+
+1. **Thread Safety**: Used separate mutexes for RNG (`rngMu`) and time function (`nowFuncMu`) 
+   to avoid data races while maintaining good read concurrency with RWMutex for main data.
+
+2. **ParameterValue as Type Alias**: Made `ParameterValue` a type alias for `Value` to maintain
+   backward compatibility with existing code while satisfying the requirement naming.
+
+3. **getNow() Helper**: Created thread-safe `getNow()` method to safely access the time function,
+   enabling proper testing with mock time.
+
+4. **FIFO Eviction**: SimpleParameterPool uses FIFO eviction (remove oldest first) when at capacity,
+   matching the behavior of ShardedPool.
+
+=== Verification ===
+
+**Test Results:**
+```
+$ go test ./internal/pool/... -v -race -count=1
+PASS
+ok  	github.com/example/erp/tools/loadgen/internal/pool	13.662s
+```
+
+**All 45+ tests pass including:**
+- TestNewSimpleParameterPool (2 subtests)
+- TestSimpleParameterPool_Add_Get (5 subtests)
+- TestSimpleParameterPool_AddWithTTL
+- TestSimpleParameterPool_GetAll
+- TestSimpleParameterPool_Size
+- TestSimpleParameterPool_TotalSize
+- TestSimpleParameterPool_Types
+- TestSimpleParameterPool_Clear (2 subtests)
+- TestSimpleParameterPool_Cleanup
+- TestSimpleParameterPool_Stats
+- TestSimpleParameterPool_Eviction
+- TestSimpleParameterPool_Concurrent
+- TestSimpleParameterPool_ConcurrentReadWrite
+- TestSimpleParameterPool_ConcurrentCleanup
+- TestSimpleParameterPool_Close
+- TestSimpleParameterPool_GetRandom
+- TestSimpleParameterPool_MetadataStorage
+- TestSimpleParameterPool_ImplementsInterface
+- TestNewParameterValue
+- TestNewParameterValueWithTTL
+- TestValue_IsExpired (3 subtests)
+- TestValue_IsExpiredAt
+- TestValue_TTL (3 subtests)
+- TestValue_Clone
+
+**Acceptance Criteria Verification:**
+- ✅ Parameter pool supports concurrent read/write (verified with race detector)
+- ✅ Correctly handles expiration (TTL tests pass)
+- ✅ No data races detected
+
+=== Code Review Findings (Fixed) ===
+
+**CRITICAL (Fixed):**
+- Data race in `rand.Rand` usage - Fixed by adding `rngMu` mutex
+
+**HIGH (Fixed):**
+- `nowFunc` thread safety - Fixed by adding `nowFuncMu` RWMutex and `getNow()` helper
+
+=== Notes ===
+
+- SimpleParameterPool is designed for testing and low-concurrency scenarios
+- For high-concurrency production use, ShardedPool (LOADGEN-005) is recommended
+- The existing ShardedPool implementation was already complete from previous work
+
+=== Next Steps ===
+
+- LOADGEN-006: Dependency Graph and Producer-Consumer Relationships
+- Use PinRegistry connections to build execution plans
