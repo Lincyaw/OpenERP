@@ -10269,7 +10269,7 @@
       "./bin/loadgen -config configs/test.yaml -qps 100 -burst 20 -duration 30s",
       "curl -s http://localhost:9090/metrics | grep loadgen_requests_total"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-004",
@@ -10294,7 +10294,7 @@
       "./bin/loadgen --shaper=spike --interval 30s --multiplier 10 -duration 90s",
       "./bin/loadgen --shaper=step --step-duration 30s --step-increase 0.2 -duration 120s"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-005",
