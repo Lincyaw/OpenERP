@@ -11,7 +11,7 @@ import { Dropdown, Button, Spin, Toast } from '@douyinfe/semi-ui-19'
 import { IconGridSquare } from '@douyinfe/semi-icons'
 import { useI18n } from '@/hooks'
 import { useAuthStore, useUser } from '@/store'
-import { getTenants } from '@/api/tenants/tenants'
+import { listTenants } from '@/api/tenants/tenants'
 import type { HandlerTenantResponse } from '@/api/models'
 import { createScopedLogger } from '@/utils'
 
@@ -74,11 +74,10 @@ export function TenantSwitcher({
 
     setLoading(true)
     try {
-      const api = getTenants()
-      const response = await api.listTenants({ page_size: 100 })
+      const response = await listTenants({ page_size: 100 })
 
-      if (response.success && response.data?.tenants) {
-        const tenantOptions: TenantOption[] = response.data.tenants
+      if (response.status === 200 && response.data.success && response.data.data?.tenants) {
+        const tenantOptions: TenantOption[] = response.data.data.tenants
           .filter((tenant: HandlerTenantResponse) => tenant.status === 'active')
           .map((tenant: HandlerTenantResponse) => ({
             id: tenant.id || '',

@@ -33784,3 +33784,53 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-014: React Query Migration - Tenants Module
+
+=== Implementation Details ===
+- Migrated 1 file from getTenants factory pattern to direct function imports
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+
+**Files Updated:**
+1. src/components/common/TenantSwitcher.tsx
+
+=== Key Changes ===
+
+**TenantSwitcher.tsx:**
+- Replaced `getTenants` factory with direct import: `listTenants`
+- Removed factory instantiation: `const api = getTenants()`
+- Updated response handling:
+  - `response.status === 200 && response.data.success && response.data.data?.tenants`
+  - Tenants array: `response.data.data.tenants` instead of `response.data.tenants`
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const api = getTenants()
+const response = await api.listTenants({ page_size: 100 })
+if (response.success && response.data?.tenants) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { listTenants } from '@/api/tenants/tenants'
+const response = await listTenants({ page_size: 100 })
+if (response.status === 200 && response.data.success && response.data.data?.tenants) { ... }
+```
+
+=== API Method Mapping ===
+| Old Factory Method | New Direct Import |
+|---|---|
+| api.listTenants() | listTenants() |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getTenants` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Status codes: 200 for GET
+- Tenants data nested under response.data.data.tenants
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

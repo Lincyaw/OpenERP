@@ -9936,7 +9936,7 @@
       "- Response handling uses new format",
       "- No TypeScript errors in affected file"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/components/common/TenantSwitcher.tsx"
     ]
