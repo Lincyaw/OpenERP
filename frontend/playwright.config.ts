@@ -26,7 +26,7 @@ export default defineConfig({
   retries: process.env.CI ? 0 : 0,
 
   // Parallel workers: Keep low to avoid rate limiting (100 req/min API, 5 req/min auth)
-  workers: process.env.CI ? 4 : 4,
+  workers: process.env.CI ? 4 : 30,
 
   // Reporter to use
   reporter: [

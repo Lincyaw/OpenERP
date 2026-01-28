@@ -15,6 +15,7 @@ import (
 	identityapp "github.com/erp/backend/internal/application/identity"
 	inventoryapp "github.com/erp/backend/internal/application/inventory"
 	partnerapp "github.com/erp/backend/internal/application/partner"
+	printingapp "github.com/erp/backend/internal/application/printing"
 	reportapp "github.com/erp/backend/internal/application/report"
 	tradeapp "github.com/erp/backend/internal/application/trade"
 	financedomain "github.com/erp/backend/internal/domain/finance"
@@ -26,6 +27,7 @@ import (
 	"github.com/erp/backend/internal/infrastructure/logger"
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	infraPlugin "github.com/erp/backend/internal/infrastructure/plugin"
+	infraPrinting "github.com/erp/backend/internal/infrastructure/printing"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
 	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/infrastructure/telemetry"
@@ -292,6 +294,10 @@ func main() {
 	flagOverrideRepo := persistence.NewGormFlagOverrideRepository(db.DB)
 	flagAuditLogRepo := persistence.NewGormFlagAuditLogRepository(db.DB)
 
+	// Print repositories
+	printTemplateRepo := persistence.NewGormPrintTemplateRepository(db.DB)
+	printJobRepo := persistence.NewGormPrintJobRepository(db.DB)
+
 	// Initialize event serializer and register all event types
 	eventSerializer := event.NewEventSerializer()
 	event.RegisterAllEvents(eventSerializer)
@@ -445,6 +451,31 @@ func main() {
 		flagOverrideRepo,
 		flagAuditLogRepo,
 		outboxRepo,
+		log,
+	)
+
+	// Print service
+	// Initialize printing infrastructure components
+	templateEngine := infraPrinting.NewTemplateEngine()
+	pdfRenderer, err := infraPrinting.NewChromedpRenderer(&infraPrinting.ChromedpConfig{})
+	if err != nil {
+		log.Warn("Failed to initialize ChromeDP renderer for printing, printing features may be limited", zap.Error(err))
+	}
+	pdfStorage, err := infraPrinting.NewFileSystemStorage(&infraPrinting.FileSystemStorageConfig{
+		BasePath: "./storage/prints",
+		BaseURL:  "/api/v1/prints",
+		Logger:   log,
+	})
+	if err != nil {
+		log.Warn("Failed to initialize PDF storage, printing features may be limited", zap.Error(err))
+	}
+
+	printService := printingapp.NewPrintService(
+		printTemplateRepo,
+		printJobRepo,
+		templateEngine,
+		pdfRenderer,
+		pdfStorage,
 		log,
 	)
 
@@ -659,6 +690,7 @@ func main() {
 	financeHandler := handler.NewFinanceHandler(financeService)
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
+	printHandler := handler.NewPrintHandler(printService)
 
 	// Initialize Feature Flag SSE handler for real-time updates
 	// This creates a Redis Pub/Sub subscriber that broadcasts flag updates to connected SSE clients
@@ -1304,6 +1336,17 @@ func main() {
 	}
 
 	r.Register(featureFlagRoutes)
+
+	// Print domain - document printing and template management
+	// Create JWT middleware for print routes authentication
+	printJWTMiddleware := middleware.JWTAuthMiddlewareWithConfig(middleware.JWTMiddlewareConfig{
+		JWTService:     jwtService,
+		TokenBlacklist: tokenBlacklist,
+		SkipPaths:      []string{},
+		Logger:         log,
+	})
+	printRoutes := handler.PrintRoutes(printHandler, printJWTMiddleware)
+	r.Register(printRoutes)
 
 	// Setup routes
 	r.Setup()
