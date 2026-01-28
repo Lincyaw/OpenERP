@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Modal,
@@ -11,7 +11,7 @@ import {
   Descriptions,
   Select,
 } from '@douyinfe/semi-ui-19'
-import { getBalance } from '@/api/balance/balance'
+import { rechargeBalance } from '@/api/balance/balance'
 import type { HandlerRechargeRequest, HandlerRechargeRequestPaymentMethod } from '@/api/models'
 import { useFormatters } from '@/hooks/useFormatters'
 import './RechargeModal.css'
@@ -46,7 +46,6 @@ export default function RechargeModal({
 }: RechargeModalProps) {
   const { t } = useTranslation(['partner', 'common'])
   const { formatCurrency } = useFormatters()
-  const balanceApi = useMemo(() => getBalance(), [])
 
   // Form state
   const [amount, setAmount] = useState<number | null>(null)
@@ -89,9 +88,9 @@ export default function RechargeModal({
         remark: remark || undefined,
       }
 
-      const response = await balanceApi.addCustomerBalance(customerId, request)
+      const response = await rechargeBalance(customerId, request)
 
-      if (response.success) {
+      if (response.status === 201 && response.data.success) {
         handleClose()
         onSuccess()
       } else {
@@ -102,7 +101,7 @@ export default function RechargeModal({
     } finally {
       setSubmitting(false)
     }
-  }, [amount, paymentMethod, reference, remark, customerId, balanceApi, handleClose, onSuccess, t])
+  }, [amount, paymentMethod, reference, remark, customerId, handleClose, onSuccess, t])
 
   // Handle amount change
   const handleAmountChange = useCallback((value: number | string) => {

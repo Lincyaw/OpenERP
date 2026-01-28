@@ -33720,3 +33720,67 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-013: React Query Migration - Balance Module
+
+=== Implementation Details ===
+- Migrated 2 files from getBalance factory pattern to direct function imports
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+- Removed unused useMemo import from RechargeModal.tsx
+
+**Files Updated:**
+1. src/pages/partner/CustomerBalance.tsx
+2. src/pages/partner/RechargeModal.tsx
+
+=== Key Changes ===
+
+**CustomerBalance.tsx:**
+- Replaced `getBalance` factory with direct imports:
+  - `getBalanceBalanceSummary` - fetch balance summary
+  - `listBalanceTransactions` - list transactions with pagination
+- Removed `balanceApi` useMemo factory pattern
+- Updated response handling:
+  - `response.status === 200 && response.data.success && response.data.data`
+  - Pagination meta: `response.data.meta` instead of `response.meta`
+
+**RechargeModal.tsx:**
+- Replaced `getBalance` factory with direct import: `rechargeBalance`
+- Removed `balanceApi` useMemo factory pattern
+- Removed unused `useMemo` import
+- Updated response handling:
+  - `response.status === 201 && response.data.success` for POST create
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const balanceApi = useMemo(() => getBalance(), [])
+const response = await balanceApi.getBalanceSummary(customerId)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { getBalanceBalanceSummary } from '@/api/balance/balance'
+const response = await getBalanceBalanceSummary(customerId)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== API Method Mapping ===
+| Old Factory Method | New Direct Import |
+|---|---|
+| balanceApi.getBalanceSummary() | getBalanceBalanceSummary() |
+| balanceApi.listBalanceTransactions() | listBalanceTransactions() |
+| balanceApi.addCustomerBalance() | rechargeBalance() |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getBalance` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Status codes: 200 for GET, 201 for POST create
+- Error responses accessed via `response.data.error?.message`
+- Removed unused `useMemo` import from RechargeModal.tsx (no longer needed for factory)
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

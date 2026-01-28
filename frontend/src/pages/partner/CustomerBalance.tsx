@@ -16,7 +16,7 @@ import { IconArrowLeft, IconPlus, IconRefresh, IconHistory } from '@douyinfe/sem
 import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getBalance } from '@/api/balance/balance'
+import { getBalanceBalanceSummary, listBalanceTransactions } from '@/api/balance/balance'
 import { getCustomerById } from '@/api/customers/customers'
 import { useFormatters } from '@/hooks/useFormatters'
 import type {
@@ -57,7 +57,6 @@ export default function CustomerBalancePage() {
   const { formatDateTime, formatCurrency } = useFormatters()
   const navigate = useNavigate()
   const { id: customerId } = useParams<{ id: string }>()
-  const balanceApi = useMemo(() => getBalance(), [])
 
   // Memoized transaction type options with translations
   const transactionTypeOptions = useMemo(
@@ -156,16 +155,16 @@ export default function CustomerBalancePage() {
     if (!customerId) return
     setSummaryLoading(true)
     try {
-      const response = await balanceApi.getBalanceSummary(customerId)
-      if (response.success && response.data) {
-        setBalanceSummary(response.data)
+      const response = await getBalanceBalanceSummary(customerId)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setBalanceSummary(response.data.data)
       }
     } catch {
       Toast.error(t('partner:balance.fetchBalanceError'))
     } finally {
       setSummaryLoading(false)
     }
-  }, [customerId, balanceApi, t])
+  }, [customerId, t])
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {
@@ -185,16 +184,16 @@ export default function CustomerBalancePage() {
         date_to: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await balanceApi.listBalanceTransactions(customerId, params)
+      const response = await listBalanceTransactions(customerId, params)
 
-      if (response.success && response.data) {
-        setTransactions(response.data as BalanceTransaction[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setTransactions(response.data.data as BalanceTransaction[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -205,7 +204,6 @@ export default function CustomerBalancePage() {
     }
   }, [
     customerId,
-    balanceApi,
     state.pagination.page,
     state.pagination.pageSize,
     transactionTypeFilter,
