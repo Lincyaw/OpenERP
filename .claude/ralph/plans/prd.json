@@ -9830,7 +9830,7 @@
       "- React components use useListPurchaseReturns hook",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/features/trade/PurchaseReturnForm.tsx",
       "src/pages/trade/PurchaseReturns.tsx"

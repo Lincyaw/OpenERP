@@ -33588,3 +33588,59 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-011: React Query Migration - Purchase Returns Module
+
+=== Implementation Details ===
+- Migrated 2 files from getPurchaseReturns factory pattern to direct function imports
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+
+**Files Updated:**
+1. src/features/trade/PurchaseReturnForm.tsx
+2. src/pages/trade/PurchaseReturns.tsx
+
+=== Key Changes ===
+
+**PurchaseReturnForm.tsx:**
+- Replaced `getPurchaseReturns` factory with direct import: `createPurchaseReturn`
+- Removed `purchaseReturnApi` useMemo factory pattern
+- Updated response handling: check `response.status !== 201` for create operations
+- Updated error handling to access `response.data.error?.message`
+
+**PurchaseReturns.tsx:**
+- Replaced `getPurchaseReturns` factory with direct imports: `listPurchaseReturns`, `deletePurchaseReturn`, `submitPurchaseReturn`, `approvePurchaseReturn`, `rejectPurchaseReturn`, `shipPurchaseReturn`, `completePurchaseReturn`, `cancelPurchaseReturn`
+- Removed `purchaseReturnApi` useMemo factory pattern
+- Updated response handling to new axios format:
+  - List: `response.status === 200 && response.data.success && response.data.data`
+  - Pagination meta: `response.data.meta` instead of `response.meta`
+- Updated all action functions (submit, approve, reject, ship, complete, cancel, delete) to use direct imports
+- Added empty object `{}` as required body parameter for `submitPurchaseReturn` and `completePurchaseReturn`
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
+const response = await purchaseReturnApi.listPurchaseReturns(params)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { listPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
+const response = await listPurchaseReturns(params)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getPurchaseReturns` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Kept `useMemo` import in both files as it's still used for other purposes (calculations, options, columns)
+- Status codes: 200 for GET/PUT, 201 for POST create, 204 for DELETE
+- Error responses accessed via `response.data.error?.message`
+- Some API functions require empty object `{}` as body parameter even when no data is needed
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

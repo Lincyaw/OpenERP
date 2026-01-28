@@ -17,7 +17,7 @@ import {
 import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
-import { getPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
+import { createPurchaseReturn } from '@/api/purchase-returns/purchase-returns'
 import { listPurchaseOrders, getPurchaseOrderById } from '@/api/purchase-orders/purchase-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
@@ -129,8 +129,6 @@ export function PurchaseReturnForm() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preSelectedOrderId = searchParams.get('order_id')
-
-  const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
 
   // Form state
   const [formData, setFormData] = useState<ReturnFormData>({
@@ -480,7 +478,7 @@ export function PurchaseReturnForm() {
         (item) => item.selected && item.return_quantity > 0
       )
 
-      const response = await purchaseReturnApi.createPurchaseReturn({
+      const response = await createPurchaseReturn({
         purchase_order_id: formData.purchase_order_id,
         warehouse_id: formData.warehouse_id,
         reason: formData.reason,
@@ -494,8 +492,8 @@ export function PurchaseReturnForm() {
         })),
       })
 
-      if (!response.success) {
-        throw new Error(response.error?.message || '创建失败')
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || '创建失败')
       }
 
       Toast.success('退货单创建成功')
@@ -505,7 +503,7 @@ export function PurchaseReturnForm() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, purchaseReturnApi, navigate, validateForm])
+  }, [formData, navigate, validateForm])
 
   // Handle cancel
   const handleCancel = useCallback(() => {

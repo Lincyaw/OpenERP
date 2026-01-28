@@ -20,7 +20,16 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
+import {
+  listPurchaseReturns,
+  deletePurchaseReturn,
+  submitPurchaseReturn,
+  approvePurchaseReturn,
+  rejectPurchaseReturn,
+  shipPurchaseReturn,
+  completePurchaseReturn,
+  cancelPurchaseReturn,
+} from '@/api/purchase-returns/purchase-returns'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseReturnListResponse,
@@ -83,7 +92,6 @@ export default function PurchaseReturnsPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
-  const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
 
   // State for data
   const [returnList, setReturnList] = useState<PurchaseReturn[]>([])
@@ -168,16 +176,16 @@ export default function PurchaseReturnsPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await purchaseReturnApi.listPurchaseReturns(params)
+      const response = await listPurchaseReturns(params)
 
-      if (response.success && response.data) {
-        setReturnList(response.data as PurchaseReturn[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setReturnList(response.data.data as PurchaseReturn[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -187,7 +195,6 @@ export default function PurchaseReturnsPage() {
       setLoading(false)
     }
   }, [
-    purchaseReturnApi,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
@@ -264,7 +271,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.submitPurchaseReturn(returnItem.id!)
+            await submitPurchaseReturn(returnItem.id!, {})
             Toast.success(t('purchaseReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {
@@ -273,7 +280,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle approve return
@@ -289,7 +296,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.approvePurchaseReturn(returnItem.id!, { note: '' })
+            await approvePurchaseReturn(returnItem.id!, { note: '' })
             Toast.success(t('purchaseReturn.messages.approveSuccess'))
             fetchReturns()
           } catch {
@@ -298,7 +305,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle reject return
@@ -315,7 +322,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.rejectPurchaseReturn(returnItem.id!, {
+            await rejectPurchaseReturn(returnItem.id!, {
               reason: t('purchaseReturn.actions.reject'),
             })
             Toast.success(t('purchaseReturn.messages.rejectSuccess'))
@@ -326,7 +333,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle ship return (send goods back to supplier)
@@ -340,7 +347,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.shipPurchaseReturn(returnItem.id!, {
+            await shipPurchaseReturn(returnItem.id!, {
               note: '',
             })
             Toast.success(t('purchaseReturn.messages.shipSuccess'))
@@ -351,7 +358,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle complete return
@@ -359,14 +366,14 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       try {
-        await purchaseReturnApi.completePurchaseReturn(returnItem.id!)
+        await completePurchaseReturn(returnItem.id!, {})
         Toast.success(t('purchaseReturn.messages.completeSuccess'))
         fetchReturns()
       } catch {
         Toast.error(t('purchaseReturn.messages.completeError'))
       }
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle cancel return
@@ -383,7 +390,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.cancelPurchaseReturn(returnItem.id!, {
+            await cancelPurchaseReturn(returnItem.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(t('purchaseReturn.messages.cancelSuccess'))
@@ -394,7 +401,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle delete return
@@ -411,7 +418,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.deletePurchaseReturn(returnItem.id!)
+            await deletePurchaseReturn(returnItem.id!)
             Toast.success(t('purchaseReturn.messages.deleteSuccess'))
             fetchReturns()
           } catch {
@@ -420,7 +427,7 @@ export default function PurchaseReturnsPage() {
         },
       })
     },
-    [purchaseReturnApi, fetchReturns, t]
+    [fetchReturns, t]
   )
 
   // Handle view return
