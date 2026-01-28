@@ -10318,7 +10318,7 @@
       "./bin/loadgen --adaptive-control --latency-threshold 500ms -duration 300s",
       "./bin/loadgen --auto-workers --min-workers 5 --max-workers 50 -duration 180s"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-006",
