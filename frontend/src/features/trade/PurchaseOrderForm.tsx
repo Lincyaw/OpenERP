@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { listSuppliers } from '@/api/suppliers/suppliers'
 import { getProducts } from '@/api/products/products'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type {
@@ -52,7 +52,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
-  const supplierApi = useMemo(() => getSuppliers(), [])
   const productApi = useMemo(() => getProducts(), [])
   const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
@@ -136,28 +135,25 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const hasSetDefaultWarehouse = useRef(false)
 
   // Fetch suppliers
-  const fetchSuppliers = useCallback(
-    async (search?: string, signal?: AbortSignal) => {
-      setSuppliersLoading(true)
-      try {
-        const response = await supplierApi.listSuppliers(
-          { page_size: 50, search: search || undefined, status: 'active' },
-          { signal }
-        )
-        if (response.success && response.data) {
-          setSuppliers(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch suppliers', response.error)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'CanceledError') return
-        log.error('Error fetching suppliers', error)
-      } finally {
-        setSuppliersLoading(false)
+  const fetchSuppliers = useCallback(async (search?: string, signal?: AbortSignal) => {
+    setSuppliersLoading(true)
+    try {
+      const response = await listSuppliers(
+        { page_size: 50, search: search || undefined, status: 'active' },
+        { signal }
+      )
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSuppliers(response.data.data)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch suppliers', response.data.error)
       }
-    },
-    [supplierApi]
-  )
+    } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return
+      log.error('Error fetching suppliers', error)
+    } finally {
+      setSuppliersLoading(false)
+    }
+  }, [])
 
   // Fetch products
   const fetchProducts = useCallback(

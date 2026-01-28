@@ -21,7 +21,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseReturnListResponse,
   ListPurchaseReturnsParams,
@@ -84,7 +84,6 @@ export default function PurchaseReturnsPage() {
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
-  const supplierApi = useMemo(() => getSuppliers(), [])
 
   // State for data
   const [returnList, setReturnList] = useState<PurchaseReturn[]>([])
@@ -127,9 +126,9 @@ export default function PurchaseReturnsPage() {
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
     try {
-      const response = await supplierApi.listSuppliers({ page_size: 100 })
-      if (response.success && response.data) {
-        const options: SupplierOption[] = response.data.map(
+      const response = await listSuppliers({ page_size: 100 })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const options: SupplierOption[] = response.data.data.map(
           (supplier: HandlerSupplierListResponse) => ({
             label: supplier.name || supplier.code || '',
             value: supplier.id || '',
@@ -142,7 +141,7 @@ export default function PurchaseReturnsPage() {
     } finally {
       setSuppliersLoading(false)
     }
-  }, [supplierApi, t])
+  }, [t])
 
   // Fetch suppliers on mount
   useEffect(() => {

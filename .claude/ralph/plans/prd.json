@@ -9498,7 +9498,7 @@
       "- Response handling uses new format",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/features/partner/SupplierForm.tsx",
       "src/pages/partner/Suppliers.tsx",

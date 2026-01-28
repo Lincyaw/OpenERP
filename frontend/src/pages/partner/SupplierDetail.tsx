@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Card,
   Typography,
@@ -17,7 +17,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import {
+  getSupplierById,
+  activateSupplier,
+  deactivateSupplier,
+  blockSupplier,
+  deleteSupplier,
+} from '@/api/suppliers/suppliers'
 import type { HandlerSupplierResponse, HandlerSupplierResponseStatus } from '@/api/models'
 import './SupplierDetail.css'
 
@@ -44,7 +50,6 @@ export default function SupplierDetailPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const { formatCurrency, formatDateTime } = useFormatters()
-  const suppliersApi = useMemo(() => getSuppliers(), [])
 
   const [supplier, setSupplier] = useState<HandlerSupplierResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,9 +61,9 @@ export default function SupplierDetailPage() {
 
     setLoading(true)
     try {
-      const response = await suppliersApi.getSupplierById(id)
-      if (response.success && response.data) {
-        setSupplier(response.data)
+      const response = await getSupplierById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSupplier(response.data.data)
       } else {
         Toast.error(t('supplierDetail.messages.fetchError'))
         navigate('/partner/suppliers')
@@ -69,7 +74,7 @@ export default function SupplierDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, suppliersApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchSupplier()
@@ -80,7 +85,7 @@ export default function SupplierDetailPage() {
     if (!supplier?.id) return
     setActionLoading(true)
     try {
-      await suppliersApi.activateSupplier(supplier.id)
+      await activateSupplier(supplier.id, {})
       Toast.success(t('suppliers.messages.activateSuccess', { name: supplier.name }))
       fetchSupplier()
     } catch {
@@ -88,14 +93,14 @@ export default function SupplierDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [supplier, suppliersApi, fetchSupplier, t])
+  }, [supplier, fetchSupplier, t])
 
   // Handle deactivate supplier
   const handleDeactivate = useCallback(async () => {
     if (!supplier?.id) return
     setActionLoading(true)
     try {
-      await suppliersApi.deactivateSupplier(supplier.id)
+      await deactivateSupplier(supplier.id, {})
       Toast.success(t('suppliers.messages.deactivateSuccess', { name: supplier.name }))
       fetchSupplier()
     } catch {
@@ -103,7 +108,7 @@ export default function SupplierDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [supplier, suppliersApi, fetchSupplier, t])
+  }, [supplier, fetchSupplier, t])
 
   // Handle block supplier
   const handleBlock = useCallback(async () => {
@@ -117,7 +122,7 @@ export default function SupplierDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await suppliersApi.blockSupplier(supplier.id!)
+          await blockSupplier(supplier.id!, {})
           Toast.success(t('suppliers.messages.blockSuccess', { name: supplier.name }))
           fetchSupplier()
         } catch {
@@ -127,7 +132,7 @@ export default function SupplierDetailPage() {
         }
       },
     })
-  }, [supplier, suppliersApi, fetchSupplier, t])
+  }, [supplier, fetchSupplier, t])
 
   // Handle delete supplier
   const handleDelete = useCallback(async () => {
@@ -141,7 +146,7 @@ export default function SupplierDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await suppliersApi.deleteSupplier(supplier.id!)
+          await deleteSupplier(supplier.id!)
           Toast.success(t('suppliers.messages.deleteSuccess', { name: supplier.name }))
           navigate('/partner/suppliers')
         } catch {
@@ -151,7 +156,7 @@ export default function SupplierDetailPage() {
         }
       },
     })
-  }, [supplier, suppliersApi, navigate, t])
+  }, [supplier, navigate, t])
 
   // Handle edit supplier
   const handleEdit = useCallback(() => {

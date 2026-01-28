@@ -23,7 +23,13 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import {
+  listSuppliers,
+  activateSupplier,
+  deactivateSupplier,
+  blockSupplier,
+  deleteSupplier,
+} from '@/api/suppliers/suppliers'
 import type {
   HandlerSupplierListResponse,
   HandlerSupplierListResponseStatus,
@@ -60,7 +66,6 @@ export default function SuppliersPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const { formatDate } = useFormatters()
-  const api = useMemo(() => getSuppliers(), [])
 
   // Memoized options with translations
   const STATUS_OPTIONS = useMemo(
@@ -116,16 +121,16 @@ export default function SuppliersPage() {
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.listSuppliers(params)
+      const response = await listSuppliers(params)
 
-      if (response.success && response.data) {
-        setSupplierList(response.data as Supplier[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSupplierList(response.data.data as Supplier[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -135,7 +140,6 @@ export default function SuppliersPage() {
       setLoading(false)
     }
   }, [
-    api,
     t,
     state.pagination.page,
     state.pagination.pageSize,
@@ -185,14 +189,14 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       try {
-        await api.activateSupplier(supplier.id)
+        await activateSupplier(supplier.id, {})
         Toast.success(t('suppliers.messages.activateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
         Toast.error(t('suppliers.messages.activateError'))
       }
     },
-    [api, fetchSuppliers, t]
+    [fetchSuppliers, t]
   )
 
   // Handle deactivate supplier
@@ -200,14 +204,14 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       try {
-        await api.deactivateSupplier(supplier.id)
+        await deactivateSupplier(supplier.id, {})
         Toast.success(t('suppliers.messages.deactivateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
         Toast.error(t('suppliers.messages.deactivateError'))
       }
     },
-    [api, fetchSuppliers, t]
+    [fetchSuppliers, t]
   )
 
   // Handle block supplier
@@ -222,7 +226,7 @@ export default function SuppliersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.blockSupplier(supplier.id!)
+            await blockSupplier(supplier.id!, {})
             Toast.success(t('suppliers.messages.blockSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
@@ -231,7 +235,7 @@ export default function SuppliersPage() {
         },
       })
     },
-    [api, fetchSuppliers, t]
+    [fetchSuppliers, t]
   )
 
   // Handle delete supplier
@@ -246,7 +250,7 @@ export default function SuppliersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deleteSupplier(supplier.id!)
+            await deleteSupplier(supplier.id!)
             Toast.success(t('suppliers.messages.deleteSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
@@ -255,7 +259,7 @@ export default function SuppliersPage() {
         },
       })
     },
-    [api, fetchSuppliers, t]
+    [fetchSuppliers, t]
   )
 
   // Handle edit supplier
@@ -280,9 +284,7 @@ export default function SuppliersPage() {
 
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.activateSupplier(id))
-    )
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => activateSupplier(id, {})))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -305,12 +307,12 @@ export default function SuppliersPage() {
 
     setSelectedRowKeys([])
     fetchSuppliers()
-  }, [api, selectedRowKeys, fetchSuppliers, t])
+  }, [selectedRowKeys, fetchSuppliers, t])
 
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
     const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.deactivateSupplier(id))
+      selectedRowKeys.map((id) => deactivateSupplier(id, {}))
     )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
@@ -334,7 +336,7 @@ export default function SuppliersPage() {
 
     setSelectedRowKeys([])
     fetchSuppliers()
-  }, [api, selectedRowKeys, fetchSuppliers, t])
+  }, [selectedRowKeys, fetchSuppliers, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Supplier>[] = useMemo(

@@ -22,7 +22,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseOrderListResponse,
   ListPurchaseOrdersParams,
@@ -70,7 +70,6 @@ export default function PurchaseOrdersPage() {
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
-  const supplierApi = useMemo(() => getSuppliers(), [])
 
   // State for data
   const [orderList, setOrderList] = useState<PurchaseOrder[]>([])
@@ -115,9 +114,9 @@ export default function PurchaseOrdersPage() {
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
     try {
-      const response = await supplierApi.listSuppliers({ page_size: 100 })
-      if (response.success && response.data) {
-        const options: SupplierOption[] = response.data.map(
+      const response = await listSuppliers({ page_size: 100 })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const options: SupplierOption[] = response.data.data.map(
           (supplier: HandlerSupplierListResponse) => ({
             label: supplier.name || supplier.code || '',
             value: supplier.id || '',
@@ -130,7 +129,7 @@ export default function PurchaseOrdersPage() {
     } finally {
       setSuppliersLoading(false)
     }
-  }, [supplierApi])
+  }, [t])
 
   // Fetch suppliers on mount
   useEffect(() => {
@@ -177,6 +176,7 @@ export default function PurchaseOrdersPage() {
     }
   }, [
     purchaseOrderApi,
+    t,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,

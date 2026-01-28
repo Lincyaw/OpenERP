@@ -17,7 +17,7 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { createSupplier, updateSupplier } from '@/api/suppliers/suppliers'
 import type { HandlerSupplierResponse } from '@/api/models'
 import './SupplierForm.css'
 
@@ -46,7 +46,6 @@ interface SupplierFormProps {
 export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
-  const api = useMemo(() => getSuppliers(), [])
   const isEditMode = Boolean(supplierId)
 
   // Supplier type options with translations
@@ -255,7 +254,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
   const onSubmit = async (data: SupplierFormData) => {
     if (isEditMode && supplierId) {
       // Update existing supplier
-      const response = await api.updateSupplier(supplierId, {
+      const response = await updateSupplier(supplierId, {
         name: data.name,
         short_name: data.short_name,
         contact_name: data.contact_name,
@@ -275,12 +274,12 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('suppliers.messages.updateError'))
+      if (response.status !== 200 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('suppliers.messages.updateError'))
       }
     } else {
       // Create new supplier
-      const response = await api.createSupplier({
+      const response = await createSupplier({
         code: data.code,
         name: data.name,
         short_name: data.short_name,
@@ -302,8 +301,8 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('suppliers.messages.createError'))
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('suppliers.messages.createError'))
       }
     }
   }

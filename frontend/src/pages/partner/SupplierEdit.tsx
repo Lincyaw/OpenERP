@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { SupplierForm } from '@/features/partner/SupplierForm'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { getSupplierById } from '@/api/suppliers/suppliers'
 import type { HandlerSupplierResponse } from '@/api/models'
 import { Container } from '@/components/common/layout'
 
@@ -14,7 +14,6 @@ import { Container } from '@/components/common/layout'
 export default function SupplierEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const api = useMemo(() => getSuppliers(), [])
 
   const [loading, setLoading] = useState(true)
   const [supplier, setSupplier] = useState<HandlerSupplierResponse | null>(null)
@@ -30,11 +29,11 @@ export default function SupplierEditPage() {
     const loadSupplier = async () => {
       setLoading(true)
       try {
-        const response = await api.getSupplierById(id)
-        if (response.success && response.data) {
-          setSupplier(response.data)
+        const response = await getSupplierById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setSupplier(response.data.data)
         } else {
-          Toast.error(response.error?.message || '加载供应商失败')
+          Toast.error(response.data.error?.message || '加载供应商失败')
           navigate('/partner/suppliers')
         }
       } catch {
@@ -46,7 +45,7 @@ export default function SupplierEditPage() {
     }
 
     loadSupplier()
-  }, [id, api, navigate])
+  }, [id, navigate])
 
   if (loading) {
     return (

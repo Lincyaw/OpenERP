@@ -19,7 +19,7 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { getFinanceApi } from '@/api/finance'
-import { getSuppliers } from '@/api/suppliers/suppliers'
+import { listSuppliers, getSupplierById } from '@/api/suppliers/suppliers'
 import type { PaymentMethod, CreatePaymentVoucherRequest, AccountPayable } from '@/api/finance'
 import type { HandlerSupplierResponse } from '@/api/models'
 import './PaymentVoucherNew.css'
@@ -90,7 +90,6 @@ export default function PaymentVoucherNewPage() {
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('finance')
   const financeApi = useMemo(() => getFinanceApi(), [])
-  const supplierApi = useMemo(() => getSuppliers(), [])
 
   // URL params for pre-filling
   const preSelectedSupplierId = searchParams.get('supplier_id') || ''
@@ -154,15 +153,15 @@ export default function PaymentVoucherNewPage() {
 
       setSupplierLoading(true)
       try {
-        const response = await supplierApi.listSuppliers({
+        const response = await listSuppliers({
           search: keyword,
           status: 'active',
           page: 1,
           page_size: 20,
         })
 
-        if (response.success && response.data) {
-          const options = response.data.map((supplier) => ({
+        if (response.status === 200 && response.data.success && response.data.data) {
+          const options = response.data.data.map((supplier) => ({
             label: `${supplier.name} (${supplier.code})`,
             value: supplier.id || '',
             supplier,
@@ -175,7 +174,7 @@ export default function PaymentVoucherNewPage() {
         setSupplierLoading(false)
       }
     },
-    [supplierApi, t]
+    [t]
   )
 
   // Fetch supplier payables when supplier is selected
@@ -217,9 +216,9 @@ export default function PaymentVoucherNewPage() {
     if (preSelectedSupplierId) {
       const loadSupplier = async () => {
         try {
-          const response = await supplierApi.getSupplierById(preSelectedSupplierId)
-          if (response.success && response.data) {
-            const supplier = response.data
+          const response = await getSupplierById(preSelectedSupplierId)
+          if (response.status === 200 && response.data.success && response.data.data) {
+            const supplier = response.data.data
             setSelectedSupplier(supplier)
             setValue('supplier_id', supplier.id || '')
             setValue('supplier_name', supplier.name || '')
@@ -238,7 +237,7 @@ export default function PaymentVoucherNewPage() {
       }
       loadSupplier()
     }
-  }, [preSelectedSupplierId, supplierApi, setValue, fetchSupplierPayables, t])
+  }, [preSelectedSupplierId, setValue, fetchSupplierPayables, t])
 
   // Watch for supplier changes
   useEffect(() => {

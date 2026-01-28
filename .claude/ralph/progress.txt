@@ -33026,3 +33026,50 @@ Dashboard:
 === Next Steps ===
 - Continue with RQ-MIG-003: Suppliers Module migration
 - Apply same pattern to remaining factory function usages
+
+2026-01-28 - Task RQ-MIG-003: React Query Migration - Suppliers Module
+
+=== Implementation Details ===
+- Migrated all supplier module files from factory pattern to direct imports
+- Updated 8 files across partner, trade, and finance modules
+- Replaced `getSuppliers()` factory pattern with direct function imports
+
+=== Key Files Modified ===
+Partner Module:
+- src/features/partner/SupplierForm.tsx - Direct imports: createSupplier, updateSupplier
+- src/pages/partner/Suppliers.tsx - Direct imports: listSuppliers, activateSupplier, deactivateSupplier, blockSupplier, deleteSupplier
+- src/pages/partner/SupplierDetail.tsx - Direct imports: getSupplierById, activateSupplier, deactivateSupplier, blockSupplier, deleteSupplier
+- src/pages/partner/SupplierEdit.tsx - Direct import: getSupplierById
+
+Trade Module:
+- src/features/trade/PurchaseOrderForm.tsx - Direct import: listSuppliers
+- src/pages/trade/PurchaseOrders.tsx - Direct import: listSuppliers
+- src/pages/trade/PurchaseReturns.tsx - Direct import: listSuppliers
+
+Finance Module:
+- src/pages/finance/PaymentVoucherNew.tsx - Direct imports: listSuppliers, getSupplierById
+
+=== Response Format Update ===
+- Changed from `response.success && response.data` pattern
+- Now uses `response.status === 200 && response.data.success && response.data.data`
+- Create operations check for status 201 instead of 200
+- Status mutations (activate, deactivate, block) now require empty object `{}` as body parameter
+
+=== Verification ===
+- TypeScript check (npm run type-check) passes for all migrated files
+- Code review completed via code-reviewer agent
+- No critical issues found in production code
+
+=== Code Review Summary ===
+- Production code migration complete and correct
+- Test files still use old factory pattern (noted for future updates)
+- Some hardcoded Chinese strings in SupplierEdit.tsx (pre-existing localization issue)
+
+=== Notes ===
+- Removed `useMemo(() => getSuppliers(), [])` pattern from all files
+- Removed unused `useMemo` import from SupplierEdit.tsx
+- Updated all dependency arrays to remove stale API variable references
+
+=== Next Steps ===
+- Continue with RQ-MIG-004 or other remaining migration tasks
+- Consider updating test files to match new pattern in future iterations
