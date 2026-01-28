@@ -1,13 +1,12 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Card, Form, Button, Typography, Toast, Banner } from '@douyinfe/semi-ui-19'
 import { IconUser, IconLock } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store'
-import { getAuth } from '@/api/auth'
+import { useLoginAuth } from '@/api/auth/auth'
 import { resetRedirectFlag } from '@/services/token-refresh'
 import type { User } from '@/store/types'
-import type { AxiosError } from 'axios'
 
 const { Title, Text } = Typography
 
@@ -33,10 +32,9 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useTranslation('auth')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const login = useAuthStore((state) => state.login)
-  const authApi = useMemo(() => getAuth(), [])
+  const loginMutation = useLoginAuth()
 
   // Get intended destination from location state
   const from = (location.state as { from?: Location })?.from?.pathname || '/'
@@ -51,20 +49,23 @@ export default function LoginPage() {
   }, [])
 
   const handleSubmit = async (values: LoginFormValues) => {
-    setLoading(true)
     setError(null)
 
     try {
-      const response = await authApi.loginAuth({
-        username: values.username,
-        password: values.password,
+      const response = await loginMutation.mutateAsync({
+        data: {
+          username: values.username,
+          password: values.password,
+        },
       })
 
-      if (!response.success || !response.data) {
-        throw new Error(response.error?.message || t('login.failed'))
+      // Check response status and data
+      if (response.status !== 200 || !response.data.success || !response.data.data) {
+        const apiError = response.data as unknown as ApiError
+        throw new Error(apiError.error?.message || t('login.failed'))
       }
 
-      const { token, user: apiUser } = response.data
+      const { token, user: apiUser } = response.data.data
 
       if (!apiUser || !token) {
         throw new Error(t('login.failed'))
@@ -93,11 +94,17 @@ export default function LoginPage() {
       // Redirect to intended destination
       navigate(from, { replace: true })
     } catch (err) {
-      const axiosError = err as AxiosError<ApiError>
       let errorMessage = t('login.failed')
 
-      if (axiosError.response?.data?.error) {
-        const apiError = axiosError.response.data.error
+      // Handle error response from API
+      if (err instanceof Error) {
+        errorMessage = err.message
+      }
+
+      // Try to extract error code from mutation error
+      const mutationError = loginMutation.error as { data?: ApiError } | null
+      if (mutationError?.data?.error) {
+        const apiError = mutationError.data.error
         // Handle specific error codes
         switch (apiError.code) {
           case 'INVALID_CREDENTIALS':
@@ -116,14 +123,10 @@ export default function LoginPage() {
           default:
             errorMessage = apiError.message || errorMessage
         }
-      } else if (axiosError.message) {
-        errorMessage = axiosError.message
       }
 
       setError(errorMessage)
       Toast.error({ content: errorMessage })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -170,7 +173,7 @@ export default function LoginPage() {
               { min: 3, message: t('validation.usernameMinLength') },
               { max: 100, message: t('validation.usernameMaxLength') },
             ]}
-            disabled={loading}
+            disabled={loginMutation.isPending}
           />
 
           <Form.Input
@@ -184,7 +187,7 @@ export default function LoginPage() {
               { min: 8, message: t('validation.passwordMinLength') },
               { max: 128, message: t('validation.passwordMaxLength') },
             ]}
-            disabled={loading}
+            disabled={loginMutation.isPending}
           />
 
           <Button
@@ -192,7 +195,7 @@ export default function LoginPage() {
             htmlType="submit"
             theme="solid"
             block
-            loading={loading}
+            loading={loginMutation.isPending}
             style={{ marginTop: 'var(--spacing-4)' }}
           >
             {t('login.submit')}

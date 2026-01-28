@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { getRouteObjects } from './router'
 import { AuthProvider } from './components/auth'
 import { I18nProvider, FeatureFlagProvider } from './components/providers'
+import { queryClient } from './lib/queryClient'
 
 // Initialize i18n (must be imported before components that use translations)
 import './i18n'
@@ -19,12 +21,14 @@ const router = createBrowserRouter(getRouteObjects())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <I18nProvider>
-      <FeatureFlagProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </FeatureFlagProvider>
-    </I18nProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nProvider>
+        <FeatureFlagProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </FeatureFlagProvider>
+      </I18nProvider>
+    </QueryClientProvider>
   </StrictMode>
 )

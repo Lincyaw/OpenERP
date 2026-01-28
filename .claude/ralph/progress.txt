@@ -32824,3 +32824,89 @@ All 338 ERP endpoints successfully parsed with parameters and response fields.
 - Use parsed InputPins/OutputPins for semantic type assignment
 - Connect parser output to parameter pool system
 
+
+=============================================================================
+2026-01-28 - PRD: React Query Migration Tasks Created
+=============================================================================
+
+=== Background ===
+The frontend build has 137 TypeScript errors related to the React Query migration.
+The orval code generator produces direct function exports and React Query hooks,
+but the existing code uses a factory function pattern that no longer exists.
+
+=== Error Categories Identified ===
+1. Missing factory functions (getProducts, getCustomers, getSuppliers, getTenants, etc.)
+2. Renamed functions (getCategories -> listCategories, getWarehouses -> listWarehouses)
+3. Missing module paths (@/api/finance, @/api/feature-flags, @/api/printing, @/api/reports, @/api/identity)
+4. Implicit 'any' types on callback parameters
+
+=== PRD Tasks Created (19 total) ===
+
+| Task ID      | Module                | Files Affected |
+|--------------|----------------------|----------------|
+| RQ-MIG-001   | Products             | 10 files       |
+| RQ-MIG-002   | Customers            | 11 files       |
+| RQ-MIG-003   | Suppliers            | 8 files        |
+| RQ-MIG-004   | Warehouses           | 16 files       |
+| RQ-MIG-005   | Inventory            | 7 files        |
+| RQ-MIG-006   | Categories           | 1 file         |
+| RQ-MIG-007   | Customer Levels      | 1 file         |
+| RQ-MIG-008   | Sales Orders         | 6 files        |
+| RQ-MIG-009   | Purchase Orders      | 6 files        |
+| RQ-MIG-010   | Sales Returns        | 4 files        |
+| RQ-MIG-011   | Purchase Returns     | 2 files        |
+| RQ-MIG-012   | Stock Taking         | 3 files        |
+| RQ-MIG-013   | Balance              | 2 files        |
+| RQ-MIG-014   | Tenants              | 1 file         |
+| RQ-MIG-015   | Finance (paths)      | 12 files       |
+| RQ-MIG-016   | Feature Flags (paths)| 7 files        |
+| RQ-MIG-017   | Printing (paths)     | 1 file         |
+| RQ-MIG-018   | Reports (paths)      | 5 files        |
+| RQ-MIG-019   | Identity (paths)     | 3 files        |
+
+=== Migration Pattern (Documented in Each Task) ===
+
+**For React Components (use hooks):**
+// Before
+import { getProducts } from '@/api/products/products'
+const api = useMemo(() => getProducts(), [])
+const [data, setData] = useState([])
+useEffect(() => { fetchData() }, [])
+
+// After
+import { useListProducts } from '@/api/products/products'
+const { data, isLoading, refetch } = useListProducts(params)
+
+**For Non-React Context (raw functions):**
+// Before
+const api = getProducts()
+await api.listProducts(params)
+
+// After
+import { listProducts } from '@/api/products/products'
+await listProducts(params)
+
+**Response Format Change:**
+// Before: response.success, response.data
+// After: response.status === 200, response.data.success, response.data.data
+
+=== Trade-offs Analysis ===
+**Pros:**
+- Consistent with orval-generated code
+- Better TypeScript inference
+- React Query provides caching, deduplication, background updates
+- Smaller bundle (no factory wrapper code)
+
+**Cons:**
+- Large migration effort (106 files affected)
+- Potential for breaking changes during migration
+- Need to update response handling throughout
+
+**Risk Level:** MEDIUM (large scope, but well-defined pattern)
+
+=== Next Steps ===
+- Prioritize tasks based on module dependencies
+- Start with smaller modules (Categories, Customer Levels) for pattern validation
+- Then tackle high-dependency modules (Products, Customers, Warehouses)
+- Finally address path fixes (Finance, Feature Flags, Printing, Reports, Identity)
+

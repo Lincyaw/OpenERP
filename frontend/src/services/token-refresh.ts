@@ -16,11 +16,8 @@
  * - Secure logout on refresh failure
  */
 
-import { getAuth } from '@/api/auth'
+import { refreshTokenAuth } from '@/api/auth/auth'
 import { useAuthStore } from '@/store'
-
-// Create auth API instance
-const authApi = getAuth()
 
 // Token expiration buffer (refresh 1 minute before expiry)
 const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000
@@ -175,12 +172,13 @@ async function performRefresh(): Promise<string | null> {
   try {
     // Send empty body - refresh token is sent via httpOnly cookie automatically
     // The backend will read the refresh_token from the cookie
-    const response = await authApi.refreshTokenAuth({
+    const response = await refreshTokenAuth({
       // Empty body - refresh token comes from httpOnly cookie
       refresh_token: '', // Kept for backward compatibility, backend ignores this
     })
 
-    if (!response.success || !response.data) {
+    // Check if response is successful (status 200)
+    if (response.status !== 200 || !response.data.success || !response.data.data) {
       // Refresh failed, logout user but DON'T redirect here
       // Let the caller handle redirect to avoid double redirects
       logout()
@@ -188,7 +186,7 @@ async function performRefresh(): Promise<string | null> {
       return null
     }
 
-    const { token } = response.data
+    const { token } = response.data.data
 
     // Update access token in store (stored in memory only)
     // Note: refresh_token in response is empty - it's updated via httpOnly cookie by backend
