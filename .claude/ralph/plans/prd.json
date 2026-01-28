@@ -8978,7 +8978,7 @@
       "- 所有测试通过",
       "- 使用 React Testing Library"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Testing",
     "affectedModules": [
       "frontend/src/stores/__tests__/featureFlagStore.test.ts",

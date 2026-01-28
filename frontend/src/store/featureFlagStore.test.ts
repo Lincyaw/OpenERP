@@ -5,8 +5,17 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { act } from '@testing-library/react'
-import { useFeatureFlagStore, type FlagValue } from './featureFlagStore'
+import { act, renderHook } from '@testing-library/react'
+import {
+  useFeatureFlagStore,
+  type FlagValue,
+  useIsFeatureEnabled,
+  useFeatureVariant,
+  useFeatureFlag,
+  useFeatureFlagsLoading,
+  useFeatureFlagsReady,
+  useFeatureFlagsError,
+} from './featureFlagStore'
 
 // Mock axios instance
 vi.mock('@/services/axios-instance', () => ({
@@ -520,6 +529,147 @@ describe('useFeatureFlagStore', () => {
       expect(state.flags).toEqual(mockFlags)
       expect(state.isLoading).toBe(true)
       expect(state.error).toBe('test error')
+    })
+  })
+
+  // ============================================================================
+  // Exported Selector Hooks Tests (with renderHook)
+  // ============================================================================
+
+  describe('exported selector hooks', () => {
+    beforeEach(() => {
+      act(() => {
+        useFeatureFlagStore.setState({
+          flags: mockFlags,
+          isReady: true,
+          isLoading: false,
+          error: null,
+        })
+      })
+    })
+
+    describe('useIsFeatureEnabled', () => {
+      it('should return true for enabled flags', () => {
+        const { result } = renderHook(() => useIsFeatureEnabled('new_checkout_flow'))
+        expect(result.current).toBe(true)
+      })
+
+      it('should return false for disabled flags', () => {
+        const { result } = renderHook(() => useIsFeatureEnabled('disabled_feature'))
+        expect(result.current).toBe(false)
+      })
+
+      it('should return false for non-existent flags', () => {
+        const { result } = renderHook(() => useIsFeatureEnabled('unknown_flag'))
+        expect(result.current).toBe(false)
+      })
+
+      it('should update when flag state changes', () => {
+        const { result, rerender } = renderHook(() => useIsFeatureEnabled('new_checkout_flow'))
+
+        expect(result.current).toBe(true)
+
+        act(() => {
+          useFeatureFlagStore.setState({
+            flags: {
+              ...mockFlags,
+              new_checkout_flow: { enabled: false, variant: null },
+            },
+          })
+        })
+
+        rerender()
+        expect(result.current).toBe(false)
+      })
+    })
+
+    describe('useFeatureVariant', () => {
+      it('should return variant for flags with variants', () => {
+        const { result } = renderHook(() => useFeatureVariant('button_color'))
+        expect(result.current).toBe('blue')
+      })
+
+      it('should return null for flags without variants', () => {
+        const { result } = renderHook(() => useFeatureVariant('new_checkout_flow'))
+        expect(result.current).toBeNull()
+      })
+
+      it('should return null for non-existent flags', () => {
+        const { result } = renderHook(() => useFeatureVariant('unknown_flag'))
+        expect(result.current).toBeNull()
+      })
+    })
+
+    describe('useFeatureFlag', () => {
+      it('should return full flag value', () => {
+        const { result } = renderHook(() => useFeatureFlag('button_color'))
+        expect(result.current).toEqual({ enabled: true, variant: 'blue' })
+      })
+
+      it('should return undefined for non-existent flags', () => {
+        const { result } = renderHook(() => useFeatureFlag('unknown_flag'))
+        expect(result.current).toBeUndefined()
+      })
+    })
+
+    describe('useFeatureFlagsLoading', () => {
+      it('should return loading state', () => {
+        act(() => {
+          useFeatureFlagStore.setState({ isLoading: true })
+        })
+
+        const { result } = renderHook(() => useFeatureFlagsLoading())
+        expect(result.current).toBe(true)
+      })
+
+      it('should update when loading state changes', () => {
+        const { result, rerender } = renderHook(() => useFeatureFlagsLoading())
+
+        expect(result.current).toBe(false)
+
+        act(() => {
+          useFeatureFlagStore.setState({ isLoading: true })
+        })
+
+        rerender()
+        expect(result.current).toBe(true)
+      })
+    })
+
+    describe('useFeatureFlagsReady', () => {
+      it('should return ready state', () => {
+        const { result } = renderHook(() => useFeatureFlagsReady())
+        expect(result.current).toBe(true)
+      })
+
+      it('should update when ready state changes', () => {
+        const { result, rerender } = renderHook(() => useFeatureFlagsReady())
+
+        expect(result.current).toBe(true)
+
+        act(() => {
+          useFeatureFlagStore.setState({ isReady: false })
+        })
+
+        rerender()
+        expect(result.current).toBe(false)
+      })
+    })
+
+    describe('useFeatureFlagsError', () => {
+      it('should return null when no error', () => {
+        const { result } = renderHook(() => useFeatureFlagsError())
+        expect(result.current).toBeNull()
+      })
+
+      it('should return error message when error exists', () => {
+        act(() => {
+          useFeatureFlagStore.setState({ error: 'Network error' })
+        })
+
+        const { result } = renderHook(() => useFeatureFlagsError())
+        expect(result.current).toBe('Network error')
+      })
     })
   })
 })
