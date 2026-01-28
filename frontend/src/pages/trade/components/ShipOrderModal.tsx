@@ -61,7 +61,7 @@ export default function ShipOrderModal({
   const fetchWarehouses = useCallback(async () => {
     setWarehousesLoading(true)
     try {
-      const response = await warehouseApi.getPartnerWarehouses({
+      const response = await warehouseApi.listWarehouses({
         status: 'enabled',
         page_size: 100, // Fetch all active warehouses
       })

@@ -263,11 +263,12 @@ export default function SalesReportPage() {
 
     try {
       // Fetch all data in parallel
+      // Note: API functions expect (body, params) - body is unused for GET requests
       const [summaryRes, trendsRes, productsRes, customersRes] = await Promise.allSettled([
-        reportsApi.getReportsSalesSummary(params),
-        reportsApi.getReportsSalesDailyTrend(params),
-        reportsApi.getReportsSalesProductsRanking({ ...params, top_n: 10 }),
-        reportsApi.getReportsSalesCustomersRanking({ ...params, top_n: 10 }),
+        reportsApi.getReportSalesSummary(params),
+        reportsApi.getReportDailySalesTrend(params),
+        reportsApi.getReportProductSalesRanking({ ...params, top_n: 10 }),
+        reportsApi.getReportCustomerSalesRanking({ ...params, top_n: 10 }),
       ])
 
       // Process summary

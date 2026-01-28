@@ -164,7 +164,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   const onSubmit = async (data: ProductFormData) => {
     if (isEditMode && productId) {
       // Update existing product
-      const response = await api.putCatalogProductsId(productId, {
+      const response = await api.updateProduct(productId, {
         name: data.name,
         barcode: data.barcode,
         description: data.description,
@@ -178,7 +178,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       }
     } else {
       // Create new product
-      const response = await api.postCatalogProducts({
+      const response = await api.createProduct({
         code: data.code,
         name: data.name,
         unit: data.unit,

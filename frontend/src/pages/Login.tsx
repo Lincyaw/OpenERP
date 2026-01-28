@@ -55,7 +55,7 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const response = await authApi.postAuthLogin({
+      const response = await authApi.loginAuth({
         username: values.username,
         password: values.password,
       })

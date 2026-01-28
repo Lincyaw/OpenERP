@@ -136,8 +136,8 @@ const createMockReconcileResponse = () => ({
 
 describe('PaymentReconcilePage', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -147,8 +147,8 @@ describe('PaymentReconcilePage', () => {
 
     // Setup mock finance API
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -453,7 +453,7 @@ describe('PaymentReconcilePage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when voucher load fails', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce({
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce({
         success: false,
         error: '加载付款单失败',
       })
@@ -466,7 +466,7 @@ describe('PaymentReconcilePage', () => {
     })
 
     it('should navigate away when voucher not found', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce({
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce({
         success: false,
         data: null,
       })
@@ -523,8 +523,8 @@ describe('PaymentReconcilePage', () => {
 
 describe('PaymentReconcilePage - Voucher Status States', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -533,8 +533,8 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -545,7 +545,7 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
 
   describe('Draft Voucher', () => {
     it('should show warning banner for draft voucher', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockDraftVoucher)
       )
 
@@ -557,7 +557,7 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
     })
 
     it('should display draft status tag', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockDraftVoucher)
       )
 
@@ -571,7 +571,7 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
 
   describe('Fully Allocated Voucher', () => {
     it('should show success banner for fully allocated voucher', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockAllocatedVoucher)
       )
 
@@ -583,7 +583,7 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
     })
 
     it('should display allocated status tag', async () => {
-      mockFinanceApiInstance.getFinancePaymentsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getPaymentVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockAllocatedVoucher)
       )
 
@@ -598,8 +598,8 @@ describe('PaymentReconcilePage - Voucher Status States', () => {
 
 describe('PaymentReconcilePage - Empty Payables', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -608,8 +608,8 @@ describe('PaymentReconcilePage - Empty Payables', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse([])),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse([])),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -629,8 +629,8 @@ describe('PaymentReconcilePage - Empty Payables', () => {
 
 describe('PaymentReconcilePage - Reconcile Result Display', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -639,8 +639,8 @@ describe('PaymentReconcilePage - Reconcile Result Display', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -716,8 +716,8 @@ describe('PaymentReconcilePage - Reconcile Result Display', () => {
 
 describe('PaymentReconcilePage - Manual Mode', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -726,8 +726,8 @@ describe('PaymentReconcilePage - Manual Mode', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -791,8 +791,8 @@ describe('PaymentReconcilePage - Manual Mode', () => {
 
 describe('PaymentReconcilePage - API Integration', () => {
   let mockFinanceApiInstance: {
-    getFinancePaymentsId: ReturnType<typeof vi.fn>
-    getFinancePayables: ReturnType<typeof vi.fn>
+    getPaymentVoucherById: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
     postFinancePaymentsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -801,8 +801,8 @@ describe('PaymentReconcilePage - API Integration', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePaymentsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      getPaymentVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
       postFinancePaymentsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -811,19 +811,19 @@ describe('PaymentReconcilePage - API Integration', () => {
     )
   })
 
-  it('should call getFinancePaymentsId on mount', async () => {
+  it('should call getPaymentVoucherById on mount', async () => {
     renderWithProviders(<PaymentReconcilePage />, { route: '/finance/payments/pv-001/reconcile' })
 
     await waitFor(() => {
-      expect(mockFinanceApiInstance.getFinancePaymentsId).toHaveBeenCalledWith('pv-001')
+      expect(mockFinanceApiInstance.getPaymentVoucherById).toHaveBeenCalledWith('pv-001')
     })
   })
 
-  it('should call getFinancePayables with supplier_id filter', async () => {
+  it('should call listFinancePayables with supplier_id filter', async () => {
     renderWithProviders(<PaymentReconcilePage />, { route: '/finance/payments/pv-001/reconcile' })
 
     await waitFor(() => {
-      expect(mockFinanceApiInstance.getFinancePayables).toHaveBeenCalledWith(
+      expect(mockFinanceApiInstance.listFinancePayables).toHaveBeenCalledWith(
         expect.objectContaining({
           supplier_id: 'supp-001',
         })
@@ -862,13 +862,13 @@ describe('PaymentReconcilePage - API Integration', () => {
     })
 
     // Clear call counts
-    mockFinanceApiInstance.getFinancePaymentsId.mockClear()
+    mockFinanceApiInstance.getPaymentVoucherById.mockClear()
 
     await user.click(screen.getByText('确认核销'))
 
     await waitFor(() => {
       // Should reload voucher data after reconciliation
-      expect(mockFinanceApiInstance.getFinancePaymentsId).toHaveBeenCalled()
+      expect(mockFinanceApiInstance.getPaymentVoucherById).toHaveBeenCalled()
     })
   })
 })

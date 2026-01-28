@@ -140,7 +140,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     async (search?: string, signal?: AbortSignal) => {
       setCustomersLoading(true)
       try {
-        const response = await customerApi.getPartnerCustomers(
+        const response = await customerApi.listCustomers(
           { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
@@ -164,7 +164,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     async (search?: string, signal?: AbortSignal) => {
       setProductsLoading(true)
       try {
-        const response = await productApi.getCatalogProducts(
+        const response = await productApi.listProducts(
           { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
@@ -188,7 +188,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     async (signal?: AbortSignal) => {
       setWarehousesLoading(true)
       try {
-        const response = await warehouseApi.getPartnerWarehouses(
+        const response = await warehouseApi.listWarehouses(
           { page_size: 100, status: 'enabled' },
           { signal }
         )
@@ -370,7 +370,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       }))
 
       if (isEditMode && orderId) {
-        const response = await salesOrderApi.putTradeSalesOrdersId(orderId, {
+        const response = await salesOrderApi.updateSalesOrder(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
           remark: formData.remark || undefined,
@@ -380,7 +380,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        const response = await salesOrderApi.postTradeSalesOrders({
+        const response = await salesOrderApi.createSalesOrder({
           customer_id: formData.customer_id,
           customer_name: formData.customer_name,
           warehouse_id: formData.warehouse_id,

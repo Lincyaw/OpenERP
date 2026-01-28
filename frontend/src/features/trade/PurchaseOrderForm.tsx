@@ -140,7 +140,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     async (search?: string, signal?: AbortSignal) => {
       setSuppliersLoading(true)
       try {
-        const response = await supplierApi.getPartnerSuppliers(
+        const response = await supplierApi.listSuppliers(
           { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
@@ -164,7 +164,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     async (search?: string, signal?: AbortSignal) => {
       setProductsLoading(true)
       try {
-        const response = await productApi.getCatalogProducts(
+        const response = await productApi.listProducts(
           { page_size: 50, search: search || undefined, status: 'active' },
           { signal }
         )
@@ -188,7 +188,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     async (signal?: AbortSignal) => {
       setWarehousesLoading(true)
       try {
-        const response = await warehouseApi.getPartnerWarehouses(
+        const response = await warehouseApi.listWarehouses(
           { page_size: 100, status: 'enabled' },
           { signal }
         )
@@ -371,7 +371,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       }))
 
       if (isEditMode && orderId) {
-        const response = await purchaseOrderApi.putTradePurchaseOrdersId(orderId, {
+        const response = await purchaseOrderApi.updatePurchaseOrder(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
           remark: formData.remark || undefined,
@@ -381,7 +381,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        const response = await purchaseOrderApi.postTradePurchaseOrders({
+        const response = await purchaseOrderApi.createPurchaseOrder({
           supplier_id: formData.supplier_id,
           supplier_name: formData.supplier_name,
           warehouse_id: formData.warehouse_id,

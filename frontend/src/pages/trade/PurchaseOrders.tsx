@@ -25,8 +25,8 @@ import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
 import { getSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseOrderListResponse,
-  GetTradePurchaseOrdersParams,
-  GetTradePurchaseOrdersStatus,
+  ListPurchaseOrdersParams,
+  ListPurchaseOrdersStatus,
   HandlerSupplierListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -115,7 +115,7 @@ export default function PurchaseOrdersPage() {
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
     try {
-      const response = await supplierApi.getPartnerSuppliers({ page_size: 100 })
+      const response = await supplierApi.listSuppliers({ page_size: 100 })
       if (response.success && response.data) {
         const options: SupplierOption[] = response.data.map(
           (supplier: HandlerSupplierListResponse) => ({
@@ -141,11 +141,11 @@ export default function PurchaseOrdersPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetTradePurchaseOrdersParams = {
+      const params: ListPurchaseOrdersParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetTradePurchaseOrdersStatus | undefined,
+        status: (statusFilter || undefined) as ListPurchaseOrdersStatus | undefined,
         supplier_id: supplierFilter || undefined,
         order_by: state.sort.field || 'created_at',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
@@ -157,7 +157,7 @@ export default function PurchaseOrdersPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await purchaseOrderApi.getTradePurchaseOrders(params)
+      const response = await purchaseOrderApi.listPurchaseOrders(params)
 
       if (response.success && response.data) {
         setOrderList(response.data as PurchaseOrder[])
@@ -250,7 +250,7 @@ export default function PurchaseOrdersPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseOrderApi.postTradePurchaseOrdersIdConfirm(order.id!, {})
+            await purchaseOrderApi.confirmPurchaseOrder(order.id!, {})
             Toast.success(
               t('purchaseOrder.messages.confirmSuccess', { orderNumber: order.order_number })
             )
@@ -286,7 +286,7 @@ export default function PurchaseOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseOrderApi.postTradePurchaseOrdersIdCancel(order.id!, {
+            await purchaseOrderApi.cancelPurchaseOrder(order.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(
@@ -314,7 +314,7 @@ export default function PurchaseOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseOrderApi.deleteTradePurchaseOrdersId(order.id!)
+            await purchaseOrderApi.deletePurchaseOrder(order.id!)
             Toast.success(
               t('purchaseOrder.messages.deleteSuccess', { orderNumber: order.order_number })
             )

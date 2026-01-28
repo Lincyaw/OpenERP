@@ -143,7 +143,7 @@ export default function ReceiptReconcilePage() {
     setLoading(true)
     try {
       // Load voucher
-      const voucherResponse = await financeApi.getFinanceReceiptsId(id)
+      const voucherResponse = await financeApi.getFinanceReceiptReceiptVoucher(id)
       if (!voucherResponse.success || !voucherResponse.data) {
         Toast.error(t('receiptReconcile.messages.fetchError'))
         navigate('/finance/receivables')
@@ -154,7 +154,7 @@ export default function ReceiptReconcilePage() {
       setVoucher(loadedVoucher)
 
       // Load receivables for the customer
-      const receivablesResponse = await financeApi.getFinanceReceivables({
+      const receivablesResponse = await financeApi.listFinanceReceivablesReceivables({
         customer_id: loadedVoucher.customer_id,
         page: 1,
         page_size: 100,
@@ -367,7 +367,7 @@ export default function ReceiptReconcilePage() {
 
     setReconciling(true)
     try {
-      const response = await financeApi.postFinanceReceiptsIdReconcile(id, request)
+      const response = await financeApi.reconcileFinanceReceipt(id, request)
       if (response.success && response.data) {
         Toast.success(t('receiptReconcile.messages.allocateSuccess'))
         setReconcileResult(response.data)

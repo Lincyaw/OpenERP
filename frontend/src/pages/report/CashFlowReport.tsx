@@ -251,9 +251,10 @@ export default function CashFlowReportPage() {
 
     try {
       // Fetch current period data
+      // Note: API functions expect (body, params) - body is unused for GET requests
       const [statementRes, itemsRes] = await Promise.allSettled([
-        reportsApi.getReportsFinanceCashFlow(params),
-        reportsApi.getReportsFinanceCashFlowItems(params),
+        reportsApi.getReportCashFlowStatement(params),
+        reportsApi.getReportCashFlowItems(params),
       ])
 
       // Process statement
@@ -279,7 +280,7 @@ export default function CashFlowReportPage() {
         }
 
         try {
-          const compRes = await reportsApi.getReportsFinanceCashFlow(comparisonParams)
+          const compRes = await reportsApi.getReportCashFlowStatement(comparisonParams)
           if (compRes.data) {
             setComparisonStatement(compRes.data as unknown as CashFlowStatement)
           } else {

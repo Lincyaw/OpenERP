@@ -24,8 +24,8 @@ import { getSalesReturns } from '@/api/sales-returns/sales-returns'
 import { getCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesReturnListResponse,
-  GetTradeSalesReturnsParams,
-  GetTradeSalesReturnsStatus,
+  ListSalesReturnsParams,
+  ListSalesReturnsStatus,
   HandlerCustomerListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -127,7 +127,7 @@ export default function SalesReturnsPage() {
   const fetchCustomers = useCallback(async () => {
     setCustomersLoading(true)
     try {
-      const response = await customerApi.getPartnerCustomers({ page_size: 100 })
+      const response = await customerApi.listCustomers({ page_size: 100 })
       if (response.success && response.data) {
         const options: CustomerOption[] = response.data.map(
           (customer: HandlerCustomerListResponse) => ({
@@ -153,11 +153,11 @@ export default function SalesReturnsPage() {
   const fetchReturns = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetTradeSalesReturnsParams = {
+      const params: ListSalesReturnsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetTradeSalesReturnsStatus | undefined,
+        status: (statusFilter || undefined) as ListSalesReturnsStatus | undefined,
         customer_id: customerFilter || undefined,
         order_by: state.sort.field || 'created_at',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
@@ -169,7 +169,7 @@ export default function SalesReturnsPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await salesReturnApi.getTradeSalesReturns(params)
+      const response = await salesReturnApi.listSalesReturns(params)
 
       if (response.success && response.data) {
         setReturnList(response.data as SalesReturn[])
@@ -263,7 +263,7 @@ export default function SalesReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesReturnApi.postTradeSalesReturnsIdSubmit(returnItem.id!)
+            await salesReturnApi.submitSalesReturn(returnItem.id!)
             Toast.success(t('salesReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {
@@ -286,7 +286,7 @@ export default function SalesReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesReturnApi.postTradeSalesReturnsIdApprove(returnItem.id!, { note: '' })
+            await salesReturnApi.approveSalesReturn(returnItem.id!, { note: '' })
             Toast.success(t('salesReturn.messages.approveSuccess'))
             fetchReturns()
           } catch {
@@ -310,7 +310,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.postTradeSalesReturnsIdReject(returnItem.id!, {
+            await salesReturnApi.rejectSalesReturn(returnItem.id!, {
               reason: t('salesReturn.actions.reject'),
             })
             Toast.success(t('salesReturn.messages.rejectSuccess'))
@@ -329,7 +329,7 @@ export default function SalesReturnsPage() {
     async (returnItem: SalesReturn) => {
       if (!returnItem.id) return
       try {
-        await salesReturnApi.postTradeSalesReturnsIdComplete(returnItem.id!, {})
+        await salesReturnApi.completeSalesReturn(returnItem.id!, {})
         Toast.success(t('salesReturn.messages.completeSuccess'))
         fetchReturns()
       } catch {
@@ -344,7 +344,7 @@ export default function SalesReturnsPage() {
     async (returnItem: SalesReturn) => {
       if (!returnItem.id) return
       try {
-        await salesReturnApi.postTradeSalesReturnsIdReceive(returnItem.id!, {})
+        await salesReturnApi.receiveSalesReturn(returnItem.id!, {})
         Toast.success(t('salesReturn.messages.receiveSuccess'))
         fetchReturns()
       } catch {
@@ -366,7 +366,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.postTradeSalesReturnsIdCancel(returnItem.id!, {
+            await salesReturnApi.cancelSalesReturn(returnItem.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(t('salesReturn.messages.cancelSuccess'))
@@ -392,7 +392,7 @@ export default function SalesReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesReturnApi.deleteTradeSalesReturnsId(returnItem.id!)
+            await salesReturnApi.deleteSalesReturn(returnItem.id!)
             Toast.success(t('salesReturn.messages.deleteSuccess'))
             fetchReturns()
           } catch {

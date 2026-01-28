@@ -11,7 +11,7 @@ import {
   Collapsible,
 } from '@douyinfe/semi-ui-19'
 import { IconChevronDown, IconChevronUp } from '@douyinfe/semi-icons'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type { AuditLog } from '@/api/feature-flags'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 
@@ -93,7 +93,7 @@ interface AuditLogTimelineProps {
  */
 export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
   const { t, i18n } = useTranslation('admin')
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [logs, setLogs] = useState<AuditLog[]>([])

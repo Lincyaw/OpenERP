@@ -157,7 +157,7 @@ export default function StockTakingCreatePage() {
   const fetchWarehouses = useCallback(async () => {
     setLoadingWarehouses(true)
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -195,7 +195,7 @@ export default function StockTakingCreatePage() {
     setLoadingInventory(true)
     try {
       // Use the warehouse-specific endpoint with path parameter
-      const response = await inventoryApi.getInventoryWarehousesWarehouseIdItems(warehouseId, {
+      const response = await inventoryApi.listInventoryByWarehouse(warehouseId, {
         page_size: 500,
         has_stock: true,
       })
@@ -290,7 +290,7 @@ export default function StockTakingCreatePage() {
     const warehouseName = warehouseMap.get(data.warehouse_id) || ''
 
     // Create stock taking
-    const createResponse = await stockTakingApi.postInventoryStockTakings({
+    const createResponse = await stockTakingApi.createStockTaking({
       warehouse_id: data.warehouse_id,
       warehouse_name: warehouseName,
       taking_date: data.taking_date?.toISOString().split('T')[0],
@@ -315,7 +315,7 @@ export default function StockTakingCreatePage() {
       unit_cost: p.unit_cost,
     }))
 
-    const addItemsResponse = await stockTakingApi.postInventoryStockTakingsIdItemsBulk(
+    const addItemsResponse = await stockTakingApi.addItemsStockTaking(
       stockTakingId || '',
       { items }
     )

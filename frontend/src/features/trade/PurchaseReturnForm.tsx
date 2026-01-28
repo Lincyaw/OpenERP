@@ -176,7 +176,7 @@ export function PurchaseReturnForm() {
       setOrdersLoading(true)
       try {
         // Only get orders that have received goods (PARTIAL_RECEIVED or COMPLETED)
-        const response = await purchaseOrderApi.getTradePurchaseOrders({
+        const response = await purchaseOrderApi.listPurchaseOrders({
           page_size: 50,
           search: search || undefined,
           statuses: ['PARTIAL_RECEIVED', 'COMPLETED'],
@@ -201,7 +201,7 @@ export function PurchaseReturnForm() {
       if (!orderId) return
       setOrderLoading(true)
       try {
-        const response = await purchaseOrderApi.getTradePurchaseOrdersId(orderId)
+        const response = await purchaseOrderApi.getPurchaseOrderById(orderId)
         if (response.success && response.data) {
           setSelectedOrder(response.data)
           // Convert order items to return items (only items with received quantity)
@@ -243,7 +243,7 @@ export function PurchaseReturnForm() {
   const fetchWarehouses = useCallback(async () => {
     setWarehousesLoading(true)
     try {
-      const response = await warehouseApi.getPartnerWarehouses({
+      const response = await warehouseApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -472,7 +472,7 @@ export function PurchaseReturnForm() {
         (item) => item.selected && item.return_quantity > 0
       )
 
-      const response = await purchaseReturnApi.postTradePurchaseReturns({
+      const response = await purchaseReturnApi.createPurchaseReturn({
         purchase_order_id: formData.purchase_order_id,
         warehouse_id: formData.warehouse_id,
         reason: formData.reason,

@@ -122,13 +122,13 @@ const createMockPaymentVoucherResponse = () => ({
 
 describe('PaymentVoucherNewPage', () => {
   let mockFinanceApiInstance: {
-    getFinancePayables: ReturnType<typeof vi.fn>
-    postFinancePayments: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
+    createPaymentVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
-    getPartnerSuppliersId: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
+    getSupplierById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -137,14 +137,14 @@ describe('PaymentVoucherNewPage', () => {
 
     // Setup mock finance API
     mockFinanceApiInstance = {
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
-      postFinancePayments: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      createPaymentVoucher: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
     }
 
     // Setup mock supplier API
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
-      getPartnerSuppliersId: vi.fn().mockResolvedValue({
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
+      getSupplierById: vi.fn().mockResolvedValue({
         success: true,
         data: mockSuppliers[0],
       }),
@@ -264,7 +264,7 @@ describe('PaymentVoucherNewPage', () => {
 
   describe('Error Handling', () => {
     it('should handle supplier search API failure gracefully', async () => {
-      mockSupplierApiInstance.getPartnerSuppliers.mockRejectedValueOnce(new Error('Network error'))
+      mockSupplierApiInstance.listSuppliers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<PaymentVoucherNewPage />, { route: '/finance/payments/new' })
 
@@ -276,13 +276,13 @@ describe('PaymentVoucherNewPage', () => {
 
 describe('PaymentVoucherNewPage - Form Validation', () => {
   let mockFinanceApiInstance: {
-    getFinancePayables: ReturnType<typeof vi.fn>
-    postFinancePayments: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
+    createPaymentVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
-    getPartnerSuppliersId: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
+    getSupplierById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -290,13 +290,13 @@ describe('PaymentVoucherNewPage - Form Validation', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
-      postFinancePayments: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      createPaymentVoucher: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
     }
 
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
-      getPartnerSuppliersId: vi.fn().mockResolvedValue({
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
+      getSupplierById: vi.fn().mockResolvedValue({
         success: true,
         data: mockSuppliers[0],
       }),
@@ -344,13 +344,13 @@ describe('PaymentVoucherNewPage - Form Validation', () => {
 
 describe('PaymentVoucherNewPage - Supplier Payables Summary', () => {
   let mockFinanceApiInstance: {
-    getFinancePayables: ReturnType<typeof vi.fn>
-    postFinancePayments: ReturnType<typeof vi.fn>
+    listFinancePayables: ReturnType<typeof vi.fn>
+    createPaymentVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
-    getPartnerSuppliersId: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
+    getSupplierById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -358,13 +358,13 @@ describe('PaymentVoucherNewPage - Supplier Payables Summary', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
-      postFinancePayments: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
+      listFinancePayables: vi.fn().mockResolvedValue(createMockPayablesResponse()),
+      createPaymentVoucher: vi.fn().mockResolvedValue(createMockPaymentVoucherResponse()),
     }
 
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
-      getPartnerSuppliersId: vi.fn().mockResolvedValue({
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierSearchResponse()),
+      getSupplierById: vi.fn().mockResolvedValue({
         success: true,
         data: mockSuppliers[0],
       }),

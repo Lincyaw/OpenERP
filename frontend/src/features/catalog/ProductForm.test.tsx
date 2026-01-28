@@ -69,9 +69,9 @@ const createErrorResponse = (message: string, code = 'ERR_VALIDATION') => ({
 
 describe('ProductForm', () => {
   let mockApi: {
-    postCatalogProducts: ReturnType<typeof vi.fn>
-    putCatalogProductsId: ReturnType<typeof vi.fn>
-    getCatalogProductsId: ReturnType<typeof vi.fn>
+    createProduct: ReturnType<typeof vi.fn>
+    updateProduct: ReturnType<typeof vi.fn>
+    getProductById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -79,9 +79,9 @@ describe('ProductForm', () => {
     mockNavigate.mockClear()
 
     mockApi = {
-      postCatalogProducts: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
-      putCatalogProductsId: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
-      getCatalogProductsId: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
+      createProduct: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
+      updateProduct: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
+      getProductById: vi.fn().mockResolvedValue(createSuccessResponse(mockProduct)),
     }
 
     vi.mocked(productsApi.getProducts).mockReturnValue(
@@ -151,7 +151,7 @@ describe('ProductForm', () => {
 
       // Wait for API call
       await waitFor(() => {
-        expect(mockApi.postCatalogProducts).toHaveBeenCalledWith(
+        expect(mockApi.createProduct).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'NEW-SKU-001',
             name: '新商品',
@@ -247,7 +247,7 @@ describe('ProductForm', () => {
       await user.click(screen.getByRole('button', { name: /保存/i }))
 
       await waitFor(() => {
-        expect(mockApi.putCatalogProductsId).toHaveBeenCalledWith(
+        expect(mockApi.updateProduct).toHaveBeenCalledWith(
           mockProduct.id,
           expect.objectContaining({
             name: '更新的商品名称',
@@ -272,7 +272,7 @@ describe('ProductForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called with invalid data
-      expect(mockApi.postCatalogProducts).not.toHaveBeenCalled()
+      expect(mockApi.createProduct).not.toHaveBeenCalled()
     })
 
     it('should validate code format (alphanumeric, underscore, hyphen)', async () => {
@@ -287,13 +287,13 @@ describe('ProductForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postCatalogProducts).not.toHaveBeenCalled()
+      expect(mockApi.createProduct).not.toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should show error message when create API fails', async () => {
-      mockApi.postCatalogProducts.mockResolvedValueOnce(
+      mockApi.createProduct.mockResolvedValueOnce(
         createErrorResponse('商品编码已存在', 'ERR_DUPLICATE')
       )
 
@@ -311,7 +311,7 @@ describe('ProductForm', () => {
     })
 
     it('should show error message when update API fails', async () => {
-      mockApi.putCatalogProductsId.mockResolvedValueOnce(
+      mockApi.updateProduct.mockResolvedValueOnce(
         createErrorResponse('更新失败', 'ERR_UPDATE')
       )
 
@@ -345,7 +345,7 @@ describe('ProductForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postCatalogProducts).toHaveBeenCalledWith(
+        expect(mockApi.createProduct).toHaveBeenCalledWith(
           expect.objectContaining({
             purchase_price: 99.99,
             selling_price: 199.99,
@@ -367,7 +367,7 @@ describe('ProductForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postCatalogProducts).toHaveBeenCalledWith({
+        expect(mockApi.createProduct).toHaveBeenCalledWith({
           code: 'API-TEST-001',
           name: 'API测试商品',
           unit: '个',

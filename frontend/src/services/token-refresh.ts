@@ -175,7 +175,7 @@ async function performRefresh(): Promise<string | null> {
   try {
     // Send empty body - refresh token is sent via httpOnly cookie automatically
     // The backend will read the refresh_token from the cookie
-    const response = await authApi.postAuthRefresh({
+    const response = await authApi.refreshTokenAuth({
       // Empty body - refresh token comes from httpOnly cookie
       refresh_token: '', // Kept for backward compatibility, backend ignores this
     })

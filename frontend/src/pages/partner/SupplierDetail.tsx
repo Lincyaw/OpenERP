@@ -56,7 +56,7 @@ export default function SupplierDetailPage() {
 
     setLoading(true)
     try {
-      const response = await suppliersApi.getPartnerSuppliersId(id)
+      const response = await suppliersApi.getSupplierById(id)
       if (response.success && response.data) {
         setSupplier(response.data)
       } else {
@@ -80,7 +80,7 @@ export default function SupplierDetailPage() {
     if (!supplier?.id) return
     setActionLoading(true)
     try {
-      await suppliersApi.postPartnerSuppliersIdActivate(supplier.id)
+      await suppliersApi.activateSupplier(supplier.id)
       Toast.success(t('suppliers.messages.activateSuccess', { name: supplier.name }))
       fetchSupplier()
     } catch {
@@ -95,7 +95,7 @@ export default function SupplierDetailPage() {
     if (!supplier?.id) return
     setActionLoading(true)
     try {
-      await suppliersApi.postPartnerSuppliersIdDeactivate(supplier.id)
+      await suppliersApi.deactivateSupplier(supplier.id)
       Toast.success(t('suppliers.messages.deactivateSuccess', { name: supplier.name }))
       fetchSupplier()
     } catch {
@@ -117,7 +117,7 @@ export default function SupplierDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await suppliersApi.postPartnerSuppliersIdBlock(supplier.id!)
+          await suppliersApi.blockSupplier(supplier.id!)
           Toast.success(t('suppliers.messages.blockSuccess', { name: supplier.name }))
           fetchSupplier()
         } catch {
@@ -141,7 +141,7 @@ export default function SupplierDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await suppliersApi.deletePartnerSuppliersId(supplier.id!)
+          await suppliersApi.deleteSupplier(supplier.id!)
           Toast.success(t('suppliers.messages.deleteSuccess', { name: supplier.name }))
           navigate('/partner/suppliers')
         } catch {

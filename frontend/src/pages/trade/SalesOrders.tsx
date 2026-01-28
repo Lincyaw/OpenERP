@@ -24,8 +24,8 @@ import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import { getCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesOrderListResponse,
-  GetTradeSalesOrdersParams,
-  GetTradeSalesOrdersStatus,
+  ListSalesOrdersParams,
+  ListSalesOrdersStatus,
   HandlerCustomerListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -120,7 +120,7 @@ export default function SalesOrdersPage() {
     async (signal?: AbortSignal) => {
       setCustomersLoading(true)
       try {
-        const response = await customerApi.getPartnerCustomers({ page_size: 100 }, { signal })
+        const response = await customerApi.listCustomers({ page_size: 100 }, { signal })
         if (response.success && response.data) {
           const options: CustomerOption[] = response.data.map(
             (customer: HandlerCustomerListResponse) => ({
@@ -152,11 +152,11 @@ export default function SalesOrdersPage() {
     async (signal?: AbortSignal) => {
       setLoading(true)
       try {
-        const params: GetTradeSalesOrdersParams = {
+        const params: ListSalesOrdersParams = {
           page: state.pagination.page,
           page_size: state.pagination.pageSize,
           search: searchKeyword || undefined,
-          status: (statusFilter || undefined) as GetTradeSalesOrdersStatus | undefined,
+          status: (statusFilter || undefined) as ListSalesOrdersStatus | undefined,
           customer_id: customerFilter || undefined,
           order_by: state.sort.field || 'created_at',
           order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
@@ -168,7 +168,7 @@ export default function SalesOrdersPage() {
           params.end_date = dateRange[1].toISOString()
         }
 
-        const response = await salesOrderApi.getTradeSalesOrders(params, { signal })
+        const response = await salesOrderApi.listSalesOrders(params, { signal })
 
         if (response.success && response.data) {
           setOrderList(response.data as SalesOrder[])
@@ -266,7 +266,7 @@ export default function SalesOrdersPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesOrderApi.postTradeSalesOrdersIdConfirm(order.id!, {})
+            await salesOrderApi.confirmSalesOrder(order.id!, {})
             Toast.success(
               t('salesOrder.messages.confirmSuccess', { orderNumber: order.order_number })
             )
@@ -294,7 +294,7 @@ export default function SalesOrdersPage() {
       if (!selectedOrderForShip?.id) return
 
       try {
-        await salesOrderApi.postTradeSalesOrdersIdShip(selectedOrderForShip.id, {
+        await salesOrderApi.shipSalesOrder(selectedOrderForShip.id, {
           warehouse_id: warehouseId,
         })
         Toast.success(
@@ -316,7 +316,7 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       try {
-        await salesOrderApi.postTradeSalesOrdersIdComplete(order.id)
+        await salesOrderApi.completeSalesOrder(order.id)
         Toast.success(t('salesOrder.messages.completeSuccess', { orderNumber: order.order_number }))
         fetchOrders()
       } catch {
@@ -338,7 +338,7 @@ export default function SalesOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, {
+            await salesOrderApi.cancelSalesOrder(order.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(
@@ -367,7 +367,7 @@ export default function SalesOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesOrderApi.deleteTradeSalesOrdersId(order.id!)
+            await salesOrderApi.deleteSalesOrder(order.id!)
             Toast.success(
               t('salesOrder.messages.deleteSuccess', { orderNumber: order.order_number })
             )

@@ -139,7 +139,7 @@ export default function ExpenseFormPage() {
       const loadExpense = async () => {
         setInitialLoading(true)
         try {
-          const response = await api.getFinanceExpensesId(id)
+          const response = await api.getExpenseExpense(id)
           if (response.success && response.data) {
             const expense = response.data
             reset({
@@ -178,12 +178,12 @@ export default function ExpenseFormPage() {
       }
 
       if (isEditMode && id) {
-        const response = await api.putFinanceExpensesId(id, request)
+        const response = await api.updateExpenseExpense(id, request)
         if (!response.success) {
           throw new Error(response.error || t('expenseForm.messages.updateError'))
         }
       } else {
-        const response = await api.postFinanceExpenses(request)
+        const response = await api.createExpensExpense(request)
         if (!response.success) {
           throw new Error(response.error || t('expenseForm.messages.createError'))
         }

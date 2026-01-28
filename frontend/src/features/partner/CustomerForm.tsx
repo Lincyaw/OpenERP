@@ -63,7 +63,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const fetchCustomerLevels = useCallback(async () => {
     try {
       setLevelsLoading(true)
-      const response = await customerLevelsApi.getPartnerCustomerLevels({ active_only: true })
+      const response = await customerLevelsApi.listCustomerLevels({ active_only: true })
       if (response.success && response.data) {
         setCustomerLevels(response.data)
       }
@@ -277,7 +277,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const onSubmit = async (data: CustomerFormData) => {
     if (isEditMode && customerId) {
       // Update existing customer
-      const response = await api.putPartnerCustomersId(customerId, {
+      const response = await api.updateCustomer(customerId, {
         name: data.name,
         short_name: data.short_name,
         level: data.level as HandlerUpdateCustomerRequestLevel | undefined,
@@ -299,7 +299,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
       }
     } else {
       // Create new customer
-      const response = await api.postPartnerCustomers({
+      const response = await api.createCustomer({
         code: data.code,
         name: data.name,
         short_name: data.short_name,

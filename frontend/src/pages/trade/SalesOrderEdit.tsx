@@ -28,7 +28,7 @@ export default function SalesOrderEditPage() {
 
       setLoading(true)
       try {
-        const response = await api.getTradeSalesOrdersId(id)
+        const response = await api.getSalesOrderById(id)
         if (response.success && response.data) {
           // Check if order is in draft status (only draft orders can be edited)
           if (response.data.status !== 'draft') {

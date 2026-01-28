@@ -193,7 +193,7 @@ export default function OtherIncomesPage() {
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await api.getFinanceIncomes(params)
+      const response = await api.listIncomeIncomes(params)
 
       if (response.success && response.data) {
         setIncomeList(response.data as IncomeRow[])
@@ -234,7 +234,7 @@ export default function OtherIncomesPage() {
       if (dateRange?.[1]) {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
-      const response = await api.getFinanceIncomesSummary(params)
+      const response = await api.getIncomeIncomesSummary(params)
       if (response.success && response.data) {
         setSummary(response.data)
       }
@@ -331,7 +331,7 @@ export default function OtherIncomesPage() {
   const handleConfirm = useCallback(
     async (income: IncomeRow) => {
       try {
-        const response = await api.postFinanceIncomesIdConfirm(income.id)
+        const response = await api.confirmIncomeIncome(income.id)
         if (response.success) {
           Toast.success(t('otherIncomes.messages.confirmSuccess'))
           fetchIncomes()
@@ -360,7 +360,7 @@ export default function OtherIncomesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.postFinanceIncomesIdCancel(selectedIncome.id, {
+      const response = await api.cancelIncomeIncome(selectedIncome.id, {
         reason: actionReason,
       })
       if (response.success) {
@@ -388,7 +388,7 @@ export default function OtherIncomesPage() {
         okType: 'danger',
         onOk: async () => {
           try {
-            const response = await api.deleteFinanceIncomesId(income.id)
+            const response = await api.deleteIncomeIncome(income.id)
             if (response.success) {
               Toast.success(t('otherIncomes.messages.deleteSuccess'))
               fetchIncomes()

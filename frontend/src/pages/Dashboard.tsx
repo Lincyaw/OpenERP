@@ -117,13 +117,13 @@ export default function DashboardPage() {
         payablesRes,
         recentOrdersRes,
       ] = await Promise.allSettled([
-        productsApi.getCatalogProductsStatsCount(),
-        customersApi.getPartnerCustomersStatsCount(),
-        salesOrdersApi.getTradeSalesOrdersStatsSummary(),
-        inventoryApi.getInventoryItemsAlertsLowStock({ page_size: 100 }),
-        financeApi.getFinanceReceivablesSummary(),
-        financeApi.getFinancePayablesSummary(),
-        salesOrdersApi.getTradeSalesOrders({
+        productsApi.countProductByStatus(),
+        customersApi.countCustomerByStatus(),
+        salesOrdersApi.getSalesOrderStatusSummary(),
+        inventoryApi.listInventoryBelowMinimum({ page_size: 100 }),
+        financeApi.getFinanceReceivableReceivableSummary(),
+        financeApi.getFinancePayablePayableSummary(),
+        salesOrdersApi.listSalesOrders({
           page_size: 5,
           order_by: 'order_date',
           order_dir: 'desc',

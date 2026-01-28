@@ -26,7 +26,7 @@ import type {
   HandlerSalesReturnResponse,
   HandlerSalesReturnItemResponse,
   HandlerCustomerListResponse,
-  GetTradeSalesReturnsParams,
+  ListSalesReturnsParams,
 } from '@/api/models'
 import './SalesReturnApproval.css'
 import { safeToFixed, safeFormatCurrency } from '@/utils'
@@ -138,7 +138,7 @@ export default function SalesReturnApprovalPage() {
   // Fetch customers for filter dropdown
   const fetchCustomers = useCallback(async () => {
     try {
-      const response = await customerApi.getPartnerCustomers({ page_size: 100 })
+      const response = await customerApi.listCustomers({ page_size: 100 })
       if (response.success && response.data) {
         const options: CustomerOption[] = response.data.map(
           (customer: HandlerCustomerListResponse) => ({
@@ -157,7 +157,7 @@ export default function SalesReturnApprovalPage() {
   const fetchPendingReturns = useCallback(async () => {
     setListLoading(true)
     try {
-      const params: GetTradeSalesReturnsParams = {
+      const params: ListSalesReturnsParams = {
         page: 1,
         page_size: 100,
         status: 'PENDING',
@@ -172,7 +172,7 @@ export default function SalesReturnApprovalPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await salesReturnApi.getTradeSalesReturns(params)
+      const response = await salesReturnApi.listSalesReturns(params)
       if (response.success && response.data) {
         setReturnList(response.data)
       }
@@ -188,7 +188,7 @@ export default function SalesReturnApprovalPage() {
     async (id: string) => {
       setDetailLoading(true)
       try {
-        const response = await salesReturnApi.getTradeSalesReturnsId(id)
+        const response = await salesReturnApi.getSalesReturnById(id)
         if (response.success && response.data) {
           setSelectedReturn(response.data)
         } else {
@@ -261,7 +261,7 @@ export default function SalesReturnApprovalPage() {
 
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdApprove(selectedReturn.id, {
+      await salesReturnApi.approveSalesReturn(selectedReturn.id, {
         note: approvalNote || undefined,
       })
       Toast.success(`退货单 "${selectedReturn.return_number}" 已审批通过`)
@@ -285,7 +285,7 @@ export default function SalesReturnApprovalPage() {
 
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdReject(selectedReturn.id, {
+      await salesReturnApi.rejectSalesReturn(selectedReturn.id, {
         reason: rejectionReason,
       })
       Toast.success(`退货单 "${selectedReturn.return_number}" 已拒绝`)

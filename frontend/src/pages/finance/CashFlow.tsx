@@ -160,7 +160,7 @@ export default function CashFlowPage() {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
 
-      const response = await api.getFinanceCashFlow(params)
+      const response = await api.getExpensCashFlow(params)
 
       if (response.success && response.data) {
         setSummary(response.data)

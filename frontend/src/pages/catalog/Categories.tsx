@@ -180,7 +180,7 @@ export default function CategoriesPage() {
   const fetchCategoryTree = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await api.getCatalogCategoriesTree()
+      const response = await api.getCategoryTree()
 
       if (response.success && response.data) {
         const tree = (response.data as CategoryNode[]) || []
@@ -281,7 +281,7 @@ export default function CategoriesPage() {
           parent_id: parentCategory?.id || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : 0,
         }
-        const response = await api.postCatalogCategories(request)
+        const response = await api.createCategory(request)
         if (response.success) {
           Toast.success(t('categories.messages.createSuccess'))
           setModalVisible(false)
@@ -295,7 +295,7 @@ export default function CategoriesPage() {
           description: values.description || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : undefined,
         }
-        const response = await api.putCatalogCategoriesId(editingCategory.id, request)
+        const response = await api.updateCategory(editingCategory.id, request)
         if (response.success) {
           Toast.success(t('categories.messages.updateSuccess'))
           setModalVisible(false)
@@ -327,7 +327,7 @@ export default function CategoriesPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deleteCatalogCategoriesId(category.id)
+            await api.deleteCategory(category.id)
             Toast.success(t('categories.messages.deleteSuccess', { name: category.name }))
             fetchCategoryTree()
           } catch {
@@ -343,7 +343,7 @@ export default function CategoriesPage() {
   const handleActivate = useCallback(
     async (category: CategoryNode) => {
       try {
-        const response = await api.postCatalogCategoriesIdActivate(category.id)
+        const response = await api.activateCategory(category.id)
         if (response.success) {
           Toast.success(t('categories.messages.activateSuccess', { name: category.name }))
           fetchCategoryTree()
@@ -368,7 +368,7 @@ export default function CategoriesPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            const response = await api.postCatalogCategoriesIdDeactivate(category.id)
+            const response = await api.deactivateCategory(category.id)
             if (response.success) {
               Toast.success(t('categories.messages.deactivateSuccess', { name: category.name }))
               fetchCategoryTree()
@@ -409,7 +409,7 @@ export default function CategoriesPage() {
       // Only call API if parent changed
       if (dragData.parent_id !== newParentId) {
         try {
-          const response = await api.postCatalogCategoriesIdMove(dragKey, {
+          const response = await api.moveCategory(dragKey, {
             parent_id: newParentId,
           })
           if (response.success) {

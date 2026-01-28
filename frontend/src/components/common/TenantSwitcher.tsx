@@ -75,7 +75,7 @@ export function TenantSwitcher({
     setLoading(true)
     try {
       const api = getTenants()
-      const response = await api.getIdentityTenants({ page_size: 100 })
+      const response = await api.listTenants({ page_size: 100 })
 
       if (response.success && response.data?.tenants) {
         const tenantOptions: TenantOption[] = response.data.tenants

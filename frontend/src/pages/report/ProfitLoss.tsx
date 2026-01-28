@@ -203,10 +203,11 @@ export default function ProfitLossPage() {
 
     try {
       // Fetch all data in parallel
+      // Note: API functions expect (body, params) - body is unused for GET requests
       const [statementRes, trendsRes, productRes] = await Promise.allSettled([
-        reportsApi.getReportsFinanceProfitLoss(params),
-        reportsApi.getReportsFinanceMonthlyTrend(params),
-        reportsApi.getReportsFinanceProfitByProduct({ ...params, top_n: 20 }),
+        reportsApi.getReportProfitLossStatement(params),
+        reportsApi.getReportMonthlyProfitTrend(params),
+        reportsApi.getReportProfitByProduct({ ...params, top_n: 20 }),
       ])
 
       // Process statement

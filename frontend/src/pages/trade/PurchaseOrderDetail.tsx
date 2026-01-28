@@ -61,7 +61,7 @@ export default function PurchaseOrderDetailPage() {
 
     setLoading(true)
     try {
-      const response = await purchaseOrderApi.getTradePurchaseOrdersId(id)
+      const response = await purchaseOrderApi.getPurchaseOrderById(id)
       if (response.success && response.data) {
         setOrder(response.data)
       } else {
@@ -91,7 +91,7 @@ export default function PurchaseOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await purchaseOrderApi.postTradePurchaseOrdersIdConfirm(order.id!, {})
+          await purchaseOrderApi.confirmPurchaseOrder(order.id!, {})
           Toast.success(t('purchaseOrderDetail.messages.confirmSuccess'))
           fetchOrder()
         } catch {
@@ -122,7 +122,7 @@ export default function PurchaseOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await purchaseOrderApi.postTradePurchaseOrdersIdCancel(order.id!, {
+          await purchaseOrderApi.cancelPurchaseOrder(order.id!, {
             reason: t('common:userCancel', { defaultValue: '用户取消' }),
           })
           Toast.success(t('purchaseOrderDetail.messages.cancelSuccess'))

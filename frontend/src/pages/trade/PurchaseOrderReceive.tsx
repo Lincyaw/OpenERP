@@ -95,7 +95,7 @@ export default function PurchaseOrderReceivePage() {
     setLoading(true)
     try {
       // Fetch order details
-      const orderResponse = await purchaseOrderApi.getTradePurchaseOrdersId(id)
+      const orderResponse = await purchaseOrderApi.getPurchaseOrderById(id)
       if (orderResponse.success && orderResponse.data) {
         setOrder(orderResponse.data)
 
@@ -109,7 +109,7 @@ export default function PurchaseOrderReceivePage() {
       }
 
       // Fetch receivable items
-      const itemsResponse = await purchaseOrderApi.getTradePurchaseOrdersIdReceivableItems(id)
+      const itemsResponse = await purchaseOrderApi.getPurchaseOrderReceivableItems(id)
       if (itemsResponse.success && itemsResponse.data) {
         const items: ReceivableItem[] = (
           itemsResponse.data as HandlerPurchaseOrderItemResponse[]
@@ -140,7 +140,7 @@ export default function PurchaseOrderReceivePage() {
   // Fetch warehouses
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehouseApi.getPartnerWarehouses({
+      const response = await warehouseApi.listWarehouses({
         status: 'enabled',
         page_size: 100,
       })
@@ -244,7 +244,7 @@ export default function PurchaseOrderReceivePage() {
         expiry_date: item.expiry_date || undefined,
       }))
 
-      const response = await purchaseOrderApi.postTradePurchaseOrdersIdReceive(id, {
+      const response = await purchaseOrderApi.receivePurchaseOrder(id, {
         warehouse_id: selectedWarehouseId,
         items: requestItems,
       })

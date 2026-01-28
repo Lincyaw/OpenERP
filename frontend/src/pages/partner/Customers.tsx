@@ -19,10 +19,10 @@ import type {
   HandlerCustomerListResponseStatus,
   HandlerCustomerListResponseLevel,
   HandlerCustomerListResponseType,
-  GetPartnerCustomersParams,
-  GetPartnerCustomersStatus,
-  GetPartnerCustomersLevel,
-  GetPartnerCustomersType,
+  ListCustomersParams,
+  ListCustomersStatus,
+  ListCustomersLevel,
+  ListCustomersType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Customers.css'
@@ -122,18 +122,18 @@ export default function CustomersPage() {
   const fetchCustomers = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetPartnerCustomersParams = {
+      const params: ListCustomersParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetPartnerCustomersStatus | undefined,
-        type: (typeFilter || undefined) as GetPartnerCustomersType | undefined,
-        level: (levelFilter || undefined) as GetPartnerCustomersLevel | undefined,
+        status: (statusFilter || undefined) as ListCustomersStatus | undefined,
+        type: (typeFilter || undefined) as ListCustomersType | undefined,
+        level: (levelFilter || undefined) as ListCustomersLevel | undefined,
         order_by: state.sort.field || 'created_at',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.getPartnerCustomers(params)
+      const response = await api.listCustomers(params)
 
       if (response.success && response.data) {
         setCustomerList(response.data as Customer[])
@@ -213,7 +213,7 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await api.postPartnerCustomersIdActivate(customer.id)
+        await api.activateCustomer(customer.id)
         Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
@@ -228,7 +228,7 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await api.postPartnerCustomersIdDeactivate(customer.id)
+        await api.deactivateCustomer(customer.id)
         Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
@@ -250,7 +250,7 @@ export default function CustomersPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            await api.postPartnerCustomersIdSuspend(customer.id!)
+            await api.deactivateCustomer(customer.id!)
             Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
@@ -274,7 +274,7 @@ export default function CustomersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deletePartnerCustomersId(customer.id!)
+            await api.deleteCustomer(customer.id!)
             Toast.success(t('customers.messages.deleteSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
@@ -309,7 +309,7 @@ export default function CustomersPage() {
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
     const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.postPartnerCustomersIdActivate(id))
+      selectedRowKeys.map((id) => api.activateCustomer(id))
     )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
@@ -338,7 +338,7 @@ export default function CustomersPage() {
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
     const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.postPartnerCustomersIdDeactivate(id))
+      selectedRowKeys.map((id) => api.deactivateCustomer(id))
     )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length

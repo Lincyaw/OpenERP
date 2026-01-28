@@ -109,12 +109,12 @@ const createMockCategoryResponse = (category: (typeof mockCategoryTree)[0]) => (
 
 describe('CategoriesPage', () => {
   let mockApi: {
-    getCatalogCategoriesTree: ReturnType<typeof vi.fn>
-    postCatalogCategories: ReturnType<typeof vi.fn>
-    putCatalogCategoriesId: ReturnType<typeof vi.fn>
-    deleteCatalogCategoriesId: ReturnType<typeof vi.fn>
-    postCatalogCategoriesIdActivate: ReturnType<typeof vi.fn>
-    postCatalogCategoriesIdDeactivate: ReturnType<typeof vi.fn>
+    getCategoryTree: ReturnType<typeof vi.fn>
+    createCategory: ReturnType<typeof vi.fn>
+    updateCategory: ReturnType<typeof vi.fn>
+    deleteCategory: ReturnType<typeof vi.fn>
+    activateCategory: ReturnType<typeof vi.fn>
+    deactivateCategory: ReturnType<typeof vi.fn>
     postCatalogCategoriesIdMove: ReturnType<typeof vi.fn>
   }
 
@@ -123,18 +123,18 @@ describe('CategoriesPage', () => {
 
     // Setup mock API with default implementations
     mockApi = {
-      getCatalogCategoriesTree: vi.fn().mockResolvedValue(createMockTreeResponse()),
-      postCatalogCategories: vi
+      getCategoryTree: vi.fn().mockResolvedValue(createMockTreeResponse()),
+      createCategory: vi
         .fn()
         .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      putCatalogCategoriesId: vi
+      updateCategory: vi
         .fn()
         .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      deleteCatalogCategoriesId: vi.fn().mockResolvedValue({ success: true }),
-      postCatalogCategoriesIdActivate: vi
+      deleteCategory: vi.fn().mockResolvedValue({ success: true }),
+      activateCategory: vi
         .fn()
         .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      postCatalogCategoriesIdDeactivate: vi
+      deactivateCategory: vi
         .fn()
         .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
       postCatalogCategoriesIdMove: vi
@@ -158,7 +158,7 @@ describe('CategoriesPage', () => {
       renderWithProviders(<CategoriesPage />, { route: '/catalog/categories' })
 
       await waitFor(() => {
-        expect(mockApi.getCatalogCategoriesTree).toHaveBeenCalled()
+        expect(mockApi.getCategoryTree).toHaveBeenCalled()
       })
     })
 
@@ -206,7 +206,7 @@ describe('CategoriesPage', () => {
     })
 
     it('should show empty state when no categories exist', async () => {
-      mockApi.getCatalogCategoriesTree.mockResolvedValueOnce(createMockTreeResponse([]))
+      mockApi.getCategoryTree.mockResolvedValueOnce(createMockTreeResponse([]))
 
       renderWithProviders(<CategoriesPage />, { route: '/catalog/categories' })
 
@@ -250,7 +250,7 @@ describe('CategoriesPage', () => {
 
       await waitFor(() => {
         // API should be called twice - once on mount, once on refresh
-        expect(mockApi.getCatalogCategoriesTree).toHaveBeenCalledTimes(2)
+        expect(mockApi.getCategoryTree).toHaveBeenCalledTimes(2)
       })
     })
   })
@@ -427,7 +427,7 @@ describe('CategoriesPage', () => {
       await user.click(createButton)
 
       await waitFor(() => {
-        expect(mockApi.postCatalogCategories).toHaveBeenCalledWith(
+        expect(mockApi.createCategory).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'new-cat',
             name: '新分类',
@@ -470,7 +470,7 @@ describe('CategoriesPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when API fails', async () => {
-      mockApi.getCatalogCategoriesTree.mockRejectedValueOnce(new Error('Network error'))
+      mockApi.getCategoryTree.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<CategoriesPage />, { route: '/catalog/categories' })
 
@@ -480,7 +480,7 @@ describe('CategoriesPage', () => {
     })
 
     it('should show error toast when create fails', async () => {
-      mockApi.postCatalogCategories.mockResolvedValueOnce({
+      mockApi.createCategory.mockResolvedValueOnce({
         success: false,
         error: { message: '分类编码已存在' },
       })
@@ -544,7 +544,7 @@ describe('CategoriesPage', () => {
         },
       ]
 
-      mockApi.getCatalogCategoriesTree.mockResolvedValueOnce(createMockTreeResponse(complexTree))
+      mockApi.getCategoryTree.mockResolvedValueOnce(createMockTreeResponse(complexTree))
 
       renderWithProviders(<CategoriesPage />, { route: '/catalog/categories' })
 
@@ -555,7 +555,7 @@ describe('CategoriesPage', () => {
     })
 
     it('should handle empty API response gracefully', async () => {
-      mockApi.getCatalogCategoriesTree.mockResolvedValueOnce({
+      mockApi.getCategoryTree.mockResolvedValueOnce({
         success: true,
         data: [],
       })
@@ -575,7 +575,7 @@ describe('CategoriesPage', () => {
       })
 
       // Initial load
-      expect(mockApi.getCatalogCategoriesTree).toHaveBeenCalledTimes(1)
+      expect(mockApi.getCategoryTree).toHaveBeenCalledTimes(1)
 
       const addButton = screen.getByRole('button', { name: /新增根分类/i })
       await user.click(addButton)
@@ -598,7 +598,7 @@ describe('CategoriesPage', () => {
 
       await waitFor(() => {
         // Should refresh tree after create
-        expect(mockApi.getCatalogCategoriesTree).toHaveBeenCalledTimes(2)
+        expect(mockApi.getCategoryTree).toHaveBeenCalledTimes(2)
       })
     })
   })
@@ -653,7 +653,7 @@ describe('CategoriesPage', () => {
 
       // API should not be called due to validation failure
       await waitFor(() => {
-        expect(mockApi.postCatalogCategories).not.toHaveBeenCalled()
+        expect(mockApi.createCategory).not.toHaveBeenCalled()
       })
     })
 
@@ -685,7 +685,7 @@ describe('CategoriesPage', () => {
 
       // API should not be called due to validation failure
       await waitFor(() => {
-        expect(mockApi.postCatalogCategories).not.toHaveBeenCalled()
+        expect(mockApi.createCategory).not.toHaveBeenCalled()
       })
     })
   })

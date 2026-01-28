@@ -55,7 +55,7 @@ export default function ProductDetailPage() {
 
     setLoading(true)
     try {
-      const response = await productsApi.getCatalogProductsId(id)
+      const response = await productsApi.getProductById(id)
       if (response.success && response.data) {
         setProduct(response.data)
       } else {
@@ -79,7 +79,7 @@ export default function ProductDetailPage() {
     if (!product?.id) return
     setActionLoading(true)
     try {
-      await productsApi.postCatalogProductsIdActivate(product.id)
+      await productsApi.activateProduct(product.id)
       Toast.success(t('products.messages.activateSuccess', { name: product.name }))
       fetchProduct()
     } catch {
@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
     if (!product?.id) return
     setActionLoading(true)
     try {
-      await productsApi.postCatalogProductsIdDeactivate(product.id)
+      await productsApi.deactivateProduct(product.id)
       Toast.success(t('products.messages.deactivateSuccess', { name: product.name }))
       fetchProduct()
     } catch {
@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await productsApi.postCatalogProductsIdDiscontinue(product.id!)
+          await productsApi.discontinueProduct(product.id!)
           Toast.success(t('products.messages.discontinueSuccess', { name: product.name }))
           fetchProduct()
         } catch {
@@ -140,7 +140,7 @@ export default function ProductDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await productsApi.deleteCatalogProductsId(product.id!)
+          await productsApi.deleteProduct(product.id!)
           Toast.success(t('products.messages.deleteSuccess', { name: product.name }))
           navigate('/catalog/products')
         } catch {

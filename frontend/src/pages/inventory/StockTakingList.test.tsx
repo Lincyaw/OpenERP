@@ -184,7 +184,7 @@ describe('StockTakingListPage', () => {
   }
 
   let mockWarehouseApiInstance: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -198,7 +198,7 @@ describe('StockTakingListPage', () => {
 
     // Setup mock warehouse API
     mockWarehouseApiInstance = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
     }
 
     vi.mocked(stockTakingApi.getStockTaking).mockReturnValue(
@@ -437,7 +437,7 @@ describe('StockTakingListPage', () => {
       renderWithProviders(<StockTakingListPage />, { route: '/inventory/stock-taking' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
       })
 
       // Warehouse filter loads options including "全部仓库" as default
@@ -474,7 +474,7 @@ describe('StockTakingListPage', () => {
       renderWithProviders(<StockTakingListPage />, { route: '/inventory/stock-taking' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalledWith({
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith({
           page_size: 100,
           status: 'active',
         })
@@ -511,7 +511,7 @@ describe('StockTakingListPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
         new Error('Network error')
       )
 

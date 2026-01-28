@@ -166,14 +166,14 @@ const createMockSupplierListResponse = (suppliers = mockSuppliers) => ({
 
 describe('PurchaseOrdersPage', () => {
   let mockPurchaseOrderApiInstance: {
-    getTradePurchaseOrders: ReturnType<typeof vi.fn>
+    listPurchaseOrders: ReturnType<typeof vi.fn>
     postTradePurchaseOrdersIdConfirm: ReturnType<typeof vi.fn>
     postTradePurchaseOrdersIdCancel: ReturnType<typeof vi.fn>
-    deleteTradePurchaseOrdersId: ReturnType<typeof vi.fn>
+    deletePurchaseOrder: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -182,15 +182,15 @@ describe('PurchaseOrdersPage', () => {
 
     // Setup mock purchase order API
     mockPurchaseOrderApiInstance = {
-      getTradePurchaseOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+      listPurchaseOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
       postTradePurchaseOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
       postTradePurchaseOrdersIdCancel: vi.fn().mockResolvedValue({ success: true }),
-      deleteTradePurchaseOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      deletePurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     // Setup mock supplier API
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
@@ -209,7 +209,7 @@ describe('PurchaseOrdersPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalled()
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalled()
       })
 
       // Verify order numbers are displayed
@@ -391,7 +391,7 @@ describe('PurchaseOrdersPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when order list API fails', async () => {
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockRejectedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -403,14 +403,14 @@ describe('PurchaseOrdersPage', () => {
     })
 
     it('should handle empty order list gracefully', async () => {
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([], 0)
       )
 
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalled()
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -418,7 +418,7 @@ describe('PurchaseOrdersPage', () => {
     })
 
     it('should handle supplier API failure gracefully', async () => {
-      mockSupplierApiInstance.getPartnerSuppliers.mockRejectedValueOnce(new Error('Network error'))
+      mockSupplierApiInstance.listSuppliers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
@@ -434,7 +434,7 @@ describe('PurchaseOrdersPage', () => {
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalledWith(
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -447,7 +447,7 @@ describe('PurchaseOrdersPage', () => {
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
       await waitFor(() => {
-        expect(mockSupplierApiInstance.getPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockSupplierApiInstance.listSuppliers).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
           })
@@ -473,7 +473,7 @@ describe('PurchaseOrdersPage', () => {
         updated_at: '2024-06-15T14:30:00Z',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([detailedOrder], 1)
       )
 
@@ -502,14 +502,14 @@ describe('PurchaseOrdersPage', () => {
         // Missing supplier_name, item_count, amounts, etc.
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([minimalOrder], 1)
       )
 
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalled()
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalled()
       })
 
       // Should display without errors
@@ -526,7 +526,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -551,7 +551,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'confirmed',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -572,7 +572,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'partial_received',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([partialOrder], 1)
       )
 
@@ -592,7 +592,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -612,7 +612,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'confirmed',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -632,7 +632,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -653,7 +653,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -673,7 +673,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'completed',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([completedOrder], 1)
       )
 
@@ -697,7 +697,7 @@ describe('PurchaseOrdersPage', () => {
         status: 'cancelled',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([cancelledOrder], 1)
       )
 
@@ -745,7 +745,7 @@ describe('PurchaseOrdersPage', () => {
       renderWithProviders(<PurchaseOrdersPage />, { route: '/trade/purchase' })
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalledWith(
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             order_by: 'created_at',
             order_dir: 'desc',
@@ -764,13 +764,13 @@ describe('PurchaseOrdersPage', () => {
       })
 
       // Clear mock to track new call
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockClear()
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockClear()
 
       const refreshButton = screen.getByText('刷新')
       await user.click(refreshButton)
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalled()
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalled()
       })
     })
   })
@@ -784,13 +784,13 @@ describe('PurchaseOrdersPage', () => {
       })
 
       // Clear mock to track new call
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockClear()
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockClear()
 
       const searchInput = screen.getByPlaceholderText('搜索订单编号...')
       await user.type(searchInput, 'PO-2024-0001')
 
       await waitFor(() => {
-        expect(mockPurchaseOrderApiInstance.getTradePurchaseOrders).toHaveBeenCalledWith(
+        expect(mockPurchaseOrderApiInstance.listPurchaseOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             search: 'PO-2024-0001',
           })
@@ -807,7 +807,7 @@ describe('PurchaseOrdersPage', () => {
         receive_progress: 0,
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -828,7 +828,7 @@ describe('PurchaseOrdersPage', () => {
         receive_progress: 0.6,
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([partialOrder], 1)
       )
 
@@ -849,7 +849,7 @@ describe('PurchaseOrdersPage', () => {
         receive_progress: 1.0,
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([completedOrder], 1)
       )
 
@@ -867,14 +867,14 @@ describe('PurchaseOrdersPage', () => {
 
 describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => {
   let mockPurchaseOrderApiInstance: {
-    getTradePurchaseOrders: ReturnType<typeof vi.fn>
+    listPurchaseOrders: ReturnType<typeof vi.fn>
     postTradePurchaseOrdersIdConfirm: ReturnType<typeof vi.fn>
     postTradePurchaseOrdersIdCancel: ReturnType<typeof vi.fn>
-    deleteTradePurchaseOrdersId: ReturnType<typeof vi.fn>
+    deletePurchaseOrder: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -882,14 +882,14 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
     mockNavigate.mockClear()
 
     mockPurchaseOrderApiInstance = {
-      getTradePurchaseOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+      listPurchaseOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
       postTradePurchaseOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
       postTradePurchaseOrdersIdCancel: vi.fn().mockResolvedValue({ success: true }),
-      deleteTradePurchaseOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      deletePurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
@@ -909,7 +909,7 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -939,7 +939,7 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
         status: 'confirmed',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -963,7 +963,7 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
         status: 'partial_received',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([partialOrder], 1)
       )
 
@@ -988,7 +988,7 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
         status: 'draft',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -1022,7 +1022,7 @@ describe('PurchaseOrdersPage - Receiving Flow Verification (P3-INT-002)', () => 
         updated_at: '2024-01-15T11:00:00Z',
       }
 
-      mockPurchaseOrderApiInstance.getTradePurchaseOrders.mockResolvedValueOnce(
+      mockPurchaseOrderApiInstance.listPurchaseOrders.mockResolvedValueOnce(
         createMockOrderListResponse([orderWithWarehouse], 1)
       )
 

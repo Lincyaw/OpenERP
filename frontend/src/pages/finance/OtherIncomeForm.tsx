@@ -131,7 +131,7 @@ export default function OtherIncomeFormPage() {
       const loadIncome = async () => {
         setInitialLoading(true)
         try {
-          const response = await api.getFinanceIncomesId(id)
+          const response = await api.getIncomeIncome(id)
           if (response.success && response.data) {
             const income = response.data
             reset({
@@ -170,12 +170,12 @@ export default function OtherIncomeFormPage() {
       }
 
       if (isEditMode && id) {
-        const response = await api.putFinanceIncomesId(id, request)
+        const response = await api.updateIncomeIncome(id, request)
         if (!response.success) {
           throw new Error(response.error || t('otherIncomeForm.messages.updateError'))
         }
       } else {
-        const response = await api.postFinanceIncomes(request)
+        const response = await api.createIncomeIncome(request)
         if (!response.success) {
           throw new Error(response.error || t('otherIncomeForm.messages.createError'))
         }

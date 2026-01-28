@@ -26,7 +26,7 @@ export default function WarehouseEditPage() {
       }
 
       try {
-        const response = await api.getPartnerWarehousesId(id)
+        const response = await api.getWarehouseById(id)
         if (response.success && response.data) {
           setWarehouse(response.data)
         } else {

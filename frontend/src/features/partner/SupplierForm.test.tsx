@@ -81,9 +81,9 @@ const createErrorResponse = (message: string, code = 'ERR_VALIDATION') => ({
 
 describe('SupplierForm', () => {
   let mockApi: {
-    postPartnerSuppliers: ReturnType<typeof vi.fn>
-    putPartnerSuppliersId: ReturnType<typeof vi.fn>
-    getPartnerSuppliersId: ReturnType<typeof vi.fn>
+    createSupplier: ReturnType<typeof vi.fn>
+    updateSupplier: ReturnType<typeof vi.fn>
+    getSupplierById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -91,9 +91,9 @@ describe('SupplierForm', () => {
     mockNavigate.mockClear()
 
     mockApi = {
-      postPartnerSuppliers: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
-      putPartnerSuppliersId: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
-      getPartnerSuppliersId: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
+      createSupplier: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
+      updateSupplier: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
+      getSupplierById: vi.fn().mockResolvedValue(createSuccessResponse(mockSupplier)),
     }
 
     vi.mocked(suppliersApi.getSuppliers).mockReturnValue(
@@ -164,7 +164,7 @@ describe('SupplierForm', () => {
 
       // Wait for API call
       await waitFor(() => {
-        expect(mockApi.postPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.createSupplier).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'NEW-SUPP-001',
             name: '新供应商有限公司',
@@ -264,7 +264,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /保存/i }))
 
       await waitFor(() => {
-        expect(mockApi.putPartnerSuppliersId).toHaveBeenCalledWith(
+        expect(mockApi.updateSupplier).toHaveBeenCalledWith(
           mockSupplier.id,
           expect.objectContaining({
             name: '更新的供应商名称',
@@ -282,7 +282,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called with invalid data
-      expect(mockApi.postPartnerSuppliers).not.toHaveBeenCalled()
+      expect(mockApi.createSupplier).not.toHaveBeenCalled()
     })
 
     it('should validate code format (alphanumeric, underscore, hyphen)', async () => {
@@ -296,7 +296,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerSuppliers).not.toHaveBeenCalled()
+      expect(mockApi.createSupplier).not.toHaveBeenCalled()
     })
 
     it('should validate email format', async () => {
@@ -312,13 +312,13 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerSuppliers).not.toHaveBeenCalled()
+      expect(mockApi.createSupplier).not.toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should show error message when create API fails', async () => {
-      mockApi.postPartnerSuppliers.mockResolvedValueOnce(
+      mockApi.createSupplier.mockResolvedValueOnce(
         createErrorResponse('供应商编码已存在', 'ERR_DUPLICATE')
       )
 
@@ -351,7 +351,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.createSupplier).toHaveBeenCalledWith(
           expect.objectContaining({
             contact_name: '王五',
             phone: '13900139000',
@@ -376,7 +376,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.createSupplier).toHaveBeenCalledWith(
           expect.objectContaining({
             province: '浙江省',
             city: '杭州市',
@@ -400,7 +400,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.createSupplier).toHaveBeenCalledWith(
           expect.objectContaining({
             bank_name: '中国银行',
             bank_account: '1234567890',
@@ -447,7 +447,7 @@ describe('SupplierForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.createSupplier).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'API-TEST-001',
             name: 'API测试供应商',

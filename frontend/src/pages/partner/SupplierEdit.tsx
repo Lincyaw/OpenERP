@@ -30,7 +30,7 @@ export default function SupplierEditPage() {
     const loadSupplier = async () => {
       setLoading(true)
       try {
-        const response = await api.getPartnerSuppliersId(id)
+        const response = await api.getSupplierById(id)
         if (response.success && response.data) {
           setSupplier(response.data)
         } else {

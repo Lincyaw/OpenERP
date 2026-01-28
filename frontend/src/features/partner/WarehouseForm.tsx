@@ -216,7 +216,7 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
   const onSubmit = async (data: WarehouseFormData) => {
     if (isEditMode && warehouseId) {
       // Update existing warehouse
-      const response = await api.putPartnerWarehousesId(warehouseId, {
+      const response = await api.updateWarehouse(warehouseId, {
         name: data.name,
         short_name: data.short_name,
         contact_name: data.contact_name,
@@ -237,7 +237,7 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
       }
     } else {
       // Create new warehouse
-      const response = await api.postPartnerWarehouses({
+      const response = await api.createWarehouse({
         code: data.code,
         name: data.name,
         short_name: data.short_name,

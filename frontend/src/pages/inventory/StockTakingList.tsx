@@ -16,9 +16,9 @@ import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerStockTakingListResponse,
-  GetInventoryStockTakingsParams,
-  GetInventoryStockTakingsOrderDir,
-  GetInventoryStockTakingsOrderBy,
+  ListStockTakingsParams,
+  ListStockTakingsOrderDir,
+  ListStockTakingsOrderBy,
   HandlerWarehouseListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -116,7 +116,7 @@ export default function StockTakingListPage() {
   // Fetch warehouses for filter dropdown
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -140,19 +140,19 @@ export default function StockTakingListPage() {
   const fetchStockTakings = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetInventoryStockTakingsParams = {
+      const params: ListStockTakingsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
         warehouse_id: warehouseFilter || undefined,
-        status: (statusFilter as GetInventoryStockTakingsParams['status']) || undefined,
-        order_by: (state.sort.field || 'created_at') as GetInventoryStockTakingsOrderBy,
+        status: (statusFilter as ListStockTakingsParams['status']) || undefined,
+        order_by: (state.sort.field || 'created_at') as ListStockTakingsOrderBy,
         order_dir: (state.sort.order === 'asc'
           ? 'asc'
-          : 'desc') as GetInventoryStockTakingsOrderDir,
+          : 'desc') as ListStockTakingsOrderDir,
       }
 
-      const response = await stockTakingApi.getInventoryStockTakings(params)
+      const response = await stockTakingApi.listStockTakings(params)
 
       if (response.success && response.data) {
         setStockTakingList(response.data as StockTakingItem[])

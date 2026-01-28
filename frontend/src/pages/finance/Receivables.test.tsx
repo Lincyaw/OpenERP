@@ -151,8 +151,8 @@ const createMockSummaryResponse = (summary = mockSummary) => ({
 
 describe('ReceivablesPage', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceivables: ReturnType<typeof vi.fn>
-    getFinanceReceivablesSummary: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
+    getFinanceReceivableReceivableSummary: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -161,8 +161,8 @@ describe('ReceivablesPage', () => {
 
     // Setup mock finance API
     mockFinanceApiInstance = {
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivableListResponse()),
-      getFinanceReceivablesSummary: vi.fn().mockResolvedValue(createMockSummaryResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivableListResponse()),
+      getFinanceReceivableReceivableSummary: vi.fn().mockResolvedValue(createMockSummaryResponse()),
     }
 
     vi.mocked(financeApi.getFinanceApi).mockReturnValue(
@@ -218,7 +218,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
 
       expect(screen.getByText('待收总额')).toBeInTheDocument()
@@ -228,7 +228,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
 
       expect(screen.getByText('逾期总额')).toBeInTheDocument()
@@ -238,7 +238,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
 
       expect(screen.getByText('待收款单')).toBeInTheDocument()
@@ -248,7 +248,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
 
       // "部分收款" appears in both summary label and status tags
@@ -261,7 +261,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
 
       expect(screen.getByText('逾期单数')).toBeInTheDocument()
@@ -273,7 +273,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalled()
       })
 
       await waitFor(() => {
@@ -441,7 +441,7 @@ describe('ReceivablesPage', () => {
         status: 'PENDING',
       }
 
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([pendingReceivable], 1)
       )
 
@@ -461,7 +461,7 @@ describe('ReceivablesPage', () => {
         status: 'PARTIAL',
       }
 
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([partialReceivable], 1)
       )
 
@@ -481,7 +481,7 @@ describe('ReceivablesPage', () => {
         status: 'PAID',
       }
 
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([paidReceivable], 1)
       )
 
@@ -503,7 +503,7 @@ describe('ReceivablesPage', () => {
         status: 'CANCELLED',
       }
 
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([cancelledReceivable], 1)
       )
 
@@ -525,7 +525,7 @@ describe('ReceivablesPage', () => {
         status: 'PENDING',
       }
 
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([pendingReceivable], 1)
       )
 
@@ -546,7 +546,7 @@ describe('ReceivablesPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when receivables API fails', async () => {
-      mockFinanceApiInstance.getFinanceReceivables.mockRejectedValueOnce(new Error('Network error'))
+      mockFinanceApiInstance.listFinanceReceivables.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
@@ -556,14 +556,14 @@ describe('ReceivablesPage', () => {
     })
 
     it('should handle empty receivables list gracefully', async () => {
-      mockFinanceApiInstance.getFinanceReceivables.mockResolvedValueOnce(
+      mockFinanceApiInstance.listFinanceReceivables.mockResolvedValueOnce(
         createMockReceivableListResponse([], 0)
       )
 
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -571,7 +571,7 @@ describe('ReceivablesPage', () => {
     })
 
     it('should handle summary API failure gracefully', async () => {
-      mockFinanceApiInstance.getFinanceReceivablesSummary.mockRejectedValueOnce(
+      mockFinanceApiInstance.getFinanceReceivableReceivableSummary.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -589,7 +589,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalledWith(
+        expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -602,7 +602,7 @@ describe('ReceivablesPage', () => {
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
     })
   })
@@ -616,15 +616,15 @@ describe('ReceivablesPage', () => {
       })
 
       // Clear mock to track new call
-      mockFinanceApiInstance.getFinanceReceivables.mockClear()
-      mockFinanceApiInstance.getFinanceReceivablesSummary.mockClear()
+      mockFinanceApiInstance.listFinanceReceivables.mockClear()
+      mockFinanceApiInstance.getFinanceReceivableReceivableSummary.mockClear()
 
       const refreshButton = screen.getByText('刷新')
       await user.click(refreshButton)
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalled()
-        expect(mockFinanceApiInstance.getFinanceReceivablesSummary).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalled()
+        expect(mockFinanceApiInstance.getFinanceReceivableReceivableSummary).toHaveBeenCalled()
       })
     })
   })
@@ -638,13 +638,13 @@ describe('ReceivablesPage', () => {
       })
 
       // Clear mock to track new call
-      mockFinanceApiInstance.getFinanceReceivables.mockClear()
+      mockFinanceApiInstance.listFinanceReceivables.mockClear()
 
       const searchInput = screen.getByPlaceholderText('搜索单据编号、客户名称...')
       await user.type(searchInput, 'AR-2024-0001')
 
       await waitFor(() => {
-        expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalledWith(
+        expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalledWith(
           expect.objectContaining({
             search: 'AR-2024-0001',
           })

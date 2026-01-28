@@ -18,9 +18,9 @@ import type {
   HandlerWarehouseListResponse,
   HandlerWarehouseListResponseStatus,
   HandlerWarehouseListResponseType,
-  GetPartnerWarehousesParams,
-  GetPartnerWarehousesStatus,
-  GetPartnerWarehousesType,
+  ListWarehousesParams,
+  ListWarehousesStatus,
+  ListWarehousesType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Warehouses.css'
@@ -102,17 +102,17 @@ export default function WarehousesPage() {
   const fetchWarehouses = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetPartnerWarehousesParams = {
+      const params: ListWarehousesParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetPartnerWarehousesStatus | undefined,
-        type: (typeFilter || undefined) as GetPartnerWarehousesType | undefined,
+        status: (statusFilter || undefined) as ListWarehousesStatus | undefined,
+        type: (typeFilter || undefined) as ListWarehousesType | undefined,
         order_by: state.sort.field || 'sort_order',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.getPartnerWarehouses(params)
+      const response = await api.listWarehouses(params)
 
       if (response.success && response.data) {
         setWarehouseList(response.data as Warehouse[])
@@ -181,7 +181,7 @@ export default function WarehousesPage() {
     async (warehouse: Warehouse) => {
       if (!warehouse.id) return
       try {
-        await api.postPartnerWarehousesIdEnable(warehouse.id)
+        await api.enableWarehouse(warehouse.id)
         Toast.success(t('warehouses.messages.enableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
@@ -200,7 +200,7 @@ export default function WarehousesPage() {
         return
       }
       try {
-        await api.postPartnerWarehousesIdDisable(warehouse.id)
+        await api.disableWarehouse(warehouse.id)
         Toast.success(t('warehouses.messages.disableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
@@ -225,7 +225,7 @@ export default function WarehousesPage() {
         cancelText: t('common:actions.cancel'),
         onOk: async () => {
           try {
-            await api.postPartnerWarehousesIdSetDefault(warehouse.id!)
+            await api.setDefaultWarehouse(warehouse.id!)
             Toast.success(t('warehouses.messages.setDefaultSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
@@ -253,7 +253,7 @@ export default function WarehousesPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deletePartnerWarehousesId(warehouse.id!)
+            await api.deleteWarehouse(warehouse.id!)
             Toast.success(t('warehouses.messages.deleteSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
@@ -288,7 +288,7 @@ export default function WarehousesPage() {
   // Handle bulk enable
   const handleBulkEnable = useCallback(async () => {
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerWarehousesIdEnable(id)))
+      await Promise.all(selectedRowKeys.map((id) => api.enableWarehouse(id)))
       Toast.success(t('warehouses.messages.batchEnableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()
@@ -308,7 +308,7 @@ export default function WarehousesPage() {
       return
     }
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.postPartnerWarehousesIdDisable(id)))
+      await Promise.all(selectedRowKeys.map((id) => api.disableWarehouse(id)))
       Toast.success(t('warehouses.messages.batchDisableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()

@@ -160,7 +160,7 @@ export default function PayablesPage() {
         overdue: overdueOnly || undefined,
       }
 
-      const response = await api.getFinancePayables(params)
+      const response = await api.listFinancePayablesPayables(params)
 
       if (response.success && response.data) {
         setPayableList(response.data as PayableRow[])
@@ -194,7 +194,7 @@ export default function PayablesPage() {
   const fetchSummary = useCallback(async () => {
     setSummaryLoading(true)
     try {
-      const response = await api.getFinancePayablesSummary()
+      const response = await api.getFinancePayablePayableSummary()
       if (response.success && response.data) {
         setSummary(response.data)
       }

@@ -81,11 +81,11 @@ const createMockListResponse = (customers = mockCustomers, total = mockCustomers
 
 describe('CustomersPage', () => {
   let mockApi: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
-    postPartnerCustomersIdActivate: ReturnType<typeof vi.fn>
-    postPartnerCustomersIdDeactivate: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
+    activateCustomer: ReturnType<typeof vi.fn>
+    deactivateCustomer: ReturnType<typeof vi.fn>
     postPartnerCustomersIdSuspend: ReturnType<typeof vi.fn>
-    deletePartnerCustomersId: ReturnType<typeof vi.fn>
+    deleteCustomer: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -93,17 +93,17 @@ describe('CustomersPage', () => {
 
     // Setup mock API with default implementations
     mockApi = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockListResponse()),
-      postPartnerCustomersIdActivate: vi
+      listCustomers: vi.fn().mockResolvedValue(createMockListResponse()),
+      activateCustomer: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockCustomers[1] }),
-      postPartnerCustomersIdDeactivate: vi
+      deactivateCustomer: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockCustomers[0] }),
       postPartnerCustomersIdSuspend: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockCustomers[0] }),
-      deletePartnerCustomersId: vi.fn().mockResolvedValue({ success: true }),
+      deleteCustomer: vi.fn().mockResolvedValue({ success: true }),
     }
 
     vi.mocked(customersApi.getCustomers).mockReturnValue(
@@ -117,7 +117,7 @@ describe('CustomersPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockApi.getPartnerCustomers).toHaveBeenCalled()
+        expect(mockApi.listCustomers).toHaveBeenCalled()
       })
 
       // Verify customer codes are displayed
@@ -205,7 +205,7 @@ describe('CustomersPage', () => {
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockApi.listCustomers).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -264,7 +264,7 @@ describe('CustomersPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when API fails', async () => {
-      mockApi.getPartnerCustomers.mockRejectedValueOnce(new Error('Network error'))
+      mockApi.listCustomers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
@@ -274,12 +274,12 @@ describe('CustomersPage', () => {
     })
 
     it('should handle empty customer list gracefully', async () => {
-      mockApi.getPartnerCustomers.mockResolvedValueOnce(createMockListResponse([], 0))
+      mockApi.listCustomers.mockResolvedValueOnce(createMockListResponse([], 0))
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerCustomers).toHaveBeenCalled()
+        expect(mockApi.listCustomers).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -330,7 +330,7 @@ describe('CustomersPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getPartnerCustomers.mockResolvedValueOnce(
+      mockApi.listCustomers.mockResolvedValueOnce(
         createMockListResponse([detailedCustomer], 1)
       )
 
@@ -360,7 +360,7 @@ describe('CustomersPage', () => {
         // No phone, email, province, city
       }
 
-      mockApi.getPartnerCustomers.mockResolvedValueOnce(
+      mockApi.listCustomers.mockResolvedValueOnce(
         createMockListResponse([minimalCustomer], 1)
       )
 
@@ -378,11 +378,11 @@ describe('CustomersPage', () => {
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerCustomers).toHaveBeenCalled()
+        expect(mockApi.listCustomers).toHaveBeenCalled()
       })
 
       // Verify API was called with expected parameters
-      expect(mockApi.getPartnerCustomers).toHaveBeenCalledWith(
+      expect(mockApi.listCustomers).toHaveBeenCalledWith(
         expect.objectContaining({
           page: 1,
           page_size: 20,

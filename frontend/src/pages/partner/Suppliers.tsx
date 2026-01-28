@@ -27,9 +27,9 @@ import { getSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerSupplierListResponse,
   HandlerSupplierListResponseStatus,
-  GetPartnerSuppliersParams,
-  GetPartnerSuppliersStatus,
-  GetPartnerSuppliersType,
+  ListSuppliersParams,
+  ListSuppliersStatus,
+  ListSuppliersType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Suppliers.css'
@@ -106,17 +106,17 @@ export default function SuppliersPage() {
   const fetchSuppliers = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetPartnerSuppliersParams = {
+      const params: ListSuppliersParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetPartnerSuppliersStatus | undefined,
-        type: (typeFilter || undefined) as GetPartnerSuppliersType | undefined,
+        status: (statusFilter || undefined) as ListSuppliersStatus | undefined,
+        type: (typeFilter || undefined) as ListSuppliersType | undefined,
         order_by: state.sort.field || 'created_at',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.getPartnerSuppliers(params)
+      const response = await api.listSuppliers(params)
 
       if (response.success && response.data) {
         setSupplierList(response.data as Supplier[])
@@ -185,7 +185,7 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       try {
-        await api.postPartnerSuppliersIdActivate(supplier.id)
+        await api.activateSupplier(supplier.id)
         Toast.success(t('suppliers.messages.activateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
@@ -200,7 +200,7 @@ export default function SuppliersPage() {
     async (supplier: Supplier) => {
       if (!supplier.id) return
       try {
-        await api.postPartnerSuppliersIdDeactivate(supplier.id)
+        await api.deactivateSupplier(supplier.id)
         Toast.success(t('suppliers.messages.deactivateSuccess', { name: supplier.name }))
         fetchSuppliers()
       } catch {
@@ -222,7 +222,7 @@ export default function SuppliersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.postPartnerSuppliersIdBlock(supplier.id!)
+            await api.blockSupplier(supplier.id!)
             Toast.success(t('suppliers.messages.blockSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
@@ -246,7 +246,7 @@ export default function SuppliersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deletePartnerSuppliersId(supplier.id!)
+            await api.deleteSupplier(supplier.id!)
             Toast.success(t('suppliers.messages.deleteSuccess', { name: supplier.name }))
             fetchSuppliers()
           } catch {
@@ -281,7 +281,7 @@ export default function SuppliersPage() {
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
     const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.postPartnerSuppliersIdActivate(id))
+      selectedRowKeys.map((id) => api.activateSupplier(id))
     )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
@@ -310,7 +310,7 @@ export default function SuppliersPage() {
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
     const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.postPartnerSuppliersIdDeactivate(id))
+      selectedRowKeys.map((id) => api.deactivateSupplier(id))
     )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length

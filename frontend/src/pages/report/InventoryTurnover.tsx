@@ -202,11 +202,12 @@ export default function InventoryTurnoverPage() {
         warehouse_id: selectedWarehouse,
       }
 
+      // Note: API functions expect (body, params) - body is unused for GET requests
       const [summaryRes, turnoverRes, categoryRes, warehouseRes] = await Promise.allSettled([
-        api.getReportsInventorySummary(params),
-        api.getReportsInventoryTurnover(params),
-        api.getReportsInventoryValueByCategory(params),
-        api.getReportsInventoryValueByWarehouse(params),
+        api.getReportInventorySummary(params),
+        api.getReportInventoryTurnover(params),
+        api.getReportInventoryValueByCategory(params),
+        api.getReportInventoryValueByWarehouse(params),
       ])
 
       if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {

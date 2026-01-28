@@ -136,8 +136,8 @@ const createMockReconcileResponse = () => ({
 
 describe('ReceiptReconcilePage', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -147,8 +147,8 @@ describe('ReceiptReconcilePage', () => {
 
     // Setup mock finance API
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -453,7 +453,7 @@ describe('ReceiptReconcilePage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when voucher load fails', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce({
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce({
         success: false,
         error: '加载收款单失败',
       })
@@ -466,7 +466,7 @@ describe('ReceiptReconcilePage', () => {
     })
 
     it('should navigate away when voucher not found', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce({
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce({
         success: false,
         data: null,
       })
@@ -523,8 +523,8 @@ describe('ReceiptReconcilePage', () => {
 
 describe('ReceiptReconcilePage - Voucher Status States', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -533,8 +533,8 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -545,7 +545,7 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
 
   describe('Draft Voucher', () => {
     it('should show warning banner for draft voucher', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockDraftVoucher)
       )
 
@@ -557,7 +557,7 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
     })
 
     it('should display draft status tag', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockDraftVoucher)
       )
 
@@ -571,7 +571,7 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
 
   describe('Fully Allocated Voucher', () => {
     it('should show success banner for fully allocated voucher', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockAllocatedVoucher)
       )
 
@@ -583,7 +583,7 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
     })
 
     it('should display allocated status tag', async () => {
-      mockFinanceApiInstance.getFinanceReceiptsId.mockResolvedValueOnce(
+      mockFinanceApiInstance.getReceiptVoucherById.mockResolvedValueOnce(
         createMockVoucherResponse(mockAllocatedVoucher)
       )
 
@@ -598,8 +598,8 @@ describe('ReceiptReconcilePage - Voucher Status States', () => {
 
 describe('ReceiptReconcilePage - Empty Receivables', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -608,8 +608,8 @@ describe('ReceiptReconcilePage - Empty Receivables', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse([])),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse([])),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -629,8 +629,8 @@ describe('ReceiptReconcilePage - Empty Receivables', () => {
 
 describe('ReceiptReconcilePage - Reconcile Result Display', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -639,8 +639,8 @@ describe('ReceiptReconcilePage - Reconcile Result Display', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -716,8 +716,8 @@ describe('ReceiptReconcilePage - Reconcile Result Display', () => {
 
 describe('ReceiptReconcilePage - Manual Mode', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -726,8 +726,8 @@ describe('ReceiptReconcilePage - Manual Mode', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -791,8 +791,8 @@ describe('ReceiptReconcilePage - Manual Mode', () => {
 
 describe('ReceiptReconcilePage - API Integration', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceiptsId: ReturnType<typeof vi.fn>
-    getFinanceReceivables: ReturnType<typeof vi.fn>
+    getReceiptVoucherById: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
     postFinanceReceiptsIdReconcile: ReturnType<typeof vi.fn>
   }
 
@@ -801,8 +801,8 @@ describe('ReceiptReconcilePage - API Integration', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceiptsId: vi.fn().mockResolvedValue(createMockVoucherResponse()),
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      getReceiptVoucherById: vi.fn().mockResolvedValue(createMockVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
       postFinanceReceiptsIdReconcile: vi.fn().mockResolvedValue(createMockReconcileResponse()),
     }
 
@@ -811,19 +811,19 @@ describe('ReceiptReconcilePage - API Integration', () => {
     )
   })
 
-  it('should call getFinanceReceiptsId on mount', async () => {
+  it('should call getReceiptVoucherById on mount', async () => {
     renderWithProviders(<ReceiptReconcilePage />, { route: '/finance/receipts/rv-001/reconcile' })
 
     await waitFor(() => {
-      expect(mockFinanceApiInstance.getFinanceReceiptsId).toHaveBeenCalledWith('rv-001')
+      expect(mockFinanceApiInstance.getReceiptVoucherById).toHaveBeenCalledWith('rv-001')
     })
   })
 
-  it('should call getFinanceReceivables with customer_id filter', async () => {
+  it('should call listFinanceReceivables with customer_id filter', async () => {
     renderWithProviders(<ReceiptReconcilePage />, { route: '/finance/receipts/rv-001/reconcile' })
 
     await waitFor(() => {
-      expect(mockFinanceApiInstance.getFinanceReceivables).toHaveBeenCalledWith(
+      expect(mockFinanceApiInstance.listFinanceReceivables).toHaveBeenCalledWith(
         expect.objectContaining({
           customer_id: 'cust-001',
         })
@@ -862,13 +862,13 @@ describe('ReceiptReconcilePage - API Integration', () => {
     })
 
     // Clear call counts
-    mockFinanceApiInstance.getFinanceReceiptsId.mockClear()
+    mockFinanceApiInstance.getReceiptVoucherById.mockClear()
 
     await user.click(screen.getByText('确认核销'))
 
     await waitFor(() => {
       // Should reload voucher data after reconciliation
-      expect(mockFinanceApiInstance.getFinanceReceiptsId).toHaveBeenCalled()
+      expect(mockFinanceApiInstance.getReceiptVoucherById).toHaveBeenCalled()
     })
   })
 })

@@ -30,7 +30,7 @@ export default function CustomerEditPage() {
     const loadCustomer = async () => {
       setLoading(true)
       try {
-        const response = await api.getPartnerCustomersId(id)
+        const response = await api.getCustomerById(id)
         if (response.success && response.data) {
           setCustomer(response.data)
         } else {

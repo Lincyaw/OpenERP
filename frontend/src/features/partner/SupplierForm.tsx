@@ -255,7 +255,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
   const onSubmit = async (data: SupplierFormData) => {
     if (isEditMode && supplierId) {
       // Update existing supplier
-      const response = await api.putPartnerSuppliersId(supplierId, {
+      const response = await api.updateSupplier(supplierId, {
         name: data.name,
         short_name: data.short_name,
         contact_name: data.contact_name,
@@ -280,7 +280,7 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
       }
     } else {
       // Create new supplier
-      const response = await api.postPartnerSuppliers({
+      const response = await api.createSupplier({
         code: data.code,
         name: data.name,
         short_name: data.short_name,

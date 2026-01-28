@@ -154,7 +154,7 @@ export default function PaymentVoucherNewPage() {
 
       setSupplierLoading(true)
       try {
-        const response = await supplierApi.getPartnerSuppliers({
+        const response = await supplierApi.listSuppliers({
           search: keyword,
           status: 'active',
           page: 1,
@@ -188,7 +188,7 @@ export default function PaymentVoucherNewPage() {
 
       setPayablesLoading(true)
       try {
-        const payablesResponse = await financeApi.getFinancePayables({
+        const payablesResponse = await financeApi.listFinancePayablesPayables({
           supplier_id: supplierId,
           status: 'PENDING',
           page: 1,
@@ -217,7 +217,7 @@ export default function PaymentVoucherNewPage() {
     if (preSelectedSupplierId) {
       const loadSupplier = async () => {
         try {
-          const response = await supplierApi.getPartnerSuppliersId(preSelectedSupplierId)
+          const response = await supplierApi.getSupplierById(preSelectedSupplierId)
           if (response.success && response.data) {
             const supplier = response.data
             setSelectedSupplier(supplier)
@@ -286,7 +286,7 @@ export default function PaymentVoucherNewPage() {
       remark: data.remark,
     }
 
-    const response = await financeApi.postFinancePayments(request)
+    const response = await financeApi.createFinancePaymentPaymentVoucher(request)
     if (!response.success) {
       throw new Error(response.error || t('paymentVoucher.messages.createError'))
     }

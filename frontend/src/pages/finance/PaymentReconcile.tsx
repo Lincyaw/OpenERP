@@ -143,7 +143,7 @@ export default function PaymentReconcilePage() {
     setLoading(true)
     try {
       // Load voucher
-      const voucherResponse = await financeApi.getFinancePaymentsId(id)
+      const voucherResponse = await financeApi.getFinancePaymentPaymentVoucher(id)
       if (!voucherResponse.success || !voucherResponse.data) {
         Toast.error(t('paymentReconcile.messages.fetchError'))
         navigate('/finance/payables')
@@ -154,7 +154,7 @@ export default function PaymentReconcilePage() {
       setVoucher(loadedVoucher)
 
       // Load payables for the supplier
-      const payablesResponse = await financeApi.getFinancePayables({
+      const payablesResponse = await financeApi.listFinancePayablesPayables({
         supplier_id: loadedVoucher.supplier_id,
         page: 1,
         page_size: 100,
@@ -367,7 +367,7 @@ export default function PaymentReconcilePage() {
 
     setReconciling(true)
     try {
-      const response = await financeApi.postFinancePaymentsIdReconcile(id, request)
+      const response = await financeApi.reconcileFinancePayment(id, request)
       if (response.success && response.data) {
         Toast.success(t('paymentReconcile.messages.allocateSuccess'))
         setReconcileResult(response.data)

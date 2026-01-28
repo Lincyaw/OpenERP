@@ -167,15 +167,15 @@ const createMockProductListResponse = (products = mockProducts) => ({
 
 describe('StockListPage', () => {
   let mockInventoryApiInstance: {
-    getInventoryItems: ReturnType<typeof vi.fn>
+    listInventoryItems: ReturnType<typeof vi.fn>
   }
 
   let mockWarehouseApiInstance: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   let mockProductApiInstance: {
-    getCatalogProducts: ReturnType<typeof vi.fn>
+    listProducts: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -183,17 +183,17 @@ describe('StockListPage', () => {
 
     // Setup mock inventory API
     mockInventoryApiInstance = {
-      getInventoryItems: vi.fn().mockResolvedValue(createMockInventoryListResponse()),
+      listInventoryItems: vi.fn().mockResolvedValue(createMockInventoryListResponse()),
     }
 
     // Setup mock warehouse API
     mockWarehouseApiInstance = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
     }
 
     // Setup mock product API
     mockProductApiInstance = {
-      getCatalogProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
+      listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
     vi.mocked(inventoryApi.getInventory).mockReturnValue(
@@ -213,7 +213,7 @@ describe('StockListPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockInventoryApiInstance.getInventoryItems).toHaveBeenCalled()
+        expect(mockInventoryApiInstance.listInventoryItems).toHaveBeenCalled()
       })
 
       // Verify warehouse names are displayed (resolved from ID)
@@ -380,7 +380,7 @@ describe('StockListPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when inventory API fails', async () => {
-      mockInventoryApiInstance.getInventoryItems.mockRejectedValueOnce(new Error('Network error'))
+      mockInventoryApiInstance.listInventoryItems.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -390,14 +390,14 @@ describe('StockListPage', () => {
     })
 
     it('should handle empty inventory list gracefully', async () => {
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([], 0)
       )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockInventoryApiInstance.getInventoryItems).toHaveBeenCalled()
+        expect(mockInventoryApiInstance.listInventoryItems).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -405,7 +405,7 @@ describe('StockListPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -418,7 +418,7 @@ describe('StockListPage', () => {
     })
 
     it('should handle product API failure gracefully', async () => {
-      mockProductApiInstance.getCatalogProducts.mockRejectedValueOnce(new Error('Network error'))
+      mockProductApiInstance.listProducts.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -434,7 +434,7 @@ describe('StockListPage', () => {
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockInventoryApiInstance.getInventoryItems).toHaveBeenCalledWith(
+        expect(mockInventoryApiInstance.listInventoryItems).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -447,7 +447,7 @@ describe('StockListPage', () => {
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
             status: 'active',
@@ -460,7 +460,7 @@ describe('StockListPage', () => {
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockProductApiInstance.getCatalogProducts).toHaveBeenCalledWith(
+        expect(mockProductApiInstance.listProducts).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 500,
           })
@@ -488,7 +488,7 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([detailedItem], 1)
       )
 
@@ -524,14 +524,14 @@ describe('StockListPage', () => {
         // Missing unit_cost, total_value, min_quantity, max_quantity
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([minimalItem], 1)
       )
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockInventoryApiInstance.getInventoryItems).toHaveBeenCalled()
+        expect(mockInventoryApiInstance.listInventoryItems).toHaveBeenCalled()
       })
 
       // Should display without errors, showing truncated IDs for unknown references
@@ -560,7 +560,7 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([lockedItem], 1)
       )
 
@@ -596,7 +596,7 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([partiallyLockedItem], 1)
       )
 
@@ -632,7 +632,7 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([unlockedItem], 1)
       )
 
@@ -667,7 +667,7 @@ describe('StockListPage', () => {
         updated_at: '2024-06-20T16:30:00Z',
       }
 
-      mockInventoryApiInstance.getInventoryItems.mockResolvedValueOnce(
+      mockInventoryApiInstance.listInventoryItems.mockResolvedValueOnce(
         createMockInventoryListResponse([consistentItem], 1)
       )
 

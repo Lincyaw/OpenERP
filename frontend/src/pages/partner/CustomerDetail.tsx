@@ -79,7 +79,7 @@ export default function CustomerDetailPage() {
 
     setLoading(true)
     try {
-      const response = await customersApi.getPartnerCustomersId(id)
+      const response = await customersApi.getCustomerById(id)
       if (response.success && response.data) {
         setCustomer(response.data)
       } else {
@@ -103,7 +103,7 @@ export default function CustomerDetailPage() {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await customersApi.postPartnerCustomersIdActivate(customer.id)
+      await customersApi.activateCustomer(customer.id)
       Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -118,7 +118,7 @@ export default function CustomerDetailPage() {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await customersApi.postPartnerCustomersIdDeactivate(customer.id)
+      await customersApi.deactivateCustomer(customer.id)
       Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -140,7 +140,7 @@ export default function CustomerDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await customersApi.postPartnerCustomersIdSuspend(customer.id!)
+          await customersApi.deactivateCustomer(customer.id!)
           Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
           fetchCustomer()
         } catch {
@@ -164,7 +164,7 @@ export default function CustomerDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await customersApi.deletePartnerCustomersId(customer.id!)
+          await customersApi.deleteCustomer(customer.id!)
           Toast.success(t('customers.messages.deleteSuccess', { name: customer.name }))
           navigate('/partner/customers')
         } catch {

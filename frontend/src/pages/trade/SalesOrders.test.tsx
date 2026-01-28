@@ -163,16 +163,16 @@ const createMockCustomerListResponse = (customers = mockCustomers) => ({
 
 describe('SalesOrdersPage', () => {
   let mockSalesOrderApiInstance: {
-    getTradeSalesOrders: ReturnType<typeof vi.fn>
+    listSalesOrders: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdConfirm: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdShip: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdComplete: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdCancel: ReturnType<typeof vi.fn>
-    deleteTradeSalesOrdersId: ReturnType<typeof vi.fn>
+    deleteSalesOrder: ReturnType<typeof vi.fn>
   }
 
   let mockCustomerApiInstance: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -181,17 +181,17 @@ describe('SalesOrdersPage', () => {
 
     // Setup mock sales order API
     mockSalesOrderApiInstance = {
-      getTradeSalesOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+      listSalesOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
       postTradeSalesOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdShip: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdComplete: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdCancel: vi.fn().mockResolvedValue({ success: true }),
-      deleteTradeSalesOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      deleteSalesOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     // Setup mock customer API
     mockCustomerApiInstance = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockCustomerListResponse()),
+      listCustomers: vi.fn().mockResolvedValue(createMockCustomerListResponse()),
     }
 
     vi.mocked(salesOrdersApi.getSalesOrders).mockReturnValue(
@@ -208,7 +208,7 @@ describe('SalesOrdersPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalled()
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalled()
       })
 
       // Verify order numbers are displayed
@@ -392,7 +392,7 @@ describe('SalesOrdersPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when order list API fails', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockRejectedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -404,14 +404,14 @@ describe('SalesOrdersPage', () => {
     })
 
     it('should handle empty order list gracefully', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([], 0)
       )
 
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalled()
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -419,7 +419,7 @@ describe('SalesOrdersPage', () => {
     })
 
     it('should handle customer API failure gracefully', async () => {
-      mockCustomerApiInstance.getPartnerCustomers.mockRejectedValueOnce(new Error('Network error'))
+      mockCustomerApiInstance.listCustomers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
@@ -435,7 +435,7 @@ describe('SalesOrdersPage', () => {
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalledWith(
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -448,7 +448,7 @@ describe('SalesOrdersPage', () => {
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
       await waitFor(() => {
-        expect(mockCustomerApiInstance.getPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockCustomerApiInstance.listCustomers).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
           })
@@ -474,7 +474,7 @@ describe('SalesOrdersPage', () => {
         updated_at: '2024-06-15T14:30:00Z',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([detailedOrder], 1)
       )
 
@@ -503,14 +503,14 @@ describe('SalesOrdersPage', () => {
         // Missing customer_name, item_count, amounts, etc.
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([minimalOrder], 1)
       )
 
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalled()
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalled()
       })
 
       // Should display without errors
@@ -527,7 +527,7 @@ describe('SalesOrdersPage', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -550,7 +550,7 @@ describe('SalesOrdersPage', () => {
         status: 'confirmed',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -571,7 +571,7 @@ describe('SalesOrdersPage', () => {
         status: 'shipped',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([shippedOrder], 1)
       )
 
@@ -591,7 +591,7 @@ describe('SalesOrdersPage', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -611,7 +611,7 @@ describe('SalesOrdersPage', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -633,7 +633,7 @@ describe('SalesOrdersPage', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -653,7 +653,7 @@ describe('SalesOrdersPage', () => {
         status: 'completed',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([completedOrder], 1)
       )
 
@@ -715,7 +715,7 @@ describe('SalesOrdersPage', () => {
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalledWith(
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             order_by: 'created_at',
             order_dir: 'desc',
@@ -734,13 +734,13 @@ describe('SalesOrdersPage', () => {
       })
 
       // Clear mock to track new call
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockClear()
+      mockSalesOrderApiInstance.listSalesOrders.mockClear()
 
       const refreshButton = screen.getByText('刷新')
       await user.click(refreshButton)
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalled()
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalled()
       })
     })
   })
@@ -754,13 +754,13 @@ describe('SalesOrdersPage', () => {
       })
 
       // Clear mock to track new call
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockClear()
+      mockSalesOrderApiInstance.listSalesOrders.mockClear()
 
       const searchInput = screen.getByPlaceholderText('搜索订单编号...')
       await user.type(searchInput, 'SO-2024-0001')
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrders).toHaveBeenCalledWith(
+        expect(mockSalesOrderApiInstance.listSalesOrders).toHaveBeenCalledWith(
           expect.objectContaining({
             search: 'SO-2024-0001',
           })
@@ -772,16 +772,16 @@ describe('SalesOrdersPage', () => {
 
 describe('SalesOrdersPage - Status Change Verification (P3-INT-001)', () => {
   let mockSalesOrderApiInstance: {
-    getTradeSalesOrders: ReturnType<typeof vi.fn>
+    listSalesOrders: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdConfirm: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdShip: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdComplete: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdCancel: ReturnType<typeof vi.fn>
-    deleteTradeSalesOrdersId: ReturnType<typeof vi.fn>
+    deleteSalesOrder: ReturnType<typeof vi.fn>
   }
 
   let mockCustomerApiInstance: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -789,16 +789,16 @@ describe('SalesOrdersPage - Status Change Verification (P3-INT-001)', () => {
     mockNavigate.mockClear()
 
     mockSalesOrderApiInstance = {
-      getTradeSalesOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
+      listSalesOrders: vi.fn().mockResolvedValue(createMockOrderListResponse()),
       postTradeSalesOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdShip: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdComplete: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdCancel: vi.fn().mockResolvedValue({ success: true }),
-      deleteTradeSalesOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      deleteSalesOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     mockCustomerApiInstance = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockCustomerListResponse()),
+      listCustomers: vi.fn().mockResolvedValue(createMockCustomerListResponse()),
     }
 
     vi.mocked(salesOrdersApi.getSalesOrders).mockReturnValue(
@@ -816,7 +816,7 @@ describe('SalesOrdersPage - Status Change Verification (P3-INT-001)', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 
@@ -840,7 +840,7 @@ describe('SalesOrdersPage - Status Change Verification (P3-INT-001)', () => {
         status: 'confirmed',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([confirmedOrder], 1)
       )
 
@@ -867,7 +867,7 @@ describe('SalesOrdersPage - Status Change Verification (P3-INT-001)', () => {
         status: 'draft',
       }
 
-      mockSalesOrderApiInstance.getTradeSalesOrders.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.listSalesOrders.mockResolvedValueOnce(
         createMockOrderListResponse([draftOrder], 1)
       )
 

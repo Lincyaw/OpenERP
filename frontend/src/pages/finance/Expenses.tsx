@@ -180,7 +180,7 @@ export default function ExpensesPage() {
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await api.getFinanceExpenses(params)
+      const response = await api.listExpenseExpenses(params)
 
       if (response.success && response.data) {
         setExpenseList(response.data as ExpenseRow[])
@@ -221,7 +221,7 @@ export default function ExpensesPage() {
       if (dateRange?.[1]) {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
-      const response = await api.getFinanceExpensesSummary(params)
+      const response = await api.getExpensExpensesSummary(params)
       if (response.success && response.data) {
         setSummary(response.data)
       }
@@ -318,7 +318,7 @@ export default function ExpensesPage() {
   const handleSubmit = useCallback(
     async (expense: ExpenseRow) => {
       try {
-        const response = await api.postFinanceExpensesIdSubmit(expense.id)
+        const response = await api.submitExpenseExpens(expense.id)
         if (response.success) {
           Toast.success(t('expenses.messages.submitSuccess'))
           fetchExpenses()
@@ -336,7 +336,7 @@ export default function ExpensesPage() {
   const handleApprove = useCallback(
     async (expense: ExpenseRow) => {
       try {
-        const response = await api.postFinanceExpensesIdApprove(expense.id)
+        const response = await api.approveExpenseExpens(expense.id)
         if (response.success) {
           Toast.success(t('expenses.messages.approveSuccess'))
           fetchExpenses()
@@ -365,7 +365,7 @@ export default function ExpensesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.postFinanceExpensesIdReject(selectedExpense.id, {
+      const response = await api.rejectExpenseExpens(selectedExpense.id, {
         reason: actionReason,
       })
       if (response.success) {
@@ -397,7 +397,7 @@ export default function ExpensesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.postFinanceExpensesIdCancel(selectedExpense.id, {
+      const response = await api.cancelExpenseExpens(selectedExpense.id, {
         reason: actionReason,
       })
       if (response.success) {
@@ -425,7 +425,7 @@ export default function ExpensesPage() {
         okType: 'danger',
         onOk: async () => {
           try {
-            const response = await api.deleteFinanceExpensesId(expense.id)
+            const response = await api.deleteExpenseExpense(expense.id)
             if (response.success) {
               Toast.success(t('expenses.messages.deleteSuccess'))
               fetchExpenses()

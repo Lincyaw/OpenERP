@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button, Toast, Space } from '@douyinfe/semi-ui-19'
 import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type {
   Override,
   FlagType,
@@ -38,7 +38,7 @@ export function OverrideForm({
   onCancel,
 }: OverrideFormProps) {
   const { t } = useTranslation('admin')
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [loading, setLoading] = useState(false)

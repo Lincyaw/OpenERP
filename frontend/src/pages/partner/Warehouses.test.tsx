@@ -83,11 +83,11 @@ const createMockListResponse = (warehouses = mockWarehouses, total = mockWarehou
 
 describe('WarehousesPage', () => {
   let mockApi: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
     postPartnerWarehousesIdEnable: ReturnType<typeof vi.fn>
     postPartnerWarehousesIdDisable: ReturnType<typeof vi.fn>
     postPartnerWarehousesIdSetDefault: ReturnType<typeof vi.fn>
-    deletePartnerWarehousesId: ReturnType<typeof vi.fn>
+    deleteWarehouse: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -95,7 +95,7 @@ describe('WarehousesPage', () => {
 
     // Setup mock API with default implementations
     mockApi = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockListResponse()),
       postPartnerWarehousesIdEnable: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockWarehouses[2] }),
@@ -105,7 +105,7 @@ describe('WarehousesPage', () => {
       postPartnerWarehousesIdSetDefault: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockWarehouses[1] }),
-      deletePartnerWarehousesId: vi.fn().mockResolvedValue({ success: true }),
+      deleteWarehouse: vi.fn().mockResolvedValue({ success: true }),
     }
 
     vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
@@ -119,7 +119,7 @@ describe('WarehousesPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockApi.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockApi.listWarehouses).toHaveBeenCalled()
       })
 
       // Verify warehouse codes are displayed
@@ -209,7 +209,7 @@ describe('WarehousesPage', () => {
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -257,7 +257,7 @@ describe('WarehousesPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when API fails', async () => {
-      mockApi.getPartnerWarehouses.mockRejectedValueOnce(new Error('Network error'))
+      mockApi.listWarehouses.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 
@@ -267,12 +267,12 @@ describe('WarehousesPage', () => {
     })
 
     it('should handle empty warehouse list gracefully', async () => {
-      mockApi.getPartnerWarehouses.mockResolvedValueOnce(createMockListResponse([], 0))
+      mockApi.listWarehouses.mockResolvedValueOnce(createMockListResponse([], 0))
 
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockApi.listWarehouses).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -322,7 +322,7 @@ describe('WarehousesPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getPartnerWarehouses.mockResolvedValueOnce(
+      mockApi.listWarehouses.mockResolvedValueOnce(
         createMockListResponse([detailedWarehouse], 1)
       )
 
@@ -353,7 +353,7 @@ describe('WarehousesPage', () => {
         // No province, city, short_name
       }
 
-      mockApi.getPartnerWarehouses.mockResolvedValueOnce(
+      mockApi.listWarehouses.mockResolvedValueOnce(
         createMockListResponse([minimalWarehouse], 1)
       )
 
@@ -371,12 +371,12 @@ describe('WarehousesPage', () => {
       renderWithProviders(<WarehousesPage />, { route: '/partner/warehouses' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockApi.listWarehouses).toHaveBeenCalled()
       })
 
       // Verify API was called with expected parameters
       // Note: Warehouses default sort by sort_order ascending
-      expect(mockApi.getPartnerWarehouses).toHaveBeenCalledWith(
+      expect(mockApi.listWarehouses).toHaveBeenCalledWith(
         expect.objectContaining({
           page: 1,
           page_size: 20,

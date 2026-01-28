@@ -77,9 +77,9 @@ const createErrorResponse = (message: string, code = 'ERR_VALIDATION') => ({
 
 describe('WarehouseForm', () => {
   let mockApi: {
-    postPartnerWarehouses: ReturnType<typeof vi.fn>
-    putPartnerWarehousesId: ReturnType<typeof vi.fn>
-    getPartnerWarehousesId: ReturnType<typeof vi.fn>
+    createWarehouse: ReturnType<typeof vi.fn>
+    updateWarehouse: ReturnType<typeof vi.fn>
+    getWarehouseById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -87,9 +87,9 @@ describe('WarehouseForm', () => {
     mockNavigate.mockClear()
 
     mockApi = {
-      postPartnerWarehouses: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
-      putPartnerWarehousesId: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
-      getPartnerWarehousesId: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
+      createWarehouse: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
+      updateWarehouse: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
+      getWarehouseById: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
     }
 
     vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
@@ -159,7 +159,7 @@ describe('WarehouseForm', () => {
 
       // Wait for API call
       await waitFor(() => {
-        expect(mockApi.postPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.createWarehouse).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'NEW-WH-001',
             name: '新仓库',
@@ -259,7 +259,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /保存/i }))
 
       await waitFor(() => {
-        expect(mockApi.putPartnerWarehousesId).toHaveBeenCalledWith(
+        expect(mockApi.updateWarehouse).toHaveBeenCalledWith(
           mockWarehouse.id,
           expect.objectContaining({
             name: '更新的仓库名称',
@@ -277,7 +277,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called with invalid data
-      expect(mockApi.postPartnerWarehouses).not.toHaveBeenCalled()
+      expect(mockApi.createWarehouse).not.toHaveBeenCalled()
     })
 
     it('should validate code format (alphanumeric, underscore, hyphen)', async () => {
@@ -291,7 +291,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerWarehouses).not.toHaveBeenCalled()
+      expect(mockApi.createWarehouse).not.toHaveBeenCalled()
     })
 
     it('should validate email format', async () => {
@@ -307,13 +307,13 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerWarehouses).not.toHaveBeenCalled()
+      expect(mockApi.createWarehouse).not.toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should show error message when create API fails', async () => {
-      mockApi.postPartnerWarehouses.mockResolvedValueOnce(
+      mockApi.createWarehouse.mockResolvedValueOnce(
         createErrorResponse('仓库编码已存在', 'ERR_DUPLICATE')
       )
 
@@ -352,7 +352,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.createWarehouse).toHaveBeenCalledWith(
           expect.objectContaining({
             contact_name: '张经理',
             phone: '13900139000',
@@ -377,7 +377,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.createWarehouse).toHaveBeenCalledWith(
           expect.objectContaining({
             province: '广东省',
             city: '深圳市',
@@ -444,7 +444,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.createWarehouse).toHaveBeenCalledWith(
           expect.objectContaining({
             is_default: true,
           })
@@ -474,7 +474,7 @@ describe('WarehouseForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockApi.createWarehouse).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'API-TEST-001',
             name: 'API测试仓库',

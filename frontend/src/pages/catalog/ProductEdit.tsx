@@ -32,7 +32,7 @@ export default function ProductEditPage() {
     const loadProduct = async () => {
       setLoading(true)
       try {
-        const response = await api.getCatalogProductsId(id)
+        const response = await api.getProductById(id)
         if (response.success && response.data) {
           setProduct(response.data)
         } else {

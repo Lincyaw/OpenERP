@@ -159,7 +159,7 @@ export default function ReceiptVoucherNewPage() {
 
       setCustomerLoading(true)
       try {
-        const response = await customerApi.getPartnerCustomers({
+        const response = await customerApi.listCustomers({
           search: keyword,
           status: 'active',
           page: 1,
@@ -193,7 +193,7 @@ export default function ReceiptVoucherNewPage() {
 
       setReceivablesLoading(true)
       try {
-        const receivablesResponse = await financeApi.getFinanceReceivables({
+        const receivablesResponse = await financeApi.listFinanceReceivablesReceivables({
           customer_id: customerId,
           status: 'PENDING',
           page: 1,
@@ -222,7 +222,7 @@ export default function ReceiptVoucherNewPage() {
     if (preSelectedCustomerId) {
       const loadCustomer = async () => {
         try {
-          const response = await customerApi.getPartnerCustomersId(preSelectedCustomerId)
+          const response = await customerApi.getCustomerById(preSelectedCustomerId)
           if (response.success && response.data) {
             const customer = response.data
             setSelectedCustomer(customer)
@@ -291,7 +291,7 @@ export default function ReceiptVoucherNewPage() {
       remark: data.remark,
     }
 
-    const response = await financeApi.postFinanceReceipts(request)
+    const response = await financeApi.createFinanceReceiptReceiptVoucher(request)
     if (!response.success) {
       throw new Error(response.error || t('receiptVoucher.messages.createError'))
     }

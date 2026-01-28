@@ -120,13 +120,13 @@ const mockCustomerLevels = [
 
 describe('CustomerForm', () => {
   let mockApi: {
-    postPartnerCustomers: ReturnType<typeof vi.fn>
-    putPartnerCustomersId: ReturnType<typeof vi.fn>
-    getPartnerCustomersId: ReturnType<typeof vi.fn>
+    createCustomer: ReturnType<typeof vi.fn>
+    updateCustomer: ReturnType<typeof vi.fn>
+    getCustomerById: ReturnType<typeof vi.fn>
   }
 
   let mockLevelsApi: {
-    getPartnerCustomerLevels: ReturnType<typeof vi.fn>
+    listCustomerLevels: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -134,13 +134,13 @@ describe('CustomerForm', () => {
     mockNavigate.mockClear()
 
     mockApi = {
-      postPartnerCustomers: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
-      putPartnerCustomersId: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
-      getPartnerCustomersId: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
+      createCustomer: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
+      updateCustomer: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
+      getCustomerById: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomer)),
     }
 
     mockLevelsApi = {
-      getPartnerCustomerLevels: vi
+      listCustomerLevels: vi
         .fn()
         .mockResolvedValue(createSuccessResponse(mockCustomerLevels)),
     }
@@ -216,7 +216,7 @@ describe('CustomerForm', () => {
 
       // Wait for API call
       await waitFor(() => {
-        expect(mockApi.postPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockApi.createCustomer).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'NEW-CUST-001',
             name: '新客户有限公司',
@@ -316,7 +316,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /保存/i }))
 
       await waitFor(() => {
-        expect(mockApi.putPartnerCustomersId).toHaveBeenCalledWith(
+        expect(mockApi.updateCustomer).toHaveBeenCalledWith(
           mockCustomer.id,
           expect.objectContaining({
             name: '更新的客户名称',
@@ -334,7 +334,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called with invalid data
-      expect(mockApi.postPartnerCustomers).not.toHaveBeenCalled()
+      expect(mockApi.createCustomer).not.toHaveBeenCalled()
     })
 
     it('should validate code format (alphanumeric, underscore, hyphen)', async () => {
@@ -348,7 +348,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerCustomers).not.toHaveBeenCalled()
+      expect(mockApi.createCustomer).not.toHaveBeenCalled()
     })
 
     it('should validate email format', async () => {
@@ -364,13 +364,13 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       // API should not be called
-      expect(mockApi.postPartnerCustomers).not.toHaveBeenCalled()
+      expect(mockApi.createCustomer).not.toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should show error message when create API fails', async () => {
-      mockApi.postPartnerCustomers.mockResolvedValueOnce(
+      mockApi.createCustomer.mockResolvedValueOnce(
         createErrorResponse('客户编码已存在', 'ERR_DUPLICATE')
       )
 
@@ -387,7 +387,7 @@ describe('CustomerForm', () => {
     })
 
     it('should show error message when update API fails', async () => {
-      mockApi.putPartnerCustomersId.mockResolvedValueOnce(
+      mockApi.updateCustomer.mockResolvedValueOnce(
         createErrorResponse('更新失败', 'ERR_UPDATE')
       )
 
@@ -421,7 +421,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockApi.createCustomer).toHaveBeenCalledWith(
           expect.objectContaining({
             contact_name: '李四',
             phone: '13900139000',
@@ -446,7 +446,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockApi.createCustomer).toHaveBeenCalledWith(
           expect.objectContaining({
             province: '浙江省',
             city: '杭州市',
@@ -469,7 +469,7 @@ describe('CustomerForm', () => {
       await user.click(screen.getByRole('button', { name: /创建/i }))
 
       await waitFor(() => {
-        expect(mockApi.postPartnerCustomers).toHaveBeenCalledWith(
+        expect(mockApi.createCustomer).toHaveBeenCalledWith(
           expect.objectContaining({
             code: 'API-TEST-001',
             name: 'API测试客户',

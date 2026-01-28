@@ -187,7 +187,7 @@ export function SalesReturnForm() {
       setOrdersLoading(true)
       try {
         // Only get shipped or completed orders for return
-        const response = await salesOrderApi.getTradeSalesOrders({
+        const response = await salesOrderApi.listSalesOrders({
           page_size: 50,
           search: search || undefined,
           statuses: ['SHIPPED', 'COMPLETED'],
@@ -212,7 +212,7 @@ export function SalesReturnForm() {
       if (!orderId) return
       setOrderLoading(true)
       try {
-        const response = await salesOrderApi.getTradeSalesOrdersId(orderId)
+        const response = await salesOrderApi.getSalesOrderById(orderId)
         if (response.success && response.data) {
           setSelectedOrder(response.data)
           // Convert order items to return items
@@ -252,7 +252,7 @@ export function SalesReturnForm() {
   const fetchWarehouses = useCallback(async () => {
     setWarehousesLoading(true)
     try {
-      const response = await warehouseApi.getPartnerWarehouses({
+      const response = await warehouseApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -470,7 +470,7 @@ export function SalesReturnForm() {
         (item) => item.selected && item.return_quantity > 0
       )
 
-      const response = await salesReturnApi.postTradeSalesReturns({
+      const response = await salesReturnApi.createSalesReturn({
         sales_order_id: formData.sales_order_id,
         warehouse_id: formData.warehouse_id,
         reason: formData.reason,

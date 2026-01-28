@@ -16,7 +16,7 @@ import {
 import { IconPlus, IconDelete, IconRefresh } from '@douyinfe/semi-icons'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type { Override, FlagType, OverrideTargetType } from '@/api/feature-flags'
 import { OverrideForm } from './OverrideForm'
 
@@ -75,7 +75,7 @@ interface OverridesTabProps {
  */
 export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
   const { t, i18n } = useTranslation('admin')
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [overrides, setOverrides] = useState<Override[]>([])

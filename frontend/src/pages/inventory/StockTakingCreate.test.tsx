@@ -180,11 +180,11 @@ describe('StockTakingCreatePage', () => {
   }
 
   let mockWarehouseApiInstance: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   let mockInventoryApiInstance: {
-    getInventoryItems: ReturnType<typeof vi.fn>
+    listInventoryItems: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -201,12 +201,12 @@ describe('StockTakingCreatePage', () => {
 
     // Setup mock warehouse API
     mockWarehouseApiInstance = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
     }
 
     // Setup mock inventory API
     mockInventoryApiInstance = {
-      getInventoryItems: vi.fn().mockResolvedValue(createMockInventoryListResponse()),
+      listInventoryItems: vi.fn().mockResolvedValue(createMockInventoryListResponse()),
     }
 
     vi.mocked(stockTakingApi.getStockTaking).mockReturnValue(
@@ -257,7 +257,7 @@ describe('StockTakingCreatePage', () => {
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
       })
 
       expect(screen.getByText('仓库')).toBeInTheDocument()
@@ -297,7 +297,7 @@ describe('StockTakingCreatePage', () => {
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalledWith({
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith({
           page_size: 100,
           status: 'active',
         })
@@ -305,7 +305,7 @@ describe('StockTakingCreatePage', () => {
     })
 
     it('should show error toast when warehouse API fails', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -328,14 +328,14 @@ describe('StockTakingCreatePage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when inventory API fails', async () => {
-      mockInventoryApiInstance.getInventoryItems.mockRejectedValueOnce(new Error('Network error'))
+      mockInventoryApiInstance.listInventoryItems.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 
       // Note: Error only shows after warehouse is selected and inventory fetch is triggered
       // This test verifies the error handling is in place
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
       })
 
       // "创建盘点单" appears as both title and submit button
@@ -344,7 +344,7 @@ describe('StockTakingCreatePage', () => {
     })
 
     it('should handle empty warehouse list gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockResolvedValueOnce(
+      mockWarehouseApiInstance.listWarehouses.mockResolvedValueOnce(
         createMockWarehouseListResponse([])
       )
 
@@ -388,7 +388,7 @@ describe('StockTakingCreatePage', () => {
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalledWith({
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith({
           page_size: 100,
           status: 'active',
         })
@@ -402,7 +402,7 @@ describe('StockTakingCreatePage', () => {
 
       // Wait for warehouses to load
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
       })
 
       // Initial state should show "请先选择仓库"
@@ -433,7 +433,7 @@ describe('StockTakingCreatePage', () => {
       renderWithProviders(<StockTakingCreatePage />, { route: '/inventory/stock-taking/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalled()
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
       })
 
       // Before warehouse selection, should show empty state

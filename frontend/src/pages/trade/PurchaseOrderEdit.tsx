@@ -29,7 +29,7 @@ export default function PurchaseOrderEditPage() {
 
       setLoading(true)
       try {
-        const response = await api.getTradePurchaseOrdersId(id)
+        const response = await api.getPurchaseOrderById(id)
         if (response.success && response.data) {
           // Check if order is in draft status (only draft orders can be edited)
           if (response.data.status !== 'draft') {

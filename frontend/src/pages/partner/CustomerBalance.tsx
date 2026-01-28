@@ -22,9 +22,9 @@ import { useFormatters } from '@/hooks/useFormatters'
 import type {
   HandlerBalanceTransactionResponse,
   HandlerBalanceSummaryResponse,
-  GetPartnerCustomersIdBalanceTransactionsParams,
-  GetPartnerCustomersIdBalanceTransactionsTransactionType,
-  GetPartnerCustomersIdBalanceTransactionsSourceType,
+  ListBalanceTransactionsParams,
+  ListBalanceTransactionsTransactionType,
+  ListBalanceTransactionsSourceType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import RechargeModal from './RechargeModal'
@@ -142,7 +142,7 @@ export default function CustomerBalancePage() {
   const fetchCustomerInfo = useCallback(async () => {
     if (!customerId) return
     try {
-      const response = await customerApi.getPartnerCustomersId(customerId)
+      const response = await customerApi.getCustomerById(customerId)
       if (response.success && response.data) {
         setCustomerName(response.data.name || '')
         setCustomerCode(response.data.code || '')
@@ -157,7 +157,7 @@ export default function CustomerBalancePage() {
     if (!customerId) return
     setSummaryLoading(true)
     try {
-      const response = await balanceApi.getPartnerCustomersIdBalanceSummary(customerId)
+      const response = await balanceApi.getBalanceSummary(customerId)
       if (response.success && response.data) {
         setBalanceSummary(response.data)
       }
@@ -173,20 +173,20 @@ export default function CustomerBalancePage() {
     if (!customerId) return
     setTransactionsLoading(true)
     try {
-      const params: GetPartnerCustomersIdBalanceTransactionsParams = {
+      const params: ListBalanceTransactionsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         transaction_type: (transactionTypeFilter || undefined) as
-          | GetPartnerCustomersIdBalanceTransactionsTransactionType
+          | ListBalanceTransactionsTransactionType
           | undefined,
         source_type: (sourceTypeFilter || undefined) as
-          | GetPartnerCustomersIdBalanceTransactionsSourceType
+          | ListBalanceTransactionsSourceType
           | undefined,
         date_from: dateRange?.[0]?.toISOString().split('T')[0],
         date_to: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await balanceApi.getPartnerCustomersIdBalanceTransactions(customerId, params)
+      const response = await balanceApi.listBalanceTransactions(customerId, params)
 
       if (response.success && response.data) {
         setTransactions(response.data as BalanceTransaction[])

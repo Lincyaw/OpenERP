@@ -17,8 +17,8 @@ import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
-  GetInventoryItemsParams,
-  GetInventoryItemsOrderDir,
+  ListInventoriesParams,
+  ListInventoriesOrderDir,
   HandlerWarehouseListResponse,
   HandlerProductListResponse,
 } from '@/api/models'
@@ -106,7 +106,7 @@ export default function StockListPage() {
   const fetchWarehouses = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const response = await warehousesApi.getPartnerWarehouses(
+        const response = await warehousesApi.listWarehouses(
           {
             page: 1,
             page_size: 100,
@@ -146,7 +146,7 @@ export default function StockListPage() {
   const fetchProducts = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const response = await productsApi.getCatalogProducts(
+        const response = await productsApi.listProducts(
           { page: 1, page_size: 100 },
           { signal }
         )
@@ -173,13 +173,13 @@ export default function StockListPage() {
     async (signal?: AbortSignal) => {
       setLoading(true)
       try {
-        const params: GetInventoryItemsParams = {
+        const params: ListInventoriesParams = {
           page: state.pagination.page,
           page_size: state.pagination.pageSize,
           search: searchKeyword || undefined,
           warehouse_id: warehouseFilter || undefined,
           order_by: state.sort.field || 'updated_at',
-          order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as GetInventoryItemsOrderDir,
+          order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as ListInventoriesOrderDir,
         }
 
         // Apply stock status filter
@@ -191,7 +191,7 @@ export default function StockListPage() {
           params.has_stock = false
         }
 
-        const response = await inventoryApi.getInventoryItems(params, { signal })
+        const response = await inventoryApi.listInventories(params, { signal })
 
         if (response.success && response.data) {
           setInventoryList(response.data as InventoryItem[])

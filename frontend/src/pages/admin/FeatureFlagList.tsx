@@ -25,7 +25,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type {
   FeatureFlag,
   FlagListQuery,
@@ -108,7 +108,7 @@ function getStatusColor(status: FlagStatus): TagColor {
 export default function FeatureFlagListPage() {
   const { t, i18n } = useTranslation('admin')
   const navigate = useNavigate()
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(

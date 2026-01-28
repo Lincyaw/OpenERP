@@ -25,8 +25,8 @@ import type {
   HandlerTransactionResponse,
   HandlerWarehouseListResponse,
   HandlerProductListResponse,
-  GetInventoryItemsIdTransactionsParams,
-  GetInventoryItemsIdTransactionsOrderDir,
+  ListInventoryTransactionsParams,
+  ListInventoryTransactionsOrderDir,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockDetail.css'
@@ -136,7 +136,7 @@ export default function StockDetailPage() {
 
     setLoading(true)
     try {
-      const response = await inventoryApi.getInventoryItemsId(id)
+      const response = await inventoryApi.getInventoryById(id)
       if (response.success && response.data) {
         setInventoryItem(response.data as HandlerInventoryItemResponse)
       }
@@ -152,7 +152,7 @@ export default function StockDetailPage() {
     if (!inventoryItem?.warehouse_id) return
 
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -172,7 +172,7 @@ export default function StockDetailPage() {
     if (!inventoryItem?.product_id) return
 
     try {
-      const response = await productsApi.getCatalogProducts({
+      const response = await productsApi.listProducts({
         page_size: 500,
       })
       if (response.success && response.data) {
@@ -192,16 +192,16 @@ export default function StockDetailPage() {
 
     setTransactionsLoading(true)
     try {
-      const params: GetInventoryItemsIdTransactionsParams = {
+      const params: ListInventoryTransactionsParams = {
         page: transactionsState.pagination.page,
         page_size: transactionsState.pagination.pageSize,
         order_by: transactionsState.sort.field || 'transaction_date',
         order_dir: (transactionsState.sort.order === 'asc'
           ? 'asc'
-          : 'desc') as GetInventoryItemsIdTransactionsOrderDir,
+          : 'desc') as ListInventoryTransactionsOrderDir,
       }
 
-      const response = await inventoryApi.getInventoryItemsIdTransactions(id, params)
+      const response = await inventoryApi.listInventoryTransactionsByItem(id, params)
 
       if (response.success && response.data) {
         setTransactions(response.data as Transaction[])

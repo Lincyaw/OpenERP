@@ -75,11 +75,11 @@ const createMockListResponse = (products = mockProducts, total = mockProducts.le
 
 describe('ProductsPage', () => {
   let mockApi: {
-    getCatalogProducts: ReturnType<typeof vi.fn>
+    listProducts: ReturnType<typeof vi.fn>
     postCatalogProductsIdActivate: ReturnType<typeof vi.fn>
     postCatalogProductsIdDeactivate: ReturnType<typeof vi.fn>
     postCatalogProductsIdDiscontinue: ReturnType<typeof vi.fn>
-    deleteCatalogProductsId: ReturnType<typeof vi.fn>
+    deleteProduct: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -87,7 +87,7 @@ describe('ProductsPage', () => {
 
     // Setup mock API with default implementations
     mockApi = {
-      getCatalogProducts: vi.fn().mockResolvedValue(createMockListResponse()),
+      listProducts: vi.fn().mockResolvedValue(createMockListResponse()),
       postCatalogProductsIdActivate: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockProducts[1] }),
@@ -97,7 +97,7 @@ describe('ProductsPage', () => {
       postCatalogProductsIdDiscontinue: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockProducts[0] }),
-      deleteCatalogProductsId: vi.fn().mockResolvedValue({ success: true }),
+      deleteProduct: vi.fn().mockResolvedValue({ success: true }),
     }
 
     vi.mocked(productsApi.getProducts).mockReturnValue(
@@ -111,7 +111,7 @@ describe('ProductsPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockApi.getCatalogProducts).toHaveBeenCalled()
+        expect(mockApi.listProducts).toHaveBeenCalled()
       })
 
       // Verify product codes are displayed
@@ -174,7 +174,7 @@ describe('ProductsPage', () => {
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
       await waitFor(() => {
-        expect(mockApi.getCatalogProducts).toHaveBeenCalledWith(
+        expect(mockApi.listProducts).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -211,7 +211,7 @@ describe('ProductsPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when API fails', async () => {
-      mockApi.getCatalogProducts.mockRejectedValueOnce(new Error('Network error'))
+      mockApi.listProducts.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
@@ -221,12 +221,12 @@ describe('ProductsPage', () => {
     })
 
     it('should handle empty product list gracefully', async () => {
-      mockApi.getCatalogProducts.mockResolvedValueOnce(createMockListResponse([], 0))
+      mockApi.listProducts.mockResolvedValueOnce(createMockListResponse([], 0))
 
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
       await waitFor(() => {
-        expect(mockApi.getCatalogProducts).toHaveBeenCalled()
+        expect(mockApi.listProducts).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -275,7 +275,7 @@ describe('ProductsPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getCatalogProducts.mockResolvedValueOnce(createMockListResponse([detailedProduct], 1))
+      mockApi.listProducts.mockResolvedValueOnce(createMockListResponse([detailedProduct], 1))
 
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
@@ -303,7 +303,7 @@ describe('ProductsPage', () => {
         // No barcode, no prices, no description
       }
 
-      mockApi.getCatalogProducts.mockResolvedValueOnce(createMockListResponse([minimalProduct], 1))
+      mockApi.listProducts.mockResolvedValueOnce(createMockListResponse([minimalProduct], 1))
 
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
@@ -319,11 +319,11 @@ describe('ProductsPage', () => {
       renderWithProviders(<ProductsPage />, { route: '/catalog/products' })
 
       await waitFor(() => {
-        expect(mockApi.getCatalogProducts).toHaveBeenCalled()
+        expect(mockApi.listProducts).toHaveBeenCalled()
       })
 
       // Verify API was called (headers are handled by axios interceptors)
-      expect(mockApi.getCatalogProducts).toHaveBeenCalledTimes(1)
+      expect(mockApi.listProducts).toHaveBeenCalledTimes(1)
     })
   })
 })

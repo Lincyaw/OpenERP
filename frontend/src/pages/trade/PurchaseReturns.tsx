@@ -24,8 +24,8 @@ import { getPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
 import { getSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseReturnListResponse,
-  GetTradePurchaseReturnsParams,
-  GetTradePurchaseReturnsStatus,
+  ListPurchaseReturnsParams,
+  ListPurchaseReturnsStatus,
   HandlerSupplierListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
@@ -127,7 +127,7 @@ export default function PurchaseReturnsPage() {
   const fetchSuppliers = useCallback(async () => {
     setSuppliersLoading(true)
     try {
-      const response = await supplierApi.getPartnerSuppliers({ page_size: 100 })
+      const response = await supplierApi.listSuppliers({ page_size: 100 })
       if (response.success && response.data) {
         const options: SupplierOption[] = response.data.map(
           (supplier: HandlerSupplierListResponse) => ({
@@ -153,11 +153,11 @@ export default function PurchaseReturnsPage() {
   const fetchReturns = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetTradePurchaseReturnsParams = {
+      const params: ListPurchaseReturnsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as GetTradePurchaseReturnsStatus | undefined,
+        status: (statusFilter || undefined) as ListPurchaseReturnsStatus | undefined,
         supplier_id: supplierFilter || undefined,
         order_by: state.sort.field || 'created_at',
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
@@ -169,7 +169,7 @@ export default function PurchaseReturnsPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await purchaseReturnApi.getTradePurchaseReturns(params)
+      const response = await purchaseReturnApi.listPurchaseReturns(params)
 
       if (response.success && response.data) {
         setReturnList(response.data as PurchaseReturn[])
@@ -265,7 +265,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.postTradePurchaseReturnsIdSubmit(returnItem.id!)
+            await purchaseReturnApi.submitPurchaseReturn(returnItem.id!)
             Toast.success(t('purchaseReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {
@@ -290,7 +290,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.postTradePurchaseReturnsIdApprove(returnItem.id!, { note: '' })
+            await purchaseReturnApi.approvePurchaseReturn(returnItem.id!, { note: '' })
             Toast.success(t('purchaseReturn.messages.approveSuccess'))
             fetchReturns()
           } catch {
@@ -316,7 +316,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.postTradePurchaseReturnsIdReject(returnItem.id!, {
+            await purchaseReturnApi.rejectPurchaseReturn(returnItem.id!, {
               reason: t('purchaseReturn.actions.reject'),
             })
             Toast.success(t('purchaseReturn.messages.rejectSuccess'))
@@ -341,7 +341,7 @@ export default function PurchaseReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseReturnApi.postTradePurchaseReturnsIdShip(returnItem.id!, {
+            await purchaseReturnApi.shipPurchaseReturn(returnItem.id!, {
               note: '',
             })
             Toast.success(t('purchaseReturn.messages.shipSuccess'))
@@ -360,7 +360,7 @@ export default function PurchaseReturnsPage() {
     async (returnItem: PurchaseReturn) => {
       if (!returnItem.id) return
       try {
-        await purchaseReturnApi.postTradePurchaseReturnsIdComplete(returnItem.id!)
+        await purchaseReturnApi.completePurchaseReturn(returnItem.id!)
         Toast.success(t('purchaseReturn.messages.completeSuccess'))
         fetchReturns()
       } catch {
@@ -384,7 +384,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.postTradePurchaseReturnsIdCancel(returnItem.id!, {
+            await purchaseReturnApi.cancelPurchaseReturn(returnItem.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(t('purchaseReturn.messages.cancelSuccess'))
@@ -412,7 +412,7 @@ export default function PurchaseReturnsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseReturnApi.deleteTradePurchaseReturnsId(returnItem.id!)
+            await purchaseReturnApi.deletePurchaseReturn(returnItem.id!)
             Toast.success(t('purchaseReturn.messages.deleteSuccess'))
             fetchReturns()
           } catch {

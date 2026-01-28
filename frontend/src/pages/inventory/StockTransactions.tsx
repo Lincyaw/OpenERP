@@ -22,9 +22,9 @@ import type {
   HandlerTransactionResponse,
   HandlerWarehouseListResponse,
   HandlerProductListResponse,
-  GetInventoryItemsIdTransactionsParams,
-  GetInventoryItemsIdTransactionsOrderDir,
-  GetInventoryItemsIdTransactionsTransactionType,
+  ListInventoryTransactionsParams,
+  ListInventoryTransactionsOrderDir,
+  ListInventoryTransactionsTransactionType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockTransactions.css'
@@ -184,7 +184,7 @@ export default function StockTransactionsPage() {
     if (!id) return
 
     try {
-      const response = await inventoryApi.getInventoryItemsId(id)
+      const response = await inventoryApi.getInventoryById(id)
       if (response.success && response.data) {
         setInventoryItem(response.data as HandlerInventoryItemResponse)
       }
@@ -198,7 +198,7 @@ export default function StockTransactionsPage() {
     if (!inventoryItem?.warehouse_id) return
 
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
@@ -217,7 +217,7 @@ export default function StockTransactionsPage() {
     if (!inventoryItem?.product_id) return
 
     try {
-      const response = await productsApi.getCatalogProducts({
+      const response = await productsApi.listProducts({
         page_size: 500,
       })
       if (response.success && response.data) {
@@ -236,19 +236,19 @@ export default function StockTransactionsPage() {
 
     setLoading(true)
     try {
-      const params: GetInventoryItemsIdTransactionsParams = {
+      const params: ListInventoryTransactionsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         order_by: state.sort.field || 'transaction_date',
         order_dir: (state.sort.order === 'asc'
           ? 'asc'
-          : 'desc') as GetInventoryItemsIdTransactionsOrderDir,
+          : 'desc') as ListInventoryTransactionsOrderDir,
       }
 
       // Apply transaction type filter
       if (transactionTypeFilter) {
         params.transaction_type =
-          transactionTypeFilter as GetInventoryItemsIdTransactionsTransactionType
+          transactionTypeFilter as ListInventoryTransactionsTransactionType
       }
 
       // Apply date range filter
@@ -259,7 +259,7 @@ export default function StockTransactionsPage() {
         params.end_date = formatDateToISO(dateRange[1])
       }
 
-      const response = await inventoryApi.getInventoryItemsIdTransactions(id, params)
+      const response = await inventoryApi.listInventoryTransactionsByItem(id, params)
 
       if (response.success && response.data) {
         setTransactions(response.data as Transaction[])

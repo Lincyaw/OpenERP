@@ -26,7 +26,7 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type {
   FlagType,
   CreateFlagRequest,
@@ -122,7 +122,7 @@ export default function FeatureFlagFormPage() {
   const navigate = useNavigate()
   const { key } = useParams<{ key: string }>()
   const isEditMode = Boolean(key)
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [initialLoading, setInitialLoading] = useState(isEditMode)

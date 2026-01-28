@@ -120,7 +120,7 @@ export default function StockTakingExecutePage() {
 
     setLoading(true)
     try {
-      const response = await stockTakingApi.getInventoryStockTakingsId(id)
+      const response = await stockTakingApi.getStockTakingById(id)
       if (response.success && response.data) {
         setStockTaking(response.data)
         // Initialize local items from fetched data
@@ -167,7 +167,7 @@ export default function StockTakingExecutePage() {
     if (!id) return
 
     try {
-      const response = await stockTakingApi.postInventoryStockTakingsIdStart(id)
+      const response = await stockTakingApi.startStockTaking(id)
       if (response.success && response.data) {
         Toast.success(t('stockTaking.execute.messages.startSuccess'))
         setStockTaking(response.data)
@@ -230,7 +230,7 @@ export default function StockTakingExecutePage() {
           remark: localItem.remark || undefined,
         }
 
-        const response = await stockTakingApi.postInventoryStockTakingsIdCount(id, request)
+        const response = await stockTakingApi.recordStockTakingCount(id, request)
         if (response.success && response.data) {
           Toast.success(t('stockTaking.execute.messages.saveSuccess'))
           setStockTaking(response.data)
@@ -277,7 +277,7 @@ export default function StockTakingExecutePage() {
         remark: item.remark || undefined,
       }))
 
-      const response = await stockTakingApi.postInventoryStockTakingsIdCounts(id, { counts })
+      const response = await stockTakingApi.batchRecordCounts(id, { counts })
       if (response.success && response.data) {
         Toast.success(
           t('stockTaking.execute.messages.saveAllSuccess', { count: dirtyItems.length })
@@ -310,7 +310,7 @@ export default function StockTakingExecutePage() {
 
     setSubmitting(true)
     try {
-      const response = await stockTakingApi.postInventoryStockTakingsIdSubmit(id)
+      const response = await stockTakingApi.submitStockTaking(id)
       if (response.success && response.data) {
         Toast.success(t('stockTaking.execute.messages.submitSuccess'))
         setStockTaking(response.data)
@@ -331,7 +331,7 @@ export default function StockTakingExecutePage() {
 
     setSubmitting(true)
     try {
-      const response = await stockTakingApi.postInventoryStockTakingsIdCancel(id, {
+      const response = await stockTakingApi.cancelStockTaking(id, {
         reason: cancelReason || undefined,
       })
       if (response.success && response.data) {

@@ -29,8 +29,8 @@ import { getWarehouses } from '@/api/warehouses/warehouses'
 import { getProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
-  GetInventoryItemsAlertsLowStockParams,
-  GetInventoryItemsAlertsLowStockOrderDir,
+  ListInventoryBelowMinimumParams,
+  ListInventoryBelowMinimumOrderDir,
   HandlerWarehouseListResponse,
   HandlerProductListResponse,
   HandlerSetThresholdsRequest,
@@ -125,7 +125,7 @@ export default function StockAlertsPage() {
   // Fetch warehouses for filter dropdown
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page: 1,
         page_size: 100,
         status: 'enabled',
@@ -158,7 +158,7 @@ export default function StockAlertsPage() {
   // Fetch products for display names
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await productsApi.getCatalogProducts({ page: 1, page_size: 100 })
+      const response = await productsApi.listProducts({ page: 1, page_size: 100 })
       if (response.success && response.data) {
         const products = response.data as HandlerProductListResponse[]
         const map = new Map<string, string>()
@@ -178,17 +178,17 @@ export default function StockAlertsPage() {
   const fetchAlerts = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetInventoryItemsAlertsLowStockParams = {
+      const params: ListInventoryBelowMinimumParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         warehouse_id: warehouseFilter || undefined,
         order_by: state.sort.field || 'updated_at',
         order_dir: (state.sort.order === 'asc'
           ? 'asc'
-          : 'desc') as GetInventoryItemsAlertsLowStockOrderDir,
+          : 'desc') as ListInventoryBelowMinimumOrderDir,
       }
 
-      const response = await inventoryApi.getInventoryItemsAlertsLowStock(params)
+      const response = await inventoryApi.listInventoryBelowMinimum(params)
 
       if (response.success && response.data) {
         // Client-side filtering by search keyword (product name)
@@ -306,7 +306,7 @@ export default function StockAlertsPage() {
           max_quantity: values.max_quantity,
         }
 
-        const response = await inventoryApi.putInventoryThresholds(request)
+        const response = await inventoryApi.setThresholdsInventory(request)
 
         if (response.success) {
           Toast.success(t('alerts.messages.setThresholdSuccess'))

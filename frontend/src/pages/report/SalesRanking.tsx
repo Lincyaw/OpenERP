@@ -279,9 +279,10 @@ export default function SalesRankingPage() {
     }
 
     try {
+      // Note: API functions expect (body, params) - body is unused for GET requests
       const [productsRes, customersRes] = await Promise.allSettled([
-        reportsApi.getReportsSalesProductsRanking(params),
-        reportsApi.getReportsSalesCustomersRanking(params),
+        reportsApi.getReportProductSalesRanking(params),
+        reportsApi.getReportCustomerSalesRanking(params),
       ])
 
       if (productsRes.status === 'fulfilled' && productsRes.value.data) {

@@ -146,20 +146,20 @@ const createMockWarehouseListResponse = (warehouses = mockWarehouses) => ({
 
 describe('PurchaseOrderNewPage', () => {
   let mockPurchaseOrderApiInstance: {
-    postTradePurchaseOrders: ReturnType<typeof vi.fn>
-    putTradePurchaseOrdersId: ReturnType<typeof vi.fn>
+    createPurchaseOrder: ReturnType<typeof vi.fn>
+    updatePurchaseOrder: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
   }
 
   let mockProductApiInstance: {
-    getCatalogProducts: ReturnType<typeof vi.fn>
+    listProducts: ReturnType<typeof vi.fn>
   }
 
   let mockWarehouseApiInstance: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -168,20 +168,20 @@ describe('PurchaseOrderNewPage', () => {
 
     // Setup mock APIs
     mockPurchaseOrderApiInstance = {
-      postTradePurchaseOrders: vi.fn().mockResolvedValue({ success: true }),
-      putTradePurchaseOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      createPurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
+      updatePurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
     }
 
     mockProductApiInstance = {
-      getCatalogProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
+      listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
     mockWarehouseApiInstance = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
@@ -289,7 +289,7 @@ describe('PurchaseOrderNewPage', () => {
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
       await waitFor(() => {
-        expect(mockSupplierApiInstance.getPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockSupplierApiInstance.listSuppliers).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 50,
             status: 'active',
@@ -302,7 +302,7 @@ describe('PurchaseOrderNewPage', () => {
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
       await waitFor(() => {
-        expect(mockProductApiInstance.getCatalogProducts).toHaveBeenCalledWith(
+        expect(mockProductApiInstance.listProducts).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 50,
             status: 'active',
@@ -315,7 +315,7 @@ describe('PurchaseOrderNewPage', () => {
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.getPartnerWarehouses).toHaveBeenCalledWith(
+        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
             status: 'active',
@@ -325,7 +325,7 @@ describe('PurchaseOrderNewPage', () => {
     })
 
     it('should handle supplier API failure gracefully', async () => {
-      mockSupplierApiInstance.getPartnerSuppliers.mockRejectedValueOnce(new Error('Network error'))
+      mockSupplierApiInstance.listSuppliers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
@@ -336,7 +336,7 @@ describe('PurchaseOrderNewPage', () => {
     })
 
     it('should handle product API failure gracefully', async () => {
-      mockProductApiInstance.getCatalogProducts.mockRejectedValueOnce(new Error('Network error'))
+      mockProductApiInstance.listProducts.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<PurchaseOrderNewPage />, { route: '/trade/purchase/new' })
 
@@ -347,7 +347,7 @@ describe('PurchaseOrderNewPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.getPartnerWarehouses.mockRejectedValueOnce(
+      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -550,20 +550,20 @@ describe('PurchaseOrderNewPage', () => {
 
 describe('PurchaseOrderNewPage - Form Submission', () => {
   let mockPurchaseOrderApiInstance: {
-    postTradePurchaseOrders: ReturnType<typeof vi.fn>
-    putTradePurchaseOrdersId: ReturnType<typeof vi.fn>
+    createPurchaseOrder: ReturnType<typeof vi.fn>
+    updatePurchaseOrder: ReturnType<typeof vi.fn>
   }
 
   let mockSupplierApiInstance: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
   }
 
   let mockProductApiInstance: {
-    getCatalogProducts: ReturnType<typeof vi.fn>
+    listProducts: ReturnType<typeof vi.fn>
   }
 
   let mockWarehouseApiInstance: {
-    getPartnerWarehouses: ReturnType<typeof vi.fn>
+    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -571,20 +571,20 @@ describe('PurchaseOrderNewPage - Form Submission', () => {
     mockNavigate.mockClear()
 
     mockPurchaseOrderApiInstance = {
-      postTradePurchaseOrders: vi.fn().mockResolvedValue({ success: true }),
-      putTradePurchaseOrdersId: vi.fn().mockResolvedValue({ success: true }),
+      createPurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
+      updatePurchaseOrder: vi.fn().mockResolvedValue({ success: true }),
     }
 
     mockSupplierApiInstance = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
+      listSuppliers: vi.fn().mockResolvedValue(createMockSupplierListResponse()),
     }
 
     mockProductApiInstance = {
-      getCatalogProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
+      listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
     mockWarehouseApiInstance = {
-      getPartnerWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
+      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
     }
 
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
@@ -604,7 +604,7 @@ describe('PurchaseOrderNewPage - Form Submission', () => {
   })
 
   it('should handle API error on submission', async () => {
-    mockPurchaseOrderApiInstance.postTradePurchaseOrders.mockResolvedValueOnce({
+    mockPurchaseOrderApiInstance.createPurchaseOrder.mockResolvedValueOnce({
       success: false,
       error: { message: '服务器错误' },
     })

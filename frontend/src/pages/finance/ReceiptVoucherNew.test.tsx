@@ -122,13 +122,13 @@ const createMockReceiptVoucherResponse = () => ({
 
 describe('ReceiptVoucherNewPage', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceivables: ReturnType<typeof vi.fn>
-    postFinanceReceipts: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
+    createReceiptVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockCustomerApiInstance: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
-    getPartnerCustomersId: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
+    getCustomerById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -137,14 +137,14 @@ describe('ReceiptVoucherNewPage', () => {
 
     // Setup mock finance API
     mockFinanceApiInstance = {
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
-      postFinanceReceipts: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      createReceiptVoucher: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
     }
 
     // Setup mock customer API
     mockCustomerApiInstance = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
-      getPartnerCustomersId: vi.fn().mockResolvedValue({
+      listCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
+      getCustomerById: vi.fn().mockResolvedValue({
         success: true,
         data: mockCustomers[0],
       }),
@@ -265,7 +265,7 @@ describe('ReceiptVoucherNewPage', () => {
 
   describe('Error Handling', () => {
     it('should handle customer search API failure gracefully', async () => {
-      mockCustomerApiInstance.getPartnerCustomers.mockRejectedValueOnce(new Error('Network error'))
+      mockCustomerApiInstance.listCustomers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<ReceiptVoucherNewPage />, { route: '/finance/receipts/new' })
 
@@ -277,13 +277,13 @@ describe('ReceiptVoucherNewPage', () => {
 
 describe('ReceiptVoucherNewPage - Form Validation', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceivables: ReturnType<typeof vi.fn>
-    postFinanceReceipts: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
+    createReceiptVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockCustomerApiInstance: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
-    getPartnerCustomersId: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
+    getCustomerById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -291,13 +291,13 @@ describe('ReceiptVoucherNewPage - Form Validation', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
-      postFinanceReceipts: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      createReceiptVoucher: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
     }
 
     mockCustomerApiInstance = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
-      getPartnerCustomersId: vi.fn().mockResolvedValue({
+      listCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
+      getCustomerById: vi.fn().mockResolvedValue({
         success: true,
         data: mockCustomers[0],
       }),
@@ -345,13 +345,13 @@ describe('ReceiptVoucherNewPage - Form Validation', () => {
 
 describe('ReceiptVoucherNewPage - Customer Receivables Summary', () => {
   let mockFinanceApiInstance: {
-    getFinanceReceivables: ReturnType<typeof vi.fn>
-    postFinanceReceipts: ReturnType<typeof vi.fn>
+    listFinanceReceivables: ReturnType<typeof vi.fn>
+    createReceiptVoucher: ReturnType<typeof vi.fn>
   }
 
   let mockCustomerApiInstance: {
-    getPartnerCustomers: ReturnType<typeof vi.fn>
-    getPartnerCustomersId: ReturnType<typeof vi.fn>
+    listCustomers: ReturnType<typeof vi.fn>
+    getCustomerById: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -359,13 +359,13 @@ describe('ReceiptVoucherNewPage - Customer Receivables Summary', () => {
     mockNavigate.mockClear()
 
     mockFinanceApiInstance = {
-      getFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
-      postFinanceReceipts: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
+      listFinanceReceivables: vi.fn().mockResolvedValue(createMockReceivablesResponse()),
+      createReceiptVoucher: vi.fn().mockResolvedValue(createMockReceiptVoucherResponse()),
     }
 
     mockCustomerApiInstance = {
-      getPartnerCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
-      getPartnerCustomersId: vi.fn().mockResolvedValue({
+      listCustomers: vi.fn().mockResolvedValue(createMockCustomerSearchResponse()),
+      getCustomerById: vi.fn().mockResolvedValue({
         success: true,
         data: mockCustomers[0],
       }),

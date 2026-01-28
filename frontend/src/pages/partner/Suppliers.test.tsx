@@ -84,11 +84,11 @@ const createMockListResponse = (suppliers = mockSuppliers, total = mockSuppliers
 
 describe('SuppliersPage', () => {
   let mockApi: {
-    getPartnerSuppliers: ReturnType<typeof vi.fn>
+    listSuppliers: ReturnType<typeof vi.fn>
     postPartnerSuppliersIdActivate: ReturnType<typeof vi.fn>
     postPartnerSuppliersIdDeactivate: ReturnType<typeof vi.fn>
     postPartnerSuppliersIdBlock: ReturnType<typeof vi.fn>
-    deletePartnerSuppliersId: ReturnType<typeof vi.fn>
+    deleteSupplier: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -96,7 +96,7 @@ describe('SuppliersPage', () => {
 
     // Setup mock API with default implementations
     mockApi = {
-      getPartnerSuppliers: vi.fn().mockResolvedValue(createMockListResponse()),
+      listSuppliers: vi.fn().mockResolvedValue(createMockListResponse()),
       postPartnerSuppliersIdActivate: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockSuppliers[1] }),
@@ -106,7 +106,7 @@ describe('SuppliersPage', () => {
       postPartnerSuppliersIdBlock: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockSuppliers[0] }),
-      deletePartnerSuppliersId: vi.fn().mockResolvedValue({ success: true }),
+      deleteSupplier: vi.fn().mockResolvedValue({ success: true }),
     }
 
     vi.mocked(suppliersApi.getSuppliers).mockReturnValue(
@@ -120,7 +120,7 @@ describe('SuppliersPage', () => {
 
       // Wait for data to load
       await waitFor(() => {
-        expect(mockApi.getPartnerSuppliers).toHaveBeenCalled()
+        expect(mockApi.listSuppliers).toHaveBeenCalled()
       })
 
       // Verify supplier codes are displayed
@@ -195,7 +195,7 @@ describe('SuppliersPage', () => {
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerSuppliers).toHaveBeenCalledWith(
+        expect(mockApi.listSuppliers).toHaveBeenCalledWith(
           expect.objectContaining({
             page: 1,
             page_size: 20,
@@ -243,7 +243,7 @@ describe('SuppliersPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when API fails', async () => {
-      mockApi.getPartnerSuppliers.mockRejectedValueOnce(new Error('Network error'))
+      mockApi.listSuppliers.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 
@@ -253,12 +253,12 @@ describe('SuppliersPage', () => {
     })
 
     it('should handle empty supplier list gracefully', async () => {
-      mockApi.getPartnerSuppliers.mockResolvedValueOnce(createMockListResponse([], 0))
+      mockApi.listSuppliers.mockResolvedValueOnce(createMockListResponse([], 0))
 
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerSuppliers).toHaveBeenCalled()
+        expect(mockApi.listSuppliers).toHaveBeenCalled()
       })
 
       // Page should render without errors
@@ -310,7 +310,7 @@ describe('SuppliersPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.getPartnerSuppliers.mockResolvedValueOnce(
+      mockApi.listSuppliers.mockResolvedValueOnce(
         createMockListResponse([detailedSupplier], 1)
       )
 
@@ -339,7 +339,7 @@ describe('SuppliersPage', () => {
         // No phone, email, province, city, rating, payment_term_days
       }
 
-      mockApi.getPartnerSuppliers.mockResolvedValueOnce(
+      mockApi.listSuppliers.mockResolvedValueOnce(
         createMockListResponse([minimalSupplier], 1)
       )
 
@@ -357,11 +357,11 @@ describe('SuppliersPage', () => {
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 
       await waitFor(() => {
-        expect(mockApi.getPartnerSuppliers).toHaveBeenCalled()
+        expect(mockApi.listSuppliers).toHaveBeenCalled()
       })
 
       // Verify API was called with expected parameters
-      expect(mockApi.getPartnerSuppliers).toHaveBeenCalledWith(
+      expect(mockApi.listSuppliers).toHaveBeenCalledWith(
         expect.objectContaining({
           page: 1,
           page_size: 20,

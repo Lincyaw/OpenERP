@@ -160,7 +160,7 @@ export default function ReceivablesPage() {
         overdue: overdueOnly || undefined,
       }
 
-      const response = await api.getFinanceReceivables(params)
+      const response = await api.listFinanceReceivablesReceivables(params)
 
       if (response.success && response.data) {
         setReceivableList(response.data as ReceivableRow[])
@@ -194,7 +194,7 @@ export default function ReceivablesPage() {
   const fetchSummary = useCallback(async () => {
     setSummaryLoading(true)
     try {
-      const response = await api.getFinanceReceivablesSummary()
+      const response = await api.getFinanceReceivableReceivableSummary()
       if (response.success && response.data) {
         setSummary(response.data)
       }

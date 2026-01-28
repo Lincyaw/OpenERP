@@ -106,7 +106,7 @@ const createMockOrderDetailResponse = (order = createMockOrderDetail()) => ({
 
 describe('SalesOrderDetailPage', () => {
   let mockSalesOrderApiInstance: {
-    getTradeSalesOrdersId: ReturnType<typeof vi.fn>
+    getSalesOrderById: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdConfirm: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdShip: ReturnType<typeof vi.fn>
     postTradeSalesOrdersIdComplete: ReturnType<typeof vi.fn>
@@ -118,7 +118,7 @@ describe('SalesOrderDetailPage', () => {
     mockNavigate.mockClear()
 
     mockSalesOrderApiInstance = {
-      getTradeSalesOrdersId: vi.fn().mockResolvedValue(createMockOrderDetailResponse()),
+      getSalesOrderById: vi.fn().mockResolvedValue(createMockOrderDetailResponse()),
       postTradeSalesOrdersIdConfirm: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdShip: vi.fn().mockResolvedValue({ success: true }),
       postTradeSalesOrdersIdComplete: vi.fn().mockResolvedValue({ success: true }),
@@ -282,7 +282,7 @@ describe('SalesOrderDetailPage', () => {
 
   describe('Status-Based Action Buttons', () => {
     it('should show edit, confirm, cancel buttons for draft orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('draft'))
       )
 
@@ -299,7 +299,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should show ship and cancel buttons for confirmed orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('confirmed'))
       )
 
@@ -313,7 +313,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should show complete button for shipped orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('shipped'))
       )
 
@@ -327,7 +327,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should not show action buttons for completed orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('completed'))
       )
 
@@ -344,7 +344,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should not show action buttons for cancelled orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('cancelled'))
       )
 
@@ -370,7 +370,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should display confirmed timeline item for confirmed orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('confirmed'))
       )
 
@@ -382,7 +382,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should display shipped timeline item for shipped orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('shipped'))
       )
 
@@ -394,7 +394,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should display completed timeline item for completed orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('completed'))
       )
 
@@ -406,7 +406,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should display cancelled timeline item with reason for cancelled orders', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('cancelled'))
       )
 
@@ -452,7 +452,7 @@ describe('SalesOrderDetailPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast and navigate to list when order not found', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce({
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce({
         success: false,
         error: { message: '订单不存在' },
       })
@@ -467,7 +467,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should show error toast and navigate to list when API fails', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockRejectedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockRejectedValueOnce(
         new Error('Network error')
       )
 
@@ -486,7 +486,7 @@ describe('SalesOrderDetailPage', () => {
       renderWithProviders(<SalesOrderDetailPage />, { route: '/trade/sales/order-001' })
 
       await waitFor(() => {
-        expect(mockSalesOrderApiInstance.getTradeSalesOrdersId).toHaveBeenCalledWith('order-001')
+        expect(mockSalesOrderApiInstance.getSalesOrderById).toHaveBeenCalledWith('order-001')
       })
     })
   })
@@ -513,7 +513,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should open ship modal when clicking ship button', async () => {
-      mockSalesOrderApiInstance.getTradeSalesOrdersId.mockResolvedValueOnce(
+      mockSalesOrderApiInstance.getSalesOrderById.mockResolvedValueOnce(
         createMockOrderDetailResponse(createMockOrderDetail('confirmed'))
       )
 

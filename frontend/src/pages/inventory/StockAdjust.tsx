@@ -156,7 +156,7 @@ export default function StockAdjustPage() {
   const fetchWarehouses = useCallback(async () => {
     setLoadingWarehouses(true)
     try {
-      const response = await warehousesApi.getPartnerWarehouses({
+      const response = await warehousesApi.listWarehouses({
         page: 1,
         page_size: 100,
         status: 'enabled',
@@ -181,7 +181,7 @@ export default function StockAdjustPage() {
   const fetchProducts = useCallback(async () => {
     setLoadingProducts(true)
     try {
-      const response = await productsApi.getCatalogProducts({
+      const response = await productsApi.listProducts({
         page: 1,
         page_size: 100,
         status: 'active',
@@ -211,7 +211,7 @@ export default function StockAdjustPage() {
 
     setLoadingInventory(true)
     try {
-      const response = await inventoryApi.getInventoryItemsLookup({
+      const response = await inventoryApi.listInventories({
         warehouse_id: warehouseId,
         product_id: productId,
       })
@@ -249,7 +249,7 @@ export default function StockAdjustPage() {
 
   // Handle form submission
   const onSubmit = async (data: StockAdjustFormData) => {
-    const response = await inventoryApi.postInventoryStockAdjust({
+    const response = await inventoryApi.adjustStockInventory({
       warehouse_id: data.warehouse_id,
       product_id: data.product_id,
       actual_quantity: data.actual_quantity,

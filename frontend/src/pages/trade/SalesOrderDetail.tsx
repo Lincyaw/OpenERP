@@ -63,7 +63,7 @@ export default function SalesOrderDetailPage() {
 
     setLoading(true)
     try {
-      const response = await salesOrderApi.getTradeSalesOrdersId(id)
+      const response = await salesOrderApi.getSalesOrderById(id)
       if (response.success && response.data) {
         setOrder(response.data)
       } else {
@@ -93,7 +93,7 @@ export default function SalesOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesOrderApi.postTradeSalesOrdersIdConfirm(order.id!, {})
+          await salesOrderApi.confirmSalesOrder(order.id!, {})
           Toast.success(t('orderDetail.messages.confirmSuccess'))
           fetchOrder()
         } catch (error) {
@@ -117,7 +117,7 @@ export default function SalesOrderDetailPage() {
       if (!order?.id) return
 
       try {
-        await salesOrderApi.postTradeSalesOrdersIdShip(order.id, {
+        await salesOrderApi.shipSalesOrder(order.id, {
           warehouse_id: warehouseId,
         })
         Toast.success(t('orderDetail.messages.shipSuccess'))
@@ -136,7 +136,7 @@ export default function SalesOrderDetailPage() {
     if (!order?.id) return
     setActionLoading(true)
     try {
-      await salesOrderApi.postTradeSalesOrdersIdComplete(order.id)
+      await salesOrderApi.completeSalesOrder(order.id)
       Toast.success(t('orderDetail.messages.completeSuccess'))
       fetchOrder()
     } catch {
@@ -158,7 +158,7 @@ export default function SalesOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesOrderApi.postTradeSalesOrdersIdCancel(order.id!, {
+          await salesOrderApi.cancelSalesOrder(order.id!, {
             reason: t('common.userCancel'),
           })
           Toast.success(t('orderDetail.messages.cancelSuccess'))

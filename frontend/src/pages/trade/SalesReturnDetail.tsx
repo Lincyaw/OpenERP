@@ -86,7 +86,7 @@ export default function SalesReturnDetailPage() {
 
     setLoading(true)
     try {
-      const response = await salesReturnApi.getTradeSalesReturnsId(id)
+      const response = await salesReturnApi.getSalesReturnById(id)
       if (response.success && response.data) {
         setReturnData(response.data)
       } else {
@@ -116,7 +116,7 @@ export default function SalesReturnDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesReturnApi.postTradeSalesReturnsIdSubmit(returnData.id!)
+          await salesReturnApi.submitSalesReturn(returnData.id!)
           Toast.success(t('salesReturn.messages.submitSuccess'))
           fetchReturn()
         } catch {
@@ -133,7 +133,7 @@ export default function SalesReturnDetailPage() {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdApprove(returnData.id, { note: approvalNote })
+      await salesReturnApi.approveSalesReturn(returnData.id, { note: approvalNote })
       Toast.success(t('salesReturn.messages.approveSuccess'))
       setApproveModalVisible(false)
       setApprovalNote('')
@@ -154,7 +154,7 @@ export default function SalesReturnDetailPage() {
     }
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdReject(returnData.id, { reason: rejectReason })
+      await salesReturnApi.rejectSalesReturn(returnData.id, { reason: rejectReason })
       Toast.success(t('salesReturn.messages.rejectSuccess'))
       setRejectModalVisible(false)
       setRejectReason('')
@@ -177,7 +177,7 @@ export default function SalesReturnDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesReturnApi.postTradeSalesReturnsIdComplete(returnData.id!, {})
+          await salesReturnApi.completeSalesReturn(returnData.id!, {})
           Toast.success(t('salesReturn.messages.completeSuccess'))
           fetchReturn()
         } catch {
@@ -194,7 +194,7 @@ export default function SalesReturnDetailPage() {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdReceive(returnData.id!, {})
+      await salesReturnApi.receiveSalesReturn(returnData.id!, {})
       Toast.success(t('salesReturn.messages.receiveSuccess'))
       fetchReturn()
     } catch {
@@ -209,7 +209,7 @@ export default function SalesReturnDetailPage() {
     if (!returnData?.id) return
     setActionLoading(true)
     try {
-      await salesReturnApi.postTradeSalesReturnsIdCancel(returnData.id, {
+      await salesReturnApi.cancelSalesReturn(returnData.id, {
         reason: cancelReason || t('common.userCancel'),
       })
       Toast.success(t('salesReturn.messages.cancelSuccess'))

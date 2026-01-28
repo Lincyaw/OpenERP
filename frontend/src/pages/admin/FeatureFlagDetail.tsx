@@ -17,7 +17,7 @@ import {
 } from '@douyinfe/semi-ui-19'
 import { IconEdit, IconArrowLeft, IconRefresh, IconChevronRight } from '@douyinfe/semi-icons'
 import { Container } from '@/components/common/layout'
-import { getFeatureFlags } from '@/api/feature-flags'
+import { listFeatureFlagFlags } from '@/api/feature-flags'
 import type {
   FeatureFlag,
   FlagType,
@@ -94,7 +94,7 @@ export default function FeatureFlagDetailPage() {
   const { t } = useTranslation('admin')
   const { key } = useParams<{ key: string }>()
   const navigate = useNavigate()
-  const api = useMemo(() => getFeatureFlags(), [])
+  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [flag, setFlag] = useState<FeatureFlag | null>(null)
