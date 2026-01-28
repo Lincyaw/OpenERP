@@ -13,7 +13,8 @@ export function getApiBaseUrl(): string {
   if (frontendUrl.includes('erp-frontend')) {
     return 'http://erp-backend:8080'
   }
-  return frontendUrl.replace(':3000', ':8080').replace(':80', ':8080')
+  // Replace port 3000 with 8080, but handle the case where :80 is part of :8080
+  return frontendUrl.replace(/:3000$/, ':8080').replace(/:80$/, ':8080')
 }
 
 export const API_BASE_URL = getApiBaseUrl()

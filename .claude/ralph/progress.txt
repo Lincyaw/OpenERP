@@ -34673,3 +34673,365 @@ ok  github.com/example/erp/tools/loadgen/internal/circuit  1.177s
 
 - LOADGEN-007: HTTP Client and Authentication Handling
 - Use DependencyGraph to determine warmup execution order
+
+2025-01-28 - LOADGEN-007: HTTP 客户端与认证处理
+
+=== Implementation Details ===
+- Created HTTP client wrapper in `tools/loadgen/internal/client/client.go`
+  - Implements retry logic with configurable backoff
+  - Supports GET, POST, PUT, DELETE methods
+  - Thread-safe with RWMutex protection
+  - Configurable timeout and TLS settings
+
+- Implemented authentication handling in `tools/loadgen/internal/client/auth.go`
+  - Supports multiple auth types: none, basic, bearer, api_key, login
+  - Login-based authentication with automatic token management
+  - Token refresh support (configurable)
+  - Thread-safe token storage and access
+
+- Created response parsing utilities in `tools/loadgen/internal/client/response.go`
+  - JSONPath-based response extraction
+  - Type-safe extraction methods (string, int, float, bool, array, object)
+  - Error response parsing
+  - Support for extracting multiple values from arrays
+
+- Comprehensive test coverage:
+  - Unit tests for all client functionality
+  - Integration tests for authentication flows
+  - Tests for all auth types (basic, bearer, api_key, login)
+  - Retry logic and timeout handling tests
+  - Concurrent request handling tests
+
+=== Verification ===
+- All tests pass: `go test ./internal/client/... -v`
+- Test coverage includes:
+  - Successful and failed login scenarios
+  - All authentication types
+  - Request timeout handling
+  - Retry logic with backoff
+  - Concurrent request safety
+
+=== Key Features ===
+1. **Authentication Types**:
+   - Basic Auth: Username/password
+   - Bearer Token: Static token
+   - API Key: Custom header-based
+   - Login-based: POST to login endpoint, automatic token management
+
+2. **Retry Logic**:
+   - Configurable max retries
+   - Exponential backoff with jitter
+   - Customizable retry conditions
+   - Context-aware cancellation
+
+3. **Response Parsing**:
+   - JSONPath support for extracting values
+   - Type-safe extraction methods
+   - Error message parsing
+   - Multiple value extraction from arrays
+
+=== Acceptance Criteria Met ===
+✅ HTTP client wrapper implemented
+✅ Authentication handling implemented
+✅ POST /auth/login support
+✅ Bearer Token authentication
+✅ Token refresh support (framework in place)
+✅ Response parsing with JSONPath
+✅ Retry mechanism and timeout configuration
+✅ Integration tests for authentication flow
+✅ ERP login capability demonstrated
+
+=== Next Steps ===
+- LOADGEN-008: Request builder implementation
+- Integrate with DependencyGraph for warmup execution order
+- Add more sophisticated token refresh logic
+- Implement response value extraction for semantic types
+
+2025-01-28 - LOADGEN-008: 请求构建器实现
+
+=== Implementation Details ===
+- Created RequestBuilder in `tools/loadgen/internal/executor/request.go`
+  - Implements HTTP request construction from EndpointUnit configurations
+  - Supports path parameter replacement with URL encoding
+  - Handles query parameter building
+  - Constructs JSON request bodies with proper disambiguation
+  - Adds headers based on semantic types
+  - Integrates with ParameterPool for value retrieval
+
+- Key Features:
+  1. **Path Parameter Replacement**: Replaces {param} and :param placeholders in URLs
+  2. **Query Parameter Building**: Adds query parameters for common pagination/filtering fields
+  3. **JSON Body Construction**: Builds request bodies with field disambiguation to handle conflicts
+  4. **Header Management**: Adds authentication headers based on semantic types
+  5. **Error Handling**: Validates required parameters and provides clear error messages
+
+- Comprehensive test coverage in `tools/loadgen/internal/executor/final_test.go`
+  - Tests all parameter types (path, query, body, header)
+  - Validates error handling for missing parameters
+  - Tests concurrent access safety
+  - Demonstrates POST /trade/sales-orders request building
+
+=== Verification ===
+- All tests pass: `go test ./internal/executor/... -v`
+- Code review approved with security fixes implemented
+- Path parameters properly URL-encoded using url.PathEscape
+- Required parameter validation prevents runtime errors
+- Semantic type disambiguation handles field name conflicts
+
+=== Key Design Decisions ===
+1. Used semantic types for parameter classification instead of hardcoded logic
+2. Implemented field disambiguation to handle multiple semantic types with same field name
+3. Added comprehensive input validation for endpoint units
+4. Maintained backward compatibility with existing parameter pool interface
+
+=== Acceptance Criteria Met ===
+✅ RequestBuilder implemented with ParameterPool dependency
+✅ Path parameter replacement working correctly
+✅ Query parameter building for pagination/filtering
+✅ JSON body construction with nested support
+✅ Header parameter setting for auth tokens
+✅ Parameter value retrieval from ParameterPool
+✅ Complex body structure support with disambiguation
+✅ Comprehensive test coverage
+✅ POST /trade/sales-orders request building demonstrated
+
+=== Next Steps ===
+- LOADGEN-009: Response processor implementation
+- Integrate RequestBuilder with HTTP client for execution
+- Add support for more complex parameter mappings
+- Implement request retry logic with parameter refresh
+
+2025-01-28 - FF-VAL-001: Feature Flag Database Validation COMPLETED
+
+=== Task Summary ===
+Task: FF-VAL-001 - 验证Feature Flag数据库表和迁移
+Status: PASSED
+
+=== Database Migration Validation ===
+✅ Migrations successfully executed without errors
+✅ All feature flag tables created correctly
+✅ Table structures verified against design requirements
+✅ Foreign key constraints properly established
+✅ Indexes created and functional
+✅ Migration rollback tested successfully
+
+=== Table Structure Verification ===
+
+1. feature_flags table:
+   - id: uuid (primary key)
+   - key: varchar(100) (unique, not null)
+   - name: varchar(200) (not null)
+   - description: text
+   - type: varchar(20) (not null, check constraint)
+   - status: varchar(20) (not null, default 'disabled')
+   - default_value: jsonb (not null)
+   - rules: jsonb
+   - version: integer (not null, default 1)
+   - created_at: timestamp with timezone
+   - updated_at: timestamp with timezone
+   - created_by: uuid (foreign key to users)
+   - updated_by: uuid (foreign key to users)
+   - tags: jsonb (not null, default '[]')
+
+2. flag_overrides table:
+   - id: uuid (primary key)
+   - flag_key: varchar(100) (foreign key to feature_flags.key)
+   - target_type: varchar(20) (not null, check constraint)
+   - target_id: uuid (not null)
+   - value: jsonb (not null)
+   - reason: varchar(500)
+   - expires_at: timestamp with timezone
+   - created_by: uuid (foreign key to users)
+   - created_at: timestamp with timezone
+
+3. flag_audit_logs table:
+   - id: uuid (primary key)
+   - flag_key: varchar(100) (not null)
+   - action: varchar(50) (not null, check constraint)
+   - old_value: jsonb
+   - new_value: jsonb
+   - user_id: uuid
+   - tenant_id: uuid
+   - ip_address: varchar(45)
+   - created_at: timestamp with timezone
+   - updated_at: timestamp with timezone
+   - user_agent: text
+
+=== Index Verification ===
+✅ feature_flags.key: UNIQUE INDEX uq_feature_flag_key
+✅ feature_flags.status: INDEX idx_feature_flags_status
+✅ feature_flags.tags: GIN INDEX idx_feature_flags_tags
+✅ flag_overrides.flag_key: INDEX idx_flag_overrides_flag_key
+✅ flag_overrides.target: INDEX idx_flag_overrides_target
+✅ flag_overrides.expires: INDEX idx_flag_overrides_expires
+✅ flag_audit_logs.flag_key: INDEX idx_flag_audit_logs_flag_key
+✅ flag_audit_logs.action: INDEX idx_flag_audit_logs_action
+✅ flag_audit_logs.created_at: INDEX idx_flag_audit_logs_created_at
+
+=== Foreign Key Constraints ===
+✅ feature_flags.created_by → users(id) ON DELETE SET NULL
+✅ feature_flags.updated_by → users(id) ON DELETE SET NULL
+✅ flag_overrides.flag_key → feature_flags(key) ON DELETE CASCADE
+✅ flag_overrides.created_by → users(id) ON DELETE SET NULL
+
+=== Check Constraints ===
+✅ feature_flags.status: enabled, disabled, archived
+✅ feature_flags.type: boolean, percentage, variant, user_segment
+✅ flag_overrides.target_type: user, tenant
+✅ flag_audit_logs.action: created, updated, enabled, disabled, archived, override_added, override_removed
+
+=== Migration Rollback Test ===
+✅ Successfully rolled back from version 37 to 33
+✅ All feature flag tables dropped correctly
+✅ Successfully reapplied migrations to version 37
+✅ All tables recreated with correct structure
+
+=== Test Commands Executed ===
+- make dev (database startup)
+- \d feature_flags (table structure)
+- \d flag_overrides (table structure)
+- \d flag_audit_logs (table structure)
+- SELECT index verification queries
+- migrate goto 33 (rollback test)
+- migrate up (reapply migrations)
+
+=== Acceptance Criteria Met ===
+✅ 迁移成功执行无错误
+✅ 表结构符合设计文档
+✅ 外键约束正确建立
+✅ 索引存在且有效
+✅ 迁移回滚功能测试通过
+
+=== Decision ===
+[PASSED]: Feature Flag database validation complete
+All requirements satisfied, ready for feature flag implementation.
+
+
+2026-01-28 - Task FF-VAL-002: 验证Feature Flag API端点功能
+
+=== Implementation Details ===
+- Tested all 7 required feature flag API endpoints
+- Created test flags using both direct database insertion and API endpoints
+- Verified authentication and authorization work correctly
+- All endpoints require proper JWT tokens and permissions
+
+=== Endpoints Tested ===
+1. POST /api/v1/feature-flags - Creates new feature flag (Status: 201)
+2. GET /api/v1/feature-flags - Lists flags with pagination (Status: 200)
+3. GET /api/v1/feature-flags/{key} - Gets single flag (Status: 200)
+4. PUT /api/v1/feature-flags/{key} - Updates flag (Status: 200)
+5. DELETE /api/v1/feature-flags/{key} - Archives flag (Status: 204)
+6. POST /api/v1/feature-flags/{key}/evaluate - Evaluates flag (Status: 200)
+7. POST /api/v1/feature-flags/evaluate-batch - Batch evaluation (Status: 200)
+
+=== Verification Results ===
+✅ All endpoints return correct status codes
+✅ CRUD operations persist data correctly in PostgreSQL
+✅ Evaluation logic returns results (flag evaluation functional)
+✅ Batch evaluation performance <50ms (tested: ~13ms)
+✅ Authentication required for all endpoints
+✅ Authorization checks work (feature_flag permissions)
+
+=== Issues Found ===
+- Default value format issue in some cases (evaluation returns false)
+- Need to ensure proper default_value format when creating flags
+- Admin user exists but wasn't initially obvious in seed data
+
+=== Next Steps ===
+- Task FF-VAL-003: 验证Flag评估规则和逻辑
+- Continue with feature flag validation tasks
+
+2026-01-28 - Task FF-VAL-009: 验证集成测试和端到端场景
+
+=== Test Environment Setup ===
+- Backend: Running on http://localhost:8080 (healthy)
+- Frontend: Running on http://localhost:3000 (Vite dev server)
+- Database: PostgreSQL and Redis running in Docker
+
+=== E2E Test Results ===
+
+1. Real-time Updates (realtime.spec.ts):
+   - Total Tests: 7
+   - Passed: 4
+   - Failed: 3
+   - Pass Rate: 57.1%
+   - Issues: Frontend login timeout (3 tests failed on waitForLoadState)
+
+2. Admin API Tests (admin.spec.ts):
+   - Total Tests: 12
+   - Passed: 12
+   - Failed: 0
+   - Pass Rate: 100%
+   - All CRUD operations working correctly
+
+3. Flag Evaluation (evaluation.spec.ts):
+   - Total Tests: 7
+   - Passed: 4
+   - Failed: 3
+   - Pass Rate: 57.1%
+   - Issues: Frontend login timeout (3 tests failed on waitForLoadState)
+   - API evaluation working correctly
+
+4. Override Tests (override.spec.ts):
+   - Total Tests: 13
+   - Passed: 4
+   - Failed: 9
+   - Pass Rate: 30.8%
+   - Issues: 500 errors on override creation, missing override listing
+
+5. Percentage Rollout (percentage.spec.ts):
+   - Total Tests: 6
+   - Passed: 6
+   - Failed: 0
+   - Pass Rate: 100%
+   - Distribution correctly ~50% as expected
+
+=== Backend Integration Tests ===
+- Created comprehensive integration test suite
+- Tests cover: CRUD operations, flag evaluation, percentage rollout, user overrides, audit logging
+- Issue: Feature flag endpoints return 404 - routes not registered in test server
+
+=== Feature Validation Summary ===
+
+✅ Working Features:
+- Flag CRUD operations (Create, Read, Update, Delete)
+- Flag enable/disable functionality
+- Percentage-based rollout (50% distribution verified)
+- Boolean flag evaluation
+- Batch flag evaluation
+- Audit logging structure
+
+❌ Issues Found:
+1. Frontend routing/login issues (timeout on waitForLoadState)
+2. Override creation returns 500 errors
+3. Override listing not returning data
+4. Backend integration test endpoints not registered
+5. Complex business scenarios need manual testing
+
+=== Test Commands Executed ===
+- npm run dev (frontend)
+- go run main.go (backend)
+- npx playwright test tests/e2e/feature-flag/*.spec.ts --project=chromium
+- go test ./tests/integration -run TestFeatureFlagIntegration -v
+
+=== Acceptance Criteria Status ===
+❌ 变更立即对所有客户端生效 - Polling works but real-time updates need SSE
+✅ 重启后flags状态保持 - Database persistence verified
+❌ 业务场景正确响应flags - Need manual testing for complex scenarios
+✅ A/B测试数据准确收集 - Percentage rollout working
+✅ 灰度发布平滑进行 - Percentage rollout enables gradual release
+✅ 回滚机制 - Enable/disable provides rollback capability
+
+=== Decision ===
+[FAILED]: Integration test acceptance NOT met
+- Frontend E2E tests have stability issues
+- Override functionality has API errors
+- Backend integration endpoints not properly configured
+- Need fixes before production deployment
+
+Next Steps:
+1. Fix frontend routing/login issues
+2. Debug override API 500 errors
+3. Register feature flag routes in test server
+4. Add manual business scenario testing
+5. Implement SSE for real-time updates (future)

@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 import { login, getApiToken } from '../utils/auth'
-import { API_BASE_URL } from './api-utils'
+import { getApiBaseUrl } from './api-utils'
+
+const API_BASE_URL = getApiBaseUrl()
 
 /**
  * FF-INT-001: Feature Flag Real-time Updates E2E Tests

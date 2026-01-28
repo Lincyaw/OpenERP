@@ -10197,5 +10197,814 @@
       "src/pages/system/Roles.tsx",
       "src/pages/system/Users.tsx"
     ]
+  },
+  {
+    "id": "LOADGEN-VAL-001",
+    "story": "验证 Load Generator 构建成功",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "执行命令: make loadgen-build",
+      "验证二进制文件生成在 tools/loadgen/bin/loadgen",
+      "验证文件大小 > 10MB (包含所有依赖)",
+      "执行 ./bin/loadgen --help 显示帮助信息",
+      "帮助信息包含: -config, -duration, -concurrency, -qps 参数说明"
+    ],
+    "passCriteria": [
+      "构建命令返回 exit code 0",
+      "二进制文件存在且可执行",
+      "帮助信息完整显示所有参数"
+    ],
+    "testCommands": [
+      "make loadgen-build",
+      "ls -la tools/loadgen/bin/loadgen",
+      "./bin/loadgen --help"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-002",
+    "story": "验证基础配置加载和验证",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "创建最小配置文件 configs/test.yaml",
+      "包含: openapi spec, baseUrl, auth token, execution settings",
+      "测试配置加载: ./bin/loadgen -config configs/test.yaml --validate-config",
+      "测试无效配置: 缺少必填字段时返回错误",
+      "测试配置覆盖: CLI参数覆盖配置文件中的值"
+    ],
+    "passCriteria": [
+      "有效配置加载成功",
+      "无效配置返回具体错误信息",
+      "CLI参数正确覆盖配置值"
+    ],
+    "testCommands": [
+      "cat > configs/test.yaml << 'EOF'\napiVersion: v1\nopenapi: ../backend/docs/swagger.yaml\nbaseUrl: http://localhost:8080\nauth:\n  type: bearer\n  token: test-token\nexecution:\n  duration: 60s\n  concurrency: 10\n  qps: 100\nEOF",
+      "./bin/loadgen -config configs/test.yaml --validate-config",
+      "./bin/loadgen -config configs/test.yaml -duration 30s --dry-run"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-003",
+    "story": "验证速率限制器功能",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试 TokenBucketLimiter 基础功能",
+      "验证每秒请求数精确度 (±2%)",
+      "测试突发流量处理能力",
+      "验证动态速率调整 (SetRate)",
+      "测试统计信息准确性"
+    ],
+    "passCriteria": [
+      "实际QPS与目标QPS误差 < 2%",
+      "突发请求正确处理",
+      "动态调整后立即生效",
+      "统计数据准确记录"
+    ],
+    "testCommands": [
+      "./bin/loadgen -config configs/test.yaml -qps 50 -duration 30s --mode=constant",
+      "./bin/loadgen -config configs/test.yaml -qps 100 -burst 20 -duration 30s",
+      "curl -s http://localhost:9090/metrics | grep loadgen_requests_total"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-004",
+    "story": "验证流量整形器模式",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试 SineWaveShaper: 60秒周期，±50%振幅",
+      "验证正弦波QPS曲线平滑变化",
+      "测试 SpikeShaper: 突发尖峰模式",
+      "测试 StepShaper: 阶梯式增长模式",
+      "测试 CustomShaper: 自定义曲线"
+    ],
+    "passCriteria": [
+      "正弦波模式QPS变化符合数学函数",
+      "尖峰模式在指定时间产生10x流量",
+      "阶梯模式每30秒增加20% QPS",
+      "自定义模式按配置文件执行"
+    ],
+    "testCommands": [
+      "./bin/loadgen --shaper=sine --period 60s --amplitude 0.5 -duration 120s",
+      "./bin/loadgen --shaper=spike --interval 30s --multiplier 10 -duration 90s",
+      "./bin/loadgen --shaper=step --step-duration 30s --step-increase 0.2 -duration 120s"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-005",
+    "story": "验证负载控制器自适应功能",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试P95延迟超标时自动降速",
+      "验证WorkerPool大小自动调整",
+      "测试最优工作者数计算算法",
+      "验证100ms更新周期",
+      "测试恢复后自动提速"
+    ],
+    "passCriteria": [
+      "P95 > 500ms时QPS在10秒内下降 > 20%",
+      "Worker数量根据负载动态调整",
+      "延迟恢复后QPS逐步提升",
+      "调整周期严格按100ms执行"
+    ],
+    "testCommands": [
+      "./bin/loadgen --adaptive-control --latency-threshold 500ms -duration 300s",
+      "./bin/loadgen --auto-workers --min-workers 5 --max-workers 50 -duration 180s"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-006",
+    "story": "验证背压处理机制",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试错误率阈值检测 (默认10%)",
+      "测试P99延迟阈值检测 (默认1s)",
+      "验证背压策略: drop/reduce/pause/circuit",
+      "测试状态机转换: normal→warning→critical→recovery",
+      "验证恢复检测周期 (默认30s)"
+    ],
+    "passCriteria": [
+      "错误率>10%时触发背压",
+      "P99>1s时触发背压",
+      "每种策略按配置正确执行",
+      "状态转换符合预期",
+      "30秒后尝试恢复"
+    ],
+    "testCommands": [
+      "./bin/loadgen --backpressure=drop --error-threshold 0.1 -duration 120s",
+      "./bin/loadgen --backpressure=circuit --latency-threshold 1000ms -duration 120s",
+      "curl -s http://localhost:9090/metrics | grep loadgen_backpressure_state"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-007",
+    "story": "验证Prometheus指标导出",
+    "priority": "medium",
+    "category": "validation",
+    "requirements": [
+      "启动Prometheus导出器 (端口9090)",
+      "验证/metrics端点可访问",
+      "检查loadgen_requests_total计数器",
+      "检查loadgen_request_duration_seconds直方图",
+      "检查loadgen_current_qps gauge",
+      "检查loadgen_target_qps gauge",
+      "检查loadgen_backpressure_state gauge"
+    ],
+    "passCriteria": [
+      "/metrics返回有效Prometheus格式",
+      "所有指标正确注册和更新",
+      "指标值符合实际运行情况"
+    ],
+    "testCommands": [
+      "./bin/loadgen -prometheus :9090 -duration 60s &",
+      "sleep 5",
+      "curl -s http://localhost:9090/metrics",
+      "curl -s http://localhost:9090/metrics | grep -E 'loadgen_(requests_total|current_qps|backpressure_state)'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-008",
+    "story": "验证端到端负载测试",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "执行100并发用户，持续5分钟",
+      "验证QPS维持在目标值±5%",
+      "验证错误率<1%",
+      "验证P95延迟<500ms",
+      "测试实际API端点 (非模拟)",
+      "验证资源使用合理 (CPU<80%, 内存<2GB)"
+    ],
+    "passCriteria": [
+      "QPS稳定在目标值附近",
+      "错误率低于1%",
+      "P95延迟满足SLA",
+      "系统资源使用正常"
+    ],
+    "testCommands": [
+      "make docker-up",
+      "sleep 10",
+      "./bin/loadgen -config configs/erp.yaml -concurrency 100 -duration 300s -qps 200",
+      "grep -E 'QPS:|Error Rate:|P95 Latency:' results/latest/report.txt"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-009",
+    "story": "验证压力测试和极限场景",
+    "priority": "medium",
+    "category": "validation",
+    "requirements": [
+      "测试逐步增压到系统极限",
+      "验证优雅降级行为",
+      "测试1小时持续负载",
+      "监控内存泄漏",
+      "测试快速停止和恢复",
+      "验证数据一致性"
+    ],
+    "passCriteria": [
+      "系统在极限负载下不崩溃",
+      "降级时保持核心功能",
+      "长时间运行无内存泄漏",
+      "停止后可快速恢复"
+    ],
+    "testCommands": [
+      "./bin/loadgen --stress-test --max-qps 5000 --duration 3600s",
+      "./bin/loadgen --ramp-up 300s --peak-qps 1000 --duration 600s",
+      "ps aux | grep loadgen | grep -v grep"
+    ],
+    "passes": false
+  },
+  {
+    "id": "LOADGEN-VAL-010",
+    "story": "验证Makefile集成和目标",
+    "priority": "medium",
+    "category": "validation",
+    "requirements": [
+      "验证make loadgen-build成功",
+      "验证make loadgen-run执行基本测试",
+      "验证make loadgen-stress执行压力测试",
+      "验证make loadgen-scenario支持场景参数",
+      "验证README文档完整性",
+      "验证tools/loadgen/README.md存在"
+    ],
+    "passCriteria": [
+      "所有make目标正常工作",
+      "文档完整描述使用方法",
+      "包含配置示例和CLI参数说明"
+    ],
+    "testCommands": [
+      "make loadgen-build",
+      "make loadgen-run",
+      "make loadgen-stress DURATION=30s",
+      "make loadgen-scenario SCENARIO=basic",
+      "ls -la tools/loadgen/README.md",
+      "head -50 tools/loadgen/README.md"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-001",
+    "story": "验证Feature Flag数据库表和迁移",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "运行数据库迁移创建feature_flag表",
+      "验证表结构包含所有字段",
+      "验证flag_overrides表外键关系",
+      "验证flag_audit_logs表记录变更",
+      "检查索引存在(key, status, tags)",
+      "测试迁移回滚功能"
+    ],
+    "passCriteria": [
+      "迁移成功执行无错误",
+      "表结构符合设计文档",
+      "外键约束正确建立",
+      "索引存在且有效"
+    ],
+    "testCommands": [
+      "make migrate-up",
+      "psql -U erp -d erp_db -c \"\\d feature_flags\"",
+      "psql -U erp -d erp_db -c \"\\d flag_overrides\"",
+      "psql -U erp -d erp_db -c \"SELECT * FROM flag_audit_logs LIMIT 1\"",
+      "psql -U erp -d erp_db -c \"SELECT indexname FROM pg_indexes WHERE tablename = 'feature_flags'\""
+    ],
+    "passes": true
+  },
+  {
+    "id": "FF-VAL-002",
+    "story": "验证Feature Flag API端点功能",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "POST /api/v1/feature-flags 创建flag",
+      "GET /api/v1/feature-flags 分页列表",
+      "GET /api/v1/feature-flags/:key 获取单个flag",
+      "PUT /api/v1/feature-flags/:key 更新flag",
+      "DELETE /api/v1/feature-flags/:key 删除flag",
+      "POST /api/v1/feature-flags/:key/evaluate 评估flag",
+      "POST /api/v1/feature-flags/evaluate/batch 批量评估"
+    ],
+    "passCriteria": [
+      "所有端点返回正确状态码",
+      "CRUD操作数据正确持久化",
+      "评估逻辑返回正确结果",
+      "批量评估性能良好(<50ms)"
+    ],
+    "testCommands": [
+      "curl -X POST http://localhost:8080/api/v1/feature-flags -H 'Content-Type: application/json' -d '{\"key\":\"test-flag\",\"name\":\"Test Flag\",\"enabled\":true}'",
+      "curl -X GET 'http://localhost:8080/api/v1/feature-flags?page=1&limit=10'",
+      "curl -X GET http://localhost:8080/api/v1/feature-flags/test-flag",
+      "curl -X PUT http://localhost:8080/api/v1/feature-flags/test-flag -d '{\"enabled\":false}'",
+      "curl -X POST http://localhost:8080/api/v1/feature-flags/test-flag/evaluate -d '{\"userId\":\"12345\"}'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "FF-VAL-003",
+    "story": "验证Flag评估规则和逻辑",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试简单布尔flag(on/off)",
+      "测试百分比灰度(0-100%)",
+      "测试用户ID哈希分布",
+      "测试自定义属性匹配(年龄、国家等)",
+      "测试变体flag多值返回",
+      "测试规则优先级",
+      "测试覆盖规则"
+    ],
+    "passCriteria": [
+      "布尔flag正确返回true/false",
+      "百分比灰度均匀分布",
+      "用户ID哈希一致性",
+      "属性匹配精确过滤",
+      "变体返回预定义值",
+      "规则按优先级执行"
+    ],
+    "testCommands": [
+      "# 创建百分比灰度flag",
+      "curl -X POST http://localhost:8080/api/v1/feature-flags -d '{\"key\":\"rollout-50\",\"rules\":[{\"type\":\"percentage\",\"value\":50}]}'",
+      "# 评估100次验证分布",
+      "for i in {1..100}; do curl -s http://localhost:8080/api/v1/feature-flags/rollout-50/evaluate -d '{\"userId\":\"user$i\"}' | jq -r '.data.enabled'; done | sort | uniq -c",
+      "# 测试属性匹配",
+      "curl -X POST http://localhost:8080/api/v1/feature-flags -d '{\"key\":\"age-flag\",\"rules\":[{\"type\":\"attribute\",\"attribute\":\"age\",\"operator\":\">=\",\"value\":18}]}'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-004",
+    "story": "验证前端Hooks功能",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试useFeatureFlag(key)返回布尔值",
+      "测试useFeatureVariant(key)返回变体",
+      "测试useFeatureFlags(keys)批量获取",
+      "测试useFeatureFlagReady()加载状态",
+      "测试默认值处理",
+      "测试响应式更新",
+      "测试TypeScript类型安全"
+    ],
+    "passCriteria": [
+      "hooks返回正确数据类型",
+      "flag变更触发重新渲染",
+      "批量获取性能良好",
+      "加载状态正确显示",
+      "默认值生效"
+    ],
+    "testCommands": [
+      "cd frontend && npm test -- --testNamePattern='useFeatureFlag'",
+      "cd frontend && npm test -- --testNamePattern='useFeatureVariant'",
+      "cd frontend && npm test -- --testNamePattern='useFeatureFlags'",
+      "cd frontend && npm run type-check"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-005",
+    "story": "验证FeatureFlagProvider和实时更新",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试Provider初始化流程",
+      "测试轮询机制(默认30s)",
+      "测试SSE实时更新",
+      "测试错误处理和重试",
+      "测试卸载时清理",
+      "测试轮询间隔配置"
+    ],
+    "passCriteria": [
+      "Provider正确初始化flags",
+      "轮询按配置间隔执行",
+      "SSE连接建立和接收更新",
+      "错误时自动重试",
+      "组件卸载停止轮询"
+    ],
+    "testCommands": [
+      "# 启动SSE测试服务器",
+      "node frontend/test/sse-test-server.js &",
+      "cd frontend && npm test -- --testNamePattern='FeatureFlagProvider'",
+      "# 测试SSE更新",
+      "curl -X POST http://localhost:8080/api/v1/feature-flags -d '{\"key\":\"sse-test\",\"enabled\":true}'",
+      "# 验证前端接收更新(查看浏览器控制台)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-006",
+    "story": "验证Admin管理界面功能",
+    "priority": "medium",
+    "category": "validation",
+    "requirements": [
+      "测试flag列表页面和分页",
+      "测试flag创建表单验证",
+      "测试规则编辑器UI",
+      "测试变体配置界面",
+      "测试覆盖管理功能",
+      "测试审计日志显示",
+      "测试搜索和过滤"
+    ],
+    "passCriteria": [
+      "列表正确显示所有flags",
+      "表单验证阻止无效输入",
+      "规则编辑器用户友好",
+      "变体配置直观易用",
+      "审计日志完整显示"
+    ],
+    "testCommands": [
+      "# 启动前端",
+      "cd frontend && npm run dev",
+      "# 访问管理界面",
+      "open http://localhost:3000/admin/feature-flags",
+      "# 创建测试flag",
+      "# 测试分页功能",
+      "# 测试搜索功能"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-007",
+    "story": "验证性能指标和缓存",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试flag评估延迟<5ms",
+      "测试批量评估100个flags<50ms",
+      "测试缓存命中率>90%",
+      "测试10k flags内存使用",
+      "测试Redis缓存同步",
+      "测试缓存失效机制"
+    ],
+    "passCriteria": [
+      "单次评估延迟满足要求",
+      "批量评估性能良好",
+      "缓存命中率达标",
+      "内存使用合理",
+      "缓存一致性保证"
+    ],
+    "testCommands": [
+      "# 性能测试",
+      "go test ./backend/internal/domain/featureflag -bench=. -benchmem",
+      "# 缓存测试",
+      "redis-cli monitor | grep featureflag",
+      "# 批量评估测试",
+      "ab -n 1000 -c 10 -p batch-flags.json -T application/json http://localhost:8080/api/v1/feature-flags/evaluate/batch"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-008",
+    "story": "验证权限控制和安全",
+    "priority": "high",
+    "category": "validation",
+    "requirements": [
+      "测试JWT认证保护",
+      "测试角色权限控制",
+      "测试API速率限制",
+      "测试输入验证和清理",
+      "测试审计日志完整性",
+      "测试敏感数据保护"
+    ],
+    "passCriteria": [
+      "无认证请求被拒绝",
+      "权限不足返回403",
+      "速率限制正常工作",
+      "输入被正确验证",
+      "所有操作被审计"
+    ],
+    "testCommands": [
+      "# 无认证测试",
+      "curl -X GET http://localhost:8080/api/v1/feature-flags -w \"%{http_code}\"",
+      "# 错误认证测试",
+      "curl -X GET -H 'Authorization: Bearer invalid-token' http://localhost:8080/api/v1/feature-flags",
+      "# 权限测试",
+      "# 需要创建不同角色的用户进行测试"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-009",
+    "story": "验证集成测试和端到端场景",
+    "priority": "critical",
+    "category": "validation",
+    "requirements": [
+      "测试flag变更实时反映",
+      "测试flag持久化跨重启",
+      "测试复杂业务场景集成",
+      "测试A/B测试功能",
+      "测试灰度发布流程",
+      "测试回滚机制"
+    ],
+    "passCriteria": [
+      "变更立即对所有客户端生效",
+      "重启后flags状态保持",
+      "业务场景正确响应flags",
+      "A/B测试数据准确收集",
+      "灰度发布平滑进行"
+    ],
+    "testCommands": [
+      "# E2E测试",
+      "cd frontend && npm run test:e2e -- --spec=e2e/feature-flag.spec.ts",
+      "# 集成测试",
+      "go test ./backend/tests/integration -run TestFeatureFlagIntegration",
+      "# 业务场景测试",
+      "# 测试结账流程中的feature flag"
+    ],
+    "passes": false
+  },
+  {
+    "id": "FF-VAL-010",
+    "story": "验证错误处理和边界情况",
+    "priority": "medium",
+    "category": "validation",
+    "requirements": [
+      "测试数据库连接失败",
+      "测试Redis连接失败",
+      "测试并发更新冲突",
+      "测试循环依赖规则",
+      "测试无效规则配置",
+      "测试超大flag值"
+    ],
+    "passCriteria": [
+      "错误被优雅处理",
+      "系统保持可用状态",
+      "返回有意义的错误信息",
+      "不崩溃不挂起",
+      "错误被记录到日志"
+    ],
+    "testCommands": [
+      "# 断开数据库测试",
+      "docker stop erp-postgres",
+      "# 测试系统行为",
+      "docker start erp-postgres",
+      "# 检查错误日志",
+      "tail -f backend/logs/app.log | grep -i error",
+      "# 并发测试",
+      "ab -n 1000 -c 50 -p flag-update.json -T application/json http://localhost:8080/api/v1/feature-flags/test-flag"
+    ],
+    "passes": false
+  },
+  {
+    "id": "E2E-PRODUCT-001",
+    "story": "产品生命周期状态流转E2E测试",
+    "priority": "critical",
+    "category": "testing",
+    "requirements": [
+      "=== 背景 ===",
+      "产品生命周期涉及多个状态转换，当前缺乏E2E测试验证状态机的正确性。",
+      "状态错误可能导致：草稿产品被销售、停用产品继续采购等业务风险。",
+      "",
+      "=== 测试场景 ===",
+      "1. 产品创建和初始状态",
+      "   - 验证新产品默认状态为草稿",
+      "   - 验证必填字段校验",
+      "   - 验证产品编码唯一性",
+      "",
+      "2. 状态转换验证",
+      "   - 草稿→启用：验证转换条件和库存初始化",
+      "   - 启用→停用：验证停用约束和影响",
+      "   - 停用→启用：验证重新启用流程",
+      "   - 启用→废弃：验证废弃条件和数据保留",
+      "",
+      "3. 状态约束验证",
+      "   - 草稿产品禁止创建订单",
+      "   - 停用产品禁止新增交易",
+      "   - 废弃产品禁止所有交易",
+      "   - 状态转换权限控制",
+      "",
+      "4. 多租户隔离",
+      "   - 验证租户间产品数据隔离",
+      "   - 验证产品编码可跨租户重复",
+      "   - 验证状态转换不影响其他租户"
+    ],
+    "passCriteria": [
+      "所有状态转换100%正确",
+      "状态约束规则严格执行",
+      "多租户数据完全隔离",
+      "关键转换点有截图验证",
+      "测试3次运行稳定通过"
+    ],
+    "testCommands": [
+      "make e2e ARGS='tests/e2e/product-lifecycle.spec.ts'"
+    ]
+  },
+  {
+    "id": "E2E-INVENTORY-001",
+    "story": "库存操作状态流转E2E测试",
+    "priority": "critical",
+    "category": "testing",
+    "requirements": [
+      "=== 背景 ===",
+      "库存状态流转是ERP系统的核心，涉及可用、锁定、已分配、在途等状态。",
+      "状态错误可能导致：超卖、库存数据不一致、财务报表错误等严重后果。",
+      "",
+      "=== 测试场景 ===",
+      "1. 库存初始化状态",
+      "   - 验证新产品启用时的库存初始化",
+      "   - 验证初始库存数量和成本",
+      "   - 验证库存流水记录生成",
+      "",
+      "2. 销售订单对库存的影响",
+      "   - 草稿订单：库存无变化",
+      "   - 确认订单：库存锁定验证",
+      "   - 部分发货：锁定转扣减验证",
+      "   - 完全发货：库存完全扣减",
+      "   - 订单取消：锁定释放验证",
+      "",
+      "3. 库存调整状态",
+      "   - 盘盈盘亏的状态记录",
+      "   - 调整审批流程验证",
+      "   - 调整后的成本重算",
+      "",
+      "4. 仓库间转移",
+      "   - 转移申请状态：草稿→已批准→在途",
+      "   - 调出仓库库存锁定",
+      "   - 调入仓库库存增加",
+      "   - 在途库存跟踪",
+      "",
+      "5. 并发操作验证",
+      "   - 多用户同时操作同一商品",
+      "   - 乐观锁机制验证",
+      "   - 库存一致性保证"
+    ],
+    "passCriteria": [
+      "库存状态转换准确无误",
+      "库存数量始终一致",
+      "并发操作下数据正确",
+      "状态变化有完整流水",
+      "多租户库存完全隔离"
+    ],
+    "testCommands": [
+      "make e2e ARGS='tests/e2e/inventory-operations.spec.ts'"
+    ]
+  },
+  {
+    "id": "E2E-ORDER-001",
+    "story": "订单完整生命周期E2E测试",
+    "priority": "critical",
+    "category": "testing",
+    "requirements": [
+      "=== 背景 ===",
+      "订单状态机是业务流程的核心，涉及客户信用、库存锁定、财务应收等关键逻辑。",
+      "状态错误可能导致：超信用发货、库存锁定失败、财务数据不一致等问题。",
+      "",
+      "=== 测试场景 ===",
+      "1. 完整状态流转",
+      "   - 草稿→确认：信用检查、库存验证",
+      "   - 确认→发货：库存扣减、物流单生成",
+      "   - 发货→完成：应收确认、成本核算",
+      "   - 各状态的逆向流转验证",
+      "",
+      "2. 前置条件验证",
+      "   - 客户信用额度检查",
+      "   - 库存可用量验证",
+      "   - 价格策略应用",
+      "   - 最小订货量限制",
+      "",
+      "3. 部分处理场景",
+      "   - 部分发货状态处理",
+      "   - 部分收款状态更新",
+      "   - 缺货订单的等待状态",
+      "   - 分批发货的跟踪",
+      "",
+      "4. 取消和变更",
+      "   - 不同状态下的取消权限",
+      "   - 已发货订单的退货流程",
+      "   - 订单变更的影响范围",
+      "   - 取消后的数据回滚",
+      "",
+      "5. 财务集成验证",
+      "   - 应收账款的生成时机",
+      "   - 发票开具状态关联",
+      "   - 收款分配逻辑",
+      "   - 坏账处理流程"
+    ],
+    "passCriteria": [
+      "状态机转换100%正确",
+      "前置条件严格校验",
+      "财务数据同步准确",
+      "部分处理逻辑正确",
+      "取消回滚完整无误"
+    ],
+    "testCommands": [
+      "make e2e ARGS='tests/e2e/order-lifecycle.spec.ts'"
+    ]
+  },
+  {
+    "id": "E2E-PURCHASE-001",
+    "story": "采购收货流程状态流转E2E测试",
+    "priority": "high",
+    "category": "testing",
+    "requirements": [
+      "=== 背景 ===",
+      "采购收货涉及供应商、仓库、质检、财务多个模块的状态协调。",
+      "状态错误可能导致：重复收货、质检漏检、供应商余额错误等问题。",
+      "",
+      "=== 测试场景 ===",
+      "1. 完整收货流程",
+      "   - 采购订单→收货单：状态关联验证",
+      "   - 收货→质检：样品抽取和检验标准",
+      "   - 质检→入库：合格品入库、不合格品处理",
+      "   - 入库→结算：供应商对账和付款",
+      "",
+      "2. 部分收货处理",
+      "   - 分批收货的状态跟踪",
+      "   - 部分质检的处理逻辑",
+      "   - 部分入库的库存更新",
+      "   - 剩余数量的跟踪",
+      "",
+      "3. 质检异常处理",
+      "   - 不合格品的隔离状态",
+      "   - 退货给供应商的流程",
+      "   - 让步接收的特殊标记",
+      "   - 质检记录的完整性",
+      "",
+      "4. 供应商集成",
+      "   - 供应商余额的实时更新",
+      "   - 应付款项的生成时机",
+      "   - 发票匹配和差异处理",
+      "   - 付款申请的状态关联",
+      "",
+      "5. 成本核算验证",
+      "   - 采购成本的计算逻辑",
+      "   - 运杂费的分摊规则",
+      "   - 汇率变动的影响处理",
+      "   - 成本差异的分析"
+    ],
+    "passCriteria": [
+      "收货流程状态完整正确",
+      "部分收货跟踪准确",
+      "质检异常处理得当",
+      "供应商余额同步正确",
+      "成本核算精确无误"
+    ],
+    "testCommands": [
+      "make e2e ARGS='tests/e2e/purchase-receiving.spec.ts'"
+    ]
+  },
+  {
+    "id": "E2E-STOCK-001",
+    "story": "库存盘点流程状态流转E2E测试",
+    "priority": "high",
+    "category": "testing",
+    "requirements": [
+      "=== 背景 ===",
+      "库存盘点是确保账实相符的关键流程，涉及盘点计划、执行、差异处理等状态。",
+      "状态错误可能导致：盘点数据不准确、差异处理不及时、库存锁定过长等问题。",
+      "",
+      "=== 测试场景 ===",
+      "1. 完整盘点流程",
+      "   - 盘点计划：范围确定和人员分配",
+      "   - 盘点执行：初盘→复盘→抽盘",
+      "   - 差异计算：盘盈盘亏自动计算",
+      "   - 差异审批：分级审批流程",
+      "   - 调整执行：库存调整和成本处理",
+      "",
+      "2. 盘点模式验证",
+      "   - 定期盘点：月盘、季盘、年盘",
+      "   - 循环盘点：ABC分类和频次设置",
+      "   - 抽样盘点：抽样比例和代表性",
+      "   - 盲盘模式：隐藏账面数量的验证",
+      "",
+      "3. 盘点锁定机制",
+      "   - 盘点期间的库存冻结",
+      "   - 紧急出入库的特殊处理",
+      "   - 锁定超时的自动释放",
+      "   - 多仓库同时盘点的协调",
+      "",
+      "4. 差异处理流程",
+      "   - 差异原因的分类和记录",
+      "   - 责任人确认和审批",
+      "   - 调整凭证的生成",
+      "   - 后续改进措施的跟踪",
+      "",
+      "5. 盘点结果分析",
+      "   - 盘点准确率的计算",
+      "   - 差异分布的统计",
+      "   - 盘点效率的评估",
+      "   - 改进建议的生成"
+    ],
+    "passCriteria": [
+      "盘点流程状态完整",
+      "锁定机制有效可靠",
+      "差异计算准确无误",
+      "审批流程严格可控",
+      "多仓库盘点协调正确"
+    ],
+    "testCommands": [
+      "make e2e ARGS='tests/e2e/stock-taking.spec.ts'"
+    ]
   }
 ]
