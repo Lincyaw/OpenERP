@@ -428,20 +428,21 @@ func (g *DependencyGraph) GetExecutionPlan(target string) (*ExecutionPlan, error
 
 	// Build a subgraph with only required endpoints
 	subgraphInDegree := make(map[string]int)
-	subgraphDeps := make(map[string][]string)
+	subgraphReverse := make(map[string][]string) // Reverse adjacency for O(1) lookup
 
 	for name := range required {
-		deps := []string{}
+		depCount := 0
 		for _, dep := range g.adjacency[name] {
 			if required[dep] {
-				deps = append(deps, dep)
+				depCount++
+				// Build reverse adjacency: dep -> [dependents]
+				subgraphReverse[dep] = append(subgraphReverse[dep], name)
 			}
 		}
-		subgraphDeps[name] = deps
-		subgraphInDegree[name] = len(deps)
+		subgraphInDegree[name] = depCount
 	}
 
-	// Topological sort on the subgraph
+	// Topological sort on the subgraph using Kahn's algorithm
 	queue = make([]string, 0)
 	for name, degree := range subgraphInDegree {
 		if degree == 0 {
@@ -461,18 +462,11 @@ func (g *DependencyGraph) GetExecutionPlan(target string) (*ExecutionPlan, error
 		steps = append(steps, g.endpoints[current])
 		processed++
 
-		// Find dependents in the subgraph
-		for name := range required {
-			for i, dep := range subgraphDeps[name] {
-				if dep == current {
-					// Remove this dependency
-					subgraphDeps[name] = append(subgraphDeps[name][:i], subgraphDeps[name][i+1:]...)
-					subgraphInDegree[name]--
-					if subgraphInDegree[name] == 0 {
-						queue = append(queue, name)
-					}
-					break
-				}
+		// Update dependents using reverse adjacency (O(dependents) instead of O(n))
+		for _, dependent := range subgraphReverse[current] {
+			subgraphInDegree[dependent]--
+			if subgraphInDegree[dependent] == 0 {
+				queue = append(queue, dependent)
 			}
 		}
 	}

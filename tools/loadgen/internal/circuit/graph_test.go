@@ -621,6 +621,34 @@ func TestDependencyGraph_Stats(t *testing.T) {
 	assert.Equal(t, 2, stats.MaxDepth) // c -> b -> a
 }
 
+func TestDependencyGraph_Stats_WithCycles(t *testing.T) {
+	g := NewDependencyGraph()
+
+	// Create a cyclic graph: a -> b -> a
+	g.AddEndpoint(&EndpointUnit{
+		Name:       "a",
+		Path:       "/a",
+		Method:     "POST",
+		InputPins:  []SemanticType{EntityProductID},
+		OutputPins: []SemanticType{EntityCustomerID},
+	})
+
+	g.AddEndpoint(&EndpointUnit{
+		Name:       "b",
+		Path:       "/b",
+		Method:     "POST",
+		InputPins:  []SemanticType{EntityCustomerID},
+		OutputPins: []SemanticType{EntityProductID},
+	})
+
+	g.BuildDependencies()
+
+	// Should not hang or panic - cycle detection in calculateMaxDepthLocked
+	stats := g.Stats()
+	assert.Equal(t, 2, stats.TotalEndpoints)
+	assert.Equal(t, 2, stats.Connections) // a->b, b->a
+}
+
 func TestDependencyGraph_ProducersMap(t *testing.T) {
 	g := NewDependencyGraph()
 

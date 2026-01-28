@@ -34568,3 +34568,108 @@ ok  	github.com/example/erp/tools/loadgen/internal/pool	13.662s
 
 - LOADGEN-006: Dependency Graph and Producer-Consumer Relationships
 - Use PinRegistry connections to build execution plans
+
+2025-01-28 - LOADGEN-006: Dependency Graph and Producer-Consumer Relationships
+
+=== Implementation Details ===
+
+**Files Created:**
+1. `tools/loadgen/internal/circuit/graph.go` - DependencyGraph implementation
+2. `tools/loadgen/internal/circuit/graph_test.go` - Comprehensive test suite
+
+**Key Components Implemented:**
+
+1. **EndpointUnit Structure**
+   - Represents an API endpoint in the dependency graph
+   - Contains InputPins (consumed semantic types) and OutputPins (produced semantic types)
+   - Supports explicit DependsOn relationships
+
+2. **DependencyGraph**
+   - Thread-safe with RWMutex protection
+   - Manages producer-consumer relationships between endpoints
+   - Maintains adjacency and reverse adjacency lists for efficient traversal
+
+3. **Producers/Consumers Maps**
+   - `producers map[SemanticType][]*EndpointUnit` - endpoints that produce each type
+   - `consumers map[SemanticType][]*EndpointUnit` - endpoints that consume each type
+   - ProducersMap() and ConsumersMap() return defensive copies
+
+4. **DetectCycles()**
+   - DFS-based cycle detection algorithm
+   - Returns all detected cycles with path information
+   - Cycle struct with String() method for human-readable output
+
+5. **TopologicalSort()**
+   - Kahn's algorithm implementation
+   - Returns endpoints in dependency order (dependencies first)
+   - Returns ErrCycleDetected if graph contains cycles
+
+6. **GetExecutionPlan(target)**
+   - Generates execution plan for a target endpoint
+   - Includes all transitive dependencies
+   - Uses optimized O(n+m) algorithm with reverse adjacency
+   - Returns ExecutionPlan with Steps and Dependencies map
+
+7. **Additional Features**
+   - GetRootEndpoints() - endpoints with no dependencies
+   - GetLeafEndpoints() - endpoints with no dependents
+   - Stats() - graph statistics including max depth
+   - Clear(), Size(), GetAllEndpoints()
+
+**Design Decisions:**
+
+1. **Thread Safety**: Used sync.RWMutex with read locks for queries and write locks for mutations. All public methods return defensive copies to prevent external modification.
+
+2. **Deterministic Ordering**: All methods that return collections use sort.Strings() for deterministic behavior across runs.
+
+3. **Cycle-Safe Max Depth**: calculateMaxDepthLocked() uses visiting state tracking to handle cyclic graphs without infinite recursion.
+
+4. **Optimized GetExecutionPlan**: Uses reverse adjacency map for O(n+m) complexity instead of O(n²) naive approach.
+
+5. **Separation of Concerns**: AddEndpoint() registers producers/consumers, BuildDependencies() constructs the adjacency graph.
+
+=== Verification ===
+
+**Test Results:**
+```
+$ cd tools/loadgen && go test ./internal/circuit/... -v -race -count=1
+PASS
+ok  github.com/example/erp/tools/loadgen/internal/circuit  1.177s
+```
+
+**Test Coverage:**
+- 18 test functions for DependencyGraph
+- TestERPSystemNoCycles - validates typical ERP system has no circular dependencies
+- TestDependencyGraph_Stats_WithCycles - verifies cycle-safe max depth calculation
+- TestDependencyGraph_Concurrent - concurrent read safety
+
+**Acceptance Criteria Verification:**
+- ✅ DependencyGraph implemented in internal/circuit/graph.go
+- ✅ Producer-consumer relationships built from InputPins/OutputPins
+- ✅ Producers map: SemanticType → []*EndpointUnit
+- ✅ Consumers map: SemanticType → []*EndpointUnit
+- ✅ DetectCycles() implemented with DFS algorithm
+- ✅ TopologicalSort() implemented with Kahn's algorithm
+- ✅ GetExecutionPlan(target) generates execution plans
+- ✅ TestERPSystemNoCycles verifies ERP system has no circular dependencies
+- ✅ All tests pass with race detector enabled
+
+=== Code Review Findings (Fixed) ===
+
+**HIGH (Fixed):**
+- Infinite recursion in calculateMaxDepthLocked with cyclic graphs - Fixed by adding visiting state tracking
+- O(n²) algorithm in GetExecutionPlan - Fixed by using reverse adjacency map
+
+**MEDIUM (Addressed):**
+- Added test for Stats() with cyclic graphs
+
+=== Notes ===
+
+- DependencyGraph is designed to work with EndpointUnit which wraps endpoint configuration
+- The graph supports both implicit dependencies (via semantic types) and explicit dependencies (via DependsOn)
+- BuildDependencies() must be called after all endpoints are added to construct the adjacency graph
+
+=== Next Steps ===
+
+- LOADGEN-007: HTTP Client and Authentication Handling
+- Use DependencyGraph to determine warmup execution order
