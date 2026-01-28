@@ -1,0 +1,52 @@
+# Minimal test configuration for Load Generator validation
+# Used by LOADGEN-VAL-002 to test configuration loading and validation
+
+name: "Test Configuration"
+description: "Minimal test configuration for validation testing"
+version: "1.0"
+
+# Target system configuration
+target:
+  baseURL: "http://localhost:8080"
+  apiVersion: "v1"
+  timeout: 30s
+
+# Authentication configuration
+auth:
+  type: "bearer"
+  bearer:
+    token: "test-token-for-validation"
+
+# Execution settings
+duration: 60s
+
+# Traffic shaping (minimal)
+trafficShaper:
+  type: "constant"
+  baseQPS: 100
+
+# Worker pool (minimal)
+workerPool:
+  minSize: 5
+  maxSize: 50
+  initialSize: 10
+
+# At least one endpoint is required
+endpoints:
+  - name: "system.ping"
+    description: "Health check endpoint"
+    path: "/system/ping"
+    method: "GET"
+    weight: 1
+    requiresAuth: false
+
+  - name: "catalog.products.list"
+    description: "List products"
+    path: "/catalog/products"
+    method: "GET"
+    weight: 10
+    queryParams:
+      page:
+        value: "1"
+      page_size:
+        value: "20"

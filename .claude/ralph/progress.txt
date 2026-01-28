@@ -35340,3 +35340,98 @@ ls -la tools/loadgen/bin/loadgen
 
 === Decision ===
 [PASSED]: All validation criteria met for Load Generator build
+
+=== 2026-01-29 - LOADGEN-VAL-002: Basic Configuration Loading and Validation ===
+
+Task: 验证基础配置加载和验证
+Status: PASSED ✅
+
+=== Implementation Changes ===
+
+1. Created minimal test configuration file: `tools/loadgen/configs/test.yaml`
+   - Name: "Test Configuration"
+   - Target baseURL: http://localhost:8080
+   - Auth type: bearer with test token
+   - Duration: 60s
+   - TrafficShaper: constant at 100 QPS
+   - WorkerPool: min=5, max=50, initial=10
+   - Two endpoints: system.ping (no auth) and catalog.products.list (auth)
+
+=== Validation Results ===
+
+1. **Valid Config Loading**:
+   - Command: `./bin/loadgen -config configs/test.yaml --validate`
+   - Exit code: 0 ✅
+   - Output shows config summary (name, version, target, duration, auth, endpoints)
+
+2. **Invalid Config - Missing Name**:
+   - Command: `./bin/loadgen -config configs/invalid_no_name.yaml --validate`
+   - Exit code: 1 ✅
+   - Error: "config: invalid configuration: name is required"
+
+3. **Invalid Config - Missing BaseURL**:
+   - Command: `./bin/loadgen -config configs/invalid_no_baseurl.yaml --validate`
+   - Exit code: 1 ✅
+   - Error: "config: invalid configuration: target.baseURL is required"
+
+4. **Invalid Config - No Endpoints**:
+   - Command: `./bin/loadgen -config configs/invalid_no_endpoints.yaml --validate`
+   - Exit code: 1 ✅
+   - Error: "config: invalid configuration: at least one endpoint is required"
+
+5. **CLI Parameter Override - Duration**:
+   - Command: `./bin/loadgen -config configs/test.yaml -duration 30s --dry-run -v`
+   - Output: "Override: duration = 30s"
+   - Duration in summary: 30s (overridden from 60s)
+   - Status: ✅ PASSED
+
+6. **CLI Parameter Override - Concurrency and QPS**:
+   - Command: `./bin/loadgen -config configs/test.yaml -concurrency 100 -qps 200 --dry-run -v`
+   - Output: "Override: concurrency (workerPool.maxSize) = 100"
+   - Output: "Override: qps = 200.0"
+   - WorkerPool Max: 100 (overridden from 50)
+   - Base QPS: 200.0 (overridden from 100)
+   - Status: ✅ PASSED
+
+7. **Non-existent Config File**:
+   - Command: `./bin/loadgen -config /nonexistent/path.yaml --validate`
+   - Exit code: 1 ✅
+   - Error: "config: configuration file not found: /nonexistent/path.yaml"
+
+=== Test Commands Verified ===
+
+```bash
+# Valid config loading
+./bin/loadgen -config configs/test.yaml --validate
+# Output: Configuration 'Test Configuration' is valid.
+
+# Invalid configs return specific errors
+./bin/loadgen -config configs/invalid_no_name.yaml --validate
+# Error: config: invalid configuration: name is required
+
+# CLI override - duration
+./bin/loadgen -config configs/test.yaml -duration 30s --dry-run -v
+# Override: duration = 30s
+
+# CLI override - concurrency and QPS
+./bin/loadgen -config configs/test.yaml -concurrency 100 -qps 200 --dry-run -v
+# Override: concurrency (workerPool.maxSize) = 100
+# Override: qps = 200.0
+
+# List endpoints
+./bin/loadgen -config configs/test.yaml -list
+# Shows all endpoints with weights and auth requirements
+```
+
+=== Pass Criteria Status ===
+
+✅ 有效配置加载成功 - Config loads and validates with summary output
+✅ 无效配置返回具体错误信息 - Specific errors for missing name/baseURL/endpoints
+✅ CLI参数正确覆盖配置值 - Duration, concurrency, and QPS overrides work correctly
+
+=== Files Changed ===
+
+- tools/loadgen/configs/test.yaml (NEW) - Minimal test configuration
+
+=== Decision ===
+[PASSED]: All validation criteria met for basic configuration loading and validation

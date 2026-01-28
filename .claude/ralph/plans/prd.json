@@ -10244,7 +10244,7 @@
       "./bin/loadgen -config configs/test.yaml --validate-config",
       "./bin/loadgen -config configs/test.yaml -duration 30s --dry-run"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-003",

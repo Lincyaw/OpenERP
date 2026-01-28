@@ -1,0 +1,11 @@
+# Build artifacts
+bin/
+
+# Test artifacts
+*.out
+*.test
+
+# IDE
+.idea/
+.vscode/
+*.swp
