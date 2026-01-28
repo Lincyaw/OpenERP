@@ -18,14 +18,17 @@ import { IconArrowLeft, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  getFinanceReceiptReceiptVoucherByID,
+  reconcileReceiptVoucherFinanceReceipt,
+} from '@/api/finance-receipts/finance-receipts'
+import { listFinanceReceivableReceivables } from '@/api/finance-receivables/finance-receivables'
 import type {
-  ReceiptVoucher,
-  AccountReceivable,
-  ReconcileRequest,
-  ManualAllocationInput,
-  ReconcileReceiptResult,
-} from '@/api/finance'
+  HandlerReceiptVoucherResponse,
+  HandlerAccountReceivableResponse,
+  ReconcileReceiptVoucherFinanceReceiptBody,
+  HandlerReconcileReceiptResultResponse,
+} from '@/api/models'
 import './ReceiptReconcile.css'
 
 const { Title, Text } = Typography
@@ -123,14 +126,14 @@ export default function ReceiptReconcilePage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const financeApi = useMemo(() => getFinanceApi(), [])
 
   // State
-  const [voucher, setVoucher] = useState<ReceiptVoucher | null>(null)
-  const [receivables, setReceivables] = useState<AccountReceivable[]>([])
+  const [voucher, setVoucher] = useState<HandlerReceiptVoucherResponse | null>(null)
+  const [receivables, setReceivables] = useState<HandlerAccountReceivableResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [reconciling, setReconciling] = useState(false)
-  const [reconcileResult, setReconcileResult] = useState<ReconcileReceiptResult | null>(null)
+  const [reconcileResult, setReconcileResult] =
+    useState<HandlerReconcileReceiptResultResponse | null>(null)
 
   // Allocation state
   const [allocationItems, setAllocationItems] = useState<AllocationItem[]>([])
@@ -143,36 +146,45 @@ export default function ReceiptReconcilePage() {
     setLoading(true)
     try {
       // Load voucher
-      const voucherResponse = await financeApi.getFinanceReceiptReceiptVoucher(id)
-      if (!voucherResponse.success || !voucherResponse.data) {
+      const voucherResponse = await getFinanceReceiptReceiptVoucherByID(id)
+      if (
+        voucherResponse.status !== 200 ||
+        !voucherResponse.data.success ||
+        !voucherResponse.data.data
+      ) {
         Toast.error(t('receiptReconcile.messages.fetchError'))
         navigate('/finance/receivables')
         return
       }
 
-      const loadedVoucher = voucherResponse.data
+      const loadedVoucher = voucherResponse.data.data
       setVoucher(loadedVoucher)
 
       // Load receivables for the customer
-      const receivablesResponse = await financeApi.listFinanceReceivablesReceivables({
+      const receivablesResponse = await listFinanceReceivableReceivables({
         customer_id: loadedVoucher.customer_id,
         page: 1,
         page_size: 100,
       })
 
-      if (receivablesResponse.success && receivablesResponse.data) {
+      if (
+        receivablesResponse.status === 200 &&
+        receivablesResponse.data.success &&
+        receivablesResponse.data.data
+      ) {
         // Filter to pending/partial receivables only
-        const pendingReceivables = receivablesResponse.data.filter(
-          (r) => (r.status === 'PENDING' || r.status === 'PARTIAL') && r.outstanding_amount > 0
+        const pendingReceivables = receivablesResponse.data.data.filter(
+          (r) =>
+            (r.status === 'PENDING' || r.status === 'PARTIAL') && (r.outstanding_amount || 0) > 0
         )
         setReceivables(pendingReceivables)
 
         // Initialize allocation items
         const items: AllocationItem[] = pendingReceivables.map((r) => ({
-          receivableId: r.id,
-          receivableNumber: r.receivable_number,
-          totalAmount: r.total_amount,
-          outstandingAmount: r.outstanding_amount,
+          receivableId: r.id || '',
+          receivableNumber: r.receivable_number || '',
+          totalAmount: r.total_amount || 0,
+          outstandingAmount: r.outstanding_amount || 0,
           dueDate: r.due_date,
           selected: false,
           allocateAmount: 0,
@@ -184,7 +196,7 @@ export default function ReceiptReconcilePage() {
     } finally {
       setLoading(false)
     }
-  }, [id, financeApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     loadData()
@@ -328,12 +340,12 @@ export default function ReceiptReconcilePage() {
       return
     }
 
-    if (voucher.unallocated_amount <= 0) {
+    if ((voucher.unallocated_amount || 0) <= 0) {
       Toast.error(t('receiptReconcile.messages.noUnallocatedAmount'))
       return
     }
 
-    let request: ReconcileRequest
+    let request: ReconcileReceiptVoucherFinanceReceiptBody
 
     if (reconcileMode === 'FIFO') {
       request = {
@@ -341,7 +353,7 @@ export default function ReceiptReconcilePage() {
       }
     } else {
       // Manual mode
-      const manualAllocations: ManualAllocationInput[] = allocationItems
+      const manualAllocations = allocationItems
         .filter((item) => item.selected && item.allocateAmount > 0)
         .map((item) => ({
           target_id: item.receivableId,
@@ -354,7 +366,7 @@ export default function ReceiptReconcilePage() {
       }
 
       const totalManual = manualAllocations.reduce((sum, a) => sum + a.amount, 0)
-      if (totalManual > voucher.unallocated_amount) {
+      if (totalManual > (voucher.unallocated_amount || 0)) {
         Toast.error(t('receiptReconcile.messages.exceedAmount'))
         return
       }
@@ -367,14 +379,14 @@ export default function ReceiptReconcilePage() {
 
     setReconciling(true)
     try {
-      const response = await financeApi.reconcileFinanceReceipt(id, request)
-      if (response.success && response.data) {
+      const response = await reconcileReceiptVoucherFinanceReceipt(id, request)
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(t('receiptReconcile.messages.allocateSuccess'))
-        setReconcileResult(response.data)
+        setReconcileResult(response.data.data)
         // Reload data to refresh state
         await loadData()
       } else {
-        Toast.error(response.error || t('receiptReconcile.messages.allocateError'))
+        Toast.error(response.data.error?.message || t('receiptReconcile.messages.allocateError'))
       }
     } catch {
       Toast.error(t('receiptReconcile.messages.requestError'))
@@ -392,7 +404,7 @@ export default function ReceiptReconcilePage() {
   const canReconcile = useMemo(() => {
     if (!voucher) return false
     if (voucher.status !== 'CONFIRMED') return false
-    if (voucher.unallocated_amount <= 0) return false
+    if ((voucher.unallocated_amount || 0) <= 0) return false
     if (reconcileMode === 'MANUAL') {
       const hasSelection = allocationItems.some((item) => item.selected && item.allocateAmount > 0)
       return hasSelection
@@ -475,12 +487,12 @@ export default function ReceiptReconcilePage() {
           ),
           key: 'select',
           width: 50,
-          render: (_: unknown, record: AccountReceivable) => {
+          render: (_: unknown, record: HandlerAccountReceivableResponse) => {
             const item = allocationItems.find((i) => i.receivableId === record.id)
             return (
               <Checkbox
                 checked={item?.selected || false}
-                onChange={(e) => handleSelectItem(record.id, e.target.checked ?? false)}
+                onChange={(e) => handleSelectItem(record.id || '', e.target.checked ?? false)}
               />
             )
           },
@@ -490,7 +502,7 @@ export default function ReceiptReconcilePage() {
           title: t('receiptReconcile.columns.allocateAmount'),
           key: 'allocate_amount',
           width: 150,
-          render: (_: unknown, record: AccountReceivable) => {
+          render: (_: unknown, record: HandlerAccountReceivableResponse) => {
             const item = allocationItems.find((i) => i.receivableId === record.id)
             if (!item?.selected) return '-'
             return (
@@ -501,7 +513,7 @@ export default function ReceiptReconcilePage() {
                 precision={2}
                 prefix="¥"
                 style={{ width: 130 }}
-                onChange={(value) => handleAmountChange(record.id, value)}
+                onChange={(value) => handleAmountChange(record.id || '', value)}
               />
             )
           },
@@ -517,7 +529,7 @@ export default function ReceiptReconcilePage() {
         title: t('receiptReconcile.columns.fifoAllocation'),
         key: 'fifo_allocation',
         width: 120,
-        render: (_: unknown, record: AccountReceivable) => {
+        render: (_: unknown, record: HandlerAccountReceivableResponse) => {
           const allocation = fifoAllocations.find((a) => a.receivableId === record.id)
           if (!allocation || allocation.allocateAmount <= 0) {
             return <Text type="tertiary">-</Text>
@@ -735,7 +747,7 @@ export default function ReceiptReconcilePage() {
           />
         )}
 
-        {voucher.status === 'CONFIRMED' && voucher.unallocated_amount <= 0 && (
+        {voucher.status === 'CONFIRMED' && (voucher.unallocated_amount || 0) <= 0 && (
           <Banner
             type="success"
             className="status-warning"
@@ -745,7 +757,7 @@ export default function ReceiptReconcilePage() {
       </Card>
 
       {/* Reconciliation Section */}
-      {voucher.status === 'CONFIRMED' && voucher.unallocated_amount > 0 && (
+      {voucher.status === 'CONFIRMED' && (voucher.unallocated_amount || 0) > 0 && (
         <Card className="reconcile-section-card">
           <div className="reconcile-header">
             <Title heading={5}>{t('receiptReconcile.receivables.title')}</Title>
@@ -813,7 +825,7 @@ export default function ReceiptReconcilePage() {
                 <div className="summary-item">
                   <Text type="secondary">{t('receiptReconcile.summary.remaining')}</Text>
                   <Text strong type={totalAllocation > 0 ? 'warning' : 'tertiary'}>
-                    {formatCurrency(voucher.unallocated_amount - totalAllocation)}
+                    {formatCurrency((voucher.unallocated_amount || 0) - totalAllocation)}
                   </Text>
                 </div>
               </div>

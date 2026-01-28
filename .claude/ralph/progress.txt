@@ -33834,3 +33834,89 @@ if (response.status === 200 && response.data.success && response.data.data?.tena
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-015: React Query Migration - Finance Module Fix Import Paths
+
+=== Implementation Details ===
+- Fixed 1 file that was using the old `getFinanceApi` factory pattern with incorrect imports from `@/api/finance`
+- Updated to use direct function imports from the correct module paths
+
+**Files Updated:**
+1. src/pages/finance/ReceiptReconcile.tsx
+
+=== Key Changes ===
+
+**ReceiptReconcile.tsx:**
+- Replaced `getFinanceApi` factory with direct imports:
+  - `getFinanceReceiptReceiptVoucherByID` from `@/api/finance-receipts/finance-receipts`
+  - `reconcileReceiptVoucherFinanceReceipt` from `@/api/finance-receipts/finance-receipts`
+  - `listFinanceReceivableReceivables` from `@/api/finance-receivables/finance-receivables`
+- Removed factory instantiation: `const financeApi = useMemo(() => getFinanceApi(), [])`
+- Updated type imports from `@/api/models`:
+  - `HandlerReceiptVoucherResponse` (was `ReceiptVoucher`)
+  - `HandlerAccountReceivableResponse` (was `AccountReceivable`)
+  - `ReconcileReceiptVoucherFinanceReceiptBody` (was `ReconcileRequest`)
+  - `HandlerReconcileReceiptResultResponse` (was `ReconcileReceiptResult`)
+- Updated response handling to new axios format:
+  - `response.status === 200 && response.data.success && response.data.data`
+  - Error messages: `response.data.error?.message`
+- Fixed optional property access for `unallocated_amount` with `|| 0` fallback
+- Fixed optional property access for `id` with `|| ''` fallback
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const financeApi = useMemo(() => getFinanceApi(), [])
+const voucherResponse = await financeApi.getFinanceReceiptReceiptVoucher(id)
+if (!voucherResponse.success || !voucherResponse.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { getFinanceReceiptReceiptVoucherByID } from '@/api/finance-receipts/finance-receipts'
+const voucherResponse = await getFinanceReceiptReceiptVoucherByID(id)
+if (voucherResponse.status !== 200 || !voucherResponse.data.success || !voucherResponse.data.data) { ... }
+```
+
+=== API Method Mapping ===
+| Old Factory Method | New Direct Import |
+|---|---|
+| financeApi.getFinanceReceiptReceiptVoucher() | getFinanceReceiptReceiptVoucherByID() |
+| financeApi.listFinanceReceivablesReceivables() | listFinanceReceivableReceivables() |
+| financeApi.reconcileFinanceReceipt() | reconcileReceiptVoucherFinanceReceipt() |
+
+=== Type Mapping ===
+| Old Type (from @/api/finance) | New Type (from @/api/models) |
+|---|---|
+| ReceiptVoucher | HandlerReceiptVoucherResponse |
+| AccountReceivable | HandlerAccountReceivableResponse |
+| ReconcileRequest | ReconcileReceiptVoucherFinanceReceiptBody |
+| ManualAllocationInput | (inline object type) |
+| ReconcileReceiptResult | HandlerReconcileReceiptResultResponse |
+
+=== Files Already Correct ===
+The following files were already using correct import paths:
+- src/pages/Dashboard.tsx - Uses finance-receivables and finance-payables correctly
+- src/pages/finance/CashFlow.tsx - Uses expenses correctly
+- src/pages/finance/ExpenseForm.tsx - Uses expenses correctly
+- src/pages/finance/Expenses.tsx - Uses expenses correctly
+- src/pages/finance/OtherIncomeForm.tsx - Uses incomes correctly
+- src/pages/finance/OtherIncomes.tsx - Uses incomes correctly
+- src/pages/finance/Payables.tsx - Uses finance-payables correctly
+- src/pages/finance/PaymentReconcile.tsx - Uses finance-payments and finance-payables correctly
+- src/pages/finance/PaymentVoucherNew.tsx - Uses finance-payments and finance-payables correctly
+- src/pages/finance/ReceiptVoucherNew.tsx - Uses finance-receipts and finance-receivables correctly
+- src/pages/finance/Receivables.tsx - Uses finance-receivables correctly
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getFinanceApi` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Status codes: 200 for GET, 201 for POST create
+- Error responses accessed via `response.data.error?.message`
+- Optional properties require fallback values (e.g., `|| 0`, `|| ''`)
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

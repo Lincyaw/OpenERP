@@ -9996,7 +9996,7 @@
       "- All implicit any errors fixed",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/Dashboard.tsx",
       "src/pages/finance/CashFlow.tsx",
