@@ -10191,7 +10191,7 @@
       "- Type assignment errors resolved",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/system/Permissions.tsx",
       "src/pages/system/Roles.tsx",

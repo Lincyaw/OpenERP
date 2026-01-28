@@ -34175,3 +34175,97 @@ if (summaryRes.status === 'fulfilled' && summaryRes.value.status === 200 && summ
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-019: React Query Migration - Identity Module Fix Import Paths
+
+=== Implementation Details ===
+- Migrated 3 files from non-existent `@/api/identity` imports to correct module paths:
+  1. `src/pages/system/Roles.tsx`
+  2. `src/pages/system/Permissions.tsx`
+  3. `src/pages/system/Users.tsx`
+
+=== Roles.tsx Migration ===
+- Updated API function imports to use `@/api/roles/roles`:
+  - `listRoles`, `getRolePermissions`, `createRole`, `updateRole`
+  - `enableRole`, `disableRole`, `deleteRole`, `setPermissionsRole`
+- Updated type imports to use `@/api/models`:
+  - `HandlerRoleResponse` (aliased as `Role`)
+  - `ListRolesParams` (aliased as `RoleListQuery`)
+  - `CreateRoleBody` (aliased as `CreateRoleRequest`)
+  - `UpdateRoleBody` (aliased as `UpdateRoleRequest`)
+  - `SetPermissionsRoleBody`
+- Removed factory pattern (`getIdentity()`) and `api` useMemo hook
+- Updated all API calls to use direct function imports with new response pattern
+
+=== Permissions.tsx Migration ===
+- Updated API function imports to use `@/api/roles/roles`:
+  - `listRoles`, `getRolePermissions`
+- Updated type imports to use `@/api/models`:
+  - `HandlerRoleResponse` (aliased as `Role`)
+  - `ListRolesParams` (aliased as `RoleListQuery`)
+- Removed factory pattern and `api` useMemo hook
+
+=== Users.tsx Migration ===
+- Updated API function imports to use `@/api/users/users`:
+  - `listUsers`, `createUser`, `updateUser`, `activateUser`
+  - `deactivateUser`, `lockUser`, `unlockUser`, `deleteUser`
+  - `resetPasswordUser`, `assignRolesUser`
+- Updated API function imports to use `@/api/roles/roles`:
+  - `listRoles`
+- Updated type imports to use `@/api/models`:
+  - `HandlerUserResponse` (aliased as `User`)
+  - `HandlerRoleResponse` (aliased as `Role`)
+  - `ListUsersParams` (aliased as `UserListQuery`)
+  - `ListUsersStatus` (aliased as `UserStatus`)
+  - `CreateUserBody` (aliased as `CreateUserRequest`)
+  - `UpdateUserBody` (aliased as `UpdateUserRequest`)
+  - `ResetPasswordUserBody`, `AssignRolesUserBody`, `ListRolesParams`
+- Removed factory pattern and `api` useMemo hook
+
+=== API Call Pattern Migration ===
+**Before (Factory Pattern):**
+```typescript
+const api = useMemo(() => getIdentity(), [])
+const response = await api.listRoles(params)
+if (response.success && response.data) {
+  setRoleList(response.data.roles)
+}
+```
+
+**After (Direct Import with Response Handling):**
+```typescript
+import { listRoles } from '@/api/roles/roles'
+const response = await listRoles(params)
+if (response.status === 200 && response.data.success && response.data.data) {
+  setRoleList(response.data.data.roles || [])
+}
+```
+
+=== Type Mapping ===
+| Old Type | New Type (from @/api/models) |
+|----------|------------------------------|
+| Role | HandlerRoleResponse |
+| RoleListQuery | ListRolesParams |
+| CreateRoleRequest | CreateRoleBody |
+| UpdateRoleRequest | UpdateRoleBody |
+| User | HandlerUserResponse |
+| UserListQuery | ListUsersParams |
+| UserStatus | ListUsersStatus |
+| CreateUserRequest | CreateUserBody |
+| UpdateUserRequest | UpdateUserBody |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `@/api/identity` imports in affected files
+- All 3 files now use correct import paths
+- All type imports from @/api/models
+- Response data accessed via nested `response.data.data` pattern
+
+=== Notes ===
+- Type aliases created at the top of each file for backward compatibility
+- Request body fields use snake_case to match backend API expectations
+- Functions requiring empty body (enableRole, disableRole, activateUser, etc.) now pass `{}` as body parameter
+- Used non-null assertion (`!`) for id fields since they are optional in types but required for API calls
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

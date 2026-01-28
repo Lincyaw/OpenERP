@@ -26,15 +26,38 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getIdentity } from '@/api/identity'
+import {
+  listUsers,
+  createUser,
+  updateUser,
+  activateUser,
+  deactivateUser,
+  lockUser,
+  unlockUser,
+  deleteUser,
+  resetPasswordUser as resetPasswordUserApi,
+  assignRolesUser,
+} from '@/api/users/users'
+import { listRoles } from '@/api/roles/roles'
 import type {
-  User,
-  UserStatus,
-  UserListQuery,
-  Role,
-  CreateUserRequest,
-  UpdateUserRequest,
-} from '@/api/identity'
+  HandlerUserResponse,
+  HandlerRoleResponse,
+  ListUsersParams,
+  ListUsersStatus,
+  CreateUserBody,
+  UpdateUserBody,
+  ResetPasswordUserBody,
+  AssignRolesUserBody,
+  ListRolesParams,
+} from '@/api/models'
+
+// Type aliases for backward compatibility
+type User = HandlerUserResponse
+type Role = HandlerRoleResponse
+type UserStatus = ListUsersStatus
+type UserListQuery = ListUsersParams
+type CreateUserRequest = CreateUserBody
+type UpdateUserRequest = UpdateUserBody
 import './Users.css'
 
 const { Title, Text } = Typography
@@ -83,7 +106,6 @@ function generatePassword(): string {
  */
 export default function UsersPage() {
   const { t, i18n } = useTranslation('system')
-  const api = useMemo(() => getIdentity(), [])
 
   // Status tag color mapping
   const STATUS_TAG_COLORS: Record<UserStatus, 'white' | 'green' | 'red' | 'grey'> = {
@@ -148,14 +170,15 @@ export default function UsersPage() {
   // Fetch roles for filter and assignment
   const fetchRoles = useCallback(async () => {
     try {
-      const response = await api.listRoles({ page_size: 100 })
-      if (response.success && response.data) {
-        setRoles(response.data.roles)
+      const params: ListRolesParams = { page_size: 100 }
+      const response = await listRoles(params)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setRoles(response.data.data.roles || [])
       }
     } catch {
       // Silent fail for roles fetch
     }
-  }, [api])
+  }, [])
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -171,11 +194,11 @@ export default function UsersPage() {
         sort_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.listUsers(params)
+      const response = await listUsers(params)
 
-      if (response.success && response.data) {
-        setUserList(response.data.users as UserRow[])
-        setTotal(response.data.total)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setUserList(response.data.data.users as UserRow[])
+        setTotal(response.data.data.total || 0)
       }
     } catch {
       Toast.error(t('users.messages.fetchError'))
@@ -183,13 +206,13 @@ export default function UsersPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     state.sort,
     searchKeyword,
     statusFilter,
     roleFilter,
+    t,
   ])
 
   // Fetch on mount and when state changes
@@ -263,13 +286,13 @@ export default function UsersPage() {
           notes: values.notes || undefined,
           role_ids: values.role_ids || [],
         }
-        const response = await api.createUser(request)
-        if (response.success) {
+        const response = await createUser(request)
+        if (response.status === 201 && response.data.success) {
           Toast.success(t('users.messages.createSuccess'))
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || t('users.messages.createError'))
+          Toast.error(response.data.error?.message || t('users.messages.createError'))
         }
       } else if (editingUser) {
         const request: UpdateUserRequest = {
@@ -278,13 +301,13 @@ export default function UsersPage() {
           display_name: values.display_name || undefined,
           notes: values.notes || undefined,
         }
-        const response = await api.updateUser(editingUser.id, request)
-        if (response.success) {
+        const response = await updateUser(editingUser.id!, request)
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('users.messages.updateSuccess'))
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || t('users.messages.updateError'))
+          Toast.error(response.data.error?.message || t('users.messages.updateError'))
         }
       }
     } catch {
@@ -292,26 +315,26 @@ export default function UsersPage() {
     } finally {
       setModalLoading(false)
     }
-  }, [modalMode, editingUser, api, fetchUsers])
+  }, [modalMode, editingUser, fetchUsers, t])
 
   // Handle activate user
   const handleActivate = useCallback(
     async (user: UserRow) => {
       try {
-        const response = await api.activateUser(user.id)
-        if (response.success) {
+        const response = await activateUser(user.id!, {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(
             t('users.messages.activateSuccess', { name: user.display_name || user.username })
           )
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || t('users.messages.activateError'))
+          Toast.error(response.data.error?.message || t('users.messages.activateError'))
         }
       } catch {
         Toast.error(t('users.messages.activateError'))
       }
     },
-    [api, fetchUsers, t]
+    [fetchUsers, t]
   )
 
   // Handle deactivate user
@@ -325,14 +348,14 @@ export default function UsersPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            const response = await api.deactivateUser(user.id)
-            if (response.success) {
+            const response = await deactivateUser(user.id!, {})
+            if (response.status === 200 && response.data.success) {
               Toast.success(
                 t('users.messages.deactivateSuccess', { name: user.display_name || user.username })
               )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || t('users.messages.deactivateError'))
+              Toast.error(response.data.error?.message || t('users.messages.deactivateError'))
             }
           } catch {
             Toast.error(t('users.messages.deactivateError'))
@@ -340,7 +363,7 @@ export default function UsersPage() {
         },
       })
     },
-    [api, fetchUsers, t]
+    [fetchUsers, t]
   )
 
   // Handle lock user
@@ -354,14 +377,14 @@ export default function UsersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            const response = await api.lockUser(user.id)
-            if (response.success) {
+            const response = await lockUser(user.id!, {})
+            if (response.status === 200 && response.data.success) {
               Toast.success(
                 t('users.messages.lockSuccess', { name: user.display_name || user.username })
               )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || t('users.messages.lockError'))
+              Toast.error(response.data.error?.message || t('users.messages.lockError'))
             }
           } catch {
             Toast.error(t('users.messages.lockError'))
@@ -369,27 +392,27 @@ export default function UsersPage() {
         },
       })
     },
-    [api, fetchUsers, t]
+    [fetchUsers, t]
   )
 
   // Handle unlock user
   const handleUnlock = useCallback(
     async (user: UserRow) => {
       try {
-        const response = await api.unlockUser(user.id)
-        if (response.success) {
+        const response = await unlockUser(user.id!, {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(
             t('users.messages.unlockSuccess', { name: user.display_name || user.username })
           )
           fetchUsers()
         } else {
-          Toast.error(response.error?.message || t('users.messages.unlockError'))
+          Toast.error(response.data.error?.message || t('users.messages.unlockError'))
         }
       } catch {
         Toast.error(t('users.messages.unlockError'))
       }
     },
-    [api, fetchUsers, t]
+    [fetchUsers, t]
   )
 
   // Handle delete user
@@ -403,14 +426,14 @@ export default function UsersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            const response = await api.deleteUser(user.id)
-            if (response.success) {
+            const response = await deleteUser(user.id!)
+            if (response.status === 200 && response.data.success) {
               Toast.success(
                 t('users.messages.deleteSuccess', { name: user.display_name || user.username })
               )
               fetchUsers()
             } else {
-              Toast.error(response.error?.message || t('users.messages.deleteError'))
+              Toast.error(response.data.error?.message || t('users.messages.deleteError'))
             }
           } catch {
             Toast.error(t('users.messages.deleteError'))
@@ -418,7 +441,7 @@ export default function UsersPage() {
         },
       })
     },
-    [api, fetchUsers, t]
+    [fetchUsers, t]
   )
 
   // Handle reset password
@@ -433,17 +456,18 @@ export default function UsersPage() {
     if (!resetPasswordUser || !newPassword) return
 
     try {
-      const response = await api.resetPassword(resetPasswordUser.id, { new_password: newPassword })
-      if (response.success) {
+      const body: ResetPasswordUserBody = { new_password: newPassword }
+      const response = await resetPasswordUserApi(resetPasswordUser.id!, body)
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('users.messages.resetPasswordSuccess'))
         setResetPasswordVisible(false)
       } else {
-        Toast.error(response.error?.message || t('users.messages.resetPasswordError'))
+        Toast.error(response.data.error?.message || t('users.messages.resetPasswordError'))
       }
     } catch {
       Toast.error(t('users.messages.resetPasswordError'))
     }
-  }, [api, resetPasswordUser, newPassword, t])
+  }, [resetPasswordUser, newPassword, t])
 
   // Handle assign roles
   const handleAssignRoles = useCallback((user: UserRow) => {
@@ -457,42 +481,43 @@ export default function UsersPage() {
     if (!roleAssignUser) return
 
     try {
-      const response = await api.assignRoles(roleAssignUser.id, { role_ids: selectedRoleIds })
-      if (response.success) {
+      const body: AssignRolesUserBody = { role_ids: selectedRoleIds }
+      const response = await assignRolesUser(roleAssignUser.id!, body)
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('users.messages.assignRolesSuccess'))
         setRoleModalVisible(false)
         fetchUsers()
       } else {
-        Toast.error(response.error?.message || t('users.messages.assignRolesError'))
+        Toast.error(response.data.error?.message || t('users.messages.assignRolesError'))
       }
     } catch {
       Toast.error(t('users.messages.assignRolesError'))
     }
-  }, [api, roleAssignUser, selectedRoleIds, fetchUsers, t])
+  }, [roleAssignUser, selectedRoleIds, fetchUsers, t])
 
   // Handle bulk activate
   const handleBulkActivate = useCallback(async () => {
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.activateUser(id)))
+      await Promise.all(selectedRowKeys.map((id) => activateUser(id, {})))
       Toast.success(t('users.messages.batchActivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchUsers()
     } catch {
       Toast.error(t('users.messages.batchActivateError'))
     }
-  }, [api, selectedRowKeys, fetchUsers, t])
+  }, [selectedRowKeys, fetchUsers, t])
 
   // Handle bulk deactivate
   const handleBulkDeactivate = useCallback(async () => {
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.deactivateUser(id)))
+      await Promise.all(selectedRowKeys.map((id) => deactivateUser(id, {})))
       Toast.success(t('users.messages.batchDeactivateSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchUsers()
     } catch {
       Toast.error(t('users.messages.batchDeactivateError'))
     }
-  }, [api, selectedRowKeys, fetchUsers, t])
+  }, [selectedRowKeys, fetchUsers, t])
 
   // Get role name by ID
   const getRoleName = useCallback(

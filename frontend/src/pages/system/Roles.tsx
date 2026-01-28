@@ -27,8 +27,29 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getIdentity } from '@/api/identity'
-import type { Role, RoleListQuery, CreateRoleRequest, UpdateRoleRequest } from '@/api/identity'
+import {
+  listRoles,
+  getRolePermissions,
+  createRole,
+  updateRole,
+  enableRole,
+  disableRole,
+  deleteRole,
+  setPermissionsRole,
+} from '@/api/roles/roles'
+import type {
+  HandlerRoleResponse,
+  ListRolesParams,
+  CreateRoleBody,
+  UpdateRoleBody,
+  SetPermissionsRoleBody,
+} from '@/api/models'
+
+// Type aliases for backward compatibility
+type Role = HandlerRoleResponse
+type RoleListQuery = ListRolesParams
+type CreateRoleRequest = CreateRoleBody
+type UpdateRoleRequest = UpdateRoleBody
 import './Roles.css'
 
 const { Title, Text } = Typography
@@ -84,7 +105,6 @@ function groupPermissionsByResource(permissions: string[]): Map<string, string[]
  */
 export default function RolesPage() {
   const { t, i18n } = useTranslation('system')
-  const api = useMemo(() => getIdentity(), [])
 
   // Status options for filter (with i18n)
   const STATUS_OPTIONS = useMemo(
@@ -207,16 +227,16 @@ export default function RolesPage() {
   const fetchPermissions = useCallback(async () => {
     setPermissionsLoading(true)
     try {
-      const response = await api.getAllPermissions()
-      if (response.success && response.data) {
-        setAllPermissions(response.data.permissions || [])
+      const response = await getRolePermissions()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setAllPermissions(response.data.data.permissions || [])
       }
     } catch {
       // Silent fail
     } finally {
       setPermissionsLoading(false)
     }
-  }, [api])
+  }, [])
 
   // Fetch roles
   const fetchRoles = useCallback(async () => {
@@ -230,25 +250,18 @@ export default function RolesPage() {
         is_system_role: typeFilter ? typeFilter === 'true' : undefined,
       }
 
-      const response = await api.listRoles(params)
+      const response = await listRoles(params)
 
-      if (response.success && response.data) {
-        setRoleList(response.data.roles as RoleRow[])
-        setTotal(response.data.total)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setRoleList(response.data.data.roles as RoleRow[])
+        setTotal(response.data.data.total || 0)
       }
     } catch {
       Toast.error(t('roles.messages.fetchError'))
     } finally {
       setLoading(false)
     }
-  }, [
-    api,
-    state.pagination.page,
-    state.pagination.pageSize,
-    searchKeyword,
-    statusFilter,
-    typeFilter,
-  ])
+  }, [state.pagination.page, state.pagination.pageSize, searchKeyword, statusFilter, typeFilter, t])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -331,13 +344,13 @@ export default function RolesPage() {
           description: values.description || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : 0,
         }
-        const response = await api.createRole(request)
-        if (response.success) {
+        const response = await createRole(request)
+        if (response.status === 201 && response.data.success) {
           Toast.success(t('roles.messages.createSuccess'))
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || t('roles.messages.createError'))
+          Toast.error(response.data.error?.message || t('roles.messages.createError'))
         }
       } else if (editingRole) {
         const request: UpdateRoleRequest = {
@@ -345,13 +358,13 @@ export default function RolesPage() {
           description: values.description || undefined,
           sort_order: values.sort_order ? Number(values.sort_order) : undefined,
         }
-        const response = await api.updateRole(editingRole.id, request)
-        if (response.success) {
+        const response = await updateRole(editingRole.id!, request)
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('roles.messages.updateSuccess'))
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || t('roles.messages.updateError'))
+          Toast.error(response.data.error?.message || t('roles.messages.updateError'))
         }
       }
     } catch {
@@ -359,24 +372,24 @@ export default function RolesPage() {
     } finally {
       setModalLoading(false)
     }
-  }, [modalMode, editingRole, api, fetchRoles, t])
+  }, [modalMode, editingRole, fetchRoles, t])
 
   // Handle enable role
   const handleEnable = useCallback(
     async (role: RoleRow) => {
       try {
-        const response = await api.enableRole(role.id)
-        if (response.success) {
+        const response = await enableRole(role.id!, {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('roles.messages.enableSuccess', { name: role.name }))
           fetchRoles()
         } else {
-          Toast.error(response.error?.message || t('roles.messages.enableError'))
+          Toast.error(response.data.error?.message || t('roles.messages.enableError'))
         }
       } catch {
         Toast.error(t('roles.messages.enableError'))
       }
     },
-    [api, fetchRoles, t]
+    [fetchRoles, t]
   )
 
   // Handle disable role
@@ -394,12 +407,12 @@ export default function RolesPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            const response = await api.disableRole(role.id)
-            if (response.success) {
+            const response = await disableRole(role.id!, {})
+            if (response.status === 200 && response.data.success) {
               Toast.success(t('roles.messages.disableSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.error?.message || t('roles.messages.disableError'))
+              Toast.error(response.data.error?.message || t('roles.messages.disableError'))
             }
           } catch {
             Toast.error(t('roles.messages.disableError'))
@@ -407,7 +420,7 @@ export default function RolesPage() {
         },
       })
     },
-    [api, fetchRoles, t]
+    [fetchRoles, t]
   )
 
   // Handle delete role
@@ -429,12 +442,12 @@ export default function RolesPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            const response = await api.deleteRole(role.id)
-            if (response.success) {
+            const response = await deleteRole(role.id!)
+            if (response.status === 200 && response.data.success) {
               Toast.success(t('roles.messages.deleteSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.error?.message || t('roles.messages.deleteError'))
+              Toast.error(response.data.error?.message || t('roles.messages.deleteError'))
             }
           } catch {
             Toast.error(t('roles.messages.deleteError'))
@@ -442,7 +455,7 @@ export default function RolesPage() {
         },
       })
     },
-    [api, fetchRoles, t]
+    [fetchRoles, t]
   )
 
   // Handle configure permissions
@@ -458,22 +471,23 @@ export default function RolesPage() {
 
     setPermissionSaving(true)
     try {
-      const response = await api.setRolePermissions(permissionRole.id, {
+      const body: SetPermissionsRoleBody = {
         permissions: selectedPermissions,
-      })
-      if (response.success) {
+      }
+      const response = await setPermissionsRole(permissionRole.id!, body)
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('roles.messages.savePermissionsSuccess'))
         setPermissionModalVisible(false)
         fetchRoles()
       } else {
-        Toast.error(response.error?.message || t('roles.messages.savePermissionsError'))
+        Toast.error(response.data.error?.message || t('roles.messages.savePermissionsError'))
       }
     } catch {
       Toast.error(t('roles.messages.savePermissionsError'))
     } finally {
       setPermissionSaving(false)
     }
-  }, [api, permissionRole, selectedPermissions, fetchRoles, t])
+  }, [permissionRole, selectedPermissions, fetchRoles, t])
 
   // Handle permission tree selection
   const handlePermissionChange = useCallback(

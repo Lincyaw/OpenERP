@@ -18,8 +18,12 @@ import {
 import type { TreeNodeData } from '@douyinfe/semi-ui-19/lib/es/tree/interface'
 import { IconRefresh, IconSearch, IconInfoCircle } from '@douyinfe/semi-icons'
 import { Container } from '@/components/common/layout'
-import { getIdentity } from '@/api/identity'
-import type { Role, RoleListQuery } from '@/api/identity'
+import { listRoles, getRolePermissions } from '@/api/roles/roles'
+import type { HandlerRoleResponse, ListRolesParams } from '@/api/models'
+
+// Type aliases for backward compatibility
+type Role = HandlerRoleResponse
+type RoleListQuery = ListRolesParams
 import './Permissions.css'
 
 const { Title, Text } = Typography
@@ -55,7 +59,6 @@ function groupPermissionsByResource(permissions: string[]): Map<string, string[]
  */
 export default function PermissionsPage() {
   const { t, i18n } = useTranslation('system')
-  const api = useMemo(() => getIdentity(), [])
 
   /**
    * Convert permissions to tree data with additional metadata
@@ -186,11 +189,13 @@ export default function PermissionsPage() {
   const fetchPermissions = useCallback(async () => {
     setPermissionsLoading(true)
     try {
-      const response = await api.getAllPermissions()
-      if (response.success && response.data) {
-        setAllPermissions(response.data.permissions || [])
+      const response = await getRolePermissions()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setAllPermissions(response.data.data.permissions || [])
         // Initially expand all resource groups
-        const resources = new Set((response.data.permissions || []).map((p) => p.split(':')[0]))
+        const resources = new Set(
+          (response.data.data.permissions || []).map((p: string) => p.split(':')[0])
+        )
         setExpandedKeys(Array.from(resources))
       }
     } catch {
@@ -198,7 +203,7 @@ export default function PermissionsPage() {
     } finally {
       setPermissionsLoading(false)
     }
-  }, [api, t])
+  }, [t])
 
   // Fetch all roles with their permissions
   const fetchRoles = useCallback(async () => {
@@ -209,16 +214,16 @@ export default function PermissionsPage() {
         page_size: 100, // Backend max is 100
         is_enabled: true,
       }
-      const response = await api.listRoles(query)
-      if (response.success && response.data) {
-        setRoles(response.data.roles || [])
+      const response = await listRoles(query)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setRoles(response.data.data.roles || [])
       }
     } catch {
       Toast.error(t('permissions.messages.fetchRolesError'))
     } finally {
       setRolesLoading(false)
     }
-  }, [api, t])
+  }, [t])
 
   // Fetch data on mount
   useEffect(() => {
