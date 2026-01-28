@@ -7619,7 +7619,7 @@
       "编写单元测试覆盖配置加载和验证逻辑",
       "验收标准：./loadgen -config configs/erp.yaml --help 显示帮助信息"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-002",

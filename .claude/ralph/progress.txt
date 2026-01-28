@@ -32585,3 +32585,109 @@ weightedSelector:
 === Next Steps ===
 - LOADGEN-021: Time-based weight scheduling
 - Integration with request builder for endpoint selection during load test
+
+
+2025-01-28 - LOADGEN-001: CLI Entry Point and Configuration Framework
+
+=== Implementation Details ===
+
+**Task:** Implement CLI entry point with configuration loading framework
+
+**Files Created:**
+- tools/loadgen/cmd/main.go (406 lines) - CLI entry point
+- tools/loadgen/cmd/main_test.go (418 lines) - CLI tests
+
+**Pre-existing Files (already implemented):**
+- tools/loadgen/internal/config/config.go - Configuration structs and YAML loading
+- tools/loadgen/internal/config/config_test.go - Configuration unit tests
+- tools/loadgen/configs/erp.yaml - ERP system configuration (64 endpoints, 6 scenarios)
+
+**Features Implemented:**
+
+1. **CLI Entry Point (cmd/main.go):**
+   - `-config, -c <path>` - Required configuration file path
+   - `-duration, -d <dur>` - Override test duration
+   - `-concurrency <n>` - Override worker pool max size
+   - `-qps <n>` - Override base QPS
+   - `-verbose, -v` - Enable verbose output
+   - `-list, -l` - List all endpoints from configuration
+   - `-validate` - Validate configuration and exit
+   - `-dry-run` - Show execution plan without running
+   - `-version` - Show version information
+   - `-help, -h` - Show comprehensive help message
+
+2. **Configuration Loading:**
+   - LoadFromFile() - Load YAML configuration from file path
+   - LoadFromBytes() - Load YAML configuration from bytes
+   - Validate() - Comprehensive configuration validation
+   - ApplyDefaults() - Apply sensible default values
+
+3. **CLI Override System:**
+   - Duration override modifies cfg.Duration
+   - Concurrency override modifies cfg.WorkerPool.MaxSize
+   - QPS override modifies cfg.TrafficShaper.BaseQPS (and RateLimiter.QPS if applicable)
+   - Verbose flag sets cfg.Output.Verbose
+
+4. **Utility Commands:**
+   - `-validate`: Prints config summary and exits
+   - `-list`: Groups endpoints by category, shows weights and auth requirements
+   - `-dry-run`: Shows complete execution plan including traffic shaping steps
+
+5. **Version Information:**
+   - Supports ldflags for build-time version injection
+   - Shows version, build time, and git commit
+
+=== Configuration Structure ===
+```yaml
+# Minimal required config
+name: "Config Name"
+target:
+  baseURL: "http://localhost:8080"
+trafficShaper:
+  type: "sine"
+  baseQPS: 100
+endpoints:
+  - name: "endpoint.name"
+    path: "/path"
+    method: "GET"
+```
+
+=== Verification ===
+- [x] CLI builds successfully: `go build -o loadgen ./cmd/main.go`
+- [x] All 17 test cases pass: `go test -v ./cmd/...`
+- [x] Acceptance criteria met: `./loadgen -config configs/erp.yaml --help` shows help
+- [x] `-validate` command works correctly
+- [x] `-list` command shows grouped endpoints
+- [x] `-dry-run` command shows execution plan
+- [x] Command-line overrides work with `-verbose` feedback
+- [x] Short flags work (-c, -d, -v, -l)
+- [x] Error handling for missing/invalid config
+
+**Test Results:**
+```
+=== RUN   TestCLI_Help
+=== RUN   TestCLI_Version
+=== RUN   TestCLI_NoConfigError
+=== RUN   TestCLI_ConfigNotFound
+=== RUN   TestCLI_Validate
+=== RUN   TestCLI_List
+=== RUN   TestCLI_DryRun
+=== RUN   TestCLI_Overrides
+=== RUN   TestCLI_ShortFlags
+=== RUN   TestCLI_InvalidConfig
+=== RUN   TestCLI_RunPlaceholder
+=== RUN   TestApplyOverrides_Integration (4 subtests)
+=== RUN   TestGetAuthType (3 subtests)
+=== RUN   TestEndpointGrouping
+PASS - 17 tests, 3.6s
+```
+
+=== Notes ===
+- The actual load test execution (runLoadTest function) is a placeholder
+- Full load test runner will be implemented in LOADGEN-003
+- Pre-existing config infrastructure was comprehensive and well-tested
+- CLI designed to be extensible for future features
+
+=== Next Steps ===
+- LOADGEN-002: OpenAPI Parser implementation for endpoint discovery
+- LOADGEN-003: Load Test Runner implementation
