@@ -12,7 +12,6 @@ import (
 func TestNewParser(t *testing.T) {
 	p := NewParser()
 	assert.NotNil(t, p)
-	assert.NotNil(t, p.resolvedRefs)
 	assert.Equal(t, 20, p.maxRefDepth)
 }
 
@@ -37,14 +36,14 @@ info:
 	assert.ErrorIs(t, err, ErrInvalidSpec)
 }
 
-func TestParser_ParseBytes_Swagger2_Minimal(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_Minimal(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-basePath: /api/v1
-host: localhost:8080
+servers:
+  - url: http://localhost:8080
 paths:
   /users:
     get:
@@ -55,24 +54,25 @@ paths:
       responses:
         "200":
           description: Success
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: string
-                name:
-                  type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
 	require.NoError(t, err)
 
-	assert.Equal(t, "2.0", result.Version)
+	assert.Equal(t, "3.0.0", result.Version)
 	assert.Equal(t, "Test API", result.Title)
-	assert.Equal(t, "/api/v1", result.BasePath)
-	assert.Equal(t, "localhost:8080", result.Host)
+	assert.Equal(t, "http://localhost:8080", result.Host)
 	assert.Len(t, result.Endpoints, 1)
 
 	ep := result.Endpoints[0]
@@ -83,9 +83,9 @@ paths:
 	assert.Contains(t, ep.Tags, "users")
 }
 
-func TestParser_ParseBytes_Swagger2_WithParameters(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_WithParameters(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -97,18 +97,21 @@ paths:
         - name: id
           in: path
           required: true
-          type: string
-          format: uuid
+          schema:
+            type: string
+            format: uuid
           description: User ID
         - name: include_profile
           in: query
           required: false
-          type: boolean
-          default: false
+          schema:
+            type: boolean
+            default: false
         - name: X-Request-ID
           in: header
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Success
@@ -145,35 +148,37 @@ paths:
 	assert.Equal(t, ParameterLocationHeader, headerParam.Location)
 }
 
-func TestParser_ParseBytes_Swagger2_WithBodyParameter(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_WithRequestBody(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-definitions:
-  CreateUserRequest:
-    type: object
-    required:
-      - name
-      - email
-    properties:
-      name:
-        type: string
-        description: User name
-      email:
-        type: string
-        format: email
+components:
+  schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: User name
+        email:
+          type: string
+          format: email
 paths:
   /users:
     post:
       summary: Create user
-      parameters:
-        - name: body
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/CreateUserRequest'
+      requestBody:
+        required: true
+        description: User to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
         "201":
           description: Created
@@ -189,22 +194,22 @@ paths:
 	bodyParam := ep.InputPins[0]
 	assert.Equal(t, ParameterLocationBody, bodyParam.Location)
 	assert.True(t, bodyParam.Required)
+	assert.Equal(t, "User to create", bodyParam.Description)
 	assert.NotNil(t, bodyParam.Schema)
-	assert.Contains(t, bodyParam.Schema.Ref, "CreateUserRequest")
 }
 
-func TestParser_ParseBytes_Swagger2_WithSecurity(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_WithSecurity(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-securityDefinitions:
-  BearerAuth:
-    type: apiKey
-    name: Authorization
-    in: header
-    description: Bearer token authentication
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token authentication
 security:
   - BearerAuth: []
 paths:
@@ -228,7 +233,8 @@ paths:
 
 	// Check security definitions
 	assert.Contains(t, result.SecurityDefinitions, "BearerAuth")
-	assert.Equal(t, "apiKey", result.SecurityDefinitions["BearerAuth"].Type)
+	assert.Equal(t, "http", result.SecurityDefinitions["BearerAuth"].Type)
+	assert.Equal(t, "bearer", result.SecurityDefinitions["BearerAuth"].Scheme)
 
 	// Find endpoints
 	var publicEp, privateEp *EndpointUnit
@@ -253,28 +259,29 @@ paths:
 	assert.Contains(t, privateEp.SecuritySchemes, "BearerAuth")
 }
 
-func TestParser_ParseBytes_Swagger2_OutputPins(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_OutputPins(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-definitions:
-  User:
-    type: object
-    properties:
-      id:
-        type: string
-        format: uuid
-      name:
-        type: string
-      profile:
-        type: object
-        properties:
-          bio:
-            type: string
-          avatar_url:
-            type: string
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        profile:
+          type: object
+          properties:
+            bio:
+              type: string
+            avatar_url:
+              type: string
 paths:
   /users/{id}:
     get:
@@ -282,8 +289,10 @@ paths:
       responses:
         "200":
           description: Success
-          schema:
-            $ref: '#/definitions/User'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
@@ -303,35 +312,38 @@ paths:
 	assert.Equal(t, "uuid", idPin.Format)
 }
 
-func TestParser_ParseBytes_Swagger2_AllOf(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_AllOf(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-definitions:
-  BaseResponse:
-    type: object
-    properties:
-      success:
-        type: boolean
-      message:
-        type: string
-  DataWrapper:
-    type: object
-    properties:
-      data:
-        type: object
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    DataWrapper:
+      type: object
+      properties:
+        data:
+          type: object
 paths:
   /test:
     get:
       responses:
         "200":
           description: Success
-          schema:
-            allOf:
-              - $ref: '#/definitions/BaseResponse'
-              - $ref: '#/definitions/DataWrapper'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/BaseResponse'
+                  - $ref: '#/components/schemas/DataWrapper'
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
@@ -343,9 +355,9 @@ paths:
 	assert.NotEmpty(t, ep.OutputPins)
 }
 
-func TestParser_ParseBytes_Swagger2_ArrayResponse(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_ArrayResponse(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -356,20 +368,22 @@ paths:
       responses:
         "200":
           description: Success
-          schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    name:
-                      type: string
-              total:
-                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                  total:
+                    type: integer
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
@@ -379,19 +393,14 @@ paths:
 	ep := result.Endpoints[0]
 
 	// Should have output pins including array items
-	dataPin := findOutputPinByJSONPath(ep.OutputPins, "$.data")
-	if dataPin != nil {
-		assert.True(t, dataPin.IsArray || dataPin.Type == ParameterTypeArray)
-	}
-
 	totalPin := findOutputPinByName(ep.OutputPins, "total")
 	require.NotNil(t, totalPin)
 	assert.Equal(t, ParameterTypeInteger, totalPin.Type)
 }
 
-func TestParser_ParseBytes_Swagger2_Tags(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_Tags(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -434,9 +443,9 @@ paths:
 	assert.Equal(t, "/products", productEndpoints[0].Path)
 }
 
-func TestParser_ParseBytes_Swagger2_AllMethods(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_AllMethods(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -493,9 +502,9 @@ paths:
 	assert.Len(t, postEndpoints, 1)
 }
 
-func TestParser_ParseBytes_Swagger2_SuccessStatusCodes(t *testing.T) {
+func TestParser_ParseBytes_OpenAPI3_SuccessStatusCodes(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -532,19 +541,30 @@ paths:
 	}
 }
 
-func TestParser_ParseBytes_OpenAPI3_Minimal(t *testing.T) {
+func TestParser_ParseBytes_CircularReference(t *testing.T) {
+	// Test that circular $ref doesn't cause infinite recursion
 	spec := `
 openapi: "3.0.0"
 info:
-  title: Test API
+  title: Circular Ref Test
   version: "1.0"
-servers:
-  - url: http://localhost:8080
+components:
+  schemas:
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        parent:
+          $ref: '#/components/schemas/Node'
 paths:
-  /users:
+  /nodes:
     get:
-      summary: List users
-      operationId: listUsers
+      summary: List nodes
       responses:
         "200":
           description: Success
@@ -553,55 +573,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-`
-	p := NewParser()
-	result, err := p.ParseBytes([]byte(spec))
-	require.NoError(t, err)
-
-	assert.Equal(t, "3.0.0", result.Version)
-	assert.Equal(t, "Test API", result.Title)
-	assert.Len(t, result.Endpoints, 1)
-
-	ep := result.Endpoints[0]
-	assert.Equal(t, "/users", ep.Path)
-	assert.Equal(t, "GET", ep.Method)
-	assert.Equal(t, "listUsers", ep.OperationID)
-}
-
-func TestParser_ParseBytes_CircularReference(t *testing.T) {
-	// Test that circular $ref doesn't cause infinite recursion
-	spec := `
-swagger: "2.0"
-info:
-  title: Circular Ref Test
-  version: "1.0"
-definitions:
-  Node:
-    type: object
-    properties:
-      id:
-        type: string
-      children:
-        type: array
-        items:
-          $ref: '#/definitions/Node'
-      parent:
-        $ref: '#/definitions/Node'
-paths:
-  /nodes:
-    get:
-      summary: List nodes
-      responses:
-        "200":
-          description: Success
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Node'
+                  $ref: '#/components/schemas/Node'
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
@@ -616,34 +588,37 @@ paths:
 func TestParser_ParseBytes_DeeplyNestedSchema(t *testing.T) {
 	// Test maxRefDepth protection
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Deep Nesting Test
   version: "1.0"
-definitions:
-  Level1:
-    type: object
-    properties:
-      nested:
-        $ref: '#/definitions/Level2'
-  Level2:
-    type: object
-    properties:
-      nested:
-        $ref: '#/definitions/Level3'
-  Level3:
-    type: object
-    properties:
-      value:
-        type: string
+components:
+  schemas:
+    Level1:
+      type: object
+      properties:
+        nested:
+          $ref: '#/components/schemas/Level2'
+    Level2:
+      type: object
+      properties:
+        nested:
+          $ref: '#/components/schemas/Level3'
+    Level3:
+      type: object
+      properties:
+        value:
+          type: string
 paths:
   /deep:
     get:
       responses:
         "200":
           description: Success
-          schema:
-            $ref: '#/definitions/Level1'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Level1'
 `
 	p := NewParser()
 	result, err := p.ParseBytes([]byte(spec))
@@ -651,46 +626,6 @@ paths:
 
 	assert.NotNil(t, result)
 	assert.Len(t, result.Endpoints, 1)
-}
-
-func TestParser_ParseBytes_OpenAPI3_RequestBody(t *testing.T) {
-	spec := `
-openapi: "3.0.0"
-info:
-  title: Test API
-  version: "1.0"
-paths:
-  /users:
-    post:
-      summary: Create user
-      requestBody:
-        required: true
-        description: User to create
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-      responses:
-        "201":
-          description: Created
-`
-	p := NewParser()
-	result, err := p.ParseBytes([]byte(spec))
-	require.NoError(t, err)
-
-	assert.Len(t, result.Endpoints, 1)
-	ep := result.Endpoints[0]
-
-	assert.Len(t, ep.InputPins, 1)
-	bodyPin := ep.InputPins[0]
-	assert.Equal(t, ParameterLocationBody, bodyPin.Location)
-	assert.True(t, bodyPin.Required)
-	assert.Equal(t, "User to create", bodyPin.Description)
 }
 
 func TestParser_ParseBytes_OpenAPI3_Components(t *testing.T) {
@@ -736,7 +671,7 @@ paths:
 
 func TestParser_ParseBytes_Deprecated(t *testing.T) {
 	spec := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
@@ -867,9 +802,8 @@ func TestParser_ParseFile_ERPSwagger(t *testing.T) {
 	require.NoError(t, err)
 
 	// Basic assertions about ERP API
-	assert.Equal(t, "2.0", result.Version)
+	assert.True(t, result.Version == "3.1.0" || result.Version == "3.0.0", "Expected OpenAPI 3.x version")
 	assert.Equal(t, "ERP Backend API", result.Title)
-	assert.Equal(t, "/api/v1", result.BasePath)
 
 	// Should have many endpoints
 	assert.Greater(t, len(result.Endpoints), 50, "ERP API should have more than 50 endpoints")

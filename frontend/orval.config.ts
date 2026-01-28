@@ -7,9 +7,10 @@ export default defineConfig({
       mode: 'tags-split',
       target: './src/api',
       schemas: './src/api/models',
-      client: 'axios',
+      client: 'react-query',
       mock: false,
       prettier: true,
+      indexFiles: true,
       override: {
         mutator: {
           path: './src/services/axios-instance.ts',

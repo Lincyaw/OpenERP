@@ -1,9 +1,8 @@
 // Package parser provides OpenAPI specification parsing for the load generator.
-// It extracts endpoint definitions, parameters, and response schemas from Swagger 2.0/OpenAPI 3.0 specs.
+// It extracts endpoint definitions, parameters, and response schemas from OpenAPI 3.x specs.
 package parser
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -12,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/example/erp/tools/loadgen/internal/circuit"
-	"gopkg.in/yaml.v3"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // Errors returned by the parser package.
@@ -37,8 +36,8 @@ const (
 	ParameterLocationHeader ParameterLocation = "header"
 	// ParameterLocationBody indicates a request body parameter.
 	ParameterLocationBody ParameterLocation = "body"
-	// ParameterLocationFormData indicates a form data parameter.
-	ParameterLocationFormData ParameterLocation = "formData"
+	// ParameterLocationCookie indicates a cookie parameter.
+	ParameterLocationCookie ParameterLocation = "cookie"
 )
 
 // ParameterType defines the data type of a parameter.
@@ -251,37 +250,29 @@ type OpenAPISpec struct {
 
 // SecurityScheme describes a security scheme.
 type SecurityScheme struct {
-	// Type is the security scheme type (apiKey, basic, oauth2).
+	// Type is the security scheme type (apiKey, http, oauth2, openIdConnect).
 	Type string `json:"type" yaml:"type"`
 
 	// Name is the header/query parameter name for apiKey.
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 
-	// In is the location (header, query) for apiKey.
+	// In is the location (header, query, cookie) for apiKey.
 	In string `json:"in,omitempty" yaml:"in,omitempty"`
 
 	// Description is the scheme description.
 	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+
+	// Scheme is the HTTP auth scheme (e.g., "bearer") for type "http".
+	Scheme string `json:"scheme,omitempty" yaml:"scheme,omitempty"`
 }
 
-// Parser parses OpenAPI/Swagger specifications.
 // DefaultMaxRefDepth is the maximum $ref resolution depth.
-// Set to 20 to handle reasonably deep schema hierarchies while
-// preventing stack overflow on circular references.
 const DefaultMaxRefDepth = 20
 
-// Parser parses OpenAPI/Swagger specifications.
+// Parser parses OpenAPI specifications using kin-openapi.
 //
-// Thread Safety: Parser is NOT safe for concurrent use. Each goroutine
-// should use its own Parser instance or serialize access externally.
-// The ParseFile and ParseBytes methods modify internal state.
+// Thread Safety: Parser is safe for concurrent use after initialization.
 type Parser struct {
-	// rawSpec holds the raw parsed spec for reference resolution.
-	rawSpec map[string]any
-
-	// resolvedRefs caches resolved $ref values to prevent infinite loops.
-	resolvedRefs map[string]*SchemaInfo
-
 	// maxRefDepth limits reference resolution depth.
 	maxRefDepth int
 }
@@ -289,131 +280,97 @@ type Parser struct {
 // NewParser creates a new OpenAPI parser.
 func NewParser() *Parser {
 	return &Parser{
-		resolvedRefs: make(map[string]*SchemaInfo),
-		maxRefDepth:  DefaultMaxRefDepth,
+		maxRefDepth: DefaultMaxRefDepth,
 	}
 }
 
-// ParseFile parses an OpenAPI/Swagger spec from a file.
+// ParseFile parses an OpenAPI spec from a file.
 func (p *Parser) ParseFile(path string) (*OpenAPISpec, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("%w: %s", ErrSpecNotFound, path)
-		}
-		return nil, fmt.Errorf("reading spec file: %w", err)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("%w: %s", ErrSpecNotFound, path)
 	}
 
-	return p.ParseBytes(data)
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+
+	doc, err := loader.LoadFromFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidSpec, err)
+	}
+
+	return p.convertDoc(doc)
 }
 
-// ParseBytes parses an OpenAPI/Swagger spec from bytes.
+// ParseBytes parses an OpenAPI spec from bytes.
 func (p *Parser) ParseBytes(data []byte) (*OpenAPISpec, error) {
-	// Reset resolved refs for fresh parse
-	p.resolvedRefs = make(map[string]*SchemaInfo)
+	loader := openapi3.NewLoader()
 
-	// Try to parse as YAML first (also works for JSON)
-	var rawSpec map[string]any
-	if err := yaml.Unmarshal(data, &rawSpec); err != nil {
-		// Try JSON as fallback
-		if jsonErr := json.Unmarshal(data, &rawSpec); jsonErr != nil {
-			return nil, fmt.Errorf("%w: failed to parse as YAML or JSON", ErrInvalidSpec)
-		}
+	doc, err := loader.LoadFromData(data)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidSpec, err)
 	}
 
-	p.rawSpec = rawSpec
+	return p.convertDoc(doc)
+}
 
-	// Determine version
-	version := p.detectVersion(rawSpec)
-	if version == "" {
+// convertDoc converts a kin-openapi document to our OpenAPISpec.
+func (p *Parser) convertDoc(doc *openapi3.T) (*OpenAPISpec, error) {
+	if doc.OpenAPI == "" {
 		return nil, fmt.Errorf("%w: cannot determine spec version", ErrInvalidSpec)
 	}
 
-	// Parse based on version
-	if strings.HasPrefix(version, "2") {
-		return p.parseSwagger2(rawSpec, version)
-	} else if strings.HasPrefix(version, "3") {
-		return p.parseOpenAPI3(rawSpec, version)
-	}
-
-	return nil, fmt.Errorf("%w: %s", ErrUnsupportedVersion, version)
-}
-
-// detectVersion determines the OpenAPI/Swagger version from the raw spec.
-func (p *Parser) detectVersion(spec map[string]any) string {
-	// Check for Swagger 2.0
-	if swagger, ok := spec["swagger"].(string); ok {
-		return swagger
-	}
-
-	// Check for OpenAPI 3.x
-	if openapi, ok := spec["openapi"].(string); ok {
-		return openapi
-	}
-
-	return ""
-}
-
-// parseSwagger2 parses a Swagger 2.0 specification.
-func (p *Parser) parseSwagger2(spec map[string]any, version string) (*OpenAPISpec, error) {
 	result := &OpenAPISpec{
-		Version:             version,
+		Version:             doc.OpenAPI,
 		Tags:                make(map[string]string),
 		SecurityDefinitions: make(map[string]SecurityScheme),
 	}
 
-	// Parse info section
-	if info, ok := spec["info"].(map[string]any); ok {
-		result.Title = getString(info, "title")
-		result.Description = getString(info, "description")
+	// Parse info
+	if doc.Info != nil {
+		result.Title = doc.Info.Title
+		result.Description = doc.Info.Description
 	}
 
-	// Parse host and basePath
-	result.Host = getString(spec, "host")
-	result.BasePath = getString(spec, "basePath")
+	// Parse servers for host/basePath
+	if len(doc.Servers) > 0 {
+		result.Host = doc.Servers[0].URL
+	}
 
 	// Parse tags
-	if tags, ok := spec["tags"].([]any); ok {
-		for _, t := range tags {
-			if tag, ok := t.(map[string]any); ok {
-				name := getString(tag, "name")
-				desc := getString(tag, "description")
-				if name != "" {
-					result.Tags[name] = desc
-				}
-			}
+	for _, tag := range doc.Tags {
+		if tag != nil {
+			result.Tags[tag.Name] = tag.Description
 		}
 	}
 
-	// Parse security definitions
-	if secDefs, ok := spec["securityDefinitions"].(map[string]any); ok {
-		for name, def := range secDefs {
-			if defMap, ok := def.(map[string]any); ok {
+	// Parse security schemes from components
+	if doc.Components != nil && doc.Components.SecuritySchemes != nil {
+		for name, schemeRef := range doc.Components.SecuritySchemes {
+			if schemeRef != nil && schemeRef.Value != nil {
+				scheme := schemeRef.Value
 				result.SecurityDefinitions[name] = SecurityScheme{
-					Type:        getString(defMap, "type"),
-					Name:        getString(defMap, "name"),
-					In:          getString(defMap, "in"),
-					Description: getString(defMap, "description"),
+					Type:        scheme.Type,
+					Name:        scheme.Name,
+					In:          scheme.In,
+					Description: scheme.Description,
+					Scheme:      scheme.Scheme,
 				}
 			}
 		}
 	}
-
-	// Parse global consumes/produces
-	globalConsumes := getStringSlice(spec, "consumes")
-	globalProduces := getStringSlice(spec, "produces")
 
 	// Parse paths
-	if paths, ok := spec["paths"].(map[string]any); ok {
-		for path, pathItem := range paths {
-			if pathItemMap, ok := pathItem.(map[string]any); ok {
-				endpoints := p.parsePathItemSwagger2(path, pathItemMap, globalConsumes, globalProduces, spec)
-				result.Endpoints = append(result.Endpoints, endpoints...)
+	if doc.Paths != nil {
+		for path, pathItem := range doc.Paths.Map() {
+			if pathItem == nil {
+				continue
 			}
+			endpoints := p.parsePathItem(path, pathItem, doc)
+			result.Endpoints = append(result.Endpoints, endpoints...)
 		}
 	}
 
-	// Sort endpoints by path and method for consistent output
+	// Sort endpoints for consistent output
 	sort.Slice(result.Endpoints, func(i, j int) bool {
 		if result.Endpoints[i].Path != result.Endpoints[j].Path {
 			return result.Endpoints[i].Path < result.Endpoints[j].Path
@@ -424,17 +381,26 @@ func (p *Parser) parseSwagger2(spec map[string]any, version string) (*OpenAPISpe
 	return result, nil
 }
 
-// parsePathItemSwagger2 parses operations for a path item in Swagger 2.0.
-func (p *Parser) parsePathItemSwagger2(path string, pathItem map[string]any, globalConsumes, globalProduces []string, spec map[string]any) []EndpointUnit {
+// parsePathItem parses all operations for a path.
+func (p *Parser) parsePathItem(path string, item *openapi3.PathItem, doc *openapi3.T) []EndpointUnit {
 	var endpoints []EndpointUnit
 
 	// Path-level parameters
-	pathParams := p.parseParametersSwagger2(pathItem["parameters"])
+	pathParams := p.parseParameters(item.Parameters)
 
-	methods := []string{"get", "post", "put", "delete", "patch", "head", "options"}
-	for _, method := range methods {
-		if op, ok := pathItem[method].(map[string]any); ok {
-			endpoint := p.parseOperationSwagger2(path, strings.ToUpper(method), op, pathParams, globalConsumes, globalProduces, spec)
+	operations := map[string]*openapi3.Operation{
+		"GET":     item.Get,
+		"POST":    item.Post,
+		"PUT":     item.Put,
+		"DELETE":  item.Delete,
+		"PATCH":   item.Patch,
+		"HEAD":    item.Head,
+		"OPTIONS": item.Options,
+	}
+
+	for method, op := range operations {
+		if op != nil {
+			endpoint := p.parseOperation(path, method, op, pathParams, doc)
 			endpoints = append(endpoints, endpoint)
 		}
 	}
@@ -442,210 +408,194 @@ func (p *Parser) parsePathItemSwagger2(path string, pathItem map[string]any, glo
 	return endpoints
 }
 
-// parseOperationSwagger2 parses a single operation in Swagger 2.0.
-func (p *Parser) parseOperationSwagger2(path, method string, op map[string]any, pathParams []InputPin, globalConsumes, globalProduces []string, spec map[string]any) EndpointUnit {
+// parseOperation parses a single operation.
+func (p *Parser) parseOperation(path, method string, op *openapi3.Operation, pathParams []InputPin, doc *openapi3.T) EndpointUnit {
 	endpoint := EndpointUnit{
-		Path:   path,
-		Method: method,
+		Path:       path,
+		Method:     method,
+		Deprecated: op.Deprecated,
 	}
 
 	// Operation ID and name
-	endpoint.OperationID = getString(op, "operationId")
+	endpoint.OperationID = op.OperationID
 	if endpoint.OperationID != "" {
 		endpoint.Name = endpoint.OperationID
 	} else {
-		// Generate name from method and path
 		endpoint.Name = generateEndpointName(method, path)
 	}
 
 	// Summary and description
-	endpoint.Summary = getString(op, "summary")
-	endpoint.Description = getString(op, "description")
+	endpoint.Summary = op.Summary
+	endpoint.Description = op.Description
 
 	// Tags
-	endpoint.Tags = getStringSlice(op, "tags")
-
-	// Consumes/Produces (operation-level overrides global)
-	endpoint.Consumes = getStringSlice(op, "consumes")
-	if len(endpoint.Consumes) == 0 {
-		endpoint.Consumes = globalConsumes
-	}
-	endpoint.Produces = getStringSlice(op, "produces")
-	if len(endpoint.Produces) == 0 {
-		endpoint.Produces = globalProduces
-	}
-
-	// Deprecated
-	if deprecated, ok := op["deprecated"].(bool); ok {
-		endpoint.Deprecated = deprecated
-	}
+	endpoint.Tags = op.Tags
 
 	// Parse operation parameters and merge with path parameters
-	opParams := p.parseParametersSwagger2(op["parameters"])
+	opParams := p.parseParameters(op.Parameters)
 	endpoint.InputPins = mergeParameters(pathParams, opParams)
 
-	// Parse security
-	endpoint.RequiresAuth, endpoint.SecuritySchemes = p.parseSecuritySwagger2(op, spec)
+	// Parse request body
+	if op.RequestBody != nil && op.RequestBody.Value != nil {
+		bodyPins := p.parseRequestBody(op.RequestBody.Value)
+		endpoint.InputPins = append(endpoint.InputPins, bodyPins...)
+	}
 
-	// Parse responses to extract output pins
-	if responses, ok := op["responses"].(map[string]any); ok {
-		endpoint.OutputPins, endpoint.SuccessStatusCodes = p.parseResponsesSwagger2(responses)
+	// Parse security
+	endpoint.RequiresAuth, endpoint.SecuritySchemes = p.parseSecurity(op, doc)
+
+	// Parse responses
+	if op.Responses != nil {
+		endpoint.OutputPins, endpoint.SuccessStatusCodes = p.parseResponses(op.Responses)
 	}
 
 	return endpoint
 }
 
-// parseParametersSwagger2 parses Swagger 2.0 parameters.
-func (p *Parser) parseParametersSwagger2(params any) []InputPin {
-	var inputPins []InputPin
+// parseParameters parses OpenAPI parameters.
+func (p *Parser) parseParameters(params openapi3.Parameters) []InputPin {
+	var pins []InputPin
 
-	paramList, ok := params.([]any)
-	if !ok {
-		return inputPins
-	}
-
-	for _, param := range paramList {
-		paramMap, ok := param.(map[string]any)
-		if !ok {
+	for _, paramRef := range params {
+		if paramRef == nil || paramRef.Value == nil {
 			continue
 		}
-
-		// Handle $ref
-		if ref, ok := paramMap["$ref"].(string); ok {
-			resolved := p.resolveParameterRef(ref)
-			if resolved != nil {
-				inputPins = append(inputPins, *resolved)
-			}
-			continue
-		}
+		param := paramRef.Value
 
 		pin := InputPin{
-			Name:        getString(paramMap, "name"),
-			Location:    ParameterLocation(getString(paramMap, "in")),
-			Required:    getBool(paramMap, "required"),
-			Description: getString(paramMap, "description"),
-			Default:     paramMap["default"],
-			Enum:        getAnySlice(paramMap, "enum"),
-			Pattern:     getString(paramMap, "pattern"),
+			Name:        param.Name,
+			Location:    ParameterLocation(param.In),
+			Required:    param.Required,
+			Description: param.Description,
 		}
 
-		// Type info depends on location
-		if pin.Location == ParameterLocationBody {
-			// Body parameters have schema
-			if schema, ok := paramMap["schema"].(map[string]any); ok {
-				pin.Schema = p.parseSchemaSwagger2(schema, 0)
-				pin.Type = pin.Schema.Type
-			}
-		} else {
-			// Other parameters have type/format directly
-			pin.Type = ParameterType(getString(paramMap, "type"))
-			pin.Format = getString(paramMap, "format")
+		// Schema contains type info
+		if param.Schema != nil && param.Schema.Value != nil {
+			schema := param.Schema.Value
+			pin.Type = getSchemaType(schema)
+			pin.Format = schema.Format
+			pin.Default = schema.Default
+			pin.Pattern = schema.Pattern
+			pin.Example = schema.Example
 
-			// Array items
-			if items, ok := paramMap["items"].(map[string]any); ok {
-				pin.Items = p.parseSchemaSwagger2(items, 0)
+			// Enum values
+			if len(schema.Enum) > 0 {
+				pin.Enum = schema.Enum
+			}
+
+			// Items for array
+			if schema.Items != nil && schema.Items.Value != nil {
+				pin.Items = p.convertSchema(schema.Items.Value, 0)
 			}
 
 			// Numeric constraints
-			if min, ok := paramMap["minimum"].(float64); ok {
-				pin.Minimum = &min
+			if schema.Min != nil {
+				pin.Minimum = schema.Min
 			}
-			if max, ok := paramMap["maximum"].(float64); ok {
-				pin.Maximum = &max
+			if schema.Max != nil {
+				pin.Maximum = schema.Max
 			}
 
-			// String constraints (validate non-negative)
-			if minLen, ok := paramMap["minLength"].(int); ok && minLen >= 0 {
+			// String constraints
+			if schema.MinLength > 0 {
+				minLen := int(schema.MinLength)
 				pin.MinLength = &minLen
-			} else if minLen, ok := paramMap["minLength"].(float64); ok && minLen >= 0 {
-				intVal := int(minLen)
-				pin.MinLength = &intVal
 			}
-			if maxLen, ok := paramMap["maxLength"].(int); ok && maxLen >= 0 {
+			if schema.MaxLength != nil {
+				maxLen := int(*schema.MaxLength)
 				pin.MaxLength = &maxLen
-			} else if maxLen, ok := paramMap["maxLength"].(float64); ok && maxLen >= 0 {
-				intVal := int(maxLen)
-				pin.MaxLength = &intVal
 			}
 		}
 
-		// Example
-		pin.Example = paramMap["example"]
-
-		inputPins = append(inputPins, pin)
+		pins = append(pins, pin)
 	}
 
-	return inputPins
+	return pins
 }
 
-// parseSchemaSwagger2 parses a Swagger 2.0 schema.
-func (p *Parser) parseSchemaSwagger2(schema map[string]any, depth int) *SchemaInfo {
-	if depth > p.maxRefDepth {
-		return &SchemaInfo{Type: ParameterTypeObject}
+// parseRequestBody parses OpenAPI 3.0 request body.
+func (p *Parser) parseRequestBody(body *openapi3.RequestBody) []InputPin {
+	var pins []InputPin
+
+	if body.Content == nil {
+		return pins
 	}
 
-	// Handle $ref
-	if ref, ok := schema["$ref"].(string); ok {
-		// Check cache first
-		if cached, ok := p.resolvedRefs[ref]; ok {
-			return cached
+	// Prefer application/json
+	mediaTypes := []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}
+	for _, mediaType := range mediaTypes {
+		if media, ok := body.Content[mediaType]; ok && media.Schema != nil && media.Schema.Value != nil {
+			pin := InputPin{
+				Name:        "body",
+				Location:    ParameterLocationBody,
+				Required:    body.Required,
+				Description: body.Description,
+				Schema:      p.convertSchema(media.Schema.Value, 0),
+			}
+			if pin.Schema != nil {
+				pin.Type = pin.Schema.Type
+			}
+			pins = append(pins, pin)
+			break
 		}
+	}
 
-		// Reserve cache slot to prevent infinite recursion
-		placeholder := &SchemaInfo{Ref: ref}
-		p.resolvedRefs[ref] = placeholder
+	return pins
+}
 
-		resolved := p.resolveSchemaRef(ref, depth+1)
-		if resolved != nil {
-			resolved.Ref = ref
-			p.resolvedRefs[ref] = resolved
-			return resolved
-		}
-
-		return placeholder
+// convertSchema converts kin-openapi schema to our SchemaInfo.
+func (p *Parser) convertSchema(schema *openapi3.Schema, depth int) *SchemaInfo {
+	if schema == nil || depth > p.maxRefDepth {
+		return nil
 	}
 
 	info := &SchemaInfo{
-		Type:        ParameterType(getString(schema, "type")),
-		Format:      getString(schema, "format"),
-		Description: getString(schema, "description"),
-		Enum:        getAnySlice(schema, "enum"),
-		Example:     schema["example"],
-		Default:     schema["default"],
-		Required:    getStringSlice(schema, "required"),
+		Type:        getSchemaType(schema),
+		Format:      schema.Format,
+		Description: schema.Description,
+		Example:     schema.Example,
+		Default:     schema.Default,
+		Required:    schema.Required,
 	}
 
-	// Handle allOf
-	if allOf, ok := schema["allOf"].([]any); ok {
-		for _, subSchema := range allOf {
-			if subMap, ok := subSchema.(map[string]any); ok {
-				info.AllOf = append(info.AllOf, p.parseSchemaSwagger2(subMap, depth+1))
+	// Enum values
+	if len(schema.Enum) > 0 {
+		info.Enum = schema.Enum
+	}
+
+	// AllOf
+	if len(schema.AllOf) > 0 {
+		for _, ref := range schema.AllOf {
+			if ref != nil && ref.Value != nil {
+				info.AllOf = append(info.AllOf, p.convertSchema(ref.Value, depth+1))
 			}
 		}
-		// Merge allOf schemas
+		// Merge allOf into single schema
 		info = p.mergeAllOf(info)
 	}
 
-	// Handle properties
-	if props, ok := schema["properties"].(map[string]any); ok {
+	// Properties
+	if len(schema.Properties) > 0 {
 		info.Properties = make(map[string]*SchemaInfo)
-		for name, prop := range props {
-			if propMap, ok := prop.(map[string]any); ok {
-				info.Properties[name] = p.parseSchemaSwagger2(propMap, depth+1)
+		for name, propRef := range schema.Properties {
+			if propRef != nil && propRef.Value != nil {
+				info.Properties[name] = p.convertSchema(propRef.Value, depth+1)
 			}
 		}
 	}
 
-	// Handle items for arrays
-	if items, ok := schema["items"].(map[string]any); ok {
-		info.Items = p.parseSchemaSwagger2(items, depth+1)
+	// Items for arrays
+	if schema.Items != nil && schema.Items.Value != nil {
+		info.Items = p.convertSchema(schema.Items.Value, depth+1)
 	}
 
-	// Handle additionalProperties
-	if addProps, ok := schema["additionalProperties"].(map[string]any); ok {
-		info.AdditionalProperties = p.parseSchemaSwagger2(addProps, depth+1)
-	} else if addProps, ok := schema["additionalProperties"].(bool); ok && addProps {
-		info.AdditionalProperties = &SchemaInfo{Type: ParameterTypeObject}
+	// AdditionalProperties
+	if schema.AdditionalProperties.Has != nil && *schema.AdditionalProperties.Has {
+		if schema.AdditionalProperties.Schema != nil && schema.AdditionalProperties.Schema.Value != nil {
+			info.AdditionalProperties = p.convertSchema(schema.AdditionalProperties.Schema.Value, depth+1)
+		} else {
+			info.AdditionalProperties = &SchemaInfo{Type: ParameterTypeObject}
+		}
 	}
 
 	return info
@@ -662,24 +612,19 @@ func (p *Parser) mergeAllOf(info *SchemaInfo) *SchemaInfo {
 		Properties: make(map[string]*SchemaInfo),
 	}
 
-	// Merge all schemas
 	for _, sub := range info.AllOf {
-		// Inherit type if not set
+		if sub == nil {
+			continue
+		}
 		if sub.Type != "" && merged.Type == "" {
 			merged.Type = sub.Type
 		}
-
-		// Merge properties
 		if sub.Properties != nil {
 			for name, prop := range sub.Properties {
 				merged.Properties[name] = prop
 			}
 		}
-
-		// Merge required fields
 		merged.Required = append(merged.Required, sub.Required...)
-
-		// Inherit description
 		if sub.Description != "" && merged.Description == "" {
 			merged.Description = sub.Description
 		}
@@ -688,85 +633,29 @@ func (p *Parser) mergeAllOf(info *SchemaInfo) *SchemaInfo {
 	return merged
 }
 
-// resolveSchemaRef resolves a $ref to a schema definition.
-func (p *Parser) resolveSchemaRef(ref string, depth int) *SchemaInfo {
-	// Parse ref path (e.g., "#/definitions/User")
-	parts := strings.Split(ref, "/")
-	if len(parts) < 3 || parts[0] != "#" {
-		return nil
-	}
-
-	// Navigate to the referenced schema
-	current := p.rawSpec
-	for i := 1; i < len(parts); i++ {
-		key := parts[i]
-		if next, ok := current[key].(map[string]any); ok {
-			current = next
-		} else {
-			return nil
-		}
-	}
-
-	return p.parseSchemaSwagger2(current, depth)
-}
-
-// resolveParameterRef resolves a $ref to a parameter definition.
-func (p *Parser) resolveParameterRef(ref string) *InputPin {
-	// Parse ref path (e.g., "#/parameters/userId")
-	parts := strings.Split(ref, "/")
-	if len(parts) < 3 || parts[0] != "#" {
-		return nil
-	}
-
-	// Navigate to the referenced parameter
-	current := p.rawSpec
-	for i := 1; i < len(parts); i++ {
-		key := parts[i]
-		if next, ok := current[key].(map[string]any); ok {
-			current = next
-		} else {
-			return nil
-		}
-	}
-
-	pins := p.parseParametersSwagger2([]any{current})
-	if len(pins) > 0 {
-		return &pins[0]
-	}
-	return nil
-}
-
-// parseSecuritySwagger2 parses security requirements for an operation.
-func (p *Parser) parseSecuritySwagger2(op map[string]any, spec map[string]any) (bool, []string) {
+// parseSecurity parses security requirements for an operation.
+func (p *Parser) parseSecurity(op *openapi3.Operation, doc *openapi3.T) (bool, []string) {
 	var schemes []string
 	requiresAuth := false
 
 	// Check operation-level security
-	if security, ok := op["security"].([]any); ok {
-		for _, sec := range security {
-			if secMap, ok := sec.(map[string]any); ok {
-				for name := range secMap {
-					schemes = append(schemes, name)
-					requiresAuth = true
-				}
-			}
-		}
-	} else {
+	security := op.Security
+	if security == nil {
 		// Fall back to global security
-		if security, ok := spec["security"].([]any); ok {
-			for _, sec := range security {
-				if secMap, ok := sec.(map[string]any); ok {
-					for name := range secMap {
-						schemes = append(schemes, name)
-						requiresAuth = true
-					}
-				}
+		security = &doc.Security
+	}
+
+	if security != nil {
+		for _, req := range *security {
+			for name := range req {
+				schemes = append(schemes, name)
+				requiresAuth = true
 			}
 		}
 	}
 
-	// Check for explicit empty security (no auth required)
-	if security, ok := op["security"].([]any); ok && len(security) == 0 {
+	// Empty security array means no auth required
+	if op.Security != nil && len(*op.Security) == 0 {
 		requiresAuth = false
 		schemes = nil
 	}
@@ -774,16 +663,16 @@ func (p *Parser) parseSecuritySwagger2(op map[string]any, spec map[string]any) (
 	return requiresAuth, schemes
 }
 
-// parseResponsesSwagger2 parses responses to extract output pins.
-func (p *Parser) parseResponsesSwagger2(responses map[string]any) ([]OutputPin, []int) {
+// parseResponses parses responses to extract output pins.
+func (p *Parser) parseResponses(responses *openapi3.Responses) ([]OutputPin, []int) {
 	var outputPins []OutputPin
 	var successCodes []int
 
-	// Success response codes to check
 	successKeys := []string{"200", "201", "202", "204"}
 
 	for _, key := range successKeys {
-		if resp, ok := responses[key].(map[string]any); ok {
+		if respRef := responses.Value(key); respRef != nil && respRef.Value != nil {
+			resp := respRef.Value
 			code := 200
 			switch key {
 			case "201":
@@ -795,81 +684,56 @@ func (p *Parser) parseResponsesSwagger2(responses map[string]any) ([]OutputPin, 
 			}
 			successCodes = append(successCodes, code)
 
-			// Parse schema
-			if schema, ok := resp["schema"].(map[string]any); ok {
-				pins := p.extractOutputPins(schema, "$", "", 0)
-				outputPins = append(outputPins, pins...)
+			// Parse JSON response content
+			if resp.Content != nil {
+				if jsonContent, ok := resp.Content["application/json"]; ok && jsonContent.Schema != nil && jsonContent.Schema.Value != nil {
+					pins := p.extractOutputPins(jsonContent.Schema.Value, "$", "", 0)
+					outputPins = append(outputPins, pins...)
+				}
 			}
 		}
 	}
 
-	// Also check "default" response if no success codes found
-	if len(successCodes) == 0 {
-		if resp, ok := responses["default"].(map[string]any); ok {
-			if schema, ok := resp["schema"].(map[string]any); ok {
-				pins := p.extractOutputPins(schema, "$", "", 0)
-				outputPins = append(outputPins, pins...)
-			}
-		}
-	}
-
-	// Deduplicate output pins
 	outputPins = deduplicateOutputPins(outputPins)
-
 	return outputPins, successCodes
 }
 
 // extractOutputPins recursively extracts output pins from a schema.
-func (p *Parser) extractOutputPins(schema map[string]any, jsonPath, name string, depth int) []OutputPin {
-	if depth > p.maxRefDepth {
+func (p *Parser) extractOutputPins(schema *openapi3.Schema, jsonPath, name string, depth int) []OutputPin {
+	if schema == nil || depth > p.maxRefDepth {
 		return nil
 	}
 
 	var pins []OutputPin
 
-	// Handle $ref
-	if ref, ok := schema["$ref"].(string); ok {
-		resolved := p.resolveSchemaRef(ref, depth+1)
-		if resolved != nil && resolved.Properties != nil {
-			for propName, prop := range resolved.Properties {
-				propPath := fmt.Sprintf("%s.%s", jsonPath, propName)
-				pins = append(pins, p.outputPinFromSchemaInfo(propName, propPath, prop)...)
-			}
-		}
-		return pins
-	}
-
 	// Handle allOf
-	if allOf, ok := schema["allOf"].([]any); ok {
-		for _, sub := range allOf {
-			if subMap, ok := sub.(map[string]any); ok {
-				pins = append(pins, p.extractOutputPins(subMap, jsonPath, name, depth+1)...)
+	if len(schema.AllOf) > 0 {
+		for _, ref := range schema.AllOf {
+			if ref != nil && ref.Value != nil {
+				pins = append(pins, p.extractOutputPins(ref.Value, jsonPath, name, depth+1)...)
 			}
 		}
 		return deduplicateOutputPins(pins)
 	}
 
-	schemaType := getString(schema, "type")
-	format := getString(schema, "format")
+	schemaType := getSchemaType(schema)
+	format := schema.Format
 
 	// Handle object with properties
-	if props, ok := schema["properties"].(map[string]any); ok {
-		for propName, prop := range props {
-			if propMap, ok := prop.(map[string]any); ok {
+	if len(schema.Properties) > 0 {
+		for propName, propRef := range schema.Properties {
+			if propRef != nil && propRef.Value != nil {
 				propPath := fmt.Sprintf("%s.%s", jsonPath, propName)
-				pins = append(pins, p.extractOutputPins(propMap, propPath, propName, depth+1)...)
+				pins = append(pins, p.extractOutputPins(propRef.Value, propPath, propName, depth+1)...)
 			}
 		}
 		return pins
 	}
 
 	// Handle array
-	if schemaType == "array" {
-		if items, ok := schema["items"].(map[string]any); ok {
-			// For arrays, we add [*] to the path
-			arrayPath := fmt.Sprintf("%s[*]", jsonPath)
-			pins = append(pins, p.extractOutputPins(items, arrayPath, name, depth+1)...)
-		}
+	if schemaType == ParameterTypeArray && schema.Items != nil && schema.Items.Value != nil {
+		arrayPath := fmt.Sprintf("%s[*]", jsonPath)
+		pins = append(pins, p.extractOutputPins(schema.Items.Value, arrayPath, name, depth+1)...)
 		return pins
 	}
 
@@ -878,356 +742,36 @@ func (p *Parser) extractOutputPins(schema map[string]any, jsonPath, name string,
 		pin := OutputPin{
 			Name:        name,
 			JSONPath:    jsonPath,
-			Type:        ParameterType(schemaType),
+			Type:        schemaType,
 			Format:      format,
-			Description: getString(schema, "description"),
-			Example:     schema["example"],
+			Description: schema.Description,
+			Example:     schema.Example,
 		}
 		pins = append(pins, pin)
 	}
 
 	return pins
-}
-
-// outputPinFromSchemaInfo creates output pins from a SchemaInfo.
-func (p *Parser) outputPinFromSchemaInfo(name, jsonPath string, info *SchemaInfo) []OutputPin {
-	var pins []OutputPin
-
-	// Handle nested properties
-	if info.Properties != nil {
-		for propName, prop := range info.Properties {
-			propPath := fmt.Sprintf("%s.%s", jsonPath, propName)
-			pins = append(pins, p.outputPinFromSchemaInfo(propName, propPath, prop)...)
-		}
-		return pins
-	}
-
-	// Handle arrays
-	if info.Type == ParameterTypeArray && info.Items != nil {
-		arrayPath := fmt.Sprintf("%s[*]", jsonPath)
-		pins = append(pins, p.outputPinFromSchemaInfo(name, arrayPath, info.Items)...)
-		// Also add the array itself as an output
-		pin := OutputPin{
-			Name:        name,
-			JSONPath:    jsonPath,
-			Type:        ParameterTypeArray,
-			Format:      info.Format,
-			Description: info.Description,
-			IsArray:     true,
-			Example:     info.Example,
-		}
-		pins = append(pins, pin)
-		return pins
-	}
-
-	// Leaf node
-	pin := OutputPin{
-		Name:        name,
-		JSONPath:    jsonPath,
-		Type:        info.Type,
-		Format:      info.Format,
-		Description: info.Description,
-		Example:     info.Example,
-	}
-	pins = append(pins, pin)
-
-	return pins
-}
-
-// parseOpenAPI3 parses an OpenAPI 3.0 specification.
-func (p *Parser) parseOpenAPI3(spec map[string]any, version string) (*OpenAPISpec, error) {
-	result := &OpenAPISpec{
-		Version:             version,
-		Tags:                make(map[string]string),
-		SecurityDefinitions: make(map[string]SecurityScheme),
-	}
-
-	// Parse info section
-	if info, ok := spec["info"].(map[string]any); ok {
-		result.Title = getString(info, "title")
-		result.Description = getString(info, "description")
-	}
-
-	// Parse servers for basePath
-	if servers, ok := spec["servers"].([]any); ok && len(servers) > 0 {
-		if server, ok := servers[0].(map[string]any); ok {
-			url := getString(server, "url")
-			result.Host = url
-		}
-	}
-
-	// Parse tags
-	if tags, ok := spec["tags"].([]any); ok {
-		for _, t := range tags {
-			if tag, ok := t.(map[string]any); ok {
-				name := getString(tag, "name")
-				desc := getString(tag, "description")
-				if name != "" {
-					result.Tags[name] = desc
-				}
-			}
-		}
-	}
-
-	// Parse security schemes from components
-	if components, ok := spec["components"].(map[string]any); ok {
-		if secSchemes, ok := components["securitySchemes"].(map[string]any); ok {
-			for name, def := range secSchemes {
-				if defMap, ok := def.(map[string]any); ok {
-					result.SecurityDefinitions[name] = SecurityScheme{
-						Type:        getString(defMap, "type"),
-						Name:        getString(defMap, "name"),
-						In:          getString(defMap, "in"),
-						Description: getString(defMap, "description"),
-					}
-				}
-			}
-		}
-	}
-
-	// Parse paths
-	if paths, ok := spec["paths"].(map[string]any); ok {
-		for path, pathItem := range paths {
-			if pathItemMap, ok := pathItem.(map[string]any); ok {
-				endpoints := p.parsePathItemOpenAPI3(path, pathItemMap, spec)
-				result.Endpoints = append(result.Endpoints, endpoints...)
-			}
-		}
-	}
-
-	// Sort endpoints
-	sort.Slice(result.Endpoints, func(i, j int) bool {
-		if result.Endpoints[i].Path != result.Endpoints[j].Path {
-			return result.Endpoints[i].Path < result.Endpoints[j].Path
-		}
-		return result.Endpoints[i].Method < result.Endpoints[j].Method
-	})
-
-	return result, nil
-}
-
-// parsePathItemOpenAPI3 parses operations for a path item in OpenAPI 3.0.
-func (p *Parser) parsePathItemOpenAPI3(path string, pathItem map[string]any, spec map[string]any) []EndpointUnit {
-	var endpoints []EndpointUnit
-
-	// Path-level parameters
-	pathParams := p.parseParametersOpenAPI3(pathItem["parameters"])
-
-	methods := []string{"get", "post", "put", "delete", "patch", "head", "options"}
-	for _, method := range methods {
-		if op, ok := pathItem[method].(map[string]any); ok {
-			endpoint := p.parseOperationOpenAPI3(path, strings.ToUpper(method), op, pathParams, spec)
-			endpoints = append(endpoints, endpoint)
-		}
-	}
-
-	return endpoints
-}
-
-// parseOperationOpenAPI3 parses a single operation in OpenAPI 3.0.
-func (p *Parser) parseOperationOpenAPI3(path, method string, op map[string]any, pathParams []InputPin, spec map[string]any) EndpointUnit {
-	endpoint := EndpointUnit{
-		Path:   path,
-		Method: method,
-	}
-
-	// Operation ID and name
-	endpoint.OperationID = getString(op, "operationId")
-	if endpoint.OperationID != "" {
-		endpoint.Name = endpoint.OperationID
-	} else {
-		endpoint.Name = generateEndpointName(method, path)
-	}
-
-	// Summary and description
-	endpoint.Summary = getString(op, "summary")
-	endpoint.Description = getString(op, "description")
-
-	// Tags
-	endpoint.Tags = getStringSlice(op, "tags")
-
-	// Deprecated
-	if deprecated, ok := op["deprecated"].(bool); ok {
-		endpoint.Deprecated = deprecated
-	}
-
-	// Parse operation parameters
-	opParams := p.parseParametersOpenAPI3(op["parameters"])
-	endpoint.InputPins = mergeParameters(pathParams, opParams)
-
-	// Parse requestBody
-	if requestBody, ok := op["requestBody"].(map[string]any); ok {
-		bodyPins := p.parseRequestBodyOpenAPI3(requestBody)
-		endpoint.InputPins = append(endpoint.InputPins, bodyPins...)
-	}
-
-	// Parse security
-	endpoint.RequiresAuth, endpoint.SecuritySchemes = p.parseSecuritySwagger2(op, spec)
-
-	// Parse responses
-	if responses, ok := op["responses"].(map[string]any); ok {
-		endpoint.OutputPins, endpoint.SuccessStatusCodes = p.parseResponsesOpenAPI3(responses)
-	}
-
-	return endpoint
-}
-
-// parseParametersOpenAPI3 parses OpenAPI 3.0 parameters.
-func (p *Parser) parseParametersOpenAPI3(params any) []InputPin {
-	var inputPins []InputPin
-
-	paramList, ok := params.([]any)
-	if !ok {
-		return inputPins
-	}
-
-	for _, param := range paramList {
-		paramMap, ok := param.(map[string]any)
-		if !ok {
-			continue
-		}
-
-		// Handle $ref
-		if ref, ok := paramMap["$ref"].(string); ok {
-			resolved := p.resolveParameterRef(ref)
-			if resolved != nil {
-				inputPins = append(inputPins, *resolved)
-			}
-			continue
-		}
-
-		pin := InputPin{
-			Name:        getString(paramMap, "name"),
-			Location:    ParameterLocation(getString(paramMap, "in")),
-			Required:    getBool(paramMap, "required"),
-			Description: getString(paramMap, "description"),
-		}
-
-		// Schema contains type info in OpenAPI 3
-		if schema, ok := paramMap["schema"].(map[string]any); ok {
-			pin.Type = ParameterType(getString(schema, "type"))
-			pin.Format = getString(schema, "format")
-			pin.Default = schema["default"]
-			pin.Enum = getAnySlice(schema, "enum")
-			pin.Pattern = getString(schema, "pattern")
-			pin.Example = schema["example"]
-
-			if items, ok := schema["items"].(map[string]any); ok {
-				pin.Items = p.parseSchemaSwagger2(items, 0)
-			}
-		}
-
-		inputPins = append(inputPins, pin)
-	}
-
-	return inputPins
-}
-
-// parseRequestBodyOpenAPI3 parses OpenAPI 3.0 request body.
-func (p *Parser) parseRequestBodyOpenAPI3(body map[string]any) []InputPin {
-	var pins []InputPin
-
-	required := getBool(body, "required")
-
-	if content, ok := body["content"].(map[string]any); ok {
-		// Prefer application/json
-		for _, mediaType := range []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"} {
-			if media, ok := content[mediaType].(map[string]any); ok {
-				if schema, ok := media["schema"].(map[string]any); ok {
-					pin := InputPin{
-						Name:        "body",
-						Location:    ParameterLocationBody,
-						Required:    required,
-						Description: getString(body, "description"),
-						Schema:      p.parseSchemaSwagger2(schema, 0),
-					}
-					pin.Type = pin.Schema.Type
-					pins = append(pins, pin)
-					break
-				}
-			}
-		}
-	}
-
-	return pins
-}
-
-// parseResponsesOpenAPI3 parses OpenAPI 3.0 responses.
-func (p *Parser) parseResponsesOpenAPI3(responses map[string]any) ([]OutputPin, []int) {
-	var outputPins []OutputPin
-	var successCodes []int
-
-	successKeys := []string{"200", "201", "202", "204"}
-
-	for _, key := range successKeys {
-		if resp, ok := responses[key].(map[string]any); ok {
-			code := 200
-			switch key {
-			case "201":
-				code = 201
-			case "202":
-				code = 202
-			case "204":
-				code = 204
-			}
-			successCodes = append(successCodes, code)
-
-			if content, ok := resp["content"].(map[string]any); ok {
-				if jsonContent, ok := content["application/json"].(map[string]any); ok {
-					if schema, ok := jsonContent["schema"].(map[string]any); ok {
-						pins := p.extractOutputPins(schema, "$", "", 0)
-						outputPins = append(outputPins, pins...)
-					}
-				}
-			}
-		}
-	}
-
-	outputPins = deduplicateOutputPins(outputPins)
-	return outputPins, successCodes
 }
 
 // Helper functions
 
-func getString(m map[string]any, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
+// getSchemaType extracts the type from an OpenAPI schema.
+// In OpenAPI 3.1, Type can be a slice of types; we take the first one.
+func getSchemaType(schema *openapi3.Schema) ParameterType {
+	if schema == nil || schema.Type == nil {
+		return ""
 	}
-	return ""
-}
-
-func getBool(m map[string]any, key string) bool {
-	if v, ok := m[key].(bool); ok {
-		return v
+	types := schema.Type.Slice()
+	if len(types) == 0 {
+		return ""
 	}
-	return false
-}
-
-func getStringSlice(m map[string]any, key string) []string {
-	if v, ok := m[key].([]any); ok {
-		result := make([]string, 0, len(v))
-		for _, item := range v {
-			if s, ok := item.(string); ok {
-				result = append(result, s)
-			}
-		}
-		return result
-	}
-	return nil
-}
-
-func getAnySlice(m map[string]any, key string) []any {
-	if v, ok := m[key].([]any); ok {
-		return v
-	}
-	return nil
+	return ParameterType(types[0])
 }
 
 var pathParamRegex = regexp.MustCompile(`\{([^}]+)\}`)
 
 // generateEndpointName generates a name from method and path.
 func generateEndpointName(method, path string) string {
-	// Remove path parameters and clean up
 	cleaned := pathParamRegex.ReplaceAllString(path, "")
 	cleaned = strings.ReplaceAll(cleaned, "//", "/")
 	cleaned = strings.Trim(cleaned, "/")
@@ -1241,7 +785,6 @@ func generateEndpointName(method, path string) string {
 }
 
 // mergeParameters merges path-level and operation-level parameters.
-// Operation parameters override path parameters with the same name and location.
 func mergeParameters(pathParams, opParams []InputPin) []InputPin {
 	if len(pathParams) == 0 {
 		return opParams
@@ -1250,17 +793,14 @@ func mergeParameters(pathParams, opParams []InputPin) []InputPin {
 		return pathParams
 	}
 
-	// Build map of operation params
 	opMap := make(map[string]InputPin)
 	for _, p := range opParams {
 		key := fmt.Sprintf("%s:%s", p.Location, p.Name)
 		opMap[key] = p
 	}
 
-	// Start with operation params
 	result := make([]InputPin, 0, len(pathParams)+len(opParams))
 
-	// Add path params that aren't overridden
 	for _, p := range pathParams {
 		key := fmt.Sprintf("%s:%s", p.Location, p.Name)
 		if _, exists := opMap[key]; !exists {
@@ -1268,9 +808,7 @@ func mergeParameters(pathParams, opParams []InputPin) []InputPin {
 		}
 	}
 
-	// Add all operation params
 	result = append(result, opParams...)
-
 	return result
 }
 
@@ -1366,7 +904,6 @@ func (s *OpenAPISpec) Summary() string {
 	}
 
 	sb.WriteString("\nBy Tag:\n")
-	// Sort tags for consistent output
 	var tags []string
 	for tag := range tagCounts {
 		tags = append(tags, tag)

@@ -535,11 +535,10 @@ func TestCLI_OpenAPIList(t *testing.T) {
 	tmpDir := t.TempDir()
 	specPath := filepath.Join(tmpDir, "openapi.yaml")
 	specContent := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test API
   version: "1.0"
-basePath: /api/v1
 tags:
   - name: users
     description: User management
@@ -553,29 +552,31 @@ paths:
       responses:
         "200":
           description: Success
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: string
-                name:
-                  type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
     post:
       summary: Create user
       operationId: createUser
       tags:
         - users
-      parameters:
-        - name: body
-          in: body
-          required: true
-          schema:
-            type: object
-            properties:
-              name:
-                type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
       responses:
         "201":
           description: Created
@@ -589,8 +590,9 @@ paths:
         - name: id
           in: path
           required: true
-          type: string
-          format: uuid
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: Success
@@ -619,7 +621,7 @@ func TestCLI_OpenAPIListVerbose(t *testing.T) {
 	tmpDir := t.TempDir()
 	specPath := filepath.Join(tmpDir, "openapi.yaml")
 	specContent := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Test Verbose API
   version: "1.0"
@@ -632,20 +634,24 @@ paths:
         - name: id
           in: path
           required: true
-          type: string
+          schema:
+            type: string
         - name: include
           in: query
-          type: string
+          schema:
+            type: string
       responses:
         "200":
           description: Success
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-              name:
-                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
 `
 	err := os.WriteFile(specPath, []byte(specContent), 0644)
 	require.NoError(t, err)
@@ -696,7 +702,7 @@ func TestCLI_OpenAPISummary(t *testing.T) {
 	tmpDir := t.TempDir()
 	specPath := filepath.Join(tmpDir, "openapi.yaml")
 	specContent := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Summary Test API
   version: "2.0"
@@ -725,7 +731,7 @@ func TestCLI_OpenAPIShortFlag(t *testing.T) {
 	tmpDir := t.TempDir()
 	specPath := filepath.Join(tmpDir, "openapi.yaml")
 	specContent := `
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   title: Short Flag Test
   version: "1.0"
