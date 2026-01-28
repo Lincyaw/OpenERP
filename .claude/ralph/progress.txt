@@ -34104,3 +34104,74 @@ if (response.status === 200 && response.data.success && response.data.data) {
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-018: React Query Migration - Reports Module Fix Import Paths
+
+=== Implementation Details ===
+- Migrated `src/pages/report/SalesReport.tsx` from non-existent `@/api/reports` imports to correct module paths
+- Updated API function imports to use `@/api/reports/reports`:
+  - `getReportSalesSummary`
+  - `getReportDailySalesTrend`
+  - `getReportProductSalesRanking`
+  - `getReportCustomerSalesRanking`
+- Updated type imports to use `@/api/models`:
+  - `HandlerSalesSummaryResponse` (aliased as `SalesSummary`)
+  - `HandlerDailySalesTrendResponse` (aliased as `DailySalesTrend`)
+  - `HandlerProductSalesRankingResponse` (aliased as `ProductSalesRanking`)
+  - `HandlerCustomerSalesRankingResponse` (aliased as `CustomerSalesRanking`)
+- Removed factory pattern (`getReports()`) and replaced with direct function imports
+- Removed `reportsApi` useMemo hook that was no longer needed
+
+=== Files Already Correctly Migrated ===
+The following files were already using correct import paths (no changes needed):
+- `src/pages/report/CashFlowReport.tsx` - Already using `@/api/reports/reports` and `@/api/models`
+- `src/pages/report/InventoryTurnover.tsx` - Already using `@/api/reports/reports` and `@/api/models`
+- `src/pages/report/ProfitLoss.tsx` - Already using `@/api/reports/reports` and `@/api/models`
+- `src/pages/report/SalesRanking.tsx` - Already using `@/api/reports/reports` and `@/api/models`
+
+=== API Call Pattern Migration ===
+**Before (Factory Pattern):**
+```typescript
+const reportsApi = useMemo(() => getReports(), [])
+const [summaryRes, ...] = await Promise.allSettled([
+  reportsApi.getReportSalesSummary(params),
+  ...
+])
+if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
+  setSummary(summaryRes.value.data as unknown as SalesSummary)
+}
+```
+
+**After (Direct Import with Response Handling):**
+```typescript
+import { getReportSalesSummary, ... } from '@/api/reports/reports'
+const [summaryRes, ...] = await Promise.allSettled([
+  getReportSalesSummary(params),
+  ...
+])
+if (summaryRes.status === 'fulfilled' && summaryRes.value.status === 200 && summaryRes.value.data.success && summaryRes.value.data.data) {
+  setSummary(summaryRes.value.data.data)
+}
+```
+
+=== Type Mapping ===
+| Old Type | New Type (from @/api/models) |
+|----------|------------------------------|
+| SalesSummary | HandlerSalesSummaryResponse |
+| DailySalesTrend | HandlerDailySalesTrendResponse |
+| ProductSalesRanking | HandlerProductSalesRankingResponse |
+| CustomerSalesRanking | HandlerCustomerSalesRankingResponse |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `@/api/reports` imports (only `@/api/reports/reports`)
+- All 5 report files now use correct import paths
+- All type imports from @/api/models
+
+=== Notes ===
+- Type aliases created at the top of file for backward compatibility with existing code
+- Response data accessed via nested `response.data.data` pattern consistent with other migrated files
+- Removed unnecessary `as unknown as Type` casts since proper types are now used
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

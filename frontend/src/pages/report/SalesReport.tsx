@@ -33,15 +33,26 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
-import { getReports } from '@/api/reports'
+import {
+  getReportSalesSummary,
+  getReportDailySalesTrend,
+  getReportProductSalesRanking,
+  getReportCustomerSalesRanking,
+} from '@/api/reports/reports'
 import type {
-  SalesSummary,
-  DailySalesTrend,
-  ProductSalesRanking,
-  CustomerSalesRanking,
-} from '@/api/reports'
+  HandlerSalesSummaryResponse,
+  HandlerDailySalesTrendResponse,
+  HandlerProductSalesRankingResponse,
+  HandlerCustomerSalesRankingResponse,
+} from '@/api/models'
 import './SalesReport.css'
 import { safeToFixed, toNumber } from '@/utils'
+
+// Type aliases for cleaner code
+type SalesSummary = HandlerSalesSummaryResponse
+type DailySalesTrend = HandlerDailySalesTrendResponse
+type ProductSalesRanking = HandlerProductSalesRankingResponse
+type CustomerSalesRanking = HandlerCustomerSalesRankingResponse
 
 // Register ECharts components
 echarts.use([
@@ -172,7 +183,6 @@ function MetricCard({
  * - Date range filter with time range presets
  */
 export default function SalesReportPage() {
-  const reportsApi = useMemo(() => getReports(), [])
   const chartRef = useRef<ReactEChartsCore>(null)
 
   // Date range state
@@ -263,38 +273,57 @@ export default function SalesReportPage() {
 
     try {
       // Fetch all data in parallel
-      // Note: API functions expect (body, params) - body is unused for GET requests
       const [summaryRes, trendsRes, productsRes, customersRes] = await Promise.allSettled([
-        reportsApi.getReportSalesSummary(params),
-        reportsApi.getReportDailySalesTrend(params),
-        reportsApi.getReportProductSalesRanking({ ...params, top_n: 10 }),
-        reportsApi.getReportCustomerSalesRanking({ ...params, top_n: 10 }),
+        getReportSalesSummary(params),
+        getReportDailySalesTrend(params),
+        getReportProductSalesRanking({ ...params, top_n: 10 }),
+        getReportCustomerSalesRanking({ ...params, top_n: 10 }),
       ])
 
       // Process summary
-      if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
-        setSummary(summaryRes.value.data as unknown as SalesSummary)
+      if (
+        summaryRes.status === 'fulfilled' &&
+        summaryRes.value.status === 200 &&
+        summaryRes.value.data.success &&
+        summaryRes.value.data.data
+      ) {
+        setSummary(summaryRes.value.data.data)
       } else {
         setSummary(null)
       }
 
       // Process trends
-      if (trendsRes.status === 'fulfilled' && trendsRes.value.data) {
-        setDailyTrends(trendsRes.value.data as unknown as DailySalesTrend[])
+      if (
+        trendsRes.status === 'fulfilled' &&
+        trendsRes.value.status === 200 &&
+        trendsRes.value.data.success &&
+        trendsRes.value.data.data
+      ) {
+        setDailyTrends(trendsRes.value.data.data)
       } else {
         setDailyTrends([])
       }
 
       // Process product rankings
-      if (productsRes.status === 'fulfilled' && productsRes.value.data) {
-        setProductRankings(productsRes.value.data as unknown as ProductSalesRanking[])
+      if (
+        productsRes.status === 'fulfilled' &&
+        productsRes.value.status === 200 &&
+        productsRes.value.data.success &&
+        productsRes.value.data.data
+      ) {
+        setProductRankings(productsRes.value.data.data)
       } else {
         setProductRankings([])
       }
 
       // Process customer rankings
-      if (customersRes.status === 'fulfilled' && customersRes.value.data) {
-        setCustomerRankings(customersRes.value.data as unknown as CustomerSalesRanking[])
+      if (
+        customersRes.status === 'fulfilled' &&
+        customersRes.value.status === 200 &&
+        customersRes.value.data.success &&
+        customersRes.value.data.data
+      ) {
+        setCustomerRankings(customersRes.value.data.data)
       } else {
         setCustomerRankings([])
       }
@@ -304,7 +333,7 @@ export default function SalesReportPage() {
       setLoading(false)
       setChartLoading(false)
     }
-  }, [reportsApi, dateRange])
+  }, [dateRange])
 
   // Fetch data on mount and when date range changes
   useEffect(() => {

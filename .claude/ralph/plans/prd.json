@@ -10141,7 +10141,7 @@
       "- Types imported from @/api/models",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/report/CashFlowReport.tsx",
       "src/pages/report/InventoryTurnover.tsx",
