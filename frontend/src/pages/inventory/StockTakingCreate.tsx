@@ -30,7 +30,7 @@ import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listInventoryByWarehouse } from '@/api/inventory/inventory'
-import { getStockTaking } from '@/api/stock-taking/stock-taking'
+import { createStockTaking, addItemsStockTaking } from '@/api/stock-taking/stock-taking'
 import type {
   HandlerWarehouseListResponse,
   HandlerInventoryItemResponse,
@@ -86,7 +86,6 @@ export default function StockTakingCreatePage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase } = useFormatters()
-  const stockTakingApi = useMemo(() => getStockTaking(), [])
   const { user } = useAuthStore()
 
   // Wrapper function to handle undefined values
@@ -181,7 +180,7 @@ export default function StockTakingCreatePage() {
     } finally {
       setLoadingWarehouses(false)
     }
-  }, [])
+  }, [t])
 
   // Fetch inventory for selected warehouse
   const fetchInventory = useCallback(async () => {
@@ -288,7 +287,7 @@ export default function StockTakingCreatePage() {
     const warehouseName = warehouseMap.get(data.warehouse_id) || ''
 
     // Create stock taking
-    const createResponse = await stockTakingApi.createStockTaking({
+    const createResponse = await createStockTaking({
       warehouse_id: data.warehouse_id,
       warehouse_name: warehouseName,
       taking_date: data.taking_date?.toISOString().split('T')[0],
@@ -297,11 +296,17 @@ export default function StockTakingCreatePage() {
       created_by_name: user.displayName || user.username,
     })
 
-    if (!createResponse.success || !createResponse.data) {
-      throw new Error(createResponse.error?.message || t('stockTaking.create.messages.createError'))
+    if (
+      createResponse.status !== 201 ||
+      !createResponse.data.success ||
+      !createResponse.data.data
+    ) {
+      throw new Error(
+        createResponse.data.error?.message || t('stockTaking.create.messages.createError')
+      )
     }
 
-    const stockTakingId = createResponse.data.id
+    const stockTakingId = createResponse.data.data.id
 
     // Add items to stock taking
     const items: HandlerAddStockTakingItemRequest[] = selectedProducts.map((p) => ({
@@ -313,13 +318,13 @@ export default function StockTakingCreatePage() {
       unit_cost: p.unit_cost,
     }))
 
-    const addItemsResponse = await stockTakingApi.addItemsStockTaking(stockTakingId || '', {
+    const addItemsResponse = await addItemsStockTaking(stockTakingId || '', {
       items,
     })
 
-    if (!addItemsResponse.success) {
+    if (addItemsResponse.status !== 200 || !addItemsResponse.data.success) {
       throw new Error(
-        addItemsResponse.error?.message || t('stockTaking.create.messages.addItemsError')
+        addItemsResponse.data.error?.message || t('stockTaking.create.messages.addItemsError')
       )
     }
   }
