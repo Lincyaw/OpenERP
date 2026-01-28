@@ -34039,3 +34039,68 @@ Status codes:
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-017: React Query Migration - Printing Module Fix Import Paths
+
+=== Implementation Details ===
+- Migrated `src/hooks/usePrint.ts` from non-existent `@/api/printing` imports to correct module paths
+- Updated API function imports to use specific print modules:
+  - `getPrintTemplateTemplatesByDocType` from `@/api/print-templates/print-templates`
+  - `previewDocumentPrintPreview` from `@/api/print-preview/print-preview`
+  - `generatePDFPrintJob` from `@/api/print-jobs/print-jobs`
+- Updated type imports to use `@/api/models`:
+  - `HandlerPreviewHTTPResponse` (aliased as `PrintPreviewResponse`)
+  - `HandlerTemplateResponse` (aliased as `PrintTemplate`)
+  - `HandlerPrintJobResponse` (aliased as `PrintJob`)
+
+=== API Call Pattern Migration ===
+**Before (Factory Pattern):**
+```typescript
+import * as printApi from '@/api/printing'
+const result = await printApi.getTemplatesByDocType(documentType)
+const result = await printApi.previewDocument({...})
+const result = await printApi.generatePDF({...})
+```
+
+**After (Direct Import with Response Handling):**
+```typescript
+const response = await getPrintTemplateTemplatesByDocType(documentType)
+if (response.status === 200 && response.data.success && response.data.data) {
+  // use response.data.data
+}
+```
+
+=== Request Body Field Mapping ===
+| Old Field | New Field |
+|-----------|-----------|
+| documentType | document_type |
+| documentId | document_id |
+| documentNumber | document_number |
+| templateId | template_id |
+
+=== Response Handling Pattern ===
+- GET/POST operations check `response.status === 200` or `response.status === 201`
+- Access data via `response.data.success && response.data.data`
+- Error handling extracts error from `response.data.error`
+
+=== Type Mapping ===
+| Old Type | New Type (from @/api/models) |
+|----------|------------------------------|
+| PrintPreviewResponse | HandlerPreviewHTTPResponse |
+| PrintTemplate | HandlerTemplateResponse |
+| PrintJob | HandlerPrintJobResponse |
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `@/api/printing` imports
+- All API calls properly updated to new response format
+- All type imports from @/api/models
+- Fixed implicit any type for parameter 't' in template filtering by adding explicit type annotation
+
+=== Notes ===
+- Type aliases created at the top of file for cleaner code and backward compatibility
+- Request body fields use snake_case to match backend API expectations
+- Response data accessed via nested `response.data.data` pattern
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

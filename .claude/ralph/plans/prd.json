@@ -10103,7 +10103,7 @@
       "- All implicit any errors fixed",
       "- No TypeScript errors in affected file"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/hooks/usePrint.ts"
     ]

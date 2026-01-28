@@ -16,8 +16,19 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import * as printApi from '@/api/printing'
-import type { PrintPreviewResponse, PrintTemplate, PrintJob } from '@/api/printing/types'
+import { getPrintTemplateTemplatesByDocType } from '@/api/print-templates/print-templates'
+import { previewDocumentPrintPreview } from '@/api/print-preview/print-preview'
+import { generatePDFPrintJob } from '@/api/print-jobs/print-jobs'
+import type {
+  HandlerPreviewHTTPResponse,
+  HandlerTemplateResponse,
+  HandlerPrintJobResponse,
+} from '@/api/models'
+
+// Type aliases for cleaner code
+type PrintPreviewResponse = HandlerPreviewHTTPResponse
+type PrintTemplate = HandlerTemplateResponse
+type PrintJob = HandlerPrintJobResponse
 
 export interface UsePrintOptions {
   /** Document type (e.g., 'SALES_ORDER', 'SALES_DELIVERY') */
@@ -85,13 +96,18 @@ export function usePrint({
   useEffect(() => {
     async function loadTemplates() {
       try {
-        const result = await printApi.getTemplatesByDocType(documentType)
-        setTemplates(result)
+        const response = await getPrintTemplateTemplatesByDocType(documentType)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          const result = response.data.data
+          setTemplates(result)
 
-        // Auto-select default template
-        const defaultTemplate = result.find((t) => t.isDefault)
-        if (defaultTemplate) {
-          setSelectedTemplateId(defaultTemplate.id)
+          // Auto-select default template
+          const defaultTemplate = result.find((t: PrintTemplate) => t.is_default)
+          if (defaultTemplate) {
+            setSelectedTemplateId(defaultTemplate.id ?? null)
+          }
+        } else {
+          setTemplates([])
         }
       } catch {
         // Templates load silently - not critical for preview
@@ -111,17 +127,27 @@ export function usePrint({
       setError(null)
 
       try {
-        const result = await printApi.previewDocument({
-          documentType,
-          documentId,
-          templateId: templateId ?? selectedTemplateId ?? undefined,
+        const response = await previewDocumentPrintPreview({
+          document_type: documentType,
+          document_id: documentId,
+          template_id: templateId ?? selectedTemplateId ?? undefined,
           data,
         })
-        setPreview(result)
 
-        // Update selected template if specified
-        if (templateId) {
-          setSelectedTemplateId(templateId)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setPreview(response.data.data)
+
+          // Update selected template if specified
+          if (templateId) {
+            setSelectedTemplateId(templateId)
+          }
+        } else {
+          const errorMsg =
+            response.status !== 200 && 'error' in response.data
+              ? (response.data.error ?? '加载预览失败')
+              : '加载预览失败'
+          setError(typeof errorMsg === 'string' ? errorMsg : '加载预览失败')
+          setPreview(null)
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : '加载预览失败'
@@ -171,20 +197,29 @@ export function usePrint({
 
   // Generate PDF
   const generatePdf = useCallback(
-    async (numCopies?: number) => {
+    async (numCopies?: number): Promise<PrintJob> => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await printApi.generatePDF({
-          documentType,
-          documentId,
-          documentNumber,
-          templateId: selectedTemplateId ?? undefined,
+        const response = await generatePDFPrintJob({
+          document_type: documentType,
+          document_id: documentId,
+          document_number: documentNumber,
+          template_id: selectedTemplateId ?? undefined,
           copies: numCopies ?? copies,
           data,
         })
-        return result
+
+        if (response.status === 201 && response.data.success && response.data.data) {
+          return response.data.data
+        } else {
+          const errorMsg =
+            response.status !== 201 && 'error' in response.data
+              ? (response.data.error ?? '生成PDF失败')
+              : '生成PDF失败'
+          throw new Error(typeof errorMsg === 'string' ? errorMsg : '生成PDF失败')
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : '生成PDF失败'
         setError(message)
