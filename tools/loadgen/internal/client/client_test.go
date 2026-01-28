@@ -373,3 +373,103 @@ func TestConcurrentRequests(t *testing.T) {
 		<-done
 	}
 }
+
+// TestPutRequest tests PUT request.
+func TestPutRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "PUT", r.Method)
+		var body map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		assert.NoError(t, err)
+		assert.Equal(t, "updated", body["status"])
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"id": "123", "status": "updated"}`))
+	}))
+	defer server.Close()
+
+	targetCfg := config.TargetConfig{
+		BaseURL: server.URL,
+		Timeout: 5 * time.Second,
+	}
+
+	client, err := NewClient(targetCfg, nil, nil)
+	require.NoError(t, err)
+
+	body := map[string]interface{}{
+		"status": "updated",
+	}
+	resp, err := client.Put(context.Background(), "/items/123", body)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+// TestDeleteRequest tests DELETE request.
+func TestDeleteRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "DELETE", r.Method)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	targetCfg := config.TargetConfig{
+		BaseURL: server.URL,
+		Timeout: 5 * time.Second,
+	}
+
+	client, err := NewClient(targetCfg, nil, nil)
+	require.NoError(t, err)
+
+	resp, err := client.Delete(context.Background(), "/items/123")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
+// TestSetHeader tests setting custom headers.
+func TestSetHeader(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "custom-value", r.Header.Get("X-Custom-Header"))
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	targetCfg := config.TargetConfig{
+		BaseURL: server.URL,
+		Timeout: 5 * time.Second,
+	}
+
+	client, err := NewClient(targetCfg, nil, nil)
+	require.NoError(t, err)
+
+	client.SetHeader("X-Custom-Header", "custom-value")
+
+	resp, err := client.Get(context.Background(), "/test", nil)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+// TestClientClose tests client close.
+func TestClientClose(t *testing.T) {
+	targetCfg := config.TargetConfig{
+		BaseURL: "http://localhost:8080",
+		Timeout: 5 * time.Second,
+	}
+
+	client, err := NewClient(targetCfg, nil, nil)
+	require.NoError(t, err)
+
+	err = client.Close()
+	assert.NoError(t, err)
+}
+
+// TestClientWithInvalidBaseURL tests client creation with invalid base URL.
+func TestClientWithInvalidBaseURL(t *testing.T) {
+	targetCfg := config.TargetConfig{
+		BaseURL: "",
+		Timeout: 5 * time.Second,
+	}
+
+	_, err := NewClient(targetCfg, nil, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "base URL is required")
+}

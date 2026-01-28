@@ -7724,7 +7724,7 @@
       "编写集成测试验证认证流程",
       "验收标准：成功登录 ERP 并获取有效 token"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-008",
@@ -10541,7 +10541,7 @@
       "# 测试属性匹配",
       "curl -X POST http://localhost:8080/api/v1/feature-flags -d '{\"key\":\"age-flag\",\"rules\":[{\"type\":\"attribute\",\"attribute\":\"age\",\"operator\":\">=\",\"value\":18}]}'"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-004",
@@ -10570,7 +10570,7 @@
       "cd frontend && npm test -- --testNamePattern='useFeatureFlags'",
       "cd frontend && npm run type-check"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-005",
@@ -10600,7 +10600,7 @@
       "curl -X POST http://localhost:8080/api/v1/feature-flags -d '{\"key\":\"sse-test\",\"enabled\":true}'",
       "# 验证前端接收更新(查看浏览器控制台)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-006",
@@ -10662,7 +10662,7 @@
       "# 批量评估测试",
       "ab -n 1000 -c 10 -p batch-flags.json -T application/json http://localhost:8080/api/v1/feature-flags/evaluate/batch"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-008",
@@ -10692,7 +10692,7 @@
       "# 权限测试",
       "# 需要创建不同角色的用户进行测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-009",

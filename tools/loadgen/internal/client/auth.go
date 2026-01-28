@@ -269,9 +269,20 @@ func (am *AuthManager) startTokenRefresh() {
 
 // Stop stops the authentication manager and token refresh.
 func (am *AuthManager) Stop() {
+	am.mu.Lock()
+	defer am.mu.Unlock()
+
 	if am.refreshTicker != nil {
 		am.refreshTicker.Stop()
-		close(am.stopRefresh)
+		am.refreshTicker = nil
+
+		// Only close the channel once
+		select {
+		case <-am.stopRefresh:
+			// Already closed
+		default:
+			close(am.stopRefresh)
+		}
 	}
 }
 
