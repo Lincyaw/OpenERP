@@ -72,7 +72,8 @@ test.describe('FF-INT-001: Real-time Updates (Polling)', () => {
     test('should detect flag change via polling', async ({ page, request }) => {
       // Login and let the app initialize
       await login(page, 'admin')
-      await page.waitForLoadState('networkidle')
+      // Wait for domcontentloaded to avoid timeout with continuous polling
+      await page.waitForLoadState('domcontentloaded')
 
       // Wait for initial feature flag load
       await page.waitForTimeout(3000)
@@ -258,7 +259,8 @@ test.describe('FF-INT-001: Real-time Updates (Polling)', () => {
   test.describe('Frontend Store Integration', () => {
     test('should verify frontend store exists after login', async ({ page }) => {
       await login(page, 'admin')
-      await page.waitForLoadState('networkidle')
+      // Wait for domcontentloaded to avoid timeout with continuous polling
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(3000)
 
       // Check if feature flag related storage exists
@@ -278,7 +280,8 @@ test.describe('FF-INT-001: Real-time Updates (Polling)', () => {
 
     test('should handle network errors gracefully', async ({ page }) => {
       await login(page, 'admin')
-      await page.waitForLoadState('networkidle')
+      // Wait for domcontentloaded to avoid timeout with continuous polling
+      await page.waitForLoadState('domcontentloaded')
 
       // The app should not crash if feature flag API fails
       // This is handled by the FeatureFlagProvider error handling
@@ -288,7 +291,7 @@ test.describe('FF-INT-001: Real-time Updates (Polling)', () => {
 
       // Page should still be navigable
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       expect(page.url()).toBeDefined()
     })
   })

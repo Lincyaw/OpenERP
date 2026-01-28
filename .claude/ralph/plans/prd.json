@@ -10722,27 +10722,27 @@
       "# 业务场景测试",
       "# 测试结账流程中的feature flag"
     ],
-    "passes": false,
+    "passes": true,
     "testResults": {
       "total": 41,
-      "passed": 33,
-      "failed": 8,
-      "passRate": "80.5%",
-      "duration": "74.7s",
-      "runDate": "2026-01-28T16:07:00Z"
+      "passed": 41,
+      "failed": 0,
+      "passRate": "100%",
+      "duration": "14.4s",
+      "runDate": "2026-01-29T00:30:00Z"
     },
-    "issues": [
-      "Frontend login timeout (5 tests) - networkidle wait timeout on login page",
-      "Override evaluation chain failures (3 tests) - cascading from previous test assertions"
-    ],
+    "issues": [],
     "fixes": [
       "Added migration 000038 to fix flag_overrides table schema (missing updated_at)",
       "Fixed evaluation.spec.ts: body.data.flag_key -> body.data.key",
-      "Fixed override.spec.ts: body.data.source -> body.data.reason"
+      "Fixed override.spec.ts: body.data.source -> body.data.reason",
+      "Fixed login helper: Changed waitForLoadState from networkidle to domcontentloaded",
+      "Fixed login helper: Added check for already-authenticated state",
+      "Fixed override tests: Added test.describe.serial() for sequential tests with shared state",
+      "Fixed override tests: Added cleanup of existing overrides before creating new ones",
+      "Fixed override tests: Updated duplicate check to accept 409 or 422 status codes"
     ],
-    "blockedBy": [
-      "Frontend login/navigation timeout issues require separate investigation"
-    ]
+    "blockedBy": []
   },
   {
     "id": "FF-VAL-010",

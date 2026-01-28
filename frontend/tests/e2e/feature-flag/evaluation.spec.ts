@@ -207,7 +207,8 @@ test.describe('FF-INT-001: Feature Flag Evaluation', () => {
       await login(page, 'admin')
 
       // Wait for the app to load and feature flags to initialize
-      await page.waitForLoadState('networkidle')
+      // Use domcontentloaded to avoid timeout with continuous polling
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000) // Allow time for flag initialization
 
       // Check if feature flag store has been initialized
@@ -223,7 +224,8 @@ test.describe('FF-INT-001: Feature Flag Evaluation', () => {
 
     test('should reflect flag state change after disable', async ({ page, request }) => {
       await login(page, 'admin')
-      await page.waitForLoadState('networkidle')
+      // Use domcontentloaded to avoid timeout with continuous polling
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Disable the flag

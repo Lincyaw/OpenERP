@@ -10,7 +10,39 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   const user = TEST_USERS[userType]
 
   await page.goto('/login')
-  await page.waitForLoadState('networkidle')
+  // Use domcontentloaded instead of networkidle as app may have continuous polling
+  await page.waitForLoadState('domcontentloaded')
+
+  // Wait briefly for any redirect to complete
+  await page.waitForTimeout(500)
+
+  // Check if user is already logged in (app redirected from /login to dashboard)
+  const currentUrl = page.url()
+  console.log(`[login] Current URL after goto('/login'): ${currentUrl}`)
+
+  if (!currentUrl.includes('/login')) {
+    // Already logged in, verify auth state is present
+    const isLoggedIn = await page.evaluate(() => {
+      const erpAuth = window.localStorage.getItem('erp-auth')
+      if (!erpAuth) return false
+      try {
+        const parsed = JSON.parse(erpAuth)
+        return parsed?.state?.user !== null && parsed?.state?.user !== undefined
+      } catch {
+        return false
+      }
+    })
+    console.log(`[login] Already redirected away from login. isLoggedIn: ${isLoggedIn}`)
+    if (isLoggedIn) {
+      return // Already authenticated, skip login process
+    }
+  }
+
+  // Wait for login form to be visible
+  await page.waitForSelector('input[type="password"], #password', {
+    state: 'visible',
+    timeout: 10000,
+  })
 
   // Fill login form
   await page.fill('input[name="username"], input[placeholder*="用户名"], #username', user.username)
@@ -142,11 +174,59 @@ export async function clearAuth(page: Page): Promise<void> {
 }
 
 /**
- * Reload page and wait for network idle
+ * Wait for page to be ready (more robust than networkidle)
+ * This handles apps with persistent connections like SSE or WebSocket
+ */
+export async function waitForPageReady(page: Page, options?: { timeout?: number }): Promise<void> {
+  const timeout = options?.timeout || 10000
+
+  // Wait for DOM to be loaded
+  await page.waitForLoadState('domcontentloaded')
+
+  // Wait for main content area to be visible (Semi Design layout)
+  await page
+    .locator('.semi-layout-content, main, [role="main"], .page-content')
+    .first()
+    .waitFor({ state: 'visible', timeout })
+    .catch(() => {
+      // Content might already be visible or use different structure
+    })
+
+  // Wait for any loading spinners to disappear
+  await page
+    .locator('.semi-spin-spinning, .loading-spinner, [data-testid="loading"]')
+    .first()
+    .waitFor({ state: 'hidden', timeout: 5000 })
+    .catch(() => {
+      // Spinner might not exist or already hidden
+    })
+}
+
+/**
+ * Reload page and wait for it to be ready
  */
 export async function reloadAndWait(page: Page): Promise<void> {
   await page.reload()
-  await page.waitForLoadState('networkidle')
+  await waitForPageReady(page)
+}
+
+/**
+ * Get the API base URL based on environment
+ * Works in both local (localhost:8080) and Docker (erp-backend:8080) environments
+ */
+export function getApiBaseUrl(): string {
+  const frontendUrl = process.env.E2E_BASE_URL || 'http://localhost:3000'
+
+  if (frontendUrl.includes('erp-frontend')) {
+    // Docker environment: frontend is erp-frontend:80, backend is erp-backend:8080
+    return 'http://erp-backend:8080'
+  } else if (frontendUrl.includes('localhost:3000')) {
+    // Local development: backend is on localhost:8080
+    return 'http://localhost:8080'
+  } else {
+    // Custom environment: try to derive backend URL
+    return frontendUrl.replace(':3000', ':8080').replace(':80', ':8080')
+  }
 }
 
 /**
@@ -157,21 +237,7 @@ export async function getApiToken(
   userType: TestUserType = 'admin'
 ): Promise<string | null> {
   const user = TEST_USERS[userType]
-  // Determine the API base URL based on environment
-  // E2E_BASE_URL is the frontend URL, we need the backend URL
-  const frontendUrl = process.env.E2E_BASE_URL || 'http://localhost:3000'
-  let apiBaseUrl: string
-
-  if (frontendUrl.includes('erp-frontend')) {
-    // Docker environment: frontend is erp-frontend:80, backend is erp-backend:8080
-    apiBaseUrl = 'http://erp-backend:8080'
-  } else if (frontendUrl.includes('localhost:3000')) {
-    // Local development: backend is on localhost:8080
-    apiBaseUrl = 'http://localhost:8080'
-  } else {
-    // Custom environment: try to derive backend URL
-    apiBaseUrl = frontendUrl.replace(':3000', ':8080').replace(':80', ':8080')
-  }
+  const apiBaseUrl = getApiBaseUrl()
 
   try {
     const response = await page.request.post(`${apiBaseUrl}/api/v1/auth/login`, {
