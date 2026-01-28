@@ -17,7 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getBalance } from '@/api/balance/balance'
-import { getCustomers } from '@/api/customers/customers'
+import { getCustomerById } from '@/api/customers/customers'
 import { useFormatters } from '@/hooks/useFormatters'
 import type {
   HandlerBalanceTransactionResponse,
@@ -58,7 +58,6 @@ export default function CustomerBalancePage() {
   const navigate = useNavigate()
   const { id: customerId } = useParams<{ id: string }>()
   const balanceApi = useMemo(() => getBalance(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
 
   // Memoized transaction type options with translations
   const transactionTypeOptions = useMemo(
@@ -142,15 +141,15 @@ export default function CustomerBalancePage() {
   const fetchCustomerInfo = useCallback(async () => {
     if (!customerId) return
     try {
-      const response = await customerApi.getCustomerById(customerId)
-      if (response.success && response.data) {
-        setCustomerName(response.data.name || '')
-        setCustomerCode(response.data.code || '')
+      const response = await getCustomerById(customerId)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setCustomerName(response.data.data.name || '')
+        setCustomerCode(response.data.data.code || '')
       }
     } catch {
       Toast.error(t('partner:customers.messages.fetchCustomerError'))
     }
-  }, [customerId, customerApi, t])
+  }, [customerId, t])
 
   // Fetch balance summary
   const fetchBalanceSummary = useCallback(async () => {

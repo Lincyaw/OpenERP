@@ -13,7 +13,12 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getCustomers } from '@/api/customers/customers'
+import {
+  listCustomers,
+  activateCustomer,
+  deactivateCustomer,
+  deleteCustomer,
+} from '@/api/customers/customers'
 import type {
   HandlerCustomerListResponse,
   HandlerCustomerListResponseStatus,
@@ -65,7 +70,6 @@ export default function CustomersPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const { formatDate } = useFormatters()
-  const api = useMemo(() => getCustomers(), [])
 
   // Memoized options with translations
   const STATUS_OPTIONS = useMemo(
@@ -133,16 +137,16 @@ export default function CustomersPage() {
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.listCustomers(params)
+      const response = await listCustomers(params)
 
-      if (response.success && response.data) {
-        setCustomerList(response.data as Customer[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setCustomerList(response.data.data as Customer[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -152,7 +156,6 @@ export default function CustomersPage() {
       setLoading(false)
     }
   }, [
-    api,
     t,
     state.pagination.page,
     state.pagination.pageSize,
@@ -213,14 +216,14 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await api.activateCustomer(customer.id)
+        await activateCustomer(customer.id)
         Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
         Toast.error(t('customers.messages.activateError'))
       }
     },
-    [api, fetchCustomers, t]
+    [fetchCustomers, t]
   )
 
   // Handle deactivate customer
@@ -228,14 +231,14 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await api.deactivateCustomer(customer.id)
+        await deactivateCustomer(customer.id)
         Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
         Toast.error(t('customers.messages.deactivateError'))
       }
     },
-    [api, fetchCustomers, t]
+    [fetchCustomers, t]
   )
 
   // Handle suspend customer
@@ -250,7 +253,7 @@ export default function CustomersPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            await api.deactivateCustomer(customer.id!)
+            await deactivateCustomer(customer.id!)
             Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
@@ -259,7 +262,7 @@ export default function CustomersPage() {
         },
       })
     },
-    [api, fetchCustomers, t]
+    [fetchCustomers, t]
   )
 
   // Handle delete customer
@@ -274,7 +277,7 @@ export default function CustomersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deleteCustomer(customer.id!)
+            await deleteCustomer(customer.id!)
             Toast.success(t('customers.messages.deleteSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
@@ -283,7 +286,7 @@ export default function CustomersPage() {
         },
       })
     },
-    [api, fetchCustomers, t]
+    [fetchCustomers, t]
   )
 
   // Handle edit customer
@@ -308,9 +311,7 @@ export default function CustomersPage() {
 
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.activateCustomer(id))
-    )
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => activateCustomer(id)))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -333,13 +334,11 @@ export default function CustomersPage() {
 
     setSelectedRowKeys([])
     fetchCustomers()
-  }, [api, selectedRowKeys, fetchCustomers, t])
+  }, [selectedRowKeys, fetchCustomers, t])
 
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.deactivateCustomer(id))
-    )
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => deactivateCustomer(id)))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -362,7 +361,7 @@ export default function CustomersPage() {
 
     setSelectedRowKeys([])
     fetchCustomers()
-  }, [api, selectedRowKeys, fetchCustomers, t])
+  }, [selectedRowKeys, fetchCustomers, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Customer>[] = useMemo(

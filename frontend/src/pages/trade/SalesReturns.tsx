@@ -21,7 +21,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
-import { getCustomers } from '@/api/customers/customers'
+import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesReturnListResponse,
   ListSalesReturnsParams,
@@ -84,7 +84,6 @@ export default function SalesReturnsPage() {
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate } = useFormatters()
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
 
   // State for data
   const [returnList, setReturnList] = useState<SalesReturn[]>([])
@@ -127,9 +126,9 @@ export default function SalesReturnsPage() {
   const fetchCustomers = useCallback(async () => {
     setCustomersLoading(true)
     try {
-      const response = await customerApi.listCustomers({ page_size: 100 })
-      if (response.success && response.data) {
-        const options: CustomerOption[] = response.data.map(
+      const response = await listCustomers({ page_size: 100 })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const options: CustomerOption[] = response.data.data.map(
           (customer: HandlerCustomerListResponse) => ({
             label: customer.name || customer.code || '',
             value: customer.id || '',
@@ -142,7 +141,7 @@ export default function SalesReturnsPage() {
     } finally {
       setCustomersLoading(false)
     }
-  }, [customerApi, t])
+  }, [t])
 
   // Fetch customers on mount
   useEffect(() => {

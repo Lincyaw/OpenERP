@@ -32979,3 +32979,50 @@ Files Modified:
 - RQ-MIG-002: Customers Module migration
 - RQ-MIG-003: Suppliers Module migration
 - Continue with remaining modules as defined in PRD
+
+2026-01-28 - Task RQ-MIG-002: React Query Migration - Customers Module
+
+=== Implementation Details ===
+- Migrated all customer module files from factory pattern to direct imports
+- Updated 11 files across partner, trade, and finance modules
+- Replaced `getCustomers()` factory pattern with direct function imports
+
+=== Key Files Modified ===
+Partner Module:
+- src/features/partner/CustomerForm.tsx - Direct imports: createCustomer, updateCustomer, listCustomerLevels
+- src/pages/partner/Customers.tsx - Direct imports: listCustomers, activateCustomer, deactivateCustomer, deleteCustomer
+- src/pages/partner/CustomerDetail.tsx - Direct imports: getCustomerById, activateCustomer, deactivateCustomer, deleteCustomer
+- src/pages/partner/CustomerEdit.tsx - Direct import: getCustomerById
+- src/pages/partner/CustomerBalance.tsx - Direct import: getCustomerById
+
+Trade Module:
+- src/features/trade/SalesOrderForm.tsx - Direct import: listCustomers
+- src/pages/trade/SalesOrders.tsx - Direct import: listCustomers
+- src/pages/trade/SalesReturns.tsx - Direct import: listCustomers
+- src/pages/trade/SalesReturnApproval.tsx - Direct import: listCustomers
+
+Finance Module:
+- src/pages/finance/ReceiptVoucherNew.tsx - Direct imports: listCustomers, getCustomerById
+
+Dashboard:
+- src/pages/Dashboard.tsx - Direct import: countCustomerByStatus
+
+=== Response Format Update ===
+- Changed from `response.success && response.data` pattern
+- Now uses `response.status === 200 && response.data.success && response.data.data`
+- Properly handles the new nested response structure
+
+=== Verification ===
+- TypeScript check (npx tsc --noEmit) passes for all migrated files
+- Pre-existing errors in other modules (suppliers, warehouses, reports, system) are unrelated to this task
+- No new TypeScript errors introduced by this migration
+
+=== Notes ===
+- The migration follows the pattern established in RQ-MIG-001 (Products Module)
+- Removed `useMemo(() => getCustomers(), [])` pattern throughout
+- All response.status checks updated to use HTTP status codes (200, 201)
+- Error handling updated to access response.data.error instead of response.error
+
+=== Next Steps ===
+- Continue with RQ-MIG-003: Suppliers Module migration
+- Apply same pattern to remaining factory function usages

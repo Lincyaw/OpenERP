@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container, Row, Stack } from '@/components/common/layout'
 import { countProductByStatus } from '@/api/products/products'
-import { getCustomers } from '@/api/customers/customers'
+import { countCustomerByStatus } from '@/api/customers/customers'
 import { getInventory } from '@/api/inventory/inventory'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import { getFinanceApi } from '@/api/finance'
@@ -68,7 +68,6 @@ export default function DashboardPage() {
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
 
   // API instances
-  const customersApi = useMemo(() => getCustomers(), [])
   const inventoryApi = useMemo(() => getInventory(), [])
   const salesOrdersApi = useMemo(() => getSalesOrders(), [])
   const financeApi = useMemo(() => getFinanceApi(), [])
@@ -117,7 +116,7 @@ export default function DashboardPage() {
         recentOrdersRes,
       ] = await Promise.allSettled([
         countProductByStatus(),
-        customersApi.countCustomerByStatus(),
+        countCustomerByStatus(),
         salesOrdersApi.getSalesOrderStatusSummary(),
         inventoryApi.listInventoryBelowMinimum({ page_size: 100 }),
         financeApi.getFinanceReceivableReceivableSummary(),
@@ -143,8 +142,13 @@ export default function DashboardPage() {
       }
 
       // Process customer stats
-      if (customerStatsRes.status === 'fulfilled' && customerStatsRes.value.data) {
-        const stats = customerStatsRes.value.data
+      if (
+        customerStatsRes.status === 'fulfilled' &&
+        customerStatsRes.value.status === 200 &&
+        customerStatsRes.value.data.success &&
+        customerStatsRes.value.data.data
+      ) {
+        const stats = customerStatsRes.value.data.data
         setCustomerCount({
           total: (stats.active || 0) + (stats.inactive || 0) + (stats.suspended || 0),
           active: stats.active || 0,
@@ -296,7 +300,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [customersApi, inventoryApi, salesOrdersApi, financeApi, t, formatCurrency])
+  }, [inventoryApi, salesOrdersApi, financeApi, t, formatCurrency])
 
   // Fetch data on mount
   useEffect(() => {

@@ -17,8 +17,8 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getCustomers } from '@/api/customers/customers'
-import { getCustomerLevels } from '@/api/customer-levels/customer-levels'
+import { createCustomer, updateCustomer } from '@/api/customers/customers'
+import { listCustomerLevels } from '@/api/customer-levels/customer-levels'
 import type {
   HandlerCustomerResponse,
   HandlerCustomerLevelListResponse,
@@ -51,8 +51,6 @@ interface CustomerFormProps {
 export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
-  const api = useMemo(() => getCustomers(), [])
-  const customerLevelsApi = useMemo(() => getCustomerLevels(), [])
   const isEditMode = Boolean(customerId)
 
   // State for customer levels from API
@@ -63,9 +61,9 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const fetchCustomerLevels = useCallback(async () => {
     try {
       setLevelsLoading(true)
-      const response = await customerLevelsApi.listCustomerLevels({ active_only: true })
-      if (response.success && response.data) {
-        setCustomerLevels(response.data)
+      const response = await listCustomerLevels({ active_only: true })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setCustomerLevels(response.data.data)
       }
     } catch {
       // Silent fail - will show empty dropdown
@@ -73,7 +71,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
     } finally {
       setLevelsLoading(false)
     }
-  }, [customerLevelsApi])
+  }, [])
 
   // Load customer levels on mount
   useEffect(() => {
@@ -277,7 +275,7 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const onSubmit = async (data: CustomerFormData) => {
     if (isEditMode && customerId) {
       // Update existing customer
-      const response = await api.updateCustomer(customerId, {
+      const response = await updateCustomer(customerId, {
         name: data.name,
         short_name: data.short_name,
         level: data.level as HandlerUpdateCustomerRequestLevel | undefined,
@@ -294,12 +292,12 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('customers.messages.updateError'))
+      if (response.status !== 200 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('customers.messages.updateError'))
       }
     } else {
       // Create new customer
-      const response = await api.createCustomer({
+      const response = await createCustomer({
         code: data.code,
         name: data.name,
         short_name: data.short_name,
@@ -317,8 +315,8 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('customers.messages.createError'))
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('customers.messages.createError'))
       }
     }
   }

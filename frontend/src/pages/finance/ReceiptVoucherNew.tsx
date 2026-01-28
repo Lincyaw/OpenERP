@@ -19,7 +19,7 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { getFinanceApi } from '@/api/finance'
-import { getCustomers } from '@/api/customers/customers'
+import { listCustomers, getCustomerById } from '@/api/customers/customers'
 import type { PaymentMethod, CreateReceiptVoucherRequest, AccountReceivable } from '@/api/finance'
 import type { HandlerCustomerResponse } from '@/api/models'
 import './ReceiptVoucherNew.css'
@@ -92,7 +92,6 @@ export default function ReceiptVoucherNewPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const financeApi = useMemo(() => getFinanceApi(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
 
   // Payment method options with translated labels
   const paymentMethodOptions = useMemo(
@@ -159,15 +158,15 @@ export default function ReceiptVoucherNewPage() {
 
       setCustomerLoading(true)
       try {
-        const response = await customerApi.listCustomers({
+        const response = await listCustomers({
           search: keyword,
           status: 'active',
           page: 1,
           page_size: 20,
         })
 
-        if (response.success && response.data) {
-          const options = response.data.map((customer) => ({
+        if (response.status === 200 && response.data.success && response.data.data) {
+          const options = response.data.data.map((customer) => ({
             label: `${customer.name} (${customer.code})`,
             value: customer.id || '',
             customer,
@@ -180,7 +179,7 @@ export default function ReceiptVoucherNewPage() {
         setCustomerLoading(false)
       }
     },
-    [customerApi, t]
+    [t]
   )
 
   // Fetch customer receivables when customer is selected
@@ -222,9 +221,9 @@ export default function ReceiptVoucherNewPage() {
     if (preSelectedCustomerId) {
       const loadCustomer = async () => {
         try {
-          const response = await customerApi.getCustomerById(preSelectedCustomerId)
-          if (response.success && response.data) {
-            const customer = response.data
+          const response = await getCustomerById(preSelectedCustomerId)
+          if (response.status === 200 && response.data.success && response.data.data) {
+            const customer = response.data.data
             setSelectedCustomer(customer)
             setValue('customer_id', customer.id || '')
             setValue('customer_name', customer.name || '')
@@ -243,7 +242,7 @@ export default function ReceiptVoucherNewPage() {
       }
       loadCustomer()
     }
-  }, [preSelectedCustomerId, customerApi, setValue, fetchCustomerReceivables, t])
+  }, [preSelectedCustomerId, setValue, fetchCustomerReceivables, t])
 
   // Watch for customer changes
   useEffect(() => {

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
-import { getCustomers } from '@/api/customers/customers'
+import { listCustomers } from '@/api/customers/customers'
 import { getProducts } from '@/api/products/products'
 import { getWarehouses } from '@/api/warehouses/warehouses'
 import type {
@@ -52,7 +52,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
   const productApi = useMemo(() => getProducts(), [])
   const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
@@ -136,28 +135,25 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const hasSetDefaultWarehouse = useRef(false)
 
   // Fetch customers
-  const fetchCustomers = useCallback(
-    async (search?: string, signal?: AbortSignal) => {
-      setCustomersLoading(true)
-      try {
-        const response = await customerApi.listCustomers(
-          { page_size: 50, search: search || undefined, status: 'active' },
-          { signal }
-        )
-        if (response.success && response.data) {
-          setCustomers(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch customers', response.error)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'CanceledError') return
-        log.error('Error fetching customers', error)
-      } finally {
-        setCustomersLoading(false)
+  const fetchCustomers = useCallback(async (search?: string, signal?: AbortSignal) => {
+    setCustomersLoading(true)
+    try {
+      const response = await listCustomers(
+        { page_size: 50, search: search || undefined, status: 'active' },
+        { signal }
+      )
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setCustomers(response.data.data)
+      } else if (!response.data.success) {
+        log.error('Failed to fetch customers', response.data.error)
       }
-    },
-    [customerApi]
-  )
+    } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return
+      log.error('Error fetching customers', error)
+    } finally {
+      setCustomersLoading(false)
+    }
+  }, [])
 
   // Fetch products
   const fetchProducts = useCallback(

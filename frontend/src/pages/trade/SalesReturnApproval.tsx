@@ -21,7 +21,7 @@ import { IconArrowLeft, IconTick, IconClose, IconSearch, IconRefresh } from '@do
 import { useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
-import { getCustomers } from '@/api/customers/customers'
+import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesReturnResponse,
   HandlerSalesReturnItemResponse,
@@ -106,7 +106,6 @@ function formatDateTime(dateStr?: string): string {
 export default function SalesReturnApprovalPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
 
   // View mode: 'list' or 'detail'
   const [viewMode, setViewMode] = useState<'list' | 'detail'>(
@@ -138,9 +137,9 @@ export default function SalesReturnApprovalPage() {
   // Fetch customers for filter dropdown
   const fetchCustomers = useCallback(async () => {
     try {
-      const response = await customerApi.listCustomers({ page_size: 100 })
-      if (response.success && response.data) {
-        const options: CustomerOption[] = response.data.map(
+      const response = await listCustomers({ page_size: 100 })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const options: CustomerOption[] = response.data.data.map(
           (customer: HandlerCustomerListResponse) => ({
             label: customer.name || customer.code || '',
             value: customer.id || '',
@@ -151,7 +150,7 @@ export default function SalesReturnApprovalPage() {
     } catch {
       // Silently fail - customer filter just won't be available
     }
-  }, [customerApi])
+  }, [])
 
   // Fetch pending returns list
   const fetchPendingReturns = useCallback(async () => {

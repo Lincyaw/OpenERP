@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Card,
   Typography,
@@ -23,7 +23,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getCustomers } from '@/api/customers/customers'
+import {
+  getCustomerById,
+  activateCustomer,
+  deactivateCustomer,
+  deleteCustomer,
+} from '@/api/customers/customers'
 import type {
   HandlerCustomerResponse,
   HandlerCustomerResponseStatus,
@@ -67,7 +72,6 @@ export default function CustomerDetailPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const { formatCurrency, formatDateTime } = useFormatters()
-  const customersApi = useMemo(() => getCustomers(), [])
 
   const [customer, setCustomer] = useState<HandlerCustomerResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -79,9 +83,9 @@ export default function CustomerDetailPage() {
 
     setLoading(true)
     try {
-      const response = await customersApi.getCustomerById(id)
-      if (response.success && response.data) {
-        setCustomer(response.data)
+      const response = await getCustomerById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setCustomer(response.data.data)
       } else {
         Toast.error(t('customers.messages.fetchCustomerError'))
         navigate('/partner/customers')
@@ -92,7 +96,7 @@ export default function CustomerDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, customersApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchCustomer()
@@ -103,7 +107,7 @@ export default function CustomerDetailPage() {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await customersApi.activateCustomer(customer.id)
+      await activateCustomer(customer.id)
       Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -111,14 +115,14 @@ export default function CustomerDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [customer, customersApi, fetchCustomer, t])
+  }, [customer, fetchCustomer, t])
 
   // Handle deactivate customer
   const handleDeactivate = useCallback(async () => {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await customersApi.deactivateCustomer(customer.id)
+      await deactivateCustomer(customer.id)
       Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -126,7 +130,7 @@ export default function CustomerDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [customer, customersApi, fetchCustomer, t])
+  }, [customer, fetchCustomer, t])
 
   // Handle suspend customer
   const handleSuspend = useCallback(async () => {
@@ -140,7 +144,7 @@ export default function CustomerDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await customersApi.deactivateCustomer(customer.id!)
+          await deactivateCustomer(customer.id!)
           Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
           fetchCustomer()
         } catch {
@@ -150,7 +154,7 @@ export default function CustomerDetailPage() {
         }
       },
     })
-  }, [customer, customersApi, fetchCustomer, t])
+  }, [customer, fetchCustomer, t])
 
   // Handle delete customer
   const handleDelete = useCallback(async () => {
@@ -164,7 +168,7 @@ export default function CustomerDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await customersApi.deleteCustomer(customer.id!)
+          await deleteCustomer(customer.id!)
           Toast.success(t('customers.messages.deleteSuccess', { name: customer.name }))
           navigate('/partner/customers')
         } catch {
@@ -174,7 +178,7 @@ export default function CustomerDetailPage() {
         }
       },
     })
-  }, [customer, customersApi, navigate, t])
+  }, [customer, navigate, t])
 
   // Handle edit customer
   const handleEdit = useCallback(() => {

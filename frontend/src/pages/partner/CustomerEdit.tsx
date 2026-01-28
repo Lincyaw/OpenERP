@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { CustomerForm } from '@/features/partner/CustomerForm'
-import { getCustomers } from '@/api/customers/customers'
+import { getCustomerById } from '@/api/customers/customers'
 import type { HandlerCustomerResponse } from '@/api/models'
 import { Container } from '@/components/common/layout'
 
@@ -14,7 +14,6 @@ import { Container } from '@/components/common/layout'
 export default function CustomerEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const api = useMemo(() => getCustomers(), [])
 
   const [loading, setLoading] = useState(true)
   const [customer, setCustomer] = useState<HandlerCustomerResponse | null>(null)
@@ -30,11 +29,11 @@ export default function CustomerEditPage() {
     const loadCustomer = async () => {
       setLoading(true)
       try {
-        const response = await api.getCustomerById(id)
-        if (response.success && response.data) {
-          setCustomer(response.data)
+        const response = await getCustomerById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setCustomer(response.data.data)
         } else {
-          Toast.error(response.error?.message || '加载客户失败')
+          Toast.error(response.data.error?.message || '加载客户失败')
           navigate('/partner/customers')
         }
       } catch {
@@ -46,7 +45,7 @@ export default function CustomerEditPage() {
     }
 
     loadCustomer()
-  }, [id, api, navigate])
+  }, [id, navigate])
 
   if (loading) {
     return (

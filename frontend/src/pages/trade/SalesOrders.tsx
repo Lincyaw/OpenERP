@@ -21,7 +21,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
-import { getCustomers } from '@/api/customers/customers'
+import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesOrderListResponse,
   ListSalesOrdersParams,
@@ -70,7 +70,6 @@ export default function SalesOrdersPage() {
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
-  const customerApi = useMemo(() => getCustomers(), [])
 
   // State for data
   const [orderList, setOrderList] = useState<SalesOrder[]>([])
@@ -120,9 +119,9 @@ export default function SalesOrdersPage() {
     async (signal?: AbortSignal) => {
       setCustomersLoading(true)
       try {
-        const response = await customerApi.listCustomers({ page_size: 100 }, { signal })
-        if (response.success && response.data) {
-          const options: CustomerOption[] = response.data.map(
+        const response = await listCustomers({ page_size: 100 }, { signal })
+        if (response.status === 200 && response.data.success && response.data.data) {
+          const options: CustomerOption[] = response.data.data.map(
             (customer: HandlerCustomerListResponse) => ({
               label: customer.name || customer.code || '',
               value: customer.id || '',
@@ -137,7 +136,7 @@ export default function SalesOrdersPage() {
         setCustomersLoading(false)
       }
     },
-    [customerApi]
+    [t]
   )
 
   // Fetch customers on mount
@@ -197,6 +196,7 @@ export default function SalesOrdersPage() {
       statusFilter,
       customerFilter,
       dateRange,
+      t,
     ]
   )
 
