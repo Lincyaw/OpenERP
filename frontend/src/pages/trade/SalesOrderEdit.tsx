@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { SalesOrderForm } from '@/features/trade/SalesOrderForm'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import { getSalesOrderById } from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 
@@ -15,7 +15,6 @@ export default function SalesOrderEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const api = useMemo(() => getSalesOrders(), [])
   const [orderData, setOrderData] = useState<HandlerSalesOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -28,15 +27,15 @@ export default function SalesOrderEditPage() {
 
       setLoading(true)
       try {
-        const response = await api.getSalesOrderById(id)
-        if (response.success && response.data) {
+        const response = await getSalesOrderById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
           // Check if order is in draft status (only draft orders can be edited)
-          if (response.data.status !== 'draft') {
+          if (response.data.data.status !== 'draft') {
             Toast.error(t('orderForm.messages.onlyDraftEditable'))
             navigate('/trade/sales')
             return
           }
-          setOrderData(response.data)
+          setOrderData(response.data.data)
         } else {
           Toast.error(t('salesOrder.messages.notExist'))
           navigate('/trade/sales')
@@ -50,7 +49,7 @@ export default function SalesOrderEditPage() {
     }
 
     fetchOrder()
-  }, [id, api, navigate, t])
+  }, [id, navigate, t])
 
   if (loading) {
     return (

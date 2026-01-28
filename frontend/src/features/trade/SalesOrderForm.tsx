@@ -5,7 +5,7 @@ import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import { createSalesOrder, updateSalesOrder } from '@/api/sales-orders/sales-orders'
 import { listCustomers } from '@/api/customers/customers'
 import { getProducts } from '@/api/products/products'
 import { listWarehouses } from '@/api/warehouses/warehouses'
@@ -51,7 +51,6 @@ interface SalesOrderFormProps {
 export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const salesOrderApi = useMemo(() => getSalesOrders(), [])
   const productApi = useMemo(() => getProducts(), [])
   const isEditMode = Boolean(orderId)
 
@@ -364,17 +363,17 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
       }))
 
       if (isEditMode && orderId) {
-        const response = await salesOrderApi.updateSalesOrder(orderId, {
+        const response = await updateSalesOrder(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
           remark: formData.remark || undefined,
         })
-        if (!response.success) {
-          throw new Error(response.error?.message || t('orderForm.messages.updateError'))
+        if (response.status !== 200 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('orderForm.messages.updateError'))
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        const response = await salesOrderApi.createSalesOrder({
+        const response = await createSalesOrder({
           customer_id: formData.customer_id,
           customer_name: formData.customer_name,
           warehouse_id: formData.warehouse_id,
@@ -382,8 +381,8 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
           remark: formData.remark || undefined,
           items: itemsPayload,
         })
-        if (!response.success) {
-          throw new Error(response.error?.message || t('orderForm.messages.createError'))
+        if (response.status !== 201 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('orderForm.messages.createError'))
         }
         Toast.success(t('orderForm.messages.createSuccess'))
       }
@@ -397,17 +396,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     } finally {
       setIsSubmitting(false)
     }
-  }, [
-    formData,
-    isEditMode,
-    orderId,
-    salesOrderApi,
-    navigate,
-    validateForm,
-    t,
-    setIsSubmitting,
-    resetForm,
-  ])
+  }, [formData, isEditMode, orderId, navigate, validateForm, t, setIsSubmitting, resetForm])
 
   // Handle cancel
   const handleCancel = useCallback(() => navigate('/trade/sales'), [navigate])

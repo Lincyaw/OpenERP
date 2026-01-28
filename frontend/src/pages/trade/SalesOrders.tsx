@@ -20,7 +20,14 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import {
+  listSalesOrders,
+  confirmSalesOrder,
+  shipSalesOrder,
+  completeSalesOrder,
+  cancelSalesOrder,
+  deleteSalesOrder,
+} from '@/api/sales-orders/sales-orders'
 import { listCustomers } from '@/api/customers/customers'
 import type {
   HandlerSalesOrderListResponse,
@@ -69,7 +76,6 @@ export default function SalesOrdersPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
-  const salesOrderApi = useMemo(() => getSalesOrders(), [])
 
   // State for data
   const [orderList, setOrderList] = useState<SalesOrder[]>([])
@@ -167,16 +173,16 @@ export default function SalesOrdersPage() {
           params.end_date = dateRange[1].toISOString()
         }
 
-        const response = await salesOrderApi.listSalesOrders(params, { signal })
+        const response = await listSalesOrders(params, { signal })
 
-        if (response.success && response.data) {
-          setOrderList(response.data as SalesOrder[])
-          if (response.meta) {
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setOrderList(response.data.data as SalesOrder[])
+          if (response.data.meta) {
             setPaginationMeta({
-              page: response.meta.page || 1,
-              page_size: response.meta.page_size || 20,
-              total: response.meta.total || 0,
-              total_pages: response.meta.total_pages || 1,
+              page: response.data.meta.page || 1,
+              page_size: response.data.meta.page_size || 20,
+              total: response.data.meta.total || 0,
+              total_pages: response.data.meta.total_pages || 1,
             })
           }
         }
@@ -188,7 +194,6 @@ export default function SalesOrdersPage() {
       }
     },
     [
-      salesOrderApi,
       state.pagination.page,
       state.pagination.pageSize,
       state.sort,
@@ -266,7 +271,7 @@ export default function SalesOrdersPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await salesOrderApi.confirmSalesOrder(order.id!, {})
+            await confirmSalesOrder(order.id!, {})
             Toast.success(
               t('salesOrder.messages.confirmSuccess', { orderNumber: order.order_number })
             )
@@ -278,7 +283,7 @@ export default function SalesOrdersPage() {
         },
       })
     },
-    [salesOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle ship order - open modal
@@ -294,7 +299,7 @@ export default function SalesOrdersPage() {
       if (!selectedOrderForShip?.id) return
 
       try {
-        await salesOrderApi.shipSalesOrder(selectedOrderForShip.id, {
+        await shipSalesOrder(selectedOrderForShip.id, {
           warehouse_id: warehouseId,
         })
         Toast.success(
@@ -308,7 +313,7 @@ export default function SalesOrdersPage() {
         throw new Error(t('salesOrder.messages.shipError')) // Re-throw to keep modal open
       }
     },
-    [selectedOrderForShip, salesOrderApi, fetchOrders, t]
+    [selectedOrderForShip, fetchOrders, t]
   )
 
   // Handle complete order
@@ -316,14 +321,14 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       try {
-        await salesOrderApi.completeSalesOrder(order.id)
+        await completeSalesOrder(order.id)
         Toast.success(t('salesOrder.messages.completeSuccess', { orderNumber: order.order_number }))
         fetchOrders()
       } catch {
         Toast.error(t('salesOrder.messages.completeError'))
       }
     },
-    [salesOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle cancel order
@@ -338,7 +343,7 @@ export default function SalesOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesOrderApi.cancelSalesOrder(order.id!, {
+            await cancelSalesOrder(order.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(
@@ -352,7 +357,7 @@ export default function SalesOrdersPage() {
         },
       })
     },
-    [salesOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle delete order
@@ -367,7 +372,7 @@ export default function SalesOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await salesOrderApi.deleteSalesOrder(order.id!)
+            await deleteSalesOrder(order.id!)
             Toast.success(
               t('salesOrder.messages.deleteSuccess', { orderNumber: order.order_number })
             )
@@ -379,7 +384,7 @@ export default function SalesOrdersPage() {
         },
       })
     },
-    [salesOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle view order

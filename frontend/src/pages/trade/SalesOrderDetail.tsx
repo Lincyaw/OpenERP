@@ -16,7 +16,13 @@ import {
 import { IconArrowLeft, IconEdit, IconTick, IconClose, IconSend } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import {
+  getSalesOrderById,
+  confirmSalesOrder,
+  shipSalesOrder,
+  completeSalesOrder,
+  cancelSalesOrder,
+} from '@/api/sales-orders/sales-orders'
 import type { HandlerSalesOrderResponse, HandlerSalesOrderItemResponse } from '@/api/models'
 import { ShipOrderModal } from './components'
 import { PrintButton } from '@/components/printing'
@@ -50,7 +56,6 @@ export default function SalesOrderDetailPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDateTime } = useFormatters()
-  const salesOrderApi = useMemo(() => getSalesOrders(), [])
 
   const [order, setOrder] = useState<HandlerSalesOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,9 +68,9 @@ export default function SalesOrderDetailPage() {
 
     setLoading(true)
     try {
-      const response = await salesOrderApi.getSalesOrderById(id)
-      if (response.success && response.data) {
-        setOrder(response.data)
+      const response = await getSalesOrderById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setOrder(response.data.data)
       } else {
         Toast.error(t('salesOrder.messages.notExist'))
         navigate('/trade/sales')
@@ -76,7 +81,7 @@ export default function SalesOrderDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, salesOrderApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchOrder()
@@ -93,7 +98,7 @@ export default function SalesOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesOrderApi.confirmSalesOrder(order.id!, {})
+          await confirmSalesOrder(order.id!, {})
           Toast.success(t('orderDetail.messages.confirmSuccess'))
           fetchOrder()
         } catch (error) {
@@ -104,7 +109,7 @@ export default function SalesOrderDetailPage() {
         }
       },
     })
-  }, [order, salesOrderApi, fetchOrder, t])
+  }, [order, fetchOrder, t])
 
   // Handle ship order - open modal
   const handleShip = useCallback(() => {
@@ -117,7 +122,7 @@ export default function SalesOrderDetailPage() {
       if (!order?.id) return
 
       try {
-        await salesOrderApi.shipSalesOrder(order.id, {
+        await shipSalesOrder(order.id, {
           warehouse_id: warehouseId,
         })
         Toast.success(t('orderDetail.messages.shipSuccess'))
@@ -128,7 +133,7 @@ export default function SalesOrderDetailPage() {
         throw new Error(t('orderDetail.messages.shipError')) // Re-throw to keep modal open
       }
     },
-    [order, salesOrderApi, fetchOrder, t]
+    [order, fetchOrder, t]
   )
 
   // Handle complete order
@@ -136,7 +141,7 @@ export default function SalesOrderDetailPage() {
     if (!order?.id) return
     setActionLoading(true)
     try {
-      await salesOrderApi.completeSalesOrder(order.id)
+      await completeSalesOrder(order.id)
       Toast.success(t('orderDetail.messages.completeSuccess'))
       fetchOrder()
     } catch {
@@ -144,7 +149,7 @@ export default function SalesOrderDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [order, salesOrderApi, fetchOrder, t])
+  }, [order, fetchOrder, t])
 
   // Handle cancel order
   const handleCancel = useCallback(async () => {
@@ -158,7 +163,7 @@ export default function SalesOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await salesOrderApi.cancelSalesOrder(order.id!, {
+          await cancelSalesOrder(order.id!, {
             reason: t('common.userCancel'),
           })
           Toast.success(t('orderDetail.messages.cancelSuccess'))
@@ -171,7 +176,7 @@ export default function SalesOrderDetailPage() {
         }
       },
     })
-  }, [order, salesOrderApi, fetchOrder, t])
+  }, [order, fetchOrder, t])
 
   // Handle edit order
   const handleEdit = useCallback(() => {

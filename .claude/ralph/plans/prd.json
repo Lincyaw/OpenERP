@@ -9715,7 +9715,7 @@
       "- React components use useListSalesOrders hook",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/Dashboard.tsx",
       "src/features/trade/SalesOrderForm.tsx",

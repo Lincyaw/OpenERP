@@ -33390,3 +33390,75 @@ const customerLevels = customerLevelsResponse || []
 
 === Next Steps ===
 - Continue with RQ-MIG-008 (Sales Orders Module) or other remaining migration tasks
+
+2026-01-28 - RQ-MIG-008: React Query Migration - Sales Orders Module
+
+=== Implementation Details ===
+- Migrated 6 files from getSalesOrders factory pattern to direct function imports
+- Files updated:
+  1. src/pages/Dashboard.tsx
+  2. src/features/trade/SalesOrderForm.tsx
+  3. src/pages/trade/SalesOrders.tsx
+  4. src/pages/trade/SalesOrderDetail.tsx
+  5. src/pages/trade/SalesOrderEdit.tsx
+  6. src/features/trade/SalesReturnForm.tsx
+
+=== Key Changes ===
+
+**Dashboard.tsx:**
+- Replaced `getSalesOrders` factory with direct imports: `listSalesOrders`, `getSalesOrderStatusSummary`
+- Removed `salesOrdersApi` useMemo factory pattern
+- Updated API calls to use direct function calls
+
+**SalesOrderForm.tsx:**
+- Replaced `getSalesOrders` factory with direct imports: `createSalesOrder`, `updateSalesOrder`
+- Removed `salesOrderApi` useMemo factory pattern
+- Updated response handling to new axios format (response.status, response.data.success)
+
+**SalesOrders.tsx:**
+- Replaced `getSalesOrders` factory with direct imports: `listSalesOrders`, `confirmSalesOrder`, `shipSalesOrder`, `completeSalesOrder`, `cancelSalesOrder`, `deleteSalesOrder`
+- Removed `salesOrderApi` useMemo factory pattern
+- Updated response handling to new axios format
+
+**SalesOrderDetail.tsx:**
+- Replaced `getSalesOrders` factory with direct imports: `getSalesOrderById`, `confirmSalesOrder`, `shipSalesOrder`, `completeSalesOrder`, `cancelSalesOrder`
+- Removed `salesOrderApi` useMemo factory pattern
+- Updated response handling to new axios format
+
+**SalesOrderEdit.tsx:**
+- Replaced `getSalesOrders` factory with direct import: `getSalesOrderById`
+- Removed `api` useMemo factory pattern
+- Updated response handling to new axios format
+
+**SalesReturnForm.tsx:**
+- Replaced `getSalesOrders` factory with direct imports: `listSalesOrders`, `getSalesOrderById`
+- Removed `salesOrderApi` useMemo factory pattern
+- Updated response handling to new axios format
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const salesOrderApi = useMemo(() => getSalesOrders(), [])
+const response = await salesOrderApi.listSalesOrders(params)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { listSalesOrders } from '@/api/sales-orders/sales-orders'
+const response = await listSalesOrders(params)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getSalesOrders` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Removed unused `useMemo` imports where applicable
+- Status codes: 200 for GET/PUT, 201 for POST create, 204 for DELETE
+- Error responses accessed via `response.data.error?.message`
+
+=== Next Steps ===
+- Continue with RQ-MIG-009 (Purchase Orders Module) or other remaining migration tasks

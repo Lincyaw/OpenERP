@@ -19,7 +19,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import { listSalesOrders, getSalesOrderById } from '@/api/sales-orders/sales-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerSalesOrderResponse,
@@ -142,7 +142,6 @@ export function SalesReturnForm() {
   const returnFormSchema = useMemo(() => createReturnFormSchema(t), [t])
 
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
-  const salesOrderApi = useMemo(() => getSalesOrders(), [])
 
   // Form state
   const [formData, setFormData] = useState<ReturnFormData>({
@@ -181,29 +180,26 @@ export function SalesReturnForm() {
   }, [formData.items])
 
   // Fetch orders for selection
-  const fetchOrders = useCallback(
-    async (search?: string) => {
-      setOrdersLoading(true)
-      try {
-        // Only get shipped or completed orders for return
-        const response = await salesOrderApi.listSalesOrders({
-          page_size: 50,
-          search: search || undefined,
-          statuses: ['SHIPPED', 'COMPLETED'],
-        })
-        if (response.success && response.data) {
-          setOrders(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch orders', response.error)
-        }
-      } catch (error) {
-        log.error('Error fetching orders', error)
-      } finally {
-        setOrdersLoading(false)
+  const fetchOrders = useCallback(async (search?: string) => {
+    setOrdersLoading(true)
+    try {
+      // Only get shipped or completed orders for return
+      const response = await listSalesOrders({
+        page_size: 50,
+        search: search || undefined,
+        statuses: ['SHIPPED', 'COMPLETED'],
+      })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setOrders(response.data.data)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch orders', response.data.error)
       }
-    },
-    [salesOrderApi]
-  )
+    } catch (error) {
+      log.error('Error fetching orders', error)
+    } finally {
+      setOrdersLoading(false)
+    }
+  }, [])
 
   // Fetch order detail
   const fetchOrderDetail = useCallback(
@@ -211,11 +207,11 @@ export function SalesReturnForm() {
       if (!orderId) return
       setOrderLoading(true)
       try {
-        const response = await salesOrderApi.getSalesOrderById(orderId)
-        if (response.success && response.data) {
-          setSelectedOrder(response.data)
+        const response = await getSalesOrderById(orderId)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setSelectedOrder(response.data.data)
           // Convert order items to return items
-          const returnItems: ReturnItemFormData[] = (response.data.items || []).map(
+          const returnItems: ReturnItemFormData[] = (response.data.data.items || []).map(
             (item: HandlerSalesOrderItemResponse) => ({
               key: item.id || `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
               sales_order_item_id: item.id || '',
@@ -244,7 +240,7 @@ export function SalesReturnForm() {
         setOrderLoading(false)
       }
     },
-    [salesOrderApi, t]
+    [t]
   )
 
   // Fetch warehouses

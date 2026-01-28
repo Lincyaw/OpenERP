@@ -17,7 +17,7 @@ import { Container, Row, Stack } from '@/components/common/layout'
 import { countProductByStatus } from '@/api/products/products'
 import { countCustomerByStatus } from '@/api/customers/customers'
 import { listInventoryBelowMinimum } from '@/api/inventory/inventory'
-import { getSalesOrders } from '@/api/sales-orders/sales-orders'
+import { listSalesOrders, getSalesOrderStatusSummary } from '@/api/sales-orders/sales-orders'
 import { getFinanceApi } from '@/api/finance'
 import { useFormatters } from '@/hooks/useFormatters'
 import './Dashboard.css'
@@ -68,7 +68,6 @@ export default function DashboardPage() {
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
 
   // API instances
-  const salesOrdersApi = useMemo(() => getSalesOrders(), [])
   const financeApi = useMemo(() => getFinanceApi(), [])
 
   // Loading state
@@ -116,11 +115,11 @@ export default function DashboardPage() {
       ] = await Promise.allSettled([
         countProductByStatus(),
         countCustomerByStatus(),
-        salesOrdersApi.getSalesOrderStatusSummary(),
+        getSalesOrderStatusSummary(),
         listInventoryBelowMinimum({ page_size: 100 }),
         financeApi.getFinanceReceivableReceivableSummary(),
         financeApi.getFinancePayablePayableSummary(),
-        salesOrdersApi.listSalesOrders({
+        listSalesOrders({
           page_size: 5,
           order_by: 'order_date',
           order_dir: 'desc',
@@ -307,7 +306,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [salesOrdersApi, financeApi, t, formatCurrency])
+  }, [financeApi, t, formatCurrency])
 
   // Fetch data on mount
   useEffect(() => {
