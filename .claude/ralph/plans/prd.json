@@ -10398,7 +10398,7 @@
       "./bin/loadgen -config configs/erp.yaml -concurrency 100 -duration 300s -qps 200",
       "grep -E 'QPS:|Error Rate:|P95 Latency:' results/latest/report.txt"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-009",

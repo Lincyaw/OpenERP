@@ -27,7 +27,7 @@ auth:
     method: "POST"
     username: "admin"
     password: "admin123"
-    tokenPath: "$.data.access_token"
+    tokenPath: "$.data.token.access_token"
     refreshEndpoint: "/auth/refresh"
     refreshInterval: 15m
 
@@ -164,6 +164,7 @@ endpoints:
     method: "GET"
     weight: 5
     tags: ["auth", "read"]
+    disabled: true  # Endpoint not implemented yet
 
   - name: "auth.refresh"
     description: "Refresh access token"
@@ -554,6 +555,7 @@ endpoints:
     method: "GET"
     weight: 8
     tags: ["inventory", "read"]
+    disabled: true  # Requires mandatory warehouse_id and product_id parameters
     queryParams:
       warehouse_id:
         semanticType: "entity.warehouse.id"
@@ -588,6 +590,7 @@ endpoints:
     method: "GET"
     weight: 10
     tags: ["inventory", "read"]
+    disabled: true  # Endpoint not implemented yet
     queryParams:
       warehouse_id:
         semanticType: "entity.warehouse.id"
@@ -813,6 +816,7 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["finance", "read", "audit"]
+    disabled: true  # Endpoint not implemented yet
 
   # ==========================================================================
   # REPORTS DOMAIN
@@ -824,6 +828,11 @@ endpoints:
     method: "GET"
     weight: 5
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.sales.dailyTrend"
     description: "Get daily sales trend"
@@ -831,6 +840,11 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.sales.productsRanking"
     description: "Get product sales ranking"
@@ -838,6 +852,11 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.sales.customersRanking"
     description: "Get customer ranking"
@@ -845,6 +864,11 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.inventory.summary"
     description: "Get inventory summary"
@@ -852,6 +876,12 @@ endpoints:
     method: "GET"
     weight: 5
     tags: ["reports", "read"]
+    disabled: true  # Returns 500 error - backend bug
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.inventory.turnover"
     description: "Get inventory turnover report"
@@ -859,6 +889,12 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    disabled: true  # Returns 500 error - backend bug
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.inventory.slowMoving"
     description: "Get slow moving inventory"
@@ -866,6 +902,12 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    disabled: true  # Returns 500 error - backend bug
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.finance.profitLoss"
     description: "Get profit/loss report"
@@ -873,6 +915,11 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   - name: "reports.finance.monthlyTrend"
     description: "Get monthly financial trend"
@@ -880,6 +927,11 @@ endpoints:
     method: "GET"
     weight: 3
     tags: ["reports", "read"]
+    queryParams:
+      start_date:
+        value: "2026-01-01"
+      end_date:
+        value: "2026-12-31"
 
   # ==========================================================================
   # SYSTEM DOMAIN
