@@ -16,7 +16,7 @@ import { Container } from '@/components/common/layout'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
   HandlerTransactionResponse,
@@ -156,7 +156,6 @@ export default function StockTransactionsPage() {
   const { id } = useParams<{ id: string }>()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
-  const productsApi = useMemo(() => getProducts(), [])
 
   // State for inventory item info (for header display)
   const [inventoryItem, setInventoryItem] = useState<HandlerInventoryItemResponse | null>(null)
@@ -217,18 +216,18 @@ export default function StockTransactionsPage() {
     if (!inventoryItem?.product_id) return
 
     try {
-      const response = await productsApi.listProducts({
+      const response = await listProducts({
         page_size: 500,
       })
-      if (response.success && response.data) {
-        const products = response.data as HandlerProductListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const products = response.data.data as HandlerProductListResponse[]
         const product = products.find((p) => p.id === inventoryItem.product_id)
         setProductName(product?.name || product?.code || '-')
       }
     } catch {
       setProductName('-')
     }
-  }, [inventoryItem?.product_id, productsApi])
+  }, [inventoryItem?.product_id])
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {
@@ -247,8 +246,7 @@ export default function StockTransactionsPage() {
 
       // Apply transaction type filter
       if (transactionTypeFilter) {
-        params.transaction_type =
-          transactionTypeFilter as ListInventoryTransactionsTransactionType
+        params.transaction_type = transactionTypeFilter as ListInventoryTransactionsTransactionType
       }
 
       // Apply date range filter

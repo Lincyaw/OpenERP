@@ -26,7 +26,7 @@ import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
   ListInventoryBelowMinimumParams,
@@ -87,7 +87,6 @@ export default function StockAlertsPage() {
   const { formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
-  const productsApi = useMemo(() => getProducts(), [])
 
   // Wrapper function to handle undefined values
   const formatDate = useCallback(
@@ -158,9 +157,9 @@ export default function StockAlertsPage() {
   // Fetch products for display names
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await productsApi.listProducts({ page: 1, page_size: 100 })
-      if (response.success && response.data) {
-        const products = response.data as HandlerProductListResponse[]
+      const response = await listProducts({ page: 1, page_size: 100 })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const products = response.data.data as HandlerProductListResponse[]
         const map = new Map<string, string>()
         products.forEach((p) => {
           if (p.id) {
@@ -172,7 +171,7 @@ export default function StockAlertsPage() {
     } catch {
       log.error('Failed to fetch products')
     }
-  }, [productsApi])
+  }, [])
 
   // Fetch low stock alert items
   const fetchAlerts = useCallback(async () => {

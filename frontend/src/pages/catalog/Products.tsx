@@ -13,7 +13,13 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getProducts } from '@/api/products/products'
+import {
+  listProducts,
+  activateProduct,
+  deactivateProduct,
+  discontinueProduct,
+  deleteProduct,
+} from '@/api/products/products'
 import type {
   HandlerProductListResponse,
   HandlerProductListResponseStatus,
@@ -49,7 +55,6 @@ export default function ProductsPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['catalog', 'common'])
   const { formatCurrency, formatDate } = useFormatters()
-  const api = useMemo(() => getProducts(), [])
 
   // State for data
   const [productList, setProductList] = useState<Product[]>([])
@@ -81,16 +86,16 @@ export default function ProductsPage() {
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.listProducts(params)
+      const response = await listProducts(params)
 
-      if (response.success && response.data) {
-        setProductList(response.data as Product[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setProductList(response.data.data as Product[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -99,14 +104,7 @@ export default function ProductsPage() {
     } finally {
       setLoading(false)
     }
-  }, [
-    api,
-    state.pagination.page,
-    state.pagination.pageSize,
-    state.sort,
-    searchKeyword,
-    statusFilter,
-  ])
+  }, [state.pagination.page, state.pagination.pageSize, state.sort, searchKeyword, statusFilter])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -138,14 +136,14 @@ export default function ProductsPage() {
     async (product: Product) => {
       if (!product.id) return
       try {
-        await api.activateProduct(product.id)
+        await activateProduct(product.id, {})
         Toast.success(t('products.messages.activateSuccess', { name: product.name }))
         fetchProducts()
       } catch {
         Toast.error(t('products.messages.activateError'))
       }
     },
-    [api, fetchProducts, t]
+    [fetchProducts, t]
   )
 
   // Handle deactivate product
@@ -153,14 +151,14 @@ export default function ProductsPage() {
     async (product: Product) => {
       if (!product.id) return
       try {
-        await api.deactivateProduct(product.id)
+        await deactivateProduct(product.id, {})
         Toast.success(t('products.messages.deactivateSuccess', { name: product.name }))
         fetchProducts()
       } catch {
         Toast.error(t('products.messages.deactivateError'))
       }
     },
-    [api, fetchProducts, t]
+    [fetchProducts, t]
   )
 
   // Handle discontinue product
@@ -175,7 +173,7 @@ export default function ProductsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.discontinueProduct(product.id!)
+            await discontinueProduct(product.id!, {})
             Toast.success(t('products.messages.discontinueSuccess', { name: product.name }))
             fetchProducts()
           } catch {
@@ -184,7 +182,7 @@ export default function ProductsPage() {
         },
       })
     },
-    [api, fetchProducts, t]
+    [fetchProducts, t]
   )
 
   // Handle delete product
@@ -199,7 +197,7 @@ export default function ProductsPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deleteProduct(product.id!)
+            await deleteProduct(product.id!)
             Toast.success(t('products.messages.deleteSuccess', { name: product.name }))
             fetchProducts()
           } catch {
@@ -208,7 +206,7 @@ export default function ProductsPage() {
         },
       })
     },
-    [api, fetchProducts, t]
+    [fetchProducts, t]
   )
 
   // Handle edit product
@@ -233,9 +231,7 @@ export default function ProductsPage() {
 
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.activateProduct(id))
-    )
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => activateProduct(id, {})))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -258,13 +254,11 @@ export default function ProductsPage() {
 
     setSelectedRowKeys([])
     fetchProducts()
-  }, [api, selectedRowKeys, fetchProducts, t])
+  }, [selectedRowKeys, fetchProducts, t])
 
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    const results = await Promise.allSettled(
-      selectedRowKeys.map((id) => api.deactivateProduct(id))
-    )
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => deactivateProduct(id, {})))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -287,7 +281,7 @@ export default function ProductsPage() {
 
     setSelectedRowKeys([])
     fetchProducts()
-  }, [api, selectedRowKeys, fetchProducts, t])
+  }, [selectedRowKeys, fetchProducts, t])
 
   // Status options for filter - memoized with t dependency
   const STATUS_OPTIONS = useMemo(

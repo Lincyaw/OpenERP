@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
 import { ProductForm } from '@/features/catalog/ProductForm'
-import { getProducts } from '@/api/products/products'
+import { getProductById } from '@/api/products/products'
 import type { HandlerProductResponse } from '@/api/models'
 import { Container } from '@/components/common/layout'
 
@@ -16,7 +16,6 @@ export default function ProductEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation(['catalog', 'common'])
-  const api = useMemo(() => getProducts(), [])
 
   const [loading, setLoading] = useState(true)
   const [product, setProduct] = useState<HandlerProductResponse | null>(null)
@@ -32,11 +31,11 @@ export default function ProductEditPage() {
     const loadProduct = async () => {
       setLoading(true)
       try {
-        const response = await api.getProductById(id)
-        if (response.success && response.data) {
-          setProduct(response.data)
+        const response = await getProductById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setProduct(response.data.data)
         } else {
-          Toast.error(response.error?.message || t('products.messages.loadError'))
+          Toast.error(response.data.error?.message || t('products.messages.loadError'))
           navigate('/catalog/products')
         }
       } catch {
@@ -48,7 +47,7 @@ export default function ProductEditPage() {
     }
 
     loadProduct()
-  }, [id, api, navigate, t])
+  }, [id, navigate, t])
 
   if (loading) {
     return (

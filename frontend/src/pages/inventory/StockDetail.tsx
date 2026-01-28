@@ -19,7 +19,7 @@ import { DataTable, useTableState, type DataTableColumn } from '@/components/com
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
   HandlerTransactionResponse,
@@ -94,7 +94,6 @@ export default function StockDetailPage() {
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
-  const productsApi = useMemo(() => getProducts(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -172,11 +171,11 @@ export default function StockDetailPage() {
     if (!inventoryItem?.product_id) return
 
     try {
-      const response = await productsApi.listProducts({
+      const response = await listProducts({
         page_size: 500,
       })
-      if (response.success && response.data) {
-        const products = response.data as HandlerProductListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const products = response.data.data as HandlerProductListResponse[]
         const product = products.find((p) => p.id === inventoryItem.product_id)
         setProductName(product?.name || product?.code || inventoryItem.product_id || '-')
       }
@@ -184,7 +183,7 @@ export default function StockDetailPage() {
       // Silently fail - use ID as fallback
       setProductName(inventoryItem.product_id || '-')
     }
-  }, [inventoryItem?.product_id, productsApi])
+  }, [inventoryItem?.product_id])
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {

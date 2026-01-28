@@ -32910,3 +32910,72 @@ await listProducts(params)
 - Then tackle high-dependency modules (Products, Customers, Warehouses)
 - Finally address path fixes (Finance, Feature Flags, Printing, Reports, Identity)
 
+
+2026-01-28 - Task ID: RQ-MIG-001 - React Query Migration: Products Module
+
+=== Implementation Details ===
+- Migrated all Products module files from factory function pattern to direct function imports
+- Updated response handling from `response.success`/`response.data` to `response.status === 200 && response.data.success`/`response.data.data`
+
+Files Modified:
+1. src/features/catalog/ProductForm.tsx
+   - Import: `getProducts` → `createProduct, updateProduct`
+   - Removed: `useMemo(() => getProducts(), [])`
+   - Updated: Response checks to use `.status === 200/.status === 201` and `.data.success`
+
+2. src/pages/Dashboard.tsx  
+   - Import: `getProducts` → `countProductByStatus`
+   - Removed: `productsApi` from useMemo
+   - Updated: Product stats handling to use new response format
+
+3. src/pages/catalog/Products.tsx
+   - Import: `getProducts` → `listProducts, activateProduct, deactivateProduct, discontinueProduct, deleteProduct`
+   - Removed: `api = useMemo(() => getProducts(), [])`
+   - Updated: All API calls to use direct functions
+   - Updated: Response handling for pagination and data
+
+4. src/pages/catalog/ProductDetail.tsx
+   - Import: `getProducts` → `getProductById, activateProduct, deactivateProduct, discontinueProduct, deleteProduct`
+   - Removed: `productsApi` useMemo
+   - Updated: All handlers to call direct functions
+
+5. src/pages/catalog/ProductEdit.tsx
+   - Import: `getProducts` → `getProductById`
+   - Removed: `api = useMemo(() => getProducts(), [])`
+   - Updated: Load product using direct function
+
+6. src/pages/inventory/StockAdjust.tsx
+   - Import: `getProducts` → `listProducts`
+   - Updated: fetchProducts to use direct function with new response format
+
+7. src/pages/inventory/StockAlerts.tsx
+   - Import: `getProducts` → `listProducts`
+   - Updated: fetchProducts to use direct function with new response format
+
+8. src/pages/inventory/StockDetail.tsx
+   - Import: `getProducts` → `listProducts`
+   - Updated: fetchProductName to use direct function with new response format
+
+9. src/pages/inventory/StockList.tsx
+   - Import: `getProducts` → `listProducts`
+   - Updated: fetchProducts to use direct function with new response format
+
+10. src/pages/inventory/StockTransactions.tsx
+    - Import: `getProducts` → `listProducts`
+    - Updated: fetchProductName to use direct function with new response format
+
+=== Verification ===
+- TypeScript check: PASSED (npm run type-check)
+- Build: Pre-existing failures in other modules (not related to this task)
+  - Finance, Partner, Trade, Report, System modules have their own migration tasks pending
+- All 10 affected files have no TypeScript errors
+
+=== Notes ===
+- The build fails due to pre-existing issues in other modules that require their own migration tasks (RQ-MIG-002 through RQ-MIG-009)
+- Response format changed from `response.success/response.data` to `response.data.success/response.data.data`
+- Status mutations (activate, deactivate, discontinue) now require empty object `{}` as second parameter
+
+=== Next Steps ===
+- RQ-MIG-002: Customers Module migration
+- RQ-MIG-003: Suppliers Module migration
+- Continue with remaining modules as defined in PRD

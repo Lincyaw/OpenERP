@@ -14,7 +14,7 @@ import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
   ListInventoriesParams,
@@ -66,7 +66,6 @@ export default function StockListPage() {
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
-  const productsApi = useMemo(() => getProducts(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -143,30 +142,24 @@ export default function StockListPage() {
   )
 
   // Fetch products for display names
-  const fetchProducts = useCallback(
-    async (signal?: AbortSignal) => {
-      try {
-        const response = await productsApi.listProducts(
-          { page: 1, page_size: 100 },
-          { signal }
-        )
-        if (response.success && response.data) {
-          const products = response.data as HandlerProductListResponse[]
-          const map = new Map<string, string>()
-          products.forEach((p) => {
-            if (p.id) {
-              map.set(p.id, p.name || p.code || p.id)
-            }
-          })
-          setProductMap(map)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'CanceledError') return
-        log.error('Failed to fetch products')
+  const fetchProducts = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await listProducts({ page: 1, page_size: 100 }, { signal })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const products = response.data.data as HandlerProductListResponse[]
+        const map = new Map<string, string>()
+        products.forEach((p) => {
+          if (p.id) {
+            map.set(p.id, p.name || p.code || p.id)
+          }
+        })
+        setProductMap(map)
       }
-    },
-    [productsApi]
-  )
+    } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return
+      log.error('Failed to fetch products')
+    }
+  }, [])
 
   // Fetch inventory items
   const fetchInventory = useCallback(

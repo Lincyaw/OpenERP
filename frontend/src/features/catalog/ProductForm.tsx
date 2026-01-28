@@ -15,7 +15,7 @@ import {
   validationMessages,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getProducts } from '@/api/products/products'
+import { createProduct, updateProduct } from '@/api/products/products'
 import type { HandlerProductResponse } from '@/api/models'
 import './ProductForm.css'
 
@@ -97,7 +97,6 @@ function createProductFormSchema(codeRegexError: string) {
 export function ProductForm({ productId, initialData }: ProductFormProps) {
   const navigate = useNavigate()
   const { t } = useTranslation(['catalog', 'common'])
-  const api = useMemo(() => getProducts(), [])
   const isEditMode = Boolean(productId)
 
   // Create schema with i18n error messages
@@ -164,7 +163,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   const onSubmit = async (data: ProductFormData) => {
     if (isEditMode && productId) {
       // Update existing product
-      const response = await api.updateProduct(productId, {
+      const response = await updateProduct(productId, {
         name: data.name,
         barcode: data.barcode,
         description: data.description,
@@ -173,12 +172,12 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         min_stock: data.min_stock,
         sort_order: data.sort_order,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('products.messages.updateError'))
+      if (response.status !== 200 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('products.messages.updateError'))
       }
     } else {
       // Create new product
-      const response = await api.createProduct({
+      const response = await createProduct({
         code: data.code,
         name: data.name,
         unit: data.unit,
@@ -189,8 +188,8 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         min_stock: data.min_stock,
         sort_order: data.sort_order,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('products.messages.createError'))
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('products.messages.createError'))
       }
     }
   }

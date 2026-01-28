@@ -28,7 +28,7 @@ import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
 import { getWarehouses } from '@/api/warehouses/warehouses'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
   HandlerWarehouseListResponse,
@@ -81,7 +81,6 @@ export default function StockAdjustPage() {
   const { formatCurrency: formatCurrencyBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
   const warehousesApi = useMemo(() => getWarehouses(), [])
-  const productsApi = useMemo(() => getProducts(), [])
 
   // Wrapper function to handle undefined values
   const formatCurrency = useCallback(
@@ -181,13 +180,13 @@ export default function StockAdjustPage() {
   const fetchProducts = useCallback(async () => {
     setLoadingProducts(true)
     try {
-      const response = await productsApi.listProducts({
+      const response = await listProducts({
         page: 1,
         page_size: 100,
         status: 'active',
       })
-      if (response.success && response.data) {
-        const productList = response.data as HandlerProductListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const productList = response.data.data as HandlerProductListResponse[]
         setProducts(
           productList.map((p) => ({
             value: p.id || '',
@@ -200,7 +199,7 @@ export default function StockAdjustPage() {
     } finally {
       setLoadingProducts(false)
     }
-  }, [productsApi])
+  }, [t])
 
   // Fetch inventory item when warehouse and product are selected
   const fetchInventoryItem = useCallback(async () => {

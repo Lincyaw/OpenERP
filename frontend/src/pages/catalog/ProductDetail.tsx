@@ -16,7 +16,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getProducts } from '@/api/products/products'
+import {
+  getProductById,
+  activateProduct,
+  deactivateProduct,
+  discontinueProduct,
+  deleteProduct,
+} from '@/api/products/products'
 import type { HandlerProductResponse, HandlerProductResponseStatus } from '@/api/models'
 import './ProductDetail.css'
 
@@ -43,7 +49,6 @@ export default function ProductDetailPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['catalog', 'common'])
   const { formatCurrency, formatDateTime } = useFormatters()
-  const productsApi = useMemo(() => getProducts(), [])
 
   const [product, setProduct] = useState<HandlerProductResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,9 +60,9 @@ export default function ProductDetailPage() {
 
     setLoading(true)
     try {
-      const response = await productsApi.getProductById(id)
-      if (response.success && response.data) {
-        setProduct(response.data)
+      const response = await getProductById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setProduct(response.data.data)
       } else {
         Toast.error(t('products.messages.loadError'))
         navigate('/catalog/products')
@@ -68,7 +73,7 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, productsApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchProduct()
@@ -79,7 +84,7 @@ export default function ProductDetailPage() {
     if (!product?.id) return
     setActionLoading(true)
     try {
-      await productsApi.activateProduct(product.id)
+      await activateProduct(product.id, {})
       Toast.success(t('products.messages.activateSuccess', { name: product.name }))
       fetchProduct()
     } catch {
@@ -87,14 +92,14 @@ export default function ProductDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [product, productsApi, fetchProduct, t])
+  }, [product, fetchProduct, t])
 
   // Handle deactivate product
   const handleDeactivate = useCallback(async () => {
     if (!product?.id) return
     setActionLoading(true)
     try {
-      await productsApi.deactivateProduct(product.id)
+      await deactivateProduct(product.id, {})
       Toast.success(t('products.messages.deactivateSuccess', { name: product.name }))
       fetchProduct()
     } catch {
@@ -102,7 +107,7 @@ export default function ProductDetailPage() {
     } finally {
       setActionLoading(false)
     }
-  }, [product, productsApi, fetchProduct, t])
+  }, [product, fetchProduct, t])
 
   // Handle discontinue product
   const handleDiscontinue = useCallback(async () => {
@@ -116,7 +121,7 @@ export default function ProductDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await productsApi.discontinueProduct(product.id!)
+          await discontinueProduct(product.id!, {})
           Toast.success(t('products.messages.discontinueSuccess', { name: product.name }))
           fetchProduct()
         } catch {
@@ -126,7 +131,7 @@ export default function ProductDetailPage() {
         }
       },
     })
-  }, [product, productsApi, fetchProduct, t])
+  }, [product, fetchProduct, t])
 
   // Handle delete product
   const handleDelete = useCallback(async () => {
@@ -140,7 +145,7 @@ export default function ProductDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await productsApi.deleteProduct(product.id!)
+          await deleteProduct(product.id!)
           Toast.success(t('products.messages.deleteSuccess', { name: product.name }))
           navigate('/catalog/products')
         } catch {
@@ -150,7 +155,7 @@ export default function ProductDetailPage() {
         }
       },
     })
-  }, [product, productsApi, navigate, t])
+  }, [product, navigate, t])
 
   // Handle edit product
   const handleEdit = useCallback(() => {
