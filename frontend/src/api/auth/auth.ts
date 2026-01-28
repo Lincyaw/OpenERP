@@ -6,16 +6,12 @@
 import type {
   DtoResponse,
   GetAuthMe200,
-  GetAuthMeBody,
-  PostAuthForceLogout200,
-  PostAuthForceLogoutBody,
+  HandlerChangePasswordRequest,
+  HandlerLoginRequest,
+  HandlerRefreshTokenRequest,
   PostAuthLogin200,
-  PostAuthLoginBody,
   PostAuthLogout200,
-  PostAuthLogoutBody,
   PostAuthRefresh200,
-  PostAuthRefreshBody,
-  PutAuthPasswordBody,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -24,29 +20,11 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1]
 
 export const getAuth = () => {
   /**
-   * Invalidate all sessions for a specific user. Requires user:force_logout permission.
-   * @summary Force logout user (Admin)
-   */
-  const postAuthForceLogout = (
-    postAuthForceLogoutBody: PostAuthForceLogoutBody,
-    options?: SecondParameter<typeof customInstance<PostAuthForceLogout200>>
-  ) => {
-    return customInstance<PostAuthForceLogout200>(
-      {
-        url: `/auth/force-logout`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: postAuthForceLogoutBody,
-      },
-      options
-    )
-  }
-  /**
    * Authenticate user with username and password. Returns access token in response body and sets refresh token as httpOnly cookie.
    * @summary User login
    */
   const postAuthLogin = (
-    postAuthLoginBody: PostAuthLoginBody,
+    handlerLoginRequest: HandlerLoginRequest,
     options?: SecondParameter<typeof customInstance<PostAuthLogin200>>
   ) => {
     return customInstance<PostAuthLogin200>(
@@ -54,7 +32,7 @@ export const getAuth = () => {
         url: `/auth/login`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: postAuthLoginBody,
+        data: handlerLoginRequest,
       },
       options
     )
@@ -63,39 +41,22 @@ export const getAuth = () => {
    * Logout and invalidate the current session. Clears refresh token cookie.
    * @summary User logout
    */
-  const postAuthLogout = (
-    postAuthLogoutBody: PostAuthLogoutBody,
-    options?: SecondParameter<typeof customInstance<PostAuthLogout200>>
-  ) => {
-    return customInstance<PostAuthLogout200>(
-      {
-        url: `/auth/logout`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: postAuthLogoutBody,
-      },
-      options
-    )
+  const postAuthLogout = (options?: SecondParameter<typeof customInstance<PostAuthLogout200>>) => {
+    return customInstance<PostAuthLogout200>({ url: `/auth/logout`, method: 'POST' }, options)
   }
   /**
    * Get the currently authenticated user's information
    * @summary Get current user
    */
-  const getAuthMe = (
-    getAuthMeBody: GetAuthMeBody,
-    options?: SecondParameter<typeof customInstance<GetAuthMe200>>
-  ) => {
-    return customInstance<GetAuthMe200>(
-      { url: `/auth/me`, method: 'GET', headers: { 'Content-Type': 'application/json' } },
-      options
-    )
+  const getAuthMe = (options?: SecondParameter<typeof customInstance<GetAuthMe200>>) => {
+    return customInstance<GetAuthMe200>({ url: `/auth/me`, method: 'GET' }, options)
   }
   /**
    * Change the current user's password
    * @summary Change password
    */
   const putAuthPassword = (
-    putAuthPasswordBody: PutAuthPasswordBody,
+    handlerChangePasswordRequest: HandlerChangePasswordRequest,
     options?: SecondParameter<typeof customInstance<DtoResponse>>
   ) => {
     return customInstance<DtoResponse>(
@@ -103,7 +64,7 @@ export const getAuth = () => {
         url: `/auth/password`,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        data: putAuthPasswordBody,
+        data: handlerChangePasswordRequest,
       },
       options
     )
@@ -113,7 +74,7 @@ export const getAuth = () => {
    * @summary Refresh access token
    */
   const postAuthRefresh = (
-    postAuthRefreshBody: PostAuthRefreshBody,
+    handlerRefreshTokenRequest: HandlerRefreshTokenRequest,
     options?: SecondParameter<typeof customInstance<PostAuthRefresh200>>
   ) => {
     return customInstance<PostAuthRefresh200>(
@@ -121,23 +82,13 @@ export const getAuth = () => {
         url: `/auth/refresh`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        data: postAuthRefreshBody,
+        data: handlerRefreshTokenRequest,
       },
       options
     )
   }
-  return {
-    postAuthForceLogout,
-    postAuthLogin,
-    postAuthLogout,
-    getAuthMe,
-    putAuthPassword,
-    postAuthRefresh,
-  }
+  return { postAuthLogin, postAuthLogout, getAuthMe, putAuthPassword, postAuthRefresh }
 }
-export type PostAuthForceLogoutResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getAuth>['postAuthForceLogout']>>
->
 export type PostAuthLoginResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getAuth>['postAuthLogin']>>
 >

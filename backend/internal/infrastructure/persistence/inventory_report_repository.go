@@ -86,7 +86,7 @@ func (r *GormInventoryReportRepository) GetInventoryTurnover(filter report.Inven
 	query := r.db.Table("inventory_items ii").
 		Select(`
 			ii.product_id,
-			p.sku as product_sku,
+			p.code as product_sku,
 			p.name as product_name,
 			p.category_id,
 			COALESCE(c.name, '') as category_name,
@@ -310,7 +310,7 @@ func (r *GormInventoryReportRepository) GetSlowMovingProducts(filter report.Inve
 	query := r.db.Table("inventory_items ii").
 		Select(`
 			ii.product_id,
-			p.sku as product_sku,
+			p.code as product_sku,
 			p.name as product_name,
 			p.category_id,
 			COALESCE(c.name, '') as category_name,

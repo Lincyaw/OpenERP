@@ -143,7 +143,7 @@ func (r *GormSalesReportRepository) GetProductSalesReport(filter report.SalesRep
 	query := r.db.Table("sales_order_items soi").
 		Select(`
 			soi.product_id,
-			p.sku as product_sku,
+			p.code as product_sku,
 			p.name as product_name,
 			p.category_id,
 			COALESCE(c.name, '') as category_name,
@@ -157,7 +157,7 @@ func (r *GormSalesReportRepository) GetProductSalesReport(filter report.SalesRep
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
-		Group("soi.product_id, p.sku, p.name, p.category_id, c.name").
+		Group("soi.product_id, p.code, p.name, p.category_id, c.name").
 		Order("sales_amount DESC")
 
 	if filter.ProductID != nil {
@@ -220,7 +220,7 @@ func (r *GormSalesReportRepository) GetProductSalesRanking(filter report.SalesRe
 	query := r.db.Table("sales_order_items soi").
 		Select(`
 			soi.product_id,
-			p.sku as product_sku,
+			p.code as product_sku,
 			p.name as product_name,
 			COALESCE(c.name, '') as category_name,
 			COALESCE(SUM(soi.quantity), 0) as total_quantity,
@@ -234,7 +234,7 @@ func (r *GormSalesReportRepository) GetProductSalesRanking(filter report.SalesRe
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"CONFIRMED", "SHIPPED", "COMPLETED"}).
-		Group("soi.product_id, p.sku, p.name, c.name").
+		Group("soi.product_id, p.code, p.name, c.name").
 		Order("total_amount DESC").
 		Limit(topN)
 

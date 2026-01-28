@@ -33,10 +33,14 @@ func (r *GormFinanceReportRepository) GetProfitLossStatement(filter report.Finan
 	}
 
 	// Get COGS (cost of goods sold)
+	// Note: sales_order_items doesn't track unit_cost directly, so we estimate COGS
+	// by joining with inventory_items to get the product's current unit cost.
+	// For more accurate COGS, the system would need to track cost at time of sale.
 	var cogs decimal.Decimal
 	if err := r.db.Table("sales_order_items soi").
-		Select("COALESCE(SUM(soi.quantity * soi.unit_cost), 0)").
+		Select("COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0)").
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
+		Joins("LEFT JOIN inventory_items ii ON ii.product_id = soi.product_id AND ii.tenant_id = so.tenant_id").
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
@@ -121,6 +125,7 @@ func (r *GormFinanceReportRepository) GetProfitLossDetail(filter report.FinanceR
 	}
 
 	// COGS items - aggregate by category
+	// Join with inventory_items to get unit cost since sales_order_items doesn't track it
 	type cogsByCategory struct {
 		CategoryName string
 		Amount       decimal.Decimal
@@ -130,11 +135,12 @@ func (r *GormFinanceReportRepository) GetProfitLossDetail(filter report.FinanceR
 	r.db.Table("sales_order_items soi").
 		Select(`
 			COALESCE(c.name, 'Uncategorized') as category_name,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as amount
+			COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0) as amount
 		`).
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
+		Joins("LEFT JOIN inventory_items ii ON ii.product_id = soi.product_id AND ii.tenant_id = so.tenant_id").
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
@@ -229,14 +235,16 @@ func (r *GormFinanceReportRepository) GetMonthlyProfitTrend(filter report.Financ
 	var salesData []monthlyData
 
 	// Get monthly sales and COGS
+	// Note: sales_order_items doesn't have unit_cost, so we join with inventory_items
 	err := r.db.Table("sales_orders so").
 		Select(`
 			EXTRACT(YEAR FROM so.created_at)::int as year,
 			EXTRACT(MONTH FROM so.created_at)::int as month,
 			COALESCE(SUM(so.total_amount), 0) as sales_revenue,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as cogs
+			COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0) as cogs
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
+		Joins("LEFT JOIN inventory_items ii ON ii.product_id = soi.product_id AND ii.tenant_id = so.tenant_id").
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
@@ -344,20 +352,21 @@ func (r *GormFinanceReportRepository) GetProfitByProduct(filter report.FinanceRe
 	query := r.db.Table("sales_order_items soi").
 		Select(`
 			soi.product_id,
-			p.sku as product_sku,
+			p.code as product_sku,
 			p.name as product_name,
 			COALESCE(c.name, '') as category_name,
-			COALESCE(SUM(soi.subtotal), 0) as sales_revenue,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as cogs
+			COALESCE(SUM(soi.amount), 0) as sales_revenue,
+			COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0) as cogs
 		`).
 		Joins("JOIN sales_orders so ON so.id = soi.order_id").
 		Joins("JOIN products p ON p.id = soi.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
+		Joins("LEFT JOIN inventory_items ii ON ii.product_id = soi.product_id AND ii.tenant_id = so.tenant_id").
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
-		Group("soi.product_id, p.sku, p.name, c.name").
-		Order("(COALESCE(SUM(soi.subtotal), 0) - COALESCE(SUM(soi.quantity * soi.unit_cost), 0)) DESC").
+		Group("soi.product_id, p.code, p.name, c.name").
+		Order("(COALESCE(SUM(soi.amount), 0) - COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0)) DESC").
 		Limit(topN)
 
 	if filter.CategoryID != nil {
@@ -424,15 +433,16 @@ func (r *GormFinanceReportRepository) GetProfitByCustomer(filter report.FinanceR
 			so.customer_id,
 			so.customer_name,
 			COALESCE(SUM(so.total_amount), 0) as sales_revenue,
-			COALESCE(SUM(soi.quantity * soi.unit_cost), 0) as cogs,
+			COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0) as cogs,
 			COUNT(DISTINCT so.id) as order_count
 		`).
 		Joins("LEFT JOIN sales_order_items soi ON soi.order_id = so.id").
+		Joins("LEFT JOIN inventory_items ii ON ii.product_id = soi.product_id AND ii.tenant_id = so.tenant_id").
 		Where("so.tenant_id = ?", filter.TenantID).
 		Where("so.created_at BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
 		Where("so.status IN ?", []string{"SHIPPED", "COMPLETED"}).
 		Group("so.customer_id, so.customer_name").
-		Order("(COALESCE(SUM(so.total_amount), 0) - COALESCE(SUM(soi.quantity * soi.unit_cost), 0)) DESC").
+		Order("(COALESCE(SUM(so.total_amount), 0) - COALESCE(SUM(soi.quantity * COALESCE(ii.unit_cost, 0)), 0)) DESC").
 		Limit(topN).
 		Scan(&results).Error
 
