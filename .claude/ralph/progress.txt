@@ -36452,3 +36452,61 @@ Acceptance Criteria Verified:
 - May want to add concurrent execution tests
 
 ================================================================================
+
+2026-01-29 - LOADGEN-016: Scheduler and Executor Implementation
+
+=== Implementation Details ===
+- Implemented internal/executor/scheduler.go (881 lines)
+  - Weighted random endpoint selection using binary search
+  - Read/Write ratio control (configurable, default 80% read)
+  - Category-based and tag-based weight multipliers
+  - Endpoint exclusion rules (dynamic add/remove)
+  - Per-endpoint weight overrides
+  - Thread-safe with RWMutex for read-heavy operations
+  - Comprehensive statistics tracking (selections, per-endpoint counts)
+  - Integration with circuit.EndpointUnit via RegisterFromUnits()
+  - Category inference from URL path (/catalog/products -> catalog)
+  - Cryptographically secure random selection (crypto/rand)
+
+- Implemented internal/executor/executor.go (783 lines)
+  - Full execution loop: select endpoint → rate limit → build request → execute → collect stats
+  - Integration with RateLimiter (token bucket), WorkerPool, CircuitBoard
+  - HTTP request execution with retry support (configurable MaxRetries, RetryDelay)
+  - Request/Response/Error callbacks for monitoring
+  - Authentication support (Bearer token)
+  - Default headers injection
+  - Comprehensive statistics (latency, throughput, status codes, per-endpoint)
+  - Graceful shutdown with context cancellation
+  - ExecuteOnce for synchronous single-request testing
+
+=== Key Design Decisions ===
+1. Binary search for weighted selection (O(log n) instead of O(n))
+2. crypto/rand for cryptographically secure random selection
+3. Separate read/write endpoint pools for ratio control
+4. Per-endpoint mutex for statistics to minimize contention
+5. Atomic operations for high-frequency counters
+6. Context propagation for request cancellation
+7. Idempotent Stop/Close operations
+
+=== Verification ===
+- All tests pass: `go test ./internal/executor/... -v -count=1`
+- Race detector clean: `go test -race ./internal/executor/...`
+- Test coverage: 83.3% (above 80% threshold)
+- Code review completed with HIGH issues addressed:
+  * Fixed race condition in updateEndpointStats
+  * Added context to RequestBuilder-built requests
+  * Improved error handling in runLoop
+
+=== Files Modified ===
+- tools/loadgen/internal/executor/scheduler.go (NEW)
+- tools/loadgen/internal/executor/scheduler_test.go (NEW)
+- tools/loadgen/internal/executor/executor.go (MODIFIED)
+- tools/loadgen/internal/executor/executor_test.go (NEW)
+
+=== Notes ===
+- Scheduler file is 881 lines, slightly over 800-line guideline - consider splitting in future
+- Medium priority issues from code review can be addressed in follow-up PR
+
+=== Next Steps ===
+- LOADGEN-017: Metrics collection and console output
+- Consider splitting scheduler.go into smaller files
