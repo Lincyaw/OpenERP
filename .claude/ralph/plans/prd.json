@@ -10220,7 +10220,7 @@
       "ls -la tools/loadgen/bin/loadgen",
       "./bin/loadgen --help"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-002",

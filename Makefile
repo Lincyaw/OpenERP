@@ -11,6 +11,7 @@
         e2e e2e-ui e2e-debug e2e-local \
         otel-up otel-down otel-logs otel-status \
         pyroscope-up pyroscope-down pyroscope-ui pyroscope-logs pyroscope-status \
+        loadgen-build loadgen-clean loadgen-test \
         clean logs api-docs
 
 # Default target
@@ -56,6 +57,9 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Profiling (Pyroscope):$(NC)"
 	@grep -E '^pyroscope-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)Load Generator:$(NC)"
+	@grep -E '^loadgen-.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(GREEN)Other:$(NC)"
 	@grep -E '^(clean|logs|api-docs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
@@ -297,3 +301,35 @@ pyroscope-status: ## Show Pyroscope status and health
 	@echo ""
 	@echo "$(CYAN)Data volume:$(NC)"
 	@docker volume inspect erp-pyroscope-data --format '  {{.Mountpoint}}' 2>/dev/null || echo "  Volume not created yet"
+
+# =============================================================================
+# Load Generator
+# =============================================================================
+
+# Build variables for loadgen
+LOADGEN_DIR := tools/loadgen
+LOADGEN_BIN := $(LOADGEN_DIR)/bin/loadgen
+LOADGEN_VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+LOADGEN_BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+LOADGEN_GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+loadgen-build: ## Build the load generator binary
+	@echo "$(CYAN)Building load generator...$(NC)"
+	@mkdir -p $(LOADGEN_DIR)/bin
+	@cd $(LOADGEN_DIR) && CGO_ENABLED=0 go build \
+		-ldflags "-X main.version=$(LOADGEN_VERSION) -X main.buildTime=$(LOADGEN_BUILD_TIME) -X main.gitCommit=$(LOADGEN_GIT_COMMIT)" \
+		-o bin/loadgen \
+		./cmd/main.go
+	@echo "$(GREEN)Build complete!$(NC)"
+	@echo "  Binary: $(LOADGEN_BIN)"
+	@ls -lh $(LOADGEN_BIN) | awk '{print "  Size:   " $$5}'
+
+loadgen-clean: ## Clean load generator build artifacts
+	@echo "$(CYAN)Cleaning load generator...$(NC)"
+	@rm -rf $(LOADGEN_DIR)/bin
+	@echo "$(GREEN)Clean complete.$(NC)"
+
+loadgen-test: ## Run load generator tests
+	@echo "$(CYAN)Running load generator tests...$(NC)"
+	@cd $(LOADGEN_DIR) && go test -v ./...
+	@echo "$(GREEN)Tests complete.$(NC)"
