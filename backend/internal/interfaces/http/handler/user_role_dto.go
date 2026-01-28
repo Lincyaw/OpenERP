@@ -11,7 +11,7 @@ import (
 // =====================
 
 // CreateUserRequest represents the request body for creating a user
-// @name HandlerCreateUserRequest
+// @Name HandlerCreateUserRequest
 type CreateUserRequest struct {
 	Username    string   `json:"username" binding:"required,min=3,max=100"`
 	Password    string   `json:"password" binding:"required,min=8,max=128"`
@@ -23,7 +23,7 @@ type CreateUserRequest struct {
 }
 
 // UpdateUserRequest represents the request body for updating a user
-// @name HandlerUpdateUserRequest
+// @Name HandlerUpdateUserRequest
 type UpdateUserRequest struct {
 	Email       *string `json:"email" binding:"omitempty,email,max=200"`
 	Phone       *string `json:"phone" binding:"omitempty,max=50"`
@@ -32,25 +32,25 @@ type UpdateUserRequest struct {
 }
 
 // ResetPasswordRequest represents the request body for resetting a user's password
-// @name HandlerResetPasswordRequest
+// @Name HandlerResetPasswordRequest
 type ResetPasswordRequest struct {
 	NewPassword string `json:"new_password" binding:"required,min=8,max=128"`
 }
 
 // AssignRolesRequest represents the request body for assigning roles to a user
-// @name HandlerAssignRolesRequest
+// @Name HandlerAssignRolesRequest
 type AssignRolesRequest struct {
 	RoleIDs []string `json:"role_ids" binding:"required"`
 }
 
 // LockUserRequest represents the request body for locking a user
-// @name HandlerLockUserRequest
+// @Name HandlerLockUserRequest
 type LockUserRequest struct {
 	DurationMinutes int `json:"duration_minutes" binding:"omitempty,min=1"`
 }
 
 // UserListQuery represents query parameters for listing users
-// @name HandlerUserListQuery
+// @Name HandlerUserListQuery
 type UserListQuery struct {
 	Keyword  string `form:"keyword" binding:"omitempty"`
 	Status   string `form:"status" binding:"omitempty,oneof=pending active locked deactivated"`
@@ -66,7 +66,7 @@ type UserListQuery struct {
 // =====================
 
 // UserResponse represents a user in API responses
-// @name HandlerUserListQuery
+// @Name HandlerUserListQuery
 type UserResponse struct {
 	ID          uuid.UUID  `json:"id"`
 	TenantID    uuid.UUID  `json:"tenant_id"`
@@ -83,7 +83,7 @@ type UserResponse struct {
 }
 
 // UserListResponse represents a paginated list of users
-// @name HandlerUserListQuery
+// @Name HandlerUserListQuery
 type UserListResponse struct {
 	Users      []UserResponse `json:"users"`
 	Total      int64          `json:"total"`
@@ -97,7 +97,7 @@ type UserListResponse struct {
 // =====================
 
 // CreateRoleRequest represents the request body for creating a role
-// @name HandlerCreateRoleRequest
+// @Name HandlerCreateRoleRequest
 type CreateRoleRequest struct {
 	Code        string   `json:"code" binding:"required,min=2,max=50"`
 	Name        string   `json:"name" binding:"required,min=1,max=100"`
@@ -107,7 +107,7 @@ type CreateRoleRequest struct {
 }
 
 // UpdateRoleRequest represents the request body for updating a role
-// @name HandlerUpdateRoleRequest
+// @Name HandlerUpdateRoleRequest
 type UpdateRoleRequest struct {
 	Name        *string `json:"name" binding:"omitempty,min=1,max=100"`
 	Description *string `json:"description" binding:"omitempty"`
@@ -115,13 +115,13 @@ type UpdateRoleRequest struct {
 }
 
 // SetPermissionsRequest represents the request body for setting role permissions
-// @name HandlerUpdateRoleRequest
+// @Name HandlerUpdateRoleRequest
 type SetPermissionsRequest struct {
 	Permissions []string `json:"permissions" binding:"required"`
 }
 
 // RoleListQuery represents query parameters for listing roles
-// @name HandlerUpdateRoleRequest
+// @Name HandlerUpdateRoleRequest
 type RoleListQuery struct {
 	Keyword      string `form:"keyword" binding:"omitempty"`
 	IsEnabled    *bool  `form:"is_enabled" binding:"omitempty"`
@@ -135,7 +135,7 @@ type RoleListQuery struct {
 // =====================
 
 // RoleResponse represents a role in API responses
-// @name HandlerRoleResponse
+// @Name HandlerRoleResponse
 type RoleResponse struct {
 	ID           uuid.UUID `json:"id"`
 	TenantID     uuid.UUID `json:"tenant_id"`
@@ -152,7 +152,7 @@ type RoleResponse struct {
 }
 
 // RoleListResponse represents a paginated list of roles
-// @name HandlerRoleResponse
+// @Name HandlerRoleResponse
 type RoleListResponse struct {
 	Roles      []RoleResponse `json:"roles"`
 	Total      int64          `json:"total"`
@@ -162,7 +162,7 @@ type RoleListResponse struct {
 }
 
 // PermissionResponse represents a permission in API responses
-// @name HandlerRoleResponse
+// @Name HandlerRoleResponse
 type PermissionResponse struct {
 	Code        string `json:"code"`
 	Resource    string `json:"resource"`
@@ -171,7 +171,7 @@ type PermissionResponse struct {
 }
 
 // PermissionListResponse represents a list of permissions
-// @name HandlerPermissionListResponse
+// @Name HandlerPermissionListResponse
 type PermissionListResponse struct {
 	Permissions []string `json:"permissions"`
 }

@@ -57,7 +57,7 @@ import (
 
 //	@securityDefinitions.apikey	BearerAuth
 //	@in							header
-//	@name						Authorization
+//	@Name						Authorization
 //	@description				Bearer token authentication. Format: "Bearer {token}"
 
 //	@externalDocs.description	OpenAPI

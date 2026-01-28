@@ -8,7 +8,7 @@ import (
 )
 
 // CategoryHandler handles category-related API endpoints
-// @name HandlerCreateWarehouseRequest
+// @Name HandlerCreateWarehouseRequest
 type CategoryHandler struct {
 	BaseHandler
 	categoryService *catalogapp.CategoryService
@@ -23,7 +23,7 @@ func NewCategoryHandler(categoryService *catalogapp.CategoryService) *CategoryHa
 
 // CreateCategoryRequest represents a request to create a new category
 // @Description Request body for creating a new category
-// @name HandlerCreateWarehouseRequest
+// @Name HandlerCreateWarehouseRequest
 type CreateCategoryRequest struct {
 	Code        string  `json:"code" binding:"required,min=1,max=50" example:"ELECTRONICS"`
 	Name        string  `json:"name" binding:"required,min=1,max=100" example:"Electronics"`
@@ -34,7 +34,7 @@ type CreateCategoryRequest struct {
 
 // UpdateCategoryRequest represents a request to update a category
 // @Description Request body for updating a category
-// @name HandlerUpdateCategoryRequest
+// @Name HandlerUpdateCategoryRequest
 type UpdateCategoryRequest struct {
 	Name        string `json:"name" binding:"omitempty,min=1,max=100" example:"Updated Name"`
 	Description string `json:"description" binding:"omitempty,max=2000" example:"Updated description"`
@@ -43,14 +43,14 @@ type UpdateCategoryRequest struct {
 
 // MoveCategoryRequest represents a request to move a category
 // @Description Request body for moving a category to a new parent
-// @name HandlerUpdateCategoryRequest
+// @Name HandlerUpdateCategoryRequest
 type MoveCategoryRequest struct {
 	ParentID *string `json:"parent_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
 // CategoryResponse represents a category in the response
 // @Description Category response object
-// @name HandlerCategoryResponse
+// @Name HandlerCategoryResponse
 type CategoryResponse struct {
 	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID    string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -69,7 +69,7 @@ type CategoryResponse struct {
 
 // CategoryListResponse represents a category list item
 // @Description Category list item
-// @name HandlerCategoryListResponse
+// @Name HandlerCategoryListResponse
 type CategoryListResponse struct {
 	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code        string  `json:"code" example:"ELECTRONICS"`
@@ -84,7 +84,7 @@ type CategoryListResponse struct {
 
 // CategoryTreeNode represents a category node in tree structure
 // @Description Category tree node with children
-// @name HandlerCategoryTreeNode
+// @Name HandlerCategoryTreeNode
 type CategoryTreeNode struct {
 	ID          string             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code        string             `json:"code" example:"ELECTRONICS"`
@@ -107,10 +107,10 @@ type CategoryTreeNode struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateCategoryRequest true "Category creation request"
 // @Success      201 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories [post]
 func (h *CategoryHandler) Create(c *gin.Context) {
@@ -173,10 +173,10 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Category ID" format(uuid)
 // @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id} [get]
 func (h *CategoryHandler) GetByID(c *gin.Context) {
@@ -215,9 +215,9 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 // @Param        sort_by query string false "Sort by field"
 // @Param        sort_desc query bool false "Sort descending"
 // @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories [get]
 func (h *CategoryHandler) List(c *gin.Context) {
@@ -258,9 +258,9 @@ func (h *CategoryHandler) List(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[[]CategoryTreeNode]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/tree [get]
 func (h *CategoryHandler) GetTree(c *gin.Context) {
@@ -288,10 +288,10 @@ func (h *CategoryHandler) GetTree(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Parent Category ID" format(uuid)
 // @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id}/children [get]
 func (h *CategoryHandler) GetChildren(c *gin.Context) {
@@ -324,9 +324,9 @@ func (h *CategoryHandler) GetChildren(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/roots [get]
 func (h *CategoryHandler) GetRoots(c *gin.Context) {
@@ -356,10 +356,10 @@ func (h *CategoryHandler) GetRoots(c *gin.Context) {
 // @Param        id path string true "Category ID" format(uuid)
 // @Param        request body UpdateCategoryRequest true "Category update request"
 // @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id} [put]
 func (h *CategoryHandler) Update(c *gin.Context) {
@@ -407,10 +407,10 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 // @Param        id path string true "Category ID" format(uuid)
 // @Param        request body MoveCategoryRequest true "Move category request"
 // @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id}/move [post]
 func (h *CategoryHandler) Move(c *gin.Context) {
@@ -461,10 +461,10 @@ func (h *CategoryHandler) Move(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Category ID" format(uuid)
 // @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id}/activate [post]
 func (h *CategoryHandler) Activate(c *gin.Context) {
@@ -499,10 +499,10 @@ func (h *CategoryHandler) Activate(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Category ID" format(uuid)
 // @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id}/deactivate [post]
 func (h *CategoryHandler) Deactivate(c *gin.Context) {
@@ -536,11 +536,11 @@ func (h *CategoryHandler) Deactivate(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Category ID" format(uuid)
 // @Success      204 "No Content"
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /catalog/categories/{id} [delete]
 func (h *CategoryHandler) Delete(c *gin.Context) {

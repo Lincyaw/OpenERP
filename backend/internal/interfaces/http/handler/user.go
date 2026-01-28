@@ -24,7 +24,6 @@ func NewUserHandler(userService *identity.UserService) *UserHandler {
 	}
 }
 
-
 // Create godoc
 // @ID           createUser
 // @Summary      Create a new user
@@ -34,11 +33,11 @@ func NewUserHandler(userService *identity.UserService) *UserHandler {
 // @Produce      json
 // @Param        request body CreateUserRequest true "User creation request"
 // @Success      201 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users [post]
 func (h *UserHandler) Create(c *gin.Context) {
@@ -99,7 +98,6 @@ func (h *UserHandler) Create(c *gin.Context) {
 	h.Created(c, toUserResponse(user))
 }
 
-
 // GetByID godoc
 // @ID           getUserById
 // @Summary      Get a user by ID
@@ -108,10 +106,10 @@ func (h *UserHandler) Create(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "User ID" format(uuid)
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id} [get]
 func (h *UserHandler) GetByID(c *gin.Context) {
@@ -130,7 +128,6 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // List godoc
 // @ID           listUsers
 // @Summary      List users
@@ -145,9 +142,9 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 // @Param        sort_by query string false "Sort by field" Enums(username, email, display_name, created_at, updated_at, last_login_at)
 // @Param        sort_dir query string false "Sort direction" Enums(asc, desc)
 // @Success      200 {object} APIResponse[UserListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users [get]
 func (h *UserHandler) List(c *gin.Context) {
@@ -196,7 +193,6 @@ func (h *UserHandler) List(c *gin.Context) {
 	h.Success(c, toUserListResponse(result))
 }
 
-
 // Update godoc
 // @ID           updateUser
 // @Summary      Update a user
@@ -207,11 +203,11 @@ func (h *UserHandler) List(c *gin.Context) {
 // @Param        id path string true "User ID" format(uuid)
 // @Param        request body UpdateUserRequest true "User update request"
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id} [put]
 func (h *UserHandler) Update(c *gin.Context) {
@@ -244,7 +240,6 @@ func (h *UserHandler) Update(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // Delete godoc
 // @ID           deleteUser
 // @Summary      Delete a user
@@ -253,10 +248,10 @@ func (h *UserHandler) Update(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "User ID" format(uuid)
 // @Success      200 {object} SuccessResponse
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id} [delete]
 func (h *UserHandler) Delete(c *gin.Context) {
@@ -274,7 +269,6 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	h.Success(c, dto.MessageResponse{Message: "User deleted successfully"})
 }
 
-
 // Activate godoc
 // @ID           activateUser
 // @Summary      Activate a user
@@ -284,11 +278,11 @@ func (h *UserHandler) Delete(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "User ID" format(uuid)
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/activate [post]
 func (h *UserHandler) Activate(c *gin.Context) {
@@ -307,7 +301,6 @@ func (h *UserHandler) Activate(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // Deactivate godoc
 // @ID           deactivateUser
 // @Summary      Deactivate a user
@@ -317,11 +310,11 @@ func (h *UserHandler) Activate(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "User ID" format(uuid)
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/deactivate [post]
 func (h *UserHandler) Deactivate(c *gin.Context) {
@@ -340,7 +333,6 @@ func (h *UserHandler) Deactivate(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // Lock godoc
 // @ID           lockUser
 // @Summary      Lock a user
@@ -351,11 +343,11 @@ func (h *UserHandler) Deactivate(c *gin.Context) {
 // @Param        id path string true "User ID" format(uuid)
 // @Param        request body LockUserRequest false "Lock duration"
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/lock [post]
 func (h *UserHandler) Lock(c *gin.Context) {
@@ -382,7 +374,6 @@ func (h *UserHandler) Lock(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // Unlock godoc
 // @ID           unlockUser
 // @Summary      Unlock a user
@@ -392,11 +383,11 @@ func (h *UserHandler) Lock(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "User ID" format(uuid)
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/unlock [post]
 func (h *UserHandler) Unlock(c *gin.Context) {
@@ -415,7 +406,6 @@ func (h *UserHandler) Unlock(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // ResetPassword godoc
 // @ID           resetPasswordUser
 // @Summary      Reset user password
@@ -426,11 +416,11 @@ func (h *UserHandler) Unlock(c *gin.Context) {
 // @Param        id path string true "User ID" format(uuid)
 // @Param        request body ResetPasswordRequest true "New password"
 // @Success      200 {object} SuccessResponse
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/reset-password [post]
 func (h *UserHandler) ResetPassword(c *gin.Context) {
@@ -454,7 +444,6 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 	h.Success(c, dto.MessageResponse{Message: "Password reset successfully. User must change password on next login."})
 }
 
-
 // AssignRoles godoc
 // @ID           assignRolesUser
 // @Summary      Assign roles to a user
@@ -465,11 +454,11 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 // @Param        id path string true "User ID" format(uuid)
 // @Param        request body AssignRolesRequest true "Role IDs"
 // @Success      200 {object} APIResponse[UserResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/{id}/roles [put]
 func (h *UserHandler) AssignRoles(c *gin.Context) {
@@ -505,7 +494,6 @@ func (h *UserHandler) AssignRoles(c *gin.Context) {
 	h.Success(c, toUserResponse(user))
 }
 
-
 // Count godoc
 // @ID           countUsers
 // @Summary      Get user count
@@ -513,8 +501,8 @@ func (h *UserHandler) AssignRoles(c *gin.Context) {
 // @Tags         users
 // @Produce      json
 // @Success      200 {object} APIResponse[CountData]
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/users/stats/count [get]
 func (h *UserHandler) Count(c *gin.Context) {

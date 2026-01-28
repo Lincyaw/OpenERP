@@ -256,7 +256,7 @@ func TestNewSuccessResponseWithMetaPagination(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		resp := NewSuccessResponseWithMeta(nil, tt.total, tt.page, tt.pageSize)
+		resp := NewSuccessResponseWithMeta[any](nil, tt.total, tt.page, tt.pageSize)
 		assert.Equal(t, tt.expectedPages, resp.Meta.TotalPages)
 		assert.Equal(t, tt.expectedSize, resp.Meta.PageSize)
 	}

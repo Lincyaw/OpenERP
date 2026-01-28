@@ -22,7 +22,7 @@ func NewWarehouseHandler(warehouseService *partnerapp.WarehouseService) *Warehou
 
 // CreateWarehouseRequest represents a request to create a new warehouse
 // @Description	Request body for creating a new warehouse
-// @name HandlerCreateWarehouseRequest
+// @Name HandlerCreateWarehouseRequest
 type CreateWarehouseRequest struct {
 	Code        string `json:"code" binding:"required,min=1,max=50" example:"WH-001"`
 	Name        string `json:"name" binding:"required,min=1,max=200" example:"Main Warehouse"`

@@ -194,7 +194,6 @@ type PurchaseReturnStatusSummaryResponse struct {
 	PendingShipment int64 `json:"pending_shipment" example:"2"`
 }
 
-
 // Create godoc
 // @ID           createPurchaseReturn
 // @Summary      Create a new purchase return
@@ -205,11 +204,11 @@ type PurchaseReturnStatusSummaryResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreatePurchaseReturnRequest true "Purchase return creation request"
 // @Success      201 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns [post]
 func (h *PurchaseReturnHandler) Create(c *gin.Context) {
@@ -281,7 +280,6 @@ func (h *PurchaseReturnHandler) Create(c *gin.Context) {
 	h.Created(c, toPurchaseReturnResponse(pr))
 }
 
-
 // GetByID godoc
 // @ID           getPurchaseReturnById
 // @Summary      Get purchase return by ID
@@ -291,10 +289,10 @@ func (h *PurchaseReturnHandler) Create(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id} [get]
 func (h *PurchaseReturnHandler) GetByID(c *gin.Context) {
@@ -319,7 +317,6 @@ func (h *PurchaseReturnHandler) GetByID(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // GetByReturnNumber godoc
 // @ID           getPurchaseReturnByReturnNumber
 // @Summary      Get purchase return by return number
@@ -329,10 +326,10 @@ func (h *PurchaseReturnHandler) GetByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        return_number path string true "Return Number" example:"PR-2026-00001"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/number/{return_number} [get]
 func (h *PurchaseReturnHandler) GetByReturnNumber(c *gin.Context) {
@@ -357,7 +354,6 @@ func (h *PurchaseReturnHandler) GetByReturnNumber(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // List godoc
 // @ID           listPurchaseReturns
 // @Summary      List purchase returns
@@ -380,9 +376,9 @@ func (h *PurchaseReturnHandler) GetByReturnNumber(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(created_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]PurchaseReturnListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns [get]
 func (h *PurchaseReturnHandler) List(c *gin.Context) {
@@ -415,7 +411,6 @@ func (h *PurchaseReturnHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, toPurchaseReturnListResponses(returns), total, filter.Page, filter.PageSize)
 }
 
-
 // Update godoc
 // @ID           updatePurchaseReturn
 // @Summary      Update a purchase return
@@ -427,11 +422,11 @@ func (h *PurchaseReturnHandler) List(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body UpdatePurchaseReturnRequest true "Purchase return update request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id} [put]
 func (h *PurchaseReturnHandler) Update(c *gin.Context) {
@@ -483,7 +478,6 @@ func (h *PurchaseReturnHandler) Update(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Delete godoc
 // @ID           deletePurchaseReturn
 // @Summary      Delete a purchase return
@@ -493,11 +487,11 @@ func (h *PurchaseReturnHandler) Update(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id} [delete]
 func (h *PurchaseReturnHandler) Delete(c *gin.Context) {
@@ -522,7 +516,6 @@ func (h *PurchaseReturnHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // AddItem godoc
 // @ID           addPurchaseReturnItem
 // @Summary      Add item to purchase return
@@ -534,11 +527,11 @@ func (h *PurchaseReturnHandler) Delete(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body AddPurchaseReturnItemRequest true "Return item to add"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/items [post]
 func (h *PurchaseReturnHandler) AddItem(c *gin.Context) {
@@ -583,7 +576,6 @@ func (h *PurchaseReturnHandler) AddItem(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // UpdateItem godoc
 // @ID           updatePurchaseReturnItem
 // @Summary      Update return item
@@ -596,11 +588,11 @@ func (h *PurchaseReturnHandler) AddItem(c *gin.Context) {
 // @Param        item_id path string true "Return Item ID" format(uuid)
 // @Param        request body UpdatePurchaseReturnItemRequest true "Return item update request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/items/{item_id} [put]
 func (h *PurchaseReturnHandler) UpdateItem(c *gin.Context) {
@@ -648,7 +640,6 @@ func (h *PurchaseReturnHandler) UpdateItem(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // RemoveItem godoc
 // @ID           removePurchaseReturnItem
 // @Summary      Remove item from purchase return
@@ -659,11 +650,11 @@ func (h *PurchaseReturnHandler) UpdateItem(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        item_id path string true "Return Item ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/items/{item_id} [delete]
 func (h *PurchaseReturnHandler) RemoveItem(c *gin.Context) {
@@ -694,7 +685,6 @@ func (h *PurchaseReturnHandler) RemoveItem(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Submit godoc
 // @ID           submitPurchaseReturn
 // @Summary      Submit a purchase return for approval
@@ -705,11 +695,11 @@ func (h *PurchaseReturnHandler) RemoveItem(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/submit [post]
 func (h *PurchaseReturnHandler) Submit(c *gin.Context) {
@@ -734,7 +724,6 @@ func (h *PurchaseReturnHandler) Submit(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Approve godoc
 // @ID           approvePurchaseReturn
 // @Summary      Approve a purchase return
@@ -746,11 +735,11 @@ func (h *PurchaseReturnHandler) Submit(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body ApprovePurchaseReturnRequest false "Approval request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/approve [post]
 func (h *PurchaseReturnHandler) Approve(c *gin.Context) {
@@ -790,7 +779,6 @@ func (h *PurchaseReturnHandler) Approve(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Reject godoc
 // @ID           rejectPurchaseReturn
 // @Summary      Reject a purchase return
@@ -802,11 +790,11 @@ func (h *PurchaseReturnHandler) Approve(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body RejectPurchaseReturnRequest true "Rejection request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/reject [post]
 func (h *PurchaseReturnHandler) Reject(c *gin.Context) {
@@ -848,7 +836,6 @@ func (h *PurchaseReturnHandler) Reject(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Ship godoc
 // @ID           shipPurchaseReturn
 // @Summary      Ship a purchase return
@@ -860,11 +847,11 @@ func (h *PurchaseReturnHandler) Reject(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body ShipPurchaseReturnRequest false "Ship return request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/ship [post]
 func (h *PurchaseReturnHandler) Ship(c *gin.Context) {
@@ -905,7 +892,6 @@ func (h *PurchaseReturnHandler) Ship(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Complete godoc
 // @ID           completePurchaseReturn
 // @Summary      Complete a purchase return
@@ -916,11 +902,11 @@ func (h *PurchaseReturnHandler) Ship(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/complete [post]
 func (h *PurchaseReturnHandler) Complete(c *gin.Context) {
@@ -947,7 +933,6 @@ func (h *PurchaseReturnHandler) Complete(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // Cancel godoc
 // @ID           cancelPurchaseReturn
 // @Summary      Cancel a purchase return
@@ -959,11 +944,11 @@ func (h *PurchaseReturnHandler) Complete(c *gin.Context) {
 // @Param        id path string true "Purchase Return ID" format(uuid)
 // @Param        request body CancelPurchaseReturnRequest true "Cancel return request"
 // @Success      200 {object} APIResponse[PurchaseReturnResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/{id}/cancel [post]
 func (h *PurchaseReturnHandler) Cancel(c *gin.Context) {
@@ -998,7 +983,6 @@ func (h *PurchaseReturnHandler) Cancel(c *gin.Context) {
 	h.Success(c, toPurchaseReturnResponse(pr))
 }
 
-
 // GetStatusSummary godoc
 // @ID           getPurchaseReturnStatusSummary
 // @Summary      Get return status summary
@@ -1007,9 +991,9 @@ func (h *PurchaseReturnHandler) Cancel(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[PurchaseReturnStatusSummaryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-returns/stats/summary [get]
 func (h *PurchaseReturnHandler) GetStatusSummary(c *gin.Context) {

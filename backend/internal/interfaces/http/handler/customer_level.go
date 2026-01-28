@@ -92,7 +92,6 @@ type UpdateCustomerLevelRequest struct {
 	Description  *string  `json:"description" binding:"omitempty,max=500" example:"Updated description"`
 }
 
-
 // Create godoc
 // @ID           createCustomerLevel
 // @Summary      Create a new customer level
@@ -103,10 +102,10 @@ type UpdateCustomerLevelRequest struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateCustomerLevelRequest true "Customer level creation request"
 // @Success      201 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels [post]
 func (h *CustomerLevelHandler) Create(c *gin.Context) {
@@ -141,7 +140,6 @@ func (h *CustomerLevelHandler) Create(c *gin.Context) {
 	h.Created(c, level)
 }
 
-
 // GetByID godoc
 // @ID           getCustomerLevelById
 // @Summary      Get customer level by ID
@@ -151,10 +149,10 @@ func (h *CustomerLevelHandler) Create(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id} [get]
 func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
@@ -179,7 +177,6 @@ func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // GetByCode godoc
 // @ID           getCustomerLevelByCode
 // @Summary      Get customer level by code
@@ -189,10 +186,10 @@ func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        code path string true "Customer Level Code"
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/code/{code} [get]
 func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
@@ -221,7 +218,6 @@ func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // GetDefault godoc
 // @ID           getCustomerLevelDefault
 // @Summary      Get default customer level
@@ -230,10 +226,10 @@ func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/default [get]
 func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
@@ -252,7 +248,6 @@ func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // List godoc
 // @ID           listCustomerLevels
 // @Summary      List customer levels
@@ -262,9 +257,9 @@ func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        active_only query bool false "Only return active levels" default(false)
 // @Success      200 {object} APIResponse[[]CustomerLevelListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels [get]
 func (h *CustomerLevelHandler) List(c *gin.Context) {
@@ -285,7 +280,6 @@ func (h *CustomerLevelHandler) List(c *gin.Context) {
 	h.Success(c, levels)
 }
 
-
 // Update godoc
 // @ID           updateCustomerLevel
 // @Summary      Update a customer level
@@ -297,10 +291,10 @@ func (h *CustomerLevelHandler) List(c *gin.Context) {
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Param        request body UpdateCustomerLevelRequest true "Customer level update request"
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id} [put]
 func (h *CustomerLevelHandler) Update(c *gin.Context) {
@@ -340,7 +334,6 @@ func (h *CustomerLevelHandler) Update(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // Delete godoc
 // @ID           deleteCustomerLevel
 // @Summary      Delete a customer level
@@ -350,11 +343,11 @@ func (h *CustomerLevelHandler) Update(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id} [delete]
 func (h *CustomerLevelHandler) Delete(c *gin.Context) {
@@ -379,7 +372,6 @@ func (h *CustomerLevelHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // SetDefault godoc
 // @ID           setDefaultCustomerLevel
 // @Summary      Set default customer level
@@ -390,11 +382,11 @@ func (h *CustomerLevelHandler) Delete(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id}/set-default [post]
 func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
@@ -419,7 +411,6 @@ func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // Activate godoc
 // @ID           activateCustomerLevel
 // @Summary      Activate a customer level
@@ -430,10 +421,10 @@ func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id}/activate [post]
 func (h *CustomerLevelHandler) Activate(c *gin.Context) {
@@ -458,7 +449,6 @@ func (h *CustomerLevelHandler) Activate(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // Deactivate godoc
 // @ID           deactivateCustomerLevel
 // @Summary      Deactivate a customer level
@@ -469,11 +459,11 @@ func (h *CustomerLevelHandler) Activate(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Customer Level ID" format(uuid)
 // @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/{id}/deactivate [post]
 func (h *CustomerLevelHandler) Deactivate(c *gin.Context) {
@@ -498,7 +488,6 @@ func (h *CustomerLevelHandler) Deactivate(c *gin.Context) {
 	h.Success(c, level)
 }
 
-
 // InitializeDefaultLevels godoc
 // @ID           initializeDefaultLevelsCustomerLevel
 // @Summary      Initialize default customer levels
@@ -508,9 +497,9 @@ func (h *CustomerLevelHandler) Deactivate(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[map[string]string]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/customer-levels/initialize [post]
 func (h *CustomerLevelHandler) InitializeDefaultLevels(c *gin.Context) {

@@ -143,7 +143,6 @@ type AuditLogResponse struct {
 
 // ===================== Handler Methods =====================
 
-
 // ===================== Handler Methods =====================
 
 // PerformTrialBalanceCheck godoc
@@ -156,8 +155,8 @@ type AuditLogResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body TrialBalanceCheckRequest false "Trial balance check options"
 // @Success      200 {object} APIResponse[TrialBalanceResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/trial-balance/check [post]
 func (h *TrialBalanceHandler) PerformTrialBalanceCheck(c *gin.Context) {
@@ -240,7 +239,6 @@ func (h *TrialBalanceHandler) PerformTrialBalanceCheck(c *gin.Context) {
 	h.Success(c, toTrialBalanceHandlerResponse(result))
 }
 
-
 // QuickBalanceCheck godoc
 // @ID           quickBalanceCheckFinanceTrialBalance
 // @Summary      Quick balance check
@@ -249,8 +247,8 @@ func (h *TrialBalanceHandler) PerformTrialBalanceCheck(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[BalanceCheckGuardResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/trial-balance/quick-check [get]
 func (h *TrialBalanceHandler) QuickBalanceCheck(c *gin.Context) {
@@ -269,7 +267,6 @@ func (h *TrialBalanceHandler) QuickBalanceCheck(c *gin.Context) {
 	h.Success(c, toBalanceCheckGuardHandlerResponse(result))
 }
 
-
 // GetReconciliationReport godoc
 // @ID           getFinanceTrialBalanceReconciliationReport
 // @Summary      Get reconciliation report
@@ -278,8 +275,8 @@ func (h *TrialBalanceHandler) QuickBalanceCheck(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[ReconciliationReportResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/trial-balance/reconciliation-report [get]
 func (h *TrialBalanceHandler) GetReconciliationReport(c *gin.Context) {
@@ -304,7 +301,6 @@ func (h *TrialBalanceHandler) GetReconciliationReport(c *gin.Context) {
 	h.Success(c, toReconciliationReportHandlerResponse(result))
 }
 
-
 // GetAuditLogs godoc
 // @ID           getFinanceTrialBalanceAuditLogs
 // @Summary      Get trial balance audit logs
@@ -314,8 +310,8 @@ func (h *TrialBalanceHandler) GetReconciliationReport(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        limit query int false "Number of logs to retrieve" default(20) maximum(100)
 // @Success      200 {object} APIResponse[[]AuditLogResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/trial-balance/audit-logs [get]
 func (h *TrialBalanceHandler) GetAuditLogs(c *gin.Context) {

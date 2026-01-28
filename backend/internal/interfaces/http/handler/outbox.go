@@ -19,7 +19,6 @@ func NewOutboxHandler(outboxService *event.OutboxService) *OutboxHandler {
 	}
 }
 
-
 // GetDeadLetterEntries godoc
 // @ID           getOutboxDeadLetterEntries
 // @Summary      List dead letter entries
@@ -29,10 +28,10 @@ func NewOutboxHandler(outboxService *event.OutboxService) *OutboxHandler {
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Items per page" default(20) maximum(100)
 // @Success      200 {object} APIResponse[OutboxListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /system/outbox/dead [get]
 func (h *OutboxHandler) GetDeadLetterEntries(c *gin.Context) {
@@ -51,7 +50,6 @@ func (h *OutboxHandler) GetDeadLetterEntries(c *gin.Context) {
 	h.Success(c, toOutboxListResponse(result))
 }
 
-
 // GetEntry godoc
 // @ID           getOutboxEntry
 // @Summary      Get an outbox entry by ID
@@ -60,10 +58,10 @@ func (h *OutboxHandler) GetDeadLetterEntries(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Outbox Entry ID" format(uuid)
 // @Success      200 {object} APIResponse[OutboxEntryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /system/outbox/{id} [get]
 func (h *OutboxHandler) GetEntry(c *gin.Context) {
@@ -82,7 +80,6 @@ func (h *OutboxHandler) GetEntry(c *gin.Context) {
 	h.Success(c, toOutboxEntryResponse(entry))
 }
 
-
 // RetryDeadEntry godoc
 // @ID           retryDeadEntryOutbox
 // @Summary      Retry a dead letter entry
@@ -92,12 +89,12 @@ func (h *OutboxHandler) GetEntry(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Outbox Entry ID" format(uuid)
 // @Success      200 {object} APIResponse[OutboxEntryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /system/outbox/{id}/retry [post]
 func (h *OutboxHandler) RetryDeadEntry(c *gin.Context) {
@@ -116,7 +113,6 @@ func (h *OutboxHandler) RetryDeadEntry(c *gin.Context) {
 	h.Success(c, toOutboxEntryResponse(entry))
 }
 
-
 // RetryAllDeadEntries godoc
 // @ID           retryAllDeadEntriesOutbox
 // @Summary      Retry all dead letter entries
@@ -125,10 +121,10 @@ func (h *OutboxHandler) RetryDeadEntry(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Success      200 {object} APIResponse[RetryAllResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /system/outbox/dead/retry-all [post]
 func (h *OutboxHandler) RetryAllDeadEntries(c *gin.Context) {
@@ -141,7 +137,6 @@ func (h *OutboxHandler) RetryAllDeadEntries(c *gin.Context) {
 	h.Success(c, RetryAllResponse{Count: count})
 }
 
-
 // GetStats godoc
 // @ID           getOutboxStats
 // @Summary      Get outbox statistics
@@ -149,9 +144,9 @@ func (h *OutboxHandler) RetryAllDeadEntries(c *gin.Context) {
 // @Tags         outbox
 // @Produce      json
 // @Success      200 {object} APIResponse[OutboxStatsResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /system/outbox/stats [get]
 func (h *OutboxHandler) GetStats(c *gin.Context) {

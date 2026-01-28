@@ -198,7 +198,6 @@ type TransactionResponse struct {
 
 // ===================== Query Handlers =====================
 
-
 // ===================== Query Handlers =====================
 
 // GetByID godoc
@@ -210,10 +209,10 @@ type TransactionResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Inventory Item ID" format(uuid)
 // @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/items/{id} [get]
 func (h *InventoryHandler) GetByID(c *gin.Context) {
@@ -238,7 +237,6 @@ func (h *InventoryHandler) GetByID(c *gin.Context) {
 	h.Success(c, item)
 }
 
-
 // GetByWarehouseAndProduct godoc
 // @ID           getInventoryByWarehouseAndProduct
 // @Summary      Get inventory by warehouse and product
@@ -249,10 +247,10 @@ func (h *InventoryHandler) GetByID(c *gin.Context) {
 // @Param        warehouse_id query string true "Warehouse ID" format(uuid)
 // @Param        product_id query string true "Product ID" format(uuid)
 // @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/items/lookup [get]
 func (h *InventoryHandler) GetByWarehouseAndProduct(c *gin.Context) {
@@ -291,7 +289,6 @@ func (h *InventoryHandler) GetByWarehouseAndProduct(c *gin.Context) {
 	h.Success(c, item)
 }
 
-
 // List godoc
 // @ID           listInventories
 // @Summary      List inventory items
@@ -311,9 +308,9 @@ func (h *InventoryHandler) GetByWarehouseAndProduct(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(updated_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/items [get]
 func (h *InventoryHandler) List(c *gin.Context) {
@@ -346,7 +343,6 @@ func (h *InventoryHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // ListByWarehouse godoc
 // @ID           listInventoryByWarehouse
 // @Summary      List inventory by warehouse
@@ -363,9 +359,9 @@ func (h *InventoryHandler) List(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(updated_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/warehouses/{warehouse_id}/items [get]
 func (h *InventoryHandler) ListByWarehouse(c *gin.Context) {
@@ -404,7 +400,6 @@ func (h *InventoryHandler) ListByWarehouse(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // ListByProduct godoc
 // @ID           listInventoryByProduct
 // @Summary      List inventory by product
@@ -421,9 +416,9 @@ func (h *InventoryHandler) ListByWarehouse(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(updated_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/products/{product_id}/items [get]
 func (h *InventoryHandler) ListByProduct(c *gin.Context) {
@@ -462,7 +457,6 @@ func (h *InventoryHandler) ListByProduct(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // ListBelowMinimum godoc
 // @ID           listInventoryBelowMinimum
 // @Summary      List inventory below minimum threshold
@@ -476,9 +470,9 @@ func (h *InventoryHandler) ListByProduct(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(updated_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/items/alerts/low-stock [get]
 func (h *InventoryHandler) ListBelowMinimum(c *gin.Context) {
@@ -511,7 +505,6 @@ func (h *InventoryHandler) ListBelowMinimum(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // CheckAvailability godoc
 // @ID           checkAvailabilityInventory
 // @Summary      Check stock availability
@@ -522,9 +515,9 @@ func (h *InventoryHandler) ListBelowMinimum(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CheckAvailabilityRequest true "Availability check request"
 // @Success      200 {object} APIResponse[CheckAvailabilityResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/availability/check [post]
 func (h *InventoryHandler) CheckAvailability(c *gin.Context) {
@@ -569,7 +562,6 @@ func (h *InventoryHandler) CheckAvailability(c *gin.Context) {
 
 // ===================== Stock Operation Handlers =====================
 
-
 // ===================== Stock Operation Handlers =====================
 
 // IncreaseStock godoc
@@ -582,9 +574,9 @@ func (h *InventoryHandler) CheckAvailability(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body IncreaseStockRequest true "Stock increase request"
 // @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock/increase [post]
 func (h *InventoryHandler) IncreaseStock(c *gin.Context) {
@@ -654,7 +646,6 @@ func (h *InventoryHandler) IncreaseStock(c *gin.Context) {
 	h.Success(c, item)
 }
 
-
 // LockStock godoc
 // @ID           lockStockInventory
 // @Summary      Lock stock
@@ -665,11 +656,11 @@ func (h *InventoryHandler) IncreaseStock(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body LockStockRequest true "Stock lock request"
 // @Success      200 {object} APIResponse[LockStockResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock/lock [post]
 func (h *InventoryHandler) LockStock(c *gin.Context) {
@@ -725,7 +716,6 @@ func (h *InventoryHandler) LockStock(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // UnlockStock godoc
 // @ID           unlockStockInventory
 // @Summary      Unlock stock
@@ -736,11 +726,11 @@ func (h *InventoryHandler) LockStock(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body UnlockStockRequest true "Stock unlock request"
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock/unlock [post]
 func (h *InventoryHandler) UnlockStock(c *gin.Context) {
@@ -775,7 +765,6 @@ func (h *InventoryHandler) UnlockStock(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // DeductStock godoc
 // @ID           deductStockInventory
 // @Summary      Deduct stock
@@ -786,11 +775,11 @@ func (h *InventoryHandler) UnlockStock(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body DeductStockRequest true "Stock deduction request"
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock/deduct [post]
 func (h *InventoryHandler) DeductStock(c *gin.Context) {
@@ -838,7 +827,6 @@ func (h *InventoryHandler) DeductStock(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // AdjustStock godoc
 // @ID           adjustStockInventory
 // @Summary      Adjust stock
@@ -849,10 +837,10 @@ func (h *InventoryHandler) DeductStock(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body AdjustStockRequest true "Stock adjustment request"
 // @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock/adjust [post]
 func (h *InventoryHandler) AdjustStock(c *gin.Context) {
@@ -908,7 +896,6 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 	h.Success(c, item)
 }
 
-
 // SetThresholds godoc
 // @ID           setThresholdsInventory
 // @Summary      Set inventory thresholds
@@ -919,10 +906,10 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body SetThresholdsRequest true "Threshold settings request"
 // @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/thresholds [put]
 func (h *InventoryHandler) SetThresholds(c *gin.Context) {
@@ -975,7 +962,6 @@ func (h *InventoryHandler) SetThresholds(c *gin.Context) {
 
 // ===================== Lock Management Handlers =====================
 
-
 // ===================== Lock Management Handlers =====================
 
 // GetActiveLocks godoc
@@ -988,10 +974,10 @@ func (h *InventoryHandler) SetThresholds(c *gin.Context) {
 // @Param        warehouse_id query string true "Warehouse ID" format(uuid)
 // @Param        product_id query string true "Product ID" format(uuid)
 // @Success      200 {object} APIResponse[[]StockLockResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/locks [get]
 func (h *InventoryHandler) GetActiveLocks(c *gin.Context) {
@@ -1030,7 +1016,6 @@ func (h *InventoryHandler) GetActiveLocks(c *gin.Context) {
 	h.Success(c, locks)
 }
 
-
 // GetLockByID godoc
 // @ID           getInventoryLockByID
 // @Summary      Get lock by ID
@@ -1040,11 +1025,11 @@ func (h *InventoryHandler) GetActiveLocks(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Lock ID" format(uuid)
 // @Success      200 {object} APIResponse[StockLockResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/locks/{id} [get]
 func (h *InventoryHandler) GetLockByID(c *gin.Context) {
@@ -1071,7 +1056,6 @@ func (h *InventoryHandler) GetLockByID(c *gin.Context) {
 
 // ===================== Transaction Handlers =====================
 
-
 // ===================== Transaction Handlers =====================
 
 // ListTransactions godoc
@@ -1093,9 +1077,9 @@ func (h *InventoryHandler) GetLockByID(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(transaction_date)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]TransactionResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/transactions [get]
 func (h *InventoryHandler) ListTransactions(c *gin.Context) {
@@ -1128,7 +1112,6 @@ func (h *InventoryHandler) ListTransactions(c *gin.Context) {
 	h.SuccessWithMeta(c, txs, total, filter.Page, filter.PageSize)
 }
 
-
 // ListTransactionsByItem godoc
 // @ID           listInventoryTransactionsByItem
 // @Summary      List transactions by inventory item
@@ -1145,10 +1128,10 @@ func (h *InventoryHandler) ListTransactions(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(transaction_date)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]TransactionResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/items/{id}/transactions [get]
 func (h *InventoryHandler) ListTransactionsByItem(c *gin.Context) {
@@ -1187,7 +1170,6 @@ func (h *InventoryHandler) ListTransactionsByItem(c *gin.Context) {
 	h.SuccessWithMeta(c, txs, total, filter.Page, filter.PageSize)
 }
 
-
 // GetTransactionByID godoc
 // @ID           getInventoryTransactionByID
 // @Summary      Get transaction by ID
@@ -1197,11 +1179,11 @@ func (h *InventoryHandler) ListTransactionsByItem(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Transaction ID" format(uuid)
 // @Success      200 {object} APIResponse[TransactionResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/transactions/{id} [get]
 func (h *InventoryHandler) GetTransactionByID(c *gin.Context) {

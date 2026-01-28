@@ -247,7 +247,6 @@ type ReconcilePaymentResultResponse struct {
 
 // ===================== Account Receivable Handlers =====================
 
-
 // ===================== Account Receivable Handlers =====================
 
 // ListReceivables godoc
@@ -267,8 +266,8 @@ type ReconcilePaymentResultResponse struct {
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Page size" default(20) maximum(100)
 // @Success      200 {object} APIResponse[[]AccountReceivableResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receivables [get]
 func (h *FinanceHandler) ListReceivables(c *gin.Context) {
@@ -300,7 +299,6 @@ func (h *FinanceHandler) ListReceivables(c *gin.Context) {
 	h.SuccessWithMeta(c, toAccountReceivableResponses(receivables), total, filter.Page, filter.PageSize)
 }
 
-
 // GetReceivableByID godoc
 // @ID           getFinanceReceivableReceivableByID
 // @Summary      Get account receivable by ID
@@ -310,9 +308,9 @@ func (h *FinanceHandler) ListReceivables(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Receivable ID" format(uuid)
 // @Success      200 {object} APIResponse[AccountReceivableResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receivables/{id} [get]
 func (h *FinanceHandler) GetReceivableByID(c *gin.Context) {
@@ -337,7 +335,6 @@ func (h *FinanceHandler) GetReceivableByID(c *gin.Context) {
 	h.Success(c, toAccountReceivableResponse(receivable))
 }
 
-
 // GetReceivableSummary godoc
 // @ID           getFinanceReceivableReceivableSummary
 // @Summary      Get receivables summary
@@ -346,8 +343,8 @@ func (h *FinanceHandler) GetReceivableByID(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[ReceivableSummaryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receivables/summary [get]
 func (h *FinanceHandler) GetReceivableSummary(c *gin.Context) {
@@ -374,7 +371,6 @@ func (h *FinanceHandler) GetReceivableSummary(c *gin.Context) {
 
 // ===================== Account Payable Handlers =====================
 
-
 // ===================== Account Payable Handlers =====================
 
 // ListPayables godoc
@@ -394,8 +390,8 @@ func (h *FinanceHandler) GetReceivableSummary(c *gin.Context) {
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Page size" default(20) maximum(100)
 // @Success      200 {object} APIResponse[[]AccountPayableResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payables [get]
 func (h *FinanceHandler) ListPayables(c *gin.Context) {
@@ -427,7 +423,6 @@ func (h *FinanceHandler) ListPayables(c *gin.Context) {
 	h.SuccessWithMeta(c, toAccountPayableResponses(payables), total, filter.Page, filter.PageSize)
 }
 
-
 // GetPayableByID godoc
 // @ID           getFinancePayablePayableByID
 // @Summary      Get account payable by ID
@@ -437,9 +432,9 @@ func (h *FinanceHandler) ListPayables(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Payable ID" format(uuid)
 // @Success      200 {object} APIResponse[AccountPayableResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payables/{id} [get]
 func (h *FinanceHandler) GetPayableByID(c *gin.Context) {
@@ -464,7 +459,6 @@ func (h *FinanceHandler) GetPayableByID(c *gin.Context) {
 	h.Success(c, toAccountPayableResponse(payable))
 }
 
-
 // GetPayableSummary godoc
 // @ID           getFinancePayablePayableSummary
 // @Summary      Get payables summary
@@ -473,8 +467,8 @@ func (h *FinanceHandler) GetPayableByID(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[PayableSummaryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payables/summary [get]
 func (h *FinanceHandler) GetPayableSummary(c *gin.Context) {
@@ -501,7 +495,6 @@ func (h *FinanceHandler) GetPayableSummary(c *gin.Context) {
 
 // ===================== Receipt Voucher Handlers =====================
 
-
 // ===================== Receipt Voucher Handlers =====================
 
 // CreateReceiptVoucher godoc
@@ -514,8 +507,8 @@ func (h *FinanceHandler) GetPayableSummary(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateReceiptVoucherRequest true "Receipt voucher creation request"
 // @Success      201 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts [post]
 func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
@@ -570,7 +563,6 @@ func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 	h.Created(c, toReceiptVoucherResponse(voucher))
 }
 
-
 // ListReceiptVouchers godoc
 // @ID           listFinanceReceiptReceiptVouchers
 // @Summary      List receipt vouchers
@@ -587,8 +579,8 @@ func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Page size" default(20) maximum(100)
 // @Success      200 {object} APIResponse[[]ReceiptVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts [get]
 func (h *FinanceHandler) ListReceiptVouchers(c *gin.Context) {
@@ -620,7 +612,6 @@ func (h *FinanceHandler) ListReceiptVouchers(c *gin.Context) {
 	h.SuccessWithMeta(c, toReceiptVoucherResponses(vouchers), total, filter.Page, filter.PageSize)
 }
 
-
 // GetReceiptVoucherByID godoc
 // @ID           getFinanceReceiptReceiptVoucherByID
 // @Summary      Get receipt voucher by ID
@@ -630,9 +621,9 @@ func (h *FinanceHandler) ListReceiptVouchers(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Receipt Voucher ID" format(uuid)
 // @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts/{id} [get]
 func (h *FinanceHandler) GetReceiptVoucherByID(c *gin.Context) {
@@ -657,7 +648,6 @@ func (h *FinanceHandler) GetReceiptVoucherByID(c *gin.Context) {
 	h.Success(c, toReceiptVoucherResponse(voucher))
 }
 
-
 // ConfirmReceiptVoucher godoc
 // @ID           confirmReceiptVoucherFinanceReceipt
 // @Summary      Confirm a receipt voucher
@@ -668,10 +658,10 @@ func (h *FinanceHandler) GetReceiptVoucherByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Receipt Voucher ID" format(uuid)
 // @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts/{id}/confirm [post]
 func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
@@ -703,7 +693,6 @@ func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
 	h.Success(c, toReceiptVoucherResponse(voucher))
 }
 
-
 // CancelReceiptVoucher godoc
 // @ID           cancelReceiptVoucherFinanceReceipt
 // @Summary      Cancel a receipt voucher
@@ -715,10 +704,10 @@ func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
 // @Param        id path string true "Receipt Voucher ID" format(uuid)
 // @Param        request body CancelVoucherRequest true "Cancel request"
 // @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts/{id}/cancel [post]
 func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
@@ -756,7 +745,6 @@ func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
 	h.Success(c, toReceiptVoucherResponse(voucher))
 }
 
-
 // ReconcileReceiptVoucher godoc
 // @ID           reconcileReceiptVoucherFinanceReceipt
 // @Summary      Reconcile a receipt voucher
@@ -768,10 +756,10 @@ func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
 // @Param        id path string true "Receipt Voucher ID" format(uuid)
 // @Param        request body ReconcileRequest true "Reconcile request"
 // @Success      200 {object} APIResponse[ReconcileReceiptResultResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/receipts/{id}/reconcile [post]
 func (h *FinanceHandler) ReconcileReceiptVoucher(c *gin.Context) {
@@ -823,7 +811,6 @@ func (h *FinanceHandler) ReconcileReceiptVoucher(c *gin.Context) {
 
 // ===================== Payment Voucher Handlers =====================
 
-
 // ===================== Payment Voucher Handlers =====================
 
 // CreatePaymentVoucher godoc
@@ -836,8 +823,8 @@ func (h *FinanceHandler) ReconcileReceiptVoucher(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreatePaymentVoucherRequest true "Payment voucher creation request"
 // @Success      201 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments [post]
 func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
@@ -892,7 +879,6 @@ func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 	h.Created(c, toPaymentVoucherResponse(voucher))
 }
 
-
 // ListPaymentVouchers godoc
 // @ID           listFinancePaymentPaymentVouchers
 // @Summary      List payment vouchers
@@ -909,8 +895,8 @@ func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 // @Param        page query int false "Page number" default(1)
 // @Param        page_size query int false "Page size" default(20) maximum(100)
 // @Success      200 {object} APIResponse[[]PaymentVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments [get]
 func (h *FinanceHandler) ListPaymentVouchers(c *gin.Context) {
@@ -942,7 +928,6 @@ func (h *FinanceHandler) ListPaymentVouchers(c *gin.Context) {
 	h.SuccessWithMeta(c, toPaymentVoucherResponses(vouchers), total, filter.Page, filter.PageSize)
 }
 
-
 // GetPaymentVoucherByID godoc
 // @ID           getFinancePaymentPaymentVoucherByID
 // @Summary      Get payment voucher by ID
@@ -952,9 +937,9 @@ func (h *FinanceHandler) ListPaymentVouchers(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Payment Voucher ID" format(uuid)
 // @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments/{id} [get]
 func (h *FinanceHandler) GetPaymentVoucherByID(c *gin.Context) {
@@ -979,7 +964,6 @@ func (h *FinanceHandler) GetPaymentVoucherByID(c *gin.Context) {
 	h.Success(c, toPaymentVoucherResponse(voucher))
 }
 
-
 // ConfirmPaymentVoucher godoc
 // @ID           confirmPaymentVoucherFinancePayment
 // @Summary      Confirm a payment voucher
@@ -990,10 +974,10 @@ func (h *FinanceHandler) GetPaymentVoucherByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Payment Voucher ID" format(uuid)
 // @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments/{id}/confirm [post]
 func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
@@ -1025,7 +1009,6 @@ func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
 	h.Success(c, toPaymentVoucherResponse(voucher))
 }
 
-
 // CancelPaymentVoucher godoc
 // @ID           cancelPaymentVoucherFinancePayment
 // @Summary      Cancel a payment voucher
@@ -1037,10 +1020,10 @@ func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
 // @Param        id path string true "Payment Voucher ID" format(uuid)
 // @Param        request body CancelVoucherRequest true "Cancel request"
 // @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments/{id}/cancel [post]
 func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
@@ -1078,7 +1061,6 @@ func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
 	h.Success(c, toPaymentVoucherResponse(voucher))
 }
 
-
 // ReconcilePaymentVoucher godoc
 // @ID           reconcilePaymentVoucherFinancePayment
 // @Summary      Reconcile a payment voucher
@@ -1090,10 +1072,10 @@ func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
 // @Param        id path string true "Payment Voucher ID" format(uuid)
 // @Param        request body ReconcileRequest true "Reconcile request"
 // @Success      200 {object} APIResponse[ReconcilePaymentResultResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /finance/payments/{id}/reconcile [post]
 func (h *FinanceHandler) ReconcilePaymentVoucher(c *gin.Context) {

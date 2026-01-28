@@ -128,6 +128,9 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "dto.ErrorResponse": {
+                "type": "object"
+            },
             "dto.EvaluateFlagResponse": {
                 "properties": {
                     "enabled": {
@@ -11683,7 +11686,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11693,7 +11696,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11703,7 +11706,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11713,7 +11716,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11723,7 +11726,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11780,7 +11783,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11790,7 +11793,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11800,7 +11803,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11810,7 +11813,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11851,7 +11854,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11861,7 +11864,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11898,7 +11901,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11908,7 +11911,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11965,7 +11968,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11975,7 +11978,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11985,7 +11988,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -11995,7 +11998,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12051,7 +12054,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12061,7 +12064,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12071,7 +12074,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12167,7 +12170,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12177,7 +12180,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12187,7 +12190,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12252,7 +12255,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12262,7 +12265,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12272,7 +12275,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12282,7 +12285,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12329,7 +12332,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12339,7 +12342,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12349,7 +12352,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12396,7 +12399,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12406,7 +12409,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12416,7 +12419,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12615,7 +12618,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12625,7 +12628,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12635,7 +12638,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12645,7 +12648,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12655,7 +12658,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12710,7 +12713,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12720,7 +12723,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12730,7 +12733,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12740,7 +12743,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12815,7 +12818,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12825,7 +12828,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12835,7 +12838,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12845,7 +12848,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12911,7 +12914,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12921,7 +12924,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12931,7 +12934,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12941,7 +12944,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12998,7 +13001,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13008,7 +13011,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13018,7 +13021,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13028,7 +13031,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13094,7 +13097,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13104,7 +13107,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13114,7 +13117,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13124,7 +13127,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13201,7 +13204,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13211,7 +13214,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13221,7 +13224,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13231,7 +13234,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14421,7 +14424,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14431,7 +14434,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14441,7 +14444,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14516,7 +14519,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14526,7 +14529,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14536,7 +14539,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14546,7 +14549,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14623,7 +14626,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14633,7 +14636,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14643,7 +14646,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14700,7 +14703,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14710,7 +14713,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14720,7 +14723,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14777,7 +14780,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14787,7 +14790,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14797,7 +14800,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14864,7 +14867,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14874,7 +14877,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14884,7 +14887,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14949,7 +14952,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14959,7 +14962,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14969,7 +14972,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15054,7 +15057,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15064,7 +15067,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15074,7 +15077,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18589,7 +18592,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18599,7 +18602,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18646,7 +18649,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18656,7 +18659,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18713,7 +18716,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18723,7 +18726,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18733,7 +18736,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18865,7 +18868,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18875,7 +18878,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18940,7 +18943,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18950,7 +18953,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19007,7 +19010,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19017,7 +19020,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19027,7 +19030,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19104,7 +19107,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19114,7 +19117,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19124,7 +19127,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19134,7 +19137,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19200,7 +19203,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19210,7 +19213,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19220,7 +19223,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19230,7 +19233,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19307,7 +19310,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19317,7 +19320,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19327,7 +19330,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19337,7 +19340,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19469,7 +19472,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19479,7 +19482,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19544,7 +19547,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19554,7 +19557,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19611,7 +19614,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19621,7 +19624,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19631,7 +19634,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19708,7 +19711,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19718,7 +19721,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19728,7 +19731,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19738,7 +19741,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19804,7 +19807,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19814,7 +19817,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19824,7 +19827,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19834,7 +19837,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19911,7 +19914,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19921,7 +19924,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19931,7 +19934,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -19941,7 +19944,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20078,7 +20081,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20088,7 +20091,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20135,7 +20138,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20145,7 +20148,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20202,7 +20205,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20212,7 +20215,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20222,7 +20225,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20279,7 +20282,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20289,7 +20292,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20355,7 +20358,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20365,7 +20368,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20412,7 +20415,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20422,7 +20425,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20469,7 +20472,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20479,7 +20482,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20516,7 +20519,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20526,7 +20529,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20608,7 +20611,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20618,7 +20621,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20628,7 +20631,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20683,7 +20686,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20693,7 +20696,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20703,7 +20706,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20713,7 +20716,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20723,7 +20726,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20771,7 +20774,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20781,7 +20784,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20791,7 +20794,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20801,7 +20804,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20838,7 +20841,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20848,7 +20851,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20885,7 +20888,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20895,7 +20898,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20944,7 +20947,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20954,7 +20957,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20964,7 +20967,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20974,7 +20977,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -20984,7 +20987,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21031,7 +21034,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21041,7 +21044,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21051,7 +21054,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21061,7 +21064,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21128,7 +21131,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21138,7 +21141,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21148,7 +21151,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21158,7 +21161,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21168,7 +21171,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21226,7 +21229,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21236,7 +21239,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21246,7 +21249,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21256,7 +21259,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21266,7 +21269,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21324,7 +21327,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21334,7 +21337,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21344,7 +21347,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21354,7 +21357,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21364,7 +21367,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21433,7 +21436,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21443,7 +21446,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21453,7 +21456,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21463,7 +21466,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21473,7 +21476,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21595,7 +21598,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21605,7 +21608,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21615,7 +21618,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21670,7 +21673,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21680,7 +21683,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21690,7 +21693,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21700,7 +21703,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21710,7 +21713,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21758,7 +21761,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21768,7 +21771,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21778,7 +21781,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21788,7 +21791,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21825,7 +21828,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21835,7 +21838,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21872,7 +21875,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21882,7 +21885,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21931,7 +21934,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21941,7 +21944,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21951,7 +21954,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21961,7 +21964,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -21971,7 +21974,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22018,7 +22021,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22028,7 +22031,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22038,7 +22041,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22048,7 +22051,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22115,7 +22118,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22125,7 +22128,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22135,7 +22138,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22145,7 +22148,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22155,7 +22158,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22213,7 +22216,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22223,7 +22226,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22233,7 +22236,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22243,7 +22246,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22253,7 +22256,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22322,7 +22325,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22332,7 +22335,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22342,7 +22345,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22352,7 +22355,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22362,7 +22365,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22420,7 +22423,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22430,7 +22433,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22440,7 +22443,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22450,7 +22453,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22460,7 +22463,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22529,7 +22532,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22539,7 +22542,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22549,7 +22552,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22559,7 +22562,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22569,7 +22572,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22627,7 +22630,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22637,7 +22640,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22647,7 +22650,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22657,7 +22660,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22667,7 +22670,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22784,7 +22787,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22794,7 +22797,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22804,7 +22807,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22859,7 +22862,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22869,7 +22872,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22879,7 +22882,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22889,7 +22892,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22899,7 +22902,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22936,7 +22939,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22946,7 +22949,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -22995,7 +22998,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23005,7 +23008,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23015,7 +23018,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23025,7 +23028,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23072,7 +23075,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23082,7 +23085,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23092,7 +23095,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23102,7 +23105,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23169,7 +23172,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23179,7 +23182,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23189,7 +23192,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23199,7 +23202,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23209,7 +23212,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23267,7 +23270,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23277,7 +23280,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23287,7 +23290,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23297,7 +23300,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23307,7 +23310,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23365,7 +23368,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23375,7 +23378,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23385,7 +23388,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23395,7 +23398,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23405,7 +23408,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23473,7 +23476,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23483,7 +23486,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23493,7 +23496,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23503,7 +23506,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23513,7 +23516,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23582,7 +23585,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23592,7 +23595,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23602,7 +23605,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23612,7 +23615,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23622,7 +23625,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23691,7 +23694,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23701,7 +23704,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23711,7 +23714,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23721,7 +23724,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23731,7 +23734,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23789,7 +23792,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23799,7 +23802,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23809,7 +23812,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23819,7 +23822,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23829,7 +23832,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23896,7 +23899,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23906,7 +23909,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23916,7 +23919,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24062,7 +24065,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24072,7 +24075,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24082,7 +24085,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24179,7 +24182,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24189,7 +24192,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24199,7 +24202,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24266,7 +24269,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24276,7 +24279,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24286,7 +24289,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24296,7 +24299,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24353,7 +24356,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24363,7 +24366,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24373,7 +24376,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24383,7 +24386,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24514,7 +24517,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24524,7 +24527,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24534,7 +24537,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24544,7 +24547,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24611,7 +24614,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24621,7 +24624,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24631,7 +24634,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24641,7 +24644,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24698,7 +24701,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24708,7 +24711,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24718,7 +24721,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24728,7 +24731,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24738,7 +24741,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24860,7 +24863,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24870,7 +24873,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -24880,7 +24883,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25036,7 +25039,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25046,7 +25049,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25056,7 +25059,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25121,7 +25124,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25131,7 +25134,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25141,7 +25144,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25197,7 +25200,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25207,7 +25210,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25217,7 +25220,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25227,7 +25230,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25323,7 +25326,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25333,7 +25336,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25343,7 +25346,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25393,7 +25396,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25403,7 +25406,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25413,7 +25416,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25423,7 +25426,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25433,7 +25436,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25488,7 +25491,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25498,7 +25501,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25508,7 +25511,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25518,7 +25521,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25593,7 +25596,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25603,7 +25606,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25613,7 +25616,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25623,7 +25626,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25633,7 +25636,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25710,7 +25713,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25720,7 +25723,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25730,7 +25733,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25740,7 +25743,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25750,7 +25753,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25827,7 +25830,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25837,7 +25840,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25847,7 +25850,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25857,7 +25860,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25867,7 +25870,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25944,7 +25947,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25954,7 +25957,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25964,7 +25967,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25974,7 +25977,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -25984,7 +25987,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26061,7 +26064,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26071,7 +26074,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26081,7 +26084,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26091,7 +26094,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26101,7 +26104,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26178,7 +26181,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26188,7 +26191,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26198,7 +26201,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26208,7 +26211,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26218,7 +26221,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26295,7 +26298,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26305,7 +26308,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26315,7 +26318,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26325,7 +26328,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26335,7 +26338,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26402,7 +26405,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26412,7 +26415,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26422,7 +26425,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26432,7 +26435,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26442,7 +26445,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26499,7 +26502,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26509,7 +26512,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26519,7 +26522,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26529,7 +26532,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26606,7 +26609,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26616,7 +26619,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26626,7 +26629,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26636,7 +26639,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26646,7 +26649,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26712,7 +26715,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26722,7 +26725,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26732,7 +26735,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26742,7 +26745,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26752,7 +26755,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26818,7 +26821,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26828,7 +26831,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26838,7 +26841,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26848,7 +26851,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26858,7 +26861,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26925,7 +26928,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26935,7 +26938,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26945,7 +26948,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -26955,7 +26958,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27015,7 +27018,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27025,7 +27028,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27035,7 +27038,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27045,7 +27048,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27055,7 +27058,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27122,7 +27125,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27132,7 +27135,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27142,7 +27145,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27209,7 +27212,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27219,7 +27222,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27229,7 +27232,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27239,7 +27242,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27249,7 +27252,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27309,7 +27312,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27319,7 +27322,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27329,7 +27332,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27339,7 +27342,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27349,7 +27352,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27416,7 +27419,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27426,7 +27429,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27436,7 +27439,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27446,7 +27449,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27609,7 +27612,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27619,7 +27622,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27629,7 +27632,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27686,7 +27689,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27696,7 +27699,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27706,7 +27709,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27716,7 +27719,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27726,7 +27729,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27848,7 +27851,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27858,7 +27861,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27868,7 +27871,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27925,7 +27928,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27935,7 +27938,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27945,7 +27948,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -27955,7 +27958,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28011,7 +28014,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28021,7 +28024,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28031,7 +28034,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28096,7 +28099,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28106,7 +28109,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28116,7 +28119,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28126,7 +28129,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28182,7 +28185,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28192,7 +28195,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28202,7 +28205,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28212,7 +28215,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28259,7 +28262,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28269,7 +28272,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28279,7 +28282,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28289,7 +28292,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28345,7 +28348,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28355,7 +28358,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28365,7 +28368,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28415,7 +28418,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28425,7 +28428,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28435,7 +28438,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28445,7 +28448,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28455,7 +28458,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28510,7 +28513,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28520,7 +28523,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28530,7 +28533,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28540,7 +28543,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28615,7 +28618,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28625,7 +28628,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28635,7 +28638,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28645,7 +28648,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28711,7 +28714,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28721,7 +28724,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28731,7 +28734,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28741,7 +28744,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28807,7 +28810,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28817,7 +28820,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28827,7 +28830,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28837,7 +28840,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28847,7 +28850,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28913,7 +28916,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28923,7 +28926,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28933,7 +28936,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28943,7 +28946,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -28953,7 +28956,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29105,7 +29108,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29115,7 +29118,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29125,7 +29128,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29190,7 +29193,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29200,7 +29203,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29210,7 +29213,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29220,7 +29223,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29276,7 +29279,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29286,7 +29289,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29296,7 +29299,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29306,7 +29309,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29353,7 +29356,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29363,7 +29366,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29373,7 +29376,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29423,7 +29426,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29433,7 +29436,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29443,7 +29446,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29453,7 +29456,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29463,7 +29466,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29518,7 +29521,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29528,7 +29531,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29538,7 +29541,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29548,7 +29551,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29623,7 +29626,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29633,7 +29636,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29643,7 +29646,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29653,7 +29656,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29663,7 +29666,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29729,7 +29732,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29739,7 +29742,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29749,7 +29752,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29759,7 +29762,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29769,7 +29772,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29826,7 +29829,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29836,7 +29839,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29846,7 +29849,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29856,7 +29859,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29933,7 +29936,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29943,7 +29946,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29953,7 +29956,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29963,7 +29966,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -29973,7 +29976,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30050,7 +30053,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30060,7 +30063,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30070,7 +30073,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30080,7 +30083,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30090,7 +30093,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30167,7 +30170,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30177,7 +30180,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30187,7 +30190,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30197,7 +30200,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30207,7 +30210,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30284,7 +30287,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30294,7 +30297,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30304,7 +30307,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30314,7 +30317,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30324,7 +30327,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30381,7 +30384,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30391,7 +30394,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30401,7 +30404,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30411,7 +30414,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30533,7 +30536,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30543,7 +30546,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30553,7 +30556,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30563,7 +30566,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30640,7 +30643,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30650,7 +30653,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30660,7 +30663,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30670,7 +30673,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30680,7 +30683,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30746,7 +30749,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30756,7 +30759,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30766,7 +30769,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30776,7 +30779,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30786,7 +30789,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30863,7 +30866,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30873,7 +30876,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30883,7 +30886,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30893,7 +30896,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30903,7 +30906,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30969,7 +30972,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30979,7 +30982,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30989,7 +30992,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -30999,7 +31002,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31009,7 +31012,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31164,7 +31167,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31174,7 +31177,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31184,7 +31187,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31249,7 +31252,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31259,7 +31262,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31269,7 +31272,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31279,7 +31282,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31335,7 +31338,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31345,7 +31348,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31355,7 +31358,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31365,7 +31368,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31412,7 +31415,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31422,7 +31425,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31432,7 +31435,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31482,7 +31485,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31492,7 +31495,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31502,7 +31505,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31512,7 +31515,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31522,7 +31525,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31577,7 +31580,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31587,7 +31590,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31597,7 +31600,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31607,7 +31610,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31682,7 +31685,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31692,7 +31695,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31702,7 +31705,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31712,7 +31715,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31722,7 +31725,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31788,7 +31791,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31798,7 +31801,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31808,7 +31811,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31818,7 +31821,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31828,7 +31831,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31894,7 +31897,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31904,7 +31907,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31914,7 +31917,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31924,7 +31927,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -31934,7 +31937,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32011,7 +32014,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32021,7 +32024,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32031,7 +32034,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32041,7 +32044,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32051,7 +32054,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32117,7 +32120,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32127,7 +32130,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32137,7 +32140,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32147,7 +32150,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32157,7 +32160,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32234,7 +32237,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32244,7 +32247,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32254,7 +32257,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32264,7 +32267,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32274,7 +32277,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32351,7 +32354,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32361,7 +32364,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32371,7 +32374,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32381,7 +32384,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32391,7 +32394,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35644,7 +35647,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35654,7 +35657,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35706,7 +35709,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35716,7 +35719,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35768,7 +35771,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35778,7 +35781,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35846,7 +35849,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35856,7 +35859,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35908,7 +35911,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35918,7 +35921,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35986,7 +35989,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -35996,7 +35999,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36064,7 +36067,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36074,7 +36077,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36150,7 +36153,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36160,7 +36163,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36212,7 +36215,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36222,7 +36225,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36274,7 +36277,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36284,7 +36287,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36336,7 +36339,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36346,7 +36349,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36403,7 +36406,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36413,7 +36416,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36478,7 +36481,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36488,7 +36491,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36540,7 +36543,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36550,7 +36553,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36618,7 +36621,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36628,7 +36631,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36704,7 +36707,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36714,7 +36717,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36746,7 +36749,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36802,7 +36805,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36812,7 +36815,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36849,7 +36852,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36902,7 +36905,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36912,7 +36915,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36922,7 +36925,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36932,7 +36935,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36978,7 +36981,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36988,7 +36991,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -36998,7 +37001,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37008,7 +37011,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37045,7 +37048,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37055,7 +37058,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37065,7 +37068,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37114,7 +37117,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37124,7 +37127,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37134,7 +37137,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37144,7 +37147,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37202,7 +37205,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37212,7 +37215,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37222,7 +37225,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37232,7 +37235,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37242,7 +37245,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37252,7 +37255,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37311,7 +37314,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37343,7 +37346,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37375,7 +37378,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37407,7 +37410,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37439,7 +37442,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37608,7 +37611,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37618,7 +37621,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37628,7 +37631,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37693,7 +37696,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37703,7 +37706,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37713,7 +37716,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37769,7 +37772,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37779,7 +37782,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37789,7 +37792,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37799,7 +37802,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37895,7 +37898,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37905,7 +37908,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37915,7 +37918,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37962,7 +37965,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37972,7 +37975,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -37982,7 +37985,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38032,7 +38035,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38042,7 +38045,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38052,7 +38055,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38062,7 +38065,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38072,7 +38075,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38127,7 +38130,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38137,7 +38140,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38147,7 +38150,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38157,7 +38160,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38232,7 +38235,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38242,7 +38245,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38252,7 +38255,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38262,7 +38265,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38272,7 +38275,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38349,7 +38352,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38359,7 +38362,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38369,7 +38372,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38379,7 +38382,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38389,7 +38392,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38465,7 +38468,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38475,7 +38478,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38485,7 +38488,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38495,7 +38498,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38505,7 +38508,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38582,7 +38585,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38592,7 +38595,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38602,7 +38605,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38612,7 +38615,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38622,7 +38625,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38689,7 +38692,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38699,7 +38702,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38709,7 +38712,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38719,7 +38722,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38729,7 +38732,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38814,7 +38817,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38824,7 +38827,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38834,7 +38837,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38844,7 +38847,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38854,7 +38857,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38911,7 +38914,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38921,7 +38924,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38931,7 +38934,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38941,7 +38944,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -38951,7 +38954,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39028,7 +39031,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39038,7 +39041,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39048,7 +39051,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39058,7 +39061,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39068,7 +39071,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39253,7 +39256,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39263,7 +39266,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39273,7 +39276,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39338,7 +39341,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39348,7 +39351,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39358,7 +39361,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39368,7 +39371,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39378,7 +39381,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39434,7 +39437,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39444,7 +39447,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39454,7 +39457,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39464,7 +39467,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39511,7 +39514,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39521,7 +39524,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39531,7 +39534,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39581,7 +39584,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39591,7 +39594,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39601,7 +39604,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39611,7 +39614,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39621,7 +39624,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39676,7 +39679,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39686,7 +39689,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39696,7 +39699,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39706,7 +39709,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39781,7 +39784,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39791,7 +39794,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39801,7 +39804,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39811,7 +39814,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39821,7 +39824,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39897,7 +39900,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39907,7 +39910,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39917,7 +39920,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39927,7 +39930,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -39937,7 +39940,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40014,7 +40017,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40024,7 +40027,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40034,7 +40037,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40044,7 +40047,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40054,7 +40057,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40120,7 +40123,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40130,7 +40133,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40140,7 +40143,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40150,7 +40153,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40160,7 +40163,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40237,7 +40240,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40247,7 +40250,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40257,7 +40260,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40267,7 +40270,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40277,7 +40280,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40344,7 +40347,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40354,7 +40357,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40364,7 +40367,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40374,7 +40377,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40384,7 +40387,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40469,7 +40472,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40479,7 +40482,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40489,7 +40492,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40499,7 +40502,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40509,7 +40512,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40586,7 +40589,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40596,7 +40599,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40606,7 +40609,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40616,7 +40619,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40626,7 +40629,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40702,7 +40705,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40712,7 +40715,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40722,7 +40725,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40732,7 +40735,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40742,7 +40745,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40808,7 +40811,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40818,7 +40821,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40828,7 +40831,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40838,7 +40841,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -40848,7 +40851,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41022,7 +41025,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41032,7 +41035,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41042,7 +41045,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41107,7 +41110,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41117,7 +41120,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41127,7 +41130,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41183,7 +41186,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41193,7 +41196,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41203,7 +41206,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41213,7 +41216,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41260,7 +41263,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41270,7 +41273,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41280,7 +41283,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41330,7 +41333,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41340,7 +41343,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41350,7 +41353,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41360,7 +41363,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41370,7 +41373,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41425,7 +41428,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41435,7 +41438,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41445,7 +41448,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41455,7 +41458,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41530,7 +41533,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41540,7 +41543,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41550,7 +41553,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41560,7 +41563,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41570,7 +41573,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41647,7 +41650,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41657,7 +41660,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41667,7 +41670,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41677,7 +41680,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41687,7 +41690,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41753,7 +41756,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41763,7 +41766,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41773,7 +41776,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41783,7 +41786,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41793,7 +41796,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41869,7 +41872,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41879,7 +41882,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41889,7 +41892,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41899,7 +41902,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41909,7 +41912,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41986,7 +41989,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -41996,7 +41999,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42006,7 +42009,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42016,7 +42019,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42026,7 +42029,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42093,7 +42096,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42103,7 +42106,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42113,7 +42116,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42123,7 +42126,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42133,7 +42136,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42218,7 +42221,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42228,7 +42231,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42238,7 +42241,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42248,7 +42251,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42258,7 +42261,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42334,7 +42337,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42344,7 +42347,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42354,7 +42357,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42364,7 +42367,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42374,7 +42377,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42558,7 +42561,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42568,7 +42571,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42578,7 +42581,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42643,7 +42646,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42653,7 +42656,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42663,7 +42666,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42673,7 +42676,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42683,7 +42686,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42739,7 +42742,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42749,7 +42752,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42759,7 +42762,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42769,7 +42772,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42816,7 +42819,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42826,7 +42829,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42836,7 +42839,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42886,7 +42889,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42896,7 +42899,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42906,7 +42909,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42916,7 +42919,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42926,7 +42929,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42981,7 +42984,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -42991,7 +42994,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43001,7 +43004,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43011,7 +43014,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43086,7 +43089,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43096,7 +43099,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43106,7 +43109,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43116,7 +43119,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43126,7 +43129,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43202,7 +43205,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43212,7 +43215,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43222,7 +43225,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43232,7 +43235,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43242,7 +43245,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43319,7 +43322,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43329,7 +43332,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43339,7 +43342,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43349,7 +43352,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43359,7 +43362,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43435,7 +43438,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43445,7 +43448,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43455,7 +43458,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43465,7 +43468,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43475,7 +43478,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43552,7 +43555,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43562,7 +43565,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43572,7 +43575,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43582,7 +43585,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43592,7 +43595,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43659,7 +43662,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43669,7 +43672,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43679,7 +43682,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43689,7 +43692,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43699,7 +43702,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43784,7 +43787,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43794,7 +43797,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43804,7 +43807,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43814,7 +43817,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43824,7 +43827,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43900,7 +43903,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43910,7 +43913,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43920,7 +43923,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43930,7 +43933,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -43940,7 +43943,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44017,7 +44020,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44027,7 +44030,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44037,7 +44040,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44047,7 +44050,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44057,7 +44060,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44123,7 +44126,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44133,7 +44136,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44143,7 +44146,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44153,7 +44156,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -44163,7 +44166,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },

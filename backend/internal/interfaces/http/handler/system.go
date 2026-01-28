@@ -10,7 +10,7 @@ import (
 )
 
 // SystemHandler handles system-related API endpoints
-// @name HandlerSystemInfoResponse
+// @Name HandlerSystemInfoResponse
 type SystemHandler struct {
 	BaseHandler
 	startTime time.Time
@@ -24,7 +24,7 @@ func NewSystemHandler() *SystemHandler {
 }
 
 // SystemInfoResponse represents the system information response
-// @name HandlerSystemInfoResponse
+// @Name HandlerSystemInfoResponse
 type SystemInfoResponse struct {
 	Name      string `json:"name" example:"ERP Backend API"`
 	Version   string `json:"version" example:"1.0.0"`
@@ -39,7 +39,7 @@ type SystemInfoResponse struct {
 // @Tags         system
 // @Produce      json
 // @Success      200 {object} APIResponse[SystemInfoResponse]
-// @Failure      500 {object} ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Router       /system/info [get]
 func (h *SystemHandler) GetSystemInfo(c *gin.Context) {
 	info := SystemInfoResponse{
@@ -53,7 +53,7 @@ func (h *SystemHandler) GetSystemInfo(c *gin.Context) {
 }
 
 // PingResponse represents the ping response
-// @name HandlerPingResponse
+// @Name HandlerPingResponse
 type PingResponse struct {
 	Message   string `json:"message" example:"pong"`
 	Timestamp string `json:"timestamp" example:"2026-01-23T12:00:00Z"`

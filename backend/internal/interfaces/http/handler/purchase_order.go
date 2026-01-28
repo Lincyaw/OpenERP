@@ -207,7 +207,6 @@ type PurchaseOrderStatusSummaryResponse struct {
 	PendingReceipt  int64 `json:"pending_receipt" example:"13"`
 }
 
-
 // Create godoc
 // @ID           createPurchaseOrder
 // @Summary      Create a new purchase order
@@ -218,9 +217,9 @@ type PurchaseOrderStatusSummaryResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreatePurchaseOrderRequest true "Purchase order creation request"
 // @Success      201 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders [post]
 func (h *PurchaseOrderHandler) Create(c *gin.Context) {
@@ -313,7 +312,6 @@ func (h *PurchaseOrderHandler) Create(c *gin.Context) {
 	h.Created(c, toPurchaseOrderResponse(order))
 }
 
-
 // GetByID godoc
 // @ID           getPurchaseOrderById
 // @Summary      Get purchase order by ID
@@ -323,10 +321,10 @@ func (h *PurchaseOrderHandler) Create(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id} [get]
 func (h *PurchaseOrderHandler) GetByID(c *gin.Context) {
@@ -351,7 +349,6 @@ func (h *PurchaseOrderHandler) GetByID(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // GetByOrderNumber godoc
 // @ID           getPurchaseOrderByOrderNumber
 // @Summary      Get purchase order by order number
@@ -361,10 +358,10 @@ func (h *PurchaseOrderHandler) GetByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        order_number path string true "Order Number" example:"PO-2026-00001"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/number/{order_number} [get]
 func (h *PurchaseOrderHandler) GetByOrderNumber(c *gin.Context) {
@@ -389,7 +386,6 @@ func (h *PurchaseOrderHandler) GetByOrderNumber(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // List godoc
 // @ID           listPurchaseOrders
 // @Summary      List purchase orders
@@ -411,9 +407,9 @@ func (h *PurchaseOrderHandler) GetByOrderNumber(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(created_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]PurchaseOrderListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders [get]
 func (h *PurchaseOrderHandler) List(c *gin.Context) {
@@ -446,7 +442,6 @@ func (h *PurchaseOrderHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, toPurchaseOrderListResponses(orders), total, filter.Page, filter.PageSize)
 }
 
-
 // ListPendingReceipt godoc
 // @ID           listPurchaseOrderPendingReceipt
 // @Summary      List purchase orders pending receipt
@@ -460,9 +455,9 @@ func (h *PurchaseOrderHandler) List(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(created_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]PurchaseOrderListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/pending-receipt [get]
 func (h *PurchaseOrderHandler) ListPendingReceipt(c *gin.Context) {
@@ -495,7 +490,6 @@ func (h *PurchaseOrderHandler) ListPendingReceipt(c *gin.Context) {
 	h.SuccessWithMeta(c, toPurchaseOrderListResponses(orders), total, filter.Page, filter.PageSize)
 }
 
-
 // Update godoc
 // @ID           updatePurchaseOrder
 // @Summary      Update a purchase order
@@ -507,11 +501,11 @@ func (h *PurchaseOrderHandler) ListPendingReceipt(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        request body UpdatePurchaseOrderRequest true "Purchase order update request"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id} [put]
 func (h *PurchaseOrderHandler) Update(c *gin.Context) {
@@ -569,7 +563,6 @@ func (h *PurchaseOrderHandler) Update(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // Delete godoc
 // @ID           deletePurchaseOrder
 // @Summary      Delete a purchase order
@@ -579,11 +572,11 @@ func (h *PurchaseOrderHandler) Update(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id} [delete]
 func (h *PurchaseOrderHandler) Delete(c *gin.Context) {
@@ -608,7 +601,6 @@ func (h *PurchaseOrderHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // AddItem godoc
 // @ID           addPurchaseOrderItem
 // @Summary      Add item to purchase order
@@ -620,11 +612,11 @@ func (h *PurchaseOrderHandler) Delete(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        request body AddPurchaseOrderItemRequest true "Order item to add"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/items [post]
 func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
@@ -683,7 +675,6 @@ func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // UpdateItem godoc
 // @ID           updatePurchaseOrderItem
 // @Summary      Update order item
@@ -696,11 +687,11 @@ func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
 // @Param        item_id path string true "Order Item ID" format(uuid)
 // @Param        request body UpdatePurchaseOrderItemRequest true "Order item update request"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/items/{item_id} [put]
 func (h *PurchaseOrderHandler) UpdateItem(c *gin.Context) {
@@ -751,7 +742,6 @@ func (h *PurchaseOrderHandler) UpdateItem(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // RemoveItem godoc
 // @ID           removePurchaseOrderItem
 // @Summary      Remove item from purchase order
@@ -762,11 +752,11 @@ func (h *PurchaseOrderHandler) UpdateItem(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        item_id path string true "Order Item ID" format(uuid)
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/items/{item_id} [delete]
 func (h *PurchaseOrderHandler) RemoveItem(c *gin.Context) {
@@ -797,7 +787,6 @@ func (h *PurchaseOrderHandler) RemoveItem(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // Confirm godoc
 // @ID           confirmPurchaseOrder
 // @Summary      Confirm a purchase order
@@ -809,11 +798,11 @@ func (h *PurchaseOrderHandler) RemoveItem(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        request body ConfirmPurchaseOrderRequest false "Confirm order request"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/confirm [post]
 func (h *PurchaseOrderHandler) Confirm(c *gin.Context) {
@@ -853,7 +842,6 @@ func (h *PurchaseOrderHandler) Confirm(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // Receive godoc
 // @ID           receivePurchaseOrder
 // @Summary      Receive goods for a purchase order
@@ -865,11 +853,11 @@ func (h *PurchaseOrderHandler) Confirm(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        request body ReceivePurchaseOrderRequest true "Receive goods request"
 // @Success      200 {object} APIResponse[ReceiveResultResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/receive [post]
 func (h *PurchaseOrderHandler) Receive(c *gin.Context) {
@@ -932,7 +920,6 @@ func (h *PurchaseOrderHandler) Receive(c *gin.Context) {
 	h.Success(c, toReceiveResultResponse(result))
 }
 
-
 // Cancel godoc
 // @ID           cancelPurchaseOrder
 // @Summary      Cancel a purchase order
@@ -944,11 +931,11 @@ func (h *PurchaseOrderHandler) Receive(c *gin.Context) {
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Param        request body CancelPurchaseOrderRequest true "Cancel order request"
 // @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/cancel [post]
 func (h *PurchaseOrderHandler) Cancel(c *gin.Context) {
@@ -983,7 +970,6 @@ func (h *PurchaseOrderHandler) Cancel(c *gin.Context) {
 	h.Success(c, toPurchaseOrderResponse(order))
 }
 
-
 // GetStatusSummary godoc
 // @ID           getPurchaseOrderStatusSummary
 // @Summary      Get purchase order status summary
@@ -992,9 +978,9 @@ func (h *PurchaseOrderHandler) Cancel(c *gin.Context) {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[PurchaseOrderStatusSummaryResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/stats/summary [get]
 func (h *PurchaseOrderHandler) GetStatusSummary(c *gin.Context) {
@@ -1021,7 +1007,6 @@ func (h *PurchaseOrderHandler) GetStatusSummary(c *gin.Context) {
 	})
 }
 
-
 // GetReceivableItems godoc
 // @ID           getPurchaseOrderReceivableItems
 // @Summary      Get receivable items for a purchase order
@@ -1031,11 +1016,11 @@ func (h *PurchaseOrderHandler) GetStatusSummary(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Purchase Order ID" format(uuid)
 // @Success      200 {object} APIResponse[[]PurchaseOrderItemResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /trade/purchase-orders/{id}/receivable-items [get]
 func (h *PurchaseOrderHandler) GetReceivableItems(c *gin.Context) {

@@ -20,7 +20,6 @@ func NewTenantHandler(tenantService *identity.TenantService) *TenantHandler {
 	}
 }
 
-
 // Create godoc
 // @ID           createTenant
 // @Summary      Create a new tenant
@@ -30,11 +29,11 @@ func NewTenantHandler(tenantService *identity.TenantService) *TenantHandler {
 // @Produce      json
 // @Param        request body CreateTenantRequest true "Tenant creation request"
 // @Success      201 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      403 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants [post]
 func (h *TenantHandler) Create(c *gin.Context) {
@@ -68,7 +67,6 @@ func (h *TenantHandler) Create(c *gin.Context) {
 	h.Created(c, toTenantResponse(tenant))
 }
 
-
 // GetByID godoc
 // @ID           getTenantById
 // @Summary      Get a tenant by ID
@@ -77,10 +75,10 @@ func (h *TenantHandler) Create(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id} [get]
 func (h *TenantHandler) GetByID(c *gin.Context) {
@@ -99,7 +97,6 @@ func (h *TenantHandler) GetByID(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // GetByCode godoc
 // @ID           getTenantByCode
 // @Summary      Get a tenant by code
@@ -108,10 +105,10 @@ func (h *TenantHandler) GetByID(c *gin.Context) {
 // @Produce      json
 // @Param        code path string true "Tenant code"
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/code/{code} [get]
 func (h *TenantHandler) GetByCode(c *gin.Context) {
@@ -130,7 +127,6 @@ func (h *TenantHandler) GetByCode(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // List godoc
 // @ID           listTenants
 // @Summary      List tenants
@@ -145,9 +141,9 @@ func (h *TenantHandler) GetByCode(c *gin.Context) {
 // @Param        sort_by query string false "Sort by field" Enums(code, name, status, plan, created_at, updated_at)
 // @Param        sort_dir query string false "Sort direction" Enums(asc, desc)
 // @Success      200 {object} APIResponse[TenantListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants [get]
 func (h *TenantHandler) List(c *gin.Context) {
@@ -176,7 +172,6 @@ func (h *TenantHandler) List(c *gin.Context) {
 	h.Success(c, toTenantListResponse(result))
 }
 
-
 // Update godoc
 // @ID           updateTenant
 // @Summary      Update a tenant
@@ -187,11 +182,11 @@ func (h *TenantHandler) List(c *gin.Context) {
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Param        request body UpdateTenantRequest true "Tenant update request"
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id} [put]
 func (h *TenantHandler) Update(c *gin.Context) {
@@ -229,7 +224,6 @@ func (h *TenantHandler) Update(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // UpdateConfig godoc
 // @ID           updateTenantConfig
 // @Summary      Update tenant configuration
@@ -240,11 +234,11 @@ func (h *TenantHandler) Update(c *gin.Context) {
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Param        request body UpdateTenantConfigRequest true "Configuration update request"
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id}/config [put]
 func (h *TenantHandler) UpdateConfig(c *gin.Context) {
@@ -279,7 +273,6 @@ func (h *TenantHandler) UpdateConfig(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // SetPlan godoc
 // @ID           setPlanTenant
 // @Summary      Set tenant plan
@@ -290,11 +283,11 @@ func (h *TenantHandler) UpdateConfig(c *gin.Context) {
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Param        request body SetTenantPlanRequest true "Plan update request"
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id}/plan [put]
 func (h *TenantHandler) SetPlan(c *gin.Context) {
@@ -319,7 +312,6 @@ func (h *TenantHandler) SetPlan(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // Activate godoc
 // @ID           activateTenant
 // @Summary      Activate a tenant
@@ -329,11 +321,11 @@ func (h *TenantHandler) SetPlan(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id}/activate [post]
 func (h *TenantHandler) Activate(c *gin.Context) {
@@ -352,7 +344,6 @@ func (h *TenantHandler) Activate(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // Deactivate godoc
 // @ID           deactivateTenant
 // @Summary      Deactivate a tenant
@@ -362,11 +353,11 @@ func (h *TenantHandler) Activate(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id}/deactivate [post]
 func (h *TenantHandler) Deactivate(c *gin.Context) {
@@ -385,7 +376,6 @@ func (h *TenantHandler) Deactivate(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // Suspend godoc
 // @ID           suspendTenant
 // @Summary      Suspend a tenant
@@ -395,11 +385,11 @@ func (h *TenantHandler) Deactivate(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Success      200 {object} APIResponse[TenantResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id}/suspend [post]
 func (h *TenantHandler) Suspend(c *gin.Context) {
@@ -418,7 +408,6 @@ func (h *TenantHandler) Suspend(c *gin.Context) {
 	h.Success(c, toTenantResponse(tenant))
 }
 
-
 // Delete godoc
 // @ID           deleteTenant
 // @Summary      Delete a tenant
@@ -427,11 +416,11 @@ func (h *TenantHandler) Suspend(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "Tenant ID" format(uuid)
 // @Success      200 {object} SuccessResponse
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/{id} [delete]
 func (h *TenantHandler) Delete(c *gin.Context) {
@@ -449,7 +438,6 @@ func (h *TenantHandler) Delete(c *gin.Context) {
 	h.Success(c, dto.MessageResponse{Message: "Tenant deleted successfully"})
 }
 
-
 // GetStats godoc
 // @ID           getTenantStats
 // @Summary      Get tenant statistics
@@ -457,8 +445,8 @@ func (h *TenantHandler) Delete(c *gin.Context) {
 // @Tags         tenants
 // @Produce      json
 // @Success      200 {object} APIResponse[TenantStatsResponse]
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/stats [get]
 func (h *TenantHandler) GetStats(c *gin.Context) {
@@ -477,7 +465,6 @@ func (h *TenantHandler) GetStats(c *gin.Context) {
 	})
 }
 
-
 // Count godoc
 // @ID           countTenants
 // @Summary      Get tenant count
@@ -485,8 +472,8 @@ func (h *TenantHandler) GetStats(c *gin.Context) {
 // @Tags         tenants
 // @Produce      json
 // @Success      200 {object} APIResponse[CountData]
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /identity/tenants/stats/count [get]
 func (h *TenantHandler) Count(c *gin.Context) {

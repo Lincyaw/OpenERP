@@ -2,14 +2,6 @@ package dto
 
 import "time"
 
-// Response represents a standard API response (non-generic, for internal use)
-type Response struct {
-	Success bool       `json:"success"`
-	Data    any        `json:"data,omitempty"`
-	Error   *ErrorInfo `json:"error,omitempty"`
-	Meta    *Meta      `json:"meta,omitempty"`
-}
-
 // APIResponse represents a generic API response for OpenAPI documentation
 // @Description Standard API response wrapper with typed data field
 type APIResponse[T any] struct {
@@ -18,6 +10,16 @@ type APIResponse[T any] struct {
 	Error   *ErrorInfo `json:"error,omitempty"`
 	Meta    *Meta      `json:"meta,omitempty"`
 }
+
+// Response is a type alias for backward compatibility with existing code
+// Use APIResponse[T] with specific types for new code
+type Response = APIResponse[any]
+
+// ErrorResponse is an alias for error-only responses (no data field)
+type ErrorResponse = APIResponse[struct{}]
+
+// EmptyData is used for responses that don't have data (like error responses)
+type EmptyData = struct{}
 
 // ErrorInfo represents error details in API responses
 type ErrorInfo struct {
@@ -43,16 +45,16 @@ type Meta struct {
 	TotalPages int   `json:"total_pages"`
 }
 
-// NewSuccessResponse creates a success response
-func NewSuccessResponse(data any) Response {
-	return Response{
+// NewSuccessResponse creates a success response with typed data
+func NewSuccessResponse[T any](data T) APIResponse[T] {
+	return APIResponse[T]{
 		Success: true,
 		Data:    data,
 	}
 }
 
 // NewSuccessResponseWithMeta creates a success response with pagination meta
-func NewSuccessResponseWithMeta(data any, total int64, page, pageSize int) Response {
+func NewSuccessResponseWithMeta[T any](data T, total int64, page, pageSize int) APIResponse[T] {
 	if pageSize <= 0 {
 		pageSize = 20 // Default page size to prevent division by zero
 	}
@@ -60,7 +62,7 @@ func NewSuccessResponseWithMeta(data any, total int64, page, pageSize int) Respo
 	if int(total)%pageSize > 0 {
 		totalPages++
 	}
-	return Response{
+	return APIResponse[T]{
 		Success: true,
 		Data:    data,
 		Meta: &Meta{
@@ -135,6 +137,35 @@ func NewErrorResponseWithHelp(code, message, requestID, help string) Response {
 			RequestID: requestID,
 			Timestamp: time.Now(),
 			Help:      help,
+		},
+	}
+}
+
+// NewTypedErrorResponse creates a typed error response with code and message
+func NewTypedErrorResponse[T any](code, message string) APIResponse[T] {
+	var zero T
+	return APIResponse[T]{
+		Success: false,
+		Data:    zero,
+		Error: &ErrorInfo{
+			Code:      NormalizeErrorCode(code),
+			Message:   message,
+			Timestamp: time.Now(),
+		},
+	}
+}
+
+// NewTypedErrorResponseWithRequestID creates a typed error response with request ID
+func NewTypedErrorResponseWithRequestID[T any](code, message, requestID string) APIResponse[T] {
+	var zero T
+	return APIResponse[T]{
+		Success: false,
+		Data:    zero,
+		Error: &ErrorInfo{
+			Code:      NormalizeErrorCode(code),
+			Message:   message,
+			RequestID: requestID,
+			Timestamp: time.Now(),
 		},
 	}
 }

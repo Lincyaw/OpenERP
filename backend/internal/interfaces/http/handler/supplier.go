@@ -89,7 +89,6 @@ type SetPaymentTermsRequest struct {
 	CreditLimit float64 `json:"credit_limit" binding:"min=0" example:"50000.00"`
 }
 
-
 // Create godoc
 // @ID           createSupplier
 // @Summary      Create a new supplier
@@ -100,10 +99,10 @@ type SetPaymentTermsRequest struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateSupplierRequest true "Supplier creation request"
 // @Success      201 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers [post]
 func (h *SupplierHandler) Create(c *gin.Context) {
@@ -169,7 +168,6 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 	h.Created(c, supplier)
 }
 
-
 // GetByID godoc
 // @ID           getSupplierById
 // @Summary      Get supplier by ID
@@ -179,10 +177,10 @@ func (h *SupplierHandler) Create(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id} [get]
 func (h *SupplierHandler) GetByID(c *gin.Context) {
@@ -207,7 +205,6 @@ func (h *SupplierHandler) GetByID(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // GetByCode godoc
 // @ID           getSupplierByCode
 // @Summary      Get supplier by code
@@ -217,10 +214,10 @@ func (h *SupplierHandler) GetByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        code path string true "Supplier Code"
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/code/{code} [get]
 func (h *SupplierHandler) GetByCode(c *gin.Context) {
@@ -245,7 +242,6 @@ func (h *SupplierHandler) GetByCode(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // List godoc
 // @ID           listSuppliers
 // @Summary      List suppliers
@@ -265,9 +261,9 @@ func (h *SupplierHandler) GetByCode(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(sort_order)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(asc)
 // @Success      200 {object} APIResponse[[]SupplierListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers [get]
 func (h *SupplierHandler) List(c *gin.Context) {
@@ -300,7 +296,6 @@ func (h *SupplierHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, suppliers, total, filter.Page, filter.PageSize)
 }
 
-
 // Update godoc
 // @ID           updateSupplier
 // @Summary      Update a supplier
@@ -312,11 +307,11 @@ func (h *SupplierHandler) List(c *gin.Context) {
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Param        request body UpdateSupplierRequest true "Supplier update request"
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id} [put]
 func (h *SupplierHandler) Update(c *gin.Context) {
@@ -374,7 +369,6 @@ func (h *SupplierHandler) Update(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // UpdateCode godoc
 // @ID           updateSupplierCode
 // @Summary      Update supplier code
@@ -386,11 +380,11 @@ func (h *SupplierHandler) Update(c *gin.Context) {
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Param        request body UpdateSupplierCodeRequest true "New supplier code"
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      409 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      409 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/code [put]
 func (h *SupplierHandler) UpdateCode(c *gin.Context) {
@@ -421,7 +415,6 @@ func (h *SupplierHandler) UpdateCode(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // Delete godoc
 // @ID           deleteSupplier
 // @Summary      Delete a supplier
@@ -431,11 +424,11 @@ func (h *SupplierHandler) UpdateCode(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id} [delete]
 func (h *SupplierHandler) Delete(c *gin.Context) {
@@ -460,7 +453,6 @@ func (h *SupplierHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // Activate godoc
 // @ID           activateSupplier
 // @Summary      Activate a supplier
@@ -471,11 +463,11 @@ func (h *SupplierHandler) Delete(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/activate [post]
 func (h *SupplierHandler) Activate(c *gin.Context) {
@@ -500,7 +492,6 @@ func (h *SupplierHandler) Activate(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // Deactivate godoc
 // @ID           deactivateSupplier
 // @Summary      Deactivate a supplier
@@ -511,11 +502,11 @@ func (h *SupplierHandler) Activate(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/deactivate [post]
 func (h *SupplierHandler) Deactivate(c *gin.Context) {
@@ -540,7 +531,6 @@ func (h *SupplierHandler) Deactivate(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // Block godoc
 // @ID           blockSupplier
 // @Summary      Block a supplier
@@ -551,11 +541,11 @@ func (h *SupplierHandler) Deactivate(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/block [post]
 func (h *SupplierHandler) Block(c *gin.Context) {
@@ -580,7 +570,6 @@ func (h *SupplierHandler) Block(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // SetRating godoc
 // @ID           setRatingSupplier
 // @Summary      Set supplier rating
@@ -592,11 +581,11 @@ func (h *SupplierHandler) Block(c *gin.Context) {
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Param        request body SetRatingRequest true "Supplier rating"
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/rating [put]
 func (h *SupplierHandler) SetRating(c *gin.Context) {
@@ -627,7 +616,6 @@ func (h *SupplierHandler) SetRating(c *gin.Context) {
 	h.Success(c, supplier)
 }
 
-
 // SetPaymentTerms godoc
 // @ID           setPaymentTermsSupplier
 // @Summary      Set supplier payment terms
@@ -639,11 +627,11 @@ func (h *SupplierHandler) SetRating(c *gin.Context) {
 // @Param        id path string true "Supplier ID" format(uuid)
 // @Param        request body SetPaymentTermsRequest true "Payment terms"
 // @Success      200 {object} APIResponse[SupplierResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/{id}/payment-terms [put]
 func (h *SupplierHandler) SetPaymentTerms(c *gin.Context) {
@@ -683,7 +671,6 @@ type SupplierCountByStatusResponse struct {
 	Total    int64 `json:"total" example:"100"`
 }
 
-
 // CountByStatus godoc
 // @ID           countSupplierByStatus
 // @Summary      Get supplier counts by status
@@ -692,9 +679,9 @@ type SupplierCountByStatusResponse struct {
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Success      200 {object} APIResponse[SupplierCountByStatusResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /partner/suppliers/stats/count [get]
 func (h *SupplierHandler) CountByStatus(c *gin.Context) {

@@ -181,7 +181,6 @@ type StockTakingProgressResponse struct {
 
 // ===================== Query Handlers =====================
 
-
 // ===================== Query Handlers =====================
 
 // GetByID godoc
@@ -193,10 +192,10 @@ type StockTakingProgressResponse struct {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id} [get]
 func (h *StockTakingHandler) GetByID(c *gin.Context) {
@@ -221,7 +220,6 @@ func (h *StockTakingHandler) GetByID(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // GetByTakingNumber godoc
 // @ID           getStockTakingByTakingNumber
 // @Summary      Get stock taking by number
@@ -231,10 +229,10 @@ func (h *StockTakingHandler) GetByID(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        taking_number path string true "Taking Number"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/by-number/{taking_number} [get]
 func (h *StockTakingHandler) GetByTakingNumber(c *gin.Context) {
@@ -259,7 +257,6 @@ func (h *StockTakingHandler) GetByTakingNumber(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // List godoc
 // @ID           listStockTakings
 // @Summary      List stock takings
@@ -278,9 +275,9 @@ func (h *StockTakingHandler) GetByTakingNumber(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(created_at) Enums(taking_number, taking_date, status, created_at, updated_at, total_items)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]StockTakingListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings [get]
 func (h *StockTakingHandler) List(c *gin.Context) {
@@ -361,7 +358,6 @@ func (h *StockTakingHandler) List(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // ListPendingApproval godoc
 // @ID           listStockTakingPendingApproval
 // @Summary      List stock takings pending approval
@@ -375,9 +371,9 @@ func (h *StockTakingHandler) List(c *gin.Context) {
 // @Param        order_by query string false "Order by field" default(created_at)
 // @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
 // @Success      200 {object} APIResponse[[]StockTakingListResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/pending-approval [get]
 func (h *StockTakingHandler) ListPendingApproval(c *gin.Context) {
@@ -410,7 +406,6 @@ func (h *StockTakingHandler) ListPendingApproval(c *gin.Context) {
 	h.SuccessWithMeta(c, items, total, filter.Page, filter.PageSize)
 }
 
-
 // GetProgress godoc
 // @ID           getStockTakingProgress
 // @Summary      Get stock taking progress
@@ -420,10 +415,10 @@ func (h *StockTakingHandler) ListPendingApproval(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Success      200 {object} APIResponse[StockTakingProgressResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/progress [get]
 func (h *StockTakingHandler) GetProgress(c *gin.Context) {
@@ -450,7 +445,6 @@ func (h *StockTakingHandler) GetProgress(c *gin.Context) {
 
 // ===================== Command Handlers =====================
 
-
 // ===================== Command Handlers =====================
 
 // Create godoc
@@ -463,9 +457,9 @@ func (h *StockTakingHandler) GetProgress(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        request body CreateStockTakingRequest true "Stock taking creation request"
 // @Success      201 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings [post]
 func (h *StockTakingHandler) Create(c *gin.Context) {
@@ -528,7 +522,6 @@ func (h *StockTakingHandler) Create(c *gin.Context) {
 	h.Created(c, result)
 }
 
-
 // Update godoc
 // @ID           updateStockTaking
 // @Summary      Update stock taking
@@ -540,11 +533,11 @@ func (h *StockTakingHandler) Create(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body UpdateStockTakingRequest true "Stock taking update request"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id} [put]
 func (h *StockTakingHandler) Update(c *gin.Context) {
@@ -579,7 +572,6 @@ func (h *StockTakingHandler) Update(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // Delete godoc
 // @ID           deleteStockTaking
 // @Summary      Delete stock taking
@@ -589,11 +581,11 @@ func (h *StockTakingHandler) Update(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Success      204
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id} [delete]
 func (h *StockTakingHandler) Delete(c *gin.Context) {
@@ -617,7 +609,6 @@ func (h *StockTakingHandler) Delete(c *gin.Context) {
 	h.NoContent(c)
 }
 
-
 // AddItem godoc
 // @ID           addStockTakingItem
 // @Summary      Add item to stock taking
@@ -629,11 +620,11 @@ func (h *StockTakingHandler) Delete(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body AddStockTakingItemRequest true "Item to add"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/items [post]
 func (h *StockTakingHandler) AddItem(c *gin.Context) {
@@ -679,7 +670,6 @@ func (h *StockTakingHandler) AddItem(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // AddItems godoc
 // @ID           addItemsStockTaking
 // @Summary      Add multiple items to stock taking
@@ -691,11 +681,11 @@ func (h *StockTakingHandler) AddItem(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body AddStockTakingItemsRequest true "Items to add"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/items/bulk [post]
 func (h *StockTakingHandler) AddItems(c *gin.Context) {
@@ -748,7 +738,6 @@ func (h *StockTakingHandler) AddItems(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // RemoveItem godoc
 // @ID           removeStockTakingItem
 // @Summary      Remove item from stock taking
@@ -759,11 +748,11 @@ func (h *StockTakingHandler) AddItems(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        product_id path string true "Product ID" format(uuid)
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/items/{product_id} [delete]
 func (h *StockTakingHandler) RemoveItem(c *gin.Context) {
@@ -794,7 +783,6 @@ func (h *StockTakingHandler) RemoveItem(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // StartCounting godoc
 // @ID           startCountingStockTaking
 // @Summary      Start counting
@@ -805,11 +793,11 @@ func (h *StockTakingHandler) RemoveItem(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/start [post]
 func (h *StockTakingHandler) StartCounting(c *gin.Context) {
@@ -834,7 +822,6 @@ func (h *StockTakingHandler) StartCounting(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // RecordCount godoc
 // @ID           recordStockTakingCount
 // @Summary      Record count for an item
@@ -846,11 +833,11 @@ func (h *StockTakingHandler) StartCounting(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body RecordCountRequest true "Count record"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/count [post]
 func (h *StockTakingHandler) RecordCount(c *gin.Context) {
@@ -893,7 +880,6 @@ func (h *StockTakingHandler) RecordCount(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // RecordCounts godoc
 // @ID           recordCountsStockTaking
 // @Summary      Record counts for multiple items
@@ -905,11 +891,11 @@ func (h *StockTakingHandler) RecordCount(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body RecordCountsRequest true "Count records"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/counts [post]
 func (h *StockTakingHandler) RecordCounts(c *gin.Context) {
@@ -959,7 +945,6 @@ func (h *StockTakingHandler) RecordCounts(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // SubmitForApproval godoc
 // @ID           submitForApprovalStockTaking
 // @Summary      Submit for approval
@@ -970,11 +955,11 @@ func (h *StockTakingHandler) RecordCounts(c *gin.Context) {
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/submit [post]
 func (h *StockTakingHandler) SubmitForApproval(c *gin.Context) {
@@ -999,7 +984,6 @@ func (h *StockTakingHandler) SubmitForApproval(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // Approve godoc
 // @ID           approveStockTaking
 // @Summary      Approve stock taking
@@ -1011,11 +995,11 @@ func (h *StockTakingHandler) SubmitForApproval(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body ApproveStockTakingRequest true "Approval request"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/approve [post]
 func (h *StockTakingHandler) Approve(c *gin.Context) {
@@ -1058,7 +1042,6 @@ func (h *StockTakingHandler) Approve(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // Reject godoc
 // @ID           rejectStockTaking
 // @Summary      Reject stock taking
@@ -1070,11 +1053,11 @@ func (h *StockTakingHandler) Approve(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body RejectStockTakingRequest true "Rejection request"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/reject [post]
 func (h *StockTakingHandler) Reject(c *gin.Context) {
@@ -1117,7 +1100,6 @@ func (h *StockTakingHandler) Reject(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // Cancel godoc
 // @ID           cancelStockTaking
 // @Summary      Cancel stock taking
@@ -1129,11 +1111,11 @@ func (h *StockTakingHandler) Reject(c *gin.Context) {
 // @Param        id path string true "Stock Taking ID" format(uuid)
 // @Param        request body CancelStockTakingRequest true "Cancellation request"
 // @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} ErrorResponse
-// @Failure      401 {object} ErrorResponse
-// @Failure      404 {object} ErrorResponse
-// @Failure      422 {object} ErrorResponse
-// @Failure      500 {object} ErrorResponse
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      401 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      422 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /inventory/stock-takings/{id}/cancel [post]
 func (h *StockTakingHandler) Cancel(c *gin.Context) {

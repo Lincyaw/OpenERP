@@ -27,7 +27,7 @@ type CreateTenantRequest struct {
 }
 
 // UpdateTenantRequest represents the request body for updating a tenant
-// @name HandlerUpdateTenantRequest
+// @Name HandlerUpdateTenantRequest
 type UpdateTenantRequest struct {
 	Name         *string `json:"name" binding:"omitempty,min=1,max=200"`
 	ShortName    *string `json:"short_name" binding:"omitempty,max=100"`
