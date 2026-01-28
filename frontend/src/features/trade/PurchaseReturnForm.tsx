@@ -18,7 +18,7 @@ import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getPurchaseReturns } from '@/api/purchase-returns/purchase-returns'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import { listPurchaseOrders, getPurchaseOrderById } from '@/api/purchase-orders/purchase-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerPurchaseOrderResponse,
@@ -131,7 +131,6 @@ export function PurchaseReturnForm() {
   const preSelectedOrderId = searchParams.get('order_id')
 
   const purchaseReturnApi = useMemo(() => getPurchaseReturns(), [])
-  const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
 
   // Form state
   const [formData, setFormData] = useState<ReturnFormData>({
@@ -170,73 +169,81 @@ export function PurchaseReturnForm() {
   }, [formData.items])
 
   // Fetch orders for selection
-  const fetchOrders = useCallback(
-    async (search?: string) => {
-      setOrdersLoading(true)
-      try {
-        // Only get orders that have received goods (PARTIAL_RECEIVED or COMPLETED)
-        const response = await purchaseOrderApi.listPurchaseOrders({
+  const fetchOrders = useCallback(async (search?: string) => {
+    setOrdersLoading(true)
+    try {
+      // Only get orders that have received goods (PARTIAL_RECEIVED or COMPLETED)
+      const response = await listPurchaseOrders({
+        page_size: 50,
+        search: search || undefined,
+        status: 'partial_received',
+      })
+      if (response.status === 200 && response.data.success && response.data.data) {
+        // Also fetch completed orders
+        const completedResponse = await listPurchaseOrders({
           page_size: 50,
           search: search || undefined,
-          statuses: ['PARTIAL_RECEIVED', 'COMPLETED'],
+          status: 'completed',
         })
-        if (response.success && response.data) {
-          setOrders(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch orders', response.error)
+        let allOrders = response.data.data
+        if (
+          completedResponse.status === 200 &&
+          completedResponse.data.success &&
+          completedResponse.data.data
+        ) {
+          allOrders = [...allOrders, ...completedResponse.data.data]
         }
-      } catch (error) {
-        log.error('Error fetching orders', error)
-      } finally {
-        setOrdersLoading(false)
+        setOrders(allOrders)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch orders', response.data.error)
       }
-    },
-    [purchaseOrderApi]
-  )
+    } catch (error) {
+      log.error('Error fetching orders', error)
+    } finally {
+      setOrdersLoading(false)
+    }
+  }, [])
 
   // Fetch order detail
-  const fetchOrderDetail = useCallback(
-    async (orderId: string) => {
-      if (!orderId) return
-      setOrderLoading(true)
-      try {
-        const response = await purchaseOrderApi.getPurchaseOrderById(orderId)
-        if (response.success && response.data) {
-          setSelectedOrder(response.data)
-          // Convert order items to return items (only items with received quantity)
-          const returnItems: ReturnItemFormData[] = (response.data.items || [])
-            .filter((item: HandlerPurchaseOrderItemResponse) => (item.received_quantity || 0) > 0)
-            .map((item: HandlerPurchaseOrderItemResponse) => ({
-              key: item.id || `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-              purchase_order_item_id: item.id || '',
-              product_id: item.product_id || '',
-              product_code: item.product_code || '',
-              product_name: item.product_name || '',
-              unit: item.unit || '',
-              unit_cost: item.unit_cost || 0,
-              ordered_quantity: item.ordered_quantity || 0,
-              received_quantity: item.received_quantity || 0,
-              return_quantity: 0,
-              refund_amount: 0,
-              reason: '',
-              condition_on_return: 'intact',
-              batch_number: '',
-              selected: false,
-            }))
-          setFormData((prev) => ({
-            ...prev,
-            purchase_order_id: orderId,
-            items: returnItems,
+  const fetchOrderDetail = useCallback(async (orderId: string) => {
+    if (!orderId) return
+    setOrderLoading(true)
+    try {
+      const response = await getPurchaseOrderById(orderId)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSelectedOrder(response.data.data)
+        // Convert order items to return items (only items with received quantity)
+        const returnItems: ReturnItemFormData[] = (response.data.data.items || [])
+          .filter((item: HandlerPurchaseOrderItemResponse) => (item.received_quantity || 0) > 0)
+          .map((item: HandlerPurchaseOrderItemResponse) => ({
+            key: item.id || `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            purchase_order_item_id: item.id || '',
+            product_id: item.product_id || '',
+            product_code: item.product_code || '',
+            product_name: item.product_name || '',
+            unit: item.unit || '',
+            unit_cost: item.unit_cost || 0,
+            ordered_quantity: item.ordered_quantity || 0,
+            received_quantity: item.received_quantity || 0,
+            return_quantity: 0,
+            refund_amount: 0,
+            reason: '',
+            condition_on_return: 'intact',
+            batch_number: '',
+            selected: false,
           }))
-        }
-      } catch {
-        Toast.error('获取订单详情失败')
-      } finally {
-        setOrderLoading(false)
+        setFormData((prev) => ({
+          ...prev,
+          purchase_order_id: orderId,
+          items: returnItems,
+        }))
       }
-    },
-    [purchaseOrderApi]
-  )
+    } catch {
+      Toast.error('获取订单详情失败')
+    } finally {
+      setOrderLoading(false)
+    }
+  }, [])
 
   // Fetch warehouses
   const fetchWarehouses = useCallback(async () => {

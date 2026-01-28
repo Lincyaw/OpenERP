@@ -18,7 +18,11 @@ import {
 import { IconArrowLeft, IconSave, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import {
+  getPurchaseOrderById,
+  getPurchaseOrderReceivableItems,
+  receivePurchaseOrder,
+} from '@/api/purchase-orders/purchase-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerPurchaseOrderResponse,
@@ -76,8 +80,6 @@ export default function PurchaseOrderReceivePage() {
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate } = useFormatters()
 
-  const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
-
   // State
   const [order, setOrder] = useState<HandlerPurchaseOrderResponse | null>(null)
   const [receivableItems, setReceivableItems] = useState<ReceivableItem[]>([])
@@ -94,13 +96,13 @@ export default function PurchaseOrderReceivePage() {
     setLoading(true)
     try {
       // Fetch order details
-      const orderResponse = await purchaseOrderApi.getPurchaseOrderById(id)
-      if (orderResponse.success && orderResponse.data) {
-        setOrder(orderResponse.data)
+      const orderResponse = await getPurchaseOrderById(id)
+      if (orderResponse.status === 200 && orderResponse.data.success && orderResponse.data.data) {
+        setOrder(orderResponse.data.data)
 
         // Set default warehouse if order has one
-        if (orderResponse.data.warehouse_id) {
-          setSelectedWarehouseId(orderResponse.data.warehouse_id)
+        if (orderResponse.data.data.warehouse_id) {
+          setSelectedWarehouseId(orderResponse.data.data.warehouse_id)
         }
       } else {
         Toast.error(t('receive.messages.fetchDetailError'))
@@ -108,10 +110,10 @@ export default function PurchaseOrderReceivePage() {
       }
 
       // Fetch receivable items
-      const itemsResponse = await purchaseOrderApi.getPurchaseOrderReceivableItems(id)
-      if (itemsResponse.success && itemsResponse.data) {
+      const itemsResponse = await getPurchaseOrderReceivableItems(id)
+      if (itemsResponse.status === 200 && itemsResponse.data.success && itemsResponse.data.data) {
         const items: ReceivableItem[] = (
-          itemsResponse.data as HandlerPurchaseOrderItemResponse[]
+          itemsResponse.data.data as HandlerPurchaseOrderItemResponse[]
         ).map((item) => ({
           id: item.id || '',
           product_id: item.product_id || '',
@@ -134,7 +136,7 @@ export default function PurchaseOrderReceivePage() {
     } finally {
       setLoading(false)
     }
-  }, [id, purchaseOrderApi])
+  }, [id, t])
 
   // Fetch warehouses
   const fetchWarehouses = useCallback(async () => {
@@ -245,13 +247,13 @@ export default function PurchaseOrderReceivePage() {
         expiry_date: item.expiry_date || undefined,
       }))
 
-      const response = await purchaseOrderApi.receivePurchaseOrder(id, {
+      const response = await receivePurchaseOrder(id, {
         warehouse_id: selectedWarehouseId,
         items: requestItems,
       })
 
-      if (response.success) {
-        const isFullyReceived = response.data?.is_fully_received
+      if (response.status === 200 && response.data.success) {
+        const isFullyReceived = response.data.data?.is_fully_received
         if (isFullyReceived) {
           Toast.success(t('receive.messages.receiveFullSuccess'))
         } else {
@@ -266,7 +268,7 @@ export default function PurchaseOrderReceivePage() {
     } finally {
       setSubmitting(false)
     }
-  }, [id, selectedWarehouseId, receivableItems, purchaseOrderApi, navigate, t])
+  }, [id, selectedWarehouseId, receivableItems, navigate, t])
 
   // Order summary data for descriptions
   const orderSummary = useMemo(() => {

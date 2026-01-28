@@ -33462,3 +33462,59 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 
 === Next Steps ===
 - Continue with RQ-MIG-009 (Purchase Orders Module) or other remaining migration tasks
+
+2026-01-28 - RQ-MIG-009: React Query Migration - Purchase Orders Module
+
+=== Implementation Details ===
+- Migrated 2 files from getPurchaseOrders factory pattern to direct function imports
+- Files updated:
+  1. src/pages/trade/PurchaseOrderReceive.tsx
+  2. src/features/trade/PurchaseReturnForm.tsx
+
+- Files already using direct imports (no changes needed):
+  1. src/pages/trade/PurchaseOrders.tsx
+  2. src/features/trade/PurchaseOrderForm.tsx
+  3. src/pages/trade/PurchaseOrderDetail.tsx
+  4. src/pages/trade/PurchaseOrderEdit.tsx
+
+=== Key Changes ===
+
+**PurchaseOrderReceive.tsx:**
+- Replaced `getPurchaseOrders` factory with direct imports: `getPurchaseOrderById`, `getPurchaseOrderReceivableItems`, `receivePurchaseOrder`
+- Removed `purchaseOrderApi` useMemo factory pattern
+- Updated response handling to new axios format (response.status, response.data.success, response.data.data)
+
+**PurchaseReturnForm.tsx:**
+- Replaced `getPurchaseOrders` factory with direct imports: `listPurchaseOrders`, `getPurchaseOrderById`
+- Removed `purchaseOrderApi` useMemo factory pattern
+- Updated response handling to new axios format
+- Note: The old API used `statuses: ['PARTIAL_RECEIVED', 'COMPLETED']` array parameter which is not supported by the new API. Changed to make two separate calls for each status and combine results.
+
+=== Response Handling Pattern ===
+**Before (Factory Pattern):**
+```typescript
+const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
+const response = await purchaseOrderApi.getPurchaseOrderById(id)
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { getPurchaseOrderById } from '@/api/purchase-orders/purchase-orders'
+const response = await getPurchaseOrderById(id)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getPurchaseOrders` factory imports in affected files
+- All API calls properly updated to new response format
+
+=== Notes ===
+- Removed unused `useMemo` imports where applicable
+- Status codes: 200 for GET/PUT, 201 for POST create, 204 for DELETE
+- Error responses accessed via `response.data.error?.message`
+- The `listPurchaseOrders` API doesn't support multiple statuses in one call, so PurchaseReturnForm now makes two calls and combines results
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items
