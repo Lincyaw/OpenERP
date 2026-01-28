@@ -34,16 +34,19 @@ func NewRandomGenerator(cfg *RandomConfig) (*RandomGenerator, error) {
 		return nil, fmt.Errorf("%w: unknown random type: %s", ErrInvalidConfig, cfg.Type)
 	}
 
-	// Apply defaults
-	if cfg.Length == 0 {
-		cfg.Length = 8
+	// Create a copy to avoid mutating the original config
+	cfgCopy := *cfg
+
+	// Apply defaults to the copy
+	if cfgCopy.Length == 0 {
+		cfgCopy.Length = 8
 	}
-	if cfg.Charset == "" {
-		cfg.Charset = "alphanumeric"
+	if cfgCopy.Charset == "" {
+		cfgCopy.Charset = "alphanumeric"
 	}
 
 	return &RandomGenerator{
-		config: cfg,
+		config: &cfgCopy,
 	}, nil
 }
 

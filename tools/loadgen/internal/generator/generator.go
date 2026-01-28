@@ -6,6 +6,7 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
 // ErrGeneratorNotFound is returned when trying to get a generator that doesn't exist.
@@ -172,7 +173,9 @@ func New(cfg Config) (Generator, error) {
 }
 
 // Registry manages a collection of named generators.
+// Registry is thread-safe and can be used concurrently.
 type Registry struct {
+	mu         sync.RWMutex
 	generators map[string]Generator
 }
 
@@ -185,11 +188,15 @@ func NewRegistry() *Registry {
 
 // Register adds a generator to the registry with the given name.
 func (r *Registry) Register(name string, gen Generator) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.generators[name] = gen
 }
 
 // Get retrieves a generator by name.
 func (r *Registry) Get(name string) (Generator, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	gen, ok := r.generators[name]
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", ErrGeneratorNotFound, name)
@@ -199,12 +206,16 @@ func (r *Registry) Get(name string) (Generator, error) {
 
 // Has checks if a generator with the given name exists.
 func (r *Registry) Has(name string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	_, ok := r.generators[name]
 	return ok
 }
 
 // Names returns all registered generator names.
 func (r *Registry) Names() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	names := make([]string, 0, len(r.generators))
 	for name := range r.generators {
 		names = append(names, name)

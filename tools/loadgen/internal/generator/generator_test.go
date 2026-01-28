@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -211,6 +212,53 @@ func TestRegistry(t *testing.T) {
 		err := reg.LoadFromConfig(configs)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid")
+	})
+
+	t.Run("concurrent access", func(t *testing.T) {
+		reg := NewRegistry()
+
+		// Pre-register some generators
+		for i := 0; i < 10; i++ {
+			gen, _ := NewFakerGenerator(&FakerConfig{Type: "name"})
+			reg.Register(strconv.Itoa(i), gen)
+		}
+
+		const goroutines = 100
+		const iterations = 100
+
+		var wg sync.WaitGroup
+		wg.Add(goroutines * 2) // Readers and writers
+
+		// Concurrent readers
+		for i := 0; i < goroutines; i++ {
+			go func(id int) {
+				defer wg.Done()
+				for j := 0; j < iterations; j++ {
+					key := strconv.Itoa(id % 10)
+					reg.Has(key)
+					reg.Get(key)
+					reg.Names()
+				}
+			}(i)
+		}
+
+		// Concurrent writers
+		for i := 0; i < goroutines; i++ {
+			go func(id int) {
+				defer wg.Done()
+				for j := 0; j < iterations; j++ {
+					gen, _ := NewFakerGenerator(&FakerConfig{Type: "email"})
+					reg.Register("concurrent-"+strconv.Itoa(id)+"-"+strconv.Itoa(j), gen)
+				}
+			}(i)
+		}
+
+		wg.Wait()
+
+		// Verify we can still access the registry
+		assert.True(t, reg.Has("0"))
+		_, err := reg.Get("0")
+		require.NoError(t, err)
 	})
 }
 
@@ -722,6 +770,32 @@ func TestSequenceGenerator(t *testing.T) {
 		gen, err := NewSequenceGenerator(&SequenceConfig{})
 		require.NoError(t, err)
 		assert.Equal(t, TypeSequence, gen.Type())
+	})
+
+	t.Run("concurrent access", func(t *testing.T) {
+		gen, err := NewSequenceGenerator(&SequenceConfig{Start: 1})
+		require.NoError(t, err)
+
+		const goroutines = 100
+		const iterations = 100
+
+		var wg sync.WaitGroup
+		wg.Add(goroutines)
+
+		for i := 0; i < goroutines; i++ {
+			go func() {
+				defer wg.Done()
+				for j := 0; j < iterations; j++ {
+					_, err := gen.Generate()
+					require.NoError(t, err)
+				}
+			}()
+		}
+
+		wg.Wait()
+
+		// Final value should be exactly goroutines * iterations
+		assert.Equal(t, int64(goroutines*iterations), gen.Current())
 	})
 }
 
