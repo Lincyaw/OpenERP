@@ -93,7 +93,7 @@ func TestCLI_NoConfigError(t *testing.T) {
 
 	_, stderr, exitCode := runLoadgen(t, binPath)
 
-	assert.Contains(t, stderr, "-config flag is required")
+	assert.Contains(t, stderr, "-config or -openapi flag is required")
 	assert.Equal(t, 1, exitCode)
 }
 
@@ -524,5 +524,224 @@ endpoints:
 	assert.Contains(t, stdout, "catalog.list")
 	assert.Contains(t, stdout, "catalog.create")
 	assert.Contains(t, stdout, "trade.list")
+	assert.Equal(t, 0, exitCode)
+}
+
+// TestCLI_OpenAPIList tests the -openapi -list command
+func TestCLI_OpenAPIList(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	// Create a minimal OpenAPI spec
+	tmpDir := t.TempDir()
+	specPath := filepath.Join(tmpDir, "openapi.yaml")
+	specContent := `
+swagger: "2.0"
+info:
+  title: Test API
+  version: "1.0"
+basePath: /api/v1
+tags:
+  - name: users
+    description: User management
+paths:
+  /users:
+    get:
+      summary: List users
+      operationId: listUsers
+      tags:
+        - users
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+    post:
+      summary: Create user
+      operationId: createUser
+      tags:
+        - users
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+      responses:
+        "201":
+          description: Created
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      operationId: getUser
+      tags:
+        - users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Success
+`
+	err := os.WriteFile(specPath, []byte(specContent), 0644)
+	require.NoError(t, err)
+
+	stdout, _, exitCode := runLoadgen(t, binPath, "-openapi", specPath, "-list")
+
+	// Check output
+	assert.Contains(t, stdout, "Test API")
+	assert.Contains(t, stdout, "Total: 3 endpoints")
+	assert.Contains(t, stdout, "/users")
+	assert.Contains(t, stdout, "GET")
+	assert.Contains(t, stdout, "POST")
+	assert.Contains(t, stdout, "/users/{id}")
+	assert.Contains(t, stdout, "USERS")
+	assert.Equal(t, 0, exitCode)
+}
+
+// TestCLI_OpenAPIListVerbose tests the -openapi -list -v command
+func TestCLI_OpenAPIListVerbose(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	// Create a minimal OpenAPI spec with parameters
+	tmpDir := t.TempDir()
+	specPath := filepath.Join(tmpDir, "openapi.yaml")
+	specContent := `
+swagger: "2.0"
+info:
+  title: Test Verbose API
+  version: "1.0"
+paths:
+  /items/{id}:
+    get:
+      summary: Get item by ID
+      operationId: getItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+        - name: include
+          in: query
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+`
+	err := os.WriteFile(specPath, []byte(specContent), 0644)
+	require.NoError(t, err)
+
+	stdout, _, exitCode := runLoadgen(t, binPath, "-openapi", specPath, "-list", "-v")
+
+	// Check verbose output
+	assert.Contains(t, stdout, "Summary: Get item by ID")
+	assert.Contains(t, stdout, "OperationID: getItem")
+	assert.Contains(t, stdout, "Input Parameters:")
+	assert.Contains(t, stdout, "id* (path, string)")
+	assert.Contains(t, stdout, "include (query, string)")
+	assert.Contains(t, stdout, "Output Fields:")
+	assert.Equal(t, 0, exitCode)
+}
+
+// TestCLI_OpenAPINotFound tests error handling for non-existent OpenAPI spec
+func TestCLI_OpenAPINotFound(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	_, stderr, exitCode := runLoadgen(t, binPath, "-openapi", "/nonexistent/openapi.yaml", "-list")
+
+	assert.Contains(t, stderr, "Error parsing OpenAPI spec")
+	assert.Equal(t, 1, exitCode)
+}
+
+// TestCLI_OpenAPIInvalidSpec tests error handling for invalid OpenAPI spec
+func TestCLI_OpenAPIInvalidSpec(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	// Create an invalid spec file
+	tmpDir := t.TempDir()
+	specPath := filepath.Join(tmpDir, "invalid.yaml")
+	err := os.WriteFile(specPath, []byte("invalid: yaml: ["), 0644)
+	require.NoError(t, err)
+
+	_, stderr, exitCode := runLoadgen(t, binPath, "-openapi", specPath, "-list")
+
+	assert.Contains(t, stderr, "Error parsing OpenAPI spec")
+	assert.Equal(t, 1, exitCode)
+}
+
+// TestCLI_OpenAPISummary tests the default OpenAPI summary output (no -list flag)
+func TestCLI_OpenAPISummary(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	// Create a minimal OpenAPI spec
+	tmpDir := t.TempDir()
+	specPath := filepath.Join(tmpDir, "openapi.yaml")
+	specContent := `
+swagger: "2.0"
+info:
+  title: Summary Test API
+  version: "2.0"
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: Success
+`
+	err := os.WriteFile(specPath, []byte(specContent), 0644)
+	require.NoError(t, err)
+
+	stdout, _, exitCode := runLoadgen(t, binPath, "-openapi", specPath)
+
+	assert.Contains(t, stdout, "Summary Test API")
+	assert.Contains(t, stdout, "Total Endpoints: 1")
+	assert.Equal(t, 0, exitCode)
+}
+
+// TestCLI_OpenAPIShortFlag tests the -o short flag for OpenAPI
+func TestCLI_OpenAPIShortFlag(t *testing.T) {
+	binPath := buildLoadgen(t)
+
+	// Create a minimal OpenAPI spec
+	tmpDir := t.TempDir()
+	specPath := filepath.Join(tmpDir, "openapi.yaml")
+	specContent := `
+swagger: "2.0"
+info:
+  title: Short Flag Test
+  version: "1.0"
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: Success
+`
+	err := os.WriteFile(specPath, []byte(specContent), 0644)
+	require.NoError(t, err)
+
+	stdout, _, exitCode := runLoadgen(t, binPath, "-o", specPath, "-l")
+
+	assert.Contains(t, stdout, "Short Flag Test")
+	assert.Contains(t, stdout, "/test")
 	assert.Equal(t, 0, exitCode)
 }

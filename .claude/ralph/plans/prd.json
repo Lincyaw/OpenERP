@@ -7636,7 +7636,7 @@
       "编写单元测试使用实际 backend/docs/swagger.yaml",
       "验收标准：解析 ERP 的 swagger.yaml，输出所有端点及其参数"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-003",

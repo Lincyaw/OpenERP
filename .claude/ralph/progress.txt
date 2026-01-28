@@ -32691,3 +32691,136 @@ PASS - 17 tests, 3.6s
 === Next Steps ===
 - LOADGEN-002: OpenAPI Parser implementation for endpoint discovery
 - LOADGEN-003: Load Test Runner implementation
+
+---
+
+2025-01-28 - LOADGEN-002: OpenAPI Parser Implementation
+
+=== Implementation Details ===
+
+**Task:** Implement OpenAPI/Swagger parser for endpoint discovery
+
+**Files Created:**
+- tools/loadgen/internal/parser/openapi.go (1385 lines) - OpenAPI 2.0/3.0 parser
+- tools/loadgen/internal/parser/openapi_test.go (1004 lines) - Comprehensive unit tests
+
+**Files Modified:**
+- tools/loadgen/cmd/main.go - Added -openapi flag and CLI integration
+- tools/loadgen/cmd/main_test.go - Added OpenAPI CLI tests
+
+**Features Implemented:**
+
+1. **OpenAPI Parser (internal/parser/openapi.go):**
+   - Supports Swagger 2.0 and OpenAPI 3.0 specifications
+   - Parses YAML and JSON formats
+   - Extracts all HTTP endpoints with methods, paths, summaries
+   - Extracts InputPins (path, query, header, body parameters)
+   - Extracts OutputPins (response schema fields with JSONPath)
+   - Resolves $ref references with circular reference protection
+   - Handles allOf schema composition
+   - Parses security definitions and requirements
+   - Parses tags with descriptions
+
+2. **Data Structures:**
+   - EndpointUnit - Full endpoint with inputs/outputs
+   - InputPin - Parameter with location, type, format, constraints
+   - OutputPin - Response field with JSONPath, type, format
+   - SchemaInfo - Schema representation with properties, refs
+   - OpenAPISpec - Full parsed specification
+
+3. **CLI Integration:**
+   - `-openapi, -o <path>` - Parse OpenAPI/Swagger spec file
+   - `-list, -l` - List endpoints (works with both -config and -openapi)
+   - `-verbose, -v` - Show detailed parameter/response info
+   - Summary output without -list flag
+
+4. **Helper Methods:**
+   - GetEndpointsByTag() - Filter by API tag
+   - GetEndpointsByMethod() - Filter by HTTP method
+   - GetAuthenticatedEndpoints() - Get protected endpoints
+   - GetPublicEndpoints() - Get public endpoints
+   - Summary() - Human-readable specification summary
+
+=== Verification ===
+
+**Test Results:**
+```
+=== Parser Tests: 26 tests passed ===
+- TestNewParser
+- TestParser_ParseFile_NotFound
+- TestParser_ParseBytes_InvalidYAML
+- TestParser_ParseBytes_NoVersion
+- TestParser_ParseBytes_Swagger2_Minimal
+- TestParser_ParseBytes_Swagger2_WithParameters
+- TestParser_ParseBytes_Swagger2_WithBodyParameter
+- TestParser_ParseBytes_Swagger2_WithSecurity
+- TestParser_ParseBytes_Swagger2_OutputPins
+- TestParser_ParseBytes_Swagger2_AllOf
+- TestParser_ParseBytes_Swagger2_ArrayResponse
+- TestParser_ParseBytes_Swagger2_Tags
+- TestParser_ParseBytes_Swagger2_AllMethods
+- TestParser_ParseBytes_Swagger2_SuccessStatusCodes
+- TestParser_ParseBytes_CircularReference
+- TestParser_ParseBytes_DeeplyNestedSchema
+- TestParser_ParseBytes_OpenAPI3_Minimal
+- TestParser_ParseBytes_OpenAPI3_RequestBody
+- TestParser_ParseBytes_OpenAPI3_Components
+- TestParser_ParseBytes_Deprecated
+- TestParser_GenerateEndpointName
+- TestParser_MergeParameters
+- TestOpenAPISpec_Summary
+- TestOpenAPISpec_GetAuthenticatedEndpoints
+- TestParser_ParseFile_ERPSwagger (Integration)
+- TestParser_ParseFile_ERPSwagger_EndpointDetails (Integration)
+
+=== CLI Tests: 21 tests passed ===
+- TestCLI_OpenAPIList
+- TestCLI_OpenAPIListVerbose
+- TestCLI_OpenAPINotFound
+- TestCLI_OpenAPIInvalidSpec
+- TestCLI_OpenAPISummary
+- TestCLI_OpenAPIShortFlag
++ 15 existing CLI tests
+```
+
+**Acceptance Criteria Verification:**
+```
+$ loadgen -openapi backend/docs/swagger.yaml -list
+
+OpenAPI Endpoints from 'ERP Backend API' (v2.0)
+Base Path: /api/v1
+Total: 338 endpoints
+Authenticated: 311, Public: 27
+
+By Method: GET=144, POST=132, PUT=37, DELETE=25
+
+By Tag: auth=6, categories=11, customers=14, products=12,
+        sales-orders=14, inventory=18, warehouses=12, ...
+```
+
+All 338 ERP endpoints successfully parsed with parameters and response fields.
+
+=== Code Review Findings ===
+
+**Issues Addressed:**
+1. Added thread safety documentation (Parser not safe for concurrent use)
+2. Added DefaultMaxRefDepth constant with documentation
+3. Fixed minLength/maxLength validation (reject negative values)
+4. Removed unused ErrRefNotFound error
+5. Added circular reference test
+
+**Remaining LOW/MEDIUM Issues (deferred):**
+- File size (1385 lines) - acceptable for comprehensive parser
+- Could split into multiple files in future refactor
+
+=== Notes ===
+- Parser correctly handles both Swagger 2.0 (used by ERP) and OpenAPI 3.0
+- Circular reference protection prevents infinite recursion
+- maxRefDepth (20) prevents stack overflow on deeply nested schemas
+- Integration tests use actual backend/docs/swagger.yaml
+
+=== Next Steps ===
+- LOADGEN-003: Semantic Type Definition and Inference Engine
+- Use parsed InputPins/OutputPins for semantic type assignment
+- Connect parser output to parameter pool system
+

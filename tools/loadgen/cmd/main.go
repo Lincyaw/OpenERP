@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/example/erp/tools/loadgen/internal/config"
+	"github.com/example/erp/tools/loadgen/internal/parser"
 )
 
 // Version information (populated at build time)
@@ -31,12 +32,17 @@ var (
 	validate    bool
 	dryRun      bool
 	showVersion bool
+	openapiPath string
 )
 
 func init() {
 	// Configuration
-	flag.StringVar(&configPath, "config", "", "Path to the YAML configuration file (required)")
+	flag.StringVar(&configPath, "config", "", "Path to the YAML configuration file")
 	flag.StringVar(&configPath, "c", "", "Path to the YAML configuration file (shorthand)")
+
+	// OpenAPI parsing
+	flag.StringVar(&openapiPath, "openapi", "", "Path to OpenAPI/Swagger spec file (for endpoint discovery)")
+	flag.StringVar(&openapiPath, "o", "", "Path to OpenAPI/Swagger spec file (shorthand)")
 
 	// Override flags
 	flag.DurationVar(&duration, "duration", 0, "Override test duration (e.g., 5m, 1h)")
@@ -47,7 +53,7 @@ func init() {
 	// Utility flags
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose output")
 	flag.BoolVar(&verbose, "v", false, "Enable verbose output (shorthand)")
-	flag.BoolVar(&list, "list", false, "List all endpoints from configuration")
+	flag.BoolVar(&list, "list", false, "List all endpoints from configuration or OpenAPI spec")
 	flag.BoolVar(&list, "l", false, "List all endpoints (shorthand)")
 	flag.BoolVar(&validate, "validate", false, "Validate configuration and exit")
 	flag.BoolVar(&dryRun, "dry-run", false, "Parse config and show execution plan without running")
@@ -62,13 +68,18 @@ func printUsage() {
 
 USAGE:
     loadgen -config <path> [options]
+    loadgen -openapi <path> -list      (Parse and list OpenAPI endpoints)
 
 DESCRIPTION:
     A load testing tool that generates realistic traffic patterns for the ERP system.
     It supports configurable traffic shaping, warmup phases, and comprehensive reporting.
 
+    The tool can parse OpenAPI/Swagger specifications to discover endpoints and their
+    parameters, which can then be used to generate realistic test traffic.
+
 CONFIGURATION:
-    -config, -c <path>    Path to the YAML configuration file (required)
+    -config, -c <path>    Path to the YAML configuration file
+    -openapi, -o <path>   Path to OpenAPI/Swagger spec file (YAML or JSON)
 
 OVERRIDE OPTIONS:
     -duration, -d <dur>   Override test duration (e.g., "5m", "1h30m")
@@ -76,7 +87,7 @@ OVERRIDE OPTIONS:
     -qps <n>              Override base QPS (queries per second)
 
 UTILITY OPTIONS:
-    -list, -l             List all endpoints from configuration
+    -list, -l             List all endpoints from configuration or OpenAPI spec
     -validate             Validate configuration and exit
     -dry-run              Show execution plan without running
     -verbose, -v          Enable verbose output
@@ -92,6 +103,12 @@ EXAMPLES:
 
     # List all configured endpoints
     loadgen -config configs/erp.yaml -list
+
+    # Parse and list OpenAPI endpoints (for endpoint discovery)
+    loadgen -openapi backend/docs/swagger.yaml -list
+
+    # Parse OpenAPI with verbose output (show parameters and response fields)
+    loadgen -openapi backend/docs/swagger.yaml -list -v
 
     # Validate configuration
     loadgen -config configs/erp.yaml -validate
@@ -111,6 +128,15 @@ CONFIGURATION FILE FORMAT:
 
     See configs/erp.yaml for a complete example.
 
+OPENAPI PARSING:
+    The OpenAPI parser supports both Swagger 2.0 and OpenAPI 3.0 specifications.
+    It extracts:
+    - All HTTP endpoints with their methods and paths
+    - Input parameters (path, query, header, body)
+    - Response schema output fields
+    - Security requirements
+    - Tags for categorization
+
 For more information, visit: https://github.com/example/erp/tools/loadgen
 `)
 }
@@ -124,9 +150,15 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Validate config path is provided
+	// Handle OpenAPI parsing mode
+	if openapiPath != "" {
+		handleOpenAPIMode()
+		return
+	}
+
+	// Config mode - validate config path is provided
 	if configPath == "" {
-		fmt.Fprintln(os.Stderr, "Error: -config flag is required")
+		fmt.Fprintln(os.Stderr, "Error: -config or -openapi flag is required")
 		fmt.Fprintln(os.Stderr, "")
 		printUsage()
 		os.Exit(1)
@@ -405,4 +437,157 @@ func runLoadTest(cfg *config.Config) error {
 	fmt.Println()
 	fmt.Println("The actual load test execution will be implemented in subsequent tasks.")
 	return nil
+}
+
+// handleOpenAPIMode handles OpenAPI parsing mode
+func handleOpenAPIMode() {
+	absPath, err := filepath.Abs(openapiPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error resolving OpenAPI path: %v\n", err)
+		os.Exit(1)
+	}
+
+	p := parser.NewParser()
+	spec, err := p.ParseFile(absPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing OpenAPI spec: %v\n", err)
+		os.Exit(1)
+	}
+
+	if list {
+		printOpenAPIEndpointList(spec)
+		os.Exit(0)
+	}
+
+	// Default: print summary
+	fmt.Print(spec.Summary())
+	os.Exit(0)
+}
+
+// printOpenAPIEndpointList prints endpoints from an OpenAPI spec
+func printOpenAPIEndpointList(spec *parser.OpenAPISpec) {
+	fmt.Printf("OpenAPI Endpoints from '%s' (v%s)\n", spec.Title, spec.Version)
+	if spec.BasePath != "" {
+		fmt.Printf("Base Path: %s\n", spec.BasePath)
+	}
+	fmt.Printf("Total: %d endpoints\n", len(spec.Endpoints))
+	fmt.Println()
+
+	// Group by tags for better readability
+	tagGroups := make(map[string][]parser.EndpointUnit)
+	for _, ep := range spec.Endpoints {
+		category := "other"
+		if len(ep.Tags) > 0 {
+			category = ep.Tags[0]
+		}
+		tagGroups[category] = append(tagGroups[category], ep)
+	}
+
+	// Sort categories for deterministic output
+	categories := make([]string, 0, len(tagGroups))
+	for category := range tagGroups {
+		categories = append(categories, category)
+	}
+	sort.Strings(categories)
+
+	// Print grouped endpoints
+	for _, category := range categories {
+		endpoints := tagGroups[category]
+		tagDesc := ""
+		if desc, ok := spec.Tags[category]; ok && desc != "" {
+			tagDesc = fmt.Sprintf(" - %s", desc)
+		}
+		fmt.Printf("== %s%s (%d) ==\n", strings.ToUpper(category), tagDesc, len(endpoints))
+
+		for _, ep := range endpoints {
+			status := ""
+			if ep.Deprecated {
+				status = " [DEPRECATED]"
+			}
+			authRequired := "AUTH"
+			if !ep.RequiresAuth {
+				authRequired = "NOAUTH"
+			}
+
+			// Print basic info
+			fmt.Printf("  %-7s %-50s %s%s\n",
+				ep.Method,
+				ep.Path,
+				authRequired,
+				status,
+			)
+
+			// Print verbose details
+			if verbose {
+				if ep.Summary != "" {
+					fmt.Printf("          Summary: %s\n", ep.Summary)
+				}
+				if ep.OperationID != "" {
+					fmt.Printf("          OperationID: %s\n", ep.OperationID)
+				}
+
+				// Print input pins
+				if len(ep.InputPins) > 0 {
+					fmt.Printf("          Input Parameters:\n")
+					for _, pin := range ep.InputPins {
+						required := ""
+						if pin.Required {
+							required = "*"
+						}
+						fmt.Printf("            - %s%s (%s, %s)\n",
+							pin.Name, required, pin.Location, pin.Type)
+					}
+				}
+
+				// Print output pins (limited to first 5)
+				if len(ep.OutputPins) > 0 {
+					fmt.Printf("          Output Fields:\n")
+					shown := min(5, len(ep.OutputPins))
+					for i := range shown {
+						pin := ep.OutputPins[i]
+						fmt.Printf("            - %s: %s (%s)\n",
+							pin.JSONPath, pin.Type, pin.Name)
+					}
+					if len(ep.OutputPins) > shown {
+						fmt.Printf("            ... and %d more\n", len(ep.OutputPins)-shown)
+					}
+				}
+
+				fmt.Println()
+			}
+		}
+		fmt.Println()
+	}
+
+	// Print summary
+	fmt.Println("Summary:")
+	authCount := 0
+	methodCounts := make(map[string]int)
+	for _, ep := range spec.Endpoints {
+		if ep.RequiresAuth {
+			authCount++
+		}
+		methodCounts[ep.Method]++
+	}
+	fmt.Printf("  Authenticated: %d\n", authCount)
+	fmt.Printf("  Public:        %d\n", len(spec.Endpoints)-authCount)
+
+	fmt.Println("\n  By Method:")
+	for _, method := range []string{"GET", "POST", "PUT", "PATCH", "DELETE"} {
+		if count, ok := methodCounts[method]; ok {
+			fmt.Printf("    %s: %d\n", method, count)
+		}
+	}
+
+	// Security definitions
+	if len(spec.SecurityDefinitions) > 0 {
+		fmt.Println("\n  Security Schemes:")
+		for name, scheme := range spec.SecurityDefinitions {
+			fmt.Printf("    %s: %s", name, scheme.Type)
+			if scheme.In != "" {
+				fmt.Printf(" (in %s)", scheme.In)
+			}
+			fmt.Println()
+		}
+	}
 }
