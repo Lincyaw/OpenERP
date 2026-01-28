@@ -18,14 +18,17 @@ import {
 import { IconArrowLeft, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  getFinancePaymentPaymentVoucherByID,
+  reconcilePaymentVoucherFinancePayment,
+} from '@/api/finance-payments/finance-payments'
+import { listFinancePayablePayables } from '@/api/finance-payables/finance-payables'
 import type {
-  PaymentVoucher,
-  AccountPayable,
-  ReconcileRequest,
-  ManualAllocationInput,
-  ReconcilePaymentResult,
-} from '@/api/finance'
+  HandlerPaymentVoucherResponse,
+  HandlerAccountPayableResponse,
+  ReconcilePaymentVoucherFinancePaymentBody,
+  HandlerReconcilePaymentResultResponse,
+} from '@/api/models'
 import './PaymentReconcile.css'
 
 const { Title, Text } = Typography
@@ -123,14 +126,14 @@ export default function PaymentReconcilePage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const financeApi = useMemo(() => getFinanceApi(), [])
 
   // State
-  const [voucher, setVoucher] = useState<PaymentVoucher | null>(null)
-  const [payables, setPayables] = useState<AccountPayable[]>([])
+  const [voucher, setVoucher] = useState<HandlerPaymentVoucherResponse | null>(null)
+  const [payables, setPayables] = useState<HandlerAccountPayableResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [reconciling, setReconciling] = useState(false)
-  const [reconcileResult, setReconcileResult] = useState<ReconcilePaymentResult | null>(null)
+  const [reconcileResult, setReconcileResult] =
+    useState<HandlerReconcilePaymentResultResponse | null>(null)
 
   // Allocation state
   const [allocationItems, setAllocationItems] = useState<AllocationItem[]>([])
@@ -143,36 +146,45 @@ export default function PaymentReconcilePage() {
     setLoading(true)
     try {
       // Load voucher
-      const voucherResponse = await financeApi.getFinancePaymentPaymentVoucher(id)
-      if (!voucherResponse.success || !voucherResponse.data) {
+      const voucherResponse = await getFinancePaymentPaymentVoucherByID(id)
+      if (
+        voucherResponse.status !== 200 ||
+        !voucherResponse.data.success ||
+        !voucherResponse.data.data
+      ) {
         Toast.error(t('paymentReconcile.messages.fetchError'))
         navigate('/finance/payables')
         return
       }
 
-      const loadedVoucher = voucherResponse.data
+      const loadedVoucher = voucherResponse.data.data
       setVoucher(loadedVoucher)
 
       // Load payables for the supplier
-      const payablesResponse = await financeApi.listFinancePayablesPayables({
+      const payablesResponse = await listFinancePayablePayables({
         supplier_id: loadedVoucher.supplier_id,
         page: 1,
         page_size: 100,
       })
 
-      if (payablesResponse.success && payablesResponse.data) {
+      if (
+        payablesResponse.status === 200 &&
+        payablesResponse.data.success &&
+        payablesResponse.data.data
+      ) {
         // Filter to pending/partial payables only
-        const pendingPayables = payablesResponse.data.filter(
-          (p) => (p.status === 'PENDING' || p.status === 'PARTIAL') && p.outstanding_amount > 0
+        const pendingPayables = payablesResponse.data.data.filter(
+          (p) =>
+            (p.status === 'PENDING' || p.status === 'PARTIAL') && (p.outstanding_amount || 0) > 0
         )
         setPayables(pendingPayables)
 
         // Initialize allocation items
         const items: AllocationItem[] = pendingPayables.map((p) => ({
-          payableId: p.id,
-          payableNumber: p.payable_number,
-          totalAmount: p.total_amount,
-          outstandingAmount: p.outstanding_amount,
+          payableId: p.id || '',
+          payableNumber: p.payable_number || '',
+          totalAmount: p.total_amount || 0,
+          outstandingAmount: p.outstanding_amount || 0,
           dueDate: p.due_date,
           selected: false,
           allocateAmount: 0,
@@ -184,7 +196,7 @@ export default function PaymentReconcilePage() {
     } finally {
       setLoading(false)
     }
-  }, [id, financeApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     loadData()
@@ -209,10 +221,10 @@ export default function PaymentReconcilePage() {
       })
 
       for (const item of sortedItems) {
-        if (remaining <= 0) break
-        const allocAmount = Math.min(remaining, item.outstandingAmount)
+        if ((remaining ?? 0) <= 0) break
+        const allocAmount = Math.min(remaining ?? 0, item.outstandingAmount)
         total += allocAmount
-        remaining -= allocAmount
+        remaining = (remaining ?? 0) - allocAmount
       }
       return total
     }
@@ -239,11 +251,11 @@ export default function PaymentReconcilePage() {
     })
 
     return sortedItems.map((item) => {
-      if (remaining <= 0) {
+      if ((remaining ?? 0) <= 0) {
         return { ...item, selected: false, allocateAmount: 0 }
       }
-      const allocAmount = Math.min(remaining, item.outstandingAmount)
-      remaining -= allocAmount
+      const allocAmount = Math.min(remaining ?? 0, item.outstandingAmount)
+      remaining = (remaining ?? 0) - allocAmount
       return { ...item, selected: true, allocateAmount: allocAmount }
     })
   }, [voucher, allocationItems])
@@ -297,14 +309,14 @@ export default function PaymentReconcilePage() {
 
       if (checked) {
         // Select all and allocate proportionally
-        let remaining = voucher.unallocated_amount
+        let remaining = voucher.unallocated_amount ?? 0
         setAllocationItems((items) =>
           items.map((item) => {
             if (remaining <= 0) {
               return { ...item, selected: false, allocateAmount: 0 }
             }
             const allocAmount = Math.min(remaining, item.outstandingAmount)
-            remaining -= allocAmount
+            remaining = remaining - allocAmount
             return { ...item, selected: true, allocateAmount: allocAmount }
           })
         )
@@ -328,12 +340,12 @@ export default function PaymentReconcilePage() {
       return
     }
 
-    if (voucher.unallocated_amount <= 0) {
+    if ((voucher.unallocated_amount || 0) <= 0) {
       Toast.error(t('paymentReconcile.messages.noUnallocatedAmount'))
       return
     }
 
-    let request: ReconcileRequest
+    let request: ReconcilePaymentVoucherFinancePaymentBody
 
     if (reconcileMode === 'FIFO') {
       request = {
@@ -341,7 +353,7 @@ export default function PaymentReconcilePage() {
       }
     } else {
       // Manual mode
-      const manualAllocations: ManualAllocationInput[] = allocationItems
+      const manualAllocations = allocationItems
         .filter((item) => item.selected && item.allocateAmount > 0)
         .map((item) => ({
           target_id: item.payableId,
@@ -354,7 +366,7 @@ export default function PaymentReconcilePage() {
       }
 
       const totalManual = manualAllocations.reduce((sum, a) => sum + a.amount, 0)
-      if (totalManual > voucher.unallocated_amount) {
+      if (totalManual > (voucher.unallocated_amount || 0)) {
         Toast.error(t('paymentReconcile.messages.exceedUnallocated'))
         return
       }
@@ -367,14 +379,17 @@ export default function PaymentReconcilePage() {
 
     setReconciling(true)
     try {
-      const response = await financeApi.reconcileFinancePayment(id, request)
-      if (response.success && response.data) {
+      const response = await reconcilePaymentVoucherFinancePayment(id, request)
+      if (response.status === 200 && response.data.success && response.data.data) {
         Toast.success(t('paymentReconcile.messages.allocateSuccess'))
-        setReconcileResult(response.data)
+        setReconcileResult(response.data.data)
         // Reload data to refresh state
         await loadData()
       } else {
-        Toast.error(response.error || t('paymentReconcile.messages.allocateError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('paymentReconcile.messages.allocateError')
+        )
       }
     } catch {
       Toast.error(t('paymentReconcile.messages.requestError'))
@@ -392,7 +407,7 @@ export default function PaymentReconcilePage() {
   const canReconcile = useMemo(() => {
     if (!voucher) return false
     if (voucher.status !== 'CONFIRMED') return false
-    if (voucher.unallocated_amount <= 0) return false
+    if ((voucher.unallocated_amount || 0) <= 0) return false
     if (reconcileMode === 'MANUAL') {
       const hasSelection = allocationItems.some((item) => item.selected && item.allocateAmount > 0)
       return hasSelection
@@ -475,12 +490,12 @@ export default function PaymentReconcilePage() {
           ),
           key: 'select',
           width: 50,
-          render: (_: unknown, record: AccountPayable) => {
+          render: (_: unknown, record: HandlerAccountPayableResponse) => {
             const item = allocationItems.find((i) => i.payableId === record.id)
             return (
               <Checkbox
                 checked={item?.selected || false}
-                onChange={(e) => handleSelectItem(record.id, e.target.checked ?? false)}
+                onChange={(e) => handleSelectItem(record.id || '', e.target.checked ?? false)}
               />
             )
           },
@@ -490,7 +505,7 @@ export default function PaymentReconcilePage() {
           title: t('paymentReconcile.columns.allocateAmount'),
           key: 'allocate_amount',
           width: 150,
-          render: (_: unknown, record: AccountPayable) => {
+          render: (_: unknown, record: HandlerAccountPayableResponse) => {
             const item = allocationItems.find((i) => i.payableId === record.id)
             if (!item?.selected) return '-'
             return (
@@ -501,7 +516,7 @@ export default function PaymentReconcilePage() {
                 precision={2}
                 prefix="¥"
                 style={{ width: 130 }}
-                onChange={(value) => handleAmountChange(record.id, value)}
+                onChange={(value) => handleAmountChange(record.id || '', value)}
               />
             )
           },
@@ -517,7 +532,7 @@ export default function PaymentReconcilePage() {
         title: t('paymentReconcile.columns.expectedAllocation'),
         key: 'fifo_allocation',
         width: 120,
-        render: (_: unknown, record: AccountPayable) => {
+        render: (_: unknown, record: HandlerAccountPayableResponse) => {
           const allocation = fifoAllocations.find((a) => a.payableId === record.id)
           if (!allocation || allocation.allocateAmount <= 0) {
             return <Text type="tertiary">-</Text>
@@ -588,15 +603,15 @@ export default function PaymentReconcilePage() {
               data={[
                 {
                   key: t('paymentReconcile.result.voucherNumber'),
-                  value: reconcileResult.voucher.voucher_number,
+                  value: reconcileResult.voucher?.voucher_number,
                 },
                 {
                   key: t('paymentReconcile.result.supplierName'),
-                  value: reconcileResult.voucher.supplier_name,
+                  value: reconcileResult.voucher?.supplier_name,
                 },
                 {
                   key: t('paymentReconcile.result.paymentAmount'),
-                  value: formatCurrency(reconcileResult.voucher.amount),
+                  value: formatCurrency(reconcileResult.voucher?.amount),
                 },
                 {
                   key: t('paymentReconcile.result.thisReconciled'),
@@ -610,12 +625,12 @@ export default function PaymentReconcilePage() {
             />
           </div>
 
-          {reconcileResult.updated_payables.length > 0 && (
+          {(reconcileResult.updated_payables || []).length > 0 && (
             <>
               <Divider />
               <Title heading={5}>{t('paymentReconcile.result.reconciledPayables')}</Title>
               <Table
-                dataSource={reconcileResult.updated_payables}
+                dataSource={reconcileResult.updated_payables || []}
                 columns={[
                   {
                     title: t('paymentReconcile.columns.payableNumber'),
@@ -689,9 +704,12 @@ export default function PaymentReconcilePage() {
             {
               key: t('paymentReconcile.voucherInfo.status'),
               value: (
-                <Tag color={getVoucherStatusColor(voucher.status)}>
-                  {String(t(`paymentReconcile.voucherStatus.${voucher.status}` as const)) ||
-                    voucher.status}
+                <Tag color={getVoucherStatusColor(voucher.status || '')}>
+                  {String(
+                    t(`paymentReconcile.voucherStatus.${voucher.status || ''}`, {
+                      defaultValue: voucher.status || '',
+                    })
+                  )}
                 </Tag>
               ),
             },
@@ -738,7 +756,7 @@ export default function PaymentReconcilePage() {
           />
         )}
 
-        {voucher.status === 'CONFIRMED' && voucher.unallocated_amount <= 0 && (
+        {voucher.status === 'CONFIRMED' && (voucher.unallocated_amount ?? 0) <= 0 && (
           <Banner
             type="success"
             className="status-warning"
@@ -748,7 +766,7 @@ export default function PaymentReconcilePage() {
       </Card>
 
       {/* Reconciliation Section */}
-      {voucher.status === 'CONFIRMED' && voucher.unallocated_amount > 0 && (
+      {voucher.status === 'CONFIRMED' && (voucher.unallocated_amount ?? 0) > 0 && (
         <Card className="reconcile-section-card">
           <div className="reconcile-header">
             <Title heading={5}>{t('paymentReconcile.payables.title')}</Title>
@@ -816,7 +834,7 @@ export default function PaymentReconcilePage() {
                 <div className="summary-item">
                   <Text type="secondary">{t('paymentReconcile.summary.remainingAfter')}</Text>
                   <Text strong type={totalAllocation > 0 ? 'warning' : 'tertiary'}>
-                    {formatCurrency(voucher.unallocated_amount - totalAllocation)}
+                    {formatCurrency((voucher.unallocated_amount ?? 0) - totalAllocation)}
                   </Text>
                 </div>
               </div>

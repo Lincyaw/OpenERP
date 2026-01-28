@@ -216,7 +216,7 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await activateCustomer(customer.id)
+        await activateCustomer(customer.id, {})
         Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
@@ -231,7 +231,7 @@ export default function CustomersPage() {
     async (customer: Customer) => {
       if (!customer.id) return
       try {
-        await deactivateCustomer(customer.id)
+        await deactivateCustomer(customer.id, {})
         Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
         fetchCustomers()
       } catch {
@@ -253,7 +253,7 @@ export default function CustomersPage() {
         okButtonProps: { type: 'warning' },
         onOk: async () => {
           try {
-            await deactivateCustomer(customer.id!)
+            await deactivateCustomer(customer.id!, {})
             Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
             fetchCustomers()
           } catch {
@@ -311,7 +311,7 @@ export default function CustomersPage() {
 
   // Handle bulk activate using Promise.allSettled for partial success handling
   const handleBulkActivate = useCallback(async () => {
-    const results = await Promise.allSettled(selectedRowKeys.map((id) => activateCustomer(id)))
+    const results = await Promise.allSettled(selectedRowKeys.map((id) => activateCustomer(id, {})))
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length
@@ -338,7 +338,9 @@ export default function CustomersPage() {
 
   // Handle bulk deactivate using Promise.allSettled for partial success handling
   const handleBulkDeactivate = useCallback(async () => {
-    const results = await Promise.allSettled(selectedRowKeys.map((id) => deactivateCustomer(id)))
+    const results = await Promise.allSettled(
+      selectedRowKeys.map((id) => deactivateCustomer(id, {}))
+    )
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length
     const failureCount = results.filter((r) => r.status === 'rejected').length

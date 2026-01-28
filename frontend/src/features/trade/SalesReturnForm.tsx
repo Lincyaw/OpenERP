@@ -479,7 +479,10 @@ export function SalesReturnForm() {
       })
 
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('salesReturnForm.messages.createFailed'))
+        throw new Error(
+          (response.data.error as { message?: string })?.message ||
+            t('salesReturnForm.messages.createFailed')
+        )
       }
 
       Toast.success(t('salesReturnForm.messages.createSuccess'))

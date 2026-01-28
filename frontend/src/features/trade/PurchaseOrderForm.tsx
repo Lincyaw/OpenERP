@@ -5,9 +5,9 @@ import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import { createPurchaseOrder, updatePurchaseOrder } from '@/api/purchase-orders/purchase-orders'
 import { listSuppliers } from '@/api/suppliers/suppliers'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerSupplierListResponse,
@@ -51,8 +51,7 @@ interface PurchaseOrderFormProps {
 export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormProps) {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
-  const productApi = useMemo(() => getProducts(), [])
+  // Product fetching will use listProducts directly
   const isEditMode = Boolean(orderId)
 
   // Form validation schema
@@ -155,28 +154,25 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   }, [])
 
   // Fetch products
-  const fetchProducts = useCallback(
-    async (search?: string, signal?: AbortSignal) => {
-      setProductsLoading(true)
-      try {
-        const response = await productApi.listProducts(
-          { page_size: 50, search: search || undefined, status: 'active' },
-          { signal }
-        )
-        if (response.success && response.data) {
-          setProducts(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch products', response.error)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'CanceledError') return
-        log.error('Error fetching products', error)
-      } finally {
-        setProductsLoading(false)
+  const fetchProducts = useCallback(async (search?: string, signal?: AbortSignal) => {
+    setProductsLoading(true)
+    try {
+      const response = await listProducts(
+        { page_size: 50, search: search || undefined, status: 'active' },
+        { signal }
+      )
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setProducts(response.data.data)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch products', response.data.error)
       }
-    },
-    [productApi]
-  )
+    } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return
+      log.error('Error fetching products', error)
+    } finally {
+      setProductsLoading(false)
+    }
+  }, [])
 
   // Fetch warehouses
   const fetchWarehouses = useCallback(
@@ -365,17 +361,20 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
       }))
 
       if (isEditMode && orderId) {
-        const response = await purchaseOrderApi.updatePurchaseOrder(orderId, {
+        const response = await updatePurchaseOrder(orderId, {
           warehouse_id: formData.warehouse_id,
           discount: formData.discount,
           remark: formData.remark || undefined,
         })
-        if (!response.success) {
-          throw new Error(response.error?.message || t('orderForm.messages.updateError'))
+        if (response.status !== 200 || !response.data.success) {
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.updateError')
+          )
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
-        const response = await purchaseOrderApi.createPurchaseOrder({
+        const response = await createPurchaseOrder({
           supplier_id: formData.supplier_id,
           supplier_name: formData.supplier_name,
           warehouse_id: formData.warehouse_id,
@@ -383,8 +382,11 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
           remark: formData.remark || undefined,
           items: itemsPayload,
         })
-        if (!response.success) {
-          throw new Error(response.error?.message || t('orderForm.messages.createError'))
+        if (response.status !== 201 || !response.data.success) {
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.createError')
+          )
         }
         Toast.success(t('orderForm.messages.createSuccess'))
       }
@@ -398,17 +400,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     } finally {
       setIsSubmitting(false)
     }
-  }, [
-    formData,
-    isEditMode,
-    orderId,
-    purchaseOrderApi,
-    navigate,
-    validateForm,
-    t,
-    setIsSubmitting,
-    resetForm,
-  ])
+  }, [formData, isEditMode, orderId, navigate, validateForm, t, setIsSubmitting, resetForm])
 
   // Handle cancel
   const handleCancel = useCallback(() => navigate('/trade/purchase'), [navigate])

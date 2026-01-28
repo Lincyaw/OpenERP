@@ -7,7 +7,7 @@ import { Container } from '@/components/common/layout'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
 import { createSalesOrder, updateSalesOrder } from '@/api/sales-orders/sales-orders'
 import { listCustomers } from '@/api/customers/customers'
-import { getProducts } from '@/api/products/products'
+import { listProducts } from '@/api/products/products'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerCustomerListResponse,
@@ -51,7 +51,7 @@ interface SalesOrderFormProps {
 export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const productApi = useMemo(() => getProducts(), [])
+  // Product fetching will use listProducts directly
   const isEditMode = Boolean(orderId)
 
   // Form validation schema
@@ -154,28 +154,25 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   }, [])
 
   // Fetch products
-  const fetchProducts = useCallback(
-    async (search?: string, signal?: AbortSignal) => {
-      setProductsLoading(true)
-      try {
-        const response = await productApi.listProducts(
-          { page_size: 50, search: search || undefined, status: 'active' },
-          { signal }
-        )
-        if (response.success && response.data) {
-          setProducts(response.data)
-        } else if (!response.success) {
-          log.error('Failed to fetch products', response.error)
-        }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'CanceledError') return
-        log.error('Error fetching products', error)
-      } finally {
-        setProductsLoading(false)
+  const fetchProducts = useCallback(async (search?: string, signal?: AbortSignal) => {
+    setProductsLoading(true)
+    try {
+      const response = await listProducts(
+        { page_size: 50, search: search || undefined, status: 'active' },
+        { signal }
+      )
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setProducts(response.data.data)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch products', response.data.error)
       }
-    },
-    [productApi]
-  )
+    } catch (error) {
+      if (error instanceof Error && error.name === 'CanceledError') return
+      log.error('Error fetching products', error)
+    } finally {
+      setProductsLoading(false)
+    }
+  }, [])
 
   // Fetch warehouses
   const fetchWarehouses = useCallback(
@@ -369,7 +366,10 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
           remark: formData.remark || undefined,
         })
         if (response.status !== 200 || !response.data.success) {
-          throw new Error(response.data.error?.message || t('orderForm.messages.updateError'))
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.updateError')
+          )
         }
         Toast.success(t('orderForm.messages.updateSuccess'))
       } else {
@@ -382,7 +382,10 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
           items: itemsPayload,
         })
         if (response.status !== 201 || !response.data.success) {
-          throw new Error(response.data.error?.message || t('orderForm.messages.createError'))
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.createError')
+          )
         }
         Toast.success(t('orderForm.messages.createSuccess'))
       }

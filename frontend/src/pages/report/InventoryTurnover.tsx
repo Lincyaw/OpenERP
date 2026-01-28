@@ -31,15 +31,26 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid, Row } from '@/components/common/layout'
-import { getReports } from '@/api/reports'
+import {
+  getReportInventorySummary,
+  getReportInventoryTurnover,
+  getReportInventoryValueByCategory,
+  getReportInventoryValueByWarehouse,
+} from '@/api/reports/reports'
 import type {
-  InventorySummary,
-  InventoryTurnover as InventoryTurnoverType,
-  InventoryValueByCategory,
-  InventoryValueByWarehouse,
-} from '@/api/reports'
+  HandlerInventorySummaryResponse,
+  HandlerInventoryTurnoverResponse,
+  HandlerInventoryValueByCategoryResponse,
+  HandlerInventoryValueByWarehouseResponse,
+} from '@/api/models'
 import './InventoryTurnover.css'
 import { safeToFixed, toNumber } from '@/utils'
+
+// Type aliases for cleaner code
+type InventorySummary = HandlerInventorySummaryResponse
+type InventoryTurnoverType = HandlerInventoryTurnoverResponse
+type InventoryValueByCategory = HandlerInventoryValueByCategoryResponse
+type InventoryValueByWarehouse = HandlerInventoryValueByWarehouseResponse
 
 // Register ECharts components
 echarts.use([
@@ -186,9 +197,6 @@ export default function InventoryTurnoverPage() {
   const turnoverChartRef = useRef<ReactEChartsCore>(null)
   const categoryChartRef = useRef<ReactEChartsCore>(null)
 
-  // API instance
-  const api = useMemo(() => getReports(), [])
-
   /**
    * Fetch all data
    */
@@ -202,34 +210,53 @@ export default function InventoryTurnoverPage() {
         warehouse_id: selectedWarehouse,
       }
 
-      // Note: API functions expect (body, params) - body is unused for GET requests
       const [summaryRes, turnoverRes, categoryRes, warehouseRes] = await Promise.allSettled([
-        api.getReportInventorySummary(params),
-        api.getReportInventoryTurnover(params),
-        api.getReportInventoryValueByCategory(params),
-        api.getReportInventoryValueByWarehouse(params),
+        getReportInventorySummary(params),
+        getReportInventoryTurnover(params),
+        getReportInventoryValueByCategory(params),
+        getReportInventoryValueByWarehouse(params),
       ])
 
-      if (summaryRes.status === 'fulfilled' && summaryRes.value.data) {
-        setSummary(summaryRes.value.data as unknown as InventorySummary)
+      if (
+        summaryRes.status === 'fulfilled' &&
+        summaryRes.value.status === 200 &&
+        summaryRes.value.data.success &&
+        summaryRes.value.data.data
+      ) {
+        setSummary(summaryRes.value.data.data)
       } else {
         setSummary(null)
       }
 
-      if (turnoverRes.status === 'fulfilled' && turnoverRes.value.data) {
-        setTurnovers(turnoverRes.value.data as unknown as InventoryTurnoverType[])
+      if (
+        turnoverRes.status === 'fulfilled' &&
+        turnoverRes.value.status === 200 &&
+        turnoverRes.value.data.success &&
+        turnoverRes.value.data.data
+      ) {
+        setTurnovers(turnoverRes.value.data.data)
       } else {
         setTurnovers([])
       }
 
-      if (categoryRes.status === 'fulfilled' && categoryRes.value.data) {
-        setValueByCategory(categoryRes.value.data as unknown as InventoryValueByCategory[])
+      if (
+        categoryRes.status === 'fulfilled' &&
+        categoryRes.value.status === 200 &&
+        categoryRes.value.data.success &&
+        categoryRes.value.data.data
+      ) {
+        setValueByCategory(categoryRes.value.data.data)
       } else {
         setValueByCategory([])
       }
 
-      if (warehouseRes.status === 'fulfilled' && warehouseRes.value.data) {
-        setValueByWarehouse(warehouseRes.value.data as unknown as InventoryValueByWarehouse[])
+      if (
+        warehouseRes.status === 'fulfilled' &&
+        warehouseRes.value.status === 200 &&
+        warehouseRes.value.data.success &&
+        warehouseRes.value.data.data
+      ) {
+        setValueByWarehouse(warehouseRes.value.data.data)
       } else {
         setValueByWarehouse([])
       }
@@ -238,7 +265,7 @@ export default function InventoryTurnoverPage() {
     } finally {
       setLoading(false)
     }
-  }, [api, dateRange, selectedCategory, selectedWarehouse])
+  }, [dateRange, selectedCategory, selectedWarehouse])
 
   // Fetch data on mount and when filters change
   useEffect(() => {
@@ -275,8 +302,8 @@ export default function InventoryTurnoverPage() {
     const lowerSearch = searchText.toLowerCase()
     return turnovers.filter(
       (item) =>
-        item.product_name.toLowerCase().includes(lowerSearch) ||
-        item.product_sku.toLowerCase().includes(lowerSearch) ||
+        (item.product_name ?? '').toLowerCase().includes(lowerSearch) ||
+        (item.product_id ?? '').toLowerCase().includes(lowerSearch) ||
         (item.category_name && item.category_name.toLowerCase().includes(lowerSearch))
     )
   }, [turnovers, searchText])
@@ -295,7 +322,7 @@ export default function InventoryTurnoverPage() {
     ]
 
     turnovers.forEach((item) => {
-      const rate = item.turnover_rate
+      const rate = item.turnover_rate ?? 0
       for (const range of ranges) {
         if (rate >= range.min && rate < range.max) {
           range.count++
@@ -351,7 +378,7 @@ export default function InventoryTurnoverPage() {
    */
   const categoryChartOptions = useMemo(() => {
     const sortedData = [...valueByCategory]
-      .sort((a, b) => b.total_value - a.total_value)
+      .sort((a, b) => (b.total_value ?? 0) - (a.total_value ?? 0))
       .slice(0, 10)
 
     return {
@@ -423,7 +450,7 @@ export default function InventoryTurnoverPage() {
               {text}
             </Text>
             <Text type="tertiary" size="small">
-              {record?.product_sku}
+              {record?.product_id}
             </Text>
           </div>
         ),
@@ -442,38 +469,38 @@ export default function InventoryTurnoverPage() {
       },
       {
         title: '期初库存',
-        dataIndex: 'beginning_stock',
+        dataIndex: 'avg_inventory',
         width: 100,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.beginning_stock || 0) - (b?.beginning_stock || 0),
+          (a?.avg_inventory || 0) - (b?.avg_inventory || 0),
         render: (val: number) => formatNumber(val),
       },
       {
         title: '期末库存',
-        dataIndex: 'ending_stock',
+        dataIndex: 'avg_inventory',
         width: 100,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.ending_stock || 0) - (b?.ending_stock || 0),
+          (a?.avg_inventory || 0) - (b?.avg_inventory || 0),
         render: (val: number) => formatNumber(val),
       },
       {
         title: '平均库存',
-        dataIndex: 'average_stock',
+        dataIndex: 'avg_inventory',
         width: 100,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.average_stock || 0) - (b?.average_stock || 0),
+          (a?.avg_inventory || 0) - (b?.avg_inventory || 0),
         render: (val: number) => formatNumber(val),
       },
       {
         title: '销售数量',
-        dataIndex: 'sold_quantity',
+        dataIndex: 'total_sold',
         width: 100,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.sold_quantity || 0) - (b?.sold_quantity || 0),
+          (a?.total_sold || 0) - (b?.total_sold || 0),
         render: (val: number) => formatNumber(val),
       },
       {
@@ -497,20 +524,20 @@ export default function InventoryTurnoverPage() {
       },
       {
         title: '库存天数',
-        dataIndex: 'days_of_inventory',
+        dataIndex: 'days_of_stock_on_hand',
         width: 100,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.days_of_inventory || 0) - (b?.days_of_inventory || 0),
+          (a?.days_of_stock_on_hand || 0) - (b?.days_of_stock_on_hand || 0),
         render: (val: number) => formatDays(val),
       },
       {
         title: '库存价值',
-        dataIndex: 'stock_value',
+        dataIndex: 'avg_inventory',
         width: 120,
         align: 'right' as const,
         sorter: (a?: InventoryTurnoverType, b?: InventoryTurnoverType) =>
-          (a?.stock_value || 0) - (b?.stock_value || 0),
+          (a?.avg_inventory || 0) - (b?.avg_inventory || 0),
         render: (val: number) => formatCurrency(val),
       },
     ],
@@ -616,7 +643,7 @@ export default function InventoryTurnoverPage() {
               />
               <MetricCard
                 title="平均周转率"
-                value={formatTurnoverRate(summary?.avg_turnover_rate)}
+                value={formatTurnoverRate(summary?.turnover_rate)}
                 subLabel="周转次数/期"
                 icon={<IconRefresh size="large" />}
                 color="#22c55e"
@@ -702,13 +729,18 @@ export default function InventoryTurnoverPage() {
                       <Text>{formatCurrency(wh.total_value)}</Text>
                     </div>
                     <Progress
-                      percent={wh.percentage * 100}
+                      percent={((wh.total_value ?? 0) / (summary?.total_value ?? 1)) * 100}
                       size="small"
                       showInfo={false}
                       style={{ marginTop: 8 }}
                     />
                     <Text type="tertiary" size="small">
-                      占比 {safeToFixed(toNumber(wh.percentage) * 100, 1)}%
+                      占比{' '}
+                      {safeToFixed(
+                        (toNumber(wh.total_value ?? 0) / toNumber(summary?.total_value ?? 1)) * 100,
+                        1
+                      )}
+                      %
                     </Text>
                   </div>
                 ))}

@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { PurchaseOrderForm } from '@/features/trade/PurchaseOrderForm'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import { getPurchaseOrderById } from '@/api/purchase-orders/purchase-orders'
 import type { HandlerPurchaseOrderResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 
@@ -16,7 +16,6 @@ export default function PurchaseOrderEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const api = useMemo(() => getPurchaseOrders(), [])
   const [orderData, setOrderData] = useState<HandlerPurchaseOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -29,15 +28,15 @@ export default function PurchaseOrderEditPage() {
 
       setLoading(true)
       try {
-        const response = await api.getPurchaseOrderById(id)
-        if (response.success && response.data) {
+        const response = await getPurchaseOrderById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
           // Check if order is in draft status (only draft orders can be edited)
-          if (response.data.status !== 'draft') {
+          if (response.data.data.status !== 'draft') {
             Toast.error(t('orderForm.messages.onlyDraftEditable'))
             navigate('/trade/purchase')
             return
           }
-          setOrderData(response.data)
+          setOrderData(response.data.data)
         } else {
           Toast.error(t('purchaseOrderDetail.messages.notExist'))
           navigate('/trade/purchase')
@@ -51,7 +50,7 @@ export default function PurchaseOrderEditPage() {
     }
 
     fetchOrder()
-  }, [id, api, navigate, t])
+  }, [id, navigate, t])
 
   if (loading) {
     return (

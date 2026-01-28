@@ -302,7 +302,8 @@ export default function StockTakingCreatePage() {
       !createResponse.data.data
     ) {
       throw new Error(
-        createResponse.data.error?.message || t('stockTaking.create.messages.createError')
+        (createResponse.data.error as { message?: string })?.message ||
+          t('stockTaking.create.messages.createError')
       )
     }
 
@@ -324,7 +325,8 @@ export default function StockTakingCreatePage() {
 
     if (addItemsResponse.status !== 200 || !addItemsResponse.data.success) {
       throw new Error(
-        addItemsResponse.data.error?.message || t('stockTaking.create.messages.addItemsError')
+        (addItemsResponse.data.error as { message?: string })?.message ||
+          t('stockTaking.create.messages.addItemsError')
       )
     }
   }

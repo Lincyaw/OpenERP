@@ -221,10 +221,10 @@ export default function ReceiptReconcilePage() {
       })
 
       for (const item of sortedItems) {
-        if (remaining <= 0) break
-        const allocAmount = Math.min(remaining, item.outstandingAmount)
+        if ((remaining ?? 0) <= 0) break
+        const allocAmount = Math.min(remaining ?? 0, item.outstandingAmount)
         total += allocAmount
-        remaining -= allocAmount
+        remaining = (remaining ?? 0) - allocAmount
       }
       return total
     }
@@ -251,11 +251,11 @@ export default function ReceiptReconcilePage() {
     })
 
     return sortedItems.map((item) => {
-      if (remaining <= 0) {
+      if ((remaining ?? 0) <= 0) {
         return { ...item, selected: false, allocateAmount: 0 }
       }
-      const allocAmount = Math.min(remaining, item.outstandingAmount)
-      remaining -= allocAmount
+      const allocAmount = Math.min(remaining ?? 0, item.outstandingAmount)
+      remaining = (remaining ?? 0) - allocAmount
       return { ...item, selected: true, allocateAmount: allocAmount }
     })
   }, [voucher, allocationItems])
@@ -309,14 +309,14 @@ export default function ReceiptReconcilePage() {
 
       if (checked) {
         // Select all and allocate proportionally
-        let remaining = voucher.unallocated_amount
+        let remaining: number | undefined = voucher.unallocated_amount
         setAllocationItems((items) =>
           items.map((item) => {
-            if (remaining <= 0) {
+            if ((remaining ?? 0) <= 0) {
               return { ...item, selected: false, allocateAmount: 0 }
             }
-            const allocAmount = Math.min(remaining, item.outstandingAmount)
-            remaining -= allocAmount
+            const allocAmount = Math.min(remaining ?? 0, item.outstandingAmount)
+            remaining = (remaining ?? 0) - allocAmount
             return { ...item, selected: true, allocateAmount: allocAmount }
           })
         )
@@ -386,7 +386,10 @@ export default function ReceiptReconcilePage() {
         // Reload data to refresh state
         await loadData()
       } else {
-        Toast.error(response.data.error?.message || t('receiptReconcile.messages.allocateError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('receiptReconcile.messages.allocateError')
+        )
       }
     } catch {
       Toast.error(t('receiptReconcile.messages.requestError'))
@@ -600,15 +603,15 @@ export default function ReceiptReconcilePage() {
               data={[
                 {
                   key: t('receiptReconcile.result.voucherNumber'),
-                  value: reconcileResult.voucher.voucher_number,
+                  value: reconcileResult.voucher?.voucher_number,
                 },
                 {
                   key: t('receiptReconcile.result.customerName'),
-                  value: reconcileResult.voucher.customer_name,
+                  value: reconcileResult.voucher?.customer_name,
                 },
                 {
                   key: t('receiptReconcile.result.receiptAmount'),
-                  value: formatCurrency(reconcileResult.voucher.amount),
+                  value: formatCurrency(reconcileResult.voucher?.amount),
                 },
                 {
                   key: t('receiptReconcile.result.thisReconciled'),
@@ -622,7 +625,7 @@ export default function ReceiptReconcilePage() {
             />
           </div>
 
-          {reconcileResult.updated_receivables.length > 0 && (
+          {(reconcileResult.updated_receivables?.length ?? 0) > 0 && (
             <>
               <Divider />
               <Title heading={5}>{t('receiptReconcile.result.reconciledReceivables')}</Title>
@@ -701,14 +704,22 @@ export default function ReceiptReconcilePage() {
             {
               key: t('receiptReconcile.voucherInfo.status'),
               value: (
-                <Tag color={getVoucherStatusColor(voucher.status)}>
-                  {t(`receiptReconcile.voucherStatus.${voucher.status}`, voucher.status)}
+                <Tag color={getVoucherStatusColor(voucher.status || '')}>
+                  {String(
+                    t(`receiptReconcile.voucherStatus.${voucher.status || ''}`, {
+                      defaultValue: voucher.status || '',
+                    })
+                  )}
                 </Tag>
               ),
             },
             {
               key: t('receiptReconcile.voucherInfo.paymentMethod'),
-              value: t(`paymentMethod.${voucher.payment_method}`, voucher.payment_method),
+              value: String(
+                t(`paymentMethod.${voucher.payment_method || ''}`, {
+                  defaultValue: voucher.payment_method || '',
+                })
+              ),
             },
             {
               key: t('receiptReconcile.voucherInfo.receiptDate'),

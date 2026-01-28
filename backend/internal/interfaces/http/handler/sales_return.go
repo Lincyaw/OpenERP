@@ -679,7 +679,6 @@ func (h *SalesReturnHandler) RemoveItem(c *gin.Context) {
 // @Summary      Submit a sales return for approval
 // @Description  Submit a sales return for approval (transitions from DRAFT to PENDING)
 // @Tags         sales-returns
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Return ID" format(uuid)

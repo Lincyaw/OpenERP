@@ -33,7 +33,7 @@ export default function SupplierEditPage() {
         if (response.status === 200 && response.data.success && response.data.data) {
           setSupplier(response.data.data)
         } else {
-          Toast.error(response.data.error?.message || '加载供应商失败')
+          Toast.error((response.data.error as { message?: string })?.message || '加载供应商失败')
           navigate('/partner/suppliers')
         }
       } catch {

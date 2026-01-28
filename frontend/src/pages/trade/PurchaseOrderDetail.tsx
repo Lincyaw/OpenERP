@@ -18,7 +18,11 @@ import { IconArrowLeft, IconEdit, IconTick, IconClose, IconBox } from '@douyinfe
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { PrintButton } from '@/components/printing'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import {
+  getPurchaseOrderById,
+  confirmPurchaseOrder,
+  cancelPurchaseOrder,
+} from '@/api/purchase-orders/purchase-orders'
 import type { HandlerPurchaseOrderResponse, HandlerPurchaseOrderItemResponse } from '@/api/models'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -49,7 +53,6 @@ export default function PurchaseOrderDetailPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDateTime } = useFormatters()
-  const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
 
   const [order, setOrder] = useState<HandlerPurchaseOrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -61,9 +64,9 @@ export default function PurchaseOrderDetailPage() {
 
     setLoading(true)
     try {
-      const response = await purchaseOrderApi.getPurchaseOrderById(id)
-      if (response.success && response.data) {
-        setOrder(response.data)
+      const response = await getPurchaseOrderById(id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setOrder(response.data.data)
       } else {
         Toast.error(t('purchaseOrderDetail.messages.notExist'))
         navigate('/trade/purchase')
@@ -74,7 +77,7 @@ export default function PurchaseOrderDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id, purchaseOrderApi, navigate, t])
+  }, [id, navigate, t])
 
   useEffect(() => {
     fetchOrder()
@@ -91,7 +94,7 @@ export default function PurchaseOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await purchaseOrderApi.confirmPurchaseOrder(order.id!, {})
+          await confirmPurchaseOrder(order.id!, {})
           Toast.success(t('purchaseOrderDetail.messages.confirmSuccess'))
           fetchOrder()
         } catch {
@@ -101,7 +104,7 @@ export default function PurchaseOrderDetailPage() {
         }
       },
     })
-  }, [order, purchaseOrderApi, fetchOrder, t])
+  }, [order, fetchOrder, t])
 
   // Handle receive order - navigate to receive page
   const handleReceive = useCallback(() => {
@@ -122,7 +125,7 @@ export default function PurchaseOrderDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await purchaseOrderApi.cancelPurchaseOrder(order.id!, {
+          await cancelPurchaseOrder(order.id!, {
             reason: t('common:userCancel', { defaultValue: '用户取消' }),
           })
           Toast.success(t('purchaseOrderDetail.messages.cancelSuccess'))
@@ -134,7 +137,7 @@ export default function PurchaseOrderDetailPage() {
         }
       },
     })
-  }, [order, purchaseOrderApi, fetchOrder, t])
+  }, [order, fetchOrder, t])
 
   // Handle edit order
   const handleEdit = useCallback(() => {

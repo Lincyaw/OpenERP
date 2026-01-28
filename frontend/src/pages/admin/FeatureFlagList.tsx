@@ -359,14 +359,11 @@ export default function FeatureFlagListPage() {
         onOk: async () => {
           try {
             const response = await archiveFlagFeatureFlag(flag.key || '')
-            if (response.status === 200 && response.data.success) {
+            if (response.status === 204) {
               Toast.success(t('featureFlags.messages.archiveSuccess', '功能开关已归档'))
               fetchFlags()
             } else {
-              Toast.error(
-                response.data.error?.message ||
-                  t('featureFlags.messages.archiveError', '归档功能开关失败')
-              )
+              Toast.error(t('featureFlags.messages.archiveError', '归档功能开关失败'))
             }
           } catch {
             Toast.error(t('featureFlags.messages.archiveError', '归档功能开关失败'))

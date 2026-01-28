@@ -124,9 +124,9 @@ export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
         })
         if (response.status === 200 && response.data.success && response.data.data) {
           if (append) {
-            setLogs((prev) => [...prev, ...(response.data.data?.logs || [])])
+            setLogs((prev) => [...prev, ...(response.data.data?.audit_logs || [])])
           } else {
-            setLogs(response.data.data.logs || [])
+            setLogs(response.data.data.audit_logs || [])
           }
           setTotal(response.data.data.total || 0)
           setCurrentPage(page)

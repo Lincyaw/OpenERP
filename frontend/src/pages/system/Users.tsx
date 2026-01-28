@@ -292,7 +292,10 @@ export default function UsersPage() {
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.data.error?.message || t('users.messages.createError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('users.messages.createError')
+          )
         }
       } else if (editingUser) {
         const request: UpdateUserRequest = {
@@ -307,7 +310,10 @@ export default function UsersPage() {
           setModalVisible(false)
           fetchUsers()
         } else {
-          Toast.error(response.data.error?.message || t('users.messages.updateError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('users.messages.updateError')
+          )
         }
       }
     } catch {
@@ -328,7 +334,10 @@ export default function UsersPage() {
           )
           fetchUsers()
         } else {
-          Toast.error(response.data.error?.message || t('users.messages.activateError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('users.messages.activateError')
+          )
         }
       } catch {
         Toast.error(t('users.messages.activateError'))
@@ -355,7 +364,10 @@ export default function UsersPage() {
               )
               fetchUsers()
             } else {
-              Toast.error(response.data.error?.message || t('users.messages.deactivateError'))
+              Toast.error(
+                (response.data.error as { message?: string })?.message ||
+                  t('users.messages.deactivateError')
+              )
             }
           } catch {
             Toast.error(t('users.messages.deactivateError'))
@@ -384,7 +396,10 @@ export default function UsersPage() {
               )
               fetchUsers()
             } else {
-              Toast.error(response.data.error?.message || t('users.messages.lockError'))
+              Toast.error(
+                (response.data.error as { message?: string })?.message ||
+                  t('users.messages.lockError')
+              )
             }
           } catch {
             Toast.error(t('users.messages.lockError'))
@@ -406,7 +421,10 @@ export default function UsersPage() {
           )
           fetchUsers()
         } else {
-          Toast.error(response.data.error?.message || t('users.messages.unlockError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('users.messages.unlockError')
+          )
         }
       } catch {
         Toast.error(t('users.messages.unlockError'))
@@ -433,7 +451,10 @@ export default function UsersPage() {
               )
               fetchUsers()
             } else {
-              Toast.error(response.data.error?.message || t('users.messages.deleteError'))
+              Toast.error(
+                (response.data as { error?: { message?: string } }).error?.message ||
+                  t('users.messages.deleteError')
+              )
             }
           } catch {
             Toast.error(t('users.messages.deleteError'))
@@ -462,7 +483,10 @@ export default function UsersPage() {
         Toast.success(t('users.messages.resetPasswordSuccess'))
         setResetPasswordVisible(false)
       } else {
-        Toast.error(response.data.error?.message || t('users.messages.resetPasswordError'))
+        Toast.error(
+          (response.data as { error?: { message?: string } }).error?.message ||
+            t('users.messages.resetPasswordError')
+        )
       }
     } catch {
       Toast.error(t('users.messages.resetPasswordError'))
@@ -488,7 +512,10 @@ export default function UsersPage() {
         setRoleModalVisible(false)
         fetchUsers()
       } else {
-        Toast.error(response.data.error?.message || t('users.messages.assignRolesError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('users.messages.assignRolesError')
+        )
       }
     } catch {
       Toast.error(t('users.messages.assignRolesError'))
@@ -690,11 +717,12 @@ export default function UsersPage() {
     fetchUsers()
   }, [fetchUsers])
 
-  // Role filter options
   const roleOptions = useMemo(() => {
-    const options = [{ label: t('users.allRoles'), value: '' }]
+    const options: Array<{ label: string; value: string }> = [
+      { label: t('users.allRoles'), value: '' },
+    ]
     roles.forEach((role) => {
-      options.push({ label: role.name, value: role.id })
+      options.push({ label: role.name || '', value: role.id || '' })
     })
     return options
   }, [roles, t])

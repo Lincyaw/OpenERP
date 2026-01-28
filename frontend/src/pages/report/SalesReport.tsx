@@ -345,7 +345,7 @@ export default function SalesReportPage() {
     if (dailyTrends.length === 0) return null
 
     const dates = dailyTrends.map((d) => {
-      const date = new Date(d.date)
+      const date = new Date(d.date || '')
       return `${date.getMonth() + 1}/${date.getDate()}`
     })
     const amounts = dailyTrends.map((d) => d.total_amount)
@@ -464,7 +464,9 @@ export default function SalesReportPage() {
 
     // Add "Others" if there are more than 5 products
     if (productRankings.length > 5) {
-      const othersAmount = productRankings.slice(5).reduce((sum, p) => sum + p.total_amount, 0)
+      const othersAmount = productRankings
+        .slice(5)
+        .reduce((sum, p) => sum + (p.total_amount ?? 0), 0)
       data.push({ name: '其他', value: othersAmount })
     }
 

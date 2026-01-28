@@ -321,7 +321,7 @@ export default function SalesOrdersPage() {
     async (order: SalesOrder) => {
       if (!order.id) return
       try {
-        await completeSalesOrder(order.id)
+        await completeSalesOrder(order.id, {})
         Toast.success(t('salesOrder.messages.completeSuccess', { orderNumber: order.order_number }))
         fetchOrders()
       } catch {

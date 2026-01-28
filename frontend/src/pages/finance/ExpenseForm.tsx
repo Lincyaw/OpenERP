@@ -18,8 +18,8 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
-import type { ExpenseCategory, CreateExpenseRecordRequest } from '@/api/finance'
+import { getExpensExpense, createExpensExpense, updateExpensExpense } from '@/api/expenses/expenses'
+import type { CreateExpensExpenseBody } from '@/api/models'
 import './ExpenseForm.css'
 
 const { Title } = Typography
@@ -81,7 +81,6 @@ export default function ExpenseFormPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEditMode = Boolean(id)
-  const api = useMemo(() => getFinanceApi(), [])
 
   // Expense category options with translated labels
   const categoryOptions = useMemo(
@@ -139,14 +138,14 @@ export default function ExpenseFormPage() {
       const loadExpense = async () => {
         setInitialLoading(true)
         try {
-          const response = await api.getExpenseExpense(id)
-          if (response.success && response.data) {
-            const expense = response.data
+          const response = await getExpensExpense(id)
+          if (response.status === 200 && response.data.success && response.data.data) {
+            const expense = response.data.data
             reset({
               category: expense.category as ExpenseFormData['category'],
               amount: expense.amount,
               description: expense.description,
-              incurred_at: new Date(expense.incurred_at),
+              incurred_at: new Date(expense.incurred_at || ''),
               remark: expense.remark || '',
               attachment_urls: expense.attachment_urls || '',
             })
@@ -163,13 +162,13 @@ export default function ExpenseFormPage() {
       }
       loadExpense()
     }
-  }, [isEditMode, id, api, reset, navigate, t])
+  }, [isEditMode, id, reset, navigate, t])
 
   // Handle form submission
   const onSubmit = useCallback(
     async (data: ExpenseFormData) => {
-      const request: CreateExpenseRecordRequest = {
-        category: data.category as ExpenseCategory,
+      const request: CreateExpensExpenseBody = {
+        category: data.category as CreateExpensExpenseBody['category'],
         amount: data.amount,
         description: data.description,
         incurred_at: data.incurred_at.toISOString(),
@@ -178,18 +177,18 @@ export default function ExpenseFormPage() {
       }
 
       if (isEditMode && id) {
-        const response = await api.updateExpenseExpense(id, request)
-        if (!response.success) {
-          throw new Error(response.error || t('expenseForm.messages.updateError'))
+        const response = await updateExpensExpense(id, request)
+        if (response.status !== 200 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('expenseForm.messages.updateError'))
         }
       } else {
-        const response = await api.createExpensExpense(request)
-        if (!response.success) {
-          throw new Error(response.error || t('expenseForm.messages.createError'))
+        const response = await createExpensExpense(request)
+        if (response.status !== 201 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('expenseForm.messages.createError'))
         }
       }
     },
-    [api, id, isEditMode, t]
+    [id, isEditMode, t]
   )
 
   // Handle cancel

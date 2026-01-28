@@ -18,8 +18,8 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
-import type { IncomeCategory, CreateOtherIncomeRecordRequest } from '@/api/finance'
+import { getIncomeIncome, createIncomeIncome, updateIncomeIncome } from '@/api/incomes/incomes'
+import type { CreateIncomeIncomeBody } from '@/api/models'
 import './OtherIncomeForm.css'
 
 const { Title } = Typography
@@ -78,7 +78,6 @@ export default function OtherIncomeFormPage() {
   const { id } = useParams<{ id: string }>()
   const { t } = useTranslation('finance')
   const isEditMode = Boolean(id)
-  const api = useMemo(() => getFinanceApi(), [])
 
   // Memoized schema with translations
   const incomeFormSchema = useMemo(() => createIncomeFormSchema(t), [t])
@@ -131,14 +130,14 @@ export default function OtherIncomeFormPage() {
       const loadIncome = async () => {
         setInitialLoading(true)
         try {
-          const response = await api.getIncomeIncome(id)
-          if (response.success && response.data) {
-            const income = response.data
+          const response = await getIncomeIncome(id)
+          if (response.status === 200 && response.data.success && response.data.data) {
+            const income = response.data.data
             reset({
               category: income.category as IncomeFormData['category'],
               amount: income.amount,
               description: income.description,
-              received_at: new Date(income.received_at),
+              received_at: new Date(income.received_at || ''),
               remark: income.remark || '',
               attachment_urls: income.attachment_urls || '',
             })
@@ -155,13 +154,13 @@ export default function OtherIncomeFormPage() {
       }
       loadIncome()
     }
-  }, [isEditMode, id, api, reset, navigate, t])
+  }, [isEditMode, id, reset, navigate, t])
 
   // Handle form submission
   const onSubmit = useCallback(
     async (data: IncomeFormData) => {
-      const request: CreateOtherIncomeRecordRequest = {
-        category: data.category as IncomeCategory,
+      const request: CreateIncomeIncomeBody = {
+        category: data.category as CreateIncomeIncomeBody['category'],
         amount: data.amount,
         description: data.description,
         received_at: data.received_at.toISOString(),
@@ -170,18 +169,18 @@ export default function OtherIncomeFormPage() {
       }
 
       if (isEditMode && id) {
-        const response = await api.updateIncomeIncome(id, request)
-        if (!response.success) {
-          throw new Error(response.error || t('otherIncomeForm.messages.updateError'))
+        const response = await updateIncomeIncome(id, request)
+        if (response.status !== 200 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('otherIncomeForm.messages.updateError'))
         }
       } else {
-        const response = await api.createIncomeIncome(request)
-        if (!response.success) {
-          throw new Error(response.error || t('otherIncomeForm.messages.createError'))
+        const response = await createIncomeIncome(request)
+        if (response.status !== 201 || !response.data.success) {
+          throw new Error(response.data.error?.message || t('otherIncomeForm.messages.createError'))
         }
       }
     },
-    [api, id, isEditMode, t]
+    [id, isEditMode, t]
   )
 
   // Handle cancel

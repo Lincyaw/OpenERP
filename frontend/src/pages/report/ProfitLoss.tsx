@@ -33,10 +33,23 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
-import { getReports } from '@/api/reports'
-import type { ProfitLossStatement, MonthlyProfitTrend, ProfitByProduct } from '@/api/reports'
+import {
+  getReportProfitLossStatement,
+  getReportMonthlyProfitTrend,
+  getReportProfitByProduct,
+} from '@/api/reports/reports'
+import type {
+  HandlerProfitLossStatementResponse,
+  HandlerMonthlyProfitTrendResponse,
+  HandlerProfitByProductResponse,
+} from '@/api/models'
 import './ProfitLoss.css'
 import { safeToFixed, toNumber } from '@/utils'
+
+// Type aliases for cleaner code
+type ProfitLossStatement = HandlerProfitLossStatementResponse
+type MonthlyProfitTrend = HandlerMonthlyProfitTrendResponse
+type ProfitByProduct = HandlerProfitByProductResponse
 
 // Register ECharts components
 echarts.use([
@@ -167,8 +180,6 @@ function MetricCard({
  * - Export support (CSV)
  */
 export default function ProfitLossPage() {
-  const reportsApi = useMemo(() => getReports(), [])
-
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)
 
@@ -203,30 +214,44 @@ export default function ProfitLossPage() {
 
     try {
       // Fetch all data in parallel
-      // Note: API functions expect (body, params) - body is unused for GET requests
       const [statementRes, trendsRes, productRes] = await Promise.allSettled([
-        reportsApi.getReportProfitLossStatement(params),
-        reportsApi.getReportMonthlyProfitTrend(params),
-        reportsApi.getReportProfitByProduct({ ...params, top_n: 20 }),
+        getReportProfitLossStatement(params),
+        getReportMonthlyProfitTrend(params),
+        getReportProfitByProduct({ ...params, top_n: 20 }),
       ])
 
       // Process statement
-      if (statementRes.status === 'fulfilled' && statementRes.value.data) {
-        setStatement(statementRes.value.data as unknown as ProfitLossStatement)
+      if (
+        statementRes.status === 'fulfilled' &&
+        statementRes.value.status === 200 &&
+        statementRes.value.data.success &&
+        statementRes.value.data.data
+      ) {
+        setStatement(statementRes.value.data.data)
       } else {
         setStatement(null)
       }
 
       // Process trends
-      if (trendsRes.status === 'fulfilled' && trendsRes.value.data) {
-        setMonthlyTrends(trendsRes.value.data as unknown as MonthlyProfitTrend[])
+      if (
+        trendsRes.status === 'fulfilled' &&
+        trendsRes.value.status === 200 &&
+        trendsRes.value.data.success &&
+        trendsRes.value.data.data
+      ) {
+        setMonthlyTrends(trendsRes.value.data.data)
       } else {
         setMonthlyTrends([])
       }
 
       // Process product profit
-      if (productRes.status === 'fulfilled' && productRes.value.data) {
-        setProfitByProduct(productRes.value.data as unknown as ProfitByProduct[])
+      if (
+        productRes.status === 'fulfilled' &&
+        productRes.value.status === 200 &&
+        productRes.value.data.success &&
+        productRes.value.data.data
+      ) {
+        setProfitByProduct(productRes.value.data.data)
       } else {
         setProfitByProduct([])
       }
@@ -236,7 +261,7 @@ export default function ProfitLossPage() {
       setLoading(false)
       setChartLoading(false)
     }
-  }, [reportsApi, dateRange])
+  }, [dateRange])
 
   // Fetch data on mount and when date range changes
   useEffect(() => {
@@ -247,12 +272,12 @@ export default function ProfitLossPage() {
   const trendChartOptions = useMemo(() => {
     if (monthlyTrends.length === 0) return null
 
-    const months = monthlyTrends.map((d) => formatMonthLabel(d.year, d.month))
-    const revenue = monthlyTrends.map((d) => d.sales_revenue)
-    const grossProfit = monthlyTrends.map((d) => d.gross_profit)
-    const netProfit = monthlyTrends.map((d) => d.net_profit)
-    const grossMargin = monthlyTrends.map((d) => d.gross_margin * 100)
-    const netMargin = monthlyTrends.map((d) => d.net_margin * 100)
+    const months = monthlyTrends.map((d) => formatMonthLabel(d.year ?? 0, d.month ?? 0))
+    const revenue = monthlyTrends.map((d) => d.sales_revenue ?? 0)
+    const grossProfit = monthlyTrends.map((d) => d.gross_profit ?? 0)
+    const netProfit = monthlyTrends.map((d) => d.net_profit ?? 0)
+    const grossMargin = monthlyTrends.map((d) => (d.gross_margin ?? 0) * 100)
+    const netMargin = monthlyTrends.map((d) => (d.net_margin ?? 0) * 100)
 
     return {
       tooltip: {
@@ -619,7 +644,7 @@ export default function ProfitLossPage() {
                   value: (
                     <div className="statement-section">
                       <div
-                        className={`statement-row total ${statement.net_profit >= 0 ? 'positive' : 'negative'}`}
+                        className={`statement-row total ${(statement.net_profit ?? 0) >= 0 ? 'positive' : 'negative'}`}
                       >
                         <span>净利润</span>
                         <span className="amount">{formatCurrency(statement.net_profit)}</span>
@@ -628,9 +653,9 @@ export default function ProfitLossPage() {
                         <span>净利率</span>
                         <Tag
                           color={
-                            statement.net_margin >= 0.1
+                            (statement.net_margin ?? 0) >= 0.1
                               ? 'green'
-                              : statement.net_margin >= 0
+                              : (statement.net_margin ?? 0) >= 0
                                 ? 'orange'
                                 : 'red'
                           }

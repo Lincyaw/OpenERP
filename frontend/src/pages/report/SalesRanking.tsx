@@ -26,10 +26,17 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Row, Grid } from '@/components/common/layout'
-import { getReports } from '@/api/reports'
-import type { ProductSalesRanking, CustomerSalesRanking } from '@/api/reports'
+import { getReportProductSalesRanking, getReportCustomerSalesRanking } from '@/api/reports/reports'
+import type {
+  HandlerProductSalesRankingResponse,
+  HandlerCustomerSalesRankingResponse,
+} from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import './SalesRanking.css'
+
+// Type aliases for cleaner code
+type ProductSalesRanking = HandlerProductSalesRankingResponse
+type CustomerSalesRanking = HandlerCustomerSalesRankingResponse
 
 // Register ECharts components
 echarts.use([BarChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
@@ -93,13 +100,13 @@ function getDimensionValue(
 ): number {
   switch (dimension) {
     case 'amount':
-      return item.total_amount
+      return item.total_amount ?? 0
     case 'quantity':
-      return item.total_quantity
+      return item.total_quantity ?? 0
     case 'profit':
-      return item.total_profit
+      return item.total_profit ?? 0
     default:
-      return item.total_amount
+      return item.total_amount ?? 0
   }
 }
 
@@ -174,8 +181,6 @@ function MetricCard({ title, value, icon, color }: MetricCardProps) {
  * - Date range filter with presets
  */
 export default function SalesRankingPage() {
-  const reportsApi = useMemo(() => getReports(), [])
-
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)
   const [presetRange, setPresetRange] = useState<string>('30days')
@@ -279,20 +284,29 @@ export default function SalesRankingPage() {
     }
 
     try {
-      // Note: API functions expect (body, params) - body is unused for GET requests
       const [productsRes, customersRes] = await Promise.allSettled([
-        reportsApi.getReportProductSalesRanking(params),
-        reportsApi.getReportCustomerSalesRanking(params),
+        getReportProductSalesRanking(params),
+        getReportCustomerSalesRanking(params),
       ])
 
-      if (productsRes.status === 'fulfilled' && productsRes.value.data) {
-        setProductRankings(productsRes.value.data as unknown as ProductSalesRanking[])
+      if (
+        productsRes.status === 'fulfilled' &&
+        productsRes.value.status === 200 &&
+        productsRes.value.data.success &&
+        productsRes.value.data.data
+      ) {
+        setProductRankings(productsRes.value.data.data)
       } else {
         setProductRankings([])
       }
 
-      if (customersRes.status === 'fulfilled' && customersRes.value.data) {
-        setCustomerRankings(customersRes.value.data as unknown as CustomerSalesRanking[])
+      if (
+        customersRes.status === 'fulfilled' &&
+        customersRes.value.status === 200 &&
+        customersRes.value.data.success &&
+        customersRes.value.data.data
+      ) {
+        setCustomerRankings(customersRes.value.data.data)
       } else {
         setCustomerRankings([])
       }
@@ -301,7 +315,7 @@ export default function SalesRankingPage() {
     } finally {
       setLoading(false)
     }
-  }, [reportsApi, dateRange, topN])
+  }, [dateRange, topN])
 
   // Fetch data on mount and when dependencies change
   useEffect(() => {
@@ -338,7 +352,9 @@ export default function SalesRankingPage() {
     const top10 = sortedProductRankings.slice(0, 10)
     const names = top10
       .map((p) =>
-        p.product_name.length > 12 ? p.product_name.substring(0, 12) + '...' : p.product_name
+        (p.product_name ?? '').length > 12
+          ? (p.product_name ?? '').substring(0, 12) + '...'
+          : (p.product_name ?? '')
       )
       .reverse()
     const values = top10.map((p) => getDimensionValue(p, dimension)).reverse()
@@ -350,7 +366,7 @@ export default function SalesRankingPage() {
         formatter: (params: Array<{ name: string; value: number }>) => {
           const param = params[0]
           const originalItem = top10.find((p) =>
-            p.product_name.startsWith(param.name.replace('...', ''))
+            (p.product_name ?? '').startsWith(param.name.replace('...', ''))
           )
           return `${originalItem?.product_name || param.name}<br/>${getDimensionLabel(dimension)}: ${formatDimensionValue(param.value, dimension)}`
         },
@@ -415,7 +431,9 @@ export default function SalesRankingPage() {
     const top10 = sortedCustomerRankings.slice(0, 10)
     const names = top10
       .map((c) =>
-        c.customer_name.length > 12 ? c.customer_name.substring(0, 12) + '...' : c.customer_name
+        (c.customer_name ?? '').length > 12
+          ? (c.customer_name ?? '').substring(0, 12) + '...'
+          : (c.customer_name ?? '')
       )
       .reverse()
     const values = top10.map((c) => getDimensionValue(c, dimension)).reverse()
@@ -427,7 +445,7 @@ export default function SalesRankingPage() {
         formatter: (params: Array<{ name: string; value: number }>) => {
           const param = params[0]
           const originalItem = top10.find((c) =>
-            c.customer_name.startsWith(param.name.replace('...', ''))
+            (c.customer_name ?? '').startsWith(param.name.replace('...', ''))
           )
           return `${originalItem?.customer_name || param.name}<br/>${getDimensionLabel(dimension)}: ${formatDimensionValue(param.value, dimension)}`
         },

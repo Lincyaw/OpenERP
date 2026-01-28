@@ -128,14 +128,11 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
     async (override: Override) => {
       try {
         const response = await deleteFeatureFlagOverride(flagKey, override.id || '')
-        if (response.status === 200 && response.data.success) {
+        if (response.status === 204) {
           Toast.success(t('featureFlags.overrides.deleteSuccess', 'Override deleted successfully'))
           fetchOverrides()
         } else {
-          Toast.error(
-            response.data.error?.message ||
-              t('featureFlags.overrides.deleteError', 'Failed to delete override')
-          )
+          Toast.error(t('featureFlags.overrides.deleteError', 'Failed to delete override'))
         }
       } catch {
         Toast.error(t('featureFlags.overrides.deleteError', 'Failed to delete override'))
@@ -166,7 +163,7 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         width: 120,
         render: (type: OverrideTargetType | string | undefined) => (
           <Tag color={getTargetTypeColor(type)}>
-            {t(`featureFlags.overrides.targetTypes.${type}`, type || '')}
+            {String(t(`featureFlags.overrides.targetTypes.${type}`, { defaultValue: type || '' }))}
           </Tag>
         ),
       },

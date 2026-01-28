@@ -22,7 +22,6 @@ import type {
 import type {
   AddSalesOrderItemBody,
   CancelSalesOrderBody,
-  CompleteSalesOrderBody,
   ConfirmSalesOrderBody,
   CreateSalesOrderBody,
   DtoErrorResponse,
@@ -940,14 +939,11 @@ export const getCompleteSalesOrderUrl = (id: string) => {
 
 export const completeSalesOrder = async (
   id: string,
-  completeSalesOrderBody: CompleteSalesOrderBody,
   options?: RequestInit
 ): Promise<completeSalesOrderResponse> => {
   return customInstance<completeSalesOrderResponse>(getCompleteSalesOrderUrl(id), {
     ...options,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(completeSalesOrderBody),
   })
 }
 
@@ -958,14 +954,14 @@ export const getCompleteSalesOrderMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof completeSalesOrder>>,
     TError,
-    { id: string; data: CompleteSalesOrderBody },
+    { id: string },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof completeSalesOrder>>,
   TError,
-  { id: string; data: CompleteSalesOrderBody },
+  { id: string },
   TContext
 > => {
   const mutationKey = ['completeSalesOrder']
@@ -977,11 +973,11 @@ export const getCompleteSalesOrderMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof completeSalesOrder>>,
-    { id: string; data: CompleteSalesOrderBody }
+    { id: string }
   > = (props) => {
-    const { id, data } = props ?? {}
+    const { id } = props ?? {}
 
-    return completeSalesOrder(id, data, requestOptions)
+    return completeSalesOrder(id, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -990,7 +986,7 @@ export const getCompleteSalesOrderMutationOptions = <
 export type CompleteSalesOrderMutationResult = NonNullable<
   Awaited<ReturnType<typeof completeSalesOrder>>
 >
-export type CompleteSalesOrderMutationBody = CompleteSalesOrderBody
+
 export type CompleteSalesOrderMutationError = DtoErrorResponse
 
 /**
@@ -1001,7 +997,7 @@ export const useCompleteSalesOrder = <TError = DtoErrorResponse, TContext = unkn
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof completeSalesOrder>>,
       TError,
-      { id: string; data: CompleteSalesOrderBody },
+      { id: string },
       TContext
     >
     request?: SecondParameter<typeof customInstance>
@@ -1010,7 +1006,7 @@ export const useCompleteSalesOrder = <TError = DtoErrorResponse, TContext = unkn
 ): UseMutationResult<
   Awaited<ReturnType<typeof completeSalesOrder>>,
   TError,
-  { id: string; data: CompleteSalesOrderBody },
+  { id: string },
   TContext
 > => {
   return useMutation(getCompleteSalesOrderMutationOptions(options), queryClient)

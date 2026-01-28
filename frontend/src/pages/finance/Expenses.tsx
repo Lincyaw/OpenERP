@@ -24,22 +24,36 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  listExpensExpenses,
+  getExpensExpensesSummary,
+  submitExpenseExpens,
+  approveExpenseExpens,
+  rejectExpenseExpens,
+  cancelExpenseExpens,
+  deleteExpensExpense,
+} from '@/api/expenses/expenses'
 import type {
-  ExpenseRecord,
-  ExpenseCategory,
-  ExpenseStatus,
-  ExpensePaymentStatus,
-  ExpenseSummary,
-  GetExpenseRecordsParams,
-} from '@/api/finance'
+  HandlerExpenseRecordResponse,
+  ListExpensExpensesParams,
+  ListExpensExpensesCategory,
+  ListExpensExpensesStatus,
+  ListExpensExpensesPaymentStatus,
+  HandlerExpenseSummaryResponse,
+} from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Expenses.css'
 
 const { Title, Text } = Typography
 
+// Expense status type
+type ExpenseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+
+// Expense payment status type
+type ExpensePaymentStatus = 'UNPAID' | 'PAID'
+
 // Expense type with index signature for DataTable compatibility
-type ExpenseRow = ExpenseRecord & Record<string, unknown>
+type ExpenseRow = HandlerExpenseRecordResponse & Record<string, unknown>
 
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<ExpenseStatus, 'grey' | 'orange' | 'green' | 'red'> = {
@@ -95,7 +109,6 @@ function formatDate(dateStr?: string): string {
 export default function ExpensesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
-  const api = useMemo(() => getFinanceApi(), [])
 
   // Filter options with i18n
   const categoryOptions = useMemo(
@@ -141,7 +154,7 @@ export default function ExpensesPage() {
   const [expenseList, setExpenseList] = useState<ExpenseRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<ExpenseSummary | null>(null)
+  const [summary, setSummary] = useState<HandlerExpenseSummaryResponse | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Filter state
@@ -169,27 +182,29 @@ export default function ExpensesPage() {
   const fetchExpenses = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetExpenseRecordsParams = {
+      const params: ListExpensExpensesParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        category: (categoryFilter || undefined) as ExpenseCategory | undefined,
-        status: (statusFilter || undefined) as ExpenseStatus | undefined,
-        payment_status: (paymentStatusFilter || undefined) as ExpensePaymentStatus | undefined,
+        category: (categoryFilter || undefined) as ListExpensExpensesCategory | undefined,
+        status: (statusFilter || undefined) as ListExpensExpensesStatus | undefined,
+        payment_status: (paymentStatusFilter || undefined) as
+          | ListExpensExpensesPaymentStatus
+          | undefined,
         from_date: dateRange?.[0]?.toISOString().split('T')[0],
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await api.listExpenseExpenses(params)
+      const response = await listExpensExpenses(params)
 
-      if (response.success && response.data) {
-        setExpenseList(response.data as ExpenseRow[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setExpenseList(response.data.data as ExpenseRow[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -199,7 +214,6 @@ export default function ExpensesPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     searchKeyword,
@@ -221,16 +235,16 @@ export default function ExpensesPage() {
       if (dateRange?.[1]) {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
-      const response = await api.getExpensExpensesSummary(params)
-      if (response.success && response.data) {
-        setSummary(response.data)
+      const response = await getExpensExpensesSummary(params)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
       }
     } catch {
       // Silently fail for summary
     } finally {
       setSummaryLoading(false)
     }
-  }, [api, dateRange])
+  }, [dateRange])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -318,36 +332,36 @@ export default function ExpensesPage() {
   const handleSubmit = useCallback(
     async (expense: ExpenseRow) => {
       try {
-        const response = await api.submitExpenseExpens(expense.id)
-        if (response.success) {
+        const response = await submitExpenseExpens(expense.id || '', {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('expenses.messages.submitSuccess'))
           fetchExpenses()
         } else {
-          Toast.error(response.error || t('expenses.messages.submitError'))
+          Toast.error(response.data.error?.message || t('expenses.messages.submitError'))
         }
       } catch {
         Toast.error(t('expenses.messages.submitError'))
       }
     },
-    [api, fetchExpenses, t]
+    [fetchExpenses, t]
   )
 
   // Handle approve expense
   const handleApprove = useCallback(
     async (expense: ExpenseRow) => {
       try {
-        const response = await api.approveExpenseExpens(expense.id)
-        if (response.success) {
+        const response = await approveExpenseExpens(expense.id || '', {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('expenses.messages.approveSuccess'))
           fetchExpenses()
         } else {
-          Toast.error(response.error || t('expenses.messages.approveError'))
+          Toast.error(response.data.error?.message || t('expenses.messages.approveError'))
         }
       } catch {
         Toast.error(t('expenses.messages.approveError'))
       }
     },
-    [api, fetchExpenses, t]
+    [fetchExpenses, t]
   )
 
   // Open reject modal
@@ -365,22 +379,22 @@ export default function ExpensesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.rejectExpenseExpens(selectedExpense.id, {
+      const response = await rejectExpenseExpens(selectedExpense.id || '', {
         reason: actionReason,
       })
-      if (response.success) {
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('expenses.messages.rejectSuccess'))
         setRejectModalVisible(false)
         fetchExpenses()
       } else {
-        Toast.error(response.error || t('expenses.messages.rejectError'))
+        Toast.error(response.data.error?.message || t('expenses.messages.rejectError'))
       }
     } catch {
       Toast.error(t('expenses.messages.rejectError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedExpense, actionReason, fetchExpenses, t])
+  }, [selectedExpense, actionReason, fetchExpenses, t])
 
   // Open cancel modal
   const openCancelModal = useCallback((expense: ExpenseRow) => {
@@ -397,22 +411,22 @@ export default function ExpensesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.cancelExpenseExpens(selectedExpense.id, {
+      const response = await cancelExpenseExpens(selectedExpense.id || '', {
         reason: actionReason,
       })
-      if (response.success) {
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('expenses.messages.cancelSuccess'))
         setCancelModalVisible(false)
         fetchExpenses()
       } else {
-        Toast.error(response.error || t('expenses.messages.cancelError'))
+        Toast.error(response.data.error?.message || t('expenses.messages.cancelError'))
       }
     } catch {
       Toast.error(t('expenses.messages.cancelError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedExpense, actionReason, fetchExpenses, t])
+  }, [selectedExpense, actionReason, fetchExpenses, t])
 
   // Handle delete expense
   const handleDelete = useCallback(
@@ -425,12 +439,15 @@ export default function ExpensesPage() {
         okType: 'danger',
         onOk: async () => {
           try {
-            const response = await api.deleteExpenseExpense(expense.id)
-            if (response.success) {
+            const response = await deleteExpensExpense(expense.id || '')
+            if (response.status === 200 && response.data.success) {
               Toast.success(t('expenses.messages.deleteSuccess'))
               fetchExpenses()
             } else {
-              Toast.error(response.error || t('expenses.messages.deleteError'))
+              Toast.error(
+                (response.data as { error?: { message?: string } }).error?.message ||
+                  t('expenses.messages.deleteError')
+              )
             }
           } catch {
             Toast.error(t('expenses.messages.deleteError'))
@@ -438,7 +455,7 @@ export default function ExpensesPage() {
         },
       })
     },
-    [api, fetchExpenses, t]
+    [fetchExpenses, t]
   )
 
   // Refresh handler

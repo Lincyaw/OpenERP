@@ -22,21 +22,27 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  listFinancePayablePayables,
+  getFinancePayablePayableSummary,
+} from '@/api/finance-payables/finance-payables'
 import type {
-  AccountPayable,
-  AccountPayableStatus,
-  PayableSourceType,
-  PayableSummary,
-  GetPayablesParams,
-} from '@/api/finance'
+  HandlerAccountPayableResponse,
+  ListFinancePayablePayablesParams,
+  ListFinancePayablePayablesStatus,
+  ListFinancePayablePayablesSourceType,
+  HandlerPayableSummaryResponse,
+} from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Payables.css'
 
 const { Title, Text } = Typography
 
+// Payable status type
+type AccountPayableStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'REVERSED' | 'CANCELLED'
+
 // Payable type with index signature for DataTable compatibility
-type PayableRow = AccountPayable & Record<string, unknown>
+type PayableRow = HandlerAccountPayableResponse & Record<string, unknown>
 
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
@@ -79,7 +85,7 @@ function formatDate(dateStr?: string): string {
 /**
  * Check if a payable is overdue
  */
-function isOverdue(payable: AccountPayable): boolean {
+function isOverdue(payable: HandlerAccountPayableResponse): boolean {
   if (!payable.due_date) return false
   if (payable.status === 'PAID' || payable.status === 'CANCELLED') return false
   return new Date(payable.due_date) < new Date()
@@ -98,7 +104,6 @@ function isOverdue(payable: AccountPayable): boolean {
 export default function PayablesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
-  const api = useMemo(() => getFinanceApi(), [])
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(
@@ -128,7 +133,7 @@ export default function PayablesPage() {
   const [payableList, setPayableList] = useState<PayableRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<PayableSummary | null>(null)
+  const [summary, setSummary] = useState<HandlerPayableSummaryResponse | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Filter state
@@ -149,27 +154,29 @@ export default function PayablesPage() {
   const fetchPayables = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetPayablesParams = {
+      const params: ListFinancePayablePayablesParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as AccountPayableStatus | undefined,
-        source_type: (sourceTypeFilter || undefined) as PayableSourceType | undefined,
+        status: (statusFilter || undefined) as ListFinancePayablePayablesStatus | undefined,
+        source_type: (sourceTypeFilter || undefined) as
+          | ListFinancePayablePayablesSourceType
+          | undefined,
         from_date: dateRange?.[0]?.toISOString().split('T')[0],
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
         overdue: overdueOnly || undefined,
       }
 
-      const response = await api.listFinancePayablesPayables(params)
+      const response = await listFinancePayablePayables(params)
 
-      if (response.success && response.data) {
-        setPayableList(response.data as PayableRow[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setPayableList(response.data.data as PayableRow[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -179,7 +186,6 @@ export default function PayablesPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     searchKeyword,
@@ -194,16 +200,16 @@ export default function PayablesPage() {
   const fetchSummary = useCallback(async () => {
     setSummaryLoading(true)
     try {
-      const response = await api.getFinancePayablePayableSummary()
-      if (response.success && response.data) {
-        setSummary(response.data)
+      const response = await getFinancePayablePayableSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
       }
     } catch {
       // Silently fail for summary
     } finally {
       setSummaryLoading(false)
     }
-  }, [api])
+  }, [])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -334,7 +340,7 @@ export default function PayablesPage() {
           <div className="source-cell">
             <span className="source-number">{(sourceNumber as string) || '-'}</span>
             <span className="source-type">
-              {record.source_type ? t(`payables.sourceType.${record.source_type}`) : '-'}
+              {record.source_type ? String(t(`payables.sourceType.${record.source_type}`)) : '-'}
             </span>
           </div>
         ),

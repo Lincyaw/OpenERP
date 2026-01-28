@@ -21,7 +21,12 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
+import {
+  listPurchaseOrders,
+  confirmPurchaseOrder,
+  cancelPurchaseOrder,
+  deletePurchaseOrder,
+} from '@/api/purchase-orders/purchase-orders'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
   HandlerPurchaseOrderListResponse,
@@ -69,7 +74,6 @@ export default function PurchaseOrdersPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
   const { formatCurrency, formatDate, formatDateTime } = useFormatters()
-  const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
 
   // State for data
   const [orderList, setOrderList] = useState<PurchaseOrder[]>([])
@@ -156,16 +160,16 @@ export default function PurchaseOrdersPage() {
         params.end_date = dateRange[1].toISOString()
       }
 
-      const response = await purchaseOrderApi.listPurchaseOrders(params)
+      const response = await listPurchaseOrders(params)
 
-      if (response.success && response.data) {
-        setOrderList(response.data as PurchaseOrder[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setOrderList(response.data.data as PurchaseOrder[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -175,7 +179,6 @@ export default function PurchaseOrdersPage() {
       setLoading(false)
     }
   }, [
-    purchaseOrderApi,
     t,
     state.pagination.page,
     state.pagination.pageSize,
@@ -250,7 +253,7 @@ export default function PurchaseOrdersPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await purchaseOrderApi.confirmPurchaseOrder(order.id!, {})
+            await confirmPurchaseOrder(order.id!, {})
             Toast.success(
               t('purchaseOrder.messages.confirmSuccess', { orderNumber: order.order_number })
             )
@@ -261,7 +264,7 @@ export default function PurchaseOrdersPage() {
         },
       })
     },
-    [purchaseOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle receive order - navigate to receive page
@@ -286,7 +289,7 @@ export default function PurchaseOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseOrderApi.cancelPurchaseOrder(order.id!, {
+            await cancelPurchaseOrder(order.id!, {
               reason: t('common.userCancel'),
             })
             Toast.success(
@@ -299,7 +302,7 @@ export default function PurchaseOrdersPage() {
         },
       })
     },
-    [purchaseOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle delete order
@@ -314,7 +317,7 @@ export default function PurchaseOrdersPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await purchaseOrderApi.deletePurchaseOrder(order.id!)
+            await deletePurchaseOrder(order.id!)
             Toast.success(
               t('purchaseOrder.messages.deleteSuccess', { orderNumber: order.order_number })
             )
@@ -325,7 +328,7 @@ export default function PurchaseOrdersPage() {
         },
       })
     },
-    [purchaseOrderApi, fetchOrders, t]
+    [fetchOrders, t]
   )
 
   // Handle view order

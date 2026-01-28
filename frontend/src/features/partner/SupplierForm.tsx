@@ -275,7 +275,10 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         notes: data.notes,
       })
       if (response.status !== 200 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('suppliers.messages.updateError'))
+        throw new Error(
+          (response.data.error as { message?: string })?.message ||
+            t('suppliers.messages.updateError')
+        )
       }
     } else {
       // Create new supplier
@@ -302,7 +305,10 @@ export function SupplierForm({ supplierId, initialData }: SupplierFormProps) {
         notes: data.notes,
       })
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('suppliers.messages.createError'))
+        throw new Error(
+          (response.data.error as { message?: string })?.message ||
+            t('suppliers.messages.createError')
+        )
       }
     }
   }

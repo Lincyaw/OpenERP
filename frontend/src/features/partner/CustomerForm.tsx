@@ -286,7 +286,10 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         notes: data.notes,
       })
       if (response.status !== 200 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('customers.messages.updateError'))
+        throw new Error(
+          (response.data.error as { message?: string })?.message ||
+            t('customers.messages.updateError')
+        )
       }
     } else {
       // Create new customer
@@ -309,7 +312,10 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
         notes: data.notes,
       })
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('customers.messages.createError'))
+        throw new Error(
+          (response.data.error as { message?: string })?.message ||
+            t('customers.messages.createError')
+        )
       }
     }
   }

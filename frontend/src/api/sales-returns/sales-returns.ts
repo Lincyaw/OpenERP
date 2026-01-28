@@ -32,7 +32,6 @@ import type {
   ListSalesReturnsParams,
   ReceiveSalesReturnBody,
   RejectSalesReturnBody,
-  SubmitSalesReturnBody,
   UpdateSalesReturnBody,
   UpdateSalesReturnItemBody,
 } from '.././models'
@@ -1881,14 +1880,11 @@ export const getSubmitSalesReturnUrl = (id: string) => {
 
 export const submitSalesReturn = async (
   id: string,
-  submitSalesReturnBody: SubmitSalesReturnBody,
   options?: RequestInit
 ): Promise<submitSalesReturnResponse> => {
   return customInstance<submitSalesReturnResponse>(getSubmitSalesReturnUrl(id), {
     ...options,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(submitSalesReturnBody),
   })
 }
 
@@ -1899,14 +1895,14 @@ export const getSubmitSalesReturnMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof submitSalesReturn>>,
     TError,
-    { id: string; data: SubmitSalesReturnBody },
+    { id: string },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof submitSalesReturn>>,
   TError,
-  { id: string; data: SubmitSalesReturnBody },
+  { id: string },
   TContext
 > => {
   const mutationKey = ['submitSalesReturn']
@@ -1918,11 +1914,11 @@ export const getSubmitSalesReturnMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof submitSalesReturn>>,
-    { id: string; data: SubmitSalesReturnBody }
+    { id: string }
   > = (props) => {
-    const { id, data } = props ?? {}
+    const { id } = props ?? {}
 
-    return submitSalesReturn(id, data, requestOptions)
+    return submitSalesReturn(id, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -1931,7 +1927,7 @@ export const getSubmitSalesReturnMutationOptions = <
 export type SubmitSalesReturnMutationResult = NonNullable<
   Awaited<ReturnType<typeof submitSalesReturn>>
 >
-export type SubmitSalesReturnMutationBody = SubmitSalesReturnBody
+
 export type SubmitSalesReturnMutationError = DtoErrorResponse
 
 /**
@@ -1942,7 +1938,7 @@ export const useSubmitSalesReturn = <TError = DtoErrorResponse, TContext = unkno
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof submitSalesReturn>>,
       TError,
-      { id: string; data: SubmitSalesReturnBody },
+      { id: string },
       TContext
     >
     request?: SecondParameter<typeof customInstance>
@@ -1951,7 +1947,7 @@ export const useSubmitSalesReturn = <TError = DtoErrorResponse, TContext = unkno
 ): UseMutationResult<
   Awaited<ReturnType<typeof submitSalesReturn>>,
   TError,
-  { id: string; data: SubmitSalesReturnBody },
+  { id: string },
   TContext
 > => {
   return useMutation(getSubmitSalesReturnMutationOptions(options), queryClient)

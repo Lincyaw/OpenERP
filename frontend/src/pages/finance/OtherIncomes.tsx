@@ -24,22 +24,34 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  listIncomeIncomes,
+  getIncomeIncomesSummary,
+  confirmIncomeIncome,
+  cancelIncomeIncome,
+  deleteIncomeIncome,
+} from '@/api/incomes/incomes'
 import type {
-  OtherIncomeRecord,
-  IncomeCategory,
-  IncomeStatus,
-  IncomeReceiptStatus,
-  IncomeSummary,
-  GetOtherIncomeRecordsParams,
-} from '@/api/finance'
+  HandlerOtherIncomeRecordResponse,
+  ListIncomeIncomesParams,
+  ListIncomeIncomesCategory,
+  ListIncomeIncomesStatus,
+  ListIncomeIncomesReceiptStatus,
+  HandlerIncomeSummaryResponse,
+} from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './OtherIncomes.css'
 
 const { Title, Text } = Typography
 
+// Income status type
+type IncomeStatus = 'DRAFT' | 'CONFIRMED' | 'CANCELLED'
+
+// Income receipt status type
+type IncomeReceiptStatus = 'PENDING' | 'RECEIVED'
+
 // Income type with index signature for DataTable compatibility
-type IncomeRow = OtherIncomeRecord & Record<string, unknown>
+type IncomeRow = HandlerOtherIncomeRecordResponse & Record<string, unknown>
 
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<IncomeStatus, 'grey' | 'green' | 'red'> = {
@@ -93,13 +105,12 @@ function formatDate(dateStr?: string): string {
 export default function OtherIncomesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
-  const api = useMemo(() => getFinanceApi(), [])
 
   // State for data
   const [incomeList, setIncomeList] = useState<IncomeRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<IncomeSummary | null>(null)
+  const [summary, setSummary] = useState<HandlerIncomeSummaryResponse | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Filter state
@@ -182,27 +193,29 @@ export default function OtherIncomesPage() {
   const fetchIncomes = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetOtherIncomeRecordsParams = {
+      const params: ListIncomeIncomesParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        category: (categoryFilter || undefined) as IncomeCategory | undefined,
-        status: (statusFilter || undefined) as IncomeStatus | undefined,
-        receipt_status: (receiptStatusFilter || undefined) as IncomeReceiptStatus | undefined,
+        category: (categoryFilter || undefined) as ListIncomeIncomesCategory | undefined,
+        status: (statusFilter || undefined) as ListIncomeIncomesStatus | undefined,
+        receipt_status: (receiptStatusFilter || undefined) as
+          | ListIncomeIncomesReceiptStatus
+          | undefined,
         from_date: dateRange?.[0]?.toISOString().split('T')[0],
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
       }
 
-      const response = await api.listIncomeIncomes(params)
+      const response = await listIncomeIncomes(params)
 
-      if (response.success && response.data) {
-        setIncomeList(response.data as IncomeRow[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setIncomeList(response.data.data as IncomeRow[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -212,7 +225,6 @@ export default function OtherIncomesPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     searchKeyword,
@@ -234,16 +246,16 @@ export default function OtherIncomesPage() {
       if (dateRange?.[1]) {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
-      const response = await api.getIncomeIncomesSummary(params)
-      if (response.success && response.data) {
-        setSummary(response.data)
+      const response = await getIncomeIncomesSummary(params)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
       }
     } catch {
       // Silently fail for summary
     } finally {
       setSummaryLoading(false)
     }
-  }, [api, dateRange])
+  }, [dateRange])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -331,18 +343,18 @@ export default function OtherIncomesPage() {
   const handleConfirm = useCallback(
     async (income: IncomeRow) => {
       try {
-        const response = await api.confirmIncomeIncome(income.id)
-        if (response.success) {
+        const response = await confirmIncomeIncome(income.id || '', {})
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('otherIncomes.messages.confirmSuccess'))
           fetchIncomes()
         } else {
-          Toast.error(response.error || t('otherIncomes.messages.confirmError'))
+          Toast.error(response.data.error?.message || t('otherIncomes.messages.confirmError'))
         }
       } catch {
         Toast.error(t('otherIncomes.messages.confirmError'))
       }
     },
-    [api, fetchIncomes, t]
+    [fetchIncomes, t]
   )
 
   // Open cancel modal
@@ -360,22 +372,22 @@ export default function OtherIncomesPage() {
     }
     setActionLoading(true)
     try {
-      const response = await api.cancelIncomeIncome(selectedIncome.id, {
+      const response = await cancelIncomeIncome(selectedIncome.id || '', {
         reason: actionReason,
       })
-      if (response.success) {
+      if (response.status === 200 && response.data.success) {
         Toast.success(t('otherIncomes.messages.cancelSuccess'))
         setCancelModalVisible(false)
         fetchIncomes()
       } else {
-        Toast.error(response.error || t('otherIncomes.messages.cancelError'))
+        Toast.error(response.data.error?.message || t('otherIncomes.messages.cancelError'))
       }
     } catch {
       Toast.error(t('otherIncomes.messages.cancelError'))
     } finally {
       setActionLoading(false)
     }
-  }, [api, selectedIncome, actionReason, fetchIncomes, t])
+  }, [selectedIncome, actionReason, fetchIncomes, t])
 
   // Handle delete income
   const handleDelete = useCallback(
@@ -388,12 +400,15 @@ export default function OtherIncomesPage() {
         okType: 'danger',
         onOk: async () => {
           try {
-            const response = await api.deleteIncomeIncome(income.id)
-            if (response.success) {
+            const response = await deleteIncomeIncome(income.id || '')
+            if (response.status === 200 && response.data.success) {
               Toast.success(t('otherIncomes.messages.deleteSuccess'))
               fetchIncomes()
             } else {
-              Toast.error(response.error || t('otherIncomes.messages.deleteError'))
+              Toast.error(
+                (response.data as { error?: { message?: string } }).error?.message ||
+                  t('otherIncomes.messages.deleteError')
+              )
             }
           } catch {
             Toast.error(t('otherIncomes.messages.deleteError'))
@@ -401,7 +416,7 @@ export default function OtherIncomesPage() {
         },
       })
     },
-    [api, fetchIncomes, t]
+    [fetchIncomes, t]
   )
 
   // Refresh handler

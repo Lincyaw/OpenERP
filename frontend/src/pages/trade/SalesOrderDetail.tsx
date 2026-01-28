@@ -141,7 +141,7 @@ export default function SalesOrderDetailPage() {
     if (!order?.id) return
     setActionLoading(true)
     try {
-      await completeSalesOrder(order.id)
+      await completeSalesOrder(order.id, {})
       Toast.success(t('orderDetail.messages.completeSuccess'))
       fetchOrder()
     } catch {

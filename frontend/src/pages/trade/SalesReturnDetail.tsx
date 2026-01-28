@@ -123,7 +123,7 @@ export default function SalesReturnDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await submitSalesReturn(returnData.id!)
+          await submitSalesReturn(returnData.id!, {})
           Toast.success(t('salesReturn.messages.submitSuccess'))
           fetchReturn()
         } catch {

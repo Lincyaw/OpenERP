@@ -237,10 +237,12 @@ export default function FeatureFlagDetailPage() {
               </Title>
               <Space>
                 <Tag color={getTypeColor(flag.type)} size="large">
-                  {t(`featureFlags.type.${flag.type}`, flag.type)}
+                  {String(t(`featureFlags.type.${flag.type}`, { defaultValue: flag.type || '' }))}
                 </Tag>
                 <Tag color={getStatusColor(flag.status)} size="large">
-                  {t(`featureFlags.status.${flag.status}`, flag.status)}
+                  {String(
+                    t(`featureFlags.status.${flag.status}`, { defaultValue: flag.status || '' })
+                  )}
                 </Tag>
               </Space>
             </div>
@@ -281,10 +283,10 @@ export default function FeatureFlagDetailPage() {
             <ConfigurationTab flag={flag} />
           </TabPane>
           <TabPane tab={t('featureFlags.tabs.overrides', 'Overrides')} itemKey="overrides">
-            <OverridesTab flagKey={flag.key} flagType={flag.type} />
+            <OverridesTab flagKey={flag.key || ''} flagType={flag.type || ''} />
           </TabPane>
           <TabPane tab={t('featureFlags.tabs.auditLog', 'Audit Log')} itemKey="audit">
-            <AuditLogTimeline flagKey={flag.key} />
+            <AuditLogTimeline flagKey={flag.key || ''} />
           </TabPane>
         </Tabs>
       </Card>
@@ -320,12 +322,12 @@ function ConfigurationTab({ flag }: ConfigurationTabProps) {
           </Descriptions.Item>
           <Descriptions.Item itemKey={t('featureFlags.columns.type', 'Type')}>
             <Tag color={getTypeColor(flag.type)}>
-              {t(`featureFlags.type.${flag.type}`, flag.type)}
+              {String(t(`featureFlags.type.${flag.type}`, { defaultValue: flag.type || '' }))}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item itemKey={t('featureFlags.columns.status', 'Status')}>
             <Tag color={getStatusColor(flag.status)}>
-              {t(`featureFlags.status.${flag.status}`, flag.status)}
+              {String(t(`featureFlags.status.${flag.status}`, { defaultValue: flag.status || '' }))}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item itemKey={t('featureFlags.detail.description', 'Description')}>

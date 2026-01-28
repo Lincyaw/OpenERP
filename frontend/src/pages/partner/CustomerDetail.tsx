@@ -107,7 +107,7 @@ export default function CustomerDetailPage() {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await activateCustomer(customer.id)
+      await activateCustomer(customer.id, {})
       Toast.success(t('customers.messages.activateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -122,7 +122,7 @@ export default function CustomerDetailPage() {
     if (!customer?.id) return
     setActionLoading(true)
     try {
-      await deactivateCustomer(customer.id)
+      await deactivateCustomer(customer.id, {})
       Toast.success(t('customers.messages.deactivateSuccess', { name: customer.name }))
       fetchCustomer()
     } catch {
@@ -144,7 +144,7 @@ export default function CustomerDetailPage() {
       onOk: async () => {
         setActionLoading(true)
         try {
-          await deactivateCustomer(customer.id!)
+          await deactivateCustomer(customer.id!, {})
           Toast.success(t('customers.messages.suspendSuccess', { name: customer.name }))
           fetchCustomer()
         } catch {

@@ -235,7 +235,7 @@ export default function PermissionsPage() {
   const rolePermissionMap = useMemo(() => {
     const map = new Map<string, string[]>()
     roles.forEach((role) => {
-      map.set(role.name, role.permissions || [])
+      map.set(role.name || '', role.permissions || [])
     })
     return map
   }, [roles])

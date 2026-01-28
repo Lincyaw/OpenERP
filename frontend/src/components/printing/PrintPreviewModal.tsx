@@ -148,14 +148,14 @@ export function PrintPreviewModal({
   const handleDownloadPdf = useCallback(async () => {
     try {
       const job = await generatePdf(copies)
-      if (job.status === 'COMPLETED' && job.pdfUrl) {
+      if (job.status === 'COMPLETED' && job.pdf_url) {
         // Open PDF in new tab
-        window.open(job.pdfUrl, '_blank')
+        window.open(job.pdf_url, '_blank')
         Toast.success('PDF 生成成功')
       } else if (job.status === 'PROCESSING') {
         Toast.info('PDF 正在生成中，请稍候...')
       } else if (job.status === 'FAILED') {
-        Toast.error(job.errorMessage || 'PDF 生成失败')
+        Toast.error(job.error_message || 'PDF 生成失败')
       }
     } catch {
       Toast.error('PDF 生成失败')
@@ -177,7 +177,7 @@ export function PrintPreviewModal({
     () =>
       templates.map((t) => ({
         value: t.id,
-        label: `${t.name}${t.isDefault ? ' (默认)' : ''} - ${PAPER_SIZE_LABELS[t.paperSize] || t.paperSize}`,
+        label: `${t.name}${t.is_default ? ' (默认)' : ''} - ${PAPER_SIZE_LABELS[t.paper_size || ''] || t.paper_size}`,
       })),
     [templates]
   )
@@ -185,7 +185,7 @@ export function PrintPreviewModal({
   // Calculate iframe dimensions based on paper size and zoom
   const iframeDimensions = useMemo(() => {
     if (!preview) return { width: 210, height: 297 }
-    const dims = getPaperDimensions(preview.paperSize, preview.orientation)
+    const dims = getPaperDimensions(preview.paper_size || 'A4', preview.orientation || 'PORTRAIT')
     return {
       width: Math.round((dims.width * zoom) / 100),
       height: Math.round((dims.height * zoom) / 100),

@@ -26568,11 +26568,6 @@ paths:
         schema:
           format: uuid
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
       responses:
         "200":
           content:
@@ -28005,11 +28000,6 @@ paths:
         schema:
           format: uuid
           type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
       responses:
         "200":
           content:

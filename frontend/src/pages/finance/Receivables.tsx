@@ -22,21 +22,27 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import {
+  listFinanceReceivableReceivables,
+  getFinanceReceivableReceivableSummary,
+} from '@/api/finance-receivables/finance-receivables'
 import type {
-  AccountReceivable,
-  AccountReceivableStatus,
-  ReceivableSourceType,
-  ReceivableSummary,
-  GetReceivablesParams,
-} from '@/api/finance'
+  HandlerAccountReceivableResponse,
+  ListFinanceReceivableReceivablesParams,
+  ListFinanceReceivableReceivablesStatus,
+  ListFinanceReceivableReceivablesSourceType,
+  HandlerReceivableSummaryResponse,
+} from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './Receivables.css'
 
 const { Title, Text } = Typography
 
+// Receivable status type
+type AccountReceivableStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'REVERSED' | 'CANCELLED'
+
 // Receivable type with index signature for DataTable compatibility
-type ReceivableRow = AccountReceivable & Record<string, unknown>
+type ReceivableRow = HandlerAccountReceivableResponse & Record<string, unknown>
 
 // Status tag color mapping
 const STATUS_TAG_COLORS: Record<
@@ -79,7 +85,7 @@ function formatDate(dateStr?: string): string {
 /**
  * Check if a receivable is overdue
  */
-function isOverdue(receivable: AccountReceivable): boolean {
+function isOverdue(receivable: HandlerAccountReceivableResponse): boolean {
   if (!receivable.due_date) return false
   if (receivable.status === 'PAID' || receivable.status === 'CANCELLED') return false
   return new Date(receivable.due_date) < new Date()
@@ -98,7 +104,6 @@ function isOverdue(receivable: AccountReceivable): boolean {
 export default function ReceivablesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
-  const api = useMemo(() => getFinanceApi(), [])
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(
@@ -128,7 +133,7 @@ export default function ReceivablesPage() {
   const [receivableList, setReceivableList] = useState<ReceivableRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<ReceivableSummary | null>(null)
+  const [summary, setSummary] = useState<HandlerReceivableSummaryResponse | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Filter state
@@ -149,27 +154,29 @@ export default function ReceivablesPage() {
   const fetchReceivables = useCallback(async () => {
     setLoading(true)
     try {
-      const params: GetReceivablesParams = {
+      const params: ListFinanceReceivableReceivablesParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
-        status: (statusFilter || undefined) as AccountReceivableStatus | undefined,
-        source_type: (sourceTypeFilter || undefined) as ReceivableSourceType | undefined,
+        status: (statusFilter || undefined) as ListFinanceReceivableReceivablesStatus | undefined,
+        source_type: (sourceTypeFilter || undefined) as
+          | ListFinanceReceivableReceivablesSourceType
+          | undefined,
         from_date: dateRange?.[0]?.toISOString().split('T')[0],
         to_date: dateRange?.[1]?.toISOString().split('T')[0],
         overdue: overdueOnly || undefined,
       }
 
-      const response = await api.listFinanceReceivablesReceivables(params)
+      const response = await listFinanceReceivableReceivables(params)
 
-      if (response.success && response.data) {
-        setReceivableList(response.data as ReceivableRow[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setReceivableList(response.data.data as ReceivableRow[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -179,7 +186,6 @@ export default function ReceivablesPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     searchKeyword,
@@ -194,16 +200,16 @@ export default function ReceivablesPage() {
   const fetchSummary = useCallback(async () => {
     setSummaryLoading(true)
     try {
-      const response = await api.getFinanceReceivableReceivableSummary()
-      if (response.success && response.data) {
-        setSummary(response.data)
+      const response = await getFinanceReceivableReceivableSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
       }
     } catch {
       // Silently fail for summary
     } finally {
       setSummaryLoading(false)
     }
-  }, [api])
+  }, [])
 
   // Fetch on mount and when state changes
   useEffect(() => {
@@ -334,7 +340,7 @@ export default function ReceivablesPage() {
           <div className="source-cell">
             <span className="source-number">{(sourceNumber as string) || '-'}</span>
             <span className="source-type">
-              {record.source_type ? t(`receivables.sourceType.${record.source_type}`) : '-'}
+              {record.source_type ? String(t(`receivables.sourceType.${record.source_type}`)) : '-'}
             </span>
           </div>
         ),

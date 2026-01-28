@@ -18,10 +18,14 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import { createFinancePaymentPaymentVoucher } from '@/api/finance-payments/finance-payments'
+import { listFinancePayablePayables } from '@/api/finance-payables/finance-payables'
 import { listSuppliers, getSupplierById } from '@/api/suppliers/suppliers'
-import type { PaymentMethod, CreatePaymentVoucherRequest, AccountPayable } from '@/api/finance'
-import type { HandlerSupplierResponse } from '@/api/models'
+import type {
+  CreateFinancePaymentPaymentVoucherBody,
+  HandlerSupplierResponse,
+  HandlerAccountPayableResponse,
+} from '@/api/models'
 import './PaymentVoucherNew.css'
 
 const { Title, Text } = Typography
@@ -89,7 +93,6 @@ export default function PaymentVoucherNewPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('finance')
-  const financeApi = useMemo(() => getFinanceApi(), [])
 
   // URL params for pre-filling
   const preSelectedSupplierId = searchParams.get('supplier_id') || ''
@@ -100,7 +103,7 @@ export default function PaymentVoucherNewPage() {
   >([])
   const [supplierLoading, setSupplierLoading] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState<HandlerSupplierResponse | null>(null)
-  const [supplierPayables, setSupplierPayables] = useState<AccountPayable[]>([])
+  const [supplierPayables, setSupplierPayables] = useState<HandlerAccountPayableResponse[]>([])
   const [payablesLoading, setPayablesLoading] = useState(false)
 
   // Payment method options with translated labels
@@ -178,38 +181,38 @@ export default function PaymentVoucherNewPage() {
   )
 
   // Fetch supplier payables when supplier is selected
-  const fetchSupplierPayables = useCallback(
-    async (supplierId: string) => {
-      if (!supplierId) {
-        setSupplierPayables([])
-        return
-      }
+  const fetchSupplierPayables = useCallback(async (supplierId: string) => {
+    if (!supplierId) {
+      setSupplierPayables([])
+      return
+    }
 
-      setPayablesLoading(true)
-      try {
-        const payablesResponse = await financeApi.listFinancePayablesPayables({
-          supplier_id: supplierId,
-          status: 'PENDING',
-          page: 1,
-          page_size: 100,
-        })
+    setPayablesLoading(true)
+    try {
+      const payablesResponse = await listFinancePayablePayables({
+        supplier_id: supplierId,
+        status: 'PENDING',
+        page: 1,
+        page_size: 100,
+      })
 
-        if (payablesResponse.success && payablesResponse.data) {
-          // Filter payables for this supplier only
-          const filteredPayables = payablesResponse.data.filter(
-            (p) =>
-              p.supplier_id === supplierId && (p.status === 'PENDING' || p.status === 'PARTIAL')
-          )
-          setSupplierPayables(filteredPayables)
-        }
-      } catch {
-        // Silent fail
-      } finally {
-        setPayablesLoading(false)
+      if (
+        payablesResponse.status === 200 &&
+        payablesResponse.data.success &&
+        payablesResponse.data.data
+      ) {
+        // Filter payables for this supplier only
+        const filteredPayables = payablesResponse.data.data.filter(
+          (p) => p.supplier_id === supplierId && (p.status === 'PENDING' || p.status === 'PARTIAL')
+        )
+        setSupplierPayables(filteredPayables)
       }
-    },
-    [financeApi]
-  )
+    } catch {
+      // Silent fail
+    } finally {
+      setPayablesLoading(false)
+    }
+  }, [])
 
   // Load pre-selected supplier
   useEffect(() => {
@@ -275,19 +278,22 @@ export default function PaymentVoucherNewPage() {
 
   // Handle form submission
   const onSubmit = async (data: PaymentVoucherFormData) => {
-    const request: CreatePaymentVoucherRequest = {
+    const request: CreateFinancePaymentPaymentVoucherBody = {
       supplier_id: data.supplier_id,
       supplier_name: data.supplier_name,
       amount: data.amount,
-      payment_method: data.payment_method as PaymentMethod,
+      payment_method: data.payment_method,
       payment_reference: data.payment_reference,
       payment_date: data.payment_date.toISOString().split('T')[0],
       remark: data.remark,
     }
 
-    const response = await financeApi.createFinancePaymentPaymentVoucher(request)
-    if (!response.success) {
-      throw new Error(response.error || t('paymentVoucher.messages.createError'))
+    const response = await createFinancePaymentPaymentVoucher(request)
+    if (response.status !== 201 || !response.data.success) {
+      throw new Error(
+        (response.data.error as { message?: string })?.message ||
+          t('paymentVoucher.messages.createError')
+      )
     }
   }
 

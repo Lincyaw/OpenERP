@@ -493,7 +493,7 @@ export function PurchaseReturnForm() {
       })
 
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || '创建失败')
+        throw new Error((response.data.error as { message?: string })?.message || '创建失败')
       }
 
       Toast.success('退货单创建成功')

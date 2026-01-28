@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Card,
   Typography,
@@ -269,7 +269,7 @@ export default function SalesReturnsPage() {
         cancelText: t('salesOrder.modal.cancelBtn'),
         onOk: async () => {
           try {
-            await submitSalesReturn(returnItem.id!)
+            await submitSalesReturn(returnItem.id!, {})
             Toast.success(t('salesReturn.messages.submitSuccess'))
             fetchReturns()
           } catch {

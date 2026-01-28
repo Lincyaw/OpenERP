@@ -178,7 +178,10 @@ export default function StockTakingExecutePage() {
         Toast.success(t('stockTaking.execute.messages.startSuccess'))
         setStockTaking(response.data.data)
       } else {
-        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.startError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('stockTaking.execute.messages.startError')
+        )
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.startError'))
@@ -253,7 +256,10 @@ export default function StockTakingExecutePage() {
             return newMap
           })
         } else {
-          Toast.error(response.data.error?.message || t('stockTaking.execute.messages.saveError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('stockTaking.execute.messages.saveError')
+          )
         }
       } catch {
         Toast.error(t('stockTaking.execute.messages.saveError'))
@@ -301,7 +307,10 @@ export default function StockTakingExecutePage() {
           return newMap
         })
       } else {
-        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.saveAllError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('stockTaking.execute.messages.saveAllError')
+        )
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.saveAllError'))
@@ -322,7 +331,10 @@ export default function StockTakingExecutePage() {
         setStockTaking(response.data.data)
         setShowSubmitModal(false)
       } else {
-        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.submitError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('stockTaking.execute.messages.submitError')
+        )
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.submitError'))
@@ -346,7 +358,10 @@ export default function StockTakingExecutePage() {
         setShowCancelModal(false)
         setCancelReason('')
       } else {
-        Toast.error(response.data.error?.message || t('stockTaking.execute.messages.cancelError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('stockTaking.execute.messages.cancelError')
+        )
       }
     } catch {
       Toast.error(t('stockTaking.execute.messages.cancelError'))

@@ -13,20 +13,21 @@ import {
 import { IconRefresh } from '@douyinfe/semi-icons'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
-import type {
-  CashFlowItem,
-  CashFlowSummary,
-  CashFlowDirection,
-  CashFlowItemType,
-} from '@/api/finance'
+import { getExpensCashFlow } from '@/api/expenses/expenses'
+import type { HandlerCashFlowItemResponse, HandlerCashFlowSummaryResponse } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './CashFlow.css'
 
 const { Title, Text } = Typography
 
+// CashFlow direction type
+type CashFlowDirection = 'INFLOW' | 'OUTFLOW'
+
+// CashFlow item type
+type CashFlowItemType = 'EXPENSE' | 'INCOME' | 'RECEIPT' | 'PAYMENT'
+
 // CashFlow item type with index signature for DataTable compatibility
-type CashFlowRow = CashFlowItem & Record<string, unknown>
+type CashFlowRow = HandlerCashFlowItemResponse & Record<string, unknown>
 
 // Direction options for filter
 const DIRECTION_OPTIONS = [
@@ -118,13 +119,11 @@ function getDefaultDateRange(): [Date, Date] {
  * - Summary cards showing key metrics
  */
 export default function CashFlowPage() {
-  const api = useMemo(() => getFinanceApi(), [])
-
   // State for data
   const [cashFlowItems, setCashFlowItems] = useState<CashFlowRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<CashFlowSummary | null>(null)
+  const [summary, setSummary] = useState<HandlerCashFlowSummaryResponse | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Filter state
@@ -160,13 +159,13 @@ export default function CashFlowPage() {
         params.to_date = dateRange[1].toISOString().split('T')[0]
       }
 
-      const response = await api.getExpensCashFlow(params)
+      const response = await getExpensCashFlow(params)
 
-      if (response.success && response.data) {
-        setSummary(response.data)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
 
         // Filter items client-side based on direction and type filters
-        let items = (response.data.items || []) as CashFlowRow[]
+        let items = ((response.data.data as { items?: CashFlowRow[] }).items || []) as CashFlowRow[]
 
         // Apply direction filter
         if (directionFilter) {
@@ -183,9 +182,9 @@ export default function CashFlowPage() {
           const keyword = searchKeyword.toLowerCase()
           items = items.filter(
             (item) =>
-              item.number?.toLowerCase().includes(keyword) ||
-              item.description?.toLowerCase().includes(keyword) ||
-              item.category?.toLowerCase().includes(keyword)
+              (item.number as string | undefined)?.toLowerCase().includes(keyword) ||
+              (item.description as string | undefined)?.toLowerCase().includes(keyword) ||
+              (item.category as string | undefined)?.toLowerCase().includes(keyword)
           )
         }
 
@@ -217,7 +216,6 @@ export default function CashFlowPage() {
       setSummaryLoading(false)
     }
   }, [
-    api,
     dateRange,
     directionFilter,
     typeFilter,
@@ -404,7 +402,9 @@ export default function CashFlowPage() {
                 <Text type="secondary" className="summary-label">
                   费用支出
                 </Text>
-                <Text className="summary-value">{formatCurrency(summary?.expense_total)}</Text>
+                <Text className="summary-value">
+                  {formatCurrency((summary as { expense_total?: number })?.expense_total || 0)}
+                </Text>
               </div>
             </Descriptions.Item>
             <Descriptions.Item itemKey="income_total">
@@ -412,7 +412,9 @@ export default function CashFlowPage() {
                 <Text type="secondary" className="summary-label">
                   其他收入
                 </Text>
-                <Text className="summary-value">{formatCurrency(summary?.income_total)}</Text>
+                <Text className="summary-value">
+                  {formatCurrency((summary as { income_total?: number })?.income_total || 0)}
+                </Text>
               </div>
             </Descriptions.Item>
           </Descriptions>

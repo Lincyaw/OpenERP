@@ -33,7 +33,7 @@ export default function CustomerEditPage() {
         if (response.status === 200 && response.data.success && response.data.data) {
           setCustomer(response.data.data)
         } else {
-          Toast.error(response.data.error?.message || '加载客户失败')
+          Toast.error((response.data.error as { message?: string })?.message || '加载客户失败')
           navigate('/partner/customers')
         }
       } catch {

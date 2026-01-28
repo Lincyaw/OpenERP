@@ -170,7 +170,7 @@ export function RulesEditor({ rules, onChange, flagType }: RulesEditorProps) {
         values: [''],
       }
       handleUpdateRule(ruleIndex, {
-        conditions: [...rule.conditions, newCondition],
+        conditions: [...(rule.conditions || []), newCondition],
       })
     },
     [rules, handleUpdateRule]
@@ -180,8 +180,8 @@ export function RulesEditor({ rules, onChange, flagType }: RulesEditorProps) {
   const handleRemoveCondition = useCallback(
     (ruleIndex: number, conditionIndex: number) => {
       const rule = rules[ruleIndex]
-      if (rule.conditions.length <= 1) return // Keep at least one condition
-      const newConditions = rule.conditions.filter((_, i) => i !== conditionIndex)
+      if ((rule.conditions?.length ?? 0) <= 1) return // Keep at least one condition
+      const newConditions = (rule.conditions || []).filter((_, i) => i !== conditionIndex)
       handleUpdateRule(ruleIndex, { conditions: newConditions })
     },
     [rules, handleUpdateRule]
@@ -191,7 +191,7 @@ export function RulesEditor({ rules, onChange, flagType }: RulesEditorProps) {
   const handleUpdateCondition = useCallback(
     (ruleIndex: number, conditionIndex: number, updates: Partial<Condition>) => {
       const rule = rules[ruleIndex]
-      const newConditions = [...rule.conditions]
+      const newConditions = [...(rule.conditions || [])]
       newConditions[conditionIndex] = { ...newConditions[conditionIndex], ...updates }
       handleUpdateRule(ruleIndex, { conditions: newConditions })
     },
@@ -361,7 +361,7 @@ function RuleItem({
           </Text>
         </div>
         <div className="rule-condition-list">
-          {rule.conditions.map((condition, conditionIndex) => (
+          {(rule.conditions || []).map((condition, conditionIndex) => (
             <div key={conditionIndex} className="rule-condition-item">
               {conditionIndex > 0 && (
                 <Tag size="small" style={{ marginRight: 4 }}>
@@ -399,7 +399,7 @@ function RuleItem({
                 type="tertiary"
                 theme="borderless"
                 size="small"
-                disabled={rule.conditions.length <= 1}
+                disabled={(rule.conditions?.length ?? 0) <= 1}
                 onClick={() => onRemoveCondition(conditionIndex)}
               />
             </div>

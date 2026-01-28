@@ -350,7 +350,10 @@ export default function RolesPage() {
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.data.error?.message || t('roles.messages.createError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('roles.messages.createError')
+          )
         }
       } else if (editingRole) {
         const request: UpdateRoleRequest = {
@@ -364,7 +367,10 @@ export default function RolesPage() {
           setModalVisible(false)
           fetchRoles()
         } else {
-          Toast.error(response.data.error?.message || t('roles.messages.updateError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('roles.messages.updateError')
+          )
         }
       }
     } catch {
@@ -383,7 +389,10 @@ export default function RolesPage() {
           Toast.success(t('roles.messages.enableSuccess', { name: role.name }))
           fetchRoles()
         } else {
-          Toast.error(response.data.error?.message || t('roles.messages.enableError'))
+          Toast.error(
+            (response.data.error as { message?: string })?.message ||
+              t('roles.messages.enableError')
+          )
         }
       } catch {
         Toast.error(t('roles.messages.enableError'))
@@ -412,7 +421,10 @@ export default function RolesPage() {
               Toast.success(t('roles.messages.disableSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.data.error?.message || t('roles.messages.disableError'))
+              Toast.error(
+                (response.data.error as { message?: string })?.message ||
+                  t('roles.messages.disableError')
+              )
             }
           } catch {
             Toast.error(t('roles.messages.disableError'))
@@ -447,7 +459,10 @@ export default function RolesPage() {
               Toast.success(t('roles.messages.deleteSuccess', { name: role.name }))
               fetchRoles()
             } else {
-              Toast.error(response.data.error?.message || t('roles.messages.deleteError'))
+              Toast.error(
+                (response.data as { error?: { message?: string } }).error?.message ||
+                  t('roles.messages.deleteError')
+              )
             }
           } catch {
             Toast.error(t('roles.messages.deleteError'))
@@ -480,7 +495,10 @@ export default function RolesPage() {
         setPermissionModalVisible(false)
         fetchRoles()
       } else {
-        Toast.error(response.data.error?.message || t('roles.messages.savePermissionsError'))
+        Toast.error(
+          (response.data.error as { message?: string })?.message ||
+            t('roles.messages.savePermissionsError')
+        )
       }
     } catch {
       Toast.error(t('roles.messages.savePermissionsError'))
@@ -620,7 +638,7 @@ export default function RolesPage() {
         key: 'edit',
         label: t('roles.actions.edit'),
         onClick: handleEdit,
-        hidden: (record) => record.is_system_role,
+        hidden: (record) => record.is_system_role === true,
       },
       {
         key: 'permissions',
@@ -633,7 +651,7 @@ export default function RolesPage() {
         label: t('roles.actions.enable'),
         type: 'primary',
         onClick: handleEnable,
-        hidden: (record) => record.is_enabled,
+        hidden: (record) => record.is_enabled === true,
       },
       {
         key: 'disable',
@@ -641,14 +659,14 @@ export default function RolesPage() {
         type: 'warning',
         icon: <IconLock size="small" />,
         onClick: handleDisable,
-        hidden: (record) => !record.is_enabled || record.is_system_role,
+        hidden: (record) => record.is_enabled !== true || record.is_system_role === true,
       },
       {
         key: 'delete',
         label: t('roles.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
-        hidden: (record) => record.is_system_role,
+        hidden: (record) => record.is_system_role === true,
       },
     ],
     [

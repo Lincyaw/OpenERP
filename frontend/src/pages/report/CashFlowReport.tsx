@@ -36,10 +36,14 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { Container, Grid } from '@/components/common/layout'
-import { getReports } from '@/api/reports'
-import type { CashFlowStatement, CashFlowItem } from '@/api/reports'
+import { getReportCashFlowStatement, getReportCashFlowItems } from '@/api/reports/reports'
+import type { HandlerCashFlowStatementResponse, HandlerCashFlowItemResponse } from '@/api/models'
 import './CashFlowReport.css'
 import { safeToFixed, toNumber } from '@/utils'
+
+// Type aliases for cleaner code
+type CashFlowStatement = HandlerCashFlowStatementResponse
+type CashFlowItem = HandlerCashFlowItemResponse
 
 // Register ECharts components
 echarts.use([
@@ -214,8 +218,6 @@ function getCashFlowTypeColor(type: string): TagColor {
  * - Export support (CSV)
  */
 export default function CashFlowReportPage() {
-  const reportsApi = useMemo(() => getReports(), [])
-
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)
   const [comparisonType, setComparisonType] = useState<string>('none')
@@ -251,22 +253,31 @@ export default function CashFlowReportPage() {
 
     try {
       // Fetch current period data
-      // Note: API functions expect (body, params) - body is unused for GET requests
       const [statementRes, itemsRes] = await Promise.allSettled([
-        reportsApi.getReportCashFlowStatement(params),
-        reportsApi.getReportCashFlowItems(params),
+        getReportCashFlowStatement(params),
+        getReportCashFlowItems(params),
       ])
 
       // Process statement
-      if (statementRes.status === 'fulfilled' && statementRes.value.data) {
-        setStatement(statementRes.value.data as unknown as CashFlowStatement)
+      if (
+        statementRes.status === 'fulfilled' &&
+        statementRes.value.status === 200 &&
+        statementRes.value.data.success &&
+        statementRes.value.data.data
+      ) {
+        setStatement(statementRes.value.data.data)
       } else {
         setStatement(null)
       }
 
       // Process items
-      if (itemsRes.status === 'fulfilled' && itemsRes.value.data) {
-        setCashFlowItems(itemsRes.value.data as unknown as CashFlowItem[])
+      if (
+        itemsRes.status === 'fulfilled' &&
+        itemsRes.value.status === 200 &&
+        itemsRes.value.data.success &&
+        itemsRes.value.data.data
+      ) {
+        setCashFlowItems(itemsRes.value.data.data)
       } else {
         setCashFlowItems([])
       }
@@ -280,9 +291,9 @@ export default function CashFlowReportPage() {
         }
 
         try {
-          const compRes = await reportsApi.getReportCashFlowStatement(comparisonParams)
-          if (compRes.data) {
-            setComparisonStatement(compRes.data as unknown as CashFlowStatement)
+          const compRes = await getReportCashFlowStatement(comparisonParams)
+          if (compRes.status === 200 && compRes.data.success && compRes.data.data) {
+            setComparisonStatement(compRes.data.data)
           } else {
             setComparisonStatement(null)
           }
@@ -298,7 +309,7 @@ export default function CashFlowReportPage() {
       setLoading(false)
       setItemsLoading(false)
     }
-  }, [reportsApi, dateRange, comparisonType])
+  }, [dateRange, comparisonType])
 
   // Fetch data on mount and when date range changes
   useEffect(() => {
@@ -326,16 +337,16 @@ export default function CashFlowReportPage() {
 
     const categories = ['期初余额', '客户收款', '供应商付款', '其他收入', '费用支出', '期末余额']
     const values = [
-      statement.beginning_cash,
-      statement.receipts_from_customers,
-      -statement.payments_to_suppliers,
-      statement.other_income,
-      -statement.expense_payments,
-      statement.ending_cash,
+      statement.beginning_cash ?? 0,
+      statement.receipts_from_customers ?? 0,
+      -(statement.payments_to_suppliers ?? 0),
+      statement.other_income ?? 0,
+      -(statement.expense_payments ?? 0),
+      statement.ending_cash ?? 0,
     ]
 
     // Calculate cumulative for waterfall effect
-    let cumulative = statement.beginning_cash
+    let cumulative = statement.beginning_cash ?? 0
     const positiveData: (number | string)[] = []
     const negativeData: (number | string)[] = []
     const invisibleData: number[] = []
@@ -368,7 +379,7 @@ export default function CashFlowReportPage() {
           params: Array<{ seriesName: string; value: number | string; axisValue: string }>
         ) => {
           const index = categories.indexOf(params[0].axisValue)
-          const value = values[index]
+          const value = values[index] ?? 0
           const formattedValue = formatCurrency(Math.abs(value))
           const sign = value >= 0 ? '+' : '-'
           return `${params[0].axisValue}<br/>金额: ${sign}${formattedValue}`
@@ -713,7 +724,7 @@ export default function CashFlowReportPage() {
                       </div>
                       <Divider margin="8px" />
                       <div
-                        className={`statement-row subtotal ${statement.net_operating_cash_flow >= 0 ? 'positive' : 'negative'}`}
+                        className={`statement-row subtotal ${(statement.net_operating_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
                       >
                         <span>经营活动现金流净额</span>
                         <span className="amount">
@@ -728,7 +739,7 @@ export default function CashFlowReportPage() {
                   value: (
                     <div className="statement-section">
                       <div
-                        className={`statement-row ${statement.net_cash_flow >= 0 ? 'positive' : 'negative'}`}
+                        className={`statement-row ${(statement.net_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
                       >
                         <span>现金净增加额</span>
                         <span className="amount">{formatCurrency(statement.net_cash_flow)}</span>

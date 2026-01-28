@@ -18,7 +18,8 @@ import { countProductByStatus } from '@/api/products/products'
 import { countCustomerByStatus } from '@/api/customers/customers'
 import { listInventoryBelowMinimum } from '@/api/inventory/inventory'
 import { listSalesOrders, getSalesOrderStatusSummary } from '@/api/sales-orders/sales-orders'
-import { getFinanceApi } from '@/api/finance'
+import { getFinanceReceivableReceivableSummary } from '@/api/finance-receivables/finance-receivables'
+import { getFinancePayablePayableSummary } from '@/api/finance-payables/finance-payables'
 import { useFormatters } from '@/hooks/useFormatters'
 import './Dashboard.css'
 
@@ -67,9 +68,6 @@ export default function DashboardPage() {
   const { t } = useTranslation('common')
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
 
-  // API instances
-  const financeApi = useMemo(() => getFinanceApi(), [])
-
   // Loading state
   const [loading, setLoading] = useState(true)
 
@@ -117,8 +115,8 @@ export default function DashboardPage() {
         countCustomerByStatus(),
         getSalesOrderStatusSummary(),
         listInventoryBelowMinimum({ page_size: 100 }),
-        financeApi.getFinanceReceivableReceivableSummary(),
-        financeApi.getFinancePayablePayableSummary(),
+        getFinanceReceivableReceivableSummary(),
+        getFinancePayablePayableSummary(),
         listSalesOrders({
           page_size: 5,
           order_by: 'order_date',
@@ -154,8 +152,12 @@ export default function DashboardPage() {
       }
 
       // Process order summary
-      if (orderSummaryRes.status === 'fulfilled' && orderSummaryRes.value.data) {
-        const summary = orderSummaryRes.value.data
+      if (
+        orderSummaryRes.status === 'fulfilled' &&
+        orderSummaryRes.value.status === 200 &&
+        orderSummaryRes.value.data.data
+      ) {
+        const summary = orderSummaryRes.value.data.data
         setOrderSummary({
           total: summary.total || 0,
           draft: summary.draft || 0,
@@ -175,8 +177,13 @@ export default function DashboardPage() {
       }
 
       // Process receivables summary
-      if (receivablesRes.status === 'fulfilled' && receivablesRes.value.data) {
-        const summary = receivablesRes.value.data
+      if (
+        receivablesRes.status === 'fulfilled' &&
+        receivablesRes.value.status === 200 &&
+        receivablesRes.value.data.success &&
+        receivablesRes.value.data.data
+      ) {
+        const summary = receivablesRes.value.data.data
         setReceivableSummary({
           totalAmount: summary.total_outstanding || 0,
           pendingCount: summary.pending_count || 0,
@@ -184,8 +191,13 @@ export default function DashboardPage() {
       }
 
       // Process payables summary
-      if (payablesRes.status === 'fulfilled' && payablesRes.value.data) {
-        const summary = payablesRes.value.data
+      if (
+        payablesRes.status === 'fulfilled' &&
+        payablesRes.value.status === 200 &&
+        payablesRes.value.data.success &&
+        payablesRes.value.data.data
+      ) {
+        const summary = payablesRes.value.data.data
         setPayableSummary({
           totalAmount: summary.total_outstanding || 0,
           pendingCount: summary.pending_count || 0,
@@ -193,24 +205,28 @@ export default function DashboardPage() {
       }
 
       // Process recent orders
-      if (recentOrdersRes.status === 'fulfilled' && recentOrdersRes.value.data) {
-        const orders = recentOrdersRes.value.data.map(
-          (order: {
+      if (
+        recentOrdersRes.status === 'fulfilled' &&
+        recentOrdersRes.value.status === 200 &&
+        recentOrdersRes.value.data.data
+      ) {
+        const orders = (
+          recentOrdersRes.value.data.data as Array<{
             id?: string
             order_number?: string
             customer_name?: string
             total_amount?: number
             status?: string
             order_date?: string
-          }) => ({
-            id: order.id || '',
-            orderNumber: order.order_number || '',
-            customerName: order.customer_name || t('dashboard.recentOrders.unknownCustomer'),
-            totalAmount: order.total_amount || 0,
-            status: order.status || '',
-            orderDate: order.order_date || '',
-          })
-        )
+          }>
+        ).map((order) => ({
+          id: order.id || '',
+          orderNumber: order.order_number || '',
+          customerName: order.customer_name || t('dashboard.recentOrders.unknownCustomer'),
+          totalAmount: order.total_amount || 0,
+          status: order.status || '',
+          orderDate: order.order_date || '',
+        }))
         setRecentOrders(orders)
       }
 
@@ -218,8 +234,12 @@ export default function DashboardPage() {
       const tasks: PendingTask[] = []
 
       // Add draft orders as pending tasks
-      if (orderSummaryRes.status === 'fulfilled' && orderSummaryRes.value.data?.draft) {
-        const draftCount = orderSummaryRes.value.data.draft
+      if (
+        orderSummaryRes.status === 'fulfilled' &&
+        orderSummaryRes.value.status === 200 &&
+        orderSummaryRes.value.data.data?.draft
+      ) {
+        const draftCount = orderSummaryRes.value.data.data.draft
         if (draftCount > 0) {
           tasks.push({
             id: 'draft-orders',
@@ -233,8 +253,12 @@ export default function DashboardPage() {
       }
 
       // Add confirmed orders as pending tasks
-      if (orderSummaryRes.status === 'fulfilled' && orderSummaryRes.value.data?.confirmed) {
-        const confirmedCount = orderSummaryRes.value.data.confirmed
+      if (
+        orderSummaryRes.status === 'fulfilled' &&
+        orderSummaryRes.value.status === 200 &&
+        orderSummaryRes.value.data.data?.confirmed
+      ) {
+        const confirmedCount = orderSummaryRes.value.data.data.confirmed
         if (confirmedCount > 0) {
           tasks.push({
             id: 'confirmed-orders',
@@ -267,15 +291,20 @@ export default function DashboardPage() {
       }
 
       // Add pending receivables
-      if (receivablesRes.status === 'fulfilled' && receivablesRes.value.data?.pending_count) {
-        const pendingCount = receivablesRes.value.data.pending_count
+      if (
+        receivablesRes.status === 'fulfilled' &&
+        receivablesRes.value.status === 200 &&
+        receivablesRes.value.data.success &&
+        receivablesRes.value.data.data?.pending_count
+      ) {
+        const pendingCount = receivablesRes.value.data.data.pending_count
         if (pendingCount > 0) {
           tasks.push({
             id: 'pending-receivables',
             type: 'receivable',
             title: t('dashboard.pendingTasks.pendingReceivables', { count: pendingCount }),
             description: t('dashboard.pendingTasks.pendingReceivablesDesc', {
-              amount: formatCurrency(receivablesRes.value.data.total_outstanding),
+              amount: formatCurrency(receivablesRes.value.data.data.total_outstanding),
             }),
             priority: 'medium',
             link: '/finance/receivables',
@@ -284,15 +313,20 @@ export default function DashboardPage() {
       }
 
       // Add pending payables
-      if (payablesRes.status === 'fulfilled' && payablesRes.value.data?.pending_count) {
-        const pendingCount = payablesRes.value.data.pending_count
+      if (
+        payablesRes.status === 'fulfilled' &&
+        payablesRes.value.status === 200 &&
+        payablesRes.value.data.success &&
+        payablesRes.value.data.data?.pending_count
+      ) {
+        const pendingCount = payablesRes.value.data.data.pending_count
         if (pendingCount > 0) {
           tasks.push({
             id: 'pending-payables',
             type: 'payable',
             title: t('dashboard.pendingTasks.pendingPayables', { count: pendingCount }),
             description: t('dashboard.pendingTasks.pendingPayablesDesc', {
-              amount: formatCurrency(payablesRes.value.data.total_outstanding),
+              amount: formatCurrency(payablesRes.value.data.data.total_outstanding),
             }),
             priority: 'low',
             link: '/finance/payables',
@@ -306,7 +340,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [financeApi, t, formatCurrency])
+  }, [t, formatCurrency])
 
   // Fetch data on mount
   useEffect(() => {

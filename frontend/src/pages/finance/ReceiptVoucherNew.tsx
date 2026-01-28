@@ -18,10 +18,14 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getFinanceApi } from '@/api/finance'
+import { createFinanceReceiptReceiptVoucher } from '@/api/finance-receipts/finance-receipts'
+import { listFinanceReceivableReceivables } from '@/api/finance-receivables/finance-receivables'
 import { listCustomers, getCustomerById } from '@/api/customers/customers'
-import type { PaymentMethod, CreateReceiptVoucherRequest, AccountReceivable } from '@/api/finance'
-import type { HandlerCustomerResponse } from '@/api/models'
+import type {
+  CreateFinanceReceiptReceiptVoucherBody,
+  HandlerCustomerResponse,
+  HandlerAccountReceivableResponse,
+} from '@/api/models'
 import './ReceiptVoucherNew.css'
 
 const { Title, Text } = Typography
@@ -91,7 +95,6 @@ export default function ReceiptVoucherNewPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const financeApi = useMemo(() => getFinanceApi(), [])
 
   // Payment method options with translated labels
   const paymentMethodOptions = useMemo(
@@ -119,7 +122,9 @@ export default function ReceiptVoucherNewPage() {
   >([])
   const [customerLoading, setCustomerLoading] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<HandlerCustomerResponse | null>(null)
-  const [customerReceivables, setCustomerReceivables] = useState<AccountReceivable[]>([])
+  const [customerReceivables, setCustomerReceivables] = useState<
+    HandlerAccountReceivableResponse[]
+  >([])
   const [receivablesLoading, setReceivablesLoading] = useState(false)
 
   // Form setup
@@ -183,38 +188,38 @@ export default function ReceiptVoucherNewPage() {
   )
 
   // Fetch customer receivables when customer is selected
-  const fetchCustomerReceivables = useCallback(
-    async (customerId: string) => {
-      if (!customerId) {
-        setCustomerReceivables([])
-        return
-      }
+  const fetchCustomerReceivables = useCallback(async (customerId: string) => {
+    if (!customerId) {
+      setCustomerReceivables([])
+      return
+    }
 
-      setReceivablesLoading(true)
-      try {
-        const receivablesResponse = await financeApi.listFinanceReceivablesReceivables({
-          customer_id: customerId,
-          status: 'PENDING',
-          page: 1,
-          page_size: 100,
-        })
+    setReceivablesLoading(true)
+    try {
+      const receivablesResponse = await listFinanceReceivableReceivables({
+        customer_id: customerId,
+        status: 'PENDING',
+        page: 1,
+        page_size: 100,
+      })
 
-        if (receivablesResponse.success && receivablesResponse.data) {
-          // Filter receivables for this customer only
-          const filteredReceivables = receivablesResponse.data.filter(
-            (r) =>
-              r.customer_id === customerId && (r.status === 'PENDING' || r.status === 'PARTIAL')
-          )
-          setCustomerReceivables(filteredReceivables)
-        }
-      } catch {
-        // Silent fail
-      } finally {
-        setReceivablesLoading(false)
+      if (
+        receivablesResponse.status === 200 &&
+        receivablesResponse.data.success &&
+        receivablesResponse.data.data
+      ) {
+        // Filter receivables for this customer only
+        const filteredReceivables = receivablesResponse.data.data.filter(
+          (r) => r.customer_id === customerId && (r.status === 'PENDING' || r.status === 'PARTIAL')
+        )
+        setCustomerReceivables(filteredReceivables)
       }
-    },
-    [financeApi]
-  )
+    } catch {
+      // Silent fail
+    } finally {
+      setReceivablesLoading(false)
+    }
+  }, [])
 
   // Load pre-selected customer
   useEffect(() => {
@@ -280,19 +285,22 @@ export default function ReceiptVoucherNewPage() {
 
   // Handle form submission
   const onSubmit = async (data: ReceiptVoucherFormData) => {
-    const request: CreateReceiptVoucherRequest = {
+    const request: CreateFinanceReceiptReceiptVoucherBody = {
       customer_id: data.customer_id,
       customer_name: data.customer_name,
       amount: data.amount,
-      payment_method: data.payment_method as PaymentMethod,
+      payment_method: data.payment_method,
       payment_reference: data.payment_reference,
       receipt_date: data.receipt_date.toISOString().split('T')[0],
       remark: data.remark,
     }
 
-    const response = await financeApi.createFinanceReceiptReceiptVoucher(request)
-    if (!response.success) {
-      throw new Error(response.error || t('receiptVoucher.messages.createError'))
+    const response = await createFinanceReceiptReceiptVoucher(request)
+    if (response.status !== 201 || !response.data.success) {
+      throw new Error(
+        (response.data.error as { message?: string })?.message ||
+          t('receiptVoucher.messages.createError')
+      )
     }
   }
 

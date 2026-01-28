@@ -795,7 +795,6 @@ func (h *SalesOrderHandler) Ship(c *gin.Context) {
 // @Summary      Complete a sales order
 // @Description  Mark a sales order as completed (transitions from SHIPPED to COMPLETED)
 // @Tags         sales-orders
-// @Accept       json
 // @Produce      json
 // @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
 // @Param        id path string true "Sales Order ID" format(uuid)
