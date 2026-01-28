@@ -33229,3 +33229,29 @@ if (response.status === 200 && response.data.success && response.data.data) { ..
 === Next Steps ===
 - Continue with RQ-MIG-006 (Categories Module) or other remaining migration tasks
 - Consider updating test files to match new pattern in future iterations
+
+=== Additional Fixes (same session) ===
+
+After code review, additional fixes were made:
+
+1. **StockTakingCreate.tsx** - Complete stock-taking API migration
+   - Replaced `getStockTaking` factory with `createStockTaking`, `addItemsStockTaking` direct imports
+   - Updated response handling to axios format (status 201 for create, status 200 for addItems)
+   - Added missing `t` to `fetchWarehouses` dependency array
+
+2. **StockAdjust.tsx** - Complete inventory API migration
+   - Replaced `getInventory` factory with `listInventories`, `adjustStockInventory` direct imports
+   - Updated response handling to axios format
+
+3. **StockAlerts.tsx** - Complete inventory API migration
+   - Replaced `getInventory` factory with `listInventoryBelowMinimum`, `setThresholdsInventory` direct imports
+   - Updated response handling to axios format
+
+4. **Dashboard.tsx** - Complete inventory API migration
+   - Replaced `getInventory` factory with `listInventoryBelowMinimum` direct import
+   - Updated response handling to axios format
+
+=== Final Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `getInventory` factory pattern in source files
+- All pre-commit hooks passed for all commits
