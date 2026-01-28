@@ -36354,3 +36354,101 @@ Acceptance Criteria Verified:
 - Continue with LOADGEN-009 (ProducerChainGuard) or other remaining tasks
 - Integration with workflow executor for end-to-end request execution
 ================================================================================
+================================================================================
+
+2026-01-29 - LOADGEN-010: 电路板主控制器 (CircuitBoard Main Controller)
+
+=== Task Summary ===
+Implemented the CircuitBoard - the main controller that orchestrates endpoint execution
+with automatic dependency resolution and self-healing capabilities for the LoadGen tool.
+
+=== Implementation Details ===
+
+1. Created internal/circuit/board.go - CircuitBoard Implementation (~930 lines)
+   - CircuitBoardConfig - Configuration for base URL, timeouts, auto-heal settings
+   - ParameterPool interface - Breaks import cycle between circuit and pool packages
+   - PoolValue interface - Abstracts pool value access
+   - ValueSource - Tracks origin of parameter values
+   - CircuitBoard - Main orchestration controller
+
+2. Core CircuitBoard Features:
+   - Integration of EndpointUnits, ParameterPool, DependencyGraph, ProducerChainGuard
+   - GetOrCreate() - Retrieves values from pool, auto-triggers producers when missing
+   - CheckDependencies() - Verifies all input dependencies for an endpoint
+   - SatisfyDependencies() - Auto-triggers producers for missing dependencies
+   - Execute() - Runs endpoint with dependency checking and output extraction
+   - ExecuteWithPlan() - Executes full dependency chain in topological order
+
+3. Self-Healing Capability:
+   - Automatic producer triggering when parameters are missing
+   - ProducerChainGuard integration prevents cascade overload
+   - Configurable max depth and cooldown period
+
+4. Response Value Extraction:
+   - extractOutputValues() - Extracts values from JSON responses
+   - getCommonJSONPaths() - Generates common paths for semantic types
+   - extractJSONPath() - Navigates nested JSON structures
+   - Configurable ResponseExtractors for custom extraction rules
+
+5. Execution Statistics (EndpointStats):
+   - TotalExecutions, SuccessfulExecutions, FailedExecutions
+   - TotalLatency, MinLatency, MaxLatency
+   - LastExecutedAt, LastError
+   - AutoHealTriggers, ValuesProduced
+   - AverageLatency(), SuccessRate() helper methods
+
+6. Board Statistics (BoardStats):
+   - TotalExecutions, SuccessfulExecutions, FailedExecutions
+   - AutoHealAttempts, AutoHealSuccesses, AutoHealFailures
+   - ValueExtracted count
+
+7. Created internal/circuit/board_test.go - Integration Tests (~850 lines)
+   - Mock implementations: mockParameterPool, mockHTTPClient, mockRequestBuilder
+   - Unit tests for all CircuitBoard methods
+   - Integration test: TestIntegration_SelfHealing_AutoCreateCustomerBeforeOrder
+   - Integration test: TestIntegration_SelfHealing_ChainedDependencies
+   - Integration test: TestIntegration_SelfHealing_MaxDepthGuard
+   - Benchmark tests for performance measurement
+
+=== Key Files Created/Modified ===
+- tools/loadgen/internal/circuit/board.go - NEW (~930 lines)
+- tools/loadgen/internal/circuit/board_test.go - NEW (~850 lines)
+
+=== Code Review Fixes Applied ===
+- Fixed potential memory exhaustion: Added 10MB limit on response body reads
+- Improved error propagation: GetOrCreate now includes last error in failure messages
+- Optimized splitPath(): Replaced loop with strings.Split()
+- Removed duplicate path in getCommonJSONPaths()
+
+=== Verification ===
+
+Test Results:
+- All 61 tests pass (100% pass rate)
+- Coverage: 81.6% (above 80% requirement)
+
+Test Commands:
+- go test ./internal/circuit/... -v -count=1
+- go test ./internal/circuit/... -cover
+
+Acceptance Criteria Verified:
+✅ 实现 internal/circuit/board.go CircuitBoard - Complete with all features
+✅ 整合 EndpointUnits、ParameterPool、DependencyGraph - Integrated via interfaces
+✅ 实现 GetOrCreate：缺少参数时自动触发生产者 - GetOrCreate with auto-heal
+✅ 实现端点执行前的依赖检查 - CheckDependencies and SatisfyDependencies
+✅ 实现响应后的输出值提取并存入参数池 - extractOutputValues with JSON paths
+✅ 实现 internal/circuit/unit.go EndpointUnit 执行统计 - EndpointStats in board.go
+✅ 编写集成测试验证自愈能力 - 3 integration tests for self-healing
+✅ 验收标准：参数池为空时自动创建客户后再创建订单 - TestIntegration_SelfHealing_AutoCreateCustomerBeforeOrder
+
+=== Architecture Notes ===
+- ParameterPool interface defined in circuit package to avoid import cycle
+- pool package imports circuit for SemanticType
+- circuit package defines ParameterPool interface that pool.* implements
+- This allows circuit to use pool without creating circular dependency
+
+=== Next Steps ===
+- Continue with remaining LOADGEN tasks
+- Consider adding Prometheus/OpenTelemetry hooks for production monitoring
+- May want to add concurrent execution tests
+
+================================================================================
