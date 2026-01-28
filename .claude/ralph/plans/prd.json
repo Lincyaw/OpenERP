@@ -8928,7 +8928,7 @@
       "- 自动重连正常工作",
       "- 降级轮询正常工作"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Section 7.4 Component Integration",
     "affectedModules": [
       "backend/internal/interfaces/http/handlers/feature_flag_sse.go",

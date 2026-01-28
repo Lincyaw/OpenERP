@@ -20,6 +20,7 @@ import (
 	financedomain "github.com/erp/backend/internal/domain/finance"
 	domainStrategy "github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/infrastructure/auth"
+	"github.com/erp/backend/internal/infrastructure/cache"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/event"
 	"github.com/erp/backend/internal/infrastructure/logger"
@@ -659,6 +660,36 @@ func main() {
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 
+	// Initialize Feature Flag SSE handler for real-time updates
+	// This creates a Redis Pub/Sub subscriber that broadcasts flag updates to connected SSE clients
+	var featureFlagSSEHandler *handler.FeatureFlagSSEHandler
+	redisCacheInvalidator, err := cache.NewRedisFlagCacheInvalidator(
+		cache.RedisConfig{
+			Host:     cfg.Redis.Host,
+			Port:     cfg.Redis.Port,
+			Password: cfg.Redis.Password,
+			DB:       cfg.Redis.DB,
+		},
+		cache.WithInvalidatorLogger(log),
+	)
+	if err != nil {
+		log.Warn("Failed to initialize Redis cache invalidator for SSE, SSE will be disabled",
+			zap.Error(err))
+	} else {
+		featureFlagSSEHandler = handler.NewFeatureFlagSSEHandler(
+			redisCacheInvalidator,
+			handler.WithSSELogger(log),
+			handler.WithSSEHeartbeat(30*time.Second),
+		)
+		// Start the SSE handler in background
+		if err := featureFlagSSEHandler.Start(); err != nil {
+			log.Warn("Failed to start Feature Flag SSE handler", zap.Error(err))
+			featureFlagSSEHandler = nil
+		} else {
+			log.Info("Feature Flag SSE handler started successfully")
+		}
+	}
+
 	// Set Gin mode based on environment
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -1266,6 +1297,12 @@ func main() {
 	// Audit log routes (admin access - requires feature_flag:audit permission)
 	featureFlagRoutes.GET("/:key/audit-logs", middleware.RequirePermission("feature_flag:audit"), featureFlagHandler.GetAuditLogs)
 
+	// SSE streaming route for real-time flag updates (requires feature_flag:evaluate permission)
+	if featureFlagSSEHandler != nil {
+		featureFlagRoutes.GET("/stream", middleware.RequirePermission("feature_flag:evaluate"), featureFlagSSEHandler.Stream)
+		log.Info("Feature Flag SSE endpoint registered at /api/v1/feature-flags/stream")
+	}
+
 	r.Register(featureFlagRoutes)
 
 	// Setup routes
@@ -1303,6 +1340,18 @@ func main() {
 	// Stop stock lock expiration job
 	if stopStockLockExpiration != nil {
 		stopStockLockExpiration()
+	}
+
+	// Stop Feature Flag SSE handler
+	if featureFlagSSEHandler != nil {
+		featureFlagSSEHandler.Stop()
+		log.Info("Feature Flag SSE handler stopped")
+	}
+	// Close Redis cache invalidator
+	if redisCacheInvalidator != nil {
+		if err := redisCacheInvalidator.Close(); err != nil {
+			log.Warn("Error closing Redis cache invalidator", zap.Error(err))
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

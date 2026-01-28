@@ -17,6 +17,16 @@ vi.mock('@/services/axios-instance', () => ({
   },
 }))
 
+// Mock SSE service (SSE is disabled by default in tests via preferSSE={false})
+vi.mock('@/services/featureFlagSSE', () => ({
+  createFeatureFlagSSE: vi.fn(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    getState: vi.fn(() => 'disconnected'),
+    isConnected: vi.fn(() => false),
+  })),
+}))
+
 import { axiosInstance } from '@/services/axios-instance'
 
 // Mock sessionStorage
@@ -253,12 +263,12 @@ describe('FeatureFlagProvider', () => {
   // ============================================================================
 
   describe('polling', () => {
-    it('should start polling after initialization when enablePolling is true', async () => {
+    it('should start polling after initialization when preferSSE is false', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true })
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider pollingInterval={1000}>
+        <FeatureFlagProvider pollingInterval={1000} preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -279,12 +289,12 @@ describe('FeatureFlagProvider', () => {
       expect(axiosInstance.post).toHaveBeenCalled()
     })
 
-    it('should not start polling when enablePolling is false', async () => {
+    it('should not start polling when enableRealtime is false', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true })
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider enablePolling={false} pollingInterval={1000}>
+        <FeatureFlagProvider enableRealtime={false} pollingInterval={1000}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -311,7 +321,7 @@ describe('FeatureFlagProvider', () => {
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider pollingInterval={5000}>
+        <FeatureFlagProvider pollingInterval={5000} preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -341,7 +351,7 @@ describe('FeatureFlagProvider', () => {
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       const { unmount } = render(
-        <FeatureFlagProvider pollingInterval={1000}>
+        <FeatureFlagProvider pollingInterval={1000} preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -366,12 +376,12 @@ describe('FeatureFlagProvider', () => {
       expect(axiosInstance.post).not.toHaveBeenCalled()
     })
 
-    it('should use default polling interval of 30 seconds', async () => {
+    it('should use default polling interval of 30 seconds (when SSE disabled)', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true })
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider>
+        <FeatureFlagProvider preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -456,7 +466,8 @@ describe('FeatureFlagProvider', () => {
       render(
         <FeatureFlagProvider
           pollingInterval={60000}
-          enablePolling={true}
+          enableRealtime={true}
+          preferSSE={false}
           loadingComponent={<span>Loading</span>}
         >
           <div data-testid="child">Child</div>
@@ -543,7 +554,7 @@ describe('FeatureFlagProvider', () => {
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider pollingInterval={0}>
+        <FeatureFlagProvider pollingInterval={0} preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )
@@ -567,7 +578,7 @@ describe('FeatureFlagProvider', () => {
       vi.mocked(axiosInstance.post).mockResolvedValue(mockApiResponse)
 
       render(
-        <FeatureFlagProvider pollingInterval={-1000}>
+        <FeatureFlagProvider pollingInterval={-1000} preferSSE={false}>
           <div>Child</div>
         </FeatureFlagProvider>
       )

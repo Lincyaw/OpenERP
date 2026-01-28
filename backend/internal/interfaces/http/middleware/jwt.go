@@ -89,20 +89,23 @@ func JWTAuthMiddlewareWithConfig(cfg JWTMiddlewareConfig) gin.HandlerFunc {
 
 		// Extract token from Authorization header
 		authHeader := c.GetHeader(AuthHeaderKey)
-		if authHeader == "" {
-			handleAuthError(c, cfg, auth.ErrInvalidToken, "Missing authorization header")
-			return
+		var tokenString string
+
+		if authHeader != "" {
+			// Check Bearer prefix
+			if !strings.HasPrefix(authHeader, BearerPrefix) {
+				handleAuthError(c, cfg, auth.ErrInvalidToken, "Invalid authorization header format")
+				return
+			}
+			tokenString = strings.TrimPrefix(authHeader, BearerPrefix)
+		} else {
+			// Fallback: check query parameter for SSE connections
+			// EventSource API doesn't support custom headers, so we allow token in query param
+			tokenString = c.Query("token")
 		}
 
-		// Check Bearer prefix
-		if !strings.HasPrefix(authHeader, BearerPrefix) {
-			handleAuthError(c, cfg, auth.ErrInvalidToken, "Invalid authorization header format")
-			return
-		}
-
-		tokenString := strings.TrimPrefix(authHeader, BearerPrefix)
 		if tokenString == "" {
-			handleAuthError(c, cfg, auth.ErrInvalidToken, "Missing token")
+			handleAuthError(c, cfg, auth.ErrInvalidToken, "Missing authorization")
 			return
 		}
 

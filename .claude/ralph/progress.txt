@@ -32231,3 +32231,87 @@ All loadgen tests pass:
 === Next Steps ===
 - FF-INT-001: E2E integration tests for Feature Flag management (will cover infrastructure layer)
 - Consider adding integration tests for repository and cache layers
+
+2026-01-28 - FF-FE-005: Feature Flag SSE 实时更新 (SSE Real-time Updates)
+
+=== Implementation Details ===
+
+**Backend Changes:**
+1. Created `backend/internal/interfaces/http/handler/feature_flag_sse.go`:
+   - SSE handler that subscribes to Redis Pub/Sub for cache invalidation events
+   - Broadcasts flag updates to all connected SSE clients
+   - Heartbeat mechanism (30s interval) to keep connections alive
+   - Rate limiting (max 10000 concurrent connections)
+   - Clean shutdown with proper resource cleanup
+
+2. Updated `backend/internal/interfaces/http/middleware/jwt.go`:
+   - Added fallback to support JWT token via query parameter
+   - Necessary because EventSource API doesn't support custom headers
+   - Added security comment explaining the limitation
+
+3. Updated `backend/cmd/server/main.go`:
+   - Initialize RedisFlagCacheInvalidator for SSE
+   - Register SSE handler with graceful fallback if Redis unavailable
+   - Added cleanup on server shutdown
+
+**Frontend Changes:**
+1. Created `frontend/src/services/featureFlagSSE.ts`:
+   - SSE client service with automatic reconnection
+   - Exponential backoff with jitter (prevents thundering herd)
+   - Heartbeat timeout detection
+   - Singleton pattern for shared instance
+   - Browser support detection (EventSource)
+
+2. Updated `frontend/src/components/providers/FeatureFlagProvider.tsx`:
+   - New props: `enableRealtime`, `preferSSE`, `sseHeartbeatTimeout`
+   - SSE first strategy with automatic polling fallback
+   - Removed old `enablePolling` prop (replaced with `enableRealtime` + `preferSSE`)
+   - Clean resource cleanup on unmount
+
+**Test Coverage:**
+- Backend: 8 tests for SSE handler (all passing)
+- Frontend: 15 tests for SSE client (all passing)
+- Frontend: 23 tests for FeatureFlagProvider (all passing)
+
+=== Security Considerations ===
+- JWT token passed via query param (EventSource limitation)
+- Mitigations documented in code:
+  1. Use short-lived access tokens
+  2. Sanitize server logs
+  3. Require HTTPS in production
+- Rate limiting prevents connection exhaustion attacks
+
+=== Architecture ===
+```
+[Browser] --SSE--> [Backend Handler] --Subscribe--> [Redis Pub/Sub]
+                                                            ^
+[Admin UI] --Update Flag--> [Flag Service] --Publish---+
+```
+
+=== Files Modified ===
+- backend/internal/interfaces/http/handler/feature_flag_sse.go (new)
+- backend/internal/interfaces/http/handler/feature_flag_sse_test.go (new)
+- backend/internal/interfaces/http/middleware/jwt.go
+- backend/cmd/server/main.go
+- frontend/src/services/featureFlagSSE.ts (new)
+- frontend/src/services/featureFlagSSE.test.ts (new)
+- frontend/src/components/providers/FeatureFlagProvider.tsx
+- frontend/src/components/providers/FeatureFlagProvider.test.tsx
+
+=== Verification ===
+- [x] Backend builds without errors
+- [x] Frontend TypeScript check passes
+- [x] Backend SSE tests pass (8/8)
+- [x] Frontend SSE tests pass (15/15)
+- [x] Frontend provider tests pass (23/23)
+
+=== Notes ===
+- SSE endpoint: GET /api/v1/feature-flags/stream
+- Requires feature_flag:evaluate permission
+- Falls back to polling if SSE connection fails after 5 reconnect attempts
+- Default heartbeat: 30 seconds (backend), 60 second timeout (frontend)
+
+=== Next Steps ===
+- Consider implementing short-lived SSE-specific tokens for enhanced security
+- Add Prometheus metrics for SSE connections (gauges/counters)
+- E2E testing with Playwright for SSE functionality
