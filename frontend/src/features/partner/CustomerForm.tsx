@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { Card, Typography } from '@douyinfe/semi-ui-19'
 import { useNavigate } from 'react-router-dom'
@@ -18,7 +18,7 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { createCustomer, updateCustomer } from '@/api/customers/customers'
-import { listCustomerLevels } from '@/api/customer-levels/customer-levels'
+import { useListCustomerLevels } from '@/api/customer-levels/customer-levels'
 import type {
   HandlerCustomerResponse,
   HandlerCustomerLevelListResponse,
@@ -53,30 +53,23 @@ export function CustomerForm({ customerId, initialData }: CustomerFormProps) {
   const { t } = useTranslation(['partner', 'common'])
   const isEditMode = Boolean(customerId)
 
-  // State for customer levels from API
-  const [customerLevels, setCustomerLevels] = useState<HandlerCustomerLevelListResponse[]>([])
-  const [levelsLoading, setLevelsLoading] = useState(true)
-
-  // Fetch customer levels from API
-  const fetchCustomerLevels = useCallback(async () => {
-    try {
-      setLevelsLoading(true)
-      const response = await listCustomerLevels({ active_only: true })
-      if (response.status === 200 && response.data.success && response.data.data) {
-        setCustomerLevels(response.data.data)
-      }
-    } catch {
-      // Silent fail - will show empty dropdown
-      setCustomerLevels([])
-    } finally {
-      setLevelsLoading(false)
+  // Fetch customer levels using React Query
+  const { data: customerLevelsResponse, isLoading: levelsLoading } = useListCustomerLevels(
+    { active_only: true },
+    {
+      query: {
+        select: (response): HandlerCustomerLevelListResponse[] => {
+          if (response.status === 200 && response.data.success && response.data.data) {
+            return response.data.data
+          }
+          return []
+        },
+      },
     }
-  }, [])
+  )
 
-  // Load customer levels on mount
-  useEffect(() => {
-    fetchCustomerLevels()
-  }, [fetchCustomerLevels])
+  // Derived state from query
+  const customerLevels = customerLevelsResponse || []
 
   // Customer type options with translations
   const CUSTOMER_TYPE_OPTIONS = useMemo(

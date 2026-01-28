@@ -33325,3 +33325,68 @@ createCategoryMutation.mutate({ data: request }, {
 === Next Steps ===
 - Continue with remaining React Query migration tasks
 - Consider adding optimistic updates for better UX in future iterations
+
+2026-01-28 - RQ-MIG-007: React Query Migration - Customer Levels Module
+
+=== Implementation Details ===
+- Migrated src/features/partner/CustomerForm.tsx from manual state management to React Query hooks
+- Replaced `listCustomerLevels` direct call with `useListCustomerLevels` React Query hook
+- Removed manual state management: `useState` for customerLevels and levelsLoading
+- Removed `useCallback` for fetchCustomerLevels and `useEffect` for initial fetch
+- React Query now handles caching, loading states, and automatic refetching
+
+=== Key Changes ===
+**Before (Manual State Management):**
+```typescript
+import { listCustomerLevels } from '@/api/customer-levels/customer-levels'
+
+const [customerLevels, setCustomerLevels] = useState<HandlerCustomerLevelListResponse[]>([])
+const [levelsLoading, setLevelsLoading] = useState(true)
+
+const fetchCustomerLevels = useCallback(async () => {
+  setLevelsLoading(true)
+  const response = await listCustomerLevels({ active_only: true })
+  if (response.status === 200 && response.data.success && response.data.data) {
+    setCustomerLevels(response.data.data)
+  }
+  setLevelsLoading(false)
+}, [])
+
+useEffect(() => {
+  fetchCustomerLevels()
+}, [fetchCustomerLevels])
+```
+
+**After (React Query Hook):**
+```typescript
+import { useListCustomerLevels } from '@/api/customer-levels/customer-levels'
+
+const { data: customerLevelsResponse, isLoading: levelsLoading } = useListCustomerLevels(
+  { active_only: true },
+  {
+    query: {
+      select: (response): HandlerCustomerLevelListResponse[] => {
+        if (response.status === 200 && response.data.success && response.data.data) {
+          return response.data.data
+        }
+        return []
+      },
+    },
+  }
+)
+
+const customerLevels = customerLevelsResponse || []
+```
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining manual fetch pattern for customer levels
+- React Query hook properly configured with select transformer
+
+=== Notes ===
+- Removed unused imports: `useState`, `useCallback`
+- The select transformer extracts data from the response, returning empty array on error
+- Loading state now derived from `isLoading` property of the query result
+
+=== Next Steps ===
+- Continue with RQ-MIG-008 (Sales Orders Module) or other remaining migration tasks
