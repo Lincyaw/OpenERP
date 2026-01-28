@@ -522,3 +522,808 @@ func TestFlagService_CreateFlag_RepositoryError(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
 }
+
+func TestFlagService_CreateFlag_CreateRepositoryError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	req := dto.CreateFlagRequest{
+		Key:  "test-flag",
+		Name: "Test Flag",
+		Type: "boolean",
+	}
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("ExistsByKey", ctx, "test-flag").Return(false, nil)
+	mockFlagRepo.On("Create", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(errors.New("create failed"))
+
+	result, err := service.CreateFlag(ctx, req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_CreateFlag_InvalidType(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	req := dto.CreateFlagRequest{
+		Key:  "test-flag",
+		Name: "Test Flag",
+		Type: "invalid-type",
+	}
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("ExistsByKey", ctx, "test-flag").Return(false, nil)
+
+	result, err := service.CreateFlag(ctx, req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestFlagService_UpdateFlag_NotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	newName := "Updated Name"
+	req := dto.UpdateFlagRequest{
+		Name: &newName,
+	}
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, shared.ErrNotFound)
+
+	result, err := service.UpdateFlag(ctx, "nonexistent", req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestFlagService_UpdateFlag_InternalError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	newName := "Updated Name"
+	req := dto.UpdateFlagRequest{
+		Name: &newName,
+	}
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_UpdateFlag_OptimisticLockFailed(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	flag.Version = 5
+
+	wrongVersion := 3
+	newName := "Updated Name"
+	req := dto.UpdateFlagRequest{
+		Name:    &newName,
+		Version: &wrongVersion,
+	}
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "OPTIMISTIC_LOCK_FAILED", domainErr.Code)
+}
+
+func TestFlagService_UpdateFlag_WithDefaultValue(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	newValue := dto.FlagValueDTO{Enabled: true}
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	req := dto.UpdateFlagRequest{
+		DefaultValue: &newValue,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(nil)
+	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*featureflag.FlagAuditLog")).Return(nil)
+	mockOutboxRepo.On("Save", ctx, mock.Anything).Return(nil)
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.DefaultValue.Enabled)
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_UpdateFlag_WithRules(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	rules := []dto.TargetingRuleDTO{
+		{
+			RuleID:   "rule-1",
+			Priority: 1,
+			Conditions: []dto.ConditionDTO{
+				{
+					Attribute: "user_role",
+					Operator:  "equals",
+					Values:    []string{"admin"},
+				},
+			},
+			Value: dto.FlagValueDTO{
+				Enabled: true,
+			},
+			Percentage: 100,
+		},
+	}
+	req := dto.UpdateFlagRequest{
+		Rules: &rules,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(nil)
+	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*featureflag.FlagAuditLog")).Return(nil)
+	mockOutboxRepo.On("Save", ctx, mock.Anything).Return(nil)
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result.Rules))
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_UpdateFlag_WithTags(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	tags := []string{"beta", "ui"}
+	req := dto.UpdateFlagRequest{
+		Tags: &tags,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(nil)
+	mockAuditRepo.On("Create", ctx, mock.AnythingOfType("*featureflag.FlagAuditLog")).Return(nil)
+	mockOutboxRepo.On("Save", ctx, mock.Anything).Return(nil)
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.ElementsMatch(t, []string{"beta", "ui"}, result.Tags)
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_UpdateFlag_RepositoryUpdateError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	newName := "Updated Name"
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	req := dto.UpdateFlagRequest{
+		Name: &newName,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(errors.New("update failed"))
+
+	result, err := service.UpdateFlag(ctx, "test-flag", req, auditCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_GetFlag_InternalError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	result, err := service.GetFlag(ctx, "test-flag")
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_ListFlags_WithStatusFilter(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag1 := createTestFlag("flag-1", "Flag 1")
+	_ = flag1.Enable(nil)
+	flags := []featureflag.FeatureFlag{*flag1}
+
+	status := "enabled"
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+		Status:   &status,
+	}
+
+	mockFlagRepo.On("FindByStatus", ctx, featureflag.FlagStatusEnabled, mock.AnythingOfType("shared.Filter")).Return(flags, nil)
+	mockFlagRepo.On("CountByStatus", ctx, featureflag.FlagStatusEnabled).Return(int64(1), nil)
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result.Flags))
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_ListFlags_WithInvalidStatus(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	status := "invalid-status"
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+		Status:   &status,
+	}
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INVALID_STATUS", domainErr.Code)
+}
+
+func TestFlagService_ListFlags_WithTypeFilter(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag1 := createTestFlag("flag-1", "Flag 1")
+	flags := []featureflag.FeatureFlag{*flag1}
+
+	flagType := "boolean"
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+		Type:     &flagType,
+	}
+
+	mockFlagRepo.On("FindByType", ctx, featureflag.FlagTypeBoolean, mock.AnythingOfType("shared.Filter")).Return(flags, nil)
+	mockFlagRepo.On("Count", ctx, mock.AnythingOfType("shared.Filter")).Return(int64(1), nil)
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result.Flags))
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_ListFlags_WithInvalidType(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	flagType := "invalid-type"
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+		Type:     &flagType,
+	}
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INVALID_TYPE", domainErr.Code)
+}
+
+func TestFlagService_ListFlags_WithTagsFilter(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag1 := createTestFlag("flag-1", "Flag 1")
+	flags := []featureflag.FeatureFlag{*flag1}
+
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+		Tags:     []string{"beta"},
+	}
+
+	mockFlagRepo.On("FindByTags", ctx, []string{"beta"}, mock.AnythingOfType("shared.Filter")).Return(flags, nil)
+	mockFlagRepo.On("Count", ctx, mock.AnythingOfType("shared.Filter")).Return(int64(1), nil)
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result.Flags))
+	mockFlagRepo.AssertExpectations(t)
+}
+
+func TestFlagService_ListFlags_RepositoryError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	filter := dto.FlagListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindAll", ctx, mock.AnythingOfType("shared.Filter")).Return([]featureflag.FeatureFlag{}, errors.New("database error"))
+
+	result, err := service.ListFlags(ctx, filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_EnableFlag_NotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, shared.ErrNotFound)
+
+	err := service.EnableFlag(ctx, "nonexistent", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestFlagService_EnableFlag_InternalError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	err := service.EnableFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_EnableFlag_UpdateError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(errors.New("update error"))
+
+	err := service.EnableFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_DisableFlag_NotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, shared.ErrNotFound)
+
+	err := service.DisableFlag(ctx, "nonexistent", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestFlagService_DisableFlag_InternalError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	err := service.DisableFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_DisableFlag_UpdateError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	_ = flag.Enable(nil) // Enable so we can disable
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(errors.New("update error"))
+
+	err := service.DisableFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_ArchiveFlag_NotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, shared.ErrNotFound)
+
+	err := service.ArchiveFlag(ctx, "nonexistent", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestFlagService_ArchiveFlag_InternalError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	auditCtx := AuditContext{}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	err := service.ArchiveFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_ArchiveFlag_UpdateError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	auditCtx := AuditContext{UserID: newTestUserID()}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockFlagRepo.On("Update", ctx, mock.AnythingOfType("*featureflag.FeatureFlag")).Return(errors.New("update error"))
+
+	err := service.ArchiveFlag(ctx, "test-flag", auditCtx)
+
+	assert.Error(t, err)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_GetAuditLogs_Success(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+
+	auditLog1, _ := featureflag.NewFlagAuditLog(
+		"test-flag",
+		featureflag.AuditActionCreated,
+		nil,
+		map[string]any{"key": "test-flag"},
+		newTestUserID(),
+		"127.0.0.1",
+		"test-agent",
+	)
+	auditLogs := []featureflag.FlagAuditLog{*auditLog1}
+
+	filter := dto.AuditLogListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockAuditRepo.On("FindByFlagKey", ctx, "test-flag", mock.AnythingOfType("shared.Filter")).Return(auditLogs, nil)
+	mockAuditRepo.On("CountByFlagKey", ctx, "test-flag").Return(int64(1), nil)
+
+	result, err := service.GetAuditLogs(ctx, "test-flag", filter)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, 1, len(result.AuditLogs))
+	assert.Equal(t, int64(1), result.Total)
+	mockFlagRepo.AssertExpectations(t)
+	mockAuditRepo.AssertExpectations(t)
+}
+
+func TestFlagService_GetAuditLogs_FlagNotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	filter := dto.AuditLogListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, shared.ErrNotFound)
+
+	result, err := service.GetAuditLogs(ctx, "nonexistent", filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestFlagService_GetAuditLogs_FindFlagError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+
+	filter := dto.AuditLogListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(nil, errors.New("database error"))
+
+	result, err := service.GetAuditLogs(ctx, "test-flag", filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_GetAuditLogs_FindAuditLogsError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+
+	filter := dto.AuditLogListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockAuditRepo.On("FindByFlagKey", ctx, "test-flag", mock.AnythingOfType("shared.Filter")).Return([]featureflag.FlagAuditLog{}, errors.New("audit error"))
+
+	result, err := service.GetAuditLogs(ctx, "test-flag", filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestFlagService_GetAuditLogs_CountError(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockAuditRepo := new(MockFlagAuditLogRepository)
+	mockOutboxRepo := new(MockOutboxRepository)
+	logger := newTestLogger()
+
+	service := NewFlagService(mockFlagRepo, mockAuditRepo, mockOutboxRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+
+	filter := dto.AuditLogListFilter{
+		Page:     1,
+		PageSize: 20,
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockAuditRepo.On("FindByFlagKey", ctx, "test-flag", mock.AnythingOfType("shared.Filter")).Return([]featureflag.FlagAuditLog{}, nil)
+	mockAuditRepo.On("CountByFlagKey", ctx, "test-flag").Return(int64(0), errors.New("count error"))
+
+	result, err := service.GetAuditLogs(ctx, "test-flag", filter)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}

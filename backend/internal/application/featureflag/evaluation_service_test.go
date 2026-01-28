@@ -2,6 +2,7 @@ package featureflag
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/erp/backend/internal/application/featureflag/dto"
@@ -329,4 +330,189 @@ func TestEvaluationService_Evaluate_DisabledFlag(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.False(t, result.Enabled)
 	assert.Equal(t, "disabled", result.Reason)
+}
+
+func TestEvaluationService_IsEnabled_FlagNotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+	evalCtx := dto.EvaluationContextDTO{
+		UserID: "user-123",
+	}
+
+	notFoundErr := shared.NewDomainError("NOT_FOUND", "Flag not found")
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, notFoundErr)
+
+	result, err := service.IsEnabled(ctx, "nonexistent", evalCtx)
+
+	assert.Error(t, err)
+	assert.False(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestEvaluationService_GetVariant_FlagNotFound(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+	evalCtx := dto.EvaluationContextDTO{
+		UserID: "user-123",
+	}
+
+	notFoundErr := shared.NewDomainError("NOT_FOUND", "Flag not found")
+	mockFlagRepo.On("FindByKey", ctx, "nonexistent").Return(nil, notFoundErr)
+
+	result, err := service.GetVariant(ctx, "nonexistent", evalCtx)
+
+	assert.Error(t, err)
+	assert.Empty(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "FLAG_NOT_FOUND", domainErr.Code)
+}
+
+func TestEvaluationService_GetClientConfig_Error(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+	evalCtx := dto.EvaluationContextDTO{
+		UserID: "user-123",
+	}
+
+	mockFlagRepo.On("FindEnabled", ctx, mock.AnythingOfType("shared.Filter")).Return([]featureflag.FeatureFlag{}, errors.New("database error"))
+
+	result, err := service.GetClientConfig(ctx, evalCtx)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	domainErr, ok := err.(*shared.DomainError)
+	assert.True(t, ok)
+	assert.Equal(t, "INTERNAL_ERROR", domainErr.Code)
+}
+
+func TestEvaluationService_WarmupCache_NonCachedEvaluator(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+
+	// WarmupCache on a non-cached evaluator should return nil
+	err := service.WarmupCache(ctx)
+
+	assert.NoError(t, err)
+}
+
+func TestEvaluationService_InvalidateFlag_NonCachedEvaluator(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+
+	// InvalidateFlag on a non-cached evaluator should return nil
+	err := service.InvalidateFlag(ctx, "test-flag")
+
+	assert.NoError(t, err)
+}
+
+func TestEvaluationService_GetCacheStats_NonCachedEvaluator(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+
+	// GetCacheStats on a non-cached evaluator should return nil
+	stats := service.GetCacheStats(ctx)
+
+	assert.Nil(t, stats)
+}
+
+func TestEvaluationService_Evaluate_WithAttributes(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	_ = flag.Enable(nil)
+
+	evalCtx := dto.EvaluationContextDTO{
+		UserID:   "user-123",
+		TenantID: "tenant-456",
+		UserAttributes: map[string]any{
+			"plan":    "premium",
+			"country": "US",
+		},
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockOverrideRepo.On("FindByFlagKeyAndTarget", ctx, "test-flag", featureflag.OverrideTargetTypeUser, mock.AnythingOfType("uuid.UUID")).Return(nil, shared.ErrNotFound)
+	mockOverrideRepo.On("FindByFlagKeyAndTarget", ctx, "test-flag", featureflag.OverrideTargetTypeTenant, mock.AnythingOfType("uuid.UUID")).Return(nil, shared.ErrNotFound)
+
+	result, err := service.Evaluate(ctx, "test-flag", evalCtx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "test-flag", result.Key)
+}
+
+func TestEvaluationService_Evaluate_WithOverride(t *testing.T) {
+	mockFlagRepo := new(MockFeatureFlagRepository)
+	mockOverrideRepo := new(MockFlagOverrideRepository)
+	logger := newTestLogger()
+
+	service := NewEvaluationService(mockFlagRepo, mockOverrideRepo, logger)
+
+	ctx := context.Background()
+	flag := createTestFlag("test-flag", "Test Flag")
+	_ = flag.Enable(nil)
+
+	userID := uuid.MustParse("12345678-1234-1234-1234-123456789abc")
+	override, _ := featureflag.NewFlagOverride(
+		"test-flag",
+		featureflag.OverrideTargetTypeUser,
+		userID,
+		featureflag.NewBooleanFlagValue(true),
+		"test override",
+		nil,
+		nil,
+	)
+
+	evalCtx := dto.EvaluationContextDTO{
+		UserID:   userID.String(),
+		TenantID: "tenant-456",
+	}
+
+	mockFlagRepo.On("FindByKey", ctx, "test-flag").Return(flag, nil)
+	mockOverrideRepo.On("FindByFlagKeyAndTarget", ctx, "test-flag", featureflag.OverrideTargetTypeUser, userID).Return(override, nil)
+
+	result, err := service.Evaluate(ctx, "test-flag", evalCtx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.True(t, result.Enabled)
+	assert.Equal(t, "override_user", result.Reason)
 }

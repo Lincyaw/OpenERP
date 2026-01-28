@@ -32164,3 +32164,70 @@ All loadgen tests pass:
 - FF-INT-001: E2E integration tests for Feature Flag management
 - Consider adding multi-role support to EvaluationContext in future
 - Consider adding metrics histogram for evaluation latency
+
+---
+
+2026-01-28 - Task ID: FF-BE-010 - Feature Flag 后端单元测试
+
+=== Implementation Details ===
+- Added comprehensive unit tests for FlagService:
+  - CreateFlag with various errors (repository error, duplicate key, invalid type)
+  - UpdateFlag with all paths (success, not found, optimistic lock, rules, tags, default value)
+  - ListFlags with filters (status, type, tags, repository errors)
+  - Enable/Disable/Archive with error paths
+  - GetAuditLogs with all error cases
+- Added tests for EvaluationService:
+  - IsEnabled and GetVariant error cases (flag not found)
+  - GetClientConfig error path
+  - Non-cached evaluator methods (WarmupCache, InvalidateFlag, GetCacheStats return nil gracefully)
+  - Evaluate with attributes and user overrides
+- Added tests for OverrideService:
+  - CreateOverride with all error paths (flag not found, archived, duplicate, repository error)
+  - ListOverrides with error cases
+  - GetOverride internal error
+  - DeleteOverride error paths and flag not found scenario
+  - CleanupExpiredOverrides error case
+  - Override with expiry
+- Added DTO tests:
+  - ToAuditLogResponse (including nil input)
+  - ToAuditLogListResponse (including zero page size and exact pages)
+
+=== Key Files Modified ===
+- backend/internal/application/featureflag/flag_service_test.go (added ~700 lines)
+- backend/internal/application/featureflag/evaluation_service_test.go (added ~180 lines)
+- backend/internal/application/featureflag/override_service_test.go (added ~360 lines)
+- backend/internal/application/featureflag/dto/dto_test.go (added ~75 lines)
+
+=== Test Coverage Results ===
+- Domain layer: 88.0% coverage
+- Application layer (featureflag): 86.0% coverage
+- DTO package: 92.4% coverage
+- Total feature flag coverage: 87.8% (exceeds 80% requirement)
+
+=== Verification ===
+- All tests pass: go test ./internal/domain/featureflag/... ./internal/application/featureflag/...
+- Go build passes: go build ./...
+- Code review: APPROVED (no CRITICAL or HIGH issues)
+- Coverage >= 80%: ✅ (87.8% total)
+
+=== Acceptance Criteria Met ===
+- ✅ Unit test coverage >= 80% (achieved 87.8%)
+- ✅ All tests pass
+- ✅ Edge cases covered:
+  - Domain layer: FeatureFlag aggregate methods, evaluator scenarios, hash distribution, condition matchers
+  - Application layer: FlagService CRUD, EvaluationService evaluation flow, OverrideService management
+  - Error paths: not found, internal errors, validation failures, optimistic locking
+
+=== Code Review Findings (MEDIUM/LOW, non-blocking) ===
+- Mock slice methods could add nil checks (follows existing pattern in FindByKey)
+- Could consolidate mocks into a single mocks_test.go file
+- Table-driven tests could be used for similar error test cases
+- Key generation in batch test uses rune which has non-printable chars > 127
+
+=== Notes ===
+- Infrastructure layer tests (Repository, Cache) were not added as they require integration testing with real database/Redis
+- The NewCachedEvaluationService constructors have 0% coverage as they require cache integration
+
+=== Next Steps ===
+- FF-INT-001: E2E integration tests for Feature Flag management (will cover infrastructure layer)
+- Consider adding integration tests for repository and cache layers

@@ -8661,7 +8661,7 @@
       "- 所有测试通过",
       "- 边界情况有测试覆盖"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Testing",
     "affectedModules": [
       "backend/internal/domain/featureflag/*_test.go",

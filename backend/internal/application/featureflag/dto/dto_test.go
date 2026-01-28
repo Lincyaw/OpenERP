@@ -280,3 +280,79 @@ func TestEvaluationContextDTO_ToDomain_EmptyFields(t *testing.T) {
 	assert.Empty(t, domain.RequestID)
 	assert.Empty(t, domain.Environment)
 }
+
+func TestToAuditLogResponse(t *testing.T) {
+	userID := uuid.New()
+	auditLog, _ := featureflag.NewFlagAuditLog(
+		"test-flag",
+		featureflag.AuditActionCreated,
+		nil,
+		map[string]any{"key": "test-flag", "name": "Test Flag"},
+		&userID,
+		"127.0.0.1",
+		"test-agent",
+	)
+
+	response := ToAuditLogResponse(auditLog)
+
+	assert.Equal(t, auditLog.ID, response.ID)
+	assert.Equal(t, "test-flag", response.FlagKey)
+	assert.Equal(t, "created", response.Action)
+	assert.NotNil(t, response.NewValue)
+	assert.Equal(t, &userID, response.UserID)
+	assert.Equal(t, "127.0.0.1", response.IPAddress)
+	assert.Equal(t, "test-agent", response.UserAgent)
+}
+
+func TestToAuditLogResponse_Nil(t *testing.T) {
+	response := ToAuditLogResponse(nil)
+	assert.Nil(t, response)
+}
+
+func TestToAuditLogListResponse(t *testing.T) {
+	userID := uuid.New()
+	auditLog1, _ := featureflag.NewFlagAuditLog(
+		"flag-1",
+		featureflag.AuditActionCreated,
+		nil,
+		map[string]any{"key": "flag-1"},
+		&userID,
+		"127.0.0.1",
+		"test-agent",
+	)
+	auditLog2, _ := featureflag.NewFlagAuditLog(
+		"flag-2",
+		featureflag.AuditActionEnabled,
+		map[string]any{"status": "disabled"},
+		map[string]any{"status": "enabled"},
+		&userID,
+		"127.0.0.1",
+		"test-agent",
+	)
+	logs := []featureflag.FlagAuditLog{*auditLog1, *auditLog2}
+
+	response := ToAuditLogListResponse(logs, 50, 1, 20)
+
+	assert.Equal(t, 2, len(response.AuditLogs))
+	assert.Equal(t, int64(50), response.Total)
+	assert.Equal(t, 1, response.Page)
+	assert.Equal(t, 20, response.PageSize)
+	assert.Equal(t, 3, response.TotalPages) // 50/20 = 2.5, rounded up to 3
+}
+
+func TestToAuditLogListResponse_ZeroPageSize(t *testing.T) {
+	logs := []featureflag.FlagAuditLog{}
+
+	response := ToAuditLogListResponse(logs, 0, 1, 0)
+
+	assert.Equal(t, 0, len(response.AuditLogs))
+	assert.Equal(t, 20, response.PageSize) // Should default to 20
+}
+
+func TestToAuditLogListResponse_ExactPages(t *testing.T) {
+	logs := []featureflag.FlagAuditLog{}
+
+	response := ToAuditLogListResponse(logs, 40, 1, 20)
+
+	assert.Equal(t, 2, response.TotalPages) // 40/20 = exactly 2 pages
+}
