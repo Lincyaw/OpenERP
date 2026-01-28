@@ -72,6 +72,10 @@ type Config struct {
 
 	// Output configures output and reporting.
 	Output OutputConfig `yaml:"output,omitempty" json:"output,omitempty"`
+
+	// DataGenerators configures data generators for semantic types.
+	// The key is the semantic type (e.g., "common.code", "common.name").
+	DataGenerators map[string]GeneratorConfig `yaml:"dataGenerators,omitempty" json:"dataGenerators,omitempty"`
 }
 
 // TargetConfig holds target system configuration.
@@ -294,8 +298,12 @@ type SequenceConfig struct {
 // PatternConfig configures pattern-based value generation.
 type PatternConfig struct {
 	// Pattern is the template pattern.
-	// Placeholders: {int}, {string:N}, {uuid}, {date}, {time}, {timestamp}
+	// Placeholders: {PREFIX}, {TIMESTAMP}, {RANDOM:N}, {UUID}, {DATE}, {TIME}, {DATETIME},
+	// {INT:MIN:MAX}, {ALPHA:N}, {HEX:N}, {SEQUENCE}
 	Pattern string `yaml:"pattern" json:"pattern"`
+
+	// Prefix is the value to use for {PREFIX} placeholder.
+	Prefix string `yaml:"prefix,omitempty" json:"prefix,omitempty"`
 }
 
 // ProducesConfig defines what values an endpoint produces.

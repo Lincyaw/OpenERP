@@ -491,3 +491,80 @@ endpoints:
 	assert.Equal(t, "string", filterParam.Generator.Random.Type)
 	assert.Equal(t, 10, filterParam.Generator.Random.Length)
 }
+
+func TestDataGeneratorsConfig(t *testing.T) {
+	yaml := `
+name: "Test"
+target:
+  baseURL: "http://localhost:8080"
+trafficShaper:
+  type: "sine"
+  baseQPS: 100
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+dataGenerators:
+  "common.code":
+    type: "pattern"
+    pattern:
+      pattern: "{PREFIX}-{TIMESTAMP}-{RANDOM:4}"
+      prefix: "TEST"
+  "common.name":
+    type: "faker"
+    faker:
+      type: "company"
+  "common.quantity":
+    type: "random"
+    random:
+      type: "int"
+      min: 1
+      max: 100
+  "common.id":
+    type: "sequence"
+    sequence:
+      prefix: "ID-"
+      start: 1000
+      step: 1
+      padding: 6
+`
+	cfg, err := LoadFromBytes([]byte(yaml))
+	require.NoError(t, err)
+
+	// Verify dataGenerators map is populated
+	assert.Len(t, cfg.DataGenerators, 4)
+
+	// Test pattern generator config
+	codeGen, ok := cfg.DataGenerators["common.code"]
+	require.True(t, ok)
+	assert.Equal(t, "pattern", codeGen.Type)
+	require.NotNil(t, codeGen.Pattern)
+	assert.Equal(t, "{PREFIX}-{TIMESTAMP}-{RANDOM:4}", codeGen.Pattern.Pattern)
+	assert.Equal(t, "TEST", codeGen.Pattern.Prefix)
+
+	// Test faker generator config
+	nameGen, ok := cfg.DataGenerators["common.name"]
+	require.True(t, ok)
+	assert.Equal(t, "faker", nameGen.Type)
+	require.NotNil(t, nameGen.Faker)
+	assert.Equal(t, "company", nameGen.Faker.Type)
+
+	// Test random generator config
+	qtyGen, ok := cfg.DataGenerators["common.quantity"]
+	require.True(t, ok)
+	assert.Equal(t, "random", qtyGen.Type)
+	require.NotNil(t, qtyGen.Random)
+	assert.Equal(t, "int", qtyGen.Random.Type)
+	assert.Equal(t, float64(1), qtyGen.Random.Min)
+	assert.Equal(t, float64(100), qtyGen.Random.Max)
+
+	// Test sequence generator config
+	idGen, ok := cfg.DataGenerators["common.id"]
+	require.True(t, ok)
+	assert.Equal(t, "sequence", idGen.Type)
+	require.NotNil(t, idGen.Sequence)
+	assert.Equal(t, "ID-", idGen.Sequence.Prefix)
+	assert.Equal(t, int64(1000), idGen.Sequence.Start)
+	assert.Equal(t, int64(1), idGen.Sequence.Step)
+	assert.Equal(t, 6, idGen.Sequence.Padding)
+}

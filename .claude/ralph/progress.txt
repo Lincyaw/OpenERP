@@ -32371,3 +32371,113 @@ All loadgen tests pass:
 
 === Next Steps ===
 - FF-INT-001: E2E integration tests for Feature Flag management
+
+2026-01-28 - LOADGEN-019: 数据生成器扩展 (Data Generator Extension)
+
+=== Implementation Details ===
+
+**Created internal/generator package with the following components:**
+
+1. **generator.go** - Core interface and types:
+   - `Generator` interface with `Generate()` and `Type()` methods
+   - `GeneratorType` enum (faker, pattern, random, sequence)
+   - `Config` struct for YAML/JSON configuration
+   - `Registry` for managing named generators
+   - Factory function `New()` to create generators from config
+
+2. **faker.go** - FakerGenerator using gofakeit v7:
+   - Supports 80+ faker types including:
+     - Person: name, firstName, lastName
+     - Contact: email, phone
+     - Address: city, country, zipCode, latitude, longitude
+     - Company: company, jobTitle
+     - Internet: url, ipv4, ipv6, mac
+     - Payment: creditCard, achAccount
+     - Text: word, sentence, paragraph
+     - Date/Time: date, time, datetime
+     - And many more
+
+3. **pattern.go** - PatternGenerator with placeholders:
+   - {PREFIX} - Configurable prefix string
+   - {TIMESTAMP} - Unix timestamp in milliseconds
+   - {RANDOM:N} - Random alphanumeric string of length N
+   - {UUID} - Random UUID v4
+   - {DATE} - YYYY-MM-DD format
+   - {TIME} - HH:MM:SS format
+   - {DATETIME} - ISO 8601 format
+   - {INT:MIN:MAX} - Random integer in range
+   - {ALPHA:N} - Random alphabetic string
+   - {HEX:N} - Random hexadecimal string
+   - {SEQUENCE} - Auto-incrementing sequence
+
+4. **random.go** - RandomGenerator for primitives:
+   - Types: int, float, string, uuid, bool
+   - Configurable min/max for numbers
+   - Configurable length and charset for strings
+   - Charsets: alphanumeric, alpha, numeric, hex, alphanum_lower, alphanum_upper
+
+5. **sequence.go** - SequenceGenerator:
+   - Configurable start, step, padding
+   - Optional prefix and suffix
+   - Thread-safe with atomic operations
+   - Reset and Current methods
+
+**Configuration Integration:**
+- Added `DataGenerators` field to `Config` struct in config.go
+- Added `Prefix` field to `PatternConfig` to support {PREFIX} placeholder
+- Updated placeholder documentation in PatternConfig
+
+=== Files Created ===
+- tools/loadgen/internal/generator/generator.go
+- tools/loadgen/internal/generator/faker.go
+- tools/loadgen/internal/generator/pattern.go
+- tools/loadgen/internal/generator/random.go
+- tools/loadgen/internal/generator/sequence.go
+- tools/loadgen/internal/generator/generator_test.go
+
+=== Files Modified ===
+- tools/loadgen/internal/config/config.go (added DataGenerators field, updated PatternConfig)
+- tools/loadgen/internal/config/config_test.go (added TestDataGeneratorsConfig)
+- tools/loadgen/go.mod (added gofakeit and uuid dependencies)
+- tools/loadgen/go.sum (updated)
+
+=== Dependencies Added ===
+- github.com/brianvoe/gofakeit/v7 v7.14.0
+- github.com/google/uuid v1.6.0
+
+=== Verification ===
+- [x] All generator unit tests pass (100+ test cases)
+- [x] Test coverage: 91.7% statements
+- [x] Config integration test passes
+- [x] All existing loadgen tests pass
+- [x] go build succeeds
+
+=== Notes ===
+- All generators are thread-safe (use atomic operations where needed)
+- Generators use crypto/rand for secure random values
+- Faker generator wraps gofakeit library for realistic test data
+- Pattern generator supports complex patterns like "{PREFIX}-{DATE}-{RANDOM:4}"
+
+=== Example Usage (from config) ===
+```yaml
+dataGenerators:
+  "common.code":
+    type: "pattern"
+    pattern:
+      pattern: "{PREFIX}-{TIMESTAMP}-{RANDOM:4}"
+      prefix: "TEST"
+  "common.name":
+    type: "faker"
+    faker:
+      type: "company"
+  "common.quantity":
+    type: "random"
+    random:
+      type: "int"
+      min: 1
+      max: 100
+```
+
+=== Next Steps ===
+- LOADGEN-020: Consider adding more generator types (enum, weighted random)
+- Integration with request builder to use generators in body templates
