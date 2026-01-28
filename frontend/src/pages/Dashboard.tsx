@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { Container, Row, Stack } from '@/components/common/layout'
 import { countProductByStatus } from '@/api/products/products'
 import { countCustomerByStatus } from '@/api/customers/customers'
-import { getInventory } from '@/api/inventory/inventory'
+import { listInventoryBelowMinimum } from '@/api/inventory/inventory'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
 import { getFinanceApi } from '@/api/finance'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -68,7 +68,6 @@ export default function DashboardPage() {
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
 
   // API instances
-  const inventoryApi = useMemo(() => getInventory(), [])
   const salesOrdersApi = useMemo(() => getSalesOrders(), [])
   const financeApi = useMemo(() => getFinanceApi(), [])
 
@@ -118,7 +117,7 @@ export default function DashboardPage() {
         countProductByStatus(),
         countCustomerByStatus(),
         salesOrdersApi.getSalesOrderStatusSummary(),
-        inventoryApi.listInventoryBelowMinimum({ page_size: 100 }),
+        listInventoryBelowMinimum({ page_size: 100 }),
         financeApi.getFinanceReceivableReceivableSummary(),
         financeApi.getFinancePayablePayableSummary(),
         salesOrdersApi.listSalesOrders({
@@ -168,8 +167,12 @@ export default function DashboardPage() {
       }
 
       // Process low stock count
-      if (lowStockRes.status === 'fulfilled' && lowStockRes.value.meta) {
-        setLowStockCount(lowStockRes.value.meta.total || 0)
+      if (
+        lowStockRes.status === 'fulfilled' &&
+        lowStockRes.value.status === 200 &&
+        lowStockRes.value.data.meta
+      ) {
+        setLowStockCount(lowStockRes.value.data.meta.total || 0)
       }
 
       // Process receivables summary
@@ -246,8 +249,12 @@ export default function DashboardPage() {
       }
 
       // Add low stock alerts
-      if (lowStockRes.status === 'fulfilled' && lowStockRes.value.meta?.total) {
-        const lowStockTotal = lowStockRes.value.meta.total
+      if (
+        lowStockRes.status === 'fulfilled' &&
+        lowStockRes.value.status === 200 &&
+        lowStockRes.value.data.meta?.total
+      ) {
+        const lowStockTotal = lowStockRes.value.data.meta.total
         if (lowStockTotal > 0) {
           tasks.push({
             id: 'low-stock',
@@ -300,7 +307,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [inventoryApi, salesOrdersApi, financeApi, t, formatCurrency])
+  }, [salesOrdersApi, financeApi, t, formatCurrency])
 
   // Fetch data on mount
   useEffect(() => {
