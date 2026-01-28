@@ -9557,7 +9557,7 @@
       "- Implicit any type errors fixed with proper typing",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/features/partner/WarehouseForm.tsx",
       "src/pages/partner/Warehouses.tsx",

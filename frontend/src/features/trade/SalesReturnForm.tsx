@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
 import { getSalesReturns } from '@/api/sales-returns/sales-returns'
 import { getSalesOrders } from '@/api/sales-orders/sales-orders'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerSalesOrderResponse,
   HandlerSalesOrderItemResponse,
@@ -143,7 +143,6 @@ export function SalesReturnForm() {
 
   const salesReturnApi = useMemo(() => getSalesReturns(), [])
   const salesOrderApi = useMemo(() => getSalesOrders(), [])
-  const warehouseApi = useMemo(() => getWarehouses(), [])
 
   // Form state
   const [formData, setFormData] = useState<ReturnFormData>({
@@ -252,28 +251,30 @@ export function SalesReturnForm() {
   const fetchWarehouses = useCallback(async () => {
     setWarehousesLoading(true)
     try {
-      const response = await warehouseApi.listWarehouses({
+      const response = await listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        setWarehouses(response.data)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setWarehouses(response.data.data)
         // Set default warehouse if available
         if (!formData.warehouse_id) {
-          const defaultWarehouse = response.data.find((w) => w.is_default)
+          const defaultWarehouse = response.data.data.find(
+            (w: HandlerWarehouseListResponse) => w.is_default
+          )
           if (defaultWarehouse?.id) {
             setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
           }
         }
-      } else if (!response.success) {
-        log.error('Failed to fetch warehouses', response.error)
+      } else if (response.status !== 200 || !response.data.success) {
+        log.error('Failed to fetch warehouses', response.data.error)
       }
     } catch (error) {
       log.error('Error fetching warehouses', error)
     } finally {
       setWarehousesLoading(false)
     }
-  }, [warehouseApi, formData.warehouse_id])
+  }, [formData.warehouse_id])
 
   // Initial data loading
   useEffect(() => {

@@ -25,7 +25,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
@@ -86,7 +86,6 @@ export default function StockAlertsPage() {
   const { t } = useTranslation(['inventory', 'common'])
   const { formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
-  const warehousesApi = useMemo(() => getWarehouses(), [])
 
   // Wrapper function to handle undefined values
   const formatDate = useCallback(
@@ -124,16 +123,16 @@ export default function StockAlertsPage() {
   // Fetch warehouses for filter dropdown
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehousesApi.listWarehouses({
+      const response = await listWarehouses({
         page: 1,
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        const warehouses = response.data as HandlerWarehouseListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const warehouses = response.data.data as HandlerWarehouseListResponse[]
         const options: WarehouseOption[] = [
           { label: t('alerts.allWarehouses'), value: '' },
-          ...warehouses.map((w) => ({
+          ...warehouses.map((w: HandlerWarehouseListResponse) => ({
             label: w.name || w.code || '',
             value: w.id || '',
           })),
@@ -142,7 +141,7 @@ export default function StockAlertsPage() {
 
         // Build warehouse map for display
         const map = new Map<string, string>()
-        warehouses.forEach((w) => {
+        warehouses.forEach((w: HandlerWarehouseListResponse) => {
           if (w.id) {
             map.set(w.id, w.name || w.code || w.id)
           }
@@ -152,7 +151,7 @@ export default function StockAlertsPage() {
     } catch {
       log.error('Failed to fetch warehouses')
     }
-  }, [warehousesApi, t])
+  }, [t])
 
   // Fetch products for display names
   const fetchProducts = useCallback(async () => {

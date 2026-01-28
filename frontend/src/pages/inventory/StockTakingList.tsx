@@ -13,7 +13,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerStockTakingListResponse,
   ListStockTakingsParams,
@@ -66,7 +66,6 @@ export default function StockTakingListPage() {
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const stockTakingApi = useMemo(() => getStockTaking(), [])
-  const warehousesApi = useMemo(() => getWarehouses(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -116,15 +115,15 @@ export default function StockTakingListPage() {
   // Fetch warehouses for filter dropdown
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehousesApi.listWarehouses({
+      const response = await listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        const warehouses = response.data as HandlerWarehouseListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const warehouses = response.data.data as HandlerWarehouseListResponse[]
         const options: WarehouseOption[] = [
           { label: t('stockTaking.list.allWarehouses'), value: '' },
-          ...warehouses.map((w) => ({
+          ...warehouses.map((w: HandlerWarehouseListResponse) => ({
             label: w.name || w.code || '',
             value: w.id || '',
           })),
@@ -134,7 +133,7 @@ export default function StockTakingListPage() {
     } catch {
       log.error('Failed to fetch warehouses')
     }
-  }, [warehousesApi, t])
+  }, [t])
 
   // Fetch stock takings
   const fetchStockTakings = useCallback(async () => {
@@ -147,9 +146,7 @@ export default function StockTakingListPage() {
         warehouse_id: warehouseFilter || undefined,
         status: (statusFilter as ListStockTakingsParams['status']) || undefined,
         order_by: (state.sort.field || 'created_at') as ListStockTakingsOrderBy,
-        order_dir: (state.sort.order === 'asc'
-          ? 'asc'
-          : 'desc') as ListStockTakingsOrderDir,
+        order_dir: (state.sort.order === 'asc' ? 'asc' : 'desc') as ListStockTakingsOrderDir,
       }
 
       const response = await stockTakingApi.listStockTakings(params)

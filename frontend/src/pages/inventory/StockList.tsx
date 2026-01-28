@@ -13,7 +13,7 @@ import {
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
@@ -65,7 +65,6 @@ export default function StockListPage() {
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
-  const warehousesApi = useMemo(() => getWarehouses(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -105,7 +104,7 @@ export default function StockListPage() {
   const fetchWarehouses = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const response = await warehousesApi.listWarehouses(
+        const response = await listWarehouses(
           {
             page: 1,
             page_size: 100,
@@ -113,11 +112,11 @@ export default function StockListPage() {
           },
           { signal }
         )
-        if (response.success && response.data) {
-          const warehouses = response.data as HandlerWarehouseListResponse[]
+        if (response.status === 200 && response.data.success && response.data.data) {
+          const warehouses = response.data.data as HandlerWarehouseListResponse[]
           const options: WarehouseOption[] = [
             { label: t('stock.allWarehouses'), value: '' },
-            ...warehouses.map((w) => ({
+            ...warehouses.map((w: HandlerWarehouseListResponse) => ({
               label: w.name || w.code || '',
               value: w.id || '',
             })),
@@ -126,7 +125,7 @@ export default function StockListPage() {
 
           // Build warehouse map for display
           const map = new Map<string, string>()
-          warehouses.forEach((w) => {
+          warehouses.forEach((w: HandlerWarehouseListResponse) => {
             if (w.id) {
               map.set(w.id, w.name || w.code || w.id)
             }
@@ -138,7 +137,7 @@ export default function StockListPage() {
         log.error('Failed to fetch warehouses')
       }
     },
-    [warehousesApi, t]
+    [t]
   )
 
   // Fetch products for display names

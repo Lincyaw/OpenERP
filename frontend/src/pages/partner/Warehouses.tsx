@@ -13,7 +13,13 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import {
+  listWarehouses,
+  enableWarehouse,
+  disableWarehouse,
+  setDefaultWarehouse,
+  deleteWarehouse,
+} from '@/api/warehouses/warehouses'
 import type {
   HandlerWarehouseListResponse,
   HandlerWarehouseListResponseStatus,
@@ -58,7 +64,6 @@ export default function WarehousesPage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['partner', 'common'])
   const { formatDate } = useFormatters()
-  const api = useMemo(() => getWarehouses(), [])
 
   // Memoized options with translations
   const STATUS_OPTIONS = useMemo(
@@ -112,16 +117,16 @@ export default function WarehousesPage() {
         order_dir: state.sort.order === 'asc' ? 'asc' : 'desc',
       }
 
-      const response = await api.listWarehouses(params)
+      const response = await listWarehouses(params)
 
-      if (response.success && response.data) {
-        setWarehouseList(response.data as Warehouse[])
-        if (response.meta) {
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setWarehouseList(response.data.data as Warehouse[])
+        if (response.data.meta) {
           setPaginationMeta({
-            page: response.meta.page || 1,
-            page_size: response.meta.page_size || 20,
-            total: response.meta.total || 0,
-            total_pages: response.meta.total_pages || 1,
+            page: response.data.meta.page || 1,
+            page_size: response.data.meta.page_size || 20,
+            total: response.data.meta.total || 0,
+            total_pages: response.data.meta.total_pages || 1,
           })
         }
       }
@@ -131,7 +136,6 @@ export default function WarehousesPage() {
       setLoading(false)
     }
   }, [
-    api,
     t,
     state.pagination.page,
     state.pagination.pageSize,
@@ -181,14 +185,14 @@ export default function WarehousesPage() {
     async (warehouse: Warehouse) => {
       if (!warehouse.id) return
       try {
-        await api.enableWarehouse(warehouse.id)
+        await enableWarehouse(warehouse.id, {})
         Toast.success(t('warehouses.messages.enableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
         Toast.error(t('warehouses.messages.enableError'))
       }
     },
-    [api, fetchWarehouses, t]
+    [fetchWarehouses, t]
   )
 
   // Handle disable warehouse
@@ -200,14 +204,14 @@ export default function WarehousesPage() {
         return
       }
       try {
-        await api.disableWarehouse(warehouse.id)
+        await disableWarehouse(warehouse.id, {})
         Toast.success(t('warehouses.messages.disableSuccess', { name: warehouse.name }))
         fetchWarehouses()
       } catch {
         Toast.error(t('warehouses.messages.disableError'))
       }
     },
-    [api, fetchWarehouses, t]
+    [fetchWarehouses, t]
   )
 
   // Handle set default warehouse
@@ -225,7 +229,7 @@ export default function WarehousesPage() {
         cancelText: t('common:actions.cancel'),
         onOk: async () => {
           try {
-            await api.setDefaultWarehouse(warehouse.id!)
+            await setDefaultWarehouse(warehouse.id!, {})
             Toast.success(t('warehouses.messages.setDefaultSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
@@ -234,7 +238,7 @@ export default function WarehousesPage() {
         },
       })
     },
-    [api, fetchWarehouses, t]
+    [fetchWarehouses, t]
   )
 
   // Handle delete warehouse
@@ -253,7 +257,7 @@ export default function WarehousesPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            await api.deleteWarehouse(warehouse.id!)
+            await deleteWarehouse(warehouse.id!)
             Toast.success(t('warehouses.messages.deleteSuccess', { name: warehouse.name }))
             fetchWarehouses()
           } catch {
@@ -262,7 +266,7 @@ export default function WarehousesPage() {
         },
       })
     },
-    [api, fetchWarehouses, t]
+    [fetchWarehouses, t]
   )
 
   // Handle edit warehouse
@@ -288,14 +292,14 @@ export default function WarehousesPage() {
   // Handle bulk enable
   const handleBulkEnable = useCallback(async () => {
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.enableWarehouse(id)))
+      await Promise.all(selectedRowKeys.map((id) => enableWarehouse(id, {})))
       Toast.success(t('warehouses.messages.batchEnableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()
     } catch {
       Toast.error(t('warehouses.messages.batchEnableError'))
     }
-  }, [api, selectedRowKeys, fetchWarehouses, t])
+  }, [selectedRowKeys, fetchWarehouses, t])
 
   // Handle bulk disable
   const handleBulkDisable = useCallback(async () => {
@@ -308,14 +312,14 @@ export default function WarehousesPage() {
       return
     }
     try {
-      await Promise.all(selectedRowKeys.map((id) => api.disableWarehouse(id)))
+      await Promise.all(selectedRowKeys.map((id) => disableWarehouse(id, {})))
       Toast.success(t('warehouses.messages.batchDisableSuccess', { count: selectedRowKeys.length }))
       setSelectedRowKeys([])
       fetchWarehouses()
     } catch {
       Toast.error(t('warehouses.messages.batchDisableError'))
     }
-  }, [api, selectedRowKeys, fetchWarehouses, warehouseList, t])
+  }, [selectedRowKeys, fetchWarehouses, warehouseList, t])
 
   // Table columns
   const tableColumns: DataTableColumn<Warehouse>[] = useMemo(

@@ -19,7 +19,7 @@ import { IconArrowLeft, IconSave, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerPurchaseOrderResponse,
   HandlerPurchaseOrderItemResponse,
@@ -77,7 +77,6 @@ export default function PurchaseOrderReceivePage() {
   const { formatCurrency, formatDate } = useFormatters()
 
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
-  const warehouseApi = useMemo(() => getWarehouses(), [])
 
   // State
   const [order, setOrder] = useState<HandlerPurchaseOrderResponse | null>(null)
@@ -140,27 +139,29 @@ export default function PurchaseOrderReceivePage() {
   // Fetch warehouses
   const fetchWarehouses = useCallback(async () => {
     try {
-      const response = await warehouseApi.listWarehouses({
+      const response = await listWarehouses({
         status: 'enabled',
         page_size: 100,
       })
-      if (response.success && response.data) {
-        setWarehouses(response.data)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setWarehouses(response.data.data as HandlerWarehouseResponse[])
 
         // Set default warehouse if not already set
         if (!selectedWarehouseId) {
-          const defaultWarehouse = response.data.find((w) => w.is_default)
+          const defaultWarehouse = response.data.data.find(
+            (w: HandlerWarehouseResponse) => w.is_default
+          )
           if (defaultWarehouse?.id) {
             setSelectedWarehouseId(defaultWarehouse.id)
-          } else if (response.data.length > 0 && response.data[0].id) {
-            setSelectedWarehouseId(response.data[0].id)
+          } else if (response.data.data.length > 0 && response.data.data[0].id) {
+            setSelectedWarehouseId(response.data.data[0].id)
           }
         }
       }
     } catch {
       Toast.error(t('receive.messages.fetchWarehousesError'))
     }
-  }, [warehouseApi, selectedWarehouseId, t])
+  }, [selectedWarehouseId, t])
 
   // Load data on mount
   useEffect(() => {

@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithProviders, screen, waitFor, fireEvent } from '@/tests/utils'
+import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import PurchaseOrderReceivePage from './PurchaseOrderReceive'
 import * as purchaseOrdersApi from '@/api/purchase-orders/purchase-orders'
 import * as warehousesApi from '@/api/warehouses/warehouses'
@@ -25,7 +25,7 @@ vi.mock('@/api/purchase-orders/purchase-orders', () => ({
 }))
 
 vi.mock('@/api/warehouses/warehouses', () => ({
-  getWarehouses: vi.fn(),
+  listWarehouses: vi.fn(),
 }))
 
 // Mock react-router-dom's useNavigate and useParams
@@ -129,13 +129,16 @@ const createMockReceivableItemsResponse = (items = mockReceivableItems) => ({
 })
 
 const createMockWarehouseListResponse = (warehouses = mockWarehouses) => ({
-  success: true,
-  data: warehouses,
-  meta: {
-    total: warehouses.length,
-    page: 1,
-    page_size: 100,
-    total_pages: 1,
+  status: 200,
+  data: {
+    success: true,
+    data: warehouses,
+    meta: {
+      total: warehouses.length,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    },
   },
 })
 
@@ -154,10 +157,6 @@ describe('PurchaseOrderReceivePage', () => {
     postTradePurchaseOrdersIdReceive: ReturnType<typeof vi.fn>
   }
 
-  let mockWarehouseApiInstance: {
-    listWarehouses: ReturnType<typeof vi.fn>
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
@@ -171,19 +170,12 @@ describe('PurchaseOrderReceivePage', () => {
       postTradePurchaseOrdersIdReceive: vi.fn().mockResolvedValue(createMockReceiveResponse()),
     }
 
-    // Setup mock warehouse API
-    mockWarehouseApiInstance = {
-      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
-    }
-
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
       mockPurchaseOrderApiInstance as unknown as ReturnType<
         typeof purchaseOrdersApi.getPurchaseOrders
       >
     )
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue(createMockWarehouseListResponse())
   })
 
   describe('Page Loading', () => {
@@ -357,7 +349,7 @@ describe('PurchaseOrderReceivePage', () => {
       })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith(
+        expect(warehousesApi.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             status: 'active',
             page_size: 100,
@@ -377,7 +369,7 @@ describe('PurchaseOrderReceivePage', () => {
 
       // The default warehouse should be pre-selected (from order or first active warehouse)
       // We can verify that warehouse API was called
-      expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalled()
+      expect(warehousesApi.listWarehouses).toHaveBeenCalled()
     })
   })
 
@@ -501,9 +493,7 @@ describe('PurchaseOrderReceivePage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      vi.mocked(warehousesApi.listWarehouses).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<PurchaseOrderReceivePage />, {
         route: '/trade/purchase/po-001/receive',
@@ -663,10 +653,6 @@ describe('PurchaseOrderReceivePage - Inventory Integration (P3-INT-002)', () => 
     postTradePurchaseOrdersIdReceive: ReturnType<typeof vi.fn>
   }
 
-  let mockWarehouseApiInstance: {
-    listWarehouses: ReturnType<typeof vi.fn>
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
@@ -679,18 +665,12 @@ describe('PurchaseOrderReceivePage - Inventory Integration (P3-INT-002)', () => 
       postTradePurchaseOrdersIdReceive: vi.fn().mockResolvedValue(createMockReceiveResponse()),
     }
 
-    mockWarehouseApiInstance = {
-      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
-    }
-
     vi.mocked(purchaseOrdersApi.getPurchaseOrders).mockReturnValue(
       mockPurchaseOrderApiInstance as unknown as ReturnType<
         typeof purchaseOrdersApi.getPurchaseOrders
       >
     )
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue(createMockWarehouseListResponse())
   })
 
   describe('Receive Submission', () => {
@@ -799,7 +779,6 @@ describe('PurchaseOrderReceivePage - Inventory Integration (P3-INT-002)', () => 
       // Verify warehouse selection section is displayed
       expect(screen.getByText('收货仓库')).toBeInTheDocument()
       // Required indicator should be present
-      const requiredElements = document.querySelectorAll('.semi-tag-danger')
       // Warehouse selection should exist
       expect(screen.getAllByRole('combobox').length).toBeGreaterThanOrEqual(1)
     })

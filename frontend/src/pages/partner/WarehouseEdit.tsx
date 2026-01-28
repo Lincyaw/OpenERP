@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Spin, Toast } from '@douyinfe/semi-ui-19'
 import { WarehouseForm } from '@/features/partner'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { getWarehouseById } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'
 
 /**
@@ -12,7 +12,6 @@ import type { HandlerWarehouseResponse } from '@/api/models'
 export default function WarehouseEditPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const api = useMemo(() => getWarehouses(), [])
 
   const [warehouse, setWarehouse] = useState<HandlerWarehouseResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,9 +25,9 @@ export default function WarehouseEditPage() {
       }
 
       try {
-        const response = await api.getWarehouseById(id)
-        if (response.success && response.data) {
-          setWarehouse(response.data)
+        const response = await getWarehouseById(id)
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setWarehouse(response.data.data)
         } else {
           Toast.error('仓库不存在')
           navigate('/partner/warehouses')
@@ -42,7 +41,7 @@ export default function WarehouseEditPage() {
     }
 
     fetchWarehouse()
-  }, [api, id, navigate])
+  }, [id, navigate])
 
   if (loading) {
     return (

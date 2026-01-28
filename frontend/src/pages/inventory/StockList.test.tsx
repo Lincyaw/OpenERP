@@ -22,7 +22,7 @@ vi.mock('@/api/inventory/inventory', () => ({
 }))
 
 vi.mock('@/api/warehouses/warehouses', () => ({
-  getWarehouses: vi.fn(),
+  listWarehouses: vi.fn(),
 }))
 
 vi.mock('@/api/products/products', () => ({
@@ -144,13 +144,16 @@ const createMockInventoryListResponse = (
 })
 
 const createMockWarehouseListResponse = (warehouses = mockWarehouses) => ({
-  success: true,
-  data: warehouses,
-  meta: {
-    total: warehouses.length,
-    page: 1,
-    page_size: 100,
-    total_pages: 1,
+  status: 200,
+  data: {
+    success: true,
+    data: warehouses,
+    meta: {
+      total: warehouses.length,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    },
   },
 })
 
@@ -170,10 +173,6 @@ describe('StockListPage', () => {
     listInventoryItems: ReturnType<typeof vi.fn>
   }
 
-  let mockWarehouseApiInstance: {
-    listWarehouses: ReturnType<typeof vi.fn>
-  }
-
   let mockProductApiInstance: {
     listProducts: ReturnType<typeof vi.fn>
   }
@@ -186,11 +185,6 @@ describe('StockListPage', () => {
       listInventoryItems: vi.fn().mockResolvedValue(createMockInventoryListResponse()),
     }
 
-    // Setup mock warehouse API
-    mockWarehouseApiInstance = {
-      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
-    }
-
     // Setup mock product API
     mockProductApiInstance = {
       listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
@@ -199,9 +193,7 @@ describe('StockListPage', () => {
     vi.mocked(inventoryApi.getInventory).mockReturnValue(
       mockInventoryApiInstance as unknown as ReturnType<typeof inventoryApi.getInventory>
     )
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue(createMockWarehouseListResponse())
     vi.mocked(productsApi.getProducts).mockReturnValue(
       mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>
     )
@@ -405,9 +397,7 @@ describe('StockListPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      vi.mocked(warehousesApi.listWarehouses).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
@@ -447,7 +437,7 @@ describe('StockListPage', () => {
       renderWithProviders(<StockListPage />, { route: '/inventory/stock' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith(
+        expect(warehousesApi.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
             status: 'active',

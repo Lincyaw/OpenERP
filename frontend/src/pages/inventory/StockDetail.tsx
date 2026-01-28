@@ -18,7 +18,7 @@ import { Container } from '@/components/common/layout'
 import { DataTable, useTableState, type DataTableColumn } from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventory } from '@/api/inventory/inventory'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
@@ -93,7 +93,6 @@ export default function StockDetailPage() {
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase, formatDate: formatDateBase } = useFormatters()
   const inventoryApi = useMemo(() => getInventory(), [])
-  const warehousesApi = useMemo(() => getWarehouses(), [])
 
   // Wrapper functions to handle undefined values
   const formatCurrency = useCallback(
@@ -151,20 +150,22 @@ export default function StockDetailPage() {
     if (!inventoryItem?.warehouse_id) return
 
     try {
-      const response = await warehousesApi.listWarehouses({
+      const response = await listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        const warehouses = response.data as HandlerWarehouseListResponse[]
-        const warehouse = warehouses.find((w) => w.id === inventoryItem.warehouse_id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const warehouses = response.data.data as HandlerWarehouseListResponse[]
+        const warehouse = warehouses.find(
+          (w: HandlerWarehouseListResponse) => w.id === inventoryItem.warehouse_id
+        )
         setWarehouseName(warehouse?.name || warehouse?.code || inventoryItem.warehouse_id || '-')
       }
     } catch {
       // Silently fail - use ID as fallback
       setWarehouseName(inventoryItem.warehouse_id || '-')
     }
-  }, [inventoryItem?.warehouse_id, warehousesApi])
+  }, [inventoryItem?.warehouse_id])
 
   // Fetch product name
   const fetchProductName = useCallback(async () => {

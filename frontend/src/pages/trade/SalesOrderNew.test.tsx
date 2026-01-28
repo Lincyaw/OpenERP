@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithProviders, screen, waitFor, fireEvent } from '@/tests/utils'
+import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import SalesOrderNewPage from './SalesOrderNew'
 import * as salesOrdersApi from '@/api/sales-orders/sales-orders'
 import * as customersApi from '@/api/customers/customers'
@@ -35,7 +35,7 @@ vi.mock('@/api/products/products', () => ({
 }))
 
 vi.mock('@/api/warehouses/warehouses', () => ({
-  getWarehouses: vi.fn(),
+  listWarehouses: vi.fn(),
 }))
 
 // Mock react-router-dom's useNavigate
@@ -134,13 +134,16 @@ const createMockProductListResponse = (products = mockProducts) => ({
 })
 
 const createMockWarehouseListResponse = (warehouses = mockWarehouses) => ({
-  success: true,
-  data: warehouses,
-  meta: {
-    total: warehouses.length,
-    page: 1,
-    page_size: 100,
-    total_pages: 1,
+  status: 200,
+  data: {
+    success: true,
+    data: warehouses,
+    meta: {
+      total: warehouses.length,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    },
   },
 })
 
@@ -156,10 +159,6 @@ describe('SalesOrderNewPage', () => {
 
   let mockProductApiInstance: {
     listProducts: ReturnType<typeof vi.fn>
-  }
-
-  let mockWarehouseApiInstance: {
-    listWarehouses: ReturnType<typeof vi.fn>
   }
 
   beforeEach(() => {
@@ -180,10 +179,6 @@ describe('SalesOrderNewPage', () => {
       listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
-    mockWarehouseApiInstance = {
-      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
-    }
-
     vi.mocked(salesOrdersApi.getSalesOrders).mockReturnValue(
       mockSalesOrderApiInstance as unknown as ReturnType<typeof salesOrdersApi.getSalesOrders>
     )
@@ -193,9 +188,7 @@ describe('SalesOrderNewPage', () => {
     vi.mocked(productsApi.getProducts).mockReturnValue(
       mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>
     )
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue(createMockWarehouseListResponse())
   })
 
   describe('Page Layout', () => {
@@ -313,7 +306,7 @@ describe('SalesOrderNewPage', () => {
       renderWithProviders(<SalesOrderNewPage />, { route: '/trade/sales/new' })
 
       await waitFor(() => {
-        expect(mockWarehouseApiInstance.listWarehouses).toHaveBeenCalledWith(
+        expect(warehousesApi.listWarehouses).toHaveBeenCalledWith(
           expect.objectContaining({
             page_size: 100,
             status: 'active',
@@ -345,9 +338,7 @@ describe('SalesOrderNewPage', () => {
     })
 
     it('should handle warehouse API failure gracefully', async () => {
-      mockWarehouseApiInstance.listWarehouses.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      vi.mocked(warehousesApi.listWarehouses).mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesOrderNewPage />, { route: '/trade/sales/new' })
 
@@ -555,10 +546,6 @@ describe('SalesOrderNewPage - Form Submission', () => {
     listProducts: ReturnType<typeof vi.fn>
   }
 
-  let mockWarehouseApiInstance: {
-    listWarehouses: ReturnType<typeof vi.fn>
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
@@ -576,10 +563,6 @@ describe('SalesOrderNewPage - Form Submission', () => {
       listProducts: vi.fn().mockResolvedValue(createMockProductListResponse()),
     }
 
-    mockWarehouseApiInstance = {
-      listWarehouses: vi.fn().mockResolvedValue(createMockWarehouseListResponse()),
-    }
-
     vi.mocked(salesOrdersApi.getSalesOrders).mockReturnValue(
       mockSalesOrderApiInstance as unknown as ReturnType<typeof salesOrdersApi.getSalesOrders>
     )
@@ -589,9 +572,7 @@ describe('SalesOrderNewPage - Form Submission', () => {
     vi.mocked(productsApi.getProducts).mockReturnValue(
       mockProductApiInstance as unknown as ReturnType<typeof productsApi.getProducts>
     )
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockWarehouseApiInstance as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue(createMockWarehouseListResponse())
   })
 
   it('should handle API error on submission', async () => {

@@ -28,7 +28,7 @@ import {
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { useFormatters } from '@/hooks/useFormatters'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import { getInventory } from '@/api/inventory/inventory'
 import { getStockTaking } from '@/api/stock-taking/stock-taking'
 import type {
@@ -86,7 +86,6 @@ export default function StockTakingCreatePage() {
   const navigate = useNavigate()
   const { t } = useTranslation(['inventory', 'common'])
   const { formatCurrency: formatCurrencyBase } = useFormatters()
-  const warehousesApi = useMemo(() => getWarehouses(), [])
   const inventoryApi = useMemo(() => getInventory(), [])
   const stockTakingApi = useMemo(() => getStockTaking(), [])
   const { user } = useAuthStore()
@@ -157,21 +156,21 @@ export default function StockTakingCreatePage() {
   const fetchWarehouses = useCallback(async () => {
     setLoadingWarehouses(true)
     try {
-      const response = await warehousesApi.listWarehouses({
+      const response = await listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        const warehouseList = response.data as HandlerWarehouseListResponse[]
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const warehouseList = response.data.data as HandlerWarehouseListResponse[]
         setWarehouses(
-          warehouseList.map((w) => ({
+          warehouseList.map((w: HandlerWarehouseListResponse) => ({
             value: w.id || '',
             label: w.name || w.code || w.id || '',
           }))
         )
         // Build warehouse map for name lookup
         const map = new Map<string, string>()
-        warehouseList.forEach((w) => {
+        warehouseList.forEach((w: HandlerWarehouseListResponse) => {
           if (w.id) {
             map.set(w.id, w.name || w.code || w.id)
           }
@@ -183,7 +182,7 @@ export default function StockTakingCreatePage() {
     } finally {
       setLoadingWarehouses(false)
     }
-  }, [warehousesApi])
+  }, [])
 
   // Fetch inventory for selected warehouse
   const fetchInventory = useCallback(async () => {
@@ -315,10 +314,9 @@ export default function StockTakingCreatePage() {
       unit_cost: p.unit_cost,
     }))
 
-    const addItemsResponse = await stockTakingApi.addItemsStockTaking(
-      stockTakingId || '',
-      { items }
-    )
+    const addItemsResponse = await stockTakingApi.addItemsStockTaking(stockTakingId || '', {
+      items,
+    })
 
     if (!addItemsResponse.success) {
       throw new Error(

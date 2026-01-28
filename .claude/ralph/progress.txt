@@ -33073,3 +33073,77 @@ Finance Module:
 === Next Steps ===
 - Continue with RQ-MIG-004 or other remaining migration tasks
 - Consider updating test files to match new pattern in future iterations
+
+---
+
+2026-01-28 - Task ID: RQ-MIG-004 - React Query Migration: Warehouses Module
+
+=== Implementation Details ===
+- Migrated 16 source files from `getWarehouses` factory pattern to direct `listWarehouses` function import
+- Updated 9 test files to use the new mock pattern
+
+=== Files Modified ===
+**Source Files:**
+1. src/features/partner/WarehouseForm.tsx - Updated imports and removed useMemo factory
+2. src/pages/partner/Warehouses.tsx - Updated imports and all API calls
+3. src/pages/partner/WarehouseEdit.tsx - Updated imports and API calls
+4. src/features/trade/PurchaseOrderForm.tsx - Updated warehouse API usage
+5. src/features/trade/PurchaseReturnForm.tsx - Updated warehouse API usage
+6. src/features/trade/SalesOrderForm.tsx - Updated warehouse API usage
+7. src/features/trade/SalesReturnForm.tsx - Updated warehouse API usage
+8. src/pages/inventory/StockAdjust.tsx - Updated warehouse API usage
+9. src/pages/inventory/StockAlerts.tsx - Updated warehouse API usage
+10. src/pages/inventory/StockDetail.tsx - Updated warehouse API usage
+11. src/pages/inventory/StockList.tsx - Updated warehouse API usage
+12. src/pages/inventory/StockTakingCreate.tsx - Updated warehouse API usage
+13. src/pages/inventory/StockTakingList.tsx - Updated warehouse API usage
+14. src/pages/inventory/StockTransactions.tsx - Updated warehouse API usage
+15. src/pages/trade/PurchaseOrderReceive.tsx - Updated warehouse API usage
+16. src/pages/trade/components/ShipOrderModal.tsx - Updated warehouse API usage
+
+**Test Files:**
+1. src/pages/trade/PurchaseOrderNew.test.tsx
+2. src/pages/trade/PurchaseOrderReceive.test.tsx
+3. src/pages/trade/SalesOrderNew.test.tsx
+4. src/pages/inventory/StockTakingCreate.test.tsx
+5. src/pages/inventory/StockTakingList.test.tsx
+6. src/pages/partner/Warehouses.test.tsx
+7. src/pages/inventory/StockAdjust.test.tsx
+8. src/pages/inventory/StockList.test.tsx
+9. src/features/partner/WarehouseForm.test.tsx
+
+=== Migration Pattern ===
+**Before (Factory Pattern):**
+```typescript
+import { getWarehouses } from '@/api/warehouses/warehouses'
+const warehousesApi = useMemo(() => getWarehouses(), [])
+const response = await warehousesApi.listWarehouses({ ... })
+if (response.success && response.data) { ... }
+```
+
+**After (Direct Import):**
+```typescript
+import { listWarehouses } from '@/api/warehouses/warehouses'
+const response = await listWarehouses({ ... })
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== Key Changes ===
+1. Removed useMemo factory pattern - no longer need to create API instance
+2. Updated response handling - axios returns data in response.data wrapper
+3. Fixed implicit 'any' type errors - added explicit HandlerWarehouseListResponse type to map callbacks
+4. Updated test mocks - changed from factory mock to direct function mock with axios response format
+
+=== Verification ===
+- TypeScript check (npx tsc --noEmit): PASSED
+- No remaining `getWarehouses` imports in source files (only test mocks updated)
+
+=== Notes ===
+- Some pre-existing test failures in authStore.test.ts unrelated to this migration
+- The new API pattern wraps data in axios response format (response.data.success, response.data.data)
+- Test file mock format changed to match axios response structure
+
+=== Next Steps ===
+- Continue with other API migration tasks if any
+- Address pre-existing test failures in authStore.test.ts separately
+

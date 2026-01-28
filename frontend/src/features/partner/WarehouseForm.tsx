@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { Card, Typography, Switch } from '@douyinfe/semi-ui-19'
@@ -17,7 +17,7 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { createWarehouse, updateWarehouse } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'
 import './WarehouseForm.css'
 
@@ -47,7 +47,6 @@ interface WarehouseFormProps {
 export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) {
   const { t } = useTranslation(['partner', 'common'])
   const navigate = useNavigate()
-  const api = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(warehouseId)
 
   // Memoized warehouse type options with translations
@@ -216,7 +215,7 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
   const onSubmit = async (data: WarehouseFormData) => {
     if (isEditMode && warehouseId) {
       // Update existing warehouse
-      const response = await api.updateWarehouse(warehouseId, {
+      const response = await updateWarehouse(warehouseId, {
         name: data.name,
         short_name: data.short_name,
         contact_name: data.contact_name,
@@ -232,12 +231,12 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('warehouses.messages.updateError'))
+      if (response.status !== 200 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('warehouses.messages.updateError'))
       }
     } else {
       // Create new warehouse
-      const response = await api.createWarehouse({
+      const response = await createWarehouse({
         code: data.code,
         name: data.name,
         short_name: data.short_name,
@@ -255,8 +254,8 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         sort_order: data.sort_order,
         notes: data.notes,
       })
-      if (!response.success) {
-        throw new Error(response.error?.message || t('warehouses.messages.createError'))
+      if (response.status !== 201 || !response.data.success) {
+        throw new Error(response.data.error?.message || t('warehouses.messages.createError'))
       }
     }
   }

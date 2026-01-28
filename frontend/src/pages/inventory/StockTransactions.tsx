@@ -15,7 +15,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { getInventory } from '@/api/inventory/inventory'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
 import type {
   HandlerInventoryItemResponse,
@@ -155,7 +155,6 @@ export default function StockTransactionsPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const inventoryApi = useMemo(() => getInventory(), [])
-  const warehousesApi = useMemo(() => getWarehouses(), [])
 
   // State for inventory item info (for header display)
   const [inventoryItem, setInventoryItem] = useState<HandlerInventoryItemResponse | null>(null)
@@ -197,19 +196,21 @@ export default function StockTransactionsPage() {
     if (!inventoryItem?.warehouse_id) return
 
     try {
-      const response = await warehousesApi.listWarehouses({
+      const response = await listWarehouses({
         page_size: 100,
         status: 'enabled',
       })
-      if (response.success && response.data) {
-        const warehouses = response.data as HandlerWarehouseListResponse[]
-        const warehouse = warehouses.find((w) => w.id === inventoryItem.warehouse_id)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        const warehouses = response.data.data as HandlerWarehouseListResponse[]
+        const warehouse = warehouses.find(
+          (w: HandlerWarehouseListResponse) => w.id === inventoryItem.warehouse_id
+        )
         setWarehouseName(warehouse?.name || warehouse?.code || '-')
       }
     } catch {
       setWarehouseName('-')
     }
-  }, [inventoryItem?.warehouse_id, warehousesApi])
+  }, [inventoryItem?.warehouse_id])
 
   // Fetch product name
   const fetchProductName = useCallback(async () => {

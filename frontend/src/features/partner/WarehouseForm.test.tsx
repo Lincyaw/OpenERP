@@ -18,7 +18,7 @@ import { Toast } from '@douyinfe/semi-ui-19'
 
 // Mock the warehouses API module
 vi.mock('@/api/warehouses/warehouses', () => ({
-  getWarehouses: vi.fn(),
+  listWarehouses: vi.fn(),
 }))
 
 // Spy on Toast methods
@@ -92,9 +92,14 @@ describe('WarehouseForm', () => {
       getWarehouseById: vi.fn().mockResolvedValue(createSuccessResponse(mockWarehouse)),
     }
 
-    vi.mocked(warehousesApi.getWarehouses).mockReturnValue(
-      mockApi as unknown as ReturnType<typeof warehousesApi.getWarehouses>
-    )
+    vi.mocked(warehousesApi.listWarehouses).mockResolvedValue({
+      status: 200,
+      data: {
+        success: true,
+        data: [mockWarehouse],
+        meta: { total: 1, page: 1, page_size: 20, total_pages: 1 },
+      },
+    } as any)
   })
 
   describe('Create Mode', () => {

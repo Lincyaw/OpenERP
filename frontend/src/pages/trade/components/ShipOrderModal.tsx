@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Modal, Select, Toast, Typography, Descriptions, Spin, Empty } from '@douyinfe/semi-ui-19'
 import { useTranslation } from 'react-i18next'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import type { HandlerWarehouseResponse } from '@/api/models'
 import { safeToFixed, safeFormatCurrency } from '@/utils'
 import './ShipOrderModal.css'
@@ -50,7 +50,6 @@ export default function ShipOrderModal({
   onCancel,
 }: ShipOrderModalProps) {
   const { t } = useTranslation('trade')
-  const warehouseApi = useMemo(() => getWarehouses(), [])
 
   const [warehouses, setWarehouses] = useState<HandlerWarehouseResponse[]>([])
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | undefined>(undefined)
@@ -61,19 +60,19 @@ export default function ShipOrderModal({
   const fetchWarehouses = useCallback(async () => {
     setWarehousesLoading(true)
     try {
-      const response = await warehouseApi.listWarehouses({
+      const response = await listWarehouses({
         status: 'enabled',
         page_size: 100, // Fetch all active warehouses
       })
-      if (response.success && response.data) {
-        setWarehouses(response.data)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setWarehouses(response.data.data as HandlerWarehouseResponse[])
       }
     } catch {
       Toast.error(t('shipModal.messages.fetchWarehousesError'))
     } finally {
       setWarehousesLoading(false)
     }
-  }, [warehouseApi, t])
+  }, [t])
 
   // Load warehouses when modal opens
   useEffect(() => {

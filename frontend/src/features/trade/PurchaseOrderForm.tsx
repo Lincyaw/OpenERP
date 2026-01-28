@@ -8,7 +8,7 @@ import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/
 import { getPurchaseOrders } from '@/api/purchase-orders/purchase-orders'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import { getProducts } from '@/api/products/products'
-import { getWarehouses } from '@/api/warehouses/warehouses'
+import { listWarehouses } from '@/api/warehouses/warehouses'
 import type {
   HandlerSupplierListResponse,
   HandlerProductListResponse,
@@ -53,7 +53,6 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
   const { t } = useI18n({ ns: 'trade' })
   const purchaseOrderApi = useMemo(() => getPurchaseOrders(), [])
   const productApi = useMemo(() => getProducts(), [])
-  const warehouseApi = useMemo(() => getWarehouses(), [])
   const isEditMode = Boolean(orderId)
 
   // Form validation schema
@@ -184,22 +183,21 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
     async (signal?: AbortSignal) => {
       setWarehousesLoading(true)
       try {
-        const response = await warehouseApi.listWarehouses(
-          { page_size: 100, status: 'enabled' },
-          { signal }
-        )
-        if (response.success && response.data) {
-          setWarehouses(response.data)
+        const response = await listWarehouses({ page_size: 100, status: 'enabled' }, { signal })
+        if (response.status === 200 && response.data.success && response.data.data) {
+          setWarehouses(response.data.data)
           // Set default warehouse only once on initial load (not edit mode)
           if (!isEditMode && !hasSetDefaultWarehouse.current) {
-            const defaultWarehouse = response.data.find((w) => w.is_default)
+            const defaultWarehouse = response.data.data.find(
+              (w: HandlerWarehouseListResponse) => w.is_default
+            )
             if (defaultWarehouse?.id) {
               hasSetDefaultWarehouse.current = true
               setFormData((prev) => ({ ...prev, warehouse_id: defaultWarehouse.id }))
             }
           }
-        } else if (!response.success) {
-          log.error('Failed to fetch warehouses', response.error)
+        } else if (response.status !== 200 || !response.data.success) {
+          log.error('Failed to fetch warehouses', response.data.error)
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'CanceledError') return
@@ -208,7 +206,7 @@ export function PurchaseOrderForm({ orderId, initialData }: PurchaseOrderFormPro
         setWarehousesLoading(false)
       }
     },
-    [warehouseApi, isEditMode, setFormData]
+    [isEditMode, setFormData]
   )
 
   // Initial data loading
