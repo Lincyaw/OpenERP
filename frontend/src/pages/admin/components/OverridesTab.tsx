@@ -16,11 +16,23 @@ import {
 import { IconPlus, IconDelete, IconRefresh } from '@douyinfe/semi-icons'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
-import type { Override, FlagType, OverrideTargetType } from '@/api/feature-flags'
+import {
+  listFeatureFlagOverrides,
+  deleteFeatureFlagOverride,
+} from '@/api/feature-flags/feature-flags'
+import type {
+  DtoOverrideResponse,
+  HandlerCreateFlagHTTPRequestType,
+  HandlerCreateOverrideHTTPRequestTargetType,
+} from '@/api/models'
 import { OverrideForm } from './OverrideForm'
 
 const { Text } = Typography
+
+// Type aliases for cleaner code
+type Override = DtoOverrideResponse
+type FlagType = HandlerCreateFlagHTTPRequestType
+type OverrideTargetType = HandlerCreateOverrideHTTPRequestTargetType
 
 /**
  * Format date for display
@@ -48,7 +60,7 @@ function isExpired(expiresAt: string | undefined): boolean {
 /**
  * Get target type color
  */
-function getTargetTypeColor(type: OverrideTargetType): TagColor {
+function getTargetTypeColor(type: OverrideTargetType | string | undefined): TagColor {
   switch (type) {
     case 'user':
       return 'blue'
@@ -61,7 +73,7 @@ function getTargetTypeColor(type: OverrideTargetType): TagColor {
 
 interface OverridesTabProps {
   flagKey: string
-  flagType: FlagType
+  flagType: FlagType | string | undefined
 }
 
 /**
@@ -75,7 +87,6 @@ interface OverridesTabProps {
  */
 export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
   const { t, i18n } = useTranslation('admin')
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [overrides, setOverrides] = useState<Override[]>([])
@@ -92,20 +103,20 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
   const fetchOverrides = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await api.listOverrides(flagKey, {
+      const response = await listFeatureFlagOverrides(flagKey, {
         page: currentPage,
         page_size: pageSize,
       })
-      if (response.success && response.data) {
-        setOverrides(response.data.overrides)
-        setTotal(response.data.total)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setOverrides(response.data.data.overrides || [])
+        setTotal(response.data.data.total || 0)
       }
     } catch {
       Toast.error(t('featureFlags.overrides.fetchError', 'Failed to load overrides'))
     } finally {
       setLoading(false)
     }
-  }, [api, flagKey, currentPage, pageSize, t])
+  }, [flagKey, currentPage, pageSize, t])
 
   // Load on mount
   useEffect(() => {
@@ -116,13 +127,13 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
   const handleDelete = useCallback(
     async (override: Override) => {
       try {
-        const response = await api.deleteOverride(flagKey, override.id)
-        if (response.success) {
+        const response = await deleteFeatureFlagOverride(flagKey, override.id || '')
+        if (response.status === 200 && response.data.success) {
           Toast.success(t('featureFlags.overrides.deleteSuccess', 'Override deleted successfully'))
           fetchOverrides()
         } else {
           Toast.error(
-            response.error?.message ||
+            response.data.error?.message ||
               t('featureFlags.overrides.deleteError', 'Failed to delete override')
           )
         }
@@ -130,7 +141,7 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         Toast.error(t('featureFlags.overrides.deleteError', 'Failed to delete override'))
       }
     },
-    [api, flagKey, t, fetchOverrides]
+    [flagKey, t, fetchOverrides]
   )
 
   // Handle create success
@@ -153,9 +164,9 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         dataIndex: 'target_type',
         key: 'target_type',
         width: 120,
-        render: (type: OverrideTargetType) => (
+        render: (type: OverrideTargetType | string | undefined) => (
           <Tag color={getTargetTypeColor(type)}>
-            {t(`featureFlags.overrides.targetTypes.${type}`, type)}
+            {t(`featureFlags.overrides.targetTypes.${type}`, type || '')}
           </Tag>
         ),
       },
@@ -164,18 +175,11 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         dataIndex: 'target_id',
         key: 'target_id',
         width: 180,
-        render: (id: string, record: Override) => (
+        render: (id: string) => (
           <div>
             <Text copyable ellipsis={{ showTooltip: true }} style={{ maxWidth: 150 }}>
               {id}
             </Text>
-            {record.target_name && (
-              <div>
-                <Text type="tertiary" size="small">
-                  {record.target_name}
-                </Text>
-              </div>
-            )}
           </div>
         ),
       },
@@ -184,22 +188,22 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         dataIndex: 'value',
         key: 'value',
         width: 150,
-        render: (_, record: Override) => {
+        render: (_: unknown, record: Override) => {
           if (flagType === 'boolean' || flagType === 'user_segment') {
             return (
-              <Tag color={record.value.enabled ? 'green' : 'grey'}>
-                {record.value.enabled
+              <Tag color={record.value?.enabled ? 'green' : 'grey'}>
+                {record.value?.enabled
                   ? t('featureFlags.status.enabled', 'Enabled')
                   : t('featureFlags.status.disabled', 'Disabled')}
               </Tag>
             )
           }
           if (flagType === 'percentage') {
-            const percentage = (record.value.metadata?.percentage as number) || 0
+            const percentage = (record.value?.metadata?.percentage as number) || 0
             return <Tag color="orange">{percentage}%</Tag>
           }
           if (flagType === 'variant') {
-            return <Tag color="purple">{record.value.variant || '-'}</Tag>
+            return <Tag color="purple">{record.value?.variant || '-'}</Tag>
           }
           return '-'
         },
@@ -243,8 +247,8 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
       },
       {
         title: t('featureFlags.overrides.createdBy', 'Created By'),
-        dataIndex: 'created_by_name',
-        key: 'created_by_name',
+        dataIndex: 'created_by',
+        key: 'created_by',
         width: 120,
         render: (name: string | undefined) => <Text>{name || <Text type="tertiary">-</Text>}</Text>,
       },

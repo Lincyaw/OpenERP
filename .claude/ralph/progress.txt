@@ -33920,3 +33920,122 @@ The following files were already using correct import paths:
 
 === Next Steps ===
 - Continue with remaining migration tasks or other PRD items
+
+2025-01-28 - RQ-MIG-016: React Query Migration - Feature Flags Module Fix Import Paths
+
+=== Implementation Details ===
+- Fixed 7 files that were using the old `@/api/feature-flags` import path (which doesn't exist)
+- Updated to use correct path `@/api/feature-flags/feature-flags` for function imports
+- Updated to use `@/api/models` for type imports
+- Replaced factory pattern with direct function imports
+
+**Files Updated:**
+1. src/pages/admin/FeatureFlagDetail.tsx
+2. src/pages/admin/FeatureFlagForm.tsx
+3. src/pages/admin/FeatureFlagList.tsx
+4. src/pages/admin/components/AuditLogTimeline.tsx
+5. src/pages/admin/components/OverrideForm.tsx
+6. src/pages/admin/components/OverridesTab.tsx
+7. src/pages/admin/components/RulesEditor.tsx
+
+=== Key Changes ===
+
+**Import Path Migration:**
+- Before: `import { listFeatureFlagFlags } from '@/api/feature-flags'`
+- After: `import { listFeatureFlagFlags, getFeatureFlagFlag, ... } from '@/api/feature-flags/feature-flags'`
+
+**Type Import Migration:**
+- Before: `import type { FeatureFlag, FlagType, FlagStatus, ... } from '@/api/feature-flags'`
+- After: `import type { DtoFlagResponse, HandlerCreateFlagHTTPRequestType, ListFeatureFlagFlagsStatus, ... } from '@/api/models'`
+
+**Type Aliases Created:**
+Each file now uses type aliases for cleaner code:
+```typescript
+type FlagType = HandlerCreateFlagHTTPRequestType
+type FlagStatus = ListFeatureFlagFlagsStatus
+type FeatureFlag = DtoFlagResponse
+type TargetingRule = DtoTargetingRuleDTO
+type FlagValue = DtoFlagValueDTO
+type Condition = DtoConditionDTO
+type Override = DtoOverrideResponse
+type OverrideTargetType = HandlerCreateOverrideHTTPRequestTargetType
+```
+
+**API Call Pattern Migration:**
+- Before (Factory Pattern):
+```typescript
+const api = useMemo(() => listFeatureFlagFlags(), [])
+const response = await api.getFlag(key)
+if (response.success && response.data) { ... }
+```
+
+- After (Direct Import):
+```typescript
+const response = await getFeatureFlagFlag(key)
+if (response.status === 200 && response.data.success && response.data.data) { ... }
+```
+
+=== API Method Mapping ===
+| Old Factory Method | New Direct Import |
+|---|---|
+| api.getFlag() | getFeatureFlagFlag() |
+| api.createFlag() | createFeatureFlagFlag() |
+| api.updateFlag() | updateFeatureFlagFlag() |
+| api.enableFlag() | enableFlagFeatureFlag() |
+| api.disableFlag() | disableFlagFeatureFlag() |
+| api.archiveFlag() | archiveFlagFeatureFlag() |
+| api.listFlags() | listFeatureFlagFlags() |
+| api.getAuditLogs() | getFeatureFlagAuditLogs() |
+| api.listOverrides() | listFeatureFlagOverrides() |
+| api.createOverride() | createFeatureFlagOverride() |
+| api.deleteOverride() | deleteFeatureFlagOverride() |
+
+=== Type Mapping ===
+| Old Type | New Type (from @/api/models) |
+|---|---|
+| FeatureFlag | DtoFlagResponse |
+| FlagType | HandlerCreateFlagHTTPRequestType |
+| FlagStatus | ListFeatureFlagFlagsStatus |
+| FlagValue | DtoFlagValueDTO |
+| TargetingRule | DtoTargetingRuleDTO |
+| Condition | DtoConditionDTO |
+| Override | DtoOverrideResponse |
+| OverrideTargetType | HandlerCreateOverrideHTTPRequestTargetType |
+| FlagListQuery | ListFeatureFlagFlagsParams |
+| CreateFlagRequest | CreateFeatureFlagFlagBody |
+| UpdateFlagRequest | UpdateFeatureFlagFlagBody |
+| CreateOverrideRequest | HandlerCreateOverrideHTTPRequest |
+| AuditLog | DtoAuditLogResponse |
+
+=== Response Handling Pattern ===
+**Before:**
+```typescript
+if (response.success && response.data) {
+  // use response.data
+}
+```
+
+**After:**
+```typescript
+if (response.status === 200 && response.data.success && response.data.data) {
+  // use response.data.data
+}
+```
+
+Status codes:
+- 200 for GET, PUT, DELETE operations
+- 201 for POST create operations
+
+=== Verification ===
+- TypeScript check (npm run type-check): PASSED
+- No remaining `@/api/feature-flags` imports (only `@/api/feature-flags/feature-flags`)
+- All API calls properly updated to new response format
+- All type imports from @/api/models
+
+=== Notes ===
+- Optional chaining used for properties that may be undefined in the new types
+- Type aliases created at the top of each file for cleaner code
+- Removed unused `useMemo` imports where factory pattern was removed
+
+=== Next Steps ===
+- Continue with remaining migration tasks or other PRD items

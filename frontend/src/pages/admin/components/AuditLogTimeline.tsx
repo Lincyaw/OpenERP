@@ -11,11 +11,14 @@ import {
   Collapsible,
 } from '@douyinfe/semi-ui-19'
 import { IconChevronDown, IconChevronUp } from '@douyinfe/semi-icons'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
-import type { AuditLog } from '@/api/feature-flags'
+import { getFeatureFlagAuditLogs } from '@/api/feature-flags/feature-flags'
+import type { DtoAuditLogResponse } from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 
 const { Text } = Typography
+
+// Type alias for cleaner code
+type AuditLog = DtoAuditLogResponse
 
 /**
  * Format date for display
@@ -93,7 +96,6 @@ interface AuditLogTimelineProps {
  */
 export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
   const { t, i18n } = useTranslation('admin')
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [logs, setLogs] = useState<AuditLog[]>([])
@@ -116,17 +118,17 @@ export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
       }
 
       try {
-        const response = await api.getAuditLogs(flagKey, {
+        const response = await getFeatureFlagAuditLogs(flagKey, {
           page,
           page_size: pageSize,
         })
-        if (response.success && response.data) {
+        if (response.status === 200 && response.data.success && response.data.data) {
           if (append) {
-            setLogs((prev) => [...prev, ...response.data!.logs])
+            setLogs((prev) => [...prev, ...(response.data.data?.logs || [])])
           } else {
-            setLogs(response.data.logs)
+            setLogs(response.data.data.logs || [])
           }
-          setTotal(response.data.total)
+          setTotal(response.data.data.total || 0)
           setCurrentPage(page)
         }
       } catch {
@@ -136,7 +138,7 @@ export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
         setLoadingMore(false)
       }
     },
-    [api, flagKey, pageSize, t]
+    [flagKey, pageSize, t]
   )
 
   // Load on mount
@@ -189,8 +191,8 @@ export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
         {logs.map((log) => (
           <Timeline.Item
             key={log.id}
-            time={formatDate(log.created_at, i18n.language)}
-            color={getTimelineColor(log.action)}
+            time={formatDate(log.created_at || '', i18n.language)}
+            color={getTimelineColor(log.action || '')}
           >
             <AuditLogItem log={log} />
           </Timeline.Item>
@@ -220,17 +222,20 @@ function AuditLogItem({ log }: AuditLogItemProps) {
   const { t } = useTranslation('admin')
   const [expanded, setExpanded] = useState(false)
 
-  const hasChanges = log.changes && Object.keys(log.changes).length > 0
+  // Use new_value/old_value for changes display
+  const hasChanges = log.new_value && Object.keys(log.new_value).length > 0
 
   return (
     <div className="audit-log-item">
       <div className="audit-log-item-header">
-        <Tag color={getActionColor(log.action)}>
-          {String(t(`featureFlags.auditLog.actions.${log.action.toLowerCase()}`, log.action))}
+        <Tag color={getActionColor(log.action || '')}>
+          {String(
+            t(`featureFlags.auditLog.actions.${(log.action || '').toLowerCase()}`, log.action || '')
+          )}
         </Tag>
         <Text type="secondary" size="small">
           {t('featureFlags.auditLog.by', 'by')}{' '}
-          {log.user_name || log.user_id || t('featureFlags.auditLog.unknown', 'Unknown')}
+          {log.user_id || t('featureFlags.auditLog.unknown', 'Unknown')}
         </Text>
       </div>
 
@@ -250,7 +255,7 @@ function AuditLogItem({ log }: AuditLogItemProps) {
 
           <Collapsible isOpen={expanded}>
             <div className="audit-log-changes-content">
-              <ChangesDisplay changes={log.changes!} />
+              <ChangesDisplay changes={log.new_value!} />
             </div>
           </Collapsible>
         </div>

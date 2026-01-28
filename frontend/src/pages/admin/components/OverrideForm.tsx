@@ -2,18 +2,24 @@ import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Form, Button, Toast, Space } from '@douyinfe/semi-ui-19'
 import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
+import { createFeatureFlagOverride } from '@/api/feature-flags/feature-flags'
 import type {
-  Override,
-  FlagType,
-  FlagValue,
-  CreateOverrideRequest,
-  OverrideTargetType,
-} from '@/api/feature-flags'
+  DtoFlagValueDTO,
+  HandlerCreateFlagHTTPRequestType,
+  HandlerCreateOverrideHTTPRequest,
+  HandlerCreateOverrideHTTPRequestTargetType,
+  DtoOverrideResponse,
+} from '@/api/models'
+
+// Type aliases for cleaner code
+type FlagType = HandlerCreateFlagHTTPRequestType
+type FlagValue = DtoFlagValueDTO
+type Override = DtoOverrideResponse
+type OverrideTargetType = HandlerCreateOverrideHTTPRequestTargetType
 
 interface OverrideFormProps {
   flagKey: string
-  flagType: FlagType
+  flagType: FlagType | string | undefined
   override?: Override | null
   onSuccess: () => void
   onCancel: () => void
@@ -38,7 +44,6 @@ export function OverrideForm({
   onCancel,
 }: OverrideFormProps) {
   const { t } = useTranslation('admin')
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [loading, setLoading] = useState(false)
@@ -88,7 +93,7 @@ export function OverrideForm({
 
       const flagValue = buildFlagValue(values)
 
-      const request: CreateOverrideRequest = {
+      const request: HandlerCreateOverrideHTTPRequest = {
         target_type: values.targetType as OverrideTargetType,
         target_id: values.targetId as string,
         value: flagValue,
@@ -96,14 +101,14 @@ export function OverrideForm({
         expires_at: values.expiresAt ? new Date(values.expiresAt as Date).toISOString() : undefined,
       }
 
-      const response = await api.createOverride(flagKey, request)
+      const response = await createFeatureFlagOverride(flagKey, request)
 
-      if (response.success) {
+      if (response.status === 201 && response.data.success) {
         Toast.success(t('featureFlags.overrides.createSuccess', 'Override created successfully'))
         onSuccess()
       } else {
         Toast.error(
-          response.error?.message ||
+          response.data.error?.message ||
             t('featureFlags.overrides.createError', 'Failed to create override')
         )
       }
@@ -113,7 +118,7 @@ export function OverrideForm({
     } finally {
       setLoading(false)
     }
-  }, [formApi, api, flagKey, buildFlagValue, t, onSuccess])
+  }, [formApi, flagKey, buildFlagValue, t, onSuccess])
 
   // Initial form values
   const initValues = useMemo(() => {
@@ -121,9 +126,9 @@ export function OverrideForm({
       return {
         targetType: override.target_type,
         targetId: override.target_id,
-        valueEnabled: override.value.enabled,
-        valuePercentage: (override.value.metadata?.percentage as number) || 50,
-        valueVariant: override.value.variant || '',
+        valueEnabled: override.value?.enabled,
+        valuePercentage: (override.value?.metadata?.percentage as number) || 50,
+        valueVariant: override.value?.variant || '',
         reason: override.reason || '',
         expiresAt: override.expires_at ? new Date(override.expires_at) : undefined,
       }

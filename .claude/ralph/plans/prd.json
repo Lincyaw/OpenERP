@@ -10052,7 +10052,7 @@
       "- All implicit any errors fixed",
       "- No TypeScript errors in affected files"
     ],
-    "passes": false,
+    "passes": true,
     "affectedModules": [
       "src/pages/admin/FeatureFlagDetail.tsx",
       "src/pages/admin/FeatureFlagForm.tsx",

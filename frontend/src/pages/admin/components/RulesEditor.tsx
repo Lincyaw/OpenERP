@@ -12,9 +12,20 @@ import {
   Tooltip,
 } from '@douyinfe/semi-ui-19'
 import { IconPlus, IconDelete, IconArrowUp, IconArrowDown, IconHandle } from '@douyinfe/semi-icons'
-import type { TargetingRule, Condition, FlagValue, FlagType } from '@/api/feature-flags'
+import type {
+  DtoTargetingRuleDTO,
+  DtoConditionDTO,
+  DtoFlagValueDTO,
+  HandlerCreateFlagHTTPRequestType,
+} from '@/api/models'
 
 const { Text } = Typography
+
+// Type aliases for cleaner code
+type TargetingRule = DtoTargetingRuleDTO
+type Condition = DtoConditionDTO
+type FlagValue = DtoFlagValueDTO
+type FlagType = HandlerCreateFlagHTTPRequestType
 
 // Generate unique rule ID
 function generateRuleId(): string {
@@ -56,7 +67,7 @@ const COMMON_ATTRIBUTES = [
 interface RulesEditorProps {
   rules: TargetingRule[]
   onChange: (rules: TargetingRule[]) => void
-  flagType: FlagType
+  flagType: FlagType | string | undefined
 }
 
 /**
@@ -251,7 +262,7 @@ export function RulesEditor({ rules, onChange, flagType }: RulesEditorProps) {
 interface RuleItemProps {
   rule: TargetingRule
   index: number
-  flagType: FlagType
+  flagType: FlagType | string | undefined
   isFirst: boolean
   isLast: boolean
   onUpdate: (updates: Partial<TargetingRule>) => void
@@ -423,9 +434,9 @@ function RuleItem({
 
 // Rule value editor based on flag type
 interface RuleValueEditorProps {
-  flagType: FlagType
-  value: FlagValue
-  percentage: number
+  flagType: FlagType | string | undefined
+  value: FlagValue | undefined
+  percentage: number | undefined
   onChange: (value: FlagValue, percentage: number) => void
 }
 
@@ -436,8 +447,8 @@ function RuleValueEditor({ flagType, value, percentage, onChange }: RuleValueEdi
     return (
       <Space>
         <Switch
-          checked={value.enabled}
-          onChange={(checked) => onChange({ ...value, enabled: checked }, percentage)}
+          checked={value?.enabled}
+          onChange={(checked) => onChange({ ...value, enabled: checked }, percentage || 100)}
           checkedText={t('featureFlags.status.enabled', 'Enabled')}
           uncheckedText={t('featureFlags.status.disabled', 'Disabled')}
         />
@@ -470,8 +481,8 @@ function RuleValueEditor({ flagType, value, percentage, onChange }: RuleValueEdi
         <Text>{t('featureFlags.form.serveVariant', 'Serve variant')}</Text>
         <Input
           size="small"
-          value={value.variant || ''}
-          onChange={(val) => onChange({ ...value, variant: val, enabled: true }, percentage)}
+          value={value?.variant || ''}
+          onChange={(val) => onChange({ ...value, variant: val, enabled: true }, percentage || 100)}
           placeholder={t('featureFlags.form.variantName', 'Variant name')}
           style={{ width: 120 }}
         />

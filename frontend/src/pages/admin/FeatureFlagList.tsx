@@ -25,18 +25,29 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
+import {
+  listFeatureFlagFlags,
+  createFeatureFlagFlag,
+  enableFlagFeatureFlag,
+  disableFlagFeatureFlag,
+  archiveFlagFeatureFlag,
+} from '@/api/feature-flags/feature-flags'
 import type {
-  FeatureFlag,
-  FlagListQuery,
-  FlagType,
-  FlagStatus,
-  CreateFlagRequest,
-} from '@/api/feature-flags'
+  DtoFlagResponse,
+  ListFeatureFlagFlagsParams,
+  HandlerCreateFlagHTTPRequestType,
+  ListFeatureFlagFlagsStatus,
+  CreateFeatureFlagFlagBody,
+} from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import './FeatureFlagList.css'
 
 const { Title, Text } = Typography
+
+// Type aliases for cleaner code
+type FlagType = HandlerCreateFlagHTTPRequestType
+type FlagStatus = ListFeatureFlagFlagsStatus
+type FeatureFlag = DtoFlagResponse
 
 // Feature Flag row type with index signature for DataTable compatibility
 type FlagRow = FeatureFlag & Record<string, unknown>
@@ -108,7 +119,6 @@ function getStatusColor(status: FlagStatus): TagColor {
 export default function FeatureFlagListPage() {
   const { t, i18n } = useTranslation('admin')
   const navigate = useNavigate()
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(
@@ -160,7 +170,7 @@ export default function FeatureFlagListPage() {
   const fetchFlags = useCallback(async () => {
     setLoading(true)
     try {
-      const params: FlagListQuery = {
+      const params: ListFeatureFlagFlagsParams = {
         page: state.pagination.page,
         page_size: state.pagination.pageSize,
         search: searchKeyword || undefined,
@@ -169,11 +179,11 @@ export default function FeatureFlagListPage() {
         tags: tagsFilter.length > 0 ? tagsFilter.join(',') : undefined,
       }
 
-      const response = await api.listFlags(params)
+      const response = await listFeatureFlagFlags(params)
 
-      if (response.success && response.data) {
-        setFlagList(response.data.flags as FlagRow[])
-        setTotal(response.data.total)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setFlagList((response.data.data.flags || []) as FlagRow[])
+        setTotal(response.data.data.total || 0)
       }
     } catch {
       Toast.error(t('featureFlags.messages.fetchError', '获取功能开关列表失败'))
@@ -181,7 +191,6 @@ export default function FeatureFlagListPage() {
       setLoading(false)
     }
   }, [
-    api,
     state.pagination.page,
     state.pagination.pageSize,
     searchKeyword,
@@ -248,7 +257,7 @@ export default function FeatureFlagListPage() {
       const values = formApiRef.getValues()
       setCreateLoading(true)
 
-      const request: CreateFlagRequest = {
+      const request: CreateFeatureFlagFlagBody = {
         key: values.key,
         name: values.name,
         description: values.description || undefined,
@@ -260,14 +269,14 @@ export default function FeatureFlagListPage() {
         tags: values.tags || undefined,
       }
 
-      const response = await api.createFlag(request)
-      if (response.success) {
+      const response = await createFeatureFlagFlag(request)
+      if (response.status === 201 && response.data.success) {
         Toast.success(t('featureFlags.messages.createSuccess', '功能开关创建成功'))
         setCreateModalVisible(false)
         fetchFlags()
       } else {
         Toast.error(
-          response.error?.message || t('featureFlags.messages.createError', '创建功能开关失败')
+          response.data.error?.message || t('featureFlags.messages.createError', '创建功能开关失败')
         )
       }
     } catch {
@@ -275,15 +284,17 @@ export default function FeatureFlagListPage() {
     } finally {
       setCreateLoading(false)
     }
-  }, [formApiRef, api, fetchFlags, t])
+  }, [formApiRef, fetchFlags, t])
 
   // Handle toggle status (enable/disable)
   const handleToggleStatus = useCallback(
     async (flag: FlagRow, checked: boolean) => {
       try {
-        const response = checked ? await api.enableFlag(flag.key) : await api.disableFlag(flag.key)
+        const response = checked
+          ? await enableFlagFeatureFlag(flag.key || '', {})
+          : await disableFlagFeatureFlag(flag.key || '', {})
 
-        if (response.success) {
+        if (response.status === 200 && response.data.success) {
           Toast.success(
             checked
               ? t('featureFlags.messages.enableSuccess', '功能开关已启用')
@@ -292,7 +303,7 @@ export default function FeatureFlagListPage() {
           fetchFlags()
         } else {
           Toast.error(
-            response.error?.message ||
+            response.data.error?.message ||
               (checked
                 ? t('featureFlags.messages.enableError', '启用功能开关失败')
                 : t('featureFlags.messages.disableError', '禁用功能开关失败'))
@@ -306,7 +317,7 @@ export default function FeatureFlagListPage() {
         )
       }
     },
-    [api, fetchFlags, t]
+    [fetchFlags, t]
   )
 
   // Handle view flag detail
@@ -347,13 +358,13 @@ export default function FeatureFlagListPage() {
         okButtonProps: { type: 'danger' },
         onOk: async () => {
           try {
-            const response = await api.archiveFlag(flag.key)
-            if (response.success) {
+            const response = await archiveFlagFeatureFlag(flag.key || '')
+            if (response.status === 200 && response.data.success) {
               Toast.success(t('featureFlags.messages.archiveSuccess', '功能开关已归档'))
               fetchFlags()
             } else {
               Toast.error(
-                response.error?.message ||
+                response.data.error?.message ||
                   t('featureFlags.messages.archiveError', '归档功能开关失败')
               )
             }
@@ -363,7 +374,7 @@ export default function FeatureFlagListPage() {
         },
       })
     },
-    [api, fetchFlags, t]
+    [fetchFlags, t]
   )
 
   // Refresh handler

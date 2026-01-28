@@ -26,14 +26,18 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
+import {
+  getFeatureFlagFlag,
+  createFeatureFlagFlag,
+  updateFeatureFlagFlag,
+} from '@/api/feature-flags/feature-flags'
 import type {
-  FlagType,
-  CreateFlagRequest,
-  UpdateFlagRequest,
-  FlagValue,
-  TargetingRule,
-} from '@/api/feature-flags'
+  DtoFlagValueDTO,
+  DtoTargetingRuleDTO,
+  HandlerCreateFlagHTTPRequestType,
+  CreateFeatureFlagFlagBody,
+  UpdateFeatureFlagFlagBody,
+} from '@/api/models'
 import { VariantEditor, type Variant } from './components/VariantEditor'
 import { RulesEditor } from './components/RulesEditor'
 import { TagInputField } from './components/TagInputField'
@@ -43,6 +47,11 @@ const { Title, Text } = Typography
 
 // Flag type values
 const FLAG_TYPES = ['boolean', 'percentage', 'variant', 'user_segment'] as const
+
+// Type aliases for cleaner code
+type FlagType = HandlerCreateFlagHTTPRequestType
+type FlagValue = DtoFlagValueDTO
+type TargetingRule = DtoTargetingRuleDTO
 
 // Helper type for translation function
 type TranslateFunc = (key: string, fallback?: string) => string
@@ -122,7 +131,6 @@ export default function FeatureFlagFormPage() {
   const navigate = useNavigate()
   const { key } = useParams<{ key: string }>()
   const isEditMode = Boolean(key)
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [initialLoading, setInitialLoading] = useState(isEditMode)
@@ -200,35 +208,35 @@ export default function FeatureFlagFormPage() {
       const loadFlag = async () => {
         setInitialLoading(true)
         try {
-          const response = await api.getFlag(key)
-          if (response.success && response.data) {
-            const flag = response.data
-            setSelectedType(flag.type)
-            setVersion(flag.version)
-            setRules(flag.rules || [])
+          const response = await getFeatureFlagFlag(key)
+          if (response.status === 200 && response.data.success && response.data.data) {
+            const flag = response.data.data
+            setSelectedType((flag.type as FlagType) || 'boolean')
+            setVersion(flag.version || 1)
+            setRules((flag.rules as TargetingRule[]) || [])
 
             // Map flag data to form values
             const formData: Partial<FlagFormData> = {
-              key: flag.key,
-              name: flag.name,
+              key: flag.key || '',
+              name: flag.name || '',
               description: flag.description || '',
-              type: flag.type,
+              type: (flag.type as FlagType) || 'boolean',
               tags: flag.tags || [],
-              defaultEnabled: flag.default_value.enabled,
+              defaultEnabled: flag.default_value?.enabled,
               defaultPercentage: 50, // Will be parsed from metadata
               variants: [],
-              defaultVariant: flag.default_value.variant,
+              defaultVariant: flag.default_value?.variant,
             }
 
             // Parse type-specific values
             if (
               flag.type === 'percentage' &&
-              flag.default_value.metadata?.percentage !== undefined
+              flag.default_value?.metadata?.percentage !== undefined
             ) {
               formData.defaultPercentage = flag.default_value.metadata.percentage as number
             }
 
-            if (flag.type === 'variant' && flag.default_value.metadata?.variants) {
+            if (flag.type === 'variant' && flag.default_value?.metadata?.variants) {
               formData.variants = flag.default_value.metadata.variants as Variant[]
             }
 
@@ -246,7 +254,7 @@ export default function FeatureFlagFormPage() {
       }
       loadFlag()
     }
-  }, [isEditMode, key, api, reset, navigate, t])
+  }, [isEditMode, key, reset, navigate, t])
 
   // Build FlagValue from form data
   const buildFlagValue = useCallback((data: FlagFormData): FlagValue => {
@@ -283,7 +291,7 @@ export default function FeatureFlagFormPage() {
       const flagValue = buildFlagValue(data)
 
       if (isEditMode && key) {
-        const request: UpdateFlagRequest = {
+        const request: UpdateFeatureFlagFlagBody = {
           name: data.name,
           description: data.description,
           default_value: flagValue,
@@ -292,15 +300,15 @@ export default function FeatureFlagFormPage() {
           version, // For optimistic locking
         }
 
-        const response = await api.updateFlag(key, request)
-        if (!response.success) {
+        const response = await updateFeatureFlagFlag(key, request)
+        if (response.status !== 200 || !response.data.success) {
           throw new Error(
-            response.error?.message ||
+            response.data.error?.message ||
               t('featureFlags.messages.updateError', 'Failed to update feature flag')
           )
         }
       } else {
-        const request: CreateFlagRequest = {
+        const request: CreateFeatureFlagFlagBody = {
           key: data.key,
           name: data.name,
           description: data.description,
@@ -310,16 +318,16 @@ export default function FeatureFlagFormPage() {
           tags: data.tags,
         }
 
-        const response = await api.createFlag(request)
-        if (!response.success) {
+        const response = await createFeatureFlagFlag(request)
+        if (response.status !== 201 || !response.data.success) {
           throw new Error(
-            response.error?.message ||
+            response.data.error?.message ||
               t('featureFlags.messages.createError', 'Failed to create feature flag')
           )
         }
       }
     },
-    [api, key, isEditMode, rules, version, buildFlagValue, t]
+    [key, isEditMode, rules, version, buildFlagValue, t]
   )
 
   // Handle cancel

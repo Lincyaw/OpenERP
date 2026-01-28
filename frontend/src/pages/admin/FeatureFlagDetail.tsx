@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -17,14 +17,18 @@ import {
 } from '@douyinfe/semi-ui-19'
 import { IconEdit, IconArrowLeft, IconRefresh, IconChevronRight } from '@douyinfe/semi-icons'
 import { Container } from '@/components/common/layout'
-import { listFeatureFlagFlags } from '@/api/feature-flags'
+import {
+  getFeatureFlagFlag,
+  enableFlagFeatureFlag,
+  disableFlagFeatureFlag,
+} from '@/api/feature-flags/feature-flags'
 import type {
-  FeatureFlag,
-  FlagType,
-  FlagStatus,
-  TargetingRule,
-  FlagValue,
-} from '@/api/feature-flags'
+  DtoFlagResponse,
+  DtoTargetingRuleDTO,
+  DtoFlagValueDTO,
+  HandlerCreateFlagHTTPRequestType,
+  ListFeatureFlagFlagsStatus,
+} from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import { OverridesTab } from './components/OverridesTab'
 import { AuditLogTimeline } from './components/AuditLogTimeline'
@@ -32,10 +36,17 @@ import './FeatureFlagDetail.css'
 
 const { Title, Text } = Typography
 
+// Type aliases for cleaner code
+type FlagType = HandlerCreateFlagHTTPRequestType
+type FlagStatus = ListFeatureFlagFlagsStatus
+type FeatureFlag = DtoFlagResponse
+type TargetingRule = DtoTargetingRuleDTO
+type FlagValue = DtoFlagValueDTO
+
 /**
  * Get color for flag type badge
  */
-function getTypeColor(type: FlagType): TagColor {
+function getTypeColor(type: FlagType | string | undefined): TagColor {
   switch (type) {
     case 'boolean':
       return 'blue'
@@ -53,7 +64,7 @@ function getTypeColor(type: FlagType): TagColor {
 /**
  * Get color for flag status
  */
-function getStatusColor(status: FlagStatus): TagColor {
+function getStatusColor(status: FlagStatus | string | undefined): TagColor {
   switch (status) {
     case 'enabled':
       return 'green'
@@ -94,7 +105,6 @@ export default function FeatureFlagDetailPage() {
   const { t } = useTranslation('admin')
   const { key } = useParams<{ key: string }>()
   const navigate = useNavigate()
-  const api = useMemo(() => listFeatureFlagFlags(), [])
 
   // State
   const [flag, setFlag] = useState<FeatureFlag | null>(null)
@@ -107,9 +117,9 @@ export default function FeatureFlagDetailPage() {
 
     setLoading(true)
     try {
-      const response = await api.getFlag(key)
-      if (response.success && response.data) {
-        setFlag(response.data)
+      const response = await getFeatureFlagFlag(key)
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setFlag(response.data.data)
       } else {
         Toast.error(t('featureFlags.messages.loadError', 'Failed to load feature flag'))
         navigate('/admin/feature-flags')
@@ -120,7 +130,7 @@ export default function FeatureFlagDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [key, api, t, navigate])
+  }, [key, t, navigate])
 
   // Load flag on mount
   useEffect(() => {
@@ -130,12 +140,14 @@ export default function FeatureFlagDetailPage() {
   // Handle toggle status
   const handleToggleStatus = useCallback(
     async (checked: boolean) => {
-      if (!flag) return
+      if (!flag || !flag.key) return
 
       try {
-        const response = checked ? await api.enableFlag(flag.key) : await api.disableFlag(flag.key)
+        const response = checked
+          ? await enableFlagFeatureFlag(flag.key, {})
+          : await disableFlagFeatureFlag(flag.key, {})
 
-        if (response.success) {
+        if (response.status === 200 && response.data.success) {
           Toast.success(
             checked
               ? t('featureFlags.messages.enableSuccess', 'Feature flag enabled')
@@ -144,7 +156,7 @@ export default function FeatureFlagDetailPage() {
           fetchFlag() // Refresh data
         } else {
           Toast.error(
-            response.error?.message ||
+            response.data.error?.message ||
               (checked
                 ? t('featureFlags.messages.enableError', 'Failed to enable feature flag')
                 : t('featureFlags.messages.disableError', 'Failed to disable feature flag'))
@@ -158,7 +170,7 @@ export default function FeatureFlagDetailPage() {
         )
       }
     },
-    [flag, api, t, fetchFlag]
+    [flag, t, fetchFlag]
   )
 
   // Handle edit navigation
@@ -378,8 +390,8 @@ function ConfigurationTab({ flag }: ConfigurationTabProps) {
  * Default Value Display Component
  */
 interface DefaultValueDisplayProps {
-  value: FlagValue
-  type: FlagType
+  value: FlagValue | undefined
+  type: FlagType | string | undefined
 }
 
 function DefaultValueDisplay({ value, type }: DefaultValueDisplayProps) {
@@ -388,8 +400,8 @@ function DefaultValueDisplay({ value, type }: DefaultValueDisplayProps) {
   if (type === 'boolean' || type === 'user_segment') {
     return (
       <div className="default-value-display">
-        <Tag color={value.enabled ? 'green' : 'grey'} size="large">
-          {value.enabled
+        <Tag color={value?.enabled ? 'green' : 'grey'} size="large">
+          {value?.enabled
             ? t('featureFlags.status.enabled', 'Enabled')
             : t('featureFlags.status.disabled', 'Disabled')}
         </Tag>
@@ -398,7 +410,7 @@ function DefaultValueDisplay({ value, type }: DefaultValueDisplayProps) {
   }
 
   if (type === 'percentage') {
-    const percentage = (value.metadata?.percentage as number) || 0
+    const percentage = (value?.metadata?.percentage as number) || 0
     return (
       <div className="default-value-display">
         <div className="percentage-display">
@@ -419,7 +431,7 @@ function DefaultValueDisplay({ value, type }: DefaultValueDisplayProps) {
   }
 
   if (type === 'variant') {
-    const variants = (value.metadata?.variants as Array<{ name: string; weight: number }>) || []
+    const variants = (value?.metadata?.variants as Array<{ name: string; weight: number }>) || []
     return (
       <div className="default-value-display">
         <div className="variant-display">
@@ -451,7 +463,7 @@ function DefaultValueDisplay({ value, type }: DefaultValueDisplayProps) {
               </div>
             ))}
           </div>
-          {value.variant && (
+          {value?.variant && (
             <div className="default-variant-info">
               <Text type="secondary">
                 {t('featureFlags.form.defaultVariant', 'Default Variant')}:
@@ -487,12 +499,14 @@ function getVariantColor(index: number): string {
  * Rules Display Component
  */
 interface RulesDisplayProps {
-  rules: TargetingRule[]
-  type: FlagType
+  rules: TargetingRule[] | undefined
+  type: FlagType | string | undefined
 }
 
 function RulesDisplay({ rules, type }: RulesDisplayProps) {
   const { t } = useTranslation('admin')
+
+  if (!rules) return null
 
   return (
     <div className="rules-display">
@@ -510,7 +524,7 @@ function RulesDisplay({ rules, type }: RulesDisplayProps) {
               {t('featureFlags.detail.ifConditions', 'If conditions match')}:
             </Text>
             <div className="conditions-list">
-              {rule.conditions.map((condition, condIndex) => (
+              {rule.conditions?.map((condition, condIndex: number) => (
                 <div key={condIndex} className="condition-display">
                   {condIndex > 0 && <Tag size="small">AND</Tag>}
                   <Tag color="light-blue">
@@ -560,9 +574,9 @@ function getOperatorLabel(operator: string): string {
  * Rule Value Display Component
  */
 interface RuleValueDisplayProps {
-  value: FlagValue
-  type: FlagType
-  percentage: number
+  value: FlagValue | undefined
+  type: FlagType | string | undefined
+  percentage: number | undefined
 }
 
 function RuleValueDisplay({ value, type, percentage }: RuleValueDisplayProps) {
@@ -570,8 +584,8 @@ function RuleValueDisplay({ value, type, percentage }: RuleValueDisplayProps) {
 
   if (type === 'boolean' || type === 'user_segment') {
     return (
-      <Tag color={value.enabled ? 'green' : 'grey'}>
-        {value.enabled
+      <Tag color={value?.enabled ? 'green' : 'grey'}>
+        {value?.enabled
           ? t('featureFlags.status.enabled', 'Enabled')
           : t('featureFlags.status.disabled', 'Disabled')}
       </Tag>
@@ -579,11 +593,11 @@ function RuleValueDisplay({ value, type, percentage }: RuleValueDisplayProps) {
   }
 
   if (type === 'percentage') {
-    return <Tag color="orange">{percentage}%</Tag>
+    return <Tag color="orange">{percentage ?? 0}%</Tag>
   }
 
   if (type === 'variant') {
-    return <Tag color="purple">{value.variant || '-'}</Tag>
+    return <Tag color="purple">{value?.variant || '-'}</Tag>
   }
 
   return <Text>-</Text>
