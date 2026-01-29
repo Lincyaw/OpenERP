@@ -191,7 +191,7 @@ func TestGetDefaultTemplateByDocTypeAndPaperSize(t *testing.T) {
 			docType:   printing.DocTypeSalesDelivery,
 			paperSize: printing.PaperSizeA5,
 			wantNil:   false,
-			wantName:  "销售发货单-A5",
+			wantName:  "销售发货单-A5横版",
 		},
 		{
 			name:      "Sales Delivery Continuous",
@@ -219,7 +219,7 @@ func TestGetDefaultTemplateByDocTypeAndPaperSize(t *testing.T) {
 			docType:   printing.DocTypeSalesReceipt,
 			paperSize: printing.PaperSizeA5,
 			wantNil:   false,
-			wantName:  "销售收据-A5",
+			wantName:  "销售收据-A5横版",
 		},
 		{
 			name:      "Purchase Receiving A4",
@@ -327,19 +327,19 @@ func TestGetTemplatesByDocType(t *testing.T) {
 			name:      "Sales Order templates",
 			docType:   printing.DocTypeSalesOrder,
 			wantCount: 2,
-			wantNames: []string{"销售订单-A4", "销售订单-A5"},
+			wantNames: []string{"销售订单-A4", "销售订单-A5横版"},
 		},
 		{
 			name:      "Sales Delivery templates",
 			docType:   printing.DocTypeSalesDelivery,
 			wantCount: 3,
-			wantNames: []string{"销售发货单-A4", "销售发货单-A5", "销售发货单-连续纸"},
+			wantNames: []string{"销售发货单-A4", "销售发货单-A5横版", "销售发货单-连续纸"},
 		},
 		{
 			name:      "Sales Receipt templates",
 			docType:   printing.DocTypeSalesReceipt,
 			wantCount: 3,
-			wantNames: []string{"销售收据-58mm", "销售收据-80mm", "销售收据-A5"},
+			wantNames: []string{"销售收据-58mm", "销售收据-80mm", "销售收据-A5横版"},
 		},
 		{
 			name:      "Purchase Receiving templates",

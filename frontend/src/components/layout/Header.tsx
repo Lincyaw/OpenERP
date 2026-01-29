@@ -18,6 +18,7 @@ import {
   IconSetting,
   IconBell,
   IconHome,
+  IconMenu,
 } from '@douyinfe/semi-icons'
 
 import { useAppStore, useAuthStore, useUser } from '@/store'
@@ -49,6 +50,7 @@ export function Header() {
   const theme = useAppStore((state) => state.theme)
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
+  const toggleMobileSidebar = useAppStore((state) => state.toggleMobileSidebar)
   const { t } = useI18n()
 
   // Generate breadcrumbs from current path
@@ -102,109 +104,123 @@ export function Header() {
 
   return (
     <SemiHeader className={`header ${sidebarCollapsed ? 'header--collapsed' : ''}`}>
-      {/* Breadcrumb navigation */}
-      <div className="header__breadcrumb">
-        <Breadcrumb>
-          <Breadcrumb.Item
-            href="/"
-            icon={<IconHome size="small" />}
-            onClick={(e) => {
-              e.preventDefault()
-              navigate('/')
-            }}
-          />
-          {breadcrumbItems.map((item, index) => (
+      {/* Left side: Mobile menu button + Breadcrumb */}
+      <div className="header__left">
+        {/* Mobile menu toggle button */}
+        <Button
+          className="header__mobile-menu-btn"
+          theme="borderless"
+          icon={<IconMenu />}
+          onClick={toggleMobileSidebar}
+          aria-label={t('actions.toggleMenu', 'Toggle menu')}
+        />
+
+        {/* Breadcrumb navigation */}
+        <div className="header__breadcrumb">
+          <Breadcrumb>
             <Breadcrumb.Item
-              key={item.path}
-              href={item.path}
+              href="/"
+              icon={<IconHome size="small" />}
               onClick={(e) => {
                 e.preventDefault()
-                if (index < breadcrumbItems.length - 1) {
-                  navigate(item.path)
-                }
+                navigate('/')
               }}
-            >
-              {item.title}
-            </Breadcrumb.Item>
-          ))}
-        </Breadcrumb>
+            />
+            {breadcrumbItems.map((item, index) => (
+              <Breadcrumb.Item
+                key={item.path}
+                href={item.path}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (index < breadcrumbItems.length - 1) {
+                    navigate(item.path)
+                  }
+                }}
+              >
+                {item.title}
+              </Breadcrumb.Item>
+            ))}
+          </Breadcrumb>
+        </div>
       </div>
 
       {/* Right side actions */}
-      <Nav mode="horizontal" className="header__nav">
-        <Space spacing={8}>
-          {/* Language switcher */}
-          <LanguageSwitcher />
+      <div className="header__right">
+        <Nav mode="horizontal" className="header__nav">
+          <Space spacing={8}>
+            {/* Language switcher */}
+            <LanguageSwitcher />
 
-          {/* Tenant switcher */}
-          <TenantSwitcher />
+            {/* Tenant switcher */}
+            <TenantSwitcher />
 
-          {/* Theme toggle */}
-          <Button
-            theme="borderless"
-            icon={theme === 'light' ? <IconMoon /> : <IconSun />}
-            onClick={toggleTheme}
-            aria-label={
-              theme === 'light'
-                ? t('actions.switchToDark', 'Switch to dark mode')
-                : t('actions.switchToLight', 'Switch to light mode')
-            }
-          />
+            {/* Theme toggle */}
+            <Button
+              theme="borderless"
+              icon={theme === 'light' ? <IconMoon /> : <IconSun />}
+              onClick={toggleTheme}
+              aria-label={
+                theme === 'light'
+                  ? t('actions.switchToDark', 'Switch to dark mode')
+                  : t('actions.switchToLight', 'Switch to light mode')
+              }
+            />
 
-          {/* Notifications */}
-          <Button
-            theme="borderless"
-            icon={<IconBell />}
-            aria-label={t('nav.notifications', 'Notifications')}
-          />
+            {/* Notifications */}
+            <Button
+              theme="borderless"
+              icon={<IconBell />}
+              aria-label={t('nav.notifications', 'Notifications')}
+            />
 
-          {/* User menu */}
-          <Dropdown
-            trigger="click"
-            position="bottomRight"
-            getPopupContainer={() => document.body}
-            render={
-              <Dropdown.Menu>
-                <div className="header__user-info">
-                  <Text strong>{user?.displayName || user?.username || 'User'}</Text>
-                  {user?.email && (
-                    <Text type="tertiary" size="small">
-                      {user.email}
-                    </Text>
-                  )}
-                </div>
-                <Dropdown.Divider />
-                {userMenuItems.map((item) => {
-                  if (item.node === 'divider') {
-                    return <Dropdown.Divider key={item.key} />
-                  }
-                  return (
-                    <Dropdown.Item
-                      key={item.key}
-                      icon={item.icon}
-                      onClick={item.onClick}
-                      type={item.type}
-                    >
-                      {item.name}
-                    </Dropdown.Item>
-                  )
-                })}
-              </Dropdown.Menu>
-            }
-          >
-            <div className="header__avatar">
-              <Avatar
-                size="small"
-                src={user?.avatar}
-                color="light-blue"
-                alt={user?.displayName || user?.username}
-              >
-                {(user?.displayName || user?.username || 'U').charAt(0).toUpperCase()}
-              </Avatar>
-            </div>
-          </Dropdown>
-        </Space>
-      </Nav>
+            {/* User menu */}
+            <Dropdown
+              trigger="click"
+              position="bottomRight"
+              getPopupContainer={() => document.body}
+              render={
+                <Dropdown.Menu>
+                  <div className="header__user-info">
+                    <Text strong>{user?.displayName || user?.username || 'User'}</Text>
+                    {user?.email && (
+                      <Text type="tertiary" size="small">
+                        {user.email}
+                      </Text>
+                    )}
+                  </div>
+                  <Dropdown.Divider />
+                  {userMenuItems.map((item) => {
+                    if (item.node === 'divider') {
+                      return <Dropdown.Divider key={item.key} />
+                    }
+                    return (
+                      <Dropdown.Item
+                        key={item.key}
+                        icon={item.icon}
+                        onClick={item.onClick}
+                        type={item.type}
+                      >
+                        {item.name}
+                      </Dropdown.Item>
+                    )
+                  })}
+                </Dropdown.Menu>
+              }
+            >
+              <div className="header__avatar">
+                <Avatar
+                  size="small"
+                  src={user?.avatar}
+                  color="light-blue"
+                  alt={user?.displayName || user?.username}
+                >
+                  {(user?.displayName || user?.username || 'U').charAt(0).toUpperCase()}
+                </Avatar>
+              </div>
+            </Dropdown>
+          </Space>
+        </Nav>
+      </div>
     </SemiHeader>
   )
 }

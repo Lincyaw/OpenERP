@@ -4,139 +4,134 @@
   padding: var(--spacing-6);
 }
 
-/* Loading container */
-.payable-detail-page .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
+/* Info cards */
+.payable-detail-page .info-card,
+.payable-detail-page .amount-card,
+.payable-detail-page .payment-records-card {
+  margin-bottom: var(--spacing-4);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
 }
 
-/* Page header */
-.payable-detail-page .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-6);
-  flex-wrap: wrap;
-  gap: var(--spacing-4);
-}
-
-.payable-detail-page .header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
-.payable-detail-page .page-title {
-  margin: 0;
-}
-
-.payable-detail-page .header-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
-/* Info card */
-.payable-detail-page .info-card {
-  margin-bottom: var(--spacing-6);
-}
-
-.payable-detail-page .info-card .semi-card-header {
+.payable-detail-page .info-card .semi-card-header,
+.payable-detail-page .amount-card .semi-card-header,
+.payable-detail-page .payment-records-card .semi-card-header {
   padding-bottom: var(--spacing-3);
   border-bottom: 1px solid var(--semi-color-border);
 }
 
-.payable-basic-info {
-  padding: var(--spacing-4);
+/* Info grid layout - matching order detail style */
+.payable-detail-page .info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4) var(--spacing-6);
 }
 
-/* Amount card */
-.payable-detail-page .amount-card {
-  margin-bottom: var(--spacing-6);
+.payable-detail-page .info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
 }
 
-.amount-summary {
-  padding: var(--spacing-4);
+.payable-detail-page .info-item--full {
+  grid-column: 1 / -1;
+}
+
+.payable-detail-page .info-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  line-height: 1.4;
+}
+
+.payable-detail-page .info-value {
+  font-size: var(--semi-font-size-regular);
+  color: var(--semi-color-text-0);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Code value styling */
+.payable-detail-page .code-value {
+  font-family: var(--semi-font-family-code);
+  letter-spacing: 0.02em;
+}
+
+/* Amount summary styles */
+.payable-detail-page .amount-summary {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
+  padding: var(--spacing-4);
   max-width: 400px;
 }
 
-.amount-row {
+.payable-detail-page .amount-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-2) 0;
 }
 
-.amount-row.outstanding-row {
-  border-top: 1px solid var(--semi-color-border);
+.payable-detail-page .amount-row.outstanding-row {
   padding-top: var(--spacing-4);
   margin-top: var(--spacing-2);
+  border-top: 1px solid var(--semi-color-border);
 }
 
-.total-amount {
+.payable-detail-page .total-amount {
   font-size: var(--semi-font-size-header-5);
   font-family: var(--semi-font-family-code);
   color: var(--semi-color-text-0);
 }
 
-.paid-amount {
+.payable-detail-page .paid-amount {
   font-size: var(--semi-font-size-header-5);
   font-family: var(--semi-font-family-code);
   color: var(--semi-color-success);
 }
 
-.outstanding-amount {
+.payable-detail-page .outstanding-amount {
   font-size: var(--semi-font-size-header-4);
   font-family: var(--semi-font-family-code);
   color: var(--semi-color-primary);
 }
 
-.outstanding-amount.overdue {
+.payable-detail-page .outstanding-amount.overdue {
   color: var(--semi-color-danger);
 }
 
-/* Payment records card */
-.payable-detail-page .payment-records-card {
-  margin-bottom: var(--spacing-6);
-}
-
-.payment-amount {
-  font-family: var(--semi-font-family-code);
-  color: var(--semi-color-success);
-}
-
 /* Overdue date styling */
-.overdue-date {
+.payable-detail-page .overdue-date {
   color: var(--semi-color-danger);
   font-weight: var(--semi-font-weight-medium);
 }
 
-/* Responsive adjustments */
+/* Payment amount in table */
+.payable-detail-page .payment-amount {
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-success);
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .payable-detail-page .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .payable-detail-page {
     padding: var(--spacing-4);
   }
 
-  .payable-detail-page .page-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .payable-detail-page .info-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
   }
 
-  .payable-detail-page .header-left {
-    flex-wrap: wrap;
-  }
-
-  .payable-detail-page .header-right {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .amount-summary {
+  .payable-detail-page .amount-summary {
+    padding: var(--spacing-3);
     max-width: 100%;
   }
 }

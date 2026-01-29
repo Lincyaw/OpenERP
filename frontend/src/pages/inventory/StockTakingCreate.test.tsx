@@ -145,7 +145,7 @@ const createMockInventoryListResponse = (items = mockInventoryItems, total = ite
   meta: {
     total,
     page: 1,
-    page_size: 500,
+    page_size: 50,
     total_pages: 1,
   },
 })

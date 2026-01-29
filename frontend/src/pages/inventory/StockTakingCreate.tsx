@@ -193,7 +193,7 @@ export default function StockTakingCreatePage() {
     try {
       // Use the warehouse-specific endpoint with path parameter
       const response = await listInventoryByWarehouse(warehouseId, {
-        page_size: 500,
+        page_size: 100,
         has_stock: true,
       })
       if (response.status === 200 && response.data.success && response.data.data) {

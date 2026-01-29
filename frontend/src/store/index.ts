@@ -9,6 +9,7 @@ export { useAuthStore, useUser, useIsAuthenticated, useAuthLoading } from './aut
 export {
   useAppStore,
   useSidebarCollapsed,
+  useMobileSidebarOpen,
   useTheme,
   useLocale,
   useBreadcrumbs,

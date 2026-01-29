@@ -60,6 +60,8 @@ export interface AuthActions {
 export interface AppState {
   /** Whether sidebar is collapsed */
   sidebarCollapsed: boolean
+  /** Whether mobile sidebar is open (for responsive layout) */
+  mobileSidebarOpen: boolean
   /** Current theme (light/dark) */
   theme: 'light' | 'dark'
   /** Current locale */
@@ -78,6 +80,10 @@ export interface AppActions {
   toggleSidebar: () => void
   /** Set sidebar collapsed state */
   setSidebarCollapsed: (collapsed: boolean) => void
+  /** Toggle mobile sidebar open state */
+  toggleMobileSidebar: () => void
+  /** Set mobile sidebar open state */
+  setMobileSidebarOpen: (open: boolean) => void
   /** Set theme */
   setTheme: (theme: 'light' | 'dark') => void
   /** Toggle theme between light and dark */

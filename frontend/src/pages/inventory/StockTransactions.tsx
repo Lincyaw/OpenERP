@@ -217,7 +217,7 @@ export default function StockTransactionsPage() {
 
     try {
       const response = await listProducts({
-        page_size: 500,
+        page_size: 100,
       })
       if (response.status === 200 && response.data.success && response.data.data) {
         const products = response.data.data as HandlerProductListResponse[]

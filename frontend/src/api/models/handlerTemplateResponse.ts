@@ -9,7 +9,6 @@ import type { HandlerMarginsResponse } from './handlerMarginsResponse'
  * Print template response
  */
 export interface HandlerTemplateResponse {
-  created_at?: string
   description?: string
   document_type?: string
   id?: string
@@ -19,6 +18,4 @@ export interface HandlerTemplateResponse {
   orientation?: string
   paper_size?: string
   status?: string
-  tenant_id?: string
-  updated_at?: string
 }

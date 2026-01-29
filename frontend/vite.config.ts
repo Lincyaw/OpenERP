@@ -58,6 +58,20 @@ export default defineConfig({
       '/api': {
         target: 'http://10.10.10.146:8080',
         changeOrigin: true,
+        // Enable cookie pass-through for auth
+        cookieDomainRewrite: '',
+        // Preserve Set-Cookie headers from backend
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            // Rewrite cookie domain to work with proxy
+            const cookies = proxyRes.headers['set-cookie']
+            if (cookies) {
+              proxyRes.headers['set-cookie'] = cookies.map((cookie) =>
+                cookie.replace(/Domain=[^;]+;?/gi, '')
+              )
+            }
+          })
+        },
       },
     },
   },

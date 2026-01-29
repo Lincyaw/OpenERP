@@ -1,138 +1,54 @@
-/* Stock Detail Page Styles */
+/* Inventory Stock Detail Page Styles */
 
 .stock-detail-page {
-  padding: var(--spacing-6, 24px);
+  padding: var(--spacing-6);
 }
 
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
+/* Detail cards */
+.stock-detail-page .detail-card {
+  margin-bottom: var(--spacing-4);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
 }
 
-/* Header styles */
-.stock-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-4, 16px);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3, 12px);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2, 8px);
-}
-
-/* Detail card styles */
-.detail-card {
-  margin-bottom: var(--spacing-4, 16px);
-}
-
-.detail-card :global(.semi-typography-h5) {
-  margin-bottom: var(--spacing-3, 12px);
-}
-
-/* Quantity grid */
-.quantity-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-4, 16px);
-}
-
-.quantity-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1, 4px);
-  padding: var(--spacing-3, 12px);
-  background-color: var(--semi-color-fill-0, #f5f5f5);
-  border-radius: var(--semi-border-radius-small, 4px);
-}
-
-.quantity-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--semi-color-text-0, #1c1f23);
-}
-
-.quantity-warning {
-  color: var(--semi-color-warning, #ff7900) !important;
-}
-
-.quantity-locked {
-  color: var(--semi-color-danger, #f93920) !important;
-}
-
-/* Transaction quantity colors */
-.quantity-positive {
-  color: var(--semi-color-success, #00b42a);
-  font-weight: 500;
-}
-
-.quantity-negative {
-  color: var(--semi-color-danger, #f93920);
-  font-weight: 500;
+.stock-detail-page .detail-card .semi-card-header {
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
 }
 
 /* Transactions card */
-.transactions-card {
+.stock-detail-page .transactions-card {
+  margin-top: var(--spacing-4);
   min-height: 400px;
 }
 
-.transactions-card :global(.semi-tabs-content) {
-  padding-top: var(--spacing-3, 12px);
+.stock-detail-page .transactions-card :global(.semi-tabs-content) {
+  padding-top: var(--spacing-3);
 }
 
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
+/* Quantity styling */
+.quantity-positive {
+  color: var(--semi-color-success);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+.quantity-negative {
+  color: var(--semi-color-danger);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
   .stock-detail-page {
-    padding: var(--spacing-4, 16px);
-  }
-
-  .stock-detail-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3, 12px);
-  }
-
-  .header-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .quantity-grid {
-    grid-template-columns: 1fr;
+    padding: var(--spacing-4);
   }
 }
 
 /* Dark mode adjustments */
-[theme-mode='dark'] .quantity-item {
-  background-color: var(--semi-color-fill-1, #333);
-}
-
-[theme-mode='dark'] .quantity-value {
-  color: var(--semi-color-text-0, #fff);
-}
-
-[theme-mode='dark'] .quantity-warning {
-  color: var(--semi-color-warning, #ffa940) !important;
-}
-
-[theme-mode='dark'] .quantity-locked {
-  color: var(--semi-color-danger, #ff4d4f) !important;
-}
-
 [theme-mode='dark'] .quantity-positive {
-  color: var(--semi-color-success, #52c41a);
+  color: var(--semi-color-success);
 }
 
 [theme-mode='dark'] .quantity-negative {
-  color: var(--semi-color-danger, #ff4d4f);
+  color: var(--semi-color-danger);
 }

@@ -1,20 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-  Modal,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconEdit, IconPlay, IconStop, IconDelete } from '@douyinfe/semi-icons'
+import { Card, Typography, Toast, Modal, Empty } from '@douyinfe/semi-ui-19'
+import { IconEdit, IconPlay, IconStop, IconDelete } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
   getProductById,
@@ -26,20 +21,20 @@ import {
 import type { HandlerProductResponse, HandlerProductResponseStatus } from '@/api/models'
 import './ProductDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<HandlerProductResponseStatus, 'green' | 'grey' | 'red'> = {
-  active: 'green',
-  inactive: 'grey',
-  discontinued: 'red',
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<HandlerProductResponseStatus, 'default' | 'success' | 'danger'> = {
+  active: 'success',
+  inactive: 'default',
+  discontinued: 'danger',
 }
 
 /**
  * Product Detail Page
  *
  * Features:
- * - Display complete product information
+ * - Display complete product information using DetailPageHeader
  * - Display price information
  * - Status action buttons (activate, deactivate, discontinue)
  * - Navigate to edit page
@@ -172,140 +167,243 @@ export default function ProductDetailPage() {
     return ((product.selling_price - product.purchase_price) / product.purchase_price) * 100
   }, [product])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!product?.status) return undefined
+    return {
+      label: t(`products.status.${product.status}`),
+      variant: STATUS_VARIANTS[product.status] || 'default',
+    }
+  }, [product, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!product) return []
+    return [
+      {
+        label: t('productDetail.fields.unit'),
+        value: product.unit || '-',
+      },
+      {
+        label: t('productDetail.fields.purchasePrice'),
+        value: product.purchase_price !== undefined ? formatCurrency(product.purchase_price) : '-',
+      },
+      {
+        label: t('productDetail.fields.sellingPrice'),
+        value: product.selling_price !== undefined ? formatCurrency(product.selling_price) : '-',
+        variant: 'primary',
+      },
+      {
+        label: t('productDetail.fields.profitMargin'),
+        value: profitMargin !== null ? `${profitMargin.toFixed(1)}%` : '-',
+        variant: profitMargin !== null && profitMargin > 0 ? 'success' : 'default',
+      },
+    ]
+  }, [product, t, formatCurrency, profitMargin])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!product) return undefined
+    const status = product.status
+
+    if (status === 'inactive') {
+      return {
+        key: 'activate',
+        label: t('products.actions.activate'),
+        icon: <IconPlay />,
+        type: 'primary',
+        onClick: handleActivate,
+        loading: actionLoading,
+      }
+    }
+    if (status === 'active') {
+      return {
+        key: 'deactivate',
+        label: t('products.actions.deactivate'),
+        icon: <IconStop />,
+        type: 'warning',
+        onClick: handleDeactivate,
+        loading: actionLoading,
+      }
+    }
+    return undefined
+  }, [product, t, handleActivate, handleDeactivate, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!product) return []
+    const status = product.status
+    const actions: DetailPageHeaderAction[] = []
+
+    if (status !== 'discontinued') {
+      actions.push({
+        key: 'edit',
+        label: t('common:actions.edit'),
+        icon: <IconEdit />,
+        onClick: handleEdit,
+        disabled: actionLoading,
+      })
+      actions.push({
+        key: 'discontinue',
+        label: t('products.actions.discontinue'),
+        type: 'danger',
+        onClick: handleDiscontinue,
+        loading: actionLoading,
+      })
+    }
+    actions.push({
+      key: 'delete',
+      label: t('products.actions.delete'),
+      icon: <IconDelete />,
+      type: 'danger',
+      onClick: handleDelete,
+      loading: actionLoading,
+    })
+
+    return actions
+  }, [product, t, handleEdit, handleDiscontinue, handleDelete, actionLoading])
+
   // Render basic info
   const renderBasicInfo = () => {
     if (!product) return null
 
-    const data = [
-      { key: t('productDetail.fields.code'), value: product.code || '-' },
-      { key: t('productDetail.fields.name'), value: product.name || '-' },
-      { key: t('productDetail.fields.unit'), value: product.unit || '-' },
-      { key: t('productDetail.fields.barcode'), value: product.barcode || '-' },
-      {
-        key: t('productDetail.fields.status'),
-        value: product.status ? (
-          <Tag color={STATUS_TAG_COLORS[product.status]}>
-            {t(`products.status.${product.status}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      { key: t('productDetail.fields.description'), value: product.description || '-' },
-    ]
-
-    return <Descriptions data={data} row className="product-basic-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.code')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {product.code || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.name')}
+          </Text>
+          <Text className="info-value">{product.name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.unit')}
+          </Text>
+          <Text className="info-value">{product.unit || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.barcode')}
+          </Text>
+          <Text className="info-value code-value">{product.barcode || '-'}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.description')}
+          </Text>
+          <Text className="info-value">{product.description || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render price info
   const renderPriceInfo = () => {
     if (!product) return null
 
-    const data = [
-      {
-        key: t('productDetail.fields.purchasePrice'),
-        value: product.purchase_price !== undefined ? formatCurrency(product.purchase_price) : '-',
-      },
-      {
-        key: t('productDetail.fields.sellingPrice'),
-        value: product.selling_price !== undefined ? formatCurrency(product.selling_price) : '-',
-      },
-      {
-        key: t('productDetail.fields.profitMargin'),
-        value: profitMargin !== null ? `${profitMargin.toFixed(2)}%` : '-',
-      },
-    ]
+    const profitMarginClass =
+      profitMargin !== null ? (profitMargin > 0 ? 'positive' : 'negative') : ''
 
-    return <Descriptions data={data} row className="product-price-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.purchasePrice')}
+          </Text>
+          <Text className="info-value">
+            {product.purchase_price !== undefined ? formatCurrency(product.purchase_price) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.sellingPrice')}
+          </Text>
+          <Text className="info-value price-value">
+            {product.selling_price !== undefined ? formatCurrency(product.selling_price) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.profitMargin')}
+          </Text>
+          <Text className={`info-value profit-value ${profitMarginClass}`}>
+            {profitMargin !== null ? `${profitMargin.toFixed(2)}%` : '-'}
+          </Text>
+        </div>
+      </div>
+    )
   }
 
   // Render stock settings
   const renderStockSettings = () => {
     if (!product) return null
 
-    const data = [
-      {
-        key: t('productDetail.fields.minStock'),
-        value: product.min_stock !== undefined ? product.min_stock.toString() : '-',
-      },
-      {
-        key: t('productDetail.fields.sortOrder'),
-        value: product.sort_order !== undefined ? product.sort_order.toString() : '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="product-stock-settings" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.minStock')}
+          </Text>
+          <Text className="info-value">
+            {product.min_stock !== undefined ? product.min_stock.toString() : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.sortOrder')}
+          </Text>
+          <Text className="info-value">
+            {product.sort_order !== undefined ? product.sort_order.toString() : '-'}
+          </Text>
+        </div>
+      </div>
+    )
   }
 
   // Render timestamps
   const renderTimestamps = () => {
     if (!product) return null
 
-    const data = [
-      {
-        key: t('productDetail.fields.createdAt'),
-        value: product.created_at ? formatDateTime(product.created_at) : '-',
-      },
-      {
-        key: t('productDetail.fields.updatedAt'),
-        value: product.updated_at ? formatDateTime(product.updated_at) : '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="product-timestamps" />
-  }
-
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!product) return null
-
-    const status = product.status
-
     return (
-      <Space>
-        {status !== 'discontinued' && (
-          <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-            {t('common:actions.edit')}
-          </Button>
-        )}
-        {status === 'inactive' && (
-          <Button
-            type="primary"
-            icon={<IconPlay />}
-            onClick={handleActivate}
-            loading={actionLoading}
-          >
-            {t('products.actions.activate')}
-          </Button>
-        )}
-        {status === 'active' && (
-          <Button
-            type="warning"
-            icon={<IconStop />}
-            onClick={handleDeactivate}
-            loading={actionLoading}
-          >
-            {t('products.actions.deactivate')}
-          </Button>
-        )}
-        {status !== 'discontinued' && (
-          <Button type="danger" onClick={handleDiscontinue} loading={actionLoading}>
-            {t('products.actions.discontinue')}
-          </Button>
-        )}
-        <Button type="danger" icon={<IconDelete />} onClick={handleDelete} loading={actionLoading}>
-          {t('products.actions.delete')}
-        </Button>
-      </Space>
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.createdAt')}
+          </Text>
+          <Text className="info-value">
+            {product.created_at ? formatDateTime(product.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('productDetail.fields.updatedAt')}
+          </Text>
+          <Text className="info-value">
+            {product.updated_at ? formatDateTime(product.updated_at) : '-'}
+          </Text>
+        </div>
+      </div>
     )
   }
 
   if (loading) {
     return (
       <Container size="lg" className="product-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('productDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/catalog/products')}
+          backLabel={t('productDetail.back')}
+        />
       </Container>
     )
   }
@@ -320,38 +418,22 @@ export default function ProductDetailPage() {
 
   return (
     <Container size="lg" className="product-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/catalog/products')}
-          >
-            {t('productDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('productDetail.title')}
-          </Title>
-          {product.status && (
-            <Tag color={STATUS_TAG_COLORS[product.status]} size="large">
-              {t(`products.status.${product.status}`)}
-            </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
-
-      {/* Product Name Display */}
-      <Card className="product-name-card">
-        <div className="product-name-display">
-          <Text className="product-code">{product.code}</Text>
-          <Title heading={3} className="product-name">
-            {product.name}
-          </Title>
-          {product.barcode && <Text type="secondary">{product.barcode}</Text>}
-        </div>
-      </Card>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('productDetail.title')}
+        documentNumber={product.code}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/catalog/products')}
+        backLabel={t('productDetail.back')}
+        titleSuffix={
+          product.barcode ? (
+            <span className="product-barcode-suffix">{product.barcode}</span>
+          ) : undefined
+        }
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('products.form.basicInfo')}>

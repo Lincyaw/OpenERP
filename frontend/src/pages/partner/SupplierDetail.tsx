@@ -1,21 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-  Modal,
-  Rating,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconEdit, IconPlay, IconStop, IconDelete } from '@douyinfe/semi-icons'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Card, Toast, Modal, Empty, Typography, Rating } from '@douyinfe/semi-ui-19'
+import { IconEdit, IconPlay, IconStop, IconDelete } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
   getSupplierById,
@@ -27,20 +21,20 @@ import {
 import type { HandlerSupplierResponse, HandlerSupplierResponseStatus } from '@/api/models'
 import './SupplierDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<HandlerSupplierResponseStatus, 'green' | 'grey' | 'red'> = {
-  active: 'green',
-  inactive: 'grey',
-  blocked: 'red',
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<HandlerSupplierResponseStatus, 'default' | 'success' | 'danger'> = {
+  active: 'success',
+  inactive: 'default',
+  blocked: 'danger',
 }
 
 /**
  * Supplier Detail Page
  *
  * Features:
- * - Display complete supplier information
+ * - Display complete supplier information using DetailPageHeader
  * - Display bank and payment info
  * - Status action buttons (activate, deactivate, block)
  * - Navigate to edit page
@@ -165,184 +159,321 @@ export default function SupplierDetailPage() {
     }
   }, [supplier, navigate])
 
-  // Render basic info
-  const renderBasicInfo = () => {
-    if (!supplier) return null
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!supplier?.status) return undefined
+    return {
+      label: t(`suppliers.status.${supplier.status}`),
+      variant: STATUS_VARIANTS[supplier.status] || 'default',
+    }
+  }, [supplier, t])
 
-    const data = [
-      { key: t('supplierDetail.fields.code'), value: supplier.code || '-' },
-      { key: t('supplierDetail.fields.name'), value: supplier.name || '-' },
-      { key: t('supplierDetail.fields.shortName'), value: supplier.short_name || '-' },
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!supplier) return []
+    return [
       {
-        key: t('supplierDetail.fields.status'),
-        value: supplier.status ? (
-          <Tag color={STATUS_TAG_COLORS[supplier.status]}>
-            {t(`suppliers.status.${supplier.status}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('supplierDetail.fields.rating'),
+        label: t('supplierDetail.fields.rating'),
         value:
-          supplier.rating !== undefined ? (
-            <div className="supplier-rating">
-              <Rating value={supplier.rating} disabled allowHalf size="small" />
-              <Text type="secondary" className="rating-text">
-                {t('suppliers.form.ratingScore', { score: supplier.rating })}
-              </Text>
-            </div>
-          ) : (
-            t('suppliers.form.ratingNotRated')
-          ),
+          supplier.rating !== undefined
+            ? t('suppliers.form.ratingScore', { score: supplier.rating })
+            : '-',
       },
-    ]
-
-    return <Descriptions data={data} row className="supplier-basic-info" />
-  }
-
-  // Render contact info
-  const renderContactInfo = () => {
-    if (!supplier) return null
-
-    const data = [
-      { key: t('supplierDetail.fields.contactName'), value: supplier.contact_name || '-' },
-      { key: t('supplierDetail.fields.phone'), value: supplier.phone || '-' },
-      { key: t('supplierDetail.fields.email'), value: supplier.email || '-' },
-      { key: t('supplierDetail.fields.taxId'), value: supplier.tax_id || '-' },
-    ]
-
-    return <Descriptions data={data} row className="supplier-contact-info" />
-  }
-
-  // Render address info
-  const renderAddressInfo = () => {
-    if (!supplier) return null
-
-    const data = [
-      { key: t('supplierDetail.fields.country'), value: supplier.country || '-' },
-      { key: t('supplierDetail.fields.province'), value: supplier.province || '-' },
-      { key: t('supplierDetail.fields.city'), value: supplier.city || '-' },
-      { key: t('supplierDetail.fields.address'), value: supplier.address || '-' },
-      { key: t('supplierDetail.fields.postalCode'), value: supplier.postal_code || '-' },
-      { key: t('supplierDetail.fields.fullAddress'), value: supplier.full_address || '-' },
-    ]
-
-    return <Descriptions data={data} row className="supplier-address-info" />
-  }
-
-  // Render bank info
-  const renderBankInfo = () => {
-    if (!supplier) return null
-
-    const data = [
-      { key: t('supplierDetail.fields.bankName'), value: supplier.bank_name || '-' },
-      { key: t('supplierDetail.fields.bankAccount'), value: supplier.bank_account || '-' },
-      { key: t('supplierDetail.fields.bankAccountName'), value: supplier.bank_account_name || '-' },
-    ]
-
-    return <Descriptions data={data} row className="supplier-bank-info" />
-  }
-
-  // Render payment terms info
-  const renderPaymentInfo = () => {
-    if (!supplier) return null
-
-    const data = [
       {
-        key: t('supplierDetail.fields.creditLimit'),
+        label: t('supplierDetail.fields.creditLimit'),
         value: supplier.credit_limit !== undefined ? formatCurrency(supplier.credit_limit) : '-',
+        variant: 'primary',
       },
       {
-        key: t('supplierDetail.fields.paymentTermDays'),
+        label: t('supplierDetail.fields.paymentTermDays'),
         value:
           supplier.payment_term_days !== undefined
             ? `${supplier.payment_term_days} ${t('suppliers.form.creditDaysSuffix')}`
             : '-',
       },
     ]
+  }, [supplier, t, formatCurrency])
 
-    return <Descriptions data={data} row className="supplier-payment-info" />
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!supplier) return undefined
+    const status = supplier.status
+
+    if (status !== 'active') {
+      return {
+        key: 'activate',
+        label: t('suppliers.actions.activate'),
+        icon: <IconPlay />,
+        type: 'primary',
+        onClick: handleActivate,
+        loading: actionLoading,
+      }
+    }
+    return {
+      key: 'deactivate',
+      label: t('suppliers.actions.deactivate'),
+      icon: <IconStop />,
+      type: 'warning',
+      onClick: handleDeactivate,
+      loading: actionLoading,
+    }
+  }, [supplier, t, handleActivate, handleDeactivate, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!supplier) return []
+    const status = supplier.status
+    const actions: DetailPageHeaderAction[] = []
+
+    actions.push({
+      key: 'edit',
+      label: t('common:actions.edit'),
+      icon: <IconEdit />,
+      onClick: handleEdit,
+      disabled: actionLoading,
+    })
+
+    if (status === 'active') {
+      actions.push({
+        key: 'block',
+        label: t('suppliers.actions.block'),
+        type: 'danger',
+        onClick: handleBlock,
+        loading: actionLoading,
+      })
+    }
+
+    actions.push({
+      key: 'delete',
+      label: t('suppliers.actions.delete'),
+      icon: <IconDelete />,
+      type: 'danger',
+      onClick: handleDelete,
+      loading: actionLoading,
+    })
+
+    return actions
+  }, [supplier, t, handleEdit, handleBlock, handleDelete, actionLoading])
+
+  // Render basic info
+  const renderBasicInfo = () => {
+    if (!supplier) return null
+
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.code')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {supplier.code || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.name')}
+          </Text>
+          <Text className="info-value">{supplier.name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.shortName')}
+          </Text>
+          <Text className="info-value">{supplier.short_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.rating')}
+          </Text>
+          <div className="info-value">
+            {supplier.rating !== undefined ? (
+              <div className="supplier-rating">
+                <Rating value={supplier.rating} disabled allowHalf size="small" />
+                <Text type="secondary" className="rating-text">
+                  {t('suppliers.form.ratingScore', { score: supplier.rating })}
+                </Text>
+              </div>
+            ) : (
+              t('suppliers.form.ratingNotRated')
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Render contact info
+  const renderContactInfo = () => {
+    if (!supplier) return null
+
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.contactName')}
+          </Text>
+          <Text className="info-value">{supplier.contact_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.phone')}
+          </Text>
+          <Text className="info-value">{supplier.phone || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.email')}
+          </Text>
+          <Text className="info-value">{supplier.email || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.taxId')}
+          </Text>
+          <Text className="info-value code-value">{supplier.tax_id || '-'}</Text>
+        </div>
+      </div>
+    )
+  }
+
+  // Render address info
+  const renderAddressInfo = () => {
+    if (!supplier) return null
+
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.country')}
+          </Text>
+          <Text className="info-value">{supplier.country || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.province')}
+          </Text>
+          <Text className="info-value">{supplier.province || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.city')}
+          </Text>
+          <Text className="info-value">{supplier.city || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.address')}
+          </Text>
+          <Text className="info-value">{supplier.address || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.postalCode')}
+          </Text>
+          <Text className="info-value code-value">{supplier.postal_code || '-'}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.fullAddress')}
+          </Text>
+          <Text className="info-value">{supplier.full_address || '-'}</Text>
+        </div>
+      </div>
+    )
+  }
+
+  // Render bank info
+  const renderBankInfo = () => {
+    if (!supplier) return null
+
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.bankName')}
+          </Text>
+          <Text className="info-value">{supplier.bank_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.bankAccount')}
+          </Text>
+          <Text className="info-value code-value">{supplier.bank_account || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.bankAccountName')}
+          </Text>
+          <Text className="info-value">{supplier.bank_account_name || '-'}</Text>
+        </div>
+      </div>
+    )
+  }
+
+  // Render payment terms info
+  const renderPaymentInfo = () => {
+    if (!supplier) return null
+
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.creditLimit')}
+          </Text>
+          <Text className="info-value credit-value">
+            {supplier.credit_limit !== undefined ? formatCurrency(supplier.credit_limit) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.paymentTermDays')}
+          </Text>
+          <Text className="info-value">
+            {supplier.payment_term_days !== undefined
+              ? `${supplier.payment_term_days} ${t('suppliers.form.creditDaysSuffix')}`
+              : '-'}
+          </Text>
+        </div>
+      </div>
+    )
   }
 
   // Render timestamps
   const renderTimestamps = () => {
     if (!supplier) return null
 
-    const data = [
-      {
-        key: t('supplierDetail.fields.createdAt'),
-        value: supplier.created_at ? formatDateTime(supplier.created_at) : '-',
-      },
-      {
-        key: t('supplierDetail.fields.updatedAt'),
-        value: supplier.updated_at ? formatDateTime(supplier.updated_at) : '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="supplier-timestamps" />
-  }
-
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!supplier) return null
-
-    const status = supplier.status
-
     return (
-      <Space>
-        <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-          {t('common:actions.edit')}
-        </Button>
-        {status !== 'active' && status !== 'blocked' && (
-          <Button
-            type="primary"
-            icon={<IconPlay />}
-            onClick={handleActivate}
-            loading={actionLoading}
-          >
-            {t('suppliers.actions.activate')}
-          </Button>
-        )}
-        {status === 'blocked' && (
-          <Button
-            type="primary"
-            icon={<IconPlay />}
-            onClick={handleActivate}
-            loading={actionLoading}
-          >
-            {t('suppliers.actions.activate')}
-          </Button>
-        )}
-        {status === 'active' && (
-          <>
-            <Button
-              type="warning"
-              icon={<IconStop />}
-              onClick={handleDeactivate}
-              loading={actionLoading}
-            >
-              {t('suppliers.actions.deactivate')}
-            </Button>
-            <Button type="danger" onClick={handleBlock} loading={actionLoading}>
-              {t('suppliers.actions.block')}
-            </Button>
-          </>
-        )}
-        <Button type="danger" icon={<IconDelete />} onClick={handleDelete} loading={actionLoading}>
-          {t('suppliers.actions.delete')}
-        </Button>
-      </Space>
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.createdAt')}
+          </Text>
+          <Text className="info-value">
+            {supplier.created_at ? formatDateTime(supplier.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('supplierDetail.fields.updatedAt')}
+          </Text>
+          <Text className="info-value">
+            {supplier.updated_at ? formatDateTime(supplier.updated_at) : '-'}
+          </Text>
+        </div>
+      </div>
     )
   }
 
   if (loading) {
     return (
       <Container size="lg" className="supplier-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('supplierDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/partner/suppliers')}
+          backLabel={t('supplierDetail.back')}
+        />
       </Container>
     )
   }
@@ -360,38 +491,22 @@ export default function SupplierDetailPage() {
 
   return (
     <Container size="lg" className="supplier-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/partner/suppliers')}
-          >
-            {t('supplierDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('supplierDetail.title')}
-          </Title>
-          {supplier.status && (
-            <Tag color={STATUS_TAG_COLORS[supplier.status]} size="large">
-              {t(`suppliers.status.${supplier.status}`)}
-            </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
-
-      {/* Supplier Name Display */}
-      <Card className="supplier-name-card">
-        <div className="supplier-name-display">
-          <Text className="supplier-code">{supplier.code}</Text>
-          <Title heading={3} className="supplier-name">
-            {supplier.name}
-          </Title>
-          {supplier.short_name && <Text type="secondary">{supplier.short_name}</Text>}
-        </div>
-      </Card>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('supplierDetail.title')}
+        documentNumber={supplier.code}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/partner/suppliers')}
+        backLabel={t('supplierDetail.back')}
+        titleSuffix={
+          supplier.short_name ? (
+            <span className="supplier-short-name-suffix">{supplier.short_name}</span>
+          ) : undefined
+        }
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('suppliers.form.basicInfo')}>

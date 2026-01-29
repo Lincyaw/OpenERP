@@ -9,6 +9,7 @@ const STORAGE_KEY = 'erp-app-settings'
  */
 const initialState: AppState = {
   sidebarCollapsed: false,
+  mobileSidebarOpen: false,
   theme: 'light',
   locale: 'zh-CN',
   breadcrumbs: [],
@@ -56,6 +57,18 @@ export const useAppStore = create<AppState & AppActions>()(
 
         setSidebarCollapsed: (collapsed: boolean) => {
           set({ sidebarCollapsed: collapsed }, false, 'app/setSidebarCollapsed')
+        },
+
+        toggleMobileSidebar: () => {
+          set(
+            (state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen }),
+            false,
+            'app/toggleMobileSidebar'
+          )
+        },
+
+        setMobileSidebarOpen: (open: boolean) => {
+          set({ mobileSidebarOpen: open }, false, 'app/setMobileSidebarOpen')
         },
 
         setTheme: (theme: 'light' | 'dark') => {
@@ -108,6 +121,7 @@ export const useAppStore = create<AppState & AppActions>()(
  * Selector hooks for common app state access patterns
  */
 export const useSidebarCollapsed = () => useAppStore((state) => state.sidebarCollapsed)
+export const useMobileSidebarOpen = () => useAppStore((state) => state.mobileSidebarOpen)
 export const useTheme = () => useAppStore((state) => state.theme)
 export const useLocale = () => useAppStore((state) => state.locale)
 export const useBreadcrumbs = () => useAppStore((state) => state.breadcrumbs)

@@ -1,27 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-  Modal,
-} from '@douyinfe/semi-ui-19'
-import {
-  IconArrowLeft,
-  IconEdit,
-  IconPlay,
-  IconStop,
-  IconDelete,
-  IconStar,
-} from '@douyinfe/semi-icons'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Card, Tag, Toast, Modal, Empty, Typography } from '@douyinfe/semi-ui-19'
+import { IconEdit, IconPlay, IconStop, IconDelete, IconStar } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
   getWarehouseById,
@@ -37,19 +25,16 @@ import type {
 } from '@/api/models'
 import './WarehouseDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<HandlerWarehouseResponseStatus, 'green' | 'grey'> = {
-  enabled: 'green',
-  disabled: 'grey',
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<HandlerWarehouseResponseStatus, 'default' | 'success'> = {
+  enabled: 'success',
+  disabled: 'default',
 }
 
 // Type tag color mapping
-const TYPE_TAG_COLORS: Record<
-  HandlerWarehouseResponseType,
-  'blue' | 'cyan' | 'violet' | 'green' | 'orange'
-> = {
+const TYPE_TAG_COLORS: Record<HandlerWarehouseResponseType, 'blue' | 'cyan' | 'violet'> = {
   normal: 'blue',
   virtual: 'cyan',
   transit: 'violet',
@@ -59,7 +44,7 @@ const TYPE_TAG_COLORS: Record<
  * Warehouse Detail Page
  *
  * Features:
- * - Display complete warehouse information
+ * - Display complete warehouse information using DetailPageHeader
  * - Display location and contact info
  * - Status action buttons (enable, disable, set default)
  * - Navigate to edit page
@@ -187,156 +172,280 @@ export default function WarehouseDetailPage() {
     }
   }, [warehouse, navigate])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!warehouse?.status) return undefined
+    return {
+      label: t(`warehouses.status.${warehouse.status}`),
+      variant: STATUS_VARIANTS[warehouse.status] || 'default',
+    }
+  }, [warehouse, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!warehouse) return []
+    return [
+      {
+        label: t('warehouseDetail.fields.type'),
+        value: warehouse.type ? t(`warehouses.type.${warehouse.type}`) : '-',
+      },
+      {
+        label: t('warehouseDetail.fields.managerName'),
+        value: warehouse.manager_name || '-',
+      },
+      {
+        label: t('warehouseDetail.fields.city'),
+        value: warehouse.city || '-',
+      },
+      {
+        label: t('warehouseDetail.fields.isDefault'),
+        value: warehouse.is_default ? t('warehouses.defaultTag') : '-',
+        variant: warehouse.is_default ? 'primary' : 'default',
+      },
+    ]
+  }, [warehouse, t])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!warehouse) return undefined
+    const status = warehouse.status
+
+    if (status === 'disabled') {
+      return {
+        key: 'enable',
+        label: t('warehouses.actions.enable'),
+        icon: <IconPlay />,
+        type: 'primary',
+        onClick: handleEnable,
+        loading: actionLoading,
+      }
+    }
+    if (!warehouse.is_default) {
+      return {
+        key: 'setDefault',
+        label: t('warehouses.actions.setDefault'),
+        icon: <IconStar />,
+        type: 'primary',
+        onClick: handleSetDefault,
+        loading: actionLoading,
+      }
+    }
+    return undefined
+  }, [warehouse, t, handleEnable, handleSetDefault, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!warehouse) return []
+    const status = warehouse.status
+    const actions: DetailPageHeaderAction[] = []
+
+    actions.push({
+      key: 'edit',
+      label: t('common:actions.edit'),
+      icon: <IconEdit />,
+      onClick: handleEdit,
+      disabled: actionLoading,
+    })
+
+    if (status === 'enabled' && !warehouse.is_default) {
+      actions.push({
+        key: 'disable',
+        label: t('warehouses.actions.disable'),
+        icon: <IconStop />,
+        type: 'warning',
+        onClick: handleDisable,
+        loading: actionLoading,
+      })
+    }
+
+    if (!warehouse.is_default) {
+      actions.push({
+        key: 'delete',
+        label: t('warehouses.actions.delete'),
+        icon: <IconDelete />,
+        type: 'danger',
+        onClick: handleDelete,
+        loading: actionLoading,
+      })
+    }
+
+    return actions
+  }, [warehouse, t, handleEdit, handleDisable, handleDelete, actionLoading])
+
   // Render basic info
   const renderBasicInfo = () => {
     if (!warehouse) return null
 
-    const data = [
-      { key: t('warehouseDetail.fields.code'), value: warehouse.code || '-' },
-      { key: t('warehouseDetail.fields.name'), value: warehouse.name || '-' },
-      { key: t('warehouseDetail.fields.shortName'), value: warehouse.short_name || '-' },
-      {
-        key: t('warehouseDetail.fields.type'),
-        value: warehouse.type ? (
-          <Tag color={TYPE_TAG_COLORS[warehouse.type]}>
-            {t(`warehouses.type.${warehouse.type}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('warehouseDetail.fields.status'),
-        value: warehouse.status ? (
-          <Tag color={STATUS_TAG_COLORS[warehouse.status]}>
-            {t(`warehouses.status.${warehouse.status}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('warehouseDetail.fields.isDefault'),
-        value: warehouse.is_default ? (
-          <Tag color="light-blue" size="small">
-            <IconStar size="small" /> {t('warehouses.defaultTag')}
-          </Tag>
-        ) : (
-          t('warehouseDetail.fields.notDefault')
-        ),
-      },
-      {
-        key: t('warehouseDetail.fields.sortOrder'),
-        value: warehouse.sort_order ?? '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="warehouse-basic-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.code')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {warehouse.code || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.name')}
+          </Text>
+          <Text className="info-value">{warehouse.name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.shortName')}
+          </Text>
+          <Text className="info-value">{warehouse.short_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.type')}
+          </Text>
+          <div className="info-value">
+            {warehouse.type ? (
+              <Tag color={TYPE_TAG_COLORS[warehouse.type]}>
+                {t(`warehouses.type.${warehouse.type}`)}
+              </Tag>
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.isDefault')}
+          </Text>
+          <div className="info-value">
+            {warehouse.is_default ? (
+              <Tag color="light-blue" size="small">
+                <IconStar size="small" /> {t('warehouses.defaultTag')}
+              </Tag>
+            ) : (
+              t('warehouseDetail.fields.notDefault')
+            )}
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.sortOrder')}
+          </Text>
+          <Text className="info-value">{warehouse.sort_order ?? '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render contact info
   const renderContactInfo = () => {
     if (!warehouse) return null
 
-    const data = [
-      { key: t('warehouseDetail.fields.managerName'), value: warehouse.manager_name || '-' },
-      { key: t('warehouseDetail.fields.phone'), value: warehouse.phone || '-' },
-      { key: t('warehouseDetail.fields.email'), value: warehouse.email || '-' },
-    ]
-
-    return <Descriptions data={data} row className="warehouse-contact-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.managerName')}
+          </Text>
+          <Text className="info-value">{warehouse.manager_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.phone')}
+          </Text>
+          <Text className="info-value">{warehouse.phone || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.email')}
+          </Text>
+          <Text className="info-value">{warehouse.email || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render address info
   const renderAddressInfo = () => {
     if (!warehouse) return null
 
-    const data = [
-      { key: t('warehouseDetail.fields.country'), value: warehouse.country || '-' },
-      { key: t('warehouseDetail.fields.province'), value: warehouse.province || '-' },
-      { key: t('warehouseDetail.fields.city'), value: warehouse.city || '-' },
-      { key: t('warehouseDetail.fields.address'), value: warehouse.address || '-' },
-      { key: t('warehouseDetail.fields.postalCode'), value: warehouse.postal_code || '-' },
-      { key: t('warehouseDetail.fields.fullAddress'), value: warehouse.full_address || '-' },
-    ]
-
-    return <Descriptions data={data} row className="warehouse-address-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.country')}
+          </Text>
+          <Text className="info-value">{warehouse.country || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.province')}
+          </Text>
+          <Text className="info-value">{warehouse.province || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.city')}
+          </Text>
+          <Text className="info-value">{warehouse.city || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.address')}
+          </Text>
+          <Text className="info-value">{warehouse.address || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.postalCode')}
+          </Text>
+          <Text className="info-value code-value">{warehouse.postal_code || '-'}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.fullAddress')}
+          </Text>
+          <Text className="info-value">{warehouse.full_address || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render timestamps
   const renderTimestamps = () => {
     if (!warehouse) return null
 
-    const data = [
-      {
-        key: t('warehouseDetail.fields.createdAt'),
-        value: warehouse.created_at ? formatDateTime(warehouse.created_at) : '-',
-      },
-      {
-        key: t('warehouseDetail.fields.updatedAt'),
-        value: warehouse.updated_at ? formatDateTime(warehouse.updated_at) : '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="warehouse-timestamps" />
-  }
-
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!warehouse) return null
-
-    const status = warehouse.status
-
     return (
-      <Space>
-        <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-          {t('common:actions.edit')}
-        </Button>
-        {!warehouse.is_default && (
-          <Button
-            type="secondary"
-            icon={<IconStar />}
-            onClick={handleSetDefault}
-            loading={actionLoading}
-          >
-            {t('warehouses.actions.setDefault')}
-          </Button>
-        )}
-        {status === 'disabled' && (
-          <Button type="primary" icon={<IconPlay />} onClick={handleEnable} loading={actionLoading}>
-            {t('warehouses.actions.enable')}
-          </Button>
-        )}
-        {status === 'enabled' && !warehouse.is_default && (
-          <Button
-            type="warning"
-            icon={<IconStop />}
-            onClick={handleDisable}
-            loading={actionLoading}
-          >
-            {t('warehouses.actions.disable')}
-          </Button>
-        )}
-        {!warehouse.is_default && (
-          <Button
-            type="danger"
-            icon={<IconDelete />}
-            onClick={handleDelete}
-            loading={actionLoading}
-          >
-            {t('warehouses.actions.delete')}
-          </Button>
-        )}
-      </Space>
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.createdAt')}
+          </Text>
+          <Text className="info-value">
+            {warehouse.created_at ? formatDateTime(warehouse.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('warehouseDetail.fields.updatedAt')}
+          </Text>
+          <Text className="info-value">
+            {warehouse.updated_at ? formatDateTime(warehouse.updated_at) : '-'}
+          </Text>
+        </div>
+      </div>
     )
   }
 
   if (loading) {
     return (
       <Container size="lg" className="warehouse-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('warehouseDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/partner/warehouses')}
+          backLabel={t('warehouseDetail.back')}
+        />
       </Container>
     )
   }
@@ -354,43 +463,24 @@ export default function WarehouseDetailPage() {
 
   return (
     <Container size="lg" className="warehouse-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/partner/warehouses')}
-          >
-            {t('warehouseDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('warehouseDetail.title')}
-          </Title>
-          {warehouse.status && (
-            <Tag color={STATUS_TAG_COLORS[warehouse.status]} size="large">
-              {t(`warehouses.status.${warehouse.status}`)}
-            </Tag>
-          )}
-          {warehouse.is_default && (
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('warehouseDetail.title')}
+        documentNumber={warehouse.code}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/partner/warehouses')}
+        backLabel={t('warehouseDetail.back')}
+        titleSuffix={
+          warehouse.is_default ? (
             <Tag color="light-blue" size="large">
               <IconStar size="small" /> {t('warehouses.defaultTag')}
             </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
-
-      {/* Warehouse Name Display */}
-      <Card className="warehouse-name-card">
-        <div className="warehouse-name-display">
-          <Text className="warehouse-code">{warehouse.code}</Text>
-          <Title heading={3} className="warehouse-name">
-            {warehouse.name}
-          </Title>
-          {warehouse.short_name && <Text type="secondary">{warehouse.short_name}</Text>}
-        </div>
-      </Card>
+          ) : undefined
+        }
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('warehouses.form.basicInfo')}>

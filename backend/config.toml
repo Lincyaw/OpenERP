@@ -42,7 +42,8 @@ max_refresh_count = 10
 
 [cookie]
 # Domain for cookies (empty = current domain)
-domain = ""
+# For development with proxy, explicitly set to the IP/hostname
+domain = "10.10.10.146"
 # Path for cookies
 path = "/"
 # Secure flag (should be true in production for HTTPS)

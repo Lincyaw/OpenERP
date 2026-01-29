@@ -264,6 +264,8 @@ export function Sidebar() {
   const { t } = useTranslation()
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
   const toggleSidebar = useAppStore((state) => state.toggleSidebar)
+  const mobileSidebarOpen = useAppStore((state) => state.mobileSidebarOpen)
+  const setMobileSidebarOpen = useAppStore((state) => state.setMobileSidebarOpen)
   const userPermissions = useAuthStore((state) => state.user?.permissions)
 
   // Generate navigation items from routes, filtered by user permissions
@@ -315,39 +317,55 @@ export function Sidebar() {
       const key = data.itemKey?.toString()
       if (key) {
         navigate(key)
+        // Close mobile sidebar after navigation
+        setMobileSidebarOpen(false)
       }
     },
-    [navigate]
+    [navigate, setMobileSidebarOpen]
   )
 
-  return (
-    <Sider
-      className={`sidebar ${sidebarCollapsed ? 'sidebar--collapsed' : ''}`}
-      style={{
-        width: sidebarCollapsed ? 60 : 220,
-      }}
-    >
-      {/* Logo area */}
-      <div className="sidebar__logo">
-        <div className="sidebar__logo-icon">
-          <IconGridView size="large" />
-        </div>
-        {!sidebarCollapsed && <span className="sidebar__logo-text">ERP System</span>}
-      </div>
+  // Close mobile sidebar when clicking overlay
+  const handleOverlayClick = useCallback(() => {
+    setMobileSidebarOpen(false)
+  }, [setMobileSidebarOpen])
 
-      {/* Navigation menu */}
-      <Nav
-        className="sidebar__nav"
-        items={navItems}
-        selectedKeys={selectedKeys}
-        defaultOpenKeys={openKeys}
-        onSelect={handleSelect}
-        isCollapsed={sidebarCollapsed}
-        onCollapseChange={toggleSidebar}
-        footer={{
-          collapseButton: true,
-        }}
+  return (
+    <>
+      {/* Mobile overlay */}
+      <div
+        className={`sidebar-overlay ${mobileSidebarOpen ? 'sidebar-overlay--visible' : ''}`}
+        onClick={handleOverlayClick}
+        aria-hidden="true"
       />
-    </Sider>
+
+      <Sider
+        className={`sidebar ${sidebarCollapsed ? 'sidebar--collapsed' : ''} ${mobileSidebarOpen ? 'sidebar--mobile-open' : ''}`}
+        style={{
+          width: sidebarCollapsed ? 60 : 220,
+        }}
+      >
+        {/* Logo area */}
+        <div className="sidebar__logo">
+          <div className="sidebar__logo-icon">
+            <IconGridView size="large" />
+          </div>
+          {!sidebarCollapsed && <span className="sidebar__logo-text">ERP System</span>}
+        </div>
+
+        {/* Navigation menu */}
+        <Nav
+          className="sidebar__nav"
+          items={navItems}
+          selectedKeys={selectedKeys}
+          defaultOpenKeys={openKeys}
+          onSelect={handleSelect}
+          isCollapsed={sidebarCollapsed}
+          onCollapseChange={toggleSidebar}
+          footer={{
+            collapseButton: true,
+          }}
+        />
+      </Sider>
+    </>
   )
 }

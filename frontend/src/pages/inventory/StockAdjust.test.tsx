@@ -117,7 +117,7 @@ const createMockProductListResponse = (products = mockProducts) => ({
   meta: {
     total: products.length,
     page: 1,
-    page_size: 500,
+    page_size: 50,
     total_pages: 1,
   },
 })
@@ -268,7 +268,7 @@ describe('StockAdjustPage', () => {
 
       await waitFor(() => {
         expect(mockProductApiInstance.listProducts).toHaveBeenCalledWith({
-          page_size: 500,
+          page_size: 50,
           status: 'active',
         })
       })

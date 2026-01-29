@@ -1,27 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-  Modal,
-} from '@douyinfe/semi-ui-19'
-import {
-  IconArrowLeft,
-  IconEdit,
-  IconPlay,
-  IconStop,
-  IconDelete,
-  IconCreditCard,
-} from '@douyinfe/semi-icons'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Card, Tag, Toast, Modal, Empty, Typography } from '@douyinfe/semi-ui-19'
+import { IconEdit, IconPlay, IconStop, IconDelete, IconCreditCard } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
   getCustomerById,
@@ -36,13 +24,13 @@ import type {
 } from '@/api/models'
 import './CustomerDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<HandlerCustomerResponseStatus, 'green' | 'grey' | 'orange'> = {
-  active: 'green',
-  inactive: 'grey',
-  suspended: 'orange',
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<HandlerCustomerResponseStatus, 'default' | 'success' | 'warning'> = {
+  active: 'success',
+  inactive: 'default',
+  suspended: 'warning',
 }
 
 // Level tag color mapping
@@ -61,7 +49,7 @@ const LEVEL_TAG_COLORS: Record<
  * Customer Detail Page
  *
  * Features:
- * - Display complete customer information
+ * - Display complete customer information using DetailPageHeader
  * - Display balance information
  * - Status action buttons (activate, deactivate, suspend)
  * - Navigate to edit page
@@ -194,172 +182,311 @@ export default function CustomerDetailPage() {
     }
   }, [customer, navigate])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!customer?.status) return undefined
+    return {
+      label: t(`customers.status.${customer.status}`),
+      variant: STATUS_VARIANTS[customer.status] || 'default',
+    }
+  }, [customer, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!customer) return []
+    return [
+      {
+        label: t('customerDetail.fields.type'),
+        value: customer.type ? t(`customers.type.${customer.type}`) : '-',
+      },
+      {
+        label: t('customerDetail.fields.level'),
+        value: customer.level ? t(`customers.level.${customer.level}`) : '-',
+      },
+      {
+        label: t('customerDetail.fields.balance'),
+        value: customer.balance !== undefined ? formatCurrency(customer.balance) : '-',
+        variant: customer.balance && customer.balance > 0 ? 'success' : 'default',
+      },
+      {
+        label: t('customerDetail.fields.creditLimit'),
+        value: customer.credit_limit !== undefined ? formatCurrency(customer.credit_limit) : '-',
+        variant: 'primary',
+      },
+    ]
+  }, [customer, t, formatCurrency])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!customer) return undefined
+    const status = customer.status
+
+    if (status !== 'active') {
+      return {
+        key: 'activate',
+        label: t('customers.actions.activate'),
+        icon: <IconPlay />,
+        type: 'primary',
+        onClick: handleActivate,
+        loading: actionLoading,
+      }
+    }
+    return {
+      key: 'balance',
+      label: t('customers.actions.balance'),
+      icon: <IconCreditCard />,
+      type: 'primary',
+      onClick: handleViewBalance,
+    }
+  }, [customer, t, handleActivate, handleViewBalance, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!customer) return []
+    const status = customer.status
+    const actions: DetailPageHeaderAction[] = []
+
+    actions.push({
+      key: 'edit',
+      label: t('common:actions.edit'),
+      icon: <IconEdit />,
+      onClick: handleEdit,
+      disabled: actionLoading,
+    })
+
+    if (status === 'active') {
+      actions.push({
+        key: 'deactivate',
+        label: t('customers.actions.deactivate'),
+        icon: <IconStop />,
+        type: 'warning',
+        onClick: handleDeactivate,
+        loading: actionLoading,
+      })
+      actions.push({
+        key: 'suspend',
+        label: t('customers.actions.suspend'),
+        type: 'warning',
+        onClick: handleSuspend,
+        loading: actionLoading,
+      })
+    }
+
+    actions.push({
+      key: 'delete',
+      label: t('customers.actions.delete'),
+      icon: <IconDelete />,
+      type: 'danger',
+      onClick: handleDelete,
+      loading: actionLoading,
+    })
+
+    return actions
+  }, [customer, t, handleEdit, handleDeactivate, handleSuspend, handleDelete, actionLoading])
+
   // Render basic info
   const renderBasicInfo = () => {
     if (!customer) return null
 
-    const data = [
-      { key: t('customerDetail.fields.code'), value: customer.code || '-' },
-      { key: t('customerDetail.fields.name'), value: customer.name || '-' },
-      { key: t('customerDetail.fields.shortName'), value: customer.short_name || '-' },
-      {
-        key: t('customerDetail.fields.type'),
-        value: customer.type ? (
-          <Tag color={customer.type === 'organization' ? 'blue' : 'light-blue'}>
-            {t(`customers.type.${customer.type}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('customerDetail.fields.level'),
-        value: customer.level ? (
-          <Tag color={LEVEL_TAG_COLORS[customer.level]}>
-            {t(`customers.level.${customer.level}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('customerDetail.fields.status'),
-        value: customer.status ? (
-          <Tag color={STATUS_TAG_COLORS[customer.status]}>
-            {t(`customers.status.${customer.status}`)}
-          </Tag>
-        ) : (
-          '-'
-        ),
-      },
-    ]
-
-    return <Descriptions data={data} row className="customer-basic-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.code')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {customer.code || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.name')}
+          </Text>
+          <Text className="info-value">{customer.name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.shortName')}
+          </Text>
+          <Text className="info-value">{customer.short_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.type')}
+          </Text>
+          <div className="info-value">
+            {customer.type ? (
+              <Tag color={customer.type === 'organization' ? 'blue' : 'light-blue'}>
+                {t(`customers.type.${customer.type}`)}
+              </Tag>
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.level')}
+          </Text>
+          <div className="info-value">
+            {customer.level ? (
+              <Tag color={LEVEL_TAG_COLORS[customer.level]}>
+                {t(`customers.level.${customer.level}`)}
+              </Tag>
+            ) : (
+              '-'
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Render contact info
   const renderContactInfo = () => {
     if (!customer) return null
 
-    const data = [
-      { key: t('customerDetail.fields.contactName'), value: customer.contact_name || '-' },
-      { key: t('customerDetail.fields.phone'), value: customer.phone || '-' },
-      { key: t('customerDetail.fields.email'), value: customer.email || '-' },
-      { key: t('customerDetail.fields.taxId'), value: customer.tax_id || '-' },
-    ]
-
-    return <Descriptions data={data} row className="customer-contact-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.contactName')}
+          </Text>
+          <Text className="info-value">{customer.contact_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.phone')}
+          </Text>
+          <Text className="info-value">{customer.phone || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.email')}
+          </Text>
+          <Text className="info-value">{customer.email || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.taxId')}
+          </Text>
+          <Text className="info-value code-value">{customer.tax_id || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render address info
   const renderAddressInfo = () => {
     if (!customer) return null
 
-    const data = [
-      { key: t('customerDetail.fields.country'), value: customer.country || '-' },
-      { key: t('customerDetail.fields.province'), value: customer.province || '-' },
-      { key: t('customerDetail.fields.city'), value: customer.city || '-' },
-      { key: t('customerDetail.fields.address'), value: customer.address || '-' },
-      { key: t('customerDetail.fields.postalCode'), value: customer.postal_code || '-' },
-      { key: t('customerDetail.fields.fullAddress'), value: customer.full_address || '-' },
-    ]
-
-    return <Descriptions data={data} row className="customer-address-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.country')}
+          </Text>
+          <Text className="info-value">{customer.country || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.province')}
+          </Text>
+          <Text className="info-value">{customer.province || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.city')}
+          </Text>
+          <Text className="info-value">{customer.city || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.address')}
+          </Text>
+          <Text className="info-value">{customer.address || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.postalCode')}
+          </Text>
+          <Text className="info-value code-value">{customer.postal_code || '-'}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.fullAddress')}
+          </Text>
+          <Text className="info-value">{customer.full_address || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render finance info
   const renderFinanceInfo = () => {
     if (!customer) return null
 
-    const data = [
-      {
-        key: t('customerDetail.fields.balance'),
-        value: customer.balance !== undefined ? formatCurrency(customer.balance) : '-',
-      },
-      {
-        key: t('customerDetail.fields.creditLimit'),
-        value: customer.credit_limit !== undefined ? formatCurrency(customer.credit_limit) : '-',
-      },
-    ]
+    const balanceClass =
+      customer.balance !== undefined ? (customer.balance > 0 ? 'positive' : 'negative') : ''
 
-    return <Descriptions data={data} row className="customer-finance-info" />
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.balance')}
+          </Text>
+          <Text className={`info-value balance-value ${balanceClass}`}>
+            {customer.balance !== undefined ? formatCurrency(customer.balance) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.creditLimit')}
+          </Text>
+          <Text className="info-value credit-value">
+            {customer.credit_limit !== undefined ? formatCurrency(customer.credit_limit) : '-'}
+          </Text>
+        </div>
+      </div>
+    )
   }
 
   // Render timestamps
   const renderTimestamps = () => {
     if (!customer) return null
 
-    const data = [
-      {
-        key: t('customerDetail.fields.createdAt'),
-        value: customer.created_at ? formatDateTime(customer.created_at) : '-',
-      },
-      {
-        key: t('customerDetail.fields.updatedAt'),
-        value: customer.updated_at ? formatDateTime(customer.updated_at) : '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="customer-timestamps" />
-  }
-
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!customer) return null
-
-    const status = customer.status
-
     return (
-      <Space>
-        <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-          {t('common:actions.edit')}
-        </Button>
-        <Button
-          type="primary"
-          icon={<IconCreditCard />}
-          onClick={handleViewBalance}
-          disabled={actionLoading}
-        >
-          {t('customers.actions.balance')}
-        </Button>
-        {status !== 'active' && (
-          <Button
-            type="primary"
-            icon={<IconPlay />}
-            onClick={handleActivate}
-            loading={actionLoading}
-          >
-            {t('customers.actions.activate')}
-          </Button>
-        )}
-        {status === 'active' && (
-          <>
-            <Button
-              type="warning"
-              icon={<IconStop />}
-              onClick={handleDeactivate}
-              loading={actionLoading}
-            >
-              {t('customers.actions.deactivate')}
-            </Button>
-            <Button type="warning" onClick={handleSuspend} loading={actionLoading}>
-              {t('customers.actions.suspend')}
-            </Button>
-          </>
-        )}
-        <Button type="danger" icon={<IconDelete />} onClick={handleDelete} loading={actionLoading}>
-          {t('customers.actions.delete')}
-        </Button>
-      </Space>
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.createdAt')}
+          </Text>
+          <Text className="info-value">
+            {customer.created_at ? formatDateTime(customer.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('customerDetail.fields.updatedAt')}
+          </Text>
+          <Text className="info-value">
+            {customer.updated_at ? formatDateTime(customer.updated_at) : '-'}
+          </Text>
+        </div>
+      </div>
     )
   }
 
   if (loading) {
     return (
       <Container size="lg" className="customer-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('customerDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/partner/customers')}
+          backLabel={t('customerDetail.back')}
+        />
       </Container>
     )
   }
@@ -377,38 +504,22 @@ export default function CustomerDetailPage() {
 
   return (
     <Container size="lg" className="customer-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/partner/customers')}
-          >
-            {t('customerDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('customerDetail.title')}
-          </Title>
-          {customer.status && (
-            <Tag color={STATUS_TAG_COLORS[customer.status]} size="large">
-              {t(`customers.status.${customer.status}`)}
-            </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
-
-      {/* Customer Name Display */}
-      <Card className="customer-name-card">
-        <div className="customer-name-display">
-          <Text className="customer-code">{customer.code}</Text>
-          <Title heading={3} className="customer-name">
-            {customer.name}
-          </Title>
-          {customer.short_name && <Text type="secondary">{customer.short_name}</Text>}
-        </div>
-      </Card>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('customerDetail.title')}
+        documentNumber={customer.code}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/partner/customers')}
+        backLabel={t('customerDetail.back')}
+        titleSuffix={
+          customer.short_name ? (
+            <span className="customer-short-name-suffix">{customer.short_name}</span>
+          ) : undefined
+        }
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('customers.form.basicInfo')}>

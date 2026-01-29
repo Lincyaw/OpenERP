@@ -1,21 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Tag,
-  Toast,
-  Descriptions,
-  Spin,
-  Button,
-  Tabs,
-  TabPane,
-  Empty,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconRefresh, IconEdit } from '@douyinfe/semi-icons'
+import { Card, Tag, Toast, Descriptions, Tabs, TabPane, Empty } from '@douyinfe/semi-ui-19'
+import { IconRefresh, IconEdit } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
-import { DataTable, useTableState, type DataTableColumn } from '@/components/common'
+import {
+  DataTable,
+  useTableState,
+  type DataTableColumn,
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { useFormatters } from '@/hooks/useFormatters'
 import { getInventoryById, listInventoryTransactionsByItem } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
@@ -30,8 +27,6 @@ import type {
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './StockDetail.css'
-
-const { Title, Text } = Typography
 
 // Semi Design Tag color type
 type TagColor =
@@ -79,11 +74,20 @@ function formatSignedQuantity(quantity?: number | string): string {
   return `${sign}${num.toFixed(2)}`
 }
 
+// Transaction type colors
+const TRANSACTION_TYPE_COLORS: Record<string, TagColor> = {
+  INBOUND: 'green',
+  OUTBOUND: 'red',
+  LOCK: 'orange',
+  UNLOCK: 'blue',
+  ADJUSTMENT: 'purple',
+}
+
 /**
  * Inventory Stock Detail Page
  *
  * Features:
- * - Display inventory item details (quantities, costs, thresholds)
+ * - Display inventory item details using DetailPageHeader
  * - Show transaction history with filtering
  * - Display stock locks
  */
@@ -142,7 +146,7 @@ export default function StockDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, t])
 
   // Fetch warehouse name
   const fetchWarehouseName = useCallback(async () => {
@@ -172,7 +176,7 @@ export default function StockDetailPage() {
 
     try {
       const response = await listProducts({
-        page_size: 500,
+        page_size: 100,
       })
       if (response.status === 200 && response.data.success && response.data.data) {
         const products = response.data.data as HandlerProductListResponse[]
@@ -218,7 +222,7 @@ export default function StockDetailPage() {
     } finally {
       setTransactionsLoading(false)
     }
-  }, [id, transactionsState.pagination, transactionsState.sort])
+  }, [id, transactionsState.pagination, transactionsState.sort, t])
 
   // Fetch inventory item on mount
   useEffect(() => {
@@ -260,31 +264,86 @@ export default function StockDetailPage() {
     }
   }, [inventoryItem, navigate])
 
-  // Transaction type colors
-  const TRANSACTION_TYPE_COLORS: Record<string, TagColor> = {
-    INBOUND: 'green',
-    OUTBOUND: 'red',
-    LOCK: 'orange',
-    UNLOCK: 'blue',
-    ADJUSTMENT: 'purple',
-  }
-
-  // Get status tag for inventory item
-  const getStatusTag = useCallback(() => {
-    if (!inventoryItem) return null
+  // Get stock status
+  const getStockStatus = useCallback((): {
+    label: string
+    variant: 'default' | 'success' | 'warning' | 'danger'
+  } => {
+    if (!inventoryItem) return { label: '-', variant: 'default' }
 
     if (inventoryItem.is_below_minimum) {
-      return <Tag color="orange">{t('stock.status.lowStock')}</Tag>
+      return { label: t('stock.status.lowStock'), variant: 'warning' }
     }
     if (inventoryItem.is_above_maximum) {
-      return <Tag color="blue">{t('stock.status.overMax')}</Tag>
+      return { label: t('stock.status.overMax'), variant: 'warning' }
     }
     const totalQty = inventoryItem.total_quantity
     if (totalQty === undefined || totalQty === null || totalQty <= 0) {
-      return <Tag color="red">{t('stock.status.noStock')}</Tag>
+      return { label: t('stock.status.noStock'), variant: 'danger' }
     }
-    return <Tag color="green">{t('stock.status.normal')}</Tag>
+    return { label: t('stock.status.normal'), variant: 'success' }
   }, [inventoryItem, t])
+
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    const status = getStockStatus()
+    return {
+      label: status.label,
+      variant: status.variant,
+    }
+  }, [getStockStatus])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!inventoryItem) return []
+    return [
+      {
+        label: t('detail.quantity.available'),
+        value: formatQuantity(inventoryItem.available_quantity),
+        variant: inventoryItem.is_below_minimum ? 'warning' : 'success',
+      },
+      {
+        label: t('detail.quantity.locked'),
+        value: formatQuantity(inventoryItem.locked_quantity),
+        variant:
+          inventoryItem.locked_quantity && inventoryItem.locked_quantity > 0
+            ? 'warning'
+            : 'default',
+      },
+      {
+        label: t('detail.quantity.total'),
+        value: formatQuantity(inventoryItem.total_quantity),
+      },
+      {
+        label: t('detail.cost.totalValue'),
+        value: formatCurrency(inventoryItem.total_value),
+        variant: 'primary',
+      },
+    ]
+  }, [inventoryItem, t, formatCurrency])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction => {
+    return {
+      key: 'adjust',
+      label: t('detail.adjustStock'),
+      icon: <IconEdit />,
+      type: 'primary',
+      onClick: handleAdjustStock,
+    }
+  }, [t, handleAdjustStock])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    return [
+      {
+        key: 'refresh',
+        label: t('detail.refresh'),
+        icon: <IconRefresh />,
+        onClick: handleRefresh,
+      },
+    ]
+  }, [t, handleRefresh])
 
   // Transactions table columns
   const transactionColumns: DataTableColumn<Transaction>[] = useMemo(
@@ -372,15 +431,19 @@ export default function StockDetailPage() {
         render: (reason: unknown) => (reason as string) || '-',
       },
     ],
-    [t, formatCurrency, formatDate, TRANSACTION_TYPE_COLORS]
+    [t, formatCurrency, formatDate]
   )
 
   if (loading) {
     return (
       <Container size="full" className="stock-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('detail.title')}
+          loading={true}
+          showBack={true}
+          onBack={handleBack}
+          backLabel={t('detail.back')}
+        />
       </Container>
     )
   }
@@ -390,7 +453,7 @@ export default function StockDetailPage() {
       <Container size="full" className="stock-detail-page">
         <Card>
           <Empty title={t('detail.notFound')} description={t('detail.notFoundDesc')}>
-            <Button onClick={handleBack}>{t('detail.backToList')}</Button>
+            <button onClick={handleBack}>{t('detail.backToList')}</button>
           </Empty>
         </Card>
       </Container>
@@ -399,30 +462,20 @@ export default function StockDetailPage() {
 
   return (
     <Container size="full" className="stock-detail-page">
-      {/* Header */}
-      <div className="stock-detail-header">
-        <div className="header-left">
-          <Button icon={<IconArrowLeft />} theme="borderless" onClick={handleBack}>
-            {t('detail.back')}
-          </Button>
-          <Title heading={4} style={{ margin: 0 }}>
-            {t('detail.title')}
-          </Title>
-          {getStatusTag()}
-        </div>
-        <div className="header-right">
-          <Button icon={<IconRefresh />} onClick={handleRefresh}>
-            {t('detail.refresh')}
-          </Button>
-          <Button type="primary" icon={<IconEdit />} onClick={handleAdjustStock}>
-            {t('detail.adjustStock')}
-          </Button>
-        </div>
-      </div>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('detail.title')}
+        documentNumber={productName}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={handleBack}
+        backLabel={t('detail.back')}
+      />
 
       {/* Basic Info Card */}
       <Card className="detail-card">
-        <Title heading={5}>{t('detail.basicInfo.title')}</Title>
         <Descriptions
           data={[
             { key: t('detail.basicInfo.warehouse'), value: warehouseName },
@@ -435,36 +488,8 @@ export default function StockDetailPage() {
         />
       </Card>
 
-      {/* Quantity Info Card */}
-      <Card className="detail-card">
-        <Title heading={5}>{t('detail.quantity.title')}</Title>
-        <div className="quantity-grid">
-          <div className="quantity-item">
-            <Text type="tertiary">{t('detail.quantity.available')}</Text>
-            <Text
-              className={`quantity-value ${inventoryItem.is_below_minimum ? 'quantity-warning' : ''}`}
-            >
-              {formatQuantity(inventoryItem.available_quantity)}
-            </Text>
-          </div>
-          <div className="quantity-item">
-            <Text type="tertiary">{t('detail.quantity.locked')}</Text>
-            <Text
-              className={`quantity-value ${inventoryItem.locked_quantity && inventoryItem.locked_quantity > 0 ? 'quantity-locked' : ''}`}
-            >
-              {formatQuantity(inventoryItem.locked_quantity)}
-            </Text>
-          </div>
-          <div className="quantity-item">
-            <Text type="tertiary">{t('detail.quantity.total')}</Text>
-            <Text className="quantity-value">{formatQuantity(inventoryItem.total_quantity)}</Text>
-          </div>
-        </div>
-      </Card>
-
       {/* Cost Info Card */}
-      <Card className="detail-card">
-        <Title heading={5}>{t('detail.cost.title')}</Title>
+      <Card className="detail-card" title={t('detail.cost.title')}>
         <Descriptions
           data={[
             { key: t('detail.cost.unitCost'), value: formatCurrency(inventoryItem.unit_cost) },
@@ -474,8 +499,7 @@ export default function StockDetailPage() {
       </Card>
 
       {/* Threshold Info Card */}
-      <Card className="detail-card">
-        <Title heading={5}>{t('detail.threshold.title')}</Title>
+      <Card className="detail-card" title={t('detail.threshold.title')}>
         <Descriptions
           data={[
             {
@@ -500,18 +524,16 @@ export default function StockDetailPage() {
       <Card className="detail-card transactions-card">
         <Tabs type="line">
           <TabPane tab={t('detail.transactions.title')} itemKey="transactions">
-            <Spin spinning={transactionsLoading}>
-              <DataTable<Transaction>
-                data={transactions}
-                columns={transactionColumns}
-                rowKey="id"
-                loading={transactionsLoading}
-                pagination={transactionsPagination}
-                onStateChange={handleTransactionsStateChange}
-                sortState={transactionsState.sort}
-                scroll={{ x: 1100 }}
-              />
-            </Spin>
+            <DataTable<Transaction>
+              data={transactions}
+              columns={transactionColumns}
+              rowKey="id"
+              loading={transactionsLoading}
+              pagination={transactionsPagination}
+              onStateChange={handleTransactionsStateChange}
+              sortState={transactionsState.sort}
+              scroll={{ x: 1100 }}
+            />
           </TabPane>
         </Tabs>
       </Card>

@@ -53,13 +53,29 @@ export interface PrintPreviewModalProps {
   title?: string
 }
 
-// Paper size display names
-const PAPER_SIZE_LABELS: Record<string, string> = {
-  A4: 'A4 (210×297mm)',
-  A5: 'A5 (148×210mm)',
-  '58MM': '58mm 热敏纸',
-  '80MM': '80mm 热敏纸',
-  '241MM_CONTINUOUS': '241mm 连续纸',
+// Base paper sizes in mm (portrait orientation)
+const PAPER_SIZES: Record<string, { width: number; height: number; name: string }> = {
+  A4: { width: 210, height: 297, name: 'A4' },
+  A5: { width: 148, height: 210, name: 'A5' },
+  RECEIPT_58MM: { width: 58, height: 200, name: '58mm 热敏纸' },
+  RECEIPT_80MM: { width: 80, height: 200, name: '80mm 热敏纸' },
+  CONTINUOUS_241: { width: 241, height: 280, name: '241mm 连续纸' },
+}
+
+// Get paper size label with orientation-aware dimensions
+const getPaperSizeLabel = (paperSize: string, orientation: string): string => {
+  const size = PAPER_SIZES[paperSize] || PAPER_SIZES.A4
+  const isLandscape = orientation === 'LANDSCAPE'
+
+  // For receipt and continuous paper, orientation doesn't change displayed dimensions
+  if (paperSize.startsWith('RECEIPT_') || paperSize.startsWith('CONTINUOUS_')) {
+    return size.name
+  }
+
+  const width = isLandscape ? size.height : size.width
+  const height = isLandscape ? size.width : size.height
+
+  return `${size.name} (${width}×${height}mm)`
 }
 
 // Get paper dimensions for preview scaling
@@ -67,22 +83,14 @@ const getPaperDimensions = (
   paperSize: string,
   orientation: string
 ): { width: number; height: number } => {
-  const sizes: Record<string, { width: number; height: number }> = {
-    A4: { width: 210, height: 297 },
-    A5: { width: 148, height: 210 },
-    '58MM': { width: 58, height: 200 },
-    '80MM': { width: 80, height: 200 },
-    '241MM_CONTINUOUS': { width: 241, height: 280 },
-  }
-
-  const size = sizes[paperSize] || sizes.A4
+  const size = PAPER_SIZES[paperSize] || PAPER_SIZES.A4
 
   // Swap dimensions for landscape
   if (orientation === 'LANDSCAPE') {
     return { width: size.height, height: size.width }
   }
 
-  return size
+  return { width: size.width, height: size.height }
 }
 
 export function PrintPreviewModal({
@@ -177,7 +185,7 @@ export function PrintPreviewModal({
     () =>
       templates.map((t) => ({
         value: t.id,
-        label: `${t.name}${t.is_default ? ' (默认)' : ''} - ${PAPER_SIZE_LABELS[t.paper_size || ''] || t.paper_size}`,
+        label: `${t.name}${t.is_default ? ' (默认)' : ''} - ${getPaperSizeLabel(t.paper_size || 'A4', t.orientation || 'PORTRAIT')}`,
       })),
     [templates]
   )

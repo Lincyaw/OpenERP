@@ -1,30 +1,37 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconLink, IconRefresh } from '@douyinfe/semi-icons'
+import { Card, Typography, Table, Tag, Toast, Button, Space, Empty } from '@douyinfe/semi-ui-19'
+import { IconLink, IconRefresh } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { getFinanceReceivableReceivableByID } from '@/api/finance-receivables/finance-receivables'
 import type { HandlerAccountReceivableResponse, HandlerPaymentRecordResponse } from '@/api/models'
 import { useTranslation } from 'react-i18next'
 import './ReceivableDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 // Status type
 type AccountReceivableStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'REVERSED' | 'CANCELLED'
 
-// Status tag color mapping
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<
+  AccountReceivableStatus,
+  'default' | 'warning' | 'primary' | 'success' | 'danger'
+> = {
+  PENDING: 'warning',
+  PARTIAL: 'primary',
+  PAID: 'success',
+  REVERSED: 'danger',
+  CANCELLED: 'default',
+}
+
+// Status tag color mapping (for inline usage)
 const STATUS_TAG_COLORS: Record<
   AccountReceivableStatus,
   'orange' | 'blue' | 'green' | 'red' | 'grey'
@@ -90,7 +97,7 @@ function isOverdue(receivable: HandlerAccountReceivableResponse): boolean {
  * Receivable Detail Page
  *
  * Features:
- * - Display complete receivable information
+ * - Display complete receivable information using DetailPageHeader
  * - Display payment history records
  * - Navigate to source document
  * - Navigate to create receipt voucher
@@ -155,6 +162,82 @@ export default function ReceivableDetailPage() {
     }
   }, [receivableData, navigate])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!receivableData?.status) return undefined
+    const status = receivableData.status as AccountReceivableStatus
+    const overdueFlag = isOverdue(receivableData)
+
+    if (overdueFlag) {
+      return {
+        label: `${t(`receivables.status.${status}`)} - ${t('receivables.tooltip.overdue')}`,
+        variant: 'danger',
+      }
+    }
+
+    return {
+      label: t(`receivables.status.${status}`),
+      variant: STATUS_VARIANTS[status] || 'default',
+    }
+  }, [receivableData, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!receivableData) return []
+    const overdueFlag = isOverdue(receivableData)
+    return [
+      {
+        label: t('receivableDetail.amount.totalAmount'),
+        value: formatCurrency(receivableData.total_amount),
+      },
+      {
+        label: t('receivableDetail.amount.paidAmount'),
+        value: formatCurrency(receivableData.paid_amount),
+        variant: 'success',
+      },
+      {
+        label: t('receivableDetail.amount.outstandingAmount'),
+        value: formatCurrency(receivableData.outstanding_amount),
+        variant: overdueFlag ? 'danger' : 'warning',
+      },
+      {
+        label: t('receivableDetail.basicInfo.dueDate'),
+        value: formatDate(receivableData.due_date),
+        variant: overdueFlag ? 'danger' : 'default',
+      },
+    ]
+  }, [receivableData, t])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!receivableData) return undefined
+    const status = receivableData.status
+    const canCollect = status !== 'PAID' && status !== 'CANCELLED' && status !== 'REVERSED'
+
+    if (canCollect) {
+      return {
+        key: 'collect',
+        label: t('receivables.actions.collect'),
+        type: 'primary',
+        onClick: handleCollect,
+      }
+    }
+    return undefined
+  }, [receivableData, t, handleCollect])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    return [
+      {
+        key: 'refresh',
+        label: t('receivableDetail.actions.refresh'),
+        icon: <IconRefresh />,
+        onClick: fetchReceivable,
+        disabled: loading,
+      },
+    ]
+  }, [t, fetchReceivable, loading])
+
   // Payment records table columns
   const paymentColumns = useMemo(
     () => [
@@ -196,73 +279,97 @@ export default function ReceivableDetailPage() {
     const status = receivableData.status as AccountReceivableStatus | undefined
     const overdueFlag = isOverdue(receivableData)
 
-    const data = [
-      {
-        key: t('receivableDetail.basicInfo.receivableNumber'),
-        value: receivableData.receivable_number || '-',
-      },
-      {
-        key: t('receivableDetail.basicInfo.customerName'),
-        value: receivableData.customer_name || '-',
-      },
-      {
-        key: t('receivableDetail.basicInfo.sourceDocument'),
-        value: receivableData.source_number ? (
-          <Space>
-            <Text>{receivableData.source_number}</Text>
-            {receivableData.source_type && receivableData.source_type !== 'MANUAL' && (
-              <Button
-                size="small"
-                icon={<IconLink />}
-                theme="borderless"
-                onClick={handleViewSource}
-              >
-                {t('receivableDetail.basicInfo.viewSource')}
-              </Button>
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.receivableNumber')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {receivableData.receivable_number || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.customerName')}
+          </Text>
+          <Text className="info-value">{receivableData.customer_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.sourceDocument')}
+          </Text>
+          <div className="info-value">
+            {receivableData.source_number ? (
+              <Space>
+                <Text>{receivableData.source_number}</Text>
+                {receivableData.source_type && receivableData.source_type !== 'MANUAL' && (
+                  <Button
+                    size="small"
+                    icon={<IconLink />}
+                    theme="borderless"
+                    onClick={handleViewSource}
+                  >
+                    {t('receivableDetail.basicInfo.viewSource')}
+                  </Button>
+                )}
+              </Space>
+            ) : (
+              '-'
             )}
-          </Space>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('receivableDetail.basicInfo.sourceType'),
-        value: receivableData.source_type
-          ? String(t(`receivables.sourceType.${receivableData.source_type}`))
-          : '-',
-      },
-      {
-        key: t('receivableDetail.basicInfo.status'),
-        value: status ? (
-          <Tag color={STATUS_TAG_COLORS[status]}>{t(`receivables.status.${status}`)}</Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('receivableDetail.basicInfo.dueDate'),
-        value: (
-          <span className={overdueFlag ? 'overdue-date' : ''}>
-            {formatDate(receivableData.due_date)}
-            {overdueFlag && (
-              <Tag color="red" style={{ marginLeft: 8 }}>
-                {t('receivables.tooltip.overdue')}
-              </Tag>
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.sourceType')}
+          </Text>
+          <Text className="info-value">
+            {receivableData.source_type
+              ? String(t(`receivables.sourceType.${receivableData.source_type}`))
+              : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.status')}
+          </Text>
+          <div className="info-value">
+            {status ? (
+              <Tag color={STATUS_TAG_COLORS[status]}>{t(`receivables.status.${status}`)}</Tag>
+            ) : (
+              '-'
             )}
-          </span>
-        ),
-      },
-      {
-        key: t('receivableDetail.basicInfo.createdAt'),
-        value: formatDateTime(receivableData.created_at),
-      },
-      {
-        key: t('receivableDetail.basicInfo.remark'),
-        value: receivableData.remark || '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="receivable-basic-info" />
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.dueDate')}
+          </Text>
+          <div className="info-value">
+            <span className={overdueFlag ? 'overdue-date' : ''}>
+              {formatDate(receivableData.due_date)}
+              {overdueFlag && (
+                <Tag color="red" style={{ marginLeft: 8 }}>
+                  {t('receivables.tooltip.overdue')}
+                </Tag>
+              )}
+            </span>
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.createdAt')}
+          </Text>
+          <Text className="info-value">{formatDateTime(receivableData.created_at)}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('receivableDetail.basicInfo.remark')}
+          </Text>
+          <Text className="info-value">{receivableData.remark || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render amount summary
@@ -294,33 +401,16 @@ export default function ReceivableDetailPage() {
     )
   }
 
-  // Render action buttons
-  const renderActions = () => {
-    if (!receivableData) return null
-
-    const status = receivableData.status
-    const canCollect = status !== 'PAID' && status !== 'CANCELLED' && status !== 'REVERSED'
-
-    return (
-      <Space>
-        <Button icon={<IconRefresh />} onClick={fetchReceivable} disabled={loading}>
-          {t('receivableDetail.actions.refresh')}
-        </Button>
-        {canCollect && (
-          <Button type="primary" onClick={handleCollect}>
-            {t('receivables.actions.collect')}
-          </Button>
-        )}
-      </Space>
-    )
-  }
-
   if (loading) {
     return (
       <Container size="lg" className="receivable-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('receivableDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/finance/receivables')}
+          backLabel={t('receivableDetail.back')}
+        />
       </Container>
     )
   }
@@ -336,31 +426,19 @@ export default function ReceivableDetailPage() {
     )
   }
 
-  const status = receivableData.status as AccountReceivableStatus | undefined
-
   return (
     <Container size="lg" className="receivable-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/finance/receivables')}
-          >
-            {t('receivableDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('receivableDetail.title')}
-          </Title>
-          {status && (
-            <Tag color={STATUS_TAG_COLORS[status]} size="large">
-              {t(`receivables.status.${status}`)}
-            </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('receivableDetail.title')}
+        documentNumber={receivableData.receivable_number}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/finance/receivables')}
+        backLabel={t('receivableDetail.back')}
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('receivableDetail.basicInfo.title')}>

@@ -1,19 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Empty,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconLink, IconRefresh } from '@douyinfe/semi-icons'
+import { Card, Typography, Table, Tag, Toast, Button, Space, Empty } from '@douyinfe/semi-ui-19'
+import { IconLink, IconRefresh } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+} from '@/components/common'
 import { getFinancePayablePayableByID } from '@/api/finance-payables/finance-payables'
 import type {
   HandlerAccountPayableResponse,
@@ -22,12 +17,24 @@ import type {
 import { useTranslation } from 'react-i18next'
 import './PayableDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 // Status type
 type AccountPayableStatus = 'PENDING' | 'PARTIAL' | 'PAID' | 'REVERSED' | 'CANCELLED'
 
-// Status tag color mapping
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<
+  AccountPayableStatus,
+  'default' | 'warning' | 'primary' | 'success' | 'danger'
+> = {
+  PENDING: 'warning',
+  PARTIAL: 'primary',
+  PAID: 'success',
+  REVERSED: 'danger',
+  CANCELLED: 'default',
+}
+
+// Status tag color mapping (for inline usage)
 const STATUS_TAG_COLORS: Record<
   AccountPayableStatus,
   'orange' | 'blue' | 'green' | 'red' | 'grey'
@@ -93,7 +100,7 @@ function isOverdue(payable: HandlerAccountPayableResponse): boolean {
  * Payable Detail Page
  *
  * Features:
- * - Display complete payable information
+ * - Display complete payable information using DetailPageHeader
  * - Display payment history records
  * - Navigate to source document
  * - Navigate to create payment voucher
@@ -156,6 +163,82 @@ export default function PayableDetailPage() {
     }
   }, [payableData, navigate])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!payableData?.status) return undefined
+    const status = payableData.status as AccountPayableStatus
+    const overdueFlag = isOverdue(payableData)
+
+    if (overdueFlag) {
+      return {
+        label: `${t(`payables.status.${status}`)} - ${t('payables.tooltip.overdue')}`,
+        variant: 'danger',
+      }
+    }
+
+    return {
+      label: t(`payables.status.${status}`),
+      variant: STATUS_VARIANTS[status] || 'default',
+    }
+  }, [payableData, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!payableData) return []
+    const overdueFlag = isOverdue(payableData)
+    return [
+      {
+        label: t('payableDetail.amount.totalAmount'),
+        value: formatCurrency(payableData.total_amount),
+      },
+      {
+        label: t('payableDetail.amount.paidAmount'),
+        value: formatCurrency(payableData.paid_amount),
+        variant: 'success',
+      },
+      {
+        label: t('payableDetail.amount.outstandingAmount'),
+        value: formatCurrency(payableData.outstanding_amount),
+        variant: overdueFlag ? 'danger' : 'warning',
+      },
+      {
+        label: t('payableDetail.basicInfo.dueDate'),
+        value: formatDate(payableData.due_date),
+        variant: overdueFlag ? 'danger' : 'default',
+      },
+    ]
+  }, [payableData, t])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!payableData) return undefined
+    const status = payableData.status
+    const canPay = status !== 'PAID' && status !== 'CANCELLED' && status !== 'REVERSED'
+
+    if (canPay) {
+      return {
+        key: 'pay',
+        label: t('payables.actions.pay'),
+        type: 'primary',
+        onClick: handlePay,
+      }
+    }
+    return undefined
+  }, [payableData, t, handlePay])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    return [
+      {
+        key: 'refresh',
+        label: t('payableDetail.actions.refresh'),
+        icon: <IconRefresh />,
+        onClick: fetchPayable,
+        disabled: loading,
+      },
+    ]
+  }, [t, fetchPayable, loading])
+
   // Payment records table columns
   const paymentColumns = useMemo(
     () => [
@@ -197,73 +280,97 @@ export default function PayableDetailPage() {
     const status = payableData.status as AccountPayableStatus | undefined
     const overdueFlag = isOverdue(payableData)
 
-    const data = [
-      {
-        key: t('payableDetail.basicInfo.payableNumber'),
-        value: payableData.payable_number || '-',
-      },
-      {
-        key: t('payableDetail.basicInfo.supplierName'),
-        value: payableData.supplier_name || '-',
-      },
-      {
-        key: t('payableDetail.basicInfo.sourceDocument'),
-        value: payableData.source_number ? (
-          <Space>
-            <Text>{payableData.source_number}</Text>
-            {payableData.source_type && payableData.source_type !== 'MANUAL' && (
-              <Button
-                size="small"
-                icon={<IconLink />}
-                theme="borderless"
-                onClick={handleViewSource}
-              >
-                {t('payableDetail.basicInfo.viewSource')}
-              </Button>
+    return (
+      <div className="info-grid">
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.payableNumber')}
+          </Text>
+          <Text strong className="info-value code-value">
+            {payableData.payable_number || '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.supplierName')}
+          </Text>
+          <Text className="info-value">{payableData.supplier_name || '-'}</Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.sourceDocument')}
+          </Text>
+          <div className="info-value">
+            {payableData.source_number ? (
+              <Space>
+                <Text>{payableData.source_number}</Text>
+                {payableData.source_type && payableData.source_type !== 'MANUAL' && (
+                  <Button
+                    size="small"
+                    icon={<IconLink />}
+                    theme="borderless"
+                    onClick={handleViewSource}
+                  >
+                    {t('payableDetail.basicInfo.viewSource')}
+                  </Button>
+                )}
+              </Space>
+            ) : (
+              '-'
             )}
-          </Space>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('payableDetail.basicInfo.sourceType'),
-        value: payableData.source_type
-          ? String(t(`payables.sourceType.${payableData.source_type}`))
-          : '-',
-      },
-      {
-        key: t('payableDetail.basicInfo.status'),
-        value: status ? (
-          <Tag color={STATUS_TAG_COLORS[status]}>{t(`payables.status.${status}`)}</Tag>
-        ) : (
-          '-'
-        ),
-      },
-      {
-        key: t('payableDetail.basicInfo.dueDate'),
-        value: (
-          <span className={overdueFlag ? 'overdue-date' : ''}>
-            {formatDate(payableData.due_date)}
-            {overdueFlag && (
-              <Tag color="red" style={{ marginLeft: 8 }}>
-                {t('payables.tooltip.overdue')}
-              </Tag>
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.sourceType')}
+          </Text>
+          <Text className="info-value">
+            {payableData.source_type
+              ? String(t(`payables.sourceType.${payableData.source_type}`))
+              : '-'}
+          </Text>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.status')}
+          </Text>
+          <div className="info-value">
+            {status ? (
+              <Tag color={STATUS_TAG_COLORS[status]}>{t(`payables.status.${status}`)}</Tag>
+            ) : (
+              '-'
             )}
-          </span>
-        ),
-      },
-      {
-        key: t('payableDetail.basicInfo.createdAt'),
-        value: formatDateTime(payableData.created_at),
-      },
-      {
-        key: t('payableDetail.basicInfo.remark'),
-        value: payableData.remark || '-',
-      },
-    ]
-
-    return <Descriptions data={data} row className="payable-basic-info" />
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.dueDate')}
+          </Text>
+          <div className="info-value">
+            <span className={overdueFlag ? 'overdue-date' : ''}>
+              {formatDate(payableData.due_date)}
+              {overdueFlag && (
+                <Tag color="red" style={{ marginLeft: 8 }}>
+                  {t('payables.tooltip.overdue')}
+                </Tag>
+              )}
+            </span>
+          </div>
+        </div>
+        <div className="info-item">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.createdAt')}
+          </Text>
+          <Text className="info-value">{formatDateTime(payableData.created_at)}</Text>
+        </div>
+        <div className="info-item info-item--full">
+          <Text type="secondary" className="info-label">
+            {t('payableDetail.basicInfo.remark')}
+          </Text>
+          <Text className="info-value">{payableData.remark || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render amount summary
@@ -292,33 +399,16 @@ export default function PayableDetailPage() {
     )
   }
 
-  // Render action buttons
-  const renderActions = () => {
-    if (!payableData) return null
-
-    const status = payableData.status
-    const canPay = status !== 'PAID' && status !== 'CANCELLED' && status !== 'REVERSED'
-
-    return (
-      <Space>
-        <Button icon={<IconRefresh />} onClick={fetchPayable} disabled={loading}>
-          {t('payableDetail.actions.refresh')}
-        </Button>
-        {canPay && (
-          <Button type="primary" onClick={handlePay}>
-            {t('payables.actions.pay')}
-          </Button>
-        )}
-      </Space>
-    )
-  }
-
   if (loading) {
     return (
       <Container size="lg" className="payable-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('payableDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/finance/payables')}
+          backLabel={t('payableDetail.back')}
+        />
       </Container>
     )
   }
@@ -331,31 +421,19 @@ export default function PayableDetailPage() {
     )
   }
 
-  const status = payableData.status as AccountPayableStatus | undefined
-
   return (
     <Container size="lg" className="payable-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/finance/payables')}
-          >
-            {t('payableDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('payableDetail.title')}
-          </Title>
-          {status && (
-            <Tag color={STATUS_TAG_COLORS[status]} size="large">
-              {t(`payables.status.${status}`)}
-            </Tag>
-          )}
-        </div>
-        <div className="header-right">{renderActions()}</div>
-      </div>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('payableDetail.title')}
+        documentNumber={payableData.payable_number}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/finance/payables')}
+        backLabel={t('payableDetail.back')}
+      />
 
       {/* Basic Info Card */}
       <Card className="info-card" title={t('payableDetail.basicInfo.title')}>
