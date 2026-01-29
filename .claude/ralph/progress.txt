@@ -37152,3 +37152,97 @@ Category: validation
 === Next Steps ===
 - Consider adding similar clickable links in detail pages for related entities
 - May want to add visual indicator icons for external navigation
+
+2026-01-29 - UX-002: Create KPICard and PageSummary common components
+
+=== Implementation Details ===
+Created two reusable components for displaying KPI summary cards across pages:
+
+1. KPICard Component (frontend/src/components/common/KPICard.tsx):
+   - Props: label, value, variant, trend, onClick, loading, icon, subtitle
+   - Variant colors: default, primary, success, warning, danger
+   - Trend support with up/down/neutral indicators and percentage display
+   - Smart trend formatting (whole numbers vs decimals)
+   - Click handler for filter/drill-down functionality
+   - Loading state with Semi UI Spin component
+   - Full accessibility support (keyboard navigation, ARIA labels, role attributes)
+
+2. PageSummary Component (frontend/src/components/common/PageSummary.tsx):
+   - Container component for KPICard lists
+   - Responsive CSS Grid layout:
+     - Mobile: 2 columns
+     - Tablet (768px+): 3 columns
+     - Desktop (1024px+): 4 columns
+   - Gap size variants: sm, md, lg
+   - Optional title with configurable heading level (h2-h5, div)
+   - Loading state support
+   - Progressive enhancement for different card counts using :has() selector
+
+3. Style Files:
+   - KPICard.css: Card styling with color variants, border accents, hover effects
+   - PageSummary.css: CSS Grid layout with responsive breakpoints
+   - Uses project design tokens (--color-*, --spacing-*, --font-*)
+   - BEM naming convention throughout
+   - Dark mode and elder-friendly theme support
+   - Reduced motion and high contrast media query support
+
+4. Exports added to components/common/index.ts:
+   - KPICard, KPICardProps, KPICardVariant, KPICardTrend, TrendDirection
+   - PageSummary, PageSummaryProps, PageSummaryGap, PageSummaryTitleAs
+
+=== Accessibility Features ===
+- role="button" for clickable cards, role="region" for static cards
+- Keyboard navigation (Enter/Space for activation)
+- aria-label for cards and trend indicators
+- aria-hidden for duplicated visual content
+- :focus-visible outline styling
+- prefers-reduced-motion: disable animations
+- prefers-contrast: high contrast borders
+- Elder theme: larger text, spacing, touch targets
+
+=== Code Review Fixes Applied ===
+- Added role="region" for non-clickable cards (screen reader support)
+- Made heading level configurable via titleAs prop (WCAG 1.3.1 compliance)
+- Improved trend formatting (avoid unnecessary decimals)
+- Added aria-label to trend indicators for screen readers
+- Conditionally bound click handlers (performance)
+- Added browser compatibility comment for :has() selector
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint (with Prettier): PASSED
+- All design tokens from project design system used
+- BEM naming convention followed
+- Mobile-first responsive design implemented
+
+=== Files Created ===
+- frontend/src/components/common/KPICard.tsx
+- frontend/src/components/common/KPICard.css
+- frontend/src/components/common/PageSummary.tsx
+- frontend/src/components/common/PageSummary.css
+
+=== Files Modified ===
+- frontend/src/components/common/index.ts (added exports)
+
+=== Usage Example ===
+```tsx
+import { KPICard, PageSummary } from '@/components/common'
+
+<PageSummary loading={summaryLoading}>
+  <KPICard label="Total Orders" value={128} variant="primary" />
+  <KPICard 
+    label="Pending" 
+    value={15} 
+    variant="warning"
+    trend={{ direction: 'up', value: 12.5, label: 'vs last month' }}
+    onClick={() => handleFilter('pending')}
+  />
+  <KPICard label="Completed" value={100} variant="success" />
+  <KPICard label="Overdue" value={3} variant="danger" onClick={handleShowOverdue} />
+</PageSummary>
+```
+
+=== Next Steps ===
+- Consider migrating existing summary sections in Receivables, Payables pages to use these components
+- Add unit tests for KPICard and PageSummary components
+- Potential enhancement: Add skeleton loading variant for KPICard

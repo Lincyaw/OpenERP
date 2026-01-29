@@ -1,0 +1,196 @@
+/**
+ * PageSummary Styles
+ *
+ * Container component for KPICard lists with responsive grid layout.
+ * Uses CSS Grid for automatic column adjustment based on viewport.
+ *
+ * Responsive behavior:
+ * - Mobile (< 768px): 2 columns
+ * - Tablet (768px - 1023px): 3 columns
+ * - Desktop (>= 1024px): 4 columns
+ */
+
+/* === Container Styles === */
+.page-summary {
+  width: 100%;
+  margin-bottom: var(--spacing-6);
+}
+
+/* === Title === */
+.page-summary__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-4) 0;
+  line-height: var(--line-height-tight);
+}
+
+/* === Grid Layout === */
+.page-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-4);
+}
+
+/* === Gap Variants === */
+.page-summary--gap-sm .page-summary__grid {
+  gap: var(--spacing-3);
+}
+
+.page-summary--gap-md .page-summary__grid {
+  gap: var(--spacing-4);
+}
+
+.page-summary--gap-lg .page-summary__grid {
+  gap: var(--spacing-6);
+}
+
+/* === Loading State === */
+.page-summary .semi-spin-wrapper {
+  min-height: 100px;
+}
+
+/* === Responsive Design (Mobile First) === */
+
+/* Tablet (768px and up) - 3 columns */
+@media (min-width: 768px) {
+  .page-summary__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .page-summary--gap-sm .page-summary__grid {
+    gap: var(--spacing-4);
+  }
+
+  .page-summary--gap-md .page-summary__grid {
+    gap: var(--spacing-5);
+  }
+
+  .page-summary--gap-lg .page-summary__grid {
+    gap: var(--spacing-8);
+  }
+
+  .page-summary__title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-5);
+  }
+}
+
+/* Desktop (1024px and up) - 4 columns */
+@media (min-width: 1024px) {
+  .page-summary__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .page-summary--gap-sm .page-summary__grid {
+    gap: var(--spacing-4);
+  }
+
+  .page-summary--gap-md .page-summary__grid {
+    gap: var(--spacing-6);
+  }
+
+  .page-summary--gap-lg .page-summary__grid {
+    gap: var(--spacing-8);
+  }
+
+  .page-summary__title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-6);
+  }
+}
+
+/* Wide screens (1440px and up) */
+@media (min-width: 1440px) {
+  .page-summary--gap-lg .page-summary__grid {
+    gap: var(--spacing-10);
+  }
+}
+
+/*
+ * === Accommodate Different Card Counts ===
+ *
+ * Progressive enhancement: :has() adjusts layout for specific card counts.
+ * Falls back to standard 4-column grid in unsupported browsers
+ * (Safari < 15.4, Firefox < 121).
+ */
+
+/* Single card - don't stretch too wide */
+.page-summary__grid > *:only-child {
+  max-width: 300px;
+}
+
+/* Two cards on desktop - centered layout */
+@media (min-width: 1024px) {
+  .page-summary__grid:has(> *:nth-child(2):last-child) {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 600px;
+  }
+}
+
+/* Three cards on desktop - use 3-column layout */
+@media (min-width: 1024px) {
+  .page-summary__grid:has(> *:nth-child(3):last-child) {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+  }
+}
+
+/* === Dark Mode === */
+[theme-mode='dark'] .page-summary__title {
+  color: var(--color-text-primary);
+}
+
+/* === Elder-Friendly Theme === */
+[theme-mode='elder'] .page-summary {
+  margin-bottom: var(--spacing-8);
+}
+
+[theme-mode='elder'] .page-summary__title {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--spacing-6);
+}
+
+[theme-mode='elder'] .page-summary__grid {
+  gap: var(--spacing-6);
+}
+
+/* On tablets and up, use 2 columns for elder mode for larger cards */
+@media (min-width: 768px) {
+  [theme-mode='elder'] .page-summary__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-8);
+  }
+}
+
+/* On desktop, max 3 columns for elder mode */
+@media (min-width: 1024px) {
+  [theme-mode='elder'] .page-summary__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* === High Contrast Mode === */
+@media (prefers-contrast: high) {
+  .page-summary__title {
+    font-weight: var(--font-weight-bold);
+  }
+}
+
+/* === Print Styles === */
+@media print {
+  .page-summary {
+    page-break-inside: avoid;
+  }
+
+  .page-summary__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+  }
+
+  .page-summary__grid > * {
+    flex: 0 0 calc(25% - var(--spacing-4));
+    min-width: 150px;
+  }
+}

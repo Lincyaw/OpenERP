@@ -139,15 +139,33 @@ export function KPICard({
     }
   }
 
+  /**
+   * Format trend value - show whole numbers without decimals
+   */
+  const formatTrendValue = (trendValue: number): string => {
+    return Number.isInteger(trendValue) ? `${trendValue}%` : `${trendValue.toFixed(1)}%`
+  }
+
+  /**
+   * Build trend aria-label for screen readers
+   */
+  const getTrendAriaLabel = (): string | undefined => {
+    if (!trend) return undefined
+    const direction =
+      trend.direction === 'up' ? 'Up' : trend.direction === 'down' ? 'Down' : 'Neutral'
+    const label = trend.label ? `, ${trend.label}` : ''
+    return `${direction} ${formatTrendValue(trend.value)}${label}`
+  }
+
   return (
     <div
       className={`kpi-card kpi-card--${variant} ${isClickable ? 'kpi-card--clickable' : ''} ${className}`}
       style={style}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      role={isClickable ? 'button' : undefined}
+      onClick={isClickable ? handleClick : undefined}
+      onKeyDown={isClickable ? handleKeyDown : undefined}
+      role={isClickable ? 'button' : 'region'}
       tabIndex={isClickable ? 0 : undefined}
-      aria-label={isClickable ? `${label}: ${value}. Click to filter.` : undefined}
+      aria-label={`${label}: ${value}${isClickable ? '. Click to filter.' : ''}`}
     >
       <Spin spinning={loading} size="small">
         <div className="kpi-card__content">
@@ -159,9 +177,14 @@ export function KPICard({
             <div className="kpi-card__value-row">
               <span className="kpi-card__value">{value}</span>
               {trend && (
-                <span className={`kpi-card__trend ${getTrendClassName()}`}>
+                <span
+                  className={`kpi-card__trend ${getTrendClassName()}`}
+                  aria-label={getTrendAriaLabel()}
+                >
                   {getTrendIcon()}
-                  <span className="kpi-card__trend-value">{trend.value.toFixed(1)}%</span>
+                  <span className="kpi-card__trend-value" aria-hidden="true">
+                    {formatTrendValue(trend.value)}
+                  </span>
                 </span>
               )}
             </div>
@@ -171,7 +194,12 @@ export function KPICard({
               </Text>
             )}
             {trend?.label && (
-              <Text className="kpi-card__trend-label" type="tertiary" size="small">
+              <Text
+                className="kpi-card__trend-label"
+                type="tertiary"
+                size="small"
+                aria-hidden="true"
+              >
                 {trend.label}
               </Text>
             )}

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, ReactNode, ElementType } from 'react'
 import { Spin } from '@douyinfe/semi-ui-19'
 import './PageSummary.css'
 
@@ -6,6 +6,11 @@ import './PageSummary.css'
  * Gap size options for PageSummary grid
  */
 export type PageSummaryGap = 'sm' | 'md' | 'lg'
+
+/**
+ * Title heading level options
+ */
+export type PageSummaryTitleAs = 'h2' | 'h3' | 'h4' | 'h5' | 'div'
 
 /**
  * PageSummary component props
@@ -19,6 +24,8 @@ export interface PageSummaryProps {
   gap?: PageSummaryGap
   /** Optional title for the summary section */
   title?: string
+  /** Heading level for the title (defaults to h3 for semantic hierarchy) */
+  titleAs?: PageSummaryTitleAs
   /** Optional className for custom styling */
   className?: string
   /** Optional inline styles */
@@ -63,18 +70,27 @@ export interface PageSummaryProps {
  *   <KPICard label="Item 1" value={100} />
  *   <KPICard label="Item 2" value={200} />
  * </PageSummary>
+ *
+ * @example
+ * // With custom heading level for proper document hierarchy
+ * <PageSummary title="Summary" titleAs="h2">
+ *   <KPICard label="Total" value={500} />
+ * </PageSummary>
  */
 export function PageSummary({
   children,
   loading = false,
   gap = 'md',
   title,
+  titleAs = 'h3',
   className = '',
   style,
 }: PageSummaryProps) {
+  const TitleTag = titleAs as ElementType
+
   return (
     <div className={`page-summary page-summary--gap-${gap} ${className}`} style={style}>
-      {title && <h3 className="page-summary__title">{title}</h3>}
+      {title && <TitleTag className="page-summary__title">{title}</TitleTag>}
       <Spin spinning={loading}>
         <div className="page-summary__grid">{children}</div>
       </Spin>

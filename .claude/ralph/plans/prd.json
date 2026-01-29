@@ -11073,7 +11073,7 @@
       "",
       "4. 导出到 components/common/index.ts"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-003",

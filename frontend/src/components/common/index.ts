@@ -12,3 +12,18 @@ export * from './order'
 
 // Feature flag components
 export { Feature, type FeatureProps, type FeatureRenderFunction } from './Feature'
+
+// KPI and Summary components
+export {
+  KPICard,
+  type KPICardProps,
+  type KPICardVariant,
+  type KPICardTrend,
+  type TrendDirection,
+} from './KPICard'
+export {
+  PageSummary,
+  type PageSummaryProps,
+  type PageSummaryGap,
+  type PageSummaryTitleAs,
+} from './PageSummary'
