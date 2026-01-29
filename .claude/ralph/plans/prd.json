@@ -10774,7 +10774,7 @@
       "# 并发测试",
       "ab -n 1000 -c 50 -p flag-update.json -T application/json http://localhost:8080/api/v1/feature-flags/test-flag"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "E2E-PRODUCT-001",
