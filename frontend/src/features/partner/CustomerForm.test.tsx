@@ -140,9 +140,7 @@ describe('CustomerForm', () => {
     }
 
     mockLevelsApi = {
-      listCustomerLevels: vi
-        .fn()
-        .mockResolvedValue(createSuccessResponse(mockCustomerLevels)),
+      listCustomerLevels: vi.fn().mockResolvedValue(createSuccessResponse(mockCustomerLevels)),
     }
 
     vi.mocked(customersApi.getCustomers).mockReturnValue(
@@ -387,9 +385,7 @@ describe('CustomerForm', () => {
     })
 
     it('should show error message when update API fails', async () => {
-      mockApi.updateCustomer.mockResolvedValueOnce(
-        createErrorResponse('更新失败', 'ERR_UPDATE')
-      )
+      mockApi.updateCustomer.mockResolvedValueOnce(createErrorResponse('更新失败', 'ERR_UPDATE'))
 
       const { user } = renderWithProviders(
         <CustomerForm customerId={mockCustomer.id} initialData={mockCustomer} />,

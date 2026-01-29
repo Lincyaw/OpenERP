@@ -546,7 +546,9 @@ describe('ReceivablesPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when receivables API fails', async () => {
-      mockFinanceApiInstance.listFinanceReceivables.mockRejectedValueOnce(new Error('Network error'))
+      mockFinanceApiInstance.listFinanceReceivables.mockRejectedValueOnce(
+        new Error('Network error')
+      )
 
       renderWithProviders(<ReceivablesPage />, { route: '/finance/receivables' })
 

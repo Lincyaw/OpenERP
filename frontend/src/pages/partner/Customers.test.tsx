@@ -94,12 +94,8 @@ describe('CustomersPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       listCustomers: vi.fn().mockResolvedValue(createMockListResponse()),
-      activateCustomer: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: mockCustomers[1] }),
-      deactivateCustomer: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: mockCustomers[0] }),
+      activateCustomer: vi.fn().mockResolvedValue({ success: true, data: mockCustomers[1] }),
+      deactivateCustomer: vi.fn().mockResolvedValue({ success: true, data: mockCustomers[0] }),
       postPartnerCustomersIdSuspend: vi
         .fn()
         .mockResolvedValue({ success: true, data: mockCustomers[0] }),
@@ -330,9 +326,7 @@ describe('CustomersPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.listCustomers.mockResolvedValueOnce(
-        createMockListResponse([detailedCustomer], 1)
-      )
+      mockApi.listCustomers.mockResolvedValueOnce(createMockListResponse([detailedCustomer], 1))
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 
@@ -360,9 +354,7 @@ describe('CustomersPage', () => {
         // No phone, email, province, city
       }
 
-      mockApi.listCustomers.mockResolvedValueOnce(
-        createMockListResponse([minimalCustomer], 1)
-      )
+      mockApi.listCustomers.mockResolvedValueOnce(createMockListResponse([minimalCustomer], 1))
 
       renderWithProviders(<CustomersPage />, { route: '/partner/customers' })
 

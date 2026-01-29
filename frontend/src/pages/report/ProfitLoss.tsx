@@ -697,7 +697,7 @@ export default function ProfitLossPage() {
           <Table
             columns={productColumns}
             dataSource={profitByProduct}
-            rowKey={(record, index) => `${record.product_id}-${index}`}
+            rowKey="product_id"
             pagination={{
               pageSize: 10,
               showSizeChanger: true,

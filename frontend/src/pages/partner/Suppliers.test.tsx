@@ -310,9 +310,7 @@ describe('SuppliersPage', () => {
         updated_at: '2024-06-15T12:00:00Z',
       }
 
-      mockApi.listSuppliers.mockResolvedValueOnce(
-        createMockListResponse([detailedSupplier], 1)
-      )
+      mockApi.listSuppliers.mockResolvedValueOnce(createMockListResponse([detailedSupplier], 1))
 
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 
@@ -339,9 +337,7 @@ describe('SuppliersPage', () => {
         // No phone, email, province, city, rating, payment_term_days
       }
 
-      mockApi.listSuppliers.mockResolvedValueOnce(
-        createMockListResponse([minimalSupplier], 1)
-      )
+      mockApi.listSuppliers.mockResolvedValueOnce(createMockListResponse([minimalSupplier], 1))
 
       renderWithProviders(<SuppliersPage />, { route: '/partner/suppliers' })
 

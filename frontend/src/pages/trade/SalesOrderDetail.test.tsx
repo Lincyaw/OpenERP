@@ -467,9 +467,7 @@ describe('SalesOrderDetailPage', () => {
     })
 
     it('should show error toast and navigate to list when API fails', async () => {
-      mockSalesOrderApiInstance.getSalesOrderById.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      mockSalesOrderApiInstance.getSalesOrderById.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesOrderDetailPage />, { route: '/trade/sales/order-001' })
 

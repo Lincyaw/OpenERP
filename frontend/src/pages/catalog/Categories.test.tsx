@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithProviders, screen, waitFor, within } from '@/tests/utils'
+import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import CategoriesPage from './Categories'
 import * as categoriesApi from '@/api/categories/categories'
 import { Toast, Modal } from '@douyinfe/semi-ui-19'
@@ -124,16 +124,10 @@ describe('CategoriesPage', () => {
     // Setup mock API with default implementations
     mockApi = {
       getCategoryTree: vi.fn().mockResolvedValue(createMockTreeResponse()),
-      createCategory: vi
-        .fn()
-        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
-      updateCategory: vi
-        .fn()
-        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      createCategory: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      updateCategory: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
       deleteCategory: vi.fn().mockResolvedValue({ success: true }),
-      activateCategory: vi
-        .fn()
-        .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
+      activateCategory: vi.fn().mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),
       deactivateCategory: vi
         .fn()
         .mockResolvedValue(createMockCategoryResponse(mockCategoryTree[0])),

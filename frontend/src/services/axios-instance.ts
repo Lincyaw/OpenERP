@@ -270,10 +270,7 @@ axiosInstance.interceptors.response.use(
  * @param options - Fetch-style RequestInit options
  * @returns Promise resolving to the response data with status
  */
-export const customInstance = async <T>(
-  url: string,
-  options?: RequestInit
-): Promise<T> => {
+export const customInstance = async <T>(url: string, options?: RequestInit): Promise<T> => {
   // Convert fetch-style options to axios config
   const config: AxiosRequestConfig = {
     url,

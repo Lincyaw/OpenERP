@@ -311,9 +311,7 @@ describe('ProductForm', () => {
     })
 
     it('should show error message when update API fails', async () => {
-      mockApi.updateProduct.mockResolvedValueOnce(
-        createErrorResponse('更新失败', 'ERR_UPDATE')
-      )
+      mockApi.updateProduct.mockResolvedValueOnce(createErrorResponse('更新失败', 'ERR_UPDATE'))
 
       const { user } = renderWithProviders(
         <ProductForm productId={mockProduct.id} initialData={mockProduct} />,

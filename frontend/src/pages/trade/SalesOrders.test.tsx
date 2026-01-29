@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderWithProviders, screen, waitFor, fireEvent } from '@/tests/utils'
+import { renderWithProviders, screen, waitFor } from '@/tests/utils'
 import SalesOrdersPage from './SalesOrders'
 import * as salesOrdersApi from '@/api/sales-orders/sales-orders'
 import * as customersApi from '@/api/customers/customers'
@@ -392,9 +392,7 @@ describe('SalesOrdersPage', () => {
 
   describe('Error Handling', () => {
     it('should show error toast when order list API fails', async () => {
-      mockSalesOrderApiInstance.listSalesOrders.mockRejectedValueOnce(
-        new Error('Network error')
-      )
+      mockSalesOrderApiInstance.listSalesOrders.mockRejectedValueOnce(new Error('Network error'))
 
       renderWithProviders(<SalesOrdersPage />, { route: '/trade/sales' })
 
