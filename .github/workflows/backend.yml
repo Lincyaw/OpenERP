@@ -127,7 +127,7 @@ jobs:
           cache-dependency-path: backend/go.sum
 
       - name: Install swag
-        run: go install github.com/swaggo/swag/cmd/swag@latest
+        run: go install github.com/swaggo/swag/cmd/swag@v2.0.0
 
       - name: Check OpenAPI docs are up-to-date
         run: |
