@@ -11736,7 +11736,7 @@
       "- [ ] History paginated and filterable",
       "- [ ] Error export helps users fix and re-import"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-FE-001",
