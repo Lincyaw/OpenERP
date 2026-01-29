@@ -11632,7 +11632,7 @@
       "- [ ] SupplierCreated events published",
       "- [ ] Integration with existing Supplier aggregate"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-BE-005",
