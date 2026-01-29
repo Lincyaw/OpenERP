@@ -72,6 +72,13 @@
       "notExist": "订单不存在",
       "fetchDetailError": "获取订单详情失败"
     },
+    "summary": {
+      "total": "总订单数",
+      "draft": "草稿",
+      "confirmed": "待发货",
+      "shipped": "待完成",
+      "completed": "已完成"
+    },
     "unit": "件"
   },
   "purchaseOrder": {
@@ -114,6 +121,13 @@
       "cancelError": "取消订单失败",
       "deleteSuccess": "采购订单 \"{{orderNumber}}\" 已删除",
       "deleteError": "删除订单失败"
+    },
+    "summary": {
+      "total": "总订单数",
+      "draft": "草稿",
+      "confirmed": "待收货",
+      "pendingReceipt": "部分收货",
+      "completed": "已完成"
     }
   },
   "purchaseOrderDetail": {
@@ -415,6 +429,13 @@
       "cancelError": "取消失败",
       "deleteSuccess": "退货单已删除",
       "deleteError": "删除失败"
+    },
+    "summary": {
+      "total": "总退货单",
+      "draft": "草稿",
+      "pending": "待审批",
+      "receiving": "收货中",
+      "completed": "已完成"
     }
   },
   "salesReturnForm": {
@@ -623,6 +644,13 @@
       "cancelError": "取消失败",
       "deleteSuccess": "退货单已删除",
       "deleteError": "删除失败"
+    },
+    "summary": {
+      "total": "总退货单",
+      "draft": "草稿",
+      "pending": "待审批",
+      "shipped": "待完成",
+      "completed": "已完成"
     }
   },
   "purchaseReturnDetail": {

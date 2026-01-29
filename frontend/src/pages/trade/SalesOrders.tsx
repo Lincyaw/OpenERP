@@ -16,6 +16,8 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
+  PageSummary,
+  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -27,6 +29,7 @@ import {
   completeSalesOrder,
   cancelSalesOrder,
   deleteSalesOrder,
+  getSalesOrderStatusSummary,
 } from '@/api/sales-orders/sales-orders'
 import { listCustomers } from '@/api/customers/customers'
 import type {
@@ -34,6 +37,7 @@ import type {
   ListSalesOrdersParams,
   ListSalesOrdersStatus,
   HandlerCustomerListResponse,
+  HandlerOrderStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { ShipOrderModal } from './components'
@@ -81,6 +85,8 @@ export default function SalesOrdersPage() {
   const [orderList, setOrderList] = useState<SalesOrder[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<HandlerOrderStatusSummaryResponse | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Customer options for filter
   const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([])
@@ -211,6 +217,26 @@ export default function SalesOrdersPage() {
     fetchOrders(abortController.signal)
     return () => abortController.abort()
   }, [fetchOrders])
+
+  // Fetch summary data
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true)
+    try {
+      const response = await getSalesOrderStatusSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
+      }
+    } catch {
+      // Silently fail for summary - it's not critical
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [])
+
+  // Fetch summary on mount
+  useEffect(() => {
+    fetchSummary()
+  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -416,7 +442,17 @@ export default function SalesOrdersPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchOrders()
-  }, [fetchOrders])
+    fetchSummary()
+  }, [fetchOrders, fetchSummary])
+
+  // Handle filter by clicking KPI card
+  const handleKPIClick = useCallback(
+    (status: string) => {
+      setStatusFilter(status)
+      setFilter('status', status || null)
+    },
+    [setFilter]
+  )
 
   // Table columns
   const tableColumns: DataTableColumn<SalesOrder>[] = useMemo(
@@ -602,6 +638,40 @@ export default function SalesOrdersPage() {
 
   return (
     <Container size="full" className="sales-orders-page">
+      {/* KPI Summary Cards */}
+      <PageSummary loading={summaryLoading} className="sales-orders-summary">
+        <KPICard
+          label={t('salesOrder.summary.total')}
+          value={summary?.total ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('')}
+        />
+        <KPICard
+          label={t('salesOrder.summary.draft')}
+          value={summary?.draft ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('draft')}
+        />
+        <KPICard
+          label={t('salesOrder.summary.confirmed')}
+          value={summary?.confirmed ?? '-'}
+          variant="primary"
+          onClick={() => handleKPIClick('confirmed')}
+        />
+        <KPICard
+          label={t('salesOrder.summary.shipped')}
+          value={summary?.shipped ?? '-'}
+          variant="warning"
+          onClick={() => handleKPIClick('shipped')}
+        />
+        <KPICard
+          label={t('salesOrder.summary.completed')}
+          value={summary?.completed ?? '-'}
+          variant="success"
+          onClick={() => handleKPIClick('completed')}
+        />
+      </PageSummary>
+
       <Card className="sales-orders-card">
         <div className="sales-orders-header">
           <Title heading={4} style={{ margin: 0 }}>

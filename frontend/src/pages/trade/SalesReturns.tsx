@@ -16,6 +16,8 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
+  PageSummary,
+  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -29,6 +31,7 @@ import {
   completeSalesReturn,
   receiveSalesReturn,
   cancelSalesReturn,
+  getSalesReturnStatusSummary,
 } from '@/api/sales-returns/sales-returns'
 import { listCustomers } from '@/api/customers/customers'
 import type {
@@ -36,6 +39,7 @@ import type {
   ListSalesReturnsParams,
   ListSalesReturnsStatus,
   HandlerCustomerListResponse,
+  HandlerReturnStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { useI18n } from '@/hooks/useI18n'
@@ -97,6 +101,8 @@ export default function SalesReturnsPage() {
   const [returnList, setReturnList] = useState<SalesReturn[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<HandlerReturnStatusSummaryResponse | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Customer options for filter
   const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([])
@@ -209,6 +215,26 @@ export default function SalesReturnsPage() {
   useEffect(() => {
     fetchReturns()
   }, [fetchReturns])
+
+  // Fetch summary data
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true)
+    try {
+      const response = await getSalesReturnStatusSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
+      }
+    } catch {
+      // Silently fail for summary - it's not critical
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [])
+
+  // Fetch summary on mount
+  useEffect(() => {
+    fetchSummary()
+  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -423,7 +449,17 @@ export default function SalesReturnsPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchReturns()
-  }, [fetchReturns])
+    fetchSummary()
+  }, [fetchReturns, fetchSummary])
+
+  // Handle filter by clicking KPI card
+  const handleKPIClick = useCallback(
+    (status: string) => {
+      setStatusFilter(status)
+      setFilter('status', status || null)
+    },
+    [setFilter]
+  )
 
   // Table columns
   const tableColumns: DataTableColumn<SalesReturn>[] = useMemo(
@@ -594,6 +630,40 @@ export default function SalesReturnsPage() {
 
   return (
     <Container size="full" className="sales-returns-page">
+      {/* KPI Summary Cards */}
+      <PageSummary loading={summaryLoading} className="sales-returns-summary">
+        <KPICard
+          label={t('salesReturn.summary.total')}
+          value={summary?.total ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('')}
+        />
+        <KPICard
+          label={t('salesReturn.summary.draft')}
+          value={summary?.draft ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('DRAFT')}
+        />
+        <KPICard
+          label={t('salesReturn.summary.pending')}
+          value={summary?.pending ?? '-'}
+          variant="warning"
+          onClick={() => handleKPIClick('PENDING')}
+        />
+        <KPICard
+          label={t('salesReturn.summary.receiving')}
+          value={summary?.receiving ?? '-'}
+          variant="primary"
+          onClick={() => handleKPIClick('RECEIVING')}
+        />
+        <KPICard
+          label={t('salesReturn.summary.completed')}
+          value={summary?.completed ?? '-'}
+          variant="success"
+          onClick={() => handleKPIClick('COMPLETED')}
+        />
+      </PageSummary>
+
       <Card className="sales-returns-card">
         <div className="sales-returns-header">
           <Title heading={4} style={{ margin: 0 }}>

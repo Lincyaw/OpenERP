@@ -16,6 +16,8 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
+  PageSummary,
+  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -29,6 +31,7 @@ import {
   shipPurchaseReturn,
   completePurchaseReturn,
   cancelPurchaseReturn,
+  getPurchaseReturnStatusSummary,
 } from '@/api/purchase-returns/purchase-returns'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
@@ -36,6 +39,7 @@ import type {
   ListPurchaseReturnsParams,
   ListPurchaseReturnsStatus,
   HandlerSupplierListResponse,
+  HandlerPurchaseReturnStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { useI18n } from '@/hooks/useI18n'
@@ -97,6 +101,8 @@ export default function PurchaseReturnsPage() {
   const [returnList, setReturnList] = useState<PurchaseReturn[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<HandlerPurchaseReturnStatusSummaryResponse | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Supplier options for filter
   const [supplierOptions, setSupplierOptions] = useState<SupplierOption[]>([])
@@ -209,6 +215,26 @@ export default function PurchaseReturnsPage() {
   useEffect(() => {
     fetchReturns()
   }, [fetchReturns])
+
+  // Fetch summary data
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true)
+    try {
+      const response = await getPurchaseReturnStatusSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
+      }
+    } catch {
+      // Silently fail for summary - it's not critical
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [])
+
+  // Fetch summary on mount
+  useEffect(() => {
+    fetchSummary()
+  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -443,7 +469,17 @@ export default function PurchaseReturnsPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchReturns()
-  }, [fetchReturns])
+    fetchSummary()
+  }, [fetchReturns, fetchSummary])
+
+  // Handle filter by clicking KPI card
+  const handleKPIClick = useCallback(
+    (status: string) => {
+      setStatusFilter(status)
+      setFilter('status', status || null)
+    },
+    [setFilter]
+  )
 
   // Table columns
   const tableColumns: DataTableColumn<PurchaseReturn>[] = useMemo(
@@ -640,6 +676,40 @@ export default function PurchaseReturnsPage() {
 
   return (
     <Container size="full" className="purchase-returns-page">
+      {/* KPI Summary Cards */}
+      <PageSummary loading={summaryLoading} className="purchase-returns-summary">
+        <KPICard
+          label={t('purchaseReturn.summary.total')}
+          value={summary?.total ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('')}
+        />
+        <KPICard
+          label={t('purchaseReturn.summary.draft')}
+          value={summary?.draft ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('DRAFT')}
+        />
+        <KPICard
+          label={t('purchaseReturn.summary.pending')}
+          value={summary?.pending ?? '-'}
+          variant="warning"
+          onClick={() => handleKPIClick('PENDING')}
+        />
+        <KPICard
+          label={t('purchaseReturn.summary.shipped')}
+          value={summary?.shipped ?? '-'}
+          variant="primary"
+          onClick={() => handleKPIClick('SHIPPED')}
+        />
+        <KPICard
+          label={t('purchaseReturn.summary.completed')}
+          value={summary?.completed ?? '-'}
+          variant="success"
+          onClick={() => handleKPIClick('COMPLETED')}
+        />
+      </PageSummary>
+
       <Card className="purchase-returns-card">
         <div className="purchase-returns-header">
           <Title heading={4} style={{ margin: 0 }}>

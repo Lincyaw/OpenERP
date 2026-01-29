@@ -11158,7 +11158,7 @@
       "",
       "5. 参考 Payables.tsx 和 Receivables.tsx 的实现模式"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-007",

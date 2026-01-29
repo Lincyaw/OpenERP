@@ -37343,3 +37343,45 @@ import { DetailPageHeader } from '@/components/common'
 - Consider migrating existing detail pages (SalesOrderDetail, PurchaseOrderDetail, etc.) to use this component
 - Add unit tests for DetailPageHeader component (80% coverage requirement)
 - Potential enhancement: Add breadcrumb support option
+
+2026-01-29 - UX-006: Add KPI Summary Cards to Trade List Pages
+
+=== Implementation Details ===
+- Added PageSummary and KPICard components to SalesOrders.tsx
+- Added PageSummary and KPICard components to PurchaseOrders.tsx
+- Added PageSummary and KPICard components to SalesReturns.tsx
+- Added PageSummary and KPICard components to PurchaseReturns.tsx
+- Added summary CSS classes to all trade page CSS files
+- Added summary translations for zh-CN and en-US locales
+
+Key files modified:
+- frontend/src/pages/trade/SalesOrders.tsx
+- frontend/src/pages/trade/PurchaseOrders.tsx
+- frontend/src/pages/trade/SalesReturns.tsx
+- frontend/src/pages/trade/PurchaseReturns.tsx
+- frontend/src/pages/trade/*.css (4 files)
+- frontend/src/locales/zh-CN/trade.json
+- frontend/src/locales/en-US/trade.json
+
+Design decisions:
+- Used existing PageSummary and KPICard components from common library
+- Integrated with existing backend summary API endpoints
+- KPI cards are clickable to filter the table by status
+- Summary data loads asynchronously and refreshes with table data
+- Silently fails if summary API is unavailable (non-critical feature)
+
+=== Verification ===
+- TypeScript type check passed (npm run type-check)
+- ESLint passed (no new warnings/errors introduced)
+- Code review completed - fixed issues identified:
+  - Changed SalesReturns to use API total field instead of manual calculation
+  - Fixed PurchaseOrders to show partial_received count consistently
+
+=== Notes ===
+- Backend summary endpoints already existed for all 4 entity types
+- Frontend API client already had the summary functions generated
+- Translation keys follow pattern: {entity}.summary.{status}
+
+=== Next Steps ===
+- Monitor page performance with summary API calls
+- Consider adding trend indicators to KPI cards in future iteration

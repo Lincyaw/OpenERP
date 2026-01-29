@@ -72,6 +72,13 @@
       "notExist": "Order does not exist",
       "fetchDetailError": "Failed to fetch order details"
     },
+    "summary": {
+      "total": "Total Orders",
+      "draft": "Draft",
+      "confirmed": "Pending Ship",
+      "shipped": "Shipped",
+      "completed": "Completed"
+    },
     "unit": "items"
   },
   "purchaseOrder": {
@@ -114,6 +121,13 @@
       "cancelError": "Failed to cancel order",
       "deleteSuccess": "Purchase order \"{{orderNumber}}\" deleted",
       "deleteError": "Failed to delete order"
+    },
+    "summary": {
+      "total": "Total Orders",
+      "draft": "Draft",
+      "confirmed": "Pending Receipt",
+      "pendingReceipt": "Partial Received",
+      "completed": "Completed"
     }
   },
   "purchaseOrderDetail": {
@@ -415,6 +429,13 @@
       "cancelError": "Failed to cancel",
       "deleteSuccess": "Return deleted",
       "deleteError": "Failed to delete"
+    },
+    "summary": {
+      "total": "Total Returns",
+      "draft": "Draft",
+      "pending": "Pending",
+      "receiving": "Receiving",
+      "completed": "Completed"
     }
   },
   "salesReturnForm": {
@@ -623,6 +644,13 @@
       "cancelError": "Failed to cancel",
       "deleteSuccess": "Return deleted",
       "deleteError": "Failed to delete"
+    },
+    "summary": {
+      "total": "Total Returns",
+      "draft": "Draft",
+      "pending": "Pending",
+      "shipped": "Shipped",
+      "completed": "Completed"
     }
   },
   "purchaseReturnDetail": {

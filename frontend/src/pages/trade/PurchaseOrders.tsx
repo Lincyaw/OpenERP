@@ -17,6 +17,8 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
+  PageSummary,
+  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -26,6 +28,7 @@ import {
   confirmPurchaseOrder,
   cancelPurchaseOrder,
   deletePurchaseOrder,
+  getPurchaseOrderStatusSummary,
 } from '@/api/purchase-orders/purchase-orders'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
@@ -33,6 +36,7 @@ import type {
   ListPurchaseOrdersParams,
   ListPurchaseOrdersStatus,
   HandlerSupplierListResponse,
+  HandlerPurchaseOrderStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { PrintPreviewModal } from '@/components/printing'
@@ -79,6 +83,8 @@ export default function PurchaseOrdersPage() {
   const [orderList, setOrderList] = useState<PurchaseOrder[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState<HandlerPurchaseOrderStatusSummaryResponse | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Supplier options for filter
   const [supplierOptions, setSupplierOptions] = useState<SupplierOption[]>([])
@@ -193,6 +199,26 @@ export default function PurchaseOrdersPage() {
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
+
+  // Fetch summary data
+  const fetchSummary = useCallback(async () => {
+    setSummaryLoading(true)
+    try {
+      const response = await getPurchaseOrderStatusSummary()
+      if (response.status === 200 && response.data.success && response.data.data) {
+        setSummary(response.data.data)
+      }
+    } catch {
+      // Silently fail for summary - it's not critical
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [])
+
+  // Fetch summary on mount
+  useEffect(() => {
+    fetchSummary()
+  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -360,7 +386,17 @@ export default function PurchaseOrdersPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchOrders()
-  }, [fetchOrders])
+    fetchSummary()
+  }, [fetchOrders, fetchSummary])
+
+  // Handle filter by clicking KPI card
+  const handleKPIClick = useCallback(
+    (status: string) => {
+      setStatusFilter(status)
+      setFilter('status', status || null)
+    },
+    [setFilter]
+  )
 
   // Table columns
   const tableColumns: DataTableColumn<PurchaseOrder>[] = useMemo(
@@ -556,6 +592,40 @@ export default function PurchaseOrdersPage() {
 
   return (
     <Container size="full" className="purchase-orders-page">
+      {/* KPI Summary Cards */}
+      <PageSummary loading={summaryLoading} className="purchase-orders-summary">
+        <KPICard
+          label={t('purchaseOrder.summary.total')}
+          value={summary?.total ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('')}
+        />
+        <KPICard
+          label={t('purchaseOrder.summary.draft')}
+          value={summary?.draft ?? '-'}
+          variant="default"
+          onClick={() => handleKPIClick('draft')}
+        />
+        <KPICard
+          label={t('purchaseOrder.summary.confirmed')}
+          value={summary?.confirmed ?? '-'}
+          variant="primary"
+          onClick={() => handleKPIClick('confirmed')}
+        />
+        <KPICard
+          label={t('purchaseOrder.summary.pendingReceipt')}
+          value={summary?.partial_received ?? '-'}
+          variant="warning"
+          onClick={() => handleKPIClick('partial_received')}
+        />
+        <KPICard
+          label={t('purchaseOrder.summary.completed')}
+          value={summary?.completed ?? '-'}
+          variant="success"
+          onClick={() => handleKPIClick('completed')}
+        />
+      </PageSummary>
+
       <Card className="purchase-orders-card">
         <div className="purchase-orders-header">
           <Title heading={4} style={{ margin: 0 }}>

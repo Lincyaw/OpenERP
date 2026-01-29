@@ -4,6 +4,11 @@
   padding: var(--spacing-6);
 }
 
+/* Summary section */
+.sales-orders-summary {
+  margin-bottom: var(--spacing-4);
+}
+
 .sales-orders-card {
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);
