@@ -237,8 +237,7 @@ func TestAttachmentService_InitiateUpload_Success(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.NotEqual(t, uuid.Nil, result.AttachmentID)
 	assert.Equal(t, "https://storage.example.com/upload?token=xyz", result.UploadURL)
-	assert.Contains(t, result.StorageKey, "tenants/")
-	assert.Contains(t, result.StorageKey, productID.String())
+	// Note: StorageKey is intentionally not exposed in response for security reasons
 	mockProductRepo.AssertExpectations(t)
 	mockAttachmentRepo.AssertExpectations(t)
 	mockStorageService.AssertExpectations(t)
@@ -431,7 +430,7 @@ func TestAttachmentService_InitiateUpload_DocumentType_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Contains(t, result.StorageKey, ".pdf")
+	// Note: StorageKey is intentionally not exposed in response for security reasons
 	mockProductRepo.AssertExpectations(t)
 	mockAttachmentRepo.AssertExpectations(t)
 	mockStorageService.AssertExpectations(t)

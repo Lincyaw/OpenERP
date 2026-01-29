@@ -12600,6 +12600,6 @@
       "从 InitiateUploadResponse 和 AttachmentResponse 中移除 StorageKey 字段",
       "客户端只需使用预签名 URL，不需要知道存储路径"
     ],
-    "passes": false
+    "passes": true
   }
 ]

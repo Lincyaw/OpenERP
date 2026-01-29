@@ -57,14 +57,17 @@ type AttachmentListFilter struct {
 // ============================================================================
 
 // InitiateUploadResponse represents the response from initiating an upload
+// Note: StorageKey is intentionally NOT exposed to clients for security reasons.
+// Clients only need the presigned UploadURL to upload files.
 type InitiateUploadResponse struct {
 	AttachmentID uuid.UUID `json:"attachment_id"`
 	UploadURL    string    `json:"upload_url"`
-	StorageKey   string    `json:"storage_key"`
 	ExpiresAt    time.Time `json:"expires_at"`
 }
 
 // AttachmentResponse represents an attachment in API responses
+// Note: StorageKey and ThumbnailKey are intentionally NOT exposed to clients for security reasons.
+// Clients access files through the presigned URL and ThumbnailURL fields.
 type AttachmentResponse struct {
 	ID           uuid.UUID  `json:"id"`
 	TenantID     uuid.UUID  `json:"tenant_id"`
@@ -74,8 +77,6 @@ type AttachmentResponse struct {
 	FileName     string     `json:"file_name"`
 	FileSize     int64      `json:"file_size"`
 	ContentType  string     `json:"content_type"`
-	StorageKey   string     `json:"storage_key"`
-	ThumbnailKey string     `json:"thumbnail_key,omitempty"`
 	SortOrder    int        `json:"sort_order"`
 	UploadedBy   *uuid.UUID `json:"uploaded_by,omitempty"`
 	URL          string     `json:"url,omitempty"`
@@ -106,23 +107,22 @@ type AttachmentListResponse struct {
 // ============================================================================
 
 // ToAttachmentResponse converts a domain ProductAttachment to AttachmentResponse
+// Note: StorageKey and ThumbnailKey are NOT included for security reasons
 func ToAttachmentResponse(a *catalog.ProductAttachment) AttachmentResponse {
 	return AttachmentResponse{
-		ID:           a.ID,
-		TenantID:     a.TenantID,
-		ProductID:    a.ProductID,
-		Type:         string(a.Type),
-		Status:       string(a.Status),
-		FileName:     a.FileName,
-		FileSize:     a.FileSize,
-		ContentType:  a.ContentType,
-		StorageKey:   a.StorageKey,
-		ThumbnailKey: a.ThumbnailKey,
-		SortOrder:    a.SortOrder,
-		UploadedBy:   a.UploadedBy,
-		CreatedAt:    a.CreatedAt,
-		UpdatedAt:    a.UpdatedAt,
-		Version:      a.Version,
+		ID:          a.ID,
+		TenantID:    a.TenantID,
+		ProductID:   a.ProductID,
+		Type:        string(a.Type),
+		Status:      string(a.Status),
+		FileName:    a.FileName,
+		FileSize:    a.FileSize,
+		ContentType: a.ContentType,
+		SortOrder:   a.SortOrder,
+		UploadedBy:  a.UploadedBy,
+		CreatedAt:   a.CreatedAt,
+		UpdatedAt:   a.UpdatedAt,
+		Version:     a.Version,
 	}
 }
 

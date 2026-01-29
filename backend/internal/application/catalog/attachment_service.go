@@ -200,7 +200,6 @@ func (s *AttachmentService) InitiateUpload(
 	return &InitiateUploadResponse{
 		AttachmentID: attachment.ID,
 		UploadURL:    uploadURL,
-		StorageKey:   storageKey,
 		ExpiresAt:    expiresAt,
 	}, nil
 }

@@ -40973,3 +40973,70 @@ Uses ImportWizard component which calls:
 - Add E2E tests for complete import workflow
 - Consider adding permission checks for individual import buttons (currently page-level permission)
 
+
+================================================================================
+2026-01-30 - ATTACH-SEC-002: Fix StorageKey Information Disclosure
+================================================================================
+
+=== Implementation Details ===
+
+**Vulnerability Fixed:**
+API responses exposed internal storage paths (StorageKey, ThumbnailKey) which revealed:
+- Internal storage structure (S3/RustFS path patterns)
+- Tenant IDs and product IDs in predictable path patterns
+- Potential for enumeration attacks against storage backend
+
+**Files Modified:**
+
+1. `backend/internal/application/catalog/attachment_dto.go`:
+   - Removed `StorageKey` field from `InitiateUploadResponse` struct
+   - Removed `StorageKey` and `ThumbnailKey` fields from `AttachmentResponse` struct
+   - Updated `ToAttachmentResponse()` converter to not map storage paths
+   - Added security documentation comments explaining intentional omission
+
+2. `backend/internal/application/catalog/attachment_service.go`:
+   - Updated `InitiateUpload()` method to not include StorageKey in response
+
+3. `backend/internal/application/catalog/attachment_service_test.go`:
+   - Removed test assertions that validated StorageKey in responses
+   - Added comments explaining intentional omission for security
+
+4. `backend/docs/swagger.yaml`, `backend/docs/swagger.json`, `backend/docs/docs.go`:
+   - Regenerated Swagger documentation reflecting updated schema
+   - Verified storage_key and thumbnail_key are not present in API specs
+
+=== Security Review Results ===
+
+- Risk Level: GREEN (Fix is complete and effective)
+- Critical Issues: 0 (Fixed)
+- Response DTOs no longer expose internal storage paths
+- Clients only receive presigned URLs which are time-limited
+
+Additional findings (out of scope for this task):
+- MEDIUM: ProductAttachmentSummary struct contains StorageKey (dead code)
+- MEDIUM: Domain events contain StorageKey (internal only, not exposed via API)
+
+=== Verification ===
+
+- Backend build: PASSED
+- Unit tests: All 38 attachment-related tests PASSED
+- Type checking: PASSED
+- Swagger documentation: Regenerated and verified no storage keys exposed
+- Security review: COMPLETED via security-reviewer agent
+
+=== Acceptance Criteria Verification ===
+
+- [x] StorageKey removed from InitiateUploadResponse
+- [x] StorageKey and ThumbnailKey removed from AttachmentResponse
+- [x] Clients access files only through presigned URLs
+- [x] API documentation updated correctly
+
+=== Notes ===
+
+The fix follows the principle of least privilege - clients only receive the information
+they need (presigned URLs) and never see internal storage paths.
+
+=== Next Steps ===
+
+- Consider removing dead code (ProductAttachmentSummary)
+- Review domain events to ensure StorageKey doesn't leak through event consumers
