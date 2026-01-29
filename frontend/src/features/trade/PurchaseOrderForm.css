@@ -24,8 +24,8 @@
   border-bottom: none;
 }
 
-.section-title {
-  margin-bottom: var(--spacing-4) !important;
+.purchase-order-form-page .section-title {
+  margin-bottom: var(--spacing-4);
   color: var(--semi-color-text-0);
 }
 
@@ -36,8 +36,8 @@
   margin-bottom: var(--spacing-4);
 }
 
-.section-header .section-title {
-  margin-bottom: 0 !important;
+.purchase-order-form-page .section-header .section-title {
+  margin-bottom: 0;
 }
 
 /* Form Row & Fields */
@@ -101,10 +101,10 @@
 }
 
 /* Summary Section */
-.summary-section {
+.purchase-order-form-page .summary-section {
   background-color: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
-  padding: var(--page-padding-mobile) !important;
+  padding: var(--page-padding-mobile);
   margin-top: var(--spacing-4);
 }
 

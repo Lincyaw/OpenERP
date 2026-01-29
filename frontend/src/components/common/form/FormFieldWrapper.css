@@ -83,15 +83,15 @@
   color: var(--semi-color-danger);
 }
 
-.form-field-wrapper--error .semi-input-wrapper,
-.form-field-wrapper--error .semi-select,
-.form-field-wrapper--error .semi-textarea-wrapper {
-  border-color: var(--semi-color-danger) !important;
+.form-field-wrapper[data-error='true'] .semi-input-wrapper,
+.form-field-wrapper[data-error='true'] .semi-select,
+.form-field-wrapper[data-error='true'] .semi-textarea-wrapper {
+  border-color: var(--semi-color-danger);
 }
 
-.form-field-wrapper--error .semi-input-wrapper:focus-within,
-.form-field-wrapper--error .semi-select:focus-within,
-.form-field-wrapper--error .semi-textarea-wrapper:focus-within {
-  border-color: var(--semi-color-danger) !important;
+.form-field-wrapper[data-error='true'] .semi-input-wrapper:focus-within,
+.form-field-wrapper[data-error='true'] .semi-select:focus-within,
+.form-field-wrapper[data-error='true'] .semi-textarea-wrapper:focus-within {
+  border-color: var(--semi-color-danger);
   box-shadow: 0 0 0 2px rgba(var(--semi-red-5), 0.2);
 }

@@ -39202,3 +39202,252 @@ Created comprehensive export utility with the following features:
 - Consider implementing "Export All" that fetches all pages
 - Add unit tests for export utilities
 - Apply similar bulk operations pattern to PurchaseOrders page
+
+---
+
+## 2026-01-29 - IMPORT-PD-001: Bulk Data Import Feature Design
+
+### Task ID: IMPORT-PD-001
+### Status: Design Complete (passes: true)
+
+### Design Summary
+
+Designed a comprehensive bulk data import feature for data migration from other systems.
+
+### Design Approach
+
+#### 1. Domain Model Analysis
+Reviewed `.claude/ralph/docs/spec.md` to understand:
+- Catalog Context: Product, Category, Unit
+- Partner Context: Customer, Supplier, Warehouse, CustomerLevel
+- Inventory Context: InventoryItem, StockBatch, InventoryTransaction
+- Multi-tenancy requirements
+
+#### 2. Entity Selection for Import
+Selected core entities essential for initial data migration:
+1. **Products** - Master data for all inventory operations
+2. **Customers** - Required for sales order creation
+3. **Suppliers** - Required for purchase order creation
+4. **Initial Inventory** - Opening stock balances
+
+#### 3. CSV Format Design
+
+**Products CSV:**
+- Required: name, category_code, base_unit, purchase_price, selling_price
+- Optional: sku, barcode, description, status, min_stock_level, attributes
+- Auto-generation: SKU if not provided
+
+**Customers CSV:**
+- Required: name, type (individual/company)
+- Optional: code, contact_person, phone, email, level_code, credit_limit, address fields
+- Foreign key: customer_levels
+
+**Suppliers CSV:**
+- Required: name
+- Optional: code, contact_person, phone, email, credit_days, credit_limit, address fields, bank info
+- PaymentTerms VO construction
+
+**Initial Inventory CSV:**
+- Required: product_sku, warehouse_code, quantity, unit_cost
+- Optional: batch_number, production_date, expiry_date
+- Foreign keys: products, warehouses
+- Creates: InventoryItem, StockBatch, InventoryTransaction
+
+### Trade-Offs Analysis
+
+| Decision | Pros | Cons | Risk Level |
+|----------|------|------|------------|
+| CSV over Excel/JSON | Universal compatibility, human-readable, simple parsing | No native type enforcement | LOW |
+| Two-phase import (validate then import) | Users fix errors before commit, no partial data | Two API calls, cached state | LOW |
+| UTF-8 with BOM | Excel compatibility for Chinese | Slightly larger files | LOW |
+| Conflict modes (skip/update/fail) | Flexible re-import scenarios | More complex logic | LOW |
+
+### Red Flags Checked
+- [x] No God Objects - Import service per entity type
+- [x] No tight coupling - Reusable CSV parser and validator
+- [x] Clear structure - Separate validation and import phases
+- [x] No premature optimization - Simple streaming for large files
+- [x] No magic - All validation rules documented
+
+### Tasks Created
+
+| Task ID | Story | Priority | Status |
+|---------|-------|----------|--------|
+| IMPORT-PD-001 | CSV Format Specification | high | passes: true |
+| IMPORT-BE-001 | CSV Parser and Validation Engine | high | passes: false |
+| IMPORT-BE-002 | Product Import Service | high | passes: false |
+| IMPORT-BE-003 | Customer Import Service | high | passes: false |
+| IMPORT-BE-004 | Supplier Import Service | high | passes: false |
+| IMPORT-BE-005 | Initial Inventory Import Service | high | passes: false |
+| IMPORT-BE-006 | Import History and Audit Trail | medium | passes: false |
+| IMPORT-FE-001 | Import Wizard Component | high | passes: false |
+| IMPORT-FE-002 | Import Pages Integration | high | passes: false |
+| IMPORT-FE-003 | CSV Template Download | medium | passes: false |
+| IMPORT-TEST-001 | E2E Tests | medium | passes: false |
+
+### Next Steps
+1. Implement IMPORT-BE-001: Core CSV parsing infrastructure
+2. Implement IMPORT-BE-002: Product import (most common use case)
+3. Create IMPORT-FE-001: Import wizard UI component
+4. Add import buttons to existing list pages
+
+### Acceptance Criteria (IMPORT-PD-001)
+- [x] CSV formats documented for all 4 entity types
+- [x] Validation rules specified
+- [x] Error handling approach defined
+- [x] Trade-offs documented
+- [x] Tasks added to prd.json with clear requirements
+
+
+## 2026-01-29 - CSS-PD-001: CSS Anti-Pattern Analysis and Fix Planning
+
+### Summary
+Analyzed CSS codebase for anti-patterns and created comprehensive fix plan. Identified hardcoded spacing values, excessive !important usage, and desktop-first responsive design patterns that need refactoring.
+
+### Deliverables
+
+#### 1. CSS Best Practices Document
+- **File**: `frontend/docs/CSS_BEST_PRACTICES.md`
+- **Contents**:
+  - Spacing system guidelines with token reference
+  - Mobile-first responsive design patterns
+  - Specificity management strategies
+  - Flexbox vs Grid decision guide
+  - Semi Design component override patterns
+- **Includes incorrect/correct examples from actual codebase**
+
+#### 2. PRD Tasks Added (CSS-001 through CSS-009)
+Added 9 tasks to `.claude/ralph/plans/prd.json`:
+
+| ID | Priority | Description |
+|----|----------|-------------|
+| CSS-001 | Medium | Fix hardcoded spacing - Form components |
+| CSS-002 | Medium | Fix hardcoded spacing - Layout components |
+| CSS-003 | Low | Fix hardcoded spacing - Page components |
+| CSS-004 | Medium | Reduce !important - Form components |
+| CSS-005 | Medium | Reduce !important - Table/Filter components |
+| CSS-006 | High | Convert to mobile-first responsive design |
+| CSS-007 | Medium | Refactor Dashboard to CSS Grid |
+| CSS-008 | Low | Create common CSS utility classes |
+| CSS-009 | High | Add Stylelint rules for prevention |
+
+### Anti-Pattern Analysis
+
+#### Hardcoded Spacing (74 instances found)
+- MainLayout.css: padding: 16px 24px (should use --spacing-4 --spacing-6)
+- Header.css: gap: 12px (should use --spacing-3)
+- Sidebar.css: padding: 8px, margin: 8px 16px
+- Form.css: 15+ instances of hardcoded px values
+
+#### !important Usage (68 instances found)
+- 24 instances of `width: 100% !important` (Semi Select override pattern)
+- 8 instances in trade form components (section title margins)
+- 6 instances in form field wrappers (error states)
+- Legitimate uses in accessibility.css and breakpoints.css (utilities)
+
+#### Desktop-First Responsive (95% of files)
+- Dashboard.css: Uses max-width: 1200px, 992px, 768px, 480px
+- Form.css: Media queries in wrong order (768px before 992px)
+- Most page CSS files use max-width queries
+
+#### Flexbox Misuse for Grid Layouts
+- Dashboard uses flex-wrap to simulate grid
+- calc() gymnastics: `flex: 0 0 calc(16.666% - 14px)`
+- Magic min-width values: 300px, 280px, 180px
+
+### Design Decisions
+
+=== Spacing Token Adoption ===
+- All new CSS must use --spacing-* tokens
+- Legacy code to be migrated incrementally
+- Token map: 4px -> --spacing-1, 8px -> --spacing-2, etc.
+- Risk Level: LOW (backwards compatible)
+
+=== Mobile-First Migration ===
+- Convert max-width to min-width queries
+- Reorder breakpoints smallest to largest
+- Base styles should be mobile-optimized
+- Risk Level: MEDIUM (requires testing all breakpoints)
+
+=== !important Elimination Strategy ===
+- Create .full-width-select utility class
+- Use data attributes for state styling
+- Increase specificity with parent selectors
+- Risk Level: MEDIUM (Semi component integration)
+
+=== Stylelint Prevention ===
+- Add declaration-no-important rule (warning)
+- Add unit-disallowed-list for px (warning with exceptions)
+- Integrate into CI pipeline
+- Risk Level: LOW (warnings only, not blocking)
+
+### Red Flags Checked
+- [x] No God Objects - CSS is modular per component
+- [x] No tight coupling - Design tokens enable theme changes
+- [x] Clear structure - BEM naming, CSS Modules
+- [x] No premature optimization - Practical, incremental fixes
+- [x] No magic/undocumented behavior - All patterns documented
+
+### Next Steps
+1. CSS-009 (Stylelint) - Prevents new violations
+2. CSS-006 (Mobile-first) - High priority, wide impact
+3. CSS-001/002 (Spacing tokens) - Foundation for consistency
+4. CSS-004/005 (!important) - Improves maintainability
+5. CSS-007 (Grid) - Dashboard performance improvement
+
+---
+
+## 2026-01-29 - CSS-004: Reduce !important Usage - Form Components
+
+### Task ID: CSS-004
+### Status: Completed
+
+### Implementation Details
+
+Removed all !important declarations from form-related CSS files by using proper specificity.
+
+#### Files Modified
+
+1. **frontend/src/features/trade/SalesOrderForm.css**
+   - Changed `.section-title` to `.sales-order-form-page .section-title`
+   - Changed `.section-header .section-title` to `.sales-order-form-page .section-header .section-title`
+   - Changed `.summary-section` to `.sales-order-form-page .summary-section`
+
+2. **frontend/src/features/trade/PurchaseOrderForm.css**
+   - Same pattern as SalesOrderForm.css using `.purchase-order-form-page` prefix
+
+3. **frontend/src/features/trade/SalesReturnForm.css**
+   - Already had `.sales-return-form-page` prefix, just removed !important declarations
+
+4. **frontend/src/features/trade/PurchaseReturnForm.css**
+   - Already had `.purchase-return-form-page` prefix, just removed !important declarations
+
+5. **frontend/src/components/common/form/FormFieldWrapper.css**
+   - Changed error state selectors from `.form-field-wrapper--error` to `.form-field-wrapper[data-error='true']`
+   - This uses data attribute selector which has higher specificity than Semi UI component styles
+
+6. **frontend/src/components/common/form/FormFieldWrapper.tsx**
+   - Added `data-error={hasError ? 'true' : undefined}` attribute to wrapper div
+
+### Strategy Applied
+
+1. **Page-specific wrapper classes**: Used existing page wrapper classes (e.g., `.sales-order-form-page`) to increase specificity
+2. **Data attributes for state**: Used `data-error='true'` attribute for error states instead of class-based selectors, which provides higher specificity to override Semi UI component styles
+3. **Selector specificity**: Increased specificity naturally through parent selectors rather than !important
+
+### Verification
+
+- TypeScript check: PASSED
+- No !important declarations remain in any affected files
+- Linting: Pre-existing warnings in other files, no new issues introduced
+
+### Acceptance Criteria Met
+
+- [x] No !important in SalesOrderForm.css
+- [x] No !important in PurchaseOrderForm.css
+- [x] No !important in SalesReturnForm.css
+- [x] No !important in PurchaseReturnForm.css
+- [x] FormFieldWrapper error states work without !important
+- [x] All form validation styling still works (verified via type check)
+
+---

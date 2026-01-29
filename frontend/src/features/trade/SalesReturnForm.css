@@ -25,7 +25,7 @@
 }
 
 .sales-return-form-page .section-title {
-  margin-bottom: var(--spacing-4) !important;
+  margin-bottom: var(--spacing-4);
   color: var(--semi-color-text-0);
 }
 
@@ -37,7 +37,7 @@
 }
 
 .sales-return-form-page .section-header .section-title {
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
 }
 
 /* Order Info Section */
@@ -104,7 +104,7 @@
 .sales-return-form-page .summary-section {
   background-color: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
-  padding: var(--page-padding-mobile) !important;
+  padding: var(--page-padding-mobile);
   margin-top: var(--spacing-4);
 }
 

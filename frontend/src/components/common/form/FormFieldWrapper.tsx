@@ -34,6 +34,7 @@ export function FormFieldWrapper({
   return (
     <div
       className={`form-field-wrapper form-field-wrapper--${labelPosition} ${hasError ? 'form-field-wrapper--error' : ''} ${className}`}
+      data-error={hasError ? 'true' : undefined}
     >
       {label && !hideLabel && (
         <label className="form-field-label" htmlFor={htmlFor}>
