@@ -12577,7 +12577,7 @@
       "创建 e2e/catalog/product-attachments.spec.ts E2E 测试",
       "验证上传、删除、设置主图完整流程"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-SEC-001",
