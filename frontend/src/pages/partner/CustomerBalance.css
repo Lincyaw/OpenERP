@@ -206,9 +206,9 @@
     flex-direction: column;
   }
 
-  .transactions-filter-container .semi-select,
-  .transactions-filter-container .semi-datepicker {
-    width: 100% !important;
+  .transactions-filter-container .semi-select[class],
+  .transactions-filter-container .semi-datepicker[class] {
+    width: 100%;
   }
 }
 

@@ -1,0 +1,84 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "declaration-no-important": [
+      true,
+      {
+        "severity": "warning",
+        "message": "Avoid !important. Use proper specificity instead."
+      }
+    ],
+    "unit-disallowed-list": [
+      ["px"],
+      {
+        "ignoreProperties": {
+          "px": [
+            "border",
+            "border-width",
+            "border-top-width",
+            "border-right-width",
+            "border-bottom-width",
+            "border-left-width",
+            "border-radius",
+            "border-top-left-radius",
+            "border-top-right-radius",
+            "border-bottom-left-radius",
+            "border-bottom-right-radius",
+            "box-shadow",
+            "outline",
+            "outline-width",
+            "outline-offset",
+            "max-width",
+            "min-width",
+            "min-height",
+            "max-height"
+          ]
+        },
+        "severity": "warning",
+        "message": "Use spacing tokens (var(--spacing-*)) instead of px values."
+      }
+    ],
+    "selector-max-specificity": [
+      "0,4,0",
+      {
+        "severity": "warning"
+      }
+    ],
+    "max-nesting-depth": 3,
+    "import-notation": "string",
+    "alpha-value-notation": "number",
+    "color-function-notation": "legacy",
+    "selector-class-pattern": [
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$|^semi-",
+      {
+        "message": "Expected class selector to be kebab-case or BEM format (block__element--modifier)"
+      }
+    ],
+    "keyframes-name-pattern": [
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$",
+      {
+        "message": "Expected keyframe name to be kebab-case"
+      }
+    ],
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global"]
+      }
+    ],
+    "media-feature-range-notation": null,
+    "color-hex-length": null,
+    "value-keyword-case": [
+      "lower",
+      {
+        "ignoreKeywords": ["currentColor"]
+      }
+    ],
+    "comment-empty-line-before": null,
+    "color-function-alias-notation": null,
+    "media-feature-name-value-no-unknown": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "no-descending-specificity": null,
+    "declaration-property-value-keyword-no-deprecated": null
+  }
+}

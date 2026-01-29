@@ -106,8 +106,8 @@
     width: 100%;
   }
 
-  .roles-filter-container .semi-select {
-    width: 100% !important;
+  .roles-filter-container .semi-select[class] {
+    width: 100%;
   }
 
   .permission-config-header {

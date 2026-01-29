@@ -613,7 +613,7 @@ export default function DashboardPage() {
         )}
 
         {/* Main Content Area */}
-        <Row gap="md" wrap="wrap" className="dashboard-content">
+        <div className="dashboard-content">
           {/* Left Column - Recent Orders & Order Stats */}
           <div className="dashboard-col-left">
             <Stack gap="md">
@@ -743,7 +743,7 @@ export default function DashboardPage() {
               )}
             </Card>
           </div>
-        </Row>
+        </div>
       </Spin>
     </Container>
   )

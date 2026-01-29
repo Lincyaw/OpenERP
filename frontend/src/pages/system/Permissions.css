@@ -189,8 +189,8 @@
     align-items: stretch;
   }
 
-  .permissions-toolbar .semi-input-wrapper {
-    width: 100% !important;
+  .permissions-toolbar .semi-input-wrapper[class] {
+    width: 100%;
   }
 
   .permission-action-node {

@@ -1,0 +1,104 @@
+/**
+ * Form Utilities
+ *
+ * CSS classes for form controls, filter containers, and Semi Design overrides.
+ * These utilities provide proper styling without relying on !important.
+ */
+
+/* === Page Filters Container ===
+ * Use this class on filter container elements to ensure Semi Select
+ * and DatePicker components fill their available width on mobile.
+ *
+ * @example
+ * ```tsx
+ * <div className="page-filters">
+ *   <Select ... />
+ *   <DatePicker ... />
+ * </div>
+ * ```
+ */
+.page-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+/* Semi Select full width within page-filters on mobile */
+@media (max-width: 768px) {
+  .page-filters .semi-select,
+  .page-filters .semi-datepicker,
+  .page-filters .semi-select-selection,
+  .page-filters > .semi-select,
+  .page-filters > .semi-datepicker {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Handle Space component children */
+  .page-filters .semi-space .semi-select,
+  .page-filters .semi-space .semi-datepicker,
+  .page-filters.semi-space .semi-select,
+  .page-filters.semi-space .semi-datepicker {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* === Full Width Select Utility ===
+ * Apply directly to Semi Select containers when you need full width.
+ *
+ * @example
+ * ```tsx
+ * <Select className="full-width-select" ... />
+ * ```
+ */
+.full-width-select.semi-select,
+.full-width-select .semi-select,
+.semi-select.full-width-select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Full width DatePicker variant */
+.full-width-datepicker.semi-datepicker,
+.full-width-datepicker .semi-datepicker,
+.semi-datepicker.full-width-datepicker {
+  width: 100%;
+  min-width: 0;
+}
+
+/* === Semi Space Gap Override ===
+ * Semi Space component has inline styles for gap.
+ * Use this class to set a different gap value.
+ *
+ * Note: Semi Space uses inline styles which require specificity workaround.
+ * This uses [class] attribute selector for higher specificity.
+ */
+.space-gap-2[class],
+.semi-space.space-gap-2[class] {
+  gap: var(--spacing-2);
+}
+
+.space-gap-3[class],
+.semi-space.space-gap-3[class] {
+  gap: var(--spacing-3);
+}
+
+.space-gap-4[class],
+.semi-space.space-gap-4[class] {
+  gap: var(--spacing-4);
+}
+
+/* Enable wrapping on Space component */
+.space-wrap[class],
+.semi-space.space-wrap[class] {
+  flex-wrap: wrap;
+}
+
+/* Combined wrap with custom gap */
+.space-wrap-gap-2[class],
+.semi-space.space-wrap-gap-2[class] {
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}

@@ -33,7 +33,7 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .feature-flag-list-page {
     padding: var(--spacing-2);
   }
@@ -44,7 +44,7 @@
   }
 
   .feature-flag-filter-container .semi-select,
-  .feature-flag-filter-container .semi-tagInput {
-    width: 100% !important;
+  .feature-flag-filter-container .semi-tag-input {
+    width: 100%;
   }
 }

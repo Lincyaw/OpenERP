@@ -85,19 +85,14 @@
   text-overflow: ellipsis;
 }
 
-/* Desktop Metric Cards Section (Mobile base) */
+/* Desktop Metric Cards Section (CSS Grid with auto-fit) */
 .dashboard-metrics {
   margin-bottom: var(--spacing-6);
 }
 
-.dashboard-metrics .metric-card-wrapper {
-  flex: 1 1 100%;
-  min-width: 180px;
-}
-
 .dashboard-metrics > div {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-4);
 }
 
@@ -151,22 +146,19 @@
   margin-top: var(--spacing-1);
 }
 
-/* Main Content Layout (Mobile: stacked) */
+/* Main Content Layout (CSS Grid) */
 .dashboard-content {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-4);
 }
 
 .dashboard-col-left {
-  flex: 1 1 100%;
-  min-width: 300px;
-  padding-right: 0;
-  margin-bottom: var(--spacing-4);
+  min-width: 0;
 }
 
 .dashboard-col-right {
-  flex: 1 1 100%;
-  min-width: 280px;
+  min-width: 0;
 }
 
 /* Order Statistics Card (Mobile: vertical) */
@@ -390,10 +382,6 @@
 
 /* Small tablets and large phones (≥ 480px) */
 @media screen and (min-width: 480px) {
-  .dashboard-metrics .metric-card-wrapper {
-    flex: 0 0 calc(50% - 8px);
-  }
-
   .recent-order-item {
     flex-direction: row;
     justify-content: space-between;
@@ -439,14 +427,8 @@
 
 /* Small desktops (≥ 992px) */
 @media screen and (min-width: 992px) {
-  .dashboard-col-left {
-    flex: 1 1 60%;
-    padding-right: var(--spacing-4);
-    margin-bottom: 0;
-  }
-
-  .dashboard-col-right {
-    flex: 1 1 35%;
+  .dashboard-content {
+    grid-template-columns: 2fr 1fr;
   }
 
   .stats-card .order-stats {
@@ -467,7 +449,5 @@
 
 /* Large desktops (≥ 1200px) */
 @media screen and (min-width: 1200px) {
-  .dashboard-metrics .metric-card-wrapper {
-    flex: 0 0 calc(33.333% - 12px);
-  }
+  /* Grid auto-fit handles column distribution automatically */
 }

@@ -114,6 +114,20 @@ export interface CommonTranslations {
   'table.selectedItems': string
   'table.totalRecords': string
   'table.searchPlaceholder': string
+  'table.export.csv': string
+  'table.export.excel': string
+  'table.export.selected': string
+  'table.export.all': string
+  'table.bulk.confirm': string
+  'table.bulk.delete': string
+  'table.bulk.export': string
+  'table.bulk.confirmTitle': string
+  'table.bulk.confirmContent': string
+  'table.bulk.deleteTitle': string
+  'table.bulk.deleteContent': string
+  'table.bulk.success': string
+  'table.bulk.error': string
+  'table.bulk.partialSuccess': string
   // Dashboard
   'dashboard.title': string
   'dashboard.welcome': string
@@ -362,6 +376,9 @@ export interface CatalogTranslations {
   'products.form.priceInfoDesc': string
   'products.form.stockSettings': string
   'products.form.stockSettingsDesc': string
+  'products.form.category': string
+  'products.form.categoryPlaceholder': string
+  'products.form.categoryRequired': string
   'products.form.code': string
   'products.form.codePlaceholder': string
   'products.form.codeHelperCreate': string

@@ -128,7 +128,7 @@
     flex-direction: column;
   }
 
-  .warehouses-filter-container .semi-select {
-    width: 100% !important;
+  .warehouses-filter-container .semi-select[class] {
+    width: 100%;
   }
 }

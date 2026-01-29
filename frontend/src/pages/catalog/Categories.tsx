@@ -530,6 +530,8 @@ export default function CategoriesPage() {
             <Dropdown
               trigger="click"
               position="bottomRight"
+              getPopupContainer={() => document.body}
+              clickToHide
               render={
                 <Dropdown.Menu>
                   <Dropdown.Item onClick={() => handleViewDetail(category)}>
@@ -557,14 +559,8 @@ export default function CategoriesPage() {
                 </Dropdown.Menu>
               }
             >
-              <span style={{ display: 'inline-flex' }}>
-                <Button
-                  icon={<IconMore />}
-                  size="small"
-                  theme="borderless"
-                  type="tertiary"
-                  onClick={(e) => e.stopPropagation()}
-                />
+              <span style={{ display: 'inline-flex' }} onClick={(e) => e.stopPropagation()}>
+                <Button icon={<IconMore />} size="small" theme="borderless" type="tertiary" />
               </span>
             </Dropdown>
           </div>

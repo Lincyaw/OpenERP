@@ -107,15 +107,16 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
     () =>
       createProductFormSchema(
         t('products.form.codeRegexError'),
-        t('products.form.categoryRequired')
+        t('products.form.categoryRequired') as string
       ),
     [t]
   )
 
   // Fetch categories for select
-  const { data: categoriesResponse } = useListCategories({ status: 'active', limit: 1000 })
+  const { data: categoriesResponse } = useListCategories({ status: 'active', page_size: 1000 })
   const categoryOptions = useMemo(() => {
-    const categories = categoriesResponse?.data?.data || []
+    const categories =
+      (categoriesResponse?.data?.data as Array<{ id?: string; name?: string }>) || []
     return categories.map((cat) => ({
       value: cat.id || '',
       label: cat.name || '',
@@ -236,8 +237,8 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               <SelectField
                 name="category_id"
                 control={control}
-                label={t('products.form.category')}
-                placeholder={t('products.form.categoryPlaceholder')}
+                label={t('products.form.category') as string}
+                placeholder={t('products.form.categoryPlaceholder') as string}
                 options={categoryOptions}
                 required
                 showSearch

@@ -1,0 +1,295 @@
+/**
+ * Common CSS Utilities
+ *
+ * Reusable utility classes to replace repeated inline styles and common patterns.
+ * Use these utilities to maintain consistency and reduce CSS duplication.
+ *
+ * @see frontend/docs/CSS_BEST_PRACTICES.md for usage guidelines
+ */
+
+/* =============================================================================
+ * Width Utilities
+ * ============================================================================= */
+
+.w-full {
+  width: 100%;
+}
+
+.w-auto {
+  width: auto;
+}
+
+.max-w-sm {
+  max-width: 24rem; /* 384px */
+}
+
+.max-w-md {
+  max-width: 28rem; /* 448px */
+}
+
+.max-w-lg {
+  max-width: 32rem; /* 512px */
+}
+
+.max-w-xl {
+  max-width: 36rem; /* 576px */
+}
+
+/* =============================================================================
+ * Semi Component Width Utilities
+ *
+ * These utilities provide full-width styling for Semi Design components
+ * without using !important. They use proper specificity instead.
+ * ============================================================================= */
+
+/**
+ * Full Width Input
+ *
+ * Apply to container or directly to Semi Input for full width.
+ *
+ * @example
+ * <Input className="full-width-input" />
+ * <div className="full-width-input"><Input /></div>
+ */
+.full-width-input .semi-input-wrapper,
+.full-width-input.semi-input-wrapper,
+.semi-input-wrapper.full-width-input {
+  width: 100%;
+}
+
+/* =============================================================================
+ * Text Utilities
+ * ============================================================================= */
+
+/**
+ * Truncate text with ellipsis
+ *
+ * Use for single-line text truncation.
+ *
+ * @example
+ * <span className="text-truncate">Long text that will be truncated...</span>
+ */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * Wrap text with word break
+ *
+ * Use for long content that should wrap and break words if needed.
+ *
+ * @example
+ * <p className="text-wrap">Long content that should wrap...</p>
+ */
+.text-wrap {
+  overflow-wrap: break-word;
+}
+
+/**
+ * Prevent text wrapping
+ *
+ * Use when text should stay on a single line without truncation.
+ *
+ * @example
+ * <span className="text-nowrap">Don't wrap this</span>
+ */
+.text-nowrap {
+  white-space: nowrap;
+}
+
+/* =============================================================================
+ * Margin/Padding Reset Utilities
+ * ============================================================================= */
+
+.m-0 {
+  margin: 0;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.ml-0 {
+  margin-left: 0;
+}
+
+.mr-0 {
+  margin-right: 0;
+}
+
+.pt-0 {
+  padding-top: 0;
+}
+
+.pb-0 {
+  padding-bottom: 0;
+}
+
+.pl-0 {
+  padding-left: 0;
+}
+
+.pr-0 {
+  padding-right: 0;
+}
+
+/* =============================================================================
+ * Display Utilities
+ * ============================================================================= */
+
+/**
+ * Hidden utility
+ *
+ * Completely hides an element from the layout.
+ * Uses !important as per CSS best practices for utility classes.
+ */
+.hidden {
+  display: none !important;
+}
+
+/**
+ * Visibility utilities
+ *
+ * For hiding elements while preserving layout space.
+ */
+.invisible {
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible;
+}
+
+/* =============================================================================
+ * Flex Utilities
+ * ============================================================================= */
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+.flex-auto {
+  flex: 1 1 auto;
+}
+
+.flex-none {
+  flex: none;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+/* =============================================================================
+ * Gap Utilities (using design tokens)
+ * ============================================================================= */
+
+.gap-1 {
+  gap: var(--spacing-1);
+}
+
+.gap-2 {
+  gap: var(--spacing-2);
+}
+
+.gap-3 {
+  gap: var(--spacing-3);
+}
+
+.gap-4 {
+  gap: var(--spacing-4);
+}
+
+.gap-6 {
+  gap: var(--spacing-6);
+}
+
+.gap-8 {
+  gap: var(--spacing-8);
+}
+
+/* =============================================================================
+ * Overflow Utilities
+ * ============================================================================= */
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+/* =============================================================================
+ * Position Utilities
+ * ============================================================================= */
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.sticky {
+  position: sticky;
+}

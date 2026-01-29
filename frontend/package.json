@@ -11,6 +11,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
+    "lint:css": "stylelint 'src/**/*.css'",
+    "lint:css:fix": "stylelint 'src/**/*.css' --fix",
+    "lint:css:strict": "stylelint 'src/**/*.css' --max-warnings 0",
     "type-check": "tsc --noEmit",
     "api:generate": "orval",
     "api:watch": "orval --watch",
@@ -24,7 +27,8 @@
     "e2e:debug": "playwright test --debug",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
-    "e2e:ci": "playwright test --reporter=html,github"
+    "e2e:ci": "playwright test --reporter=html,github",
+    "prepare": "husky"
   },
   "dependencies": {
     "@douyinfe/semi-icons": "^2.90.13",
@@ -74,14 +78,20 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "stylelint": "^16.17.0",
+    "stylelint-config-standard": "^38.0.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{css,json,md}": [
+    "*.{json,md}": [
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint",
       "prettier --write"
     ]
   }

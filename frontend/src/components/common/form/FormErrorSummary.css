@@ -14,6 +14,7 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -80,13 +81,13 @@
   background-color: rgba(var(--semi-red-0), 0.5);
 }
 
-.form-error-summary__link:focus:not(:focus-visible) {
-  outline: none;
-}
-
 .form-error-summary__link:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.form-error-summary__link:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .form-error-summary__field {
@@ -124,6 +125,7 @@
   font-size: var(--font-size-base);
 }
 
+[theme-mode='elder'] .form-error-summary__link:focus:not(:focus-visible),
 [theme-mode='elder'] .form-error-summary__link {
   font-size: var(--font-size-base);
   padding: var(--spacing-2) var(--spacing-3);

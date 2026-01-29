@@ -52,7 +52,7 @@
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--semi-color-text-0);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .mobile-card-primary-item:first-child .mobile-card-primary-value {
@@ -84,7 +84,7 @@
 .mobile-card-value {
   font-size: var(--font-size-sm);
   color: var(--semi-color-text-0);
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Full-width fields for long content */
@@ -139,9 +139,11 @@
   margin: 0;
 }
 
+/* Description paragraph - using combined selector for specificity */
+.mobile-card-list-empty-content p.mobile-card-list-empty-description,
 .mobile-card-list-empty-description {
   font-size: var(--font-size-sm);
-  margin-top: var(--spacing-2) !important;
+  margin-top: var(--spacing-2);
 }
 
 /* Handle tags and other inline elements in values */
@@ -165,6 +167,7 @@
   padding: var(--spacing-5);
 }
 
+[theme-mode='elder'] .mobile-card-primary-item:first-child .mobile-card-primary-value,
 [theme-mode='elder'] .mobile-card-primary-value {
   font-size: var(--font-size-lg);
 }

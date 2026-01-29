@@ -168,8 +168,10 @@
     align-items: stretch;
   }
 
-  .report-filters > * {
-    width: 100% !important;
+  .report-filters > .semi-select[class],
+  .report-filters > .semi-datepicker[class],
+  .report-filters > .semi-button[class] {
+    width: 100%;
   }
 
   .metrics-inline {

@@ -81,7 +81,7 @@
     width: 100%;
   }
 
-  .users-filter-container .semi-select {
-    width: 100% !important;
+  .users-filter-container .semi-select[class] {
+    width: 100%;
   }
 }

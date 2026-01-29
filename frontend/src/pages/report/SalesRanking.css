@@ -137,8 +137,10 @@
     align-items: stretch;
   }
 
-  .ranking-filters > * {
-    width: 100% !important;
+  .ranking-filters > .semi-select[class],
+  .ranking-filters > .semi-datepicker[class],
+  .ranking-filters > .semi-button[class] {
+    width: 100%;
   }
 
   .metrics-inline {

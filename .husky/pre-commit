@@ -51,14 +51,14 @@ if [ -n "$STAGED_FRONTEND_FILES" ]; then
     RUN_E2E=false
     
     cd frontend
-    
-    # Run lint-staged for frontend
-    echo "  → Running ESLint and Prettier..."
+
+    # Run lint-staged for frontend (ESLint, Prettier, Stylelint)
+    echo "  → Running ESLint, Prettier, and Stylelint..."
     if ! npx lint-staged; then
         echo "❌ Frontend lint checks failed"
         exit 1
     fi
-    
+
     cd ..
     
     # Note: TypeScript build check is skipped here as it will be done during docker build

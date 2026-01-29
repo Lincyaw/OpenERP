@@ -329,8 +329,8 @@ export default function SalesOrdersPage() {
     }
 
     Modal.confirm({
-      title: tCommon('table.bulk.confirmTitle'),
-      content: tCommon('table.bulk.confirmContent', { count: draftOrders.length }),
+      title: tCommon('table.bulk.confirmTitle') as string,
+      content: tCommon('table.bulk.confirmContent', { count: draftOrders.length }) as string,
       okText: tCommon('actions.confirm'),
       cancelText: tCommon('actions.cancel'),
       onOk: async () => {
@@ -342,16 +342,16 @@ export default function SalesOrdersPage() {
         const successCount = results.filter((r) => r.status === 'fulfilled').length
 
         if (successCount === draftOrders.length) {
-          Toast.success(tCommon('table.bulk.success'))
+          Toast.success(tCommon('table.bulk.success') as string)
         } else if (successCount > 0) {
           Toast.warning(
             tCommon('table.bulk.partialSuccess', {
               success: successCount,
               total: draftOrders.length,
-            })
+            }) as string
           )
         } else {
-          Toast.error(tCommon('table.bulk.error'))
+          Toast.error(tCommon('table.bulk.error') as string)
         }
 
         setSelectedRowKeys([])
@@ -370,8 +370,8 @@ export default function SalesOrdersPage() {
     }
 
     Modal.confirm({
-      title: tCommon('table.bulk.deleteTitle'),
-      content: tCommon('table.bulk.deleteContent', { count: draftOrders.length }),
+      title: tCommon('table.bulk.deleteTitle') as string,
+      content: tCommon('table.bulk.deleteContent', { count: draftOrders.length }) as string,
       okText: tCommon('actions.delete'),
       cancelText: tCommon('actions.cancel'),
       okButtonProps: { type: 'danger' },
@@ -384,16 +384,16 @@ export default function SalesOrdersPage() {
         const successCount = results.filter((r) => r.status === 'fulfilled').length
 
         if (successCount === draftOrders.length) {
-          Toast.success(tCommon('table.bulk.success'))
+          Toast.success(tCommon('table.bulk.success') as string)
         } else if (successCount > 0) {
           Toast.warning(
             tCommon('table.bulk.partialSuccess', {
               success: successCount,
               total: draftOrders.length,
-            })
+            }) as string
           )
         } else {
-          Toast.error(tCommon('table.bulk.error'))
+          Toast.error(tCommon('table.bulk.error') as string)
         }
 
         setSelectedRowKeys([])
@@ -413,7 +413,13 @@ export default function SalesOrdersPage() {
         t('salesOrder.columns.status'),
         t('salesOrder.columns.createdAt'),
       ],
-      fields: ['order_number', 'customer_name', 'payable_amount', 'status', 'created_at'] as const,
+      fields: [
+        'order_number',
+        'customer_name',
+        'payable_amount',
+        'status',
+        'created_at',
+      ] as string[],
       transforms: {
         payable_amount: (value: unknown) => formatNumberForExport(value as number | undefined),
         status: (value: unknown) => {
@@ -845,7 +851,7 @@ export default function SalesOrdersPage() {
             onClick={handleBulkConfirm}
             disabled={!hasDraftOrdersSelected}
           >
-            {tCommon('table.bulk.confirm')}
+            {tCommon('table.bulk.confirm') as string}
           </Button>
           <Button
             type="danger"
@@ -853,7 +859,7 @@ export default function SalesOrdersPage() {
             onClick={handleBulkDelete}
             disabled={!hasDraftOrdersSelected}
           >
-            {tCommon('table.bulk.delete')}
+            {tCommon('table.bulk.delete') as string}
           </Button>
         </BulkActionBar>
 

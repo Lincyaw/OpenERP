@@ -12145,7 +12145,7 @@
       "- [ ] Semi Select components still fill container width",
       "- [ ] No visual regressions in filter dropdowns"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CSS-006",
@@ -12192,7 +12192,7 @@
       "- [ ] Layout works correctly at all breakpoints",
       "- [ ] No duplicate style overrides"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CSS-007",
@@ -12252,7 +12252,7 @@
       "- [ ] Layout works correctly at all screen sizes",
       "- [ ] Metric cards maintain minimum readable width"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CSS-008",
@@ -12319,7 +12319,7 @@
       "- [ ] .full-width-select replaces !important usage",
       "- [ ] Utilities documented in CSS_BEST_PRACTICES.md"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CSS-009",

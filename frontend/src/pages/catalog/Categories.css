@@ -157,8 +157,8 @@
     gap: var(--spacing-3);
   }
 
-  .categories-toolbar .semi-input {
-    width: 100% !important;
+  .categories-toolbar .semi-input[class] {
+    width: 100%;
   }
 
   .category-tree-node-actions {

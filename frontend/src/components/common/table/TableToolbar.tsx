@@ -53,20 +53,25 @@ export function TableToolbar({
   const placeholder = searchPlaceholder || t('table.searchPlaceholder')
 
   // Export dropdown menu items
-  const exportMenuItems = []
+  const exportMenuItems: Array<{
+    node: 'item'
+    key: string
+    name: string
+    onClick: () => void
+  }> = []
   if (exportActions?.onExportCSV) {
     exportMenuItems.push({
-      node: 'item',
+      node: 'item' as const,
       key: 'csv',
-      name: t('table.export.csv'),
+      name: t('table.export.csv') as string,
       onClick: exportActions.onExportCSV,
     })
   }
   if (exportActions?.onExportExcel) {
     exportMenuItems.push({
-      node: 'item',
+      node: 'item' as const,
       key: 'excel',
-      name: t('table.export.excel'),
+      name: t('table.export.excel') as string,
       onClick: exportActions.onExportExcel,
     })
   }
