@@ -11,7 +11,7 @@
 /* Customer Info Section */
 .recharge-modal-content .customer-info-section {
   margin-bottom: var(--spacing-6);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
 }
@@ -32,7 +32,7 @@
 
 /* Balance Preview */
 .balance-preview {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-primary-light-default);
   border-radius: var(--semi-border-radius-medium);
   border: 1px solid var(--semi-color-primary-light-active);

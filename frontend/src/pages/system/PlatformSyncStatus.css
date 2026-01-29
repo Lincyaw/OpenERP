@@ -1,7 +1,7 @@
 /* Platform Sync Status Page Styles */
 
 .sync-status-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .sync-status-card {
@@ -73,7 +73,7 @@
 }
 
 .sync-stat {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
   text-align: center;

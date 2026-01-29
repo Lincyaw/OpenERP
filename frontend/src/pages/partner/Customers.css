@@ -75,7 +75,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .customers-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .customers-header {

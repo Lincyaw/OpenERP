@@ -82,7 +82,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .suppliers-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .suppliers-header {

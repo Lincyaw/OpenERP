@@ -3,7 +3,7 @@
  */
 
 .profit-loss-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Page Header */
@@ -142,7 +142,7 @@
 }
 
 .chart-card .semi-card-body {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Product Profit Card */

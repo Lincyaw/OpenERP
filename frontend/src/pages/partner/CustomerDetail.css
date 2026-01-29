@@ -89,7 +89,7 @@
 
 @media (max-width: 768px) {
   .customer-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .customer-detail-page .info-grid {

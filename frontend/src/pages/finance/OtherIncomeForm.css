@@ -23,7 +23,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .other-income-form-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .other-income-form-header {

@@ -1,5 +1,5 @@
 .feature-flag-list-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .feature-flag-list-card {

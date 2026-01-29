@@ -6,7 +6,7 @@
  */
 
 .receipt-voucher-new-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 @media (min-width: 768px) {
@@ -67,7 +67,7 @@
 
 /* Pending Receivables List */
 .pending-receivables-list {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--color-bg-layout);
   border-radius: var(--radius-md);
 }

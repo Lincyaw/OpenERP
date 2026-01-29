@@ -644,6 +644,7 @@ export default function ProfitLossPage() {
             }}
             loading={loading}
             empty={<Empty description="暂无商品利润数据" />}
+            scroll={{ x: 900 }}
           />
         </Card>
       </Spin>

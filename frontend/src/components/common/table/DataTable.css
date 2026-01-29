@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
   margin-top: var(--spacing-4);
   border-top: 1px solid var(--semi-color-border);
 }

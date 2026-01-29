@@ -1,7 +1,7 @@
 /* Profile Page Styles */
 
 .profile-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);

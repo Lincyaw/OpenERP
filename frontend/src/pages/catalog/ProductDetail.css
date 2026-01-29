@@ -90,7 +90,7 @@
 
 @media (max-width: 768px) {
   .product-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .product-detail-page .info-grid {

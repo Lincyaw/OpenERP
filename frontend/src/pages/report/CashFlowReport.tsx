@@ -730,6 +730,7 @@ export default function CashFlowReportPage() {
             }}
             loading={itemsLoading}
             empty={<Empty description="暂无现金流水明细" />}
+            scroll={{ x: 800 }}
           />
         </Card>
       </Spin>

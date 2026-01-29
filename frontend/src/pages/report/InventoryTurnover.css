@@ -3,7 +3,7 @@
  */
 
 .inventory-turnover-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Page Header */
@@ -112,7 +112,7 @@
 }
 
 .chart-card .semi-card-body {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Warehouse Card */
@@ -127,7 +127,7 @@
 }
 
 .warehouse-item {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   border: 1px solid var(--semi-color-border);
   border-radius: var(--semi-border-radius-medium);
   background-color: var(--semi-color-bg-1);

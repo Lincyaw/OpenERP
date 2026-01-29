@@ -1,5 +1,5 @@
 .purchase-order-receive-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
@@ -39,7 +39,7 @@
 .warehouse-selection-card,
 .items-card,
 .actions-card {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .card-title {

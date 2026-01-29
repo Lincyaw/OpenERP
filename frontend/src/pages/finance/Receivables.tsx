@@ -22,6 +22,7 @@ import {
   type TableAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { useResponsive } from '@/hooks/useResponsive'
 import {
   listFinanceReceivableReceivables,
   getFinanceReceivableReceivableSummary,
@@ -104,6 +105,7 @@ function isOverdue(receivable: HandlerAccountReceivableResponse): boolean {
 export default function ReceivablesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
+  const { isMobile } = useResponsive()
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(
@@ -453,52 +455,97 @@ export default function ReceivablesPage() {
       {/* Summary Cards */}
       <div className="receivables-summary">
         <Spin spinning={summaryLoading}>
-          <Descriptions row className="summary-descriptions">
-            <Descriptions.Item itemKey="total_outstanding">
-              <div className="summary-item">
-                <Text type="secondary" className="summary-label">
+          {isMobile ? (
+            <div className="summary-grid-mobile">
+              <div className="summary-item-mobile primary">
+                <Text type="secondary" size="small">
                   {t('receivables.summary.totalOutstanding')}
                 </Text>
-                <Text className="summary-value primary">
+                <Text strong className="summary-value-mobile">
                   {formatCurrency(summary?.total_outstanding)}
                 </Text>
               </div>
-            </Descriptions.Item>
-            <Descriptions.Item itemKey="total_overdue">
-              <div className="summary-item">
-                <Text type="secondary" className="summary-label">
+              <div className="summary-item-mobile danger">
+                <Text type="secondary" size="small">
                   {t('receivables.summary.totalOverdue')}
                 </Text>
-                <Text className="summary-value danger">
+                <Text strong className="summary-value-mobile">
                   {formatCurrency(summary?.total_overdue)}
                 </Text>
               </div>
-            </Descriptions.Item>
-            <Descriptions.Item itemKey="pending_count">
-              <div className="summary-item">
-                <Text type="secondary" className="summary-label">
+              <div className="summary-item-mobile">
+                <Text type="secondary" size="small">
                   {t('receivables.summary.pendingCount')}
                 </Text>
-                <Text className="summary-value">{summary?.pending_count ?? '-'}</Text>
+                <Text strong className="summary-value-mobile">
+                  {summary?.pending_count ?? '-'}
+                </Text>
               </div>
-            </Descriptions.Item>
-            <Descriptions.Item itemKey="partial_count">
-              <div className="summary-item">
-                <Text type="secondary" className="summary-label">
+              <div className="summary-item-mobile">
+                <Text type="secondary" size="small">
                   {t('receivables.summary.partialCount')}
                 </Text>
-                <Text className="summary-value">{summary?.partial_count ?? '-'}</Text>
+                <Text strong className="summary-value-mobile">
+                  {summary?.partial_count ?? '-'}
+                </Text>
               </div>
-            </Descriptions.Item>
-            <Descriptions.Item itemKey="overdue_count">
-              <div className="summary-item">
-                <Text type="secondary" className="summary-label">
+              <div className="summary-item-mobile warning">
+                <Text type="secondary" size="small">
                   {t('receivables.summary.overdueCount')}
                 </Text>
-                <Text className="summary-value warning">{summary?.overdue_count ?? '-'}</Text>
+                <Text strong className="summary-value-mobile">
+                  {summary?.overdue_count ?? '-'}
+                </Text>
               </div>
-            </Descriptions.Item>
-          </Descriptions>
+            </div>
+          ) : (
+            <Descriptions row className="summary-descriptions">
+              <Descriptions.Item itemKey="total_outstanding">
+                <div className="summary-item">
+                  <Text type="secondary" className="summary-label">
+                    {t('receivables.summary.totalOutstanding')}
+                  </Text>
+                  <Text className="summary-value primary">
+                    {formatCurrency(summary?.total_outstanding)}
+                  </Text>
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item itemKey="total_overdue">
+                <div className="summary-item">
+                  <Text type="secondary" className="summary-label">
+                    {t('receivables.summary.totalOverdue')}
+                  </Text>
+                  <Text className="summary-value danger">
+                    {formatCurrency(summary?.total_overdue)}
+                  </Text>
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item itemKey="pending_count">
+                <div className="summary-item">
+                  <Text type="secondary" className="summary-label">
+                    {t('receivables.summary.pendingCount')}
+                  </Text>
+                  <Text className="summary-value">{summary?.pending_count ?? '-'}</Text>
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item itemKey="partial_count">
+                <div className="summary-item">
+                  <Text type="secondary" className="summary-label">
+                    {t('receivables.summary.partialCount')}
+                  </Text>
+                  <Text className="summary-value">{summary?.partial_count ?? '-'}</Text>
+                </div>
+              </Descriptions.Item>
+              <Descriptions.Item itemKey="overdue_count">
+                <div className="summary-item">
+                  <Text type="secondary" className="summary-label">
+                    {t('receivables.summary.overdueCount')}
+                  </Text>
+                  <Text className="summary-value warning">{summary?.overdue_count ?? '-'}</Text>
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
+          )}
         </Spin>
       </div>
 

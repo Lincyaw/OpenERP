@@ -1,5 +1,5 @@
 .payment-settings-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .payment-settings-card {
@@ -48,7 +48,7 @@
 }
 
 .payment-settings-form {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .form-section {

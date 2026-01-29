@@ -11,7 +11,7 @@
 }
 
 .ship-order-modal .order-summary-section {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background-color: var(--color-fill-0);
   border-radius: var(--radius-md);
 }
@@ -21,7 +21,7 @@
 }
 
 .ship-order-modal .warehouse-selection-section {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background-color: var(--color-fill-0);
   border-radius: var(--radius-md);
 }
@@ -34,7 +34,7 @@
 }
 
 .ship-order-modal .empty-warehouses {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .ship-order-modal .warning-section {

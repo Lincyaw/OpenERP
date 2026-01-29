@@ -9,8 +9,43 @@
   margin-bottom: var(--spacing-6);
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
+
+/* Mobile Summary Grid - 2x3 compact layout */
+.summary-grid-mobile {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-2);
+}
+
+.summary-item-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--radius-sm);
+}
+
+.summary-item-mobile.primary .summary-value-mobile {
+  color: var(--semi-color-primary);
+}
+
+.summary-item-mobile.danger .summary-value-mobile {
+  color: var(--semi-color-danger);
+}
+
+.summary-item-mobile.warning .summary-value-mobile {
+  color: var(--semi-color-warning);
+}
+
+.summary-value-mobile {
+  font-size: var(--font-size-lg);
+  line-height: 1.3;
+}
+
+/* Desktop Summary */
 
 .summary-descriptions {
   display: flex;
@@ -177,7 +212,7 @@
 
 @media (max-width: 768px) {
   .receivables-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .receivables-header {

@@ -50,13 +50,23 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .purchase-returns-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .purchase-returns-header {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-3);
+  }
+
+  /* Filter controls responsive */
+  .purchase-returns-page .semi-select {
+    width: 100% !important;
+  }
+
+  .purchase-returns-page .semi-datepicker {
+    min-width: 0;
+    width: 100% !important;
   }
 }
 

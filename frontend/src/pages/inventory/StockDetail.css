@@ -40,7 +40,7 @@
 /* Responsive styles */
 @media (max-width: 768px) {
   .stock-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 }
 

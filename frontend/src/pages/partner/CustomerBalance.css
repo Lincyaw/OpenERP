@@ -56,7 +56,7 @@
 }
 
 .balance-card {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   border-radius: var(--semi-border-radius-medium);
   min-width: 140px;
   text-align: center;
@@ -185,7 +185,7 @@
 
 @media (max-width: 768px) {
   .customer-balance-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .balance-page-header {

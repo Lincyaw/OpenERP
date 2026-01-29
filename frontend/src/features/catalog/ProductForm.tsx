@@ -11,11 +11,13 @@ import {
   TextField,
   NumberField,
   TextAreaField,
+  SelectField,
   useFormWithValidation,
   validationMessages,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
 import { createProduct, updateProduct } from '@/api/products/products'
+import { useListCategories } from '@/api/categories/categories'
 import type { HandlerProductResponse } from '@/api/models'
 import './ProductForm.css'
 
@@ -33,7 +35,7 @@ interface ProductFormProps {
 /**
  * Create form validation schema with i18n support
  */
-function createProductFormSchema(codeRegexError: string) {
+function createProductFormSchema(codeRegexError: string, categoryRequired: string) {
   return z.object({
     code: z
       .string()
@@ -44,6 +46,7 @@ function createProductFormSchema(codeRegexError: string) {
       .string()
       .min(1, validationMessages.required)
       .max(200, validationMessages.maxLength(200)),
+    category_id: z.string().min(1, categoryRequired),
     unit: z.string().min(1, validationMessages.required).max(20, validationMessages.maxLength(20)),
     barcode: z
       .string()
@@ -101,9 +104,23 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
 
   // Create schema with i18n error messages
   const productFormSchema = useMemo(
-    () => createProductFormSchema(t('products.form.codeRegexError')),
+    () =>
+      createProductFormSchema(
+        t('products.form.codeRegexError'),
+        t('products.form.categoryRequired')
+      ),
     [t]
   )
+
+  // Fetch categories for select
+  const { data: categoriesResponse } = useListCategories({ status: 'active', limit: 1000 })
+  const categoryOptions = useMemo(() => {
+    const categories = categoriesResponse?.data?.data || []
+    return categories.map((cat) => ({
+      value: cat.id || '',
+      label: cat.name || '',
+    }))
+  }, [categoriesResponse])
 
   // Transform API data to form values
   const defaultValues: Partial<ProductFormData> = useMemo(() => {
@@ -111,6 +128,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       return {
         code: '',
         name: '',
+        category_id: '',
         unit: '',
         barcode: '',
         description: '',
@@ -129,6 +147,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
     return {
       code: initialData.code || '',
       name: initialData.name || '',
+      category_id: initialData.category_id || '',
       unit: initialData.unit || '',
       barcode: initialData.barcode || '',
       description: initialData.description || '',
@@ -180,6 +199,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       const response = await createProduct({
         code: data.code,
         name: data.name,
+        category_id: data.category_id,
         unit: data.unit,
         barcode: data.barcode,
         description: data.description,
@@ -213,6 +233,25 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             description={t('products.form.basicInfoDesc')}
           >
             <FormRow cols={2}>
+              <SelectField
+                name="category_id"
+                control={control}
+                label={t('products.form.category')}
+                placeholder={t('products.form.categoryPlaceholder')}
+                options={categoryOptions}
+                required
+                showSearch
+                disabled={isEditMode}
+              />
+              <TextField
+                name="name"
+                control={control}
+                label={t('products.form.name')}
+                placeholder={t('products.form.namePlaceholder')}
+                required
+              />
+            </FormRow>
+            <FormRow cols={2}>
               <TextField
                 name="code"
                 control={control}
@@ -227,15 +266,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 }
               />
               <TextField
-                name="name"
-                control={control}
-                label={t('products.form.name')}
-                placeholder={t('products.form.namePlaceholder')}
-                required
-              />
-            </FormRow>
-            <FormRow cols={2}>
-              <TextField
                 name="unit"
                 control={control}
                 label={t('products.form.unit')}
@@ -248,12 +278,15 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                     : t('products.form.unitHelperCreate')
                 }
               />
+            </FormRow>
+            <FormRow cols={2}>
               <TextField
                 name="barcode"
                 control={control}
                 label={t('products.form.barcode')}
                 placeholder={t('products.form.barcodePlaceholder')}
               />
+              <div /> {/* Empty placeholder for grid alignment */}
             </FormRow>
             <TextAreaField
               name="description"

@@ -3,7 +3,7 @@
  */
 
 .sales-ranking-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Page Header */
@@ -106,7 +106,7 @@
 }
 
 .ranking-chart-card .semi-card-body {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Table Styles */

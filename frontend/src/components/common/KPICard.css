@@ -11,7 +11,7 @@
 .kpi-card {
   background: var(--color-bg-container);
   border-radius: var(--semi-border-radius-medium, 8px);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   box-shadow: var(--shadow-card);
   transition:
     box-shadow var(--duration-normal) var(--ease-default),

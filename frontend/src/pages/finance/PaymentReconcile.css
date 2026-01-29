@@ -6,7 +6,7 @@
  */
 
 .payment-reconcile-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 @media (min-width: 768px) {
@@ -92,7 +92,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-6);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--color-bg-layout);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-4);
@@ -139,7 +139,7 @@
 
 .result-summary {
   margin-top: var(--spacing-4);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--color-bg-layout);
   border-radius: var(--radius-md);
 }

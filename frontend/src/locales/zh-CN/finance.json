@@ -1,4 +1,48 @@
 {
+  "cashFlow": {
+    "title": "收支流水",
+    "searchPlaceholder": "搜索单据编号、描述...",
+    "refresh": "刷新",
+    "summary": {
+      "netCashFlow": "净现金流",
+      "totalInflow": "总收入",
+      "totalOutflow": "总支出",
+      "inflowCount": "收入笔数",
+      "outflowCount": "支出笔数"
+    },
+    "filter": {
+      "allDirection": "全部方向",
+      "inflow": "收入",
+      "outflow": "支出",
+      "allType": "全部类型",
+      "directionPlaceholder": "收支方向",
+      "typePlaceholder": "流水类型",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "direction": {
+      "INFLOW": "收入",
+      "OUTFLOW": "支出"
+    },
+    "type": {
+      "EXPENSE": "费用支出",
+      "INCOME": "其他收入",
+      "RECEIPT": "收款",
+      "PAYMENT": "付款"
+    },
+    "columns": {
+      "transactionDate": "交易日期",
+      "referenceNo": "单据编号",
+      "direction": "收支方向",
+      "type": "类型",
+      "amount": "金额",
+      "balance": "余额",
+      "description": "描述"
+    },
+    "messages": {
+      "fetchError": "获取收支流水失败"
+    }
+  },
   "receivables": {
     "title": "应收账款",
     "searchPlaceholder": "搜索单据编号、客户名称...",

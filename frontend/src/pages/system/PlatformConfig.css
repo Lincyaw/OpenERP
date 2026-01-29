@@ -1,7 +1,7 @@
 /* Platform Config Page Styles */
 
 .platform-config-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .platform-config-card {
@@ -45,7 +45,7 @@
 
 /* Form styles */
 .platform-config-form {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .form-section {

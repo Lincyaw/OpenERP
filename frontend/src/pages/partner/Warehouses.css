@@ -80,7 +80,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .warehouses-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .warehouses-header {

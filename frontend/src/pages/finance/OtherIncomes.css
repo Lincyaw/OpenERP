@@ -9,7 +9,7 @@
   margin-bottom: var(--spacing-6);
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .other-incomes-summary .summary-descriptions {
@@ -131,7 +131,7 @@
 
 @media (max-width: 768px) {
   .other-incomes-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .other-incomes-header {

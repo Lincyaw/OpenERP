@@ -1,7 +1,7 @@
 /* Product Mappings Page Styles */
 
 .product-mappings-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .product-mappings-card {
@@ -42,7 +42,7 @@
 
 /* Mapping Modal */
 .mapping-modal .semi-modal-body {
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--page-padding-mobile) var(--spacing-6);
 }
 
 .mapping-modal .sync-settings-section {
@@ -57,7 +57,7 @@
 
 /* Batch Mapping Modal */
 .batch-mapping-modal .semi-modal-body {
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--page-padding-mobile) var(--spacing-6);
 }
 
 .batch-mapping-content {

@@ -62,7 +62,7 @@
 
 @media (max-width: 768px) {
   .warehouse-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .warehouse-detail-page .info-grid {

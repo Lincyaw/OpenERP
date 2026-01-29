@@ -15,7 +15,7 @@
   background: var(--semi-color-bg-2);
   border: 1px solid var(--semi-color-border);
   border-radius: var(--semi-border-radius-medium);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   transition: all var(--duration-fast) var(--ease-default);
 }
 
@@ -111,7 +111,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
   margin-top: var(--spacing-4);
   border-top: 1px solid var(--semi-color-border);
 }

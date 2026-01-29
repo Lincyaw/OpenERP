@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   Typography,
@@ -29,40 +30,10 @@ type CashFlowItemType = 'EXPENSE' | 'INCOME' | 'RECEIPT' | 'PAYMENT'
 // CashFlow item type with index signature for DataTable compatibility
 type CashFlowRow = HandlerCashFlowItemResponse & Record<string, unknown>
 
-// Direction options for filter
-const DIRECTION_OPTIONS = [
-  { label: '全部方向', value: '' },
-  { label: '收入', value: 'INFLOW' },
-  { label: '支出', value: 'OUTFLOW' },
-]
-
-// Type options for filter
-const TYPE_OPTIONS = [
-  { label: '全部类型', value: '' },
-  { label: '费用支出', value: 'EXPENSE' },
-  { label: '其他收入', value: 'INCOME' },
-  { label: '收款', value: 'RECEIPT' },
-  { label: '付款', value: 'PAYMENT' },
-]
-
 // Direction tag colors
 const DIRECTION_TAG_COLORS: Record<CashFlowDirection, 'green' | 'red'> = {
   INFLOW: 'green',
   OUTFLOW: 'red',
-}
-
-// Direction labels
-const DIRECTION_LABELS: Record<CashFlowDirection, string> = {
-  INFLOW: '收入',
-  OUTFLOW: '支出',
-}
-
-// Type labels
-const TYPE_LABELS: Record<CashFlowItemType, string> = {
-  EXPENSE: '费用支出',
-  INCOME: '其他收入',
-  RECEIPT: '收款',
-  PAYMENT: '付款',
 }
 
 // Type tag colors
@@ -119,6 +90,30 @@ function getDefaultDateRange(): [Date, Date] {
  * - Summary cards showing key metrics
  */
 export default function CashFlowPage() {
+  const { t } = useTranslation('finance')
+
+  // Direction options for filter
+  const DIRECTION_OPTIONS = useMemo(
+    () => [
+      { label: t('cashFlow.filter.allDirection'), value: '' },
+      { label: t('cashFlow.direction.INFLOW'), value: 'INFLOW' },
+      { label: t('cashFlow.direction.OUTFLOW'), value: 'OUTFLOW' },
+    ],
+    [t]
+  )
+
+  // Type options for filter
+  const TYPE_OPTIONS = useMemo(
+    () => [
+      { label: t('cashFlow.filter.allType'), value: '' },
+      { label: t('cashFlow.type.EXPENSE'), value: 'EXPENSE' },
+      { label: t('cashFlow.type.INCOME'), value: 'INCOME' },
+      { label: t('cashFlow.type.RECEIPT'), value: 'RECEIPT' },
+      { label: t('cashFlow.type.PAYMENT'), value: 'PAYMENT' },
+    ],
+    [t]
+  )
+
   // State for data
   const [cashFlowItems, setCashFlowItems] = useState<CashFlowRow[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
@@ -210,7 +205,7 @@ export default function CashFlowPage() {
         })
       }
     } catch {
-      Toast.error('获取收支流水失败')
+      Toast.error(t('cashFlow.messages.fetchError'))
     } finally {
       setLoading(false)
       setSummaryLoading(false)
@@ -223,6 +218,7 @@ export default function CashFlowPage() {
     state.pagination.page,
     state.pagination.pageSize,
     state.sort.order,
+    t,
   ])
 
   // Fetch on mount and when filters change
@@ -288,14 +284,14 @@ export default function CashFlowPage() {
   const tableColumns: DataTableColumn<CashFlowRow>[] = useMemo(
     () => [
       {
-        title: '日期',
+        title: t('cashFlow.columns.transactionDate'),
         dataIndex: 'date',
         width: 110,
         sortable: true,
         render: (date: unknown) => formatDate(date as string | undefined),
       },
       {
-        title: '单据编号',
+        title: t('cashFlow.columns.referenceNo'),
         dataIndex: 'number',
         width: 140,
         render: (number: unknown) => (
@@ -303,30 +299,24 @@ export default function CashFlowPage() {
         ),
       },
       {
-        title: '类型',
+        title: t('cashFlow.columns.type'),
         dataIndex: 'type',
         width: 100,
         align: 'center',
         render: (type: unknown) => {
           const typeValue = type as CashFlowItemType | undefined
           if (!typeValue) return '-'
-          return <Tag color={TYPE_TAG_COLORS[typeValue]}>{TYPE_LABELS[typeValue]}</Tag>
+          return <Tag color={TYPE_TAG_COLORS[typeValue]}>{t(`cashFlow.type.${typeValue}`)}</Tag>
         },
       },
       {
-        title: '分类',
-        dataIndex: 'category',
-        width: 100,
-        render: (category: unknown) => <span>{(category as string) || '-'}</span>,
-      },
-      {
-        title: '描述',
+        title: t('cashFlow.columns.description'),
         dataIndex: 'description',
         ellipsis: true,
         render: (desc: unknown) => <span>{(desc as string) || '-'}</span>,
       },
       {
-        title: '方向',
+        title: t('cashFlow.columns.direction'),
         dataIndex: 'direction',
         width: 80,
         align: 'center',
@@ -335,13 +325,13 @@ export default function CashFlowPage() {
           if (!directionValue) return '-'
           return (
             <Tag color={DIRECTION_TAG_COLORS[directionValue]}>
-              {DIRECTION_LABELS[directionValue]}
+              {t(`cashFlow.direction.${directionValue}`)}
             </Tag>
           )
         },
       },
       {
-        title: '金额',
+        title: t('cashFlow.columns.amount'),
         dataIndex: 'amount',
         width: 120,
         align: 'right',
@@ -356,7 +346,7 @@ export default function CashFlowPage() {
         },
       },
     ],
-    []
+    [t]
   )
 
   return (
@@ -368,7 +358,7 @@ export default function CashFlowPage() {
             <Descriptions.Item itemKey="total_inflow">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  总收入
+                  {t('cashFlow.summary.totalInflow')}
                 </Text>
                 <Text className="summary-value inflow">
                   {formatCurrency(summary?.total_inflow)}
@@ -378,7 +368,7 @@ export default function CashFlowPage() {
             <Descriptions.Item itemKey="total_outflow">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  总支出
+                  {t('cashFlow.summary.totalOutflow')}
                 </Text>
                 <Text className="summary-value outflow">
                   {formatCurrency(summary?.total_outflow)}
@@ -388,7 +378,7 @@ export default function CashFlowPage() {
             <Descriptions.Item itemKey="net_cash_flow">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  净现金流
+                  {t('cashFlow.summary.netCashFlow')}
                 </Text>
                 <Text
                   className={`summary-value ${(summary?.net_cash_flow ?? 0) >= 0 ? 'inflow' : 'outflow'}`}
@@ -400,7 +390,7 @@ export default function CashFlowPage() {
             <Descriptions.Item itemKey="expense_total">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  费用支出
+                  {t('cashFlow.type.EXPENSE')}
                 </Text>
                 <Text className="summary-value">
                   {formatCurrency((summary as { expense_total?: number })?.expense_total || 0)}
@@ -410,7 +400,7 @@ export default function CashFlowPage() {
             <Descriptions.Item itemKey="income_total">
               <div className="summary-item">
                 <Text type="secondary" className="summary-label">
-                  其他收入
+                  {t('cashFlow.type.INCOME')}
                 </Text>
                 <Text className="summary-value">
                   {formatCurrency((summary as { income_total?: number })?.income_total || 0)}
@@ -425,18 +415,18 @@ export default function CashFlowPage() {
       <Card className="cashflow-card">
         <div className="cashflow-header">
           <Title heading={4} style={{ margin: 0 }}>
-            收支流水
+            {t('cashFlow.title')}
           </Title>
         </div>
 
         <TableToolbar
           searchValue={searchKeyword}
           onSearchChange={handleSearch}
-          searchPlaceholder="搜索单据编号、描述..."
+          searchPlaceholder={t('cashFlow.searchPlaceholder')}
           secondaryActions={[
             {
               key: 'refresh',
-              label: '刷新',
+              label: t('cashFlow.refresh'),
               icon: <IconRefresh />,
               onClick: handleRefresh,
             },
@@ -444,14 +434,14 @@ export default function CashFlowPage() {
           filters={
             <Space className="cashflow-filter-container">
               <Select
-                placeholder="收支方向"
+                placeholder={t('cashFlow.filter.directionPlaceholder')}
                 value={directionFilter}
                 onChange={handleDirectionChange}
                 optionList={DIRECTION_OPTIONS}
                 style={{ width: 120 }}
               />
               <Select
-                placeholder="流水类型"
+                placeholder={t('cashFlow.filter.typePlaceholder')}
                 value={typeFilter}
                 onChange={handleTypeChange}
                 optionList={TYPE_OPTIONS}
@@ -459,7 +449,7 @@ export default function CashFlowPage() {
               />
               <DatePicker
                 type="dateRange"
-                placeholder={['开始日期', '结束日期']}
+                placeholder={[t('cashFlow.filter.startDate'), t('cashFlow.filter.endDate')]}
                 value={dateRange as [Date, Date] | undefined}
                 onChange={handleDateRangeChange}
                 style={{ width: 240 }}

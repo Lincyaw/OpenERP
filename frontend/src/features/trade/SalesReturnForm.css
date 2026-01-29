@@ -44,7 +44,7 @@
 .order-info-section {
   background-color: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Form Row & Fields */
@@ -104,7 +104,7 @@
 .sales-return-form-page .summary-section {
   background-color: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
-  padding: var(--spacing-4) !important;
+  padding: var(--page-padding-mobile) !important;
   margin-top: var(--spacing-4);
 }
 

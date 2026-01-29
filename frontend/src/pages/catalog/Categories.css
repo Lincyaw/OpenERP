@@ -142,7 +142,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .categories-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .categories-header {

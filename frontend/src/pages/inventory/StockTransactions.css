@@ -59,7 +59,7 @@
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
   .stock-transactions-page {
-    padding: var(--spacing-4, 16px);
+    padding: var(--page-padding-mobile, 16px);
   }
 
   .stock-transactions-header {

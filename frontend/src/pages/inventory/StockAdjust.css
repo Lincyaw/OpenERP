@@ -36,7 +36,7 @@
 
 /* Current stock info */
 .current-stock-info {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .stock-warning {
@@ -45,7 +45,7 @@
 
 /* Adjustment preview */
 .adjustment-preview {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -112,7 +112,7 @@
 /* Responsive styles */
 @media (max-width: 768px) {
   .stock-adjust-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .stock-adjust-header {

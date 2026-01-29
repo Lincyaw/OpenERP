@@ -139,7 +139,7 @@
 
 /* Status timeline */
 .sales-order-detail-page .status-timeline {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .sales-order-detail-page .status-timeline .semi-timeline-item-time {
@@ -167,7 +167,7 @@
 
 @media (max-width: 768px) {
   .sales-order-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .sales-order-detail-page .order-info-grid {

@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-4);
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
   margin-bottom: var(--spacing-4);
 }
 
@@ -29,6 +29,12 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+}
+
+/* Allow Space component in filters to wrap on mobile */
+.table-toolbar-filters > .semi-space {
+  flex-wrap: wrap;
+  gap: var(--spacing-2) !important;
 }
 
 .table-toolbar-bulk {
@@ -96,7 +102,41 @@
     width: 100%;
   }
 
+  .table-toolbar-filters {
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+  }
+
+  /* Make filter controls full width on mobile */
+  .table-toolbar-filters .semi-select,
+  .table-toolbar-filters .semi-datepicker {
+    min-width: 0;
+    flex: 1 1 calc(50% - var(--spacing-1));
+  }
+
+  /* Date picker needs more space */
+  .table-toolbar-filters .semi-datepicker {
+    flex: 1 1 100%;
+  }
+
   .table-toolbar-right {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  /* Bulk action bar mobile */
+  .bulk-action-bar {
+    flex-direction: column;
+    gap: var(--spacing-3);
+    align-items: stretch;
+  }
+
+  .bulk-action-bar-info {
+    justify-content: space-between;
+  }
+
+  .bulk-action-bar-actions {
+    flex-wrap: wrap;
     justify-content: flex-end;
   }
 }

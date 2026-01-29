@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container, Row, Stack } from '@/components/common/layout'
+import { useResponsive } from '@/hooks/useResponsive'
 import { countProductByStatus } from '@/api/products/products'
 import { countCustomerByStatus } from '@/api/customers/customers'
 import { listInventoryBelowMinimum } from '@/api/inventory/inventory'
@@ -30,11 +31,26 @@ interface MetricCard {
   key: string
   label: string
   value: string | number
+  mobileValue?: string | number // Compact value for mobile
   subLabel?: string
   subValue?: string | number
   icon: React.ReactNode
   color: string
   onClick?: () => void
+}
+
+/**
+ * Format currency in compact form for mobile (e.g., ¥14.8万)
+ */
+function formatCompactCurrency(amount: number | undefined): string {
+  if (amount === undefined || amount === null) return '¥0'
+  if (Math.abs(amount) >= 100000000) {
+    return `¥${(amount / 100000000).toFixed(1)}亿`
+  }
+  if (Math.abs(amount) >= 10000) {
+    return `¥${(amount / 10000).toFixed(1)}万`
+  }
+  return `¥${amount.toFixed(0)}`
 }
 
 interface PendingTask {
@@ -67,6 +83,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { t } = useTranslation('common')
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
+  const { isMobile } = useResponsive()
 
   // Loading state
   const [loading, setLoading] = useState(true)
@@ -394,6 +411,7 @@ export default function DashboardPage() {
         key: 'receivables',
         label: t('dashboard.metrics.receivables'),
         value: formatCurrency(receivableSummary.totalAmount),
+        mobileValue: formatCompactCurrency(receivableSummary.totalAmount),
         subLabel: t('dashboard.metrics.pendingReceipts'),
         subValue: formatNumber(receivableSummary.pendingCount),
         icon: <IconPriceTag size="large" />,
@@ -404,6 +422,7 @@ export default function DashboardPage() {
         key: 'payables',
         label: t('dashboard.metrics.payables'),
         value: formatCurrency(payableSummary.totalAmount),
+        mobileValue: formatCompactCurrency(payableSummary.totalAmount),
         subLabel: t('dashboard.metrics.pendingPayments'),
         subValue: formatNumber(payableSummary.pendingCount),
         icon: <IconCreditCard size="large" />,
@@ -507,54 +526,91 @@ export default function DashboardPage() {
           <Text type="secondary">{t('dashboard.welcome')}</Text>
         </div>
 
-        {/* Metric Cards */}
-        <div className="dashboard-metrics">
-          <Row gap="md" wrap="wrap">
+        {/* Metric Cards - Desktop: full cards, Mobile: compact grid */}
+        {isMobile ? (
+          <div className="dashboard-metrics-mobile">
             {metricCards.map((card) => (
-              <div key={card.key} className="metric-card-wrapper">
-                <Card
-                  className="metric-card"
-                  style={{ cursor: card.onClick ? 'pointer' : 'default' }}
+              <div
+                key={card.key}
+                className="metric-item-mobile"
+                onClick={card.onClick}
+                role={card.onClick ? 'button' : undefined}
+                tabIndex={card.onClick ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (card.onClick && (e.key === 'Enter' || e.key === ' ')) {
+                    card.onClick()
+                  }
+                }}
+              >
+                <div
+                  className="metric-icon-mobile"
+                  style={{
+                    backgroundColor: card.color + '15',
+                    color: card.color,
+                  }}
                 >
-                  <div
-                    className="metric-card-content"
-                    onClick={card.onClick}
-                    role={card.onClick ? 'button' : undefined}
-                    tabIndex={card.onClick ? 0 : undefined}
-                    onKeyDown={(e) => {
-                      if (card.onClick && (e.key === 'Enter' || e.key === ' ')) {
-                        card.onClick()
-                      }
-                    }}
-                  >
-                    <div
-                      className="metric-icon"
-                      style={{
-                        backgroundColor: card.color + '15',
-                        color: card.color,
-                      }}
-                    >
-                      {card.icon}
-                    </div>
-                    <div className="metric-info">
-                      <Text type="tertiary" className="metric-label">
-                        {card.label}
-                      </Text>
-                      <Title heading={3} className="metric-value" style={{ margin: 0 }}>
-                        {card.value}
-                      </Title>
-                      {card.subLabel && (
-                        <Text type="tertiary" size="small" className="metric-sub">
-                          {card.subLabel}: <Text strong>{card.subValue}</Text>
-                        </Text>
-                      )}
-                    </div>
-                  </div>
-                </Card>
+                  {card.icon}
+                </div>
+                <div className="metric-info-mobile">
+                  <Text type="tertiary" size="small" className="metric-label-mobile">
+                    {card.label}
+                  </Text>
+                  <Text strong className="metric-value-mobile">
+                    {card.mobileValue ?? card.value}
+                  </Text>
+                </div>
               </div>
             ))}
-          </Row>
-        </div>
+          </div>
+        ) : (
+          <div className="dashboard-metrics">
+            <Row gap="md" wrap="wrap">
+              {metricCards.map((card) => (
+                <div key={card.key} className="metric-card-wrapper">
+                  <Card
+                    className="metric-card"
+                    style={{ cursor: card.onClick ? 'pointer' : 'default' }}
+                  >
+                    <div
+                      className="metric-card-content"
+                      onClick={card.onClick}
+                      role={card.onClick ? 'button' : undefined}
+                      tabIndex={card.onClick ? 0 : undefined}
+                      onKeyDown={(e) => {
+                        if (card.onClick && (e.key === 'Enter' || e.key === ' ')) {
+                          card.onClick()
+                        }
+                      }}
+                    >
+                      <div
+                        className="metric-icon"
+                        style={{
+                          backgroundColor: card.color + '15',
+                          color: card.color,
+                        }}
+                      >
+                        {card.icon}
+                      </div>
+                      <div className="metric-info">
+                        <Text type="tertiary" className="metric-label">
+                          {card.label}
+                        </Text>
+                        <Title heading={3} className="metric-value" style={{ margin: 0 }}>
+                          {card.value}
+                        </Title>
+                        {card.subLabel && (
+                          <Text type="tertiary" size="small" className="metric-sub">
+                            {card.subLabel}: <Text strong>{card.subValue}</Text>
+                          </Text>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              ))}
+            </Row>
+          </div>
+        )}
 
         {/* Main Content Area */}
         <Row gap="md" wrap="wrap" className="dashboard-content">
@@ -563,12 +619,12 @@ export default function DashboardPage() {
             <Stack gap="md">
               {/* Order Statistics */}
               <Card title={t('dashboard.orderStats.title')} className="stats-card">
-                <div className="order-stats">
+                <div className={`order-stats ${isMobile ? 'mobile' : ''}`}>
                   <div className="order-progress">
                     <Progress
                       percent={orderCompletionRate}
                       type="circle"
-                      width={100}
+                      width={isMobile ? 80 : 100}
                       format={() => (
                         <div className="progress-content">
                           <Text strong>{orderCompletionRate}%</Text>

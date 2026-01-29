@@ -22,7 +22,7 @@
 
 /* Default warehouse field styling */
 .default-field {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
   margin-bottom: var(--spacing-4);
@@ -48,11 +48,11 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .warehouse-form-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .warehouse-form-card {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .warehouse-form-header {

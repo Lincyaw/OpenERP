@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button, Tag, Dropdown, Space, Typography, Spin } from '@douyinfe/semi-ui-19'
 import { IconArrowLeft, IconChevronDown } from '@douyinfe/semi-icons'
 import './DetailPageHeader.css'
@@ -166,13 +167,17 @@ export function DetailPageHeader({
   primaryAction,
   secondaryActions,
   onBack,
-  backLabel = 'Back',
+  backLabel,
   showBack = true,
   loading = false,
   className = '',
   style,
   titleSuffix,
 }: DetailPageHeaderProps) {
+  const { t } = useTranslation('common')
+
+  // Use provided backLabel or fall back to i18n
+  const effectiveBackLabel = backLabel ?? t('actions.back')
   /**
    * Get button type prop from action type
    */
@@ -252,8 +257,8 @@ export function DetailPageHeader({
     return (
       <Dropdown trigger="click" position="bottomRight" render={dropdownMenu}>
         <span style={{ display: 'inline-flex' }}>
-          <Button icon={<IconChevronDown />} aria-label="Actions">
-            Actions
+          <Button icon={<IconChevronDown />} aria-label={t('actions.moreActions')}>
+            {t('actions.moreActions')}
           </Button>
         </span>
       </Dropdown>
@@ -313,9 +318,9 @@ export function DetailPageHeader({
               theme="borderless"
               onClick={onBack}
               className="detail-page-header__back-btn"
-              aria-label={backLabel}
+              aria-label={effectiveBackLabel}
             >
-              <span className="detail-page-header__back-label">{backLabel}</span>
+              <span className="detail-page-header__back-label">{effectiveBackLabel}</span>
             </Button>
           )}
 

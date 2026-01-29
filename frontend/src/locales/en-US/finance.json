@@ -1,4 +1,48 @@
 {
+  "cashFlow": {
+    "title": "Cash Flow",
+    "searchPlaceholder": "Search document number, description...",
+    "refresh": "Refresh",
+    "summary": {
+      "netCashFlow": "Net Cash Flow",
+      "totalInflow": "Total Inflow",
+      "totalOutflow": "Total Outflow",
+      "inflowCount": "Inflow Count",
+      "outflowCount": "Outflow Count"
+    },
+    "filter": {
+      "allDirection": "All Directions",
+      "inflow": "Inflow",
+      "outflow": "Outflow",
+      "allType": "All Types",
+      "directionPlaceholder": "Direction",
+      "typePlaceholder": "Type",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "direction": {
+      "INFLOW": "Inflow",
+      "OUTFLOW": "Outflow"
+    },
+    "type": {
+      "EXPENSE": "Expense",
+      "INCOME": "Other Income",
+      "RECEIPT": "Receipt",
+      "PAYMENT": "Payment"
+    },
+    "columns": {
+      "transactionDate": "Transaction Date",
+      "referenceNo": "Reference No.",
+      "direction": "Direction",
+      "type": "Type",
+      "amount": "Amount",
+      "balance": "Balance",
+      "description": "Description"
+    },
+    "messages": {
+      "fetchError": "Failed to fetch cash flow"
+    }
+  },
   "receivables": {
     "title": "Accounts Receivable",
     "searchPlaceholder": "Search document number, customer name...",

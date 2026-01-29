@@ -141,7 +141,7 @@
 
 /* Status timeline */
 .purchase-return-detail-page .status-timeline {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .purchase-return-detail-page .status-timeline .semi-timeline-item-time {
@@ -174,7 +174,7 @@
 
 @media (max-width: 768px) {
   .purchase-return-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .purchase-return-detail-page .order-info-grid {

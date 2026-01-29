@@ -1,5 +1,5 @@
 .feature-flag-detail-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .feature-flag-detail-card {
@@ -18,7 +18,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-bg-1);
   border-radius: var(--semi-border-radius-medium);
   margin-bottom: var(--spacing-4);
@@ -73,7 +73,7 @@
 
 /* Configuration Tab */
 .configuration-tab {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .config-section {
@@ -98,7 +98,7 @@
 
 /* Default Value Display */
 .default-value-display {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
 }
@@ -185,7 +185,7 @@
 }
 
 .rule-display-item {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
   background: var(--semi-color-fill-0);
   border-radius: var(--semi-border-radius-medium);
   border: 1px solid var(--semi-color-border);
@@ -236,7 +236,7 @@
 
 /* Overrides Tab */
 .overrides-tab {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .overrides-tab-header {
@@ -261,7 +261,7 @@
 
 /* Audit Log Timeline */
 .audit-log-timeline {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .audit-log-timeline-loading {

@@ -32,11 +32,11 @@
 /* Responsive styles */
 @media (max-width: 768px) {
   .stock-taking-list-page {
-    padding: var(--spacing-4) 0;
+    padding: var(--page-padding-mobile) 0;
   }
 
   .stock-taking-list-card {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .stock-taking-list-header {

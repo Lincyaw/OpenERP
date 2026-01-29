@@ -59,8 +59,8 @@
 
   /* Modal spacing */
   --modal-padding: var(--spacing-6);
-  --modal-header-padding: var(--spacing-4) var(--spacing-6);
-  --modal-footer-padding: var(--spacing-4) var(--spacing-6);
+  --modal-header-padding: var(--page-padding-mobile) var(--spacing-6);
+  --modal-footer-padding: var(--page-padding-mobile) var(--spacing-6);
 
   /* Button spacing */
   --button-padding-y: var(--spacing-2);
@@ -80,7 +80,7 @@
 
   /* Page spacing */
   --page-padding: var(--spacing-6);
-  --page-padding-mobile: var(--spacing-4);
+  --page-padding-mobile: var(--spacing-1);
 }
 
 /* Elder-friendly theme increases spacing for easier touch targets */
@@ -89,7 +89,7 @@
   --form-label-margin: var(--spacing-3);
   --button-padding-y: var(--spacing-3);
   --button-padding-x: var(--spacing-6);
-  --list-item-padding: var(--spacing-4) var(--spacing-6);
+  --list-item-padding: var(--page-padding-mobile) var(--spacing-6);
   --table-cell-padding-y: var(--spacing-4);
   --table-cell-padding-x: var(--spacing-5);
 }

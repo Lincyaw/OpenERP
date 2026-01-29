@@ -682,6 +682,7 @@ export default function SalesReportPage() {
                 pagination={false}
                 loading={loading}
                 empty={<Empty description="暂无商品销售数据" />}
+                scroll={{ x: 700 }}
               />
             </TabPane>
             <TabPane
@@ -700,6 +701,7 @@ export default function SalesReportPage() {
                 pagination={false}
                 loading={loading}
                 empty={<Empty description="暂无客户销售数据" />}
+                scroll={{ x: 700 }}
               />
             </TabPane>
           </Tabs>

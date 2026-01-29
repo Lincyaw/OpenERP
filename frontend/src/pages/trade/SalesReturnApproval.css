@@ -122,7 +122,7 @@
 
 /* Status timeline */
 .sales-return-approval-page .status-timeline {
-  padding: var(--spacing-4) 0;
+  padding: var(--page-padding-mobile) 0;
 }
 
 .sales-return-approval-page .status-timeline .semi-timeline-item-time {
@@ -169,7 +169,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .sales-return-approval-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .sales-return-approval-page .page-header {

@@ -1,7 +1,7 @@
 /* Roles Page Styles */
 
 .roles-page {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 .roles-card {

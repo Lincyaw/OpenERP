@@ -21,15 +21,15 @@ This document defines the design system and frontend development guidelines for 
 
 ## Technology Stack
 
-| Category | Technology | Purpose |
-|----------|------------|---------|
-| Framework | React 19+ | UI framework |
-| Language | TypeScript | Type safety |
-| UI Library | Semi Design | Component library |
-| State | Zustand | Global state management |
-| Forms | React Hook Form + Zod | Form handling & validation |
-| Routing | React Router v7 | Navigation |
-| Build | Vite | Development & bundling |
+| Category   | Technology            | Purpose                    |
+| ---------- | --------------------- | -------------------------- |
+| Framework  | React 19+             | UI framework               |
+| Language   | TypeScript            | Type safety                |
+| UI Library | Semi Design           | Component library          |
+| State      | Zustand               | Global state management    |
+| Forms      | React Hook Form + Zod | Form handling & validation |
+| Routing    | React Router v7       | Navigation                 |
+| Build      | Vite                  | Development & bundling     |
 
 ---
 
@@ -39,19 +39,19 @@ This document defines the design system and frontend development guidelines for 
 
 We use a **mobile-first** approach with 4 breakpoints:
 
-| Breakpoint | Width | CSS Variable | Usage |
-|------------|-------|--------------|-------|
-| Mobile | 375px | `--breakpoint-mobile` | Default (base) |
-| Tablet | 768px | `--breakpoint-tablet` | `@media (min-width: 768px)` |
-| Desktop | 1024px | `--breakpoint-desktop` | `@media (min-width: 1024px)` |
-| Wide | 1440px | `--breakpoint-wide` | `@media (min-width: 1440px)` |
+| Breakpoint | Width  | CSS Variable           | Usage                        |
+| ---------- | ------ | ---------------------- | ---------------------------- |
+| Mobile     | 375px  | `--breakpoint-mobile`  | Default (base)               |
+| Tablet     | 768px  | `--breakpoint-tablet`  | `@media (min-width: 768px)`  |
+| Desktop    | 1024px | `--breakpoint-desktop` | `@media (min-width: 1024px)` |
+| Wide       | 1440px | `--breakpoint-wide`    | `@media (min-width: 1440px)` |
 
 ### Usage Example
 
 ```css
 /* Mobile first - styles apply to all sizes */
 .card {
-  padding: var(--spacing-4);
+  padding: var(--page-padding-mobile);
 }
 
 /* Tablet and up */
@@ -72,11 +72,11 @@ We use a **mobile-first** approach with 4 breakpoints:
 ### Container Max-Widths
 
 | Breakpoint | Max-Width |
-|------------|-----------|
-| Mobile | 100% |
-| Tablet | 720px |
-| Desktop | 960px |
-| Wide | 1320px |
+| ---------- | --------- |
+| Mobile     | 100%      |
+| Tablet     | 720px     |
+| Desktop    | 960px     |
+| Wide       | 1320px    |
 
 ---
 
@@ -104,15 +104,20 @@ src/styles/
 
 1. **CSS Variables for tokens**: Always use design tokens via CSS variables
 2. **CSS Modules for components**: Component-specific styles use CSS Modules
-3. **BEM naming for global classes**: Block__Element--Modifier pattern
+3. **BEM naming for global classes**: Block\_\_Element--Modifier pattern
 
 ```css
 /* BEM naming example */
-.card { }
-.card__header { }
-.card__header--highlighted { }
-.card__body { }
-.card__footer { }
+.card {
+}
+.card__header {
+}
+.card__header--highlighted {
+}
+.card__body {
+}
+.card__footer {
+}
 ```
 
 ---
@@ -230,7 +235,7 @@ Centers content with responsive max-width:
 ```tsx
 import { Container } from '@/components/common'
 
-<Container size="lg" padding="md">
+;<Container size="lg" padding="md">
   <PageContent />
 </Container>
 ```
@@ -291,10 +296,10 @@ import { Flex, Stack, Row, Spacer, Divider } from '@/components/common'
 
 ### Available Themes
 
-| Theme | Description |
-|-------|-------------|
-| `light` | Default light theme |
-| `dark` | Dark mode for low-light environments |
+| Theme   | Description                                  |
+| ------- | -------------------------------------------- |
+| `light` | Default light theme                          |
+| `dark`  | Dark mode for low-light environments         |
 | `elder` | High contrast, larger text for accessibility |
 
 ### Theme Usage
@@ -379,11 +384,7 @@ import { useAccessibilityPreferences } from '@/hooks'
 function Component() {
   const { reducedMotion, highContrast } = useAccessibilityPreferences()
 
-  return (
-    <div className={reducedMotion ? 'no-animation' : ''}>
-      Content
-    </div>
-  )
+  return <div className={reducedMotion ? 'no-animation' : ''}>Content</div>
 }
 ```
 

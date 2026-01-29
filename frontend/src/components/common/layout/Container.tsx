@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { useResponsive } from '@/hooks/useResponsive'
 
 /**
  * Container Component
@@ -40,11 +41,20 @@ const sizeMap: Record<NonNullable<ContainerProps['size']>, string> = {
   full: '100%',
 }
 
+// Desktop padding values
 const paddingMap: Record<NonNullable<ContainerProps['padding']>, string> = {
   none: '0',
   sm: 'var(--content-padding-mobile)',
   md: 'var(--content-padding-tablet)',
   lg: 'var(--content-padding-desktop)',
+}
+
+// Mobile padding values (smaller for better screen utilization)
+const mobilePaddingMap: Record<NonNullable<ContainerProps['padding']>, string> = {
+  none: '0',
+  sm: 'var(--content-padding-mobile)',
+  md: 'var(--content-padding-mobile)',
+  lg: 'var(--content-padding-mobile)',
 }
 
 export function Container({
@@ -55,11 +65,14 @@ export function Container({
   style,
   children,
 }: ContainerProps) {
+  const { isMobile } = useResponsive()
+  const activePaddingMap = isMobile ? mobilePaddingMap : paddingMap
+
   const containerStyle: CSSProperties = {
     width: '100%',
     maxWidth: sizeMap[size],
-    paddingLeft: paddingMap[padding],
-    paddingRight: paddingMap[padding],
+    paddingLeft: activePaddingMap[padding],
+    paddingRight: activePaddingMap[padding],
     marginLeft: center ? 'auto' : undefined,
     marginRight: center ? 'auto' : undefined,
     ...style,

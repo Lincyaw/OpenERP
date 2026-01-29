@@ -88,7 +88,7 @@
 
 @media (max-width: 768px) {
   .supplier-detail-page {
-    padding: var(--spacing-4);
+    padding: var(--page-padding-mobile);
   }
 
   .supplier-detail-page .info-grid {
