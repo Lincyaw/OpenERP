@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Card, Typography, Descriptions, Table, Toast, Modal, Empty } from '@douyinfe/semi-ui-19'
-import { IconEdit, IconTick, IconClose, IconSend, IconPrinter } from '@douyinfe/semi-icons'
+import { IconEdit, IconTick, IconClose, IconSend, IconPrint } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import {
@@ -261,7 +261,7 @@ export default function SalesOrderDetailPage() {
     actions.push({
       key: 'print',
       label: t('orderDetail.actions.print'),
-      icon: <IconPrinter />,
+      icon: <IconPrint />,
       onClick: () => {
         // PrintButton handles this, but we need a placeholder
         const printBtn = document.querySelector('.detail-page-print-btn') as HTMLButtonElement

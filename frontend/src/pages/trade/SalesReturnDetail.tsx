@@ -9,7 +9,7 @@ import {
   Empty,
   TextArea,
 } from '@douyinfe/semi-ui-19'
-import { IconEdit, IconTick, IconClose, IconSend, IconPrinter } from '@douyinfe/semi-icons'
+import { IconEdit, IconTick, IconClose, IconSend, IconPrint } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
 import {
@@ -333,7 +333,7 @@ export default function SalesReturnDetailPage() {
     actions.push({
       key: 'print',
       label: t('salesReturn.actions.print'),
-      icon: <IconPrinter />,
+      icon: <IconPrint />,
       onClick: () => {
         const printBtn = document.querySelector('.detail-page-print-btn') as HTMLButtonElement
         printBtn?.click()
