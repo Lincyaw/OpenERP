@@ -109,6 +109,10 @@ const FeatureFlagListPage = () => lazyLoad(() => import('@/pages/admin/FeatureFl
 const FeatureFlagFormPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagForm'))
 const FeatureFlagDetailPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagDetail'))
 
+// User module (Profile & Settings)
+const ProfilePage = () => lazyLoad(() => import('@/pages/user/Profile'))
+const SettingsPage = () => lazyLoad(() => import('@/pages/user/Settings'))
+
 /**
  * Application routes with metadata
  * Routes are organized into two groups:
@@ -782,6 +786,12 @@ export function getRouteObjects(): RouteObject[] {
       })
     }
   }
+
+  // Add user routes (profile & settings) - hidden from menu
+  protectedChildRoutes.push(
+    { path: 'profile', element: ProfilePage() },
+    { path: 'settings', element: SettingsPage() }
+  )
 
   return [
     // Public routes (no layout)

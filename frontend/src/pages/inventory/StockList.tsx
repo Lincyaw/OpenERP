@@ -524,6 +524,7 @@ export default function StockListPage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1200 }}
+            mobileCardPrimaryColumns={['product_id', 'warehouse_id']}
           />
         </Spin>
       </Card>

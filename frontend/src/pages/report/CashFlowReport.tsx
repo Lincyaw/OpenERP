@@ -9,22 +9,11 @@ import {
   Table,
   Tag,
   Button,
-  Descriptions,
-  Divider,
   Select,
 } from '@douyinfe/semi-ui-19'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
-import {
-  IconPriceTag,
-  IconMinus,
-  IconTick,
-  IconArrowUp,
-  IconArrowDown,
-  IconDownload,
-  IconHistory,
-  IconSync,
-} from '@douyinfe/semi-icons'
+import { IconDownload, IconHistory, IconSync } from '@douyinfe/semi-icons'
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -35,7 +24,7 @@ import {
   TitleComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { Container, Grid } from '@/components/common/layout'
+import { Container } from '@/components/common/layout'
 import { getReportCashFlowStatement, getReportCashFlowItems } from '@/api/reports/reports'
 import type { HandlerCashFlowStatementResponse, HandlerCashFlowItemResponse } from '@/api/models'
 import './CashFlowReport.css'
@@ -57,17 +46,6 @@ echarts.use([
 ])
 
 const { Title, Text } = Typography
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  subValue?: string | number
-  subLabel?: string
-  icon: React.ReactNode
-  color: string
-  trend?: 'up' | 'down' | 'neutral'
-  trendValue?: string
-}
 
 /**
  * Format currency for display
@@ -132,54 +110,6 @@ function getComparisonDateRange(current: [Date, Date], type: string): [Date, Dat
   }
 
   return current
-}
-
-/**
- * MetricCard component for displaying KPI metrics
- */
-function MetricCard({
-  title,
-  value,
-  subValue,
-  subLabel,
-  icon,
-  color,
-  trend,
-  trendValue,
-}: MetricCardProps) {
-  return (
-    <Card className="metric-card">
-      <div className="metric-card-content">
-        <div className="metric-icon" style={{ backgroundColor: color + '15', color }}>
-          {icon}
-        </div>
-        <div className="metric-info">
-          <Text type="tertiary" className="metric-label">
-            {title}
-          </Text>
-          <div className="metric-value-row">
-            <Title heading={3} className="metric-value" style={{ margin: 0 }}>
-              {value}
-            </Title>
-            {trend && trendValue && (
-              <Tag
-                className="metric-trend"
-                color={trend === 'up' ? 'green' : trend === 'down' ? 'red' : 'grey'}
-              >
-                {trend === 'up' ? <IconArrowUp size="small" /> : <IconArrowDown size="small" />}
-                {trendValue}
-              </Tag>
-            )}
-          </div>
-          {subLabel && subValue !== undefined && (
-            <Text type="tertiary" size="small" className="metric-sub">
-              {subLabel}: <Text strong>{subValue}</Text>
-            </Text>
-          )}
-        </div>
-      </div>
-    </Card>
-  )
 }
 
 /**
@@ -624,145 +554,150 @@ export default function CashFlowReportPage() {
           </div>
         </div>
 
-        {/* Summary Metrics Cards */}
-        <div className="report-metrics">
-          <Grid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
-            <MetricCard
-              title="期末现金余额"
-              value={formatCurrency(statement?.ending_cash)}
-              subLabel="期初余额"
-              subValue={formatCurrency(statement?.beginning_cash)}
-              icon={<IconPriceTag size="large" />}
-              color="var(--semi-color-primary)"
-              trend={netCashFlowChange?.trend}
-              trendValue={netCashFlowChange?.value}
-            />
-            <MetricCard
-              title="现金净增加"
-              value={formatCurrency(statement?.net_cash_flow)}
-              subLabel="对比期间"
-              subValue={
-                comparisonStatement ? formatCurrency(comparisonStatement.net_cash_flow) : '-'
-              }
-              icon={
-                statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0 ? (
-                  <IconArrowUp size="large" />
-                ) : (
-                  <IconArrowDown size="large" />
-                )
-              }
-              color={
-                statement?.net_cash_flow !== undefined && statement.net_cash_flow >= 0
-                  ? 'var(--semi-color-success)'
-                  : 'var(--semi-color-danger)'
-              }
-            />
-            <MetricCard
-              title="经营活动现金流"
-              value={formatCurrency(statement?.net_operating_cash_flow)}
-              subLabel="对比期间"
-              subValue={
-                comparisonStatement
-                  ? formatCurrency(comparisonStatement.net_operating_cash_flow)
-                  : '-'
-              }
-              icon={<IconTick size="large" />}
-              color="var(--semi-color-success)"
-              trend={operatingCashFlowChange?.trend}
-              trendValue={operatingCashFlowChange?.value}
-            />
-            <MetricCard
-              title="客户收款"
-              value={formatCurrency(statement?.receipts_from_customers)}
-              subLabel="供应商付款"
-              subValue={formatCurrency(statement?.payments_to_suppliers)}
-              icon={<IconMinus size="large" />}
-              color="var(--semi-color-warning)"
-            />
-          </Grid>
-        </div>
+        {/* Summary Metrics - Compact Inline Display */}
+        <Card className="metrics-bar">
+          <div className="metrics-inline">
+            <div className="metric-item">
+              <Text type="tertiary">期末现金</Text>
+              <Text strong className="metric-value-inline">
+                {formatCurrency(statement?.ending_cash)}
+              </Text>
+              <Text type="tertiary" size="small">
+                期初 {formatCurrency(statement?.beginning_cash)}
+              </Text>
+              {netCashFlowChange && (
+                <Tag size="small" color={netCashFlowChange.trend === 'up' ? 'green' : 'red'}>
+                  {netCashFlowChange.value}
+                </Tag>
+              )}
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">现金净增加</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{
+                  color:
+                    (statement?.net_cash_flow ?? 0) >= 0
+                      ? 'var(--semi-color-success)'
+                      : 'var(--semi-color-danger)',
+                }}
+              >
+                {formatCurrency(statement?.net_cash_flow)}
+              </Text>
+              {comparisonStatement && (
+                <Text type="tertiary" size="small">
+                  对比 {formatCurrency(comparisonStatement.net_cash_flow)}
+                </Text>
+              )}
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">经营活动现金流</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{
+                  color:
+                    (statement?.net_operating_cash_flow ?? 0) >= 0
+                      ? 'var(--semi-color-success)'
+                      : 'var(--semi-color-danger)',
+                }}
+              >
+                {formatCurrency(statement?.net_operating_cash_flow)}
+              </Text>
+              {operatingCashFlowChange && (
+                <Tag size="small" color={operatingCashFlowChange.trend === 'up' ? 'green' : 'red'}>
+                  {operatingCashFlowChange.value}
+                </Tag>
+              )}
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">客户收款</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-success)' }}
+              >
+                {formatCurrency(statement?.receipts_from_customers)}
+              </Text>
+              <Text type="tertiary" size="small">
+                付款 {formatCurrency(statement?.payments_to_suppliers)}
+              </Text>
+            </div>
+          </div>
+        </Card>
 
-        {/* Cash Flow Statement Breakdown */}
+        {/* Cash Flow Statement Breakdown - Compact Multi-Column Layout */}
         <Card title="现金流量明细" className="statement-card">
           {statement ? (
-            <Descriptions
-              data={[
-                {
-                  key: '期初余额',
-                  value: (
-                    <div className="statement-section">
-                      <div className="statement-row total">
-                        <span>期初现金余额</span>
-                        <span className="amount">{formatCurrency(statement.beginning_cash)}</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  key: '经营活动',
-                  value: (
-                    <div className="statement-section">
-                      <div className="statement-row positive">
-                        <span>加: 客户收款</span>
-                        <span className="amount">
-                          {formatCurrency(statement.receipts_from_customers)}
-                        </span>
-                      </div>
-                      <div className="statement-row negative">
-                        <span>减: 供应商付款</span>
-                        <span className="amount">
-                          {formatCurrency(statement.payments_to_suppliers)}
-                        </span>
-                      </div>
-                      <div className="statement-row positive">
-                        <span>加: 其他收入</span>
-                        <span className="amount">{formatCurrency(statement.other_income)}</span>
-                      </div>
-                      <div className="statement-row negative">
-                        <span>减: 费用支出</span>
-                        <span className="amount">{formatCurrency(statement.expense_payments)}</span>
-                      </div>
-                      <Divider margin="8px" />
-                      <div
-                        className={`statement-row subtotal ${(statement.net_operating_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
-                      >
-                        <span>经营活动现金流净额</span>
-                        <span className="amount">
-                          {formatCurrency(statement.net_operating_cash_flow)}
-                        </span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  key: '期末余额',
-                  value: (
-                    <div className="statement-section">
-                      <div
-                        className={`statement-row ${(statement.net_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
-                      >
-                        <span>现金净增加额</span>
-                        <span className="amount">{formatCurrency(statement.net_cash_flow)}</span>
-                      </div>
-                      <Divider margin="8px" />
-                      <div className="statement-row total">
-                        <span>期末现金余额</span>
-                        <span className="amount">{formatCurrency(statement.ending_cash)}</span>
-                      </div>
-                      {comparisonStatement && (
-                        <div className="statement-row info">
-                          <span>对比期间期末余额</span>
-                          <Tag>{formatCurrency(comparisonStatement.ending_cash)}</Tag>
-                        </div>
-                      )}
-                    </div>
-                  ),
-                },
-              ]}
-              row
-              size="medium"
-              className="statement-descriptions"
-            />
+            <div className="statement-compact">
+              <div className="statement-column">
+                <div className="statement-group-title">期初余额</div>
+                <div className="statement-line total">
+                  <span>期初现金余额</span>
+                  <span className="amount">{formatCurrency(statement.beginning_cash)}</span>
+                </div>
+              </div>
+
+              <div className="statement-column">
+                <div className="statement-group-title">经营活动现金流</div>
+                <div className="statement-line indent">
+                  <span>加: 客户收款</span>
+                  <span className="amount positive">
+                    {formatCurrency(statement.receipts_from_customers)}
+                  </span>
+                </div>
+                <div className="statement-line indent">
+                  <span>减: 供应商付款</span>
+                  <span className="amount negative">
+                    ({formatCurrency(statement.payments_to_suppliers)})
+                  </span>
+                </div>
+                <div className="statement-line indent">
+                  <span>加: 其他收入</span>
+                  <span className="amount positive">{formatCurrency(statement.other_income)}</span>
+                </div>
+                <div className="statement-line indent">
+                  <span>减: 费用支出</span>
+                  <span className="amount negative">
+                    ({formatCurrency(statement.expense_payments)})
+                  </span>
+                </div>
+                <div className="statement-line subtotal">
+                  <span>净额</span>
+                  <span
+                    className={`amount ${(statement.net_operating_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
+                  >
+                    {formatCurrency(statement.net_operating_cash_flow)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="statement-column highlight">
+                <div className="statement-group-title">期末余额</div>
+                <div className="statement-line">
+                  <span>现金净增加额</span>
+                  <span
+                    className={`amount ${(statement.net_cash_flow ?? 0) >= 0 ? 'positive' : 'negative'}`}
+                  >
+                    {formatCurrency(statement.net_cash_flow)}
+                  </span>
+                </div>
+                <div className="statement-line total">
+                  <span>期末现金余额</span>
+                  <span className="amount">{formatCurrency(statement.ending_cash)}</span>
+                </div>
+                {comparisonStatement && (
+                  <div className="statement-line info">
+                    <span>对比期间</span>
+                    <Tag size="small">{formatCurrency(comparisonStatement.ending_cash)}</Tag>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
             <Empty description="暂无现金流量数据" />
           )}

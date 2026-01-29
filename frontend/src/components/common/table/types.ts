@@ -215,6 +215,17 @@ export interface DataTableProps<T = unknown> {
     rowExpandable?: (record: T) => boolean
     expandRowByClick?: boolean
   }
+  /**
+   * Columns to show as primary in mobile card view
+   * Primary columns are displayed prominently at the top of each card.
+   * If not specified, the first 2 columns are used as primary.
+   */
+  mobileCardPrimaryColumns?: string[]
+  /**
+   * Disable mobile card view and always show table
+   * @default false
+   */
+  disableMobileCard?: boolean
 }
 
 /**

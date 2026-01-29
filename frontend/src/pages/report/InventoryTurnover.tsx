@@ -13,13 +13,7 @@ import {
   Progress,
 } from '@douyinfe/semi-ui-19'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
-import {
-  IconRefresh,
-  IconSearch,
-  IconPieChartStroked,
-  IconBox,
-  IconAlertTriangle,
-} from '@douyinfe/semi-icons'
+import { IconSearch } from '@douyinfe/semi-icons'
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 import * as echarts from 'echarts/core'
 import { BarChart, PieChart } from 'echarts/charts'
@@ -30,7 +24,7 @@ import {
   TitleComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { Container, Grid, Row } from '@/components/common/layout'
+import { Container, Row } from '@/components/common/layout'
 import {
   getReportInventorySummary,
   getReportInventoryTurnover,
@@ -64,15 +58,6 @@ echarts.use([
 ])
 
 const { Title, Text } = Typography
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  subValue?: string | number
-  subLabel?: string
-  icon: React.ReactNode
-  color: string
-}
 
 /**
  * Format currency for display
@@ -143,34 +128,6 @@ function getTurnoverStatus(rate: number): {
   } else {
     return { status: 'critical', color: 'red', label: '滞销' }
   }
-}
-
-/**
- * MetricCard component for displaying KPI metrics
- */
-function MetricCard({ title, value, subValue, subLabel, icon, color }: MetricCardProps) {
-  return (
-    <Card className="metric-card">
-      <div className="metric-card-content">
-        <div className="metric-icon" style={{ backgroundColor: color + '15', color }}>
-          {icon}
-        </div>
-        <div className="metric-info">
-          <Text type="tertiary" className="metric-label">
-            {title}
-          </Text>
-          <Title heading={3} className="metric-value" style={{ margin: 0 }}>
-            {value}
-          </Title>
-          {subValue !== undefined && subLabel && (
-            <Text type="tertiary" size="small" className="metric-sub">
-              {subLabel}: {subValue}
-            </Text>
-          )}
-        </div>
-      </div>
-    </Card>
-  )
 }
 
 /**
@@ -626,38 +583,44 @@ export default function InventoryTurnoverPage() {
         </div>
       ) : (
         <>
-          {/* Summary Metrics */}
-          <div className="report-metrics">
-            <Grid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
-              <MetricCard
-                title="商品总数"
-                value={formatNumber(summary?.total_products)}
-                icon={<IconBox size="large" />}
-                color="#6366f1"
-              />
-              <MetricCard
-                title="库存总值"
-                value={formatCurrency(summary?.total_value)}
-                icon={<IconPieChartStroked size="large" />}
-                color="#8b5cf6"
-              />
-              <MetricCard
-                title="平均周转率"
-                value={formatTurnoverRate(summary?.turnover_rate)}
-                subLabel="周转次数/期"
-                icon={<IconRefresh size="large" />}
-                color="#22c55e"
-              />
-              <MetricCard
-                title="滞销商品"
-                value={formatNumber(summary?.low_stock_count)}
-                subValue={summary?.out_of_stock_count}
-                subLabel="缺货商品"
-                icon={<IconAlertTriangle size="large" />}
-                color="#ef4444"
-              />
-            </Grid>
-          </div>
+          {/* Summary Metrics - Compact Inline Display */}
+          <Card className="metrics-bar">
+            <div className="metrics-inline">
+              <div className="metric-item">
+                <Text type="tertiary">商品总数</Text>
+                <Text strong className="metric-value-inline">
+                  {formatNumber(summary?.total_products)}
+                </Text>
+              </div>
+              <div className="metric-divider" />
+              <div className="metric-item">
+                <Text type="tertiary">库存总值</Text>
+                <Text strong className="metric-value-inline" style={{ color: '#8b5cf6' }}>
+                  {formatCurrency(summary?.total_value)}
+                </Text>
+              </div>
+              <div className="metric-divider" />
+              <div className="metric-item">
+                <Text type="tertiary">平均周转率</Text>
+                <Text strong className="metric-value-inline" style={{ color: '#22c55e' }}>
+                  {formatTurnoverRate(summary?.turnover_rate)}
+                </Text>
+                <Text type="tertiary" size="small">
+                  次/期
+                </Text>
+              </div>
+              <div className="metric-divider" />
+              <div className="metric-item">
+                <Text type="tertiary">滞销商品</Text>
+                <Text strong className="metric-value-inline" style={{ color: '#ef4444' }}>
+                  {formatNumber(summary?.low_stock_count)}
+                </Text>
+                <Text type="tertiary" size="small">
+                  缺货 {formatNumber(summary?.out_of_stock_count)}
+                </Text>
+              </div>
+            </div>
+          </Card>
 
           {/* Charts Section */}
           <div className="report-charts">

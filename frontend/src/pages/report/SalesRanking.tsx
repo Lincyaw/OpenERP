@@ -25,7 +25,7 @@ import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { Container, Row, Grid } from '@/components/common/layout'
+import { Container, Row } from '@/components/common/layout'
 import { getReportProductSalesRanking, getReportCustomerSalesRanking } from '@/api/reports/reports'
 import type {
   HandlerProductSalesRankingResponse,
@@ -139,36 +139,6 @@ function formatDimensionValue(value: number, dimension: RankingDimension): strin
     default:
       return formatCurrency(value)
   }
-}
-
-/**
- * MetricCard component for summary metrics
- */
-interface MetricCardProps {
-  title: string
-  value: string | number
-  icon: React.ReactNode
-  color: string
-}
-
-function MetricCard({ title, value, icon, color }: MetricCardProps) {
-  return (
-    <Card className="ranking-metric-card">
-      <div className="ranking-metric-content">
-        <div className="ranking-metric-icon" style={{ backgroundColor: color + '15', color }}>
-          {icon}
-        </div>
-        <div className="ranking-metric-info">
-          <Text type="tertiary" className="ranking-metric-label">
-            {title}
-          </Text>
-          <Title heading={4} className="ranking-metric-value" style={{ margin: 0 }}>
-            {value}
-          </Title>
-        </div>
-      </div>
-    </Card>
-  )
 }
 
 /**
@@ -704,35 +674,46 @@ export default function SalesRankingPage() {
           </div>
         </div>
 
-        {/* Summary Metrics */}
-        <div className="ranking-metrics">
-          <Grid cols={{ mobile: 2, tablet: 4 }} gap="md">
-            <MetricCard
-              title="参与商品数"
-              value={formatNumber(metrics.totalProducts)}
-              icon={<IconShoppingBag size="large" />}
-              color="var(--semi-color-primary)"
-            />
-            <MetricCard
-              title="参与客户数"
-              value={formatNumber(metrics.totalCustomers)}
-              icon={<IconUserGroup size="large" />}
-              color="var(--semi-color-success)"
-            />
-            <MetricCard
-              title="商品冠军销售额"
-              value={formatCurrency(metrics.topProductAmount)}
-              icon={<IconStar size="large" />}
-              color="var(--semi-color-warning)"
-            />
-            <MetricCard
-              title="客户冠军销售额"
-              value={formatCurrency(metrics.topCustomerAmount)}
-              icon={<IconStar size="large" />}
-              color="var(--semi-color-danger)"
-            />
-          </Grid>
-        </div>
+        {/* Summary Metrics - Compact Inline Display */}
+        <Card className="metrics-bar">
+          <div className="metrics-inline">
+            <div className="metric-item">
+              <Text type="tertiary">参与商品数</Text>
+              <Text strong className="metric-value-inline">
+                {formatNumber(metrics.totalProducts)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">参与客户数</Text>
+              <Text strong className="metric-value-inline">
+                {formatNumber(metrics.totalCustomers)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">商品冠军销售额</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-warning)' }}
+              >
+                {formatCurrency(metrics.topProductAmount)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">客户冠军销售额</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-danger)' }}
+              >
+                {formatCurrency(metrics.topCustomerAmount)}
+              </Text>
+            </div>
+          </div>
+        </Card>
 
         {/* Dimension Selector */}
         <Card className="dimension-card">

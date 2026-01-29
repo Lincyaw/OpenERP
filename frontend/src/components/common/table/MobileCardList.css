@@ -1,0 +1,187 @@
+/* Mobile Card List Styles */
+
+.mobile-card-list {
+  width: 100%;
+}
+
+.mobile-card-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+/* Card styles */
+.mobile-card {
+  background: var(--semi-color-bg-2);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+  padding: var(--spacing-4);
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.mobile-card:active {
+  background: var(--semi-color-fill-0);
+}
+
+.mobile-card-selected {
+  border-color: var(--semi-color-primary);
+  background: var(--semi-color-primary-light-default);
+}
+
+.mobile-card-selected:active {
+  background: var(--semi-color-primary-light-hover);
+}
+
+/* Primary section (top of card - most important info) */
+.mobile-card-primary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.mobile-card-primary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.mobile-card-primary-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--semi-color-text-0);
+  word-break: break-word;
+}
+
+.mobile-card-primary-item:first-child .mobile-card-primary-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Secondary section (details grid) */
+.mobile-card-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-3);
+}
+
+.mobile-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0; /* Allow text truncation */
+}
+
+.mobile-card-label {
+  font-size: var(--font-size-xs);
+  color: var(--semi-color-text-2);
+  white-space: nowrap;
+}
+
+.mobile-card-value {
+  font-size: var(--font-size-sm);
+  color: var(--semi-color-text-0);
+  word-break: break-word;
+}
+
+/* Full-width fields for long content */
+.mobile-card-field--full {
+  grid-column: 1 / -1;
+}
+
+/* Actions section */
+.mobile-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.mobile-card-actions .semi-button {
+  flex: 0 0 auto;
+}
+
+/* Pagination */
+.mobile-card-list-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4) 0;
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+}
+
+.mobile-card-list-pagination-info {
+  color: var(--semi-color-text-2);
+  font-size: var(--font-size-sm);
+}
+
+/* Empty state */
+.mobile-card-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: var(--spacing-6);
+}
+
+.mobile-card-list-empty-content {
+  text-align: center;
+  color: var(--semi-color-text-2);
+}
+
+.mobile-card-list-empty-content p {
+  margin: 0;
+}
+
+.mobile-card-list-empty-description {
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-2) !important;
+}
+
+/* Handle tags and other inline elements in values */
+.mobile-card-value .semi-tag {
+  margin: 0;
+}
+
+/* Handle links in cards */
+.mobile-card .table-cell-link {
+  font-weight: var(--font-weight-medium);
+}
+
+/* Loading state overlay */
+.mobile-card-list.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Elder-friendly theme */
+[theme-mode='elder'] .mobile-card {
+  padding: var(--spacing-5);
+}
+
+[theme-mode='elder'] .mobile-card-primary-value {
+  font-size: var(--font-size-lg);
+}
+
+[theme-mode='elder'] .mobile-card-primary-item:first-child .mobile-card-primary-value {
+  font-size: var(--font-size-xl);
+}
+
+[theme-mode='elder'] .mobile-card-label {
+  font-size: var(--font-size-sm);
+}
+
+[theme-mode='elder'] .mobile-card-value {
+  font-size: var(--font-size-base);
+}
+
+[theme-mode='elder'] .mobile-card-actions .semi-button {
+  min-height: 44px;
+  min-width: 44px;
+}

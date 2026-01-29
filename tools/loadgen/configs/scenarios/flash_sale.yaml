@@ -1,0 +1,56 @@
+# Flash Sale Scenario
+# Simulates a flash sale event with traffic spikes focused on catalog and order endpoints.
+#
+# This scenario tests the system's ability to handle:
+# - Sudden traffic spikes (500 QPS from base 50 QPS)
+# - Heavy read load on product catalog
+# - High-volume order creation
+
+name: "flash_sale"
+description: "Simulates flash sale traffic spike with focused catalog and order endpoints"
+
+# Override duration for the flash sale test
+duration: 10m
+
+# Traffic shaper with spike pattern
+trafficShaper:
+  type: "spike"
+  baseQPS: 50
+  spike:
+    spikeQPS: 500
+    spikeDuration: 30s
+    spikeInterval: 2m
+
+# Focus only on flash-sale relevant endpoints
+focusEndpoints:
+  - "catalog.products.list"
+  - "catalog.products.get"
+  - "catalog.categories.list"
+  - "inventory.items.list"
+  - "trade.sales_orders.create"
+  - "trade.sales_orders.list"
+  - "partner.customers.list"
+  - "system.ping"
+
+# Increase weight of high-traffic endpoints
+endpointWeights:
+  catalog.products.list: 50
+  catalog.products.get: 30
+  trade.sales_orders.create: 15
+  system.ping: 5
+
+# Disable warmup for faster start
+warmup:
+  enabled: false
+
+# Stricter assertions for flash sale
+assertions:
+  maxErrorRate: 5.0      # Allow up to 5% errors during spike
+  minSuccessRate: 95.0
+  maxP95Latency: 2s
+  maxP99Latency: 5s
+
+tags:
+  - "stress"
+  - "spike"
+  - "sales"

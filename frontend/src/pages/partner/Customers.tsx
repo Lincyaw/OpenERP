@@ -645,6 +645,7 @@ export default function CustomersPage() {
               onChange: onSelectionChange,
             }}
             scroll={{ x: 1100 }}
+            mobileCardPrimaryColumns={['name', 'code']}
           />
         </Spin>
       </Card>

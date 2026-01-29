@@ -517,6 +517,7 @@ export default function ProductsPage() {
             }}
             scroll={{ x: 900 }}
             resizable
+            mobileCardPrimaryColumns={['name', 'code']}
           />
         </Spin>
       </Card>

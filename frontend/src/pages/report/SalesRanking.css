@@ -29,47 +29,39 @@
   flex-wrap: wrap;
 }
 
-/* Summary Metrics Section */
-.ranking-metrics {
+/* Metrics Bar - Compact Inline Display */
+.metrics-bar {
   margin-bottom: var(--spacing-6);
 }
 
-/* Metric Card */
-.ranking-metric-card {
-  height: 100%;
+.metrics-bar .semi-card-body {
+  padding: var(--spacing-3) var(--spacing-4);
 }
 
-.ranking-metric-content {
+.metrics-inline {
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
 }
 
-.ranking-metric-icon {
+.metric-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--semi-border-radius-medium);
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.metric-value-inline {
+  font-size: var(--font-size-lg);
+  font-family: var(--semi-font-family-code, 'Roboto Mono', monospace);
+}
+
+.metric-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--semi-color-border);
   flex-shrink: 0;
-}
-
-.ranking-metric-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.ranking-metric-label {
-  display: block;
-  margin-bottom: var(--spacing-1);
-  font-size: var(--font-size-sm);
-}
-
-.ranking-metric-value {
-  font-size: var(--font-size-xl);
-  line-height: 1.2;
-  word-break: break-all;
 }
 
 /* Dimension Card */
@@ -149,17 +141,19 @@
     width: 100% !important;
   }
 
-  .ranking-metric-content {
+  .metrics-inline {
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--spacing-2);
   }
 
-  .ranking-metric-icon {
-    width: 36px;
-    height: 36px;
+  .metric-item {
+    width: 100%;
+    justify-content: space-between;
   }
 
-  .ranking-metric-value {
-    font-size: var(--font-size-lg);
+  .metric-divider {
+    display: none;
   }
 
   .dimension-selector {

@@ -570,6 +570,7 @@ export default function ReceivablesPage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1200 }}
+            mobileCardPrimaryColumns={['reference_number', 'customer_name']}
           />
         </Spin>
       </Card>

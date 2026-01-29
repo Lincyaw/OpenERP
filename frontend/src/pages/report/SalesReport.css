@@ -29,64 +29,39 @@
   flex-wrap: wrap;
 }
 
-/* Metrics Section */
-.report-metrics {
+/* Metrics Bar - Compact Inline Display */
+.metrics-bar {
   margin-bottom: var(--spacing-6);
 }
 
-/* Metric Card */
-.metric-card {
-  height: 100%;
+.metrics-bar .semi-card-body {
+  padding: var(--spacing-3) var(--spacing-4);
 }
 
-.metric-card-content {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-4);
-}
-
-.metric-icon {
+.metrics-inline {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--semi-border-radius-medium);
-  flex-shrink: 0;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
 }
 
-.metric-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.metric-label {
-  display: block;
-  margin-bottom: var(--spacing-1);
-}
-
-.metric-value-row {
+.metric-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
   flex-wrap: wrap;
 }
 
-.metric-value {
-  font-size: var(--font-size-2xl);
-  line-height: 1.2;
-  word-break: break-all;
+.metric-value-inline {
+  font-size: var(--font-size-lg);
+  font-family: var(--semi-font-family-code, 'Roboto Mono', monospace);
 }
 
-.metric-trend {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.metric-sub {
-  display: block;
-  margin-top: var(--spacing-1);
+.metric-divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--semi-color-border);
+  flex-shrink: 0;
 }
 
 /* Charts Section */
@@ -141,17 +116,19 @@
     width: 100% !important;
   }
 
-  .metric-card-content {
-    gap: var(--spacing-3);
+  .metrics-inline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
   }
 
-  .metric-icon {
-    width: 40px;
-    height: 40px;
+  .metric-item {
+    width: 100%;
+    justify-content: space-between;
   }
 
-  .metric-value {
-    font-size: var(--font-size-xl);
+  .metric-divider {
+    display: none;
   }
 
   .chart-trend,

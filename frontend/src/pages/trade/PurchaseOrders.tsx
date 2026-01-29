@@ -595,6 +595,7 @@ export default function PurchaseOrdersPage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1000 }}
+            mobileCardPrimaryColumns={['order_number', 'supplier_name']}
           />
         </Spin>
       </Card>

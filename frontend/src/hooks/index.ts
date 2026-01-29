@@ -64,3 +64,12 @@ export {
   useFeatureFlagError,
   type FeatureFlagValue,
 } from './useFeatureFlag'
+
+// Responsive hooks
+export {
+  useResponsive,
+  useMediaQuery,
+  BREAKPOINTS,
+  type Breakpoint,
+  type ResponsiveState,
+} from './useResponsive'

@@ -12,16 +12,7 @@ import {
   TabPane,
   Select,
 } from '@douyinfe/semi-ui-19'
-import {
-  IconLineChartStroked,
-  IconPieChartStroked,
-  IconPriceTag,
-  IconShoppingBag,
-  IconUserGroup,
-  IconTick,
-  IconArrowUp,
-  IconArrowDown,
-} from '@douyinfe/semi-icons'
+import { IconLineChartStroked, IconShoppingBag, IconUserGroup } from '@douyinfe/semi-icons'
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 import * as echarts from 'echarts/core'
 import { LineChart, PieChart, BarChart } from 'echarts/charts'
@@ -32,7 +23,7 @@ import {
   TitleComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { Container, Row, Grid } from '@/components/common/layout'
+import { Container, Row } from '@/components/common/layout'
 import {
   getReportSalesSummary,
   getReportDailySalesTrend,
@@ -67,17 +58,6 @@ echarts.use([
 ])
 
 const { Title, Text } = Typography
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  subValue?: string | number
-  subLabel?: string
-  icon: React.ReactNode
-  color: string
-  trend?: 'up' | 'down' | 'neutral'
-  trendValue?: string
-}
 
 /**
  * Format currency for display
@@ -123,54 +103,6 @@ function getDefaultDateRange(): [Date, Date] {
  */
 function formatDateParam(date: Date): string {
   return date.toISOString().split('T')[0]
-}
-
-/**
- * MetricCard component for displaying KPI metrics
- */
-function MetricCard({
-  title,
-  value,
-  subValue,
-  subLabel,
-  icon,
-  color,
-  trend,
-  trendValue,
-}: MetricCardProps) {
-  return (
-    <Card className="metric-card">
-      <div className="metric-card-content">
-        <div className="metric-icon" style={{ backgroundColor: color + '15', color }}>
-          {icon}
-        </div>
-        <div className="metric-info">
-          <Text type="tertiary" className="metric-label">
-            {title}
-          </Text>
-          <div className="metric-value-row">
-            <Title heading={3} className="metric-value" style={{ margin: 0 }}>
-              {value}
-            </Title>
-            {trend && trendValue && (
-              <Tag
-                className="metric-trend"
-                color={trend === 'up' ? 'green' : trend === 'down' ? 'red' : 'grey'}
-              >
-                {trend === 'up' ? <IconArrowUp size="small" /> : <IconArrowDown size="small" />}
-                {trendValue}
-              </Tag>
-            )}
-          </div>
-          {subLabel && subValue !== undefined && (
-            <Text type="tertiary" size="small" className="metric-sub">
-              {subLabel}: <Text strong>{subValue}</Text>
-            </Text>
-          )}
-        </div>
-      </div>
-    </Card>
-  )
 }
 
 /**
@@ -635,47 +567,61 @@ export default function SalesReportPage() {
           </div>
         </div>
 
-        {/* Summary Metrics Cards */}
-        <div className="report-metrics">
-          <Grid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
-            <MetricCard
-              title="销售总额"
-              value={formatCurrency(summary?.total_sales_amount)}
-              subLabel="平均订单"
-              subValue={formatCurrency(summary?.avg_order_value)}
-              icon={<IconPriceTag size="large" />}
-              color="var(--semi-color-primary)"
-            />
-            <MetricCard
-              title="订单数量"
-              value={formatNumber(summary?.total_orders)}
-              subLabel="销售数量"
-              subValue={formatNumber(summary?.total_quantity)}
-              icon={<IconShoppingBag size="large" />}
-              color="var(--semi-color-success)"
-            />
-            <MetricCard
-              title="毛利润"
-              value={formatCurrency(summary?.total_gross_profit)}
-              subLabel="毛利率"
-              subValue={formatPercent(summary?.profit_margin)}
-              icon={<IconTick size="large" />}
-              color="var(--semi-color-warning)"
-            />
-            <MetricCard
-              title="销售成本"
-              value={formatCurrency(summary?.total_cost_amount)}
-              subLabel="成本占比"
-              subValue={
-                summary?.total_sales_amount
+        {/* Summary Metrics - Compact Inline Display */}
+        <Card className="metrics-bar">
+          <div className="metrics-inline">
+            <div className="metric-item">
+              <Text type="tertiary">销售总额</Text>
+              <Text strong className="metric-value-inline">
+                {formatCurrency(summary?.total_sales_amount)}
+              </Text>
+              <Text type="tertiary" size="small">
+                平均订单 {formatCurrency(summary?.avg_order_value)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">订单数量</Text>
+              <Text strong className="metric-value-inline">
+                {formatNumber(summary?.total_orders)}
+              </Text>
+              <Text type="tertiary" size="small">
+                销售数量 {formatNumber(summary?.total_quantity)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">毛利润</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-success)' }}
+              >
+                {formatCurrency(summary?.total_gross_profit)}
+              </Text>
+              <Text type="tertiary" size="small">
+                毛利率 {formatPercent(summary?.profit_margin)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">销售成本</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-danger)' }}
+              >
+                {formatCurrency(summary?.total_cost_amount)}
+              </Text>
+              <Text type="tertiary" size="small">
+                成本占比{' '}
+                {summary?.total_sales_amount
                   ? formatPercent((summary?.total_cost_amount || 0) / summary.total_sales_amount)
-                  : '0%'
-              }
-              icon={<IconPieChartStroked size="large" />}
-              color="var(--semi-color-tertiary)"
-            />
-          </Grid>
-        </div>
+                  : '0%'}
+              </Text>
+            </div>
+          </div>
+        </Card>
 
         {/* Charts Section */}
         <Row gap="md" wrap="wrap" className="report-charts">

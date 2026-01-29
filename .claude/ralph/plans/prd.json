@@ -8064,7 +8064,7 @@
       "编写测试验证场景加载和执行",
       "验收标准：运行 flash_sale 场景成功"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-029",

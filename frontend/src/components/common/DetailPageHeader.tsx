@@ -251,9 +251,11 @@ export function DetailPageHeader({
 
     return (
       <Dropdown trigger="click" position="bottomRight" render={dropdownMenu}>
-        <Button icon={<IconChevronDown />} aria-label="Actions">
-          Actions
-        </Button>
+        <span style={{ display: 'inline-flex' }}>
+          <Button icon={<IconChevronDown />} aria-label="Actions">
+            Actions
+          </Button>
+        </span>
       </Dropdown>
     )
   }

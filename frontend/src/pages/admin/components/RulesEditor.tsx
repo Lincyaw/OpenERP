@@ -323,31 +323,37 @@ function RuleItem({
         </div>
         <div className="rule-item-actions">
           <Tooltip content={t('featureFlags.form.moveUp', 'Move up')}>
-            <Button
-              icon={<IconArrowUp />}
-              theme="borderless"
-              size="small"
-              disabled={isFirst}
-              onClick={onMoveUp}
-            />
+            <span style={{ display: 'inline-flex' }}>
+              <Button
+                icon={<IconArrowUp />}
+                theme="borderless"
+                size="small"
+                disabled={isFirst}
+                onClick={onMoveUp}
+              />
+            </span>
           </Tooltip>
           <Tooltip content={t('featureFlags.form.moveDown', 'Move down')}>
-            <Button
-              icon={<IconArrowDown />}
-              theme="borderless"
-              size="small"
-              disabled={isLast}
-              onClick={onMoveDown}
-            />
+            <span style={{ display: 'inline-flex' }}>
+              <Button
+                icon={<IconArrowDown />}
+                theme="borderless"
+                size="small"
+                disabled={isLast}
+                onClick={onMoveDown}
+              />
+            </span>
           </Tooltip>
           <Tooltip content={t('featureFlags.form.deleteRule', 'Delete rule')}>
-            <Button
-              icon={<IconDelete />}
-              type="danger"
-              theme="borderless"
-              size="small"
-              onClick={onRemove}
-            />
+            <span style={{ display: 'inline-flex' }}>
+              <Button
+                icon={<IconDelete />}
+                type="danger"
+                theme="borderless"
+                size="small"
+                onClick={onRemove}
+              />
+            </span>
           </Tooltip>
         </div>
       </div>

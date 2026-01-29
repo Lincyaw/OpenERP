@@ -1,5 +1,6 @@
 // Table components
 export { DataTable } from './DataTable'
+export { MobileCardList } from './MobileCardList'
 export { TableActions, createActionsColumn } from './TableActions'
 export { TableToolbar, BulkActionBar } from './TableToolbar'
 

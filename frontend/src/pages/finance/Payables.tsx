@@ -568,6 +568,7 @@ export default function PayablesPage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1200 }}
+            mobileCardPrimaryColumns={['reference_number', 'supplier_name']}
           />
         </Spin>
       </Card>

@@ -272,9 +272,13 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
               okType="danger"
               onConfirm={() => handleDelete(record)}
             >
-              <Tooltip content={t('common.delete', 'Delete')}>
-                <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
-              </Tooltip>
+              <span style={{ display: 'inline-flex' }}>
+                <Tooltip content={t('common.delete', 'Delete')}>
+                  <span style={{ display: 'inline-flex' }}>
+                    <Button icon={<IconDelete />} type="danger" theme="borderless" size="small" />
+                  </span>
+                </Tooltip>
+              </span>
             </Popconfirm>
           </Space>
         ),

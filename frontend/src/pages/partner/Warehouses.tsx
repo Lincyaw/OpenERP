@@ -564,6 +564,7 @@ export default function WarehousesPage() {
               onChange: onSelectionChange,
             }}
             scroll={{ x: 900 }}
+            mobileCardPrimaryColumns={['name', 'code']}
           />
         </Spin>
       </Card>

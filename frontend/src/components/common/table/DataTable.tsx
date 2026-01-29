@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next'
 import type { ColumnProps, ChangeInfo } from '@douyinfe/semi-ui-19/lib/es/table'
 import type { DataTableProps, SortState } from './types'
 import { TableActions } from './TableActions'
+import { MobileCardList } from './MobileCardList'
+import { useResponsive } from '@/hooks'
 import './DataTable.css'
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
@@ -16,7 +18,7 @@ const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
  * - Server-side pagination, sorting, and filtering
  * - Row selection with checkbox/radio
  * - Row actions with dropdown for overflow
- * - Responsive design
+ * - Responsive design with mobile card view
  * - Loading state
  * - Empty state
  * - Sticky header
@@ -47,6 +49,7 @@ const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
  *   actions={actions}
  *   onStateChange={handleStateChange}
  *   sortState={state.sort}
+ *   mobileCardPrimaryColumns={['name', 'code']}  // Optional: specify primary columns for mobile view
  * />
  * ```
  */
@@ -73,8 +76,12 @@ export function DataTable<T extends Record<string, unknown>>({
   sticky = false,
   resizable = true,
   expandable,
+  mobileCardPrimaryColumns,
+  disableMobileCard = false,
 }: DataTableProps<T>) {
   const { t } = useTranslation()
+  const { isMobile } = useResponsive()
+
   // Convert our column definition to Semi Table column format
   const tableColumns = useMemo<ColumnProps<T>[]>(() => {
     const cols: ColumnProps<T>[] = columns
@@ -229,6 +236,29 @@ export function DataTable<T extends Record<string, unknown>>({
     }
   }, [expandable])
 
+  // Mobile card view
+  if (isMobile && !disableMobileCard) {
+    return (
+      <div
+        className={`data-table-container data-table-mobile ${className} ${loading ? 'loading' : ''}`}
+      >
+        <MobileCardList<T>
+          data={data}
+          columns={columns}
+          rowKey={rowKey}
+          actions={actions}
+          loading={loading}
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          rowSelection={rowSelection}
+          primaryColumns={mobileCardPrimaryColumns}
+          empty={emptyContent}
+        />
+      </div>
+    )
+  }
+
+  // Desktop table view
   return (
     <div className={`data-table-container ${className}`}>
       <Table<T>

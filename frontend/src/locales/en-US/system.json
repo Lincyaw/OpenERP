@@ -484,6 +484,87 @@
       "syncIntervalMax": "Sync interval cannot exceed 60 minutes"
     }
   },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "basicInfo": "Basic Information",
+    "securityInfo": "Security Information",
+    "securityTip": "Changing your password regularly improves account security",
+    "passwordTips": "Password should be at least 8 characters and include uppercase, lowercase, numbers, and special characters",
+    "fields": {
+      "username": "Username",
+      "displayName": "Display Name",
+      "email": "Email",
+      "phone": "Phone",
+      "roles": "Roles",
+      "userId": "User ID",
+      "tenantId": "Tenant ID"
+    },
+    "form": {
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "Enter display name",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "emailError": "Please enter a valid email address",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone number",
+      "oldPassword": "Current Password",
+      "oldPasswordPlaceholder": "Enter current password",
+      "oldPasswordRequired": "Current password is required",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "newPasswordRequired": "New password is required",
+      "newPasswordMinLength": "Password must be at least 8 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "confirmPasswordRequired": "Please confirm your password",
+      "confirmPasswordError": "Passwords do not match",
+      "changePasswordBtn": "Change Password"
+    },
+    "messages": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Failed to update profile",
+      "passwordSuccess": "Password changed successfully",
+      "passwordError": "Failed to change password"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language Settings",
+      "description": "Set the interface language",
+      "display": "Display Language"
+    },
+    "theme": {
+      "title": "Theme Settings",
+      "description": "Choose your preferred interface theme",
+      "light": "Light Mode",
+      "dark": "Dark Mode",
+      "system": "Follow System"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Manage system notifications and alerts",
+      "enable": "Enable Notifications",
+      "enableDesc": "Receive system messages and business alerts",
+      "sound": "Notification Sound",
+      "soundDesc": "Play sound when receiving notifications",
+      "autoRefresh": "Auto Refresh",
+      "autoRefreshDesc": "Automatically refresh page data"
+    },
+    "data": {
+      "title": "Data Management",
+      "description": "Manage local cached data",
+      "clearCache": "Clear Cache",
+      "clearCacheDesc": "Clear locally cached data without affecting account information",
+      "clearCacheBtn": "Clear Cache"
+    },
+    "messages": {
+      "languageChanged": "Language changed",
+      "themeChanged": "Theme changed",
+      "cacheCleared": "Cache cleared"
+    }
+  },
   "syncStatus": {
     "title": "Platform Order Sync Status",
     "subtitle": "View sync history and current status for all platforms, trigger manual sync",

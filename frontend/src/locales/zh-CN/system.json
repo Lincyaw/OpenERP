@@ -484,6 +484,87 @@
       "syncIntervalMax": "同步间隔最多60分钟"
     }
   },
+  "profile": {
+    "editProfile": "编辑资料",
+    "changePassword": "修改密码",
+    "basicInfo": "基本信息",
+    "securityInfo": "安全信息",
+    "securityTip": "定期修改密码可以提高账户安全性",
+    "passwordTips": "密码建议至少8位，包含大小写字母、数字和特殊字符",
+    "fields": {
+      "username": "用户名",
+      "displayName": "显示名称",
+      "email": "邮箱",
+      "phone": "电话",
+      "roles": "角色",
+      "userId": "用户ID",
+      "tenantId": "租户ID"
+    },
+    "form": {
+      "displayName": "显示名称",
+      "displayNamePlaceholder": "请输入显示名称",
+      "email": "邮箱",
+      "emailPlaceholder": "请输入邮箱地址",
+      "emailError": "请输入有效的邮箱地址",
+      "phone": "电话",
+      "phonePlaceholder": "请输入电话号码",
+      "oldPassword": "当前密码",
+      "oldPasswordPlaceholder": "请输入当前密码",
+      "oldPasswordRequired": "请输入当前密码",
+      "newPassword": "新密码",
+      "newPasswordPlaceholder": "请输入新密码",
+      "newPasswordRequired": "请输入新密码",
+      "newPasswordMinLength": "密码至少8个字符",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "请再次输入新密码",
+      "confirmPasswordRequired": "请确认新密码",
+      "confirmPasswordError": "两次输入的密码不一致",
+      "changePasswordBtn": "修改密码"
+    },
+    "messages": {
+      "updateSuccess": "资料更新成功",
+      "updateError": "资料更新失败",
+      "passwordSuccess": "密码修改成功",
+      "passwordError": "密码修改失败"
+    }
+  },
+  "settings": {
+    "title": "系统设置",
+    "language": {
+      "title": "语言设置",
+      "description": "设置系统界面语言",
+      "display": "界面语言"
+    },
+    "theme": {
+      "title": "主题设置",
+      "description": "选择您喜欢的界面主题",
+      "light": "浅色模式",
+      "dark": "深色模式",
+      "system": "跟随系统"
+    },
+    "notifications": {
+      "title": "通知设置",
+      "description": "管理系统通知和提醒",
+      "enable": "启用通知",
+      "enableDesc": "接收系统消息和业务提醒",
+      "sound": "通知声音",
+      "soundDesc": "收到通知时播放提示音",
+      "autoRefresh": "自动刷新",
+      "autoRefreshDesc": "自动刷新页面数据"
+    },
+    "data": {
+      "title": "数据管理",
+      "description": "管理本地缓存数据",
+      "clearCache": "清除缓存",
+      "clearCacheDesc": "清除本地存储的缓存数据，不影响账户信息",
+      "clearCacheBtn": "清除缓存"
+    },
+    "messages": {
+      "languageChanged": "语言已切换",
+      "themeChanged": "主题已切换",
+      "cacheCleared": "缓存已清除"
+    }
+  },
   "syncStatus": {
     "title": "平台订单同步状态",
     "subtitle": "查看各电商平台的同步历史和当前状态，支持手动触发同步",

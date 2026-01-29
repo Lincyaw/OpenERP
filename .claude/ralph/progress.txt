@@ -39020,3 +39020,108 @@ After code review, fixed potential XSS vulnerability:
    - Removed custom `joinStrings` function in favor of proper JSON marshaling
    - Pre-allocated slice capacity for better memory efficiency
    - Updated test assertions to account for proper JSON escaping
+
+## 2026-01-29 - LOADGEN-028: Scenario Management
+
+### Task ID: LOADGEN-028
+### Status: Complete
+
+### Implementation Details
+
+#### 1. Scenario Package (`internal/scenario/`)
+
+Created a comprehensive scenario management package with two main files:
+
+**scenario.go** - Scenario definition and registry:
+- `Definition` struct with all scenario override options:
+  - Duration override
+  - TrafficShaper override (supports spike, step, sine, custom)
+  - FocusEndpoints list (whitelist specific endpoints)
+  - DisableEndpoints list (blacklist specific endpoints)
+  - EndpointWeights map (override individual endpoint weights)
+  - Warmup override configuration
+  - Assertion override configuration
+  - Tags for categorization
+- `Registry` for managing scenarios from multiple sources
+- `LoadFromFile` and `LoadMultipleFromFile` for YAML loading
+- `LoadFromDirectory` for scanning configs/scenarios/ directory
+- `LoadFromConfig` for inline scenarios in config file
+
+**runner.go** - Scenario execution:
+- `Runner` struct managing scenario state and configuration
+- `ApplyOverrides` method that creates a deep copy of base config and applies scenario overrides
+- Lifecycle methods: `Start`, `Complete`, `Cancel`
+- `RunStats` for tracking execution statistics
+
+#### 2. CLI Integration (`cmd/main.go`)
+
+Added new CLI flags and commands:
+- `-scenario, -s <name>` - Run a specific scenario by name
+- `-list-scenarios` - List all available scenarios
+- `-scenario-dir <path>` - Custom scenarios directory
+
+Updated workflow:
+1. Load configuration file
+2. Initialize scenario registry
+3. Load scenarios from directory and inline config
+4. If -scenario flag specified, apply overrides
+5. Apply CLI overrides (duration, qps, concurrency)
+6. Execute
+
+#### 3. Flash Sale Scenario (`configs/scenarios/flash_sale.yaml`)
+
+Created example scenario demonstrating all features:
+- Duration: 10 minutes
+- Traffic: Spike pattern (50 QPS base, 500 QPS spikes every 2 minutes)
+- Focus: Catalog browsing and order creation endpoints
+- Endpoint weights: Heavy focus on product listing
+- Warmup: Disabled for fast start
+- Assertions: Stricter thresholds for stress testing
+
+#### 4. Test Coverage
+
+Comprehensive test suite in `scenario_test.go`:
+- Definition validation tests
+- Override detection tests
+- Endpoint filtering tests
+- Registry CRUD operations
+- File loading (single and multi-scenario)
+- Directory loading
+- Inline config loading
+- Runner override application tests
+- Lifecycle state management tests
+- Coverage: 77%
+
+### Key Files Modified
+- `tools/loadgen/internal/scenario/scenario.go` (NEW)
+- `tools/loadgen/internal/scenario/runner.go` (NEW)
+- `tools/loadgen/internal/scenario/scenario_test.go` (NEW)
+- `tools/loadgen/configs/scenarios/flash_sale.yaml` (NEW)
+- `tools/loadgen/cmd/main.go` (updated CLI)
+
+### Verification
+
+```bash
+# All loadgen tests pass
+go test ./... (15 packages OK)
+
+# List scenarios
+loadgen -config configs/erp.yaml -list-scenarios
+# Output: 7 scenarios (6 inline + 1 from directory)
+
+# Run flash_sale with dry-run
+loadgen -config configs/erp.yaml -scenario flash_sale -dry-run -v
+# Output: Shows 8 active endpoints, spike traffic pattern
+```
+
+### Design Decisions
+
+1. **Deep Copy for Config**: Runner creates deep copies to preserve base config immutability
+2. **Flexible Loading**: Supports both single-scenario YAML files and multi-scenario collections
+3. **Override Precedence**: CLI overrides take priority over scenario overrides
+4. **Graceful Directory Handling**: Non-existent scenario directory doesn't cause errors
+
+### Next Steps
+
+- LOADGEN-029: ERP configuration file and integration tests
+- Future: Support scenario chaining and composition

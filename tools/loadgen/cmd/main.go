@@ -13,6 +13,7 @@ import (
 	"github.com/example/erp/tools/loadgen/internal/circuit"
 	"github.com/example/erp/tools/loadgen/internal/config"
 	"github.com/example/erp/tools/loadgen/internal/parser"
+	"github.com/example/erp/tools/loadgen/internal/scenario"
 )
 
 // Version information (populated at build time)
@@ -39,6 +40,9 @@ var (
 	outputFormat   string
 	outputFile     string
 	prometheusAddr string
+	scenarioName   string
+	listScenarios  bool
+	scenarioDir    string
 )
 
 func init() {
@@ -49,6 +53,12 @@ func init() {
 	// OpenAPI parsing
 	flag.StringVar(&openapiPath, "openapi", "", "Path to OpenAPI/Swagger spec file (for endpoint discovery)")
 	flag.StringVar(&openapiPath, "o", "", "Path to OpenAPI/Swagger spec file (shorthand)")
+
+	// Scenario flags
+	flag.StringVar(&scenarioName, "scenario", "", "Run a specific scenario by name")
+	flag.StringVar(&scenarioName, "s", "", "Run a specific scenario by name (shorthand)")
+	flag.BoolVar(&listScenarios, "list-scenarios", false, "List all available scenarios")
+	flag.StringVar(&scenarioDir, "scenario-dir", "", "Directory containing scenario files (default: configs/scenarios/)")
 
 	// Override flags
 	flag.DurationVar(&duration, "duration", 0, "Override test duration (e.g., 5m, 1h)")
@@ -83,7 +93,8 @@ func printUsage() {
 
 USAGE:
     loadgen -config <path> [options]
-    loadgen -openapi <path> -list      (Parse and list OpenAPI endpoints)
+    loadgen -config <path> -scenario <name>  (Run specific scenario)
+    loadgen -openapi <path> -list            (Parse and list OpenAPI endpoints)
 
 DESCRIPTION:
     A load testing tool that generates realistic traffic patterns for the ERP system.
@@ -95,6 +106,11 @@ DESCRIPTION:
 CONFIGURATION:
     -config, -c <path>    Path to the YAML configuration file
     -openapi, -o <path>   Path to OpenAPI/Swagger spec file (YAML or JSON)
+
+SCENARIO OPTIONS:
+    -scenario, -s <name>  Run a specific scenario by name
+    -list-scenarios       List all available scenarios
+    -scenario-dir <path>  Directory for scenario files (default: configs/scenarios/)
 
 OVERRIDE OPTIONS:
     -duration, -d <dur>   Override test duration (e.g., "5m", "1h30m")
@@ -118,8 +134,17 @@ EXAMPLES:
     # Run with default configuration
     loadgen -config configs/erp.yaml
 
+    # Run a specific scenario
+    loadgen -config configs/erp.yaml -scenario flash_sale
+
+    # List available scenarios
+    loadgen -config configs/erp.yaml -list-scenarios
+
     # Run with overridden duration and QPS
     loadgen -config configs/erp.yaml -duration 10m -qps 50
+
+    # Run scenario with custom duration
+    loadgen -config configs/erp.yaml -scenario browse_catalog -duration 2m
 
     # Generate JSON report
     loadgen -config configs/erp.yaml -output json
@@ -144,6 +169,26 @@ EXAMPLES:
 
     # Dry run to see execution plan
     loadgen -config configs/erp.yaml -dry-run -v
+
+SCENARIO FILE FORMAT:
+    Scenarios can be defined in YAML files in the scenarios directory:
+
+    name: "flash_sale"
+    description: "Simulates flash sale traffic spike"
+    duration: 10m
+    trafficShaper:
+      type: "spike"
+      baseQPS: 50
+      spike:
+        spikeQPS: 500
+        spikeDuration: 30s
+        spikeInterval: 2m
+    focusEndpoints:
+      - "catalog.products.list"
+      - "trade.sales_orders.create"
+
+    Scenarios can override: duration, trafficShaper, focusEndpoints,
+    disableEndpoints, endpointWeights, warmup, and assertions.
 
 CONFIGURATION FILE FORMAT:
     The configuration file is in YAML format and supports:
@@ -205,6 +250,69 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading configuration: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Load scenarios
+	registry := scenario.NewRegistry()
+
+	// Set scenario directory (relative to config file or use flag)
+	if scenarioDir == "" {
+		scenarioDir = filepath.Join(filepath.Dir(absConfigPath), "scenarios")
+	}
+	registry.SetDirectory(scenarioDir)
+
+	// Load scenarios from directory
+	if err := registry.LoadFromDirectory(); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: Failed to load scenarios from directory: %v\n", err)
+	}
+
+	// Load inline scenarios from config
+	if len(cfg.Scenarios) > 0 {
+		inlineScenarios := make([]scenario.InlineScenario, len(cfg.Scenarios))
+		for i, s := range cfg.Scenarios {
+			inlineScenarios[i] = scenario.InlineScenario{
+				Name:        s.Name,
+				Description: s.Description,
+				Endpoints:   s.Endpoints,
+				Weight:      s.Weight,
+				Sequential:  s.Sequential,
+			}
+		}
+		if err := registry.LoadFromConfig(inlineScenarios); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: Failed to load inline scenarios: %v\n", err)
+		}
+	}
+
+	// Handle list-scenarios command
+	if listScenarios {
+		printScenarioList(registry)
+		os.Exit(0)
+	}
+
+	// Apply scenario overrides if specified
+	if scenarioName != "" {
+		scenarioDef, err := registry.Get(scenarioName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: Scenario '%s' not found\n", scenarioName)
+			fmt.Fprintln(os.Stderr, "Use -list-scenarios to see available scenarios")
+			os.Exit(1)
+		}
+
+		runner := scenario.NewRunner(scenarioDef, cfg)
+		cfg, err = runner.ApplyOverrides()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error applying scenario: %v\n", err)
+			os.Exit(1)
+		}
+
+		if verbose {
+			stats := runner.Stats()
+			fmt.Printf("Scenario '%s' applied:\n", scenarioName)
+			fmt.Printf("  Active endpoints: %d\n", stats.EndpointsActive)
+			fmt.Printf("  Disabled endpoints: %d\n", stats.EndpointsDisabled)
+			fmt.Printf("  Overrides applied: %v\n", stats.OverridesApplied)
+			fmt.Println()
+		}
 	}
 
 	// Apply CLI overrides
@@ -349,6 +457,64 @@ func printConfigSummary(cfg *config.Config) {
 	fmt.Printf("  Scenarios:   %d\n", len(cfg.Scenarios))
 	fmt.Printf("  TrafficType: %s\n", cfg.TrafficShaper.Type)
 	fmt.Printf("  Base QPS:    %.1f\n", cfg.TrafficShaper.BaseQPS)
+}
+
+func printScenarioList(registry *scenario.Registry) {
+	scenarios := registry.All()
+
+	if len(scenarios) == 0 {
+		fmt.Println("No scenarios available.")
+		fmt.Println()
+		fmt.Println("Scenarios can be defined in:")
+		fmt.Println("  1. The config file's 'scenarios' block")
+		fmt.Println("  2. YAML files in configs/scenarios/ directory")
+		return
+	}
+
+	fmt.Printf("Available Scenarios (%d total):\n", len(scenarios))
+	fmt.Println()
+
+	// Sort by name for deterministic output
+	sort.Slice(scenarios, func(i, j int) bool {
+		return scenarios[i].Name < scenarios[j].Name
+	})
+
+	for _, def := range scenarios {
+		fmt.Printf("  %s\n", def.Name)
+		if def.Description != "" {
+			fmt.Printf("      %s\n", def.Description)
+		}
+
+		// Show overrides this scenario provides
+		overrides := make([]string, 0)
+		if def.HasDurationOverride() {
+			overrides = append(overrides, fmt.Sprintf("duration=%v", def.Duration))
+		}
+		if def.HasTrafficOverride() {
+			overrides = append(overrides, fmt.Sprintf("trafficShaper=%s", def.TrafficShaper.Type))
+		}
+		if def.HasFocusEndpoints() {
+			overrides = append(overrides, fmt.Sprintf("focusEndpoints=%d", len(def.FocusEndpoints)))
+		}
+		if len(def.DisableEndpoints) > 0 {
+			overrides = append(overrides, fmt.Sprintf("disableEndpoints=%d", len(def.DisableEndpoints)))
+		}
+		if len(def.EndpointWeights) > 0 {
+			overrides = append(overrides, fmt.Sprintf("weightOverrides=%d", len(def.EndpointWeights)))
+		}
+
+		if len(overrides) > 0 {
+			fmt.Printf("      Overrides: %s\n", strings.Join(overrides, ", "))
+		}
+
+		if len(def.Tags) > 0 {
+			fmt.Printf("      Tags: %s\n", strings.Join(def.Tags, ", "))
+		}
+
+		fmt.Println()
+	}
+
+	fmt.Println("Usage: loadgen -config <path> -scenario <name>")
 }
 
 func getAuthType(cfg *config.Config) string {

@@ -417,6 +417,7 @@ export default function StockTakingListPage() {
             onStateChange={handleStateChange}
             sortState={state.sort}
             scroll={{ x: 1100 }}
+            mobileCardPrimaryColumns={['document_number', 'warehouse_name']}
           />
         </Spin>
       </Card>

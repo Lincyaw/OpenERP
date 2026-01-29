@@ -9,19 +9,9 @@ import {
   Table,
   Tag,
   Button,
-  Descriptions,
-  Divider,
 } from '@douyinfe/semi-ui-19'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
-import {
-  IconPriceTag,
-  IconMinus,
-  IconTick,
-  IconArrowUp,
-  IconArrowDown,
-  IconDownload,
-  IconLineChartStroked,
-} from '@douyinfe/semi-icons'
+import { IconDownload, IconLineChartStroked } from '@douyinfe/semi-icons'
 import ReactEChartsCore from 'echarts-for-react/lib/core'
 import * as echarts from 'echarts/core'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -32,7 +22,7 @@ import {
   TitleComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { Container, Grid } from '@/components/common/layout'
+import { Container } from '@/components/common/layout'
 import {
   getReportProfitLossStatement,
   getReportMonthlyProfitTrend,
@@ -63,17 +53,6 @@ echarts.use([
 ])
 
 const { Title, Text } = Typography
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  subValue?: string | number
-  subLabel?: string
-  icon: React.ReactNode
-  color: string
-  trend?: 'up' | 'down' | 'neutral'
-  trendValue?: string
-}
 
 /**
  * Format currency for display
@@ -119,54 +98,6 @@ function formatDateParam(date: Date): string {
  */
 function formatMonthLabel(year: number, month: number): string {
   return `${year}/${String(month).padStart(2, '0')}`
-}
-
-/**
- * MetricCard component for displaying KPI metrics
- */
-function MetricCard({
-  title,
-  value,
-  subValue,
-  subLabel,
-  icon,
-  color,
-  trend,
-  trendValue,
-}: MetricCardProps) {
-  return (
-    <Card className="metric-card">
-      <div className="metric-card-content">
-        <div className="metric-icon" style={{ backgroundColor: color + '15', color }}>
-          {icon}
-        </div>
-        <div className="metric-info">
-          <Text type="tertiary" className="metric-label">
-            {title}
-          </Text>
-          <div className="metric-value-row">
-            <Title heading={3} className="metric-value" style={{ margin: 0 }}>
-              {value}
-            </Title>
-            {trend && trendValue && (
-              <Tag
-                className="metric-trend"
-                color={trend === 'up' ? 'green' : trend === 'down' ? 'red' : 'grey'}
-              >
-                {trend === 'up' ? <IconArrowUp size="small" /> : <IconArrowDown size="small" />}
-                {trendValue}
-              </Tag>
-            )}
-          </div>
-          {subLabel && subValue !== undefined && (
-            <Text type="tertiary" size="small" className="metric-sub">
-              {subLabel}: <Text strong>{subValue}</Text>
-            </Text>
-          )}
-        </div>
-      </div>
-    </Card>
-  )
 }
 
 /**
@@ -534,143 +465,151 @@ export default function ProfitLossPage() {
           </div>
         </div>
 
-        {/* Summary Metrics Cards */}
-        <div className="report-metrics">
-          <Grid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
-            <MetricCard
-              title="净销售收入"
-              value={formatCurrency(statement?.net_sales_revenue)}
-              subLabel="总收入"
-              subValue={formatCurrency(statement?.total_income)}
-              icon={<IconPriceTag size="large" />}
-              color="var(--semi-color-primary)"
-            />
-            <MetricCard
-              title="销售成本"
-              value={formatCurrency(statement?.cogs)}
-              subLabel="退货金额"
-              subValue={formatCurrency(statement?.sales_returns)}
-              icon={<IconMinus size="large" />}
-              color="var(--semi-color-danger)"
-            />
-            <MetricCard
-              title="毛利润"
-              value={formatCurrency(statement?.gross_profit)}
-              subLabel="毛利率"
-              subValue={formatPercent(statement?.gross_margin)}
-              icon={<IconTick size="large" />}
-              color="var(--semi-color-success)"
-            />
-            <MetricCard
-              title="净利润"
-              value={formatCurrency(statement?.net_profit)}
-              subLabel="净利率"
-              subValue={formatPercent(statement?.net_margin)}
-              icon={<IconArrowUp size="large" />}
-              color="var(--semi-color-warning)"
-            />
-          </Grid>
-        </div>
+        {/* Summary Metrics - Compact Inline Display */}
+        <Card className="metrics-bar">
+          <div className="metrics-inline">
+            <div className="metric-item">
+              <Text type="tertiary">净销售收入</Text>
+              <Text strong className="metric-value-inline">
+                {formatCurrency(statement?.net_sales_revenue)}
+              </Text>
+              <Text type="tertiary" size="small">
+                总收入 {formatCurrency(statement?.total_income)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">销售成本</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-danger)' }}
+              >
+                {formatCurrency(statement?.cogs)}
+              </Text>
+              <Text type="tertiary" size="small">
+                退货 {formatCurrency(statement?.sales_returns)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">毛利润</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{ color: 'var(--semi-color-success)' }}
+              >
+                {formatCurrency(statement?.gross_profit)}
+              </Text>
+              <Text type="tertiary" size="small">
+                毛利率 {formatPercent(statement?.gross_margin)}
+              </Text>
+            </div>
+            <div className="metric-divider" />
+            <div className="metric-item">
+              <Text type="tertiary">净利润</Text>
+              <Text
+                strong
+                className="metric-value-inline"
+                style={{
+                  color:
+                    (statement?.net_profit ?? 0) >= 0
+                      ? 'var(--semi-color-success)'
+                      : 'var(--semi-color-danger)',
+                }}
+              >
+                {formatCurrency(statement?.net_profit)}
+              </Text>
+              <Text type="tertiary" size="small">
+                净利率 {formatPercent(statement?.net_margin)}
+              </Text>
+            </div>
+          </div>
+        </Card>
 
-        {/* P&L Statement Breakdown */}
+        {/* P&L Statement Breakdown - Compact Multi-Column Layout */}
         <Card title="损益明细" className="statement-card">
           {statement ? (
-            <Descriptions
-              data={[
-                {
-                  key: '收入',
-                  value: (
-                    <div className="statement-section">
-                      <div className="statement-row">
-                        <span>销售收入</span>
-                        <span className="amount">{formatCurrency(statement.sales_revenue)}</span>
-                      </div>
-                      <div className="statement-row indent negative">
-                        <span>减: 销售退货</span>
-                        <span className="amount">{formatCurrency(statement.sales_returns)}</span>
-                      </div>
-                      <Divider margin="8px" />
-                      <div className="statement-row subtotal">
-                        <span>净销售收入</span>
-                        <span className="amount">
-                          {formatCurrency(statement.net_sales_revenue)}
-                        </span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  key: '成本与毛利',
-                  value: (
-                    <div className="statement-section">
-                      <div className="statement-row negative">
-                        <span>减: 销售成本 (COGS)</span>
-                        <span className="amount">{formatCurrency(statement.cogs)}</span>
-                      </div>
-                      <Divider margin="8px" />
-                      <div className="statement-row subtotal positive">
-                        <span>毛利润</span>
-                        <span className="amount">{formatCurrency(statement.gross_profit)}</span>
-                      </div>
-                      <div className="statement-row info">
-                        <span>毛利率</span>
-                        <Tag color="green">{formatPercent(statement.gross_margin)}</Tag>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  key: '其他收支',
-                  value: (
-                    <div className="statement-section">
-                      <div className="statement-row">
-                        <span>加: 其他收入</span>
-                        <span className="amount">{formatCurrency(statement.other_income)}</span>
-                      </div>
-                      <Divider margin="8px" />
-                      <div className="statement-row subtotal">
-                        <span>总收入</span>
-                        <span className="amount">{formatCurrency(statement.total_income)}</span>
-                      </div>
-                      <div className="statement-row negative">
-                        <span>减: 费用支出</span>
-                        <span className="amount">{formatCurrency(statement.expenses)}</span>
-                      </div>
-                    </div>
-                  ),
-                },
-                {
-                  key: '净利润',
-                  value: (
-                    <div className="statement-section">
-                      <div
-                        className={`statement-row total ${(statement.net_profit ?? 0) >= 0 ? 'positive' : 'negative'}`}
-                      >
-                        <span>净利润</span>
-                        <span className="amount">{formatCurrency(statement.net_profit)}</span>
-                      </div>
-                      <div className="statement-row info">
-                        <span>净利率</span>
-                        <Tag
-                          color={
-                            (statement.net_margin ?? 0) >= 0.1
-                              ? 'green'
-                              : (statement.net_margin ?? 0) >= 0
-                                ? 'orange'
-                                : 'red'
-                          }
-                        >
-                          {formatPercent(statement.net_margin)}
-                        </Tag>
-                      </div>
-                    </div>
-                  ),
-                },
-              ]}
-              row
-              size="medium"
-              className="statement-descriptions"
-            />
+            <div className="statement-compact">
+              <div className="statement-column">
+                <div className="statement-group-title">收入</div>
+                <div className="statement-line">
+                  <span>销售收入</span>
+                  <span className="amount">{formatCurrency(statement.sales_revenue)}</span>
+                </div>
+                <div className="statement-line indent">
+                  <span>减: 销售退货</span>
+                  <span className="amount negative">
+                    ({formatCurrency(statement.sales_returns)})
+                  </span>
+                </div>
+                <div className="statement-line subtotal">
+                  <span>净销售收入</span>
+                  <span className="amount">{formatCurrency(statement.net_sales_revenue)}</span>
+                </div>
+              </div>
+
+              <div className="statement-column">
+                <div className="statement-group-title">成本与毛利</div>
+                <div className="statement-line indent">
+                  <span>减: 销售成本</span>
+                  <span className="amount negative">({formatCurrency(statement.cogs)})</span>
+                </div>
+                <div className="statement-line subtotal">
+                  <span>毛利润</span>
+                  <span className="amount positive">{formatCurrency(statement.gross_profit)}</span>
+                </div>
+                <div className="statement-line info">
+                  <span>毛利率</span>
+                  <Tag color="green" size="small">
+                    {formatPercent(statement.gross_margin)}
+                  </Tag>
+                </div>
+              </div>
+
+              <div className="statement-column">
+                <div className="statement-group-title">其他收支</div>
+                <div className="statement-line indent">
+                  <span>加: 其他收入</span>
+                  <span className="amount positive">{formatCurrency(statement.other_income)}</span>
+                </div>
+                <div className="statement-line subtotal">
+                  <span>总收入</span>
+                  <span className="amount">{formatCurrency(statement.total_income)}</span>
+                </div>
+                <div className="statement-line indent">
+                  <span>减: 费用支出</span>
+                  <span className="amount negative">({formatCurrency(statement.expenses)})</span>
+                </div>
+              </div>
+
+              <div className="statement-column highlight">
+                <div className="statement-group-title">净利润</div>
+                <div className="statement-line total">
+                  <span>净利润</span>
+                  <span
+                    className={`amount ${(statement.net_profit ?? 0) >= 0 ? 'positive' : 'negative'}`}
+                  >
+                    {formatCurrency(statement.net_profit)}
+                  </span>
+                </div>
+                <div className="statement-line info">
+                  <span>净利率</span>
+                  <Tag
+                    size="small"
+                    color={
+                      (statement.net_margin ?? 0) >= 0.1
+                        ? 'green'
+                        : (statement.net_margin ?? 0) >= 0
+                          ? 'orange'
+                          : 'red'
+                    }
+                  >
+                    {formatPercent(statement.net_margin)}
+                  </Tag>
+                </div>
+              </div>
+            </div>
           ) : (
             <Empty description="暂无损益数据" />
           )}

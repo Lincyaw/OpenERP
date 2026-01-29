@@ -746,14 +746,16 @@ export default function StockTakingExecutePage() {
                 content={!hasDirtyItems ? t('stockTaking.execute.submitTips.noChanges') : ''}
                 disabled={hasDirtyItems}
               >
-                <Button
-                  icon={<IconRefresh />}
-                  onClick={handleSaveAllCounts}
-                  loading={submitting}
-                  disabled={!hasDirtyItems}
-                >
-                  {t('stockTaking.execute.actions.saveAll')}
-                </Button>
+                <span style={{ display: 'inline-flex' }}>
+                  <Button
+                    icon={<IconRefresh />}
+                    onClick={handleSaveAllCounts}
+                    loading={submitting}
+                    disabled={!hasDirtyItems}
+                  >
+                    {t('stockTaking.execute.actions.saveAll')}
+                  </Button>
+                </span>
               </Tooltip>
               <Button icon={<IconSend />} type="primary" onClick={handleSubmitClick}>
                 {t('stockTaking.execute.actions.submitApproval')}
