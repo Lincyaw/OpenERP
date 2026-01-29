@@ -40389,3 +40389,105 @@ Added RustFS S3-compatible object storage service to the ERP infrastructure for 
 - ATTACH-INFRA-002: Implement S3 storage interface and RustFS client in Go backend
 - Backend needs to auto-create the `erp-attachments` bucket on startup
 - Consider adding bucket lifecycle policies for cleanup
+
+2025-01-29 - ATTACH-INFRA-002: 实现 S3 兼容存储接口和 RustFS 客户端
+
+=== Implementation Details ===
+
+Implemented S3-compatible object storage interface using AWS SDK v2 for RustFS/MinIO/S3 backends.
+
+**1. Configuration (backend/internal/infrastructure/config/config.go)**
+- Added `StorageConfig` struct with fields:
+  - `Endpoint` - S3-compatible endpoint URL
+  - `Region` - AWS region
+  - `AccessKey` / `SecretKey` - Credentials
+  - `Bucket` - Default bucket name
+  - `UsePathStyle` - Path-style URLs (required for RustFS/MinIO)
+  - `UseSSL` - Enable TLS
+  - `PresignExpiration` - Presigned URL expiration
+  - `MaxFileSize` - Maximum upload size (50MB default)
+  - `AllowedMIMETypes` - Allowed file types whitelist
+- Added storage config loading in `Load()` function
+- Added defaults in `applyDefaults()`:
+  - Default endpoint: `http://localhost:9000` (RustFS)
+  - Default region: `us-east-1`
+  - Default bucket: `erp-attachments`
+  - Default presign expiration: 15 minutes
+  - Default max file size: 50MB
+
+**2. S3 Storage Implementation (backend/internal/infrastructure/storage/s3_storage.go)**
+- `S3ObjectStorage` struct implementing `ObjectStorageService` interface
+- Uses AWS SDK v2 (`github.com/aws/aws-sdk-go-v2`) for S3 operations
+- Implements all required interface methods:
+  - `GenerateUploadURL()` - Creates presigned PUT URL for uploads
+  - `GenerateDownloadURL()` - Creates presigned GET URL for downloads
+  - `DeleteObject()` - Deletes object from storage
+  - `ObjectExists()` - Checks if object exists (HeadObject)
+- Additional methods:
+  - `EnsureBucket()` - Creates bucket if not exists (startup initialization)
+  - `Upload()` - Direct upload for internal use
+  - `GetBucket()` - Returns bucket name
+- Functional options pattern for configuration:
+  - `WithLogger()` - Custom zap logger
+  - `WithPresignExpiration()` - Custom presign duration
+- Uses non-deprecated `BaseEndpoint` option for S3 client configuration
+
+**3. Unit Tests (backend/internal/infrastructure/storage/s3_storage_test.go)**
+- Configuration validation tests (nil config, missing fields)
+- Options tests (WithLogger, WithPresignExpiration)
+- URL generation tests (upload/download)
+- Input validation tests for all methods
+- Skipped integration tests (require live RustFS)
+- Test coverage: 67% of statements
+
+=== Files Modified/Created ===
+
+| File | Changes |
+|------|---------|
+| backend/internal/infrastructure/config/config.go | Added StorageConfig, Load(), applyDefaults() |
+| backend/internal/infrastructure/storage/s3_storage.go | New - S3 storage implementation |
+| backend/internal/infrastructure/storage/s3_storage_test.go | New - Unit tests |
+| backend/go.mod | Added AWS SDK v2 dependencies |
+| backend/go.sum | Updated with AWS SDK v2 |
+
+=== New Dependencies Added ===
+
+- `github.com/aws/aws-sdk-go-v2` v1.41.1
+- `github.com/aws/aws-sdk-go-v2/config` v1.32.7
+- `github.com/aws/aws-sdk-go-v2/credentials` v1.19.7
+- `github.com/aws/aws-sdk-go-v2/service/s3` v1.96.0
+- `github.com/aws/smithy-go` v1.24.0
+
+=== Verification ===
+
+- [x] Unit tests pass: `go test ./internal/infrastructure/storage/...` - PASS
+- [x] Build succeeds: `go build ./...` - OK
+- [x] Go vet passes: `go vet ./...` - OK
+- [x] Interface compliance: `var _ catalogapp.ObjectStorageService = (*S3ObjectStorage)(nil)`
+- [x] No console.log statements (N/A - Go code)
+- [x] No debug print statements
+
+=== Design Decisions ===
+
+1. **AWS SDK v2**: Used the modern v2 SDK instead of v1 for better performance and maintainability
+2. **Path-style URLs**: Default `UsePathStyle=false` for AWS S3, but RustFS/MinIO require `true`
+3. **BaseEndpoint**: Used the non-deprecated `BaseEndpoint` option instead of global EndpointResolver
+4. **Presigned URLs**: All client uploads/downloads use presigned URLs for security
+5. **Interface compliance**: Implements `ObjectStorageService` from application layer
+
+=== Requirements Checklist ===
+
+- [x] 创建 backend/internal/infrastructure/storage/s3_storage.go 定义接口
+- [x] 实现 GenerateUploadURL() - 生成预签名上传 URL
+- [x] 实现 GenerateDownloadURL() - 生成预签名下载 URL  
+- [x] 实现 Upload(), Delete(), Exists() 方法 (Download via presigned URL)
+- [x] 使用 AWS SDK v2 连接 RustFS
+- [x] 编写存储层单元测试
+
+Note: The requirement mentioned `rustfs_storage.go` but since S3ObjectStorage is already compatible with RustFS (any S3-compatible storage), a separate file is not needed. The naming was kept as `s3_storage.go` to reflect its S3-compatible nature.
+
+=== Next Steps ===
+
+- Wire S3ObjectStorage into the application service layer (replace StubObjectStorage)
+- Call EnsureBucket() during application startup
+- Add integration tests with actual RustFS container

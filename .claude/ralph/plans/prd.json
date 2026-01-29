@@ -12428,7 +12428,7 @@
       "使用 AWS SDK v2 连接 RustFS",
       "编写存储层单元测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-001",

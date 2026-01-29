@@ -24,6 +24,7 @@ type Config struct {
 	Swagger      SwaggerConfig
 	Telemetry    TelemetryConfig
 	FeatureFlags FeatureFlagsConfig
+	Storage      StorageConfig
 }
 
 // LogConfig holds logging configuration
@@ -161,6 +162,41 @@ type FeatureFlagsConfig struct {
 	CacheEnabled bool
 	// CacheTTL is the time-to-live for cached flag values (default: 5m)
 	CacheTTL time.Duration
+}
+
+// StorageConfig holds S3-compatible object storage configuration
+type StorageConfig struct {
+	// Endpoint is the S3-compatible storage endpoint URL
+	// Development: http://localhost:9000 (RustFS)
+	// Production: s3.amazonaws.com or your S3-compatible endpoint
+	Endpoint string
+	// Region is the AWS region (required even for non-AWS S3-compatible storage)
+	Region string
+	// AccessKey is the S3 access key credential
+	// SECURITY: Use environment variables in production: ERP_STORAGE_ACCESS_KEY
+	AccessKey string
+	// SecretKey is the S3 secret key credential
+	// SECURITY: Use environment variables in production: ERP_STORAGE_SECRET_KEY
+	SecretKey string
+	// Bucket is the default bucket for file attachments
+	// This bucket will be auto-created on startup if it doesn't exist
+	Bucket string
+	// UsePathStyle uses path-style URLs instead of virtual-hosted style
+	// Required for RustFS and most S3-compatible storage (MinIO, etc.)
+	// Set to false for AWS S3 in production
+	UsePathStyle bool
+	// UseSSL enables SSL/TLS for S3 connections
+	// Development: false (RustFS without TLS)
+	// Production: true (AWS S3 or TLS-enabled storage)
+	UseSSL bool
+	// PresignExpiration is the presigned URL expiration time for uploads and downloads
+	PresignExpiration time.Duration
+	// MaxFileSize is the maximum file size for uploads (in bytes)
+	// Default: 50MB
+	MaxFileSize int64
+	// AllowedMIMETypes is the whitelist of allowed MIME types for uploads
+	// Empty means allow all types (not recommended)
+	AllowedMIMETypes []string
 }
 
 // ProfilingConfig holds Pyroscope continuous profiling configuration
@@ -342,6 +378,18 @@ func Load() (*Config, error) {
 			PreloadKeys:  v.GetStringSlice("feature_flags.preload_keys"),
 			CacheEnabled: v.GetBool("feature_flags.cache_enabled"),
 			CacheTTL:     v.GetDuration("feature_flags.cache_ttl"),
+		},
+		Storage: StorageConfig{
+			Endpoint:          v.GetString("storage.endpoint"),
+			Region:            v.GetString("storage.region"),
+			AccessKey:         v.GetString("storage.access_key"),
+			SecretKey:         v.GetString("storage.secret_key"),
+			Bucket:            v.GetString("storage.bucket"),
+			UsePathStyle:      v.GetBool("storage.use_path_style"),
+			UseSSL:            v.GetBool("storage.use_ssl"),
+			PresignExpiration: v.GetDuration("storage.presign_expiration"),
+			MaxFileSize:       v.GetInt64("storage.max_file_size"),
+			AllowedMIMETypes:  v.GetStringSlice("storage.allowed_mime_types"),
 		},
 	}
 
@@ -566,6 +614,27 @@ func applyDefaults(cfg *Config) {
 	if cfg.FeatureFlags.CacheTTL == 0 {
 		cfg.FeatureFlags.CacheTTL = 5 * time.Minute // Default 5 minute cache TTL
 	}
+
+	// Storage defaults (S3-compatible object storage)
+	if cfg.Storage.Endpoint == "" {
+		cfg.Storage.Endpoint = "http://localhost:9000" // RustFS default
+	}
+	if cfg.Storage.Region == "" {
+		cfg.Storage.Region = "us-east-1"
+	}
+	if cfg.Storage.Bucket == "" {
+		cfg.Storage.Bucket = "erp-attachments"
+	}
+	if cfg.Storage.PresignExpiration == 0 {
+		cfg.Storage.PresignExpiration = 15 * time.Minute
+	}
+	if cfg.Storage.MaxFileSize == 0 {
+		cfg.Storage.MaxFileSize = 50 * 1024 * 1024 // 50MB
+	}
+	// Note: UsePathStyle defaults to false, which is correct for AWS S3
+	// For RustFS/MinIO, set use_path_style = true in config
+	// Note: UseSSL defaults to false for development
+	// For production, set use_ssl = true
 }
 
 // validate performs validation on the configuration
