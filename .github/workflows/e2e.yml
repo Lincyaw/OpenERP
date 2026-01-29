@@ -32,18 +32,30 @@ jobs:
 
       - name: Start test environment
         run: |
-          # Use default docker-compose.yml with docker profile
-          docker compose --profile docker up -d --build
+          # Use default docker-compose.yml with docker and migrate profiles
+          docker compose --profile docker --profile migrate up -d --build
+          # Wait for migrations to complete
+          docker compose logs migrate || true
           # Wait for services to be healthy
           echo "Waiting for services to start..."
           sleep 30
 
       - name: Check service health
         run: |
+          # Wait for migrations to complete
+          echo "Waiting for migrations to complete..."
+          docker compose logs migrate 2>&1 || true
           # Check if PostgreSQL is ready
           docker compose exec -T postgres pg_isready -U postgres || exit 1
           # Check if backend is responding
-          curl -sf http://localhost:8080/health || echo "Backend not ready yet, continuing..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080/health; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend... attempt $i"
+            sleep 2
+          done
           # Check if frontend is responding
           curl -sf http://localhost:3000 || echo "Frontend not ready yet, continuing..."
 
