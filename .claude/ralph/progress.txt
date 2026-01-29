@@ -39006,3 +39006,17 @@ Implemented comprehensive HTML report generation for the load generator:
 - Consider adding throughput over time chart (would require time-series data collection)
 - Add PDF export option using headless browser rendering
 - Consider dark mode theme option
+
+=== Security Enhancement (Same Task) ===
+
+After code review, fixed potential XSS vulnerability:
+
+1. **XSS Prevention**
+   - Changed JSON generation for charts from manual string formatting to `encoding/json`
+   - The `json.Marshal` function automatically escapes dangerous characters (`<` to `\u003c`)
+   - Added XSS prevention test case with malicious input scenarios
+
+2. **Code Quality Improvements**
+   - Removed custom `joinStrings` function in favor of proper JSON marshaling
+   - Pre-allocated slice capacity for better memory efficiency
+   - Updated test assertions to account for proper JSON escaping

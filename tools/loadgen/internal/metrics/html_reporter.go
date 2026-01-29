@@ -3,6 +3,7 @@ package metrics
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"os"
@@ -368,49 +369,43 @@ func (r *HTMLReporter) buildWorkflows(workflows []WorkflowConfig) []WorkflowData
 	return data
 }
 
-// statusCodesToJSON converts status codes to JSON for chart.
+// statusCodesToJSON converts status codes to JSON for chart using proper JSON encoding.
 func (r *HTMLReporter) statusCodesToJSON(codes []StatusCodeData) template.JS {
-	var labels, counts []string
+	labels := make([]string, 0, len(codes))
+	counts := make([]int64, 0, len(codes))
 	for _, code := range codes {
-		labels = append(labels, fmt.Sprintf(`"%s"`, code.Code))
-		counts = append(counts, fmt.Sprintf("%d", code.Count))
+		labels = append(labels, code.Code)
+		counts = append(counts, code.Count)
 	}
-	return template.JS(fmt.Sprintf(`{labels: [%s], data: [%s]}`,
-		joinStrings(labels, ","), joinStrings(counts, ",")))
+	labelsJSON, _ := json.Marshal(labels)
+	countsJSON, _ := json.Marshal(counts)
+	return template.JS(fmt.Sprintf(`{labels: %s, data: %s}`, labelsJSON, countsJSON))
 }
 
-// latencyBucketsToJSON converts latency buckets to JSON for chart.
+// latencyBucketsToJSON converts latency buckets to JSON for chart using proper JSON encoding.
 func (r *HTMLReporter) latencyBucketsToJSON(buckets []LatencyBucketData) template.JS {
-	var labels, counts []string
+	labels := make([]string, 0, len(buckets))
+	counts := make([]int64, 0, len(buckets))
 	for _, bucket := range buckets {
-		labels = append(labels, fmt.Sprintf(`"%s"`, bucket.Label))
-		counts = append(counts, fmt.Sprintf("%d", bucket.Count))
+		labels = append(labels, bucket.Label)
+		counts = append(counts, bucket.Count)
 	}
-	return template.JS(fmt.Sprintf(`{labels: [%s], data: [%s]}`,
-		joinStrings(labels, ","), joinStrings(counts, ",")))
+	labelsJSON, _ := json.Marshal(labels)
+	countsJSON, _ := json.Marshal(counts)
+	return template.JS(fmt.Sprintf(`{labels: %s, data: %s}`, labelsJSON, countsJSON))
 }
 
-// endpointsToJSON converts endpoints to JSON for chart.
+// endpointsToJSON converts endpoints to JSON for chart using proper JSON encoding.
 func (r *HTMLReporter) endpointsToJSON(endpoints []EndpointData) template.JS {
-	var labels, requests []string
+	labels := make([]string, 0, len(endpoints))
+	requests := make([]int64, 0, len(endpoints))
 	for _, ep := range endpoints {
-		labels = append(labels, fmt.Sprintf(`"%s"`, ep.Name))
-		requests = append(requests, fmt.Sprintf("%d", ep.TotalRequests))
+		labels = append(labels, ep.Name)
+		requests = append(requests, ep.TotalRequests)
 	}
-	return template.JS(fmt.Sprintf(`{labels: [%s], data: [%s]}`,
-		joinStrings(labels, ","), joinStrings(requests, ",")))
-}
-
-// joinStrings joins strings with separator.
-func joinStrings(strs []string, sep string) string {
-	if len(strs) == 0 {
-		return ""
-	}
-	result := strs[0]
-	for i := 1; i < len(strs); i++ {
-		result += sep + strs[i]
-	}
-	return result
+	labelsJSON, _ := json.Marshal(labels)
+	requestsJSON, _ := json.Marshal(requests)
+	return template.JS(fmt.Sprintf(`{labels: %s, data: %s}`, labelsJSON, requestsJSON))
 }
 
 // formatBytesPerSec formats bytes per second to human readable string.

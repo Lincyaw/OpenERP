@@ -257,13 +257,17 @@ func TestHTMLReporter_ChartDataGeneration(t *testing.T) {
 	assert.Contains(t, string(statusJSON), "100")
 
 	// Test latency buckets JSON generation
+	// Note: encoding/json escapes < as \u003c for XSS safety
 	latencyBuckets := []LatencyBucketData{
 		{Label: "< 10ms", Count: 500, Percent: 50.0},
 		{Label: "< 50ms", Count: 300, Percent: 30.0},
 	}
 	latencyJSON := r.latencyBucketsToJSON(latencyBuckets)
-	assert.Contains(t, string(latencyJSON), `"< 10ms"`)
-	assert.Contains(t, string(latencyJSON), `"< 50ms"`)
+	// The < character is escaped as \u003c by encoding/json for XSS safety
+	assert.Contains(t, string(latencyJSON), `10ms`)
+	assert.Contains(t, string(latencyJSON), `50ms`)
+	assert.Contains(t, string(latencyJSON), "500")
+	assert.Contains(t, string(latencyJSON), "300")
 
 	// Test endpoints JSON generation
 	endpoints := []EndpointData{
@@ -271,7 +275,7 @@ func TestHTMLReporter_ChartDataGeneration(t *testing.T) {
 		{Name: "POST /api/orders", TotalRequests: 3000},
 	}
 	endpointsJSON := r.endpointsToJSON(endpoints)
-	assert.Contains(t, string(endpointsJSON), `"GET /api/products"`)
+	assert.Contains(t, string(endpointsJSON), `GET /api/products`)
 	assert.Contains(t, string(endpointsJSON), "5000")
 }
 
@@ -291,27 +295,6 @@ func TestFormatBytesPerSec(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.expected, func(t *testing.T) {
 			result := formatBytesPerSec(tc.bytes)
-			assert.Equal(t, tc.expected, result)
-		})
-	}
-}
-
-func TestJoinStrings(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    []string
-		sep      string
-		expected string
-	}{
-		{"empty", []string{}, ",", ""},
-		{"single", []string{"a"}, ",", "a"},
-		{"multiple", []string{"a", "b", "c"}, ",", "a,b,c"},
-		{"with space", []string{"foo", "bar"}, ", ", "foo, bar"},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := joinStrings(tc.input, tc.sep)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
@@ -351,4 +334,35 @@ func TestHTMLReporter_BrowserCompatibility(t *testing.T) {
 	// Verify Chart.js CDN is included
 	assert.Contains(t, htmlStr, "cdn.jsdelivr.net")
 	assert.Contains(t, htmlStr, "chart.js")
+}
+
+func TestHTMLReporter_XSSPrevention(t *testing.T) {
+	// This test verifies that XSS attacks are prevented in the HTML output
+	r := NewHTMLReporter()
+	jsonReporter := NewReporter()
+
+	snapshot := createTestSnapshot()
+
+	// Create a report with potentially malicious content
+	jsonReport := jsonReporter.GenerateReport(snapshot, ReportOptions{
+		ConfigName:        `<script>alert('xss')</script>`,
+		ConfigDescription: `<img onerror="alert(1)" src="x">`,
+		TargetBaseURL:     `http://example.com"><script>alert(1)</script>`,
+		Errors: []ErrorEntry{
+			{StatusCode: 500, Endpoint: `POST /api"><img onerror=alert(1)>`, Count: 1, Message: `<script>alert('xss')</script>`},
+		},
+	})
+
+	html, err := r.GenerateHTML(jsonReport)
+	require.NoError(t, err)
+
+	htmlStr := string(html)
+
+	// Verify script tags are escaped (< becomes &lt;)
+	assert.NotContains(t, htmlStr, "<script>alert")
+	// The content should be escaped to HTML entities
+	assert.Contains(t, htmlStr, "&lt;script&gt;")
+	// Verify the raw img tag is escaped
+	assert.NotContains(t, htmlStr, `<img onerror`)
+	assert.Contains(t, htmlStr, "&lt;img")
 }
