@@ -2,6 +2,7 @@ package telemetry_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -43,7 +44,7 @@ func TestNewTracerProvider_Disabled(t *testing.T) {
 func TestNewTracerProvider_Enabled(t *testing.T) {
 	// Skip this test in CI as it requires a real OTEL collector
 	// This test is for local development with `make otel-up`
-	if testing.Short() {
+	if testing.Short() || os.Getenv("CI") == "true" {
 		t.Skip("Skipping integration test in short mode")
 	}
 
@@ -188,7 +189,7 @@ func TestConfig_Defaults(t *testing.T) {
 
 func TestNewTracerProvider_InvalidEndpoint(t *testing.T) {
 	// Skip in short mode as this may try to connect
-	if testing.Short() {
+	if testing.Short() || os.Getenv("CI") == "true" {
 		t.Skip("Skipping integration test in short mode")
 	}
 
@@ -247,7 +248,7 @@ func TestTracerProvider_EnableSpanProfiles_Disabled(t *testing.T) {
 
 func TestTracerProvider_EnableSpanProfiles_Idempotent(t *testing.T) {
 	// Skip this test in CI as it requires a real OTEL collector
-	if testing.Short() {
+	if testing.Short() || os.Getenv("CI") == "true" {
 		t.Skip("Skipping integration test in short mode")
 	}
 
@@ -304,7 +305,7 @@ func TestTracerProvider_IsSpanProfilesEnabled_Default(t *testing.T) {
 
 func TestTracerProvider_SpanProfilesWithTracer(t *testing.T) {
 	// Skip this test in CI as it requires a real OTEL collector
-	if testing.Short() {
+	if testing.Short() || os.Getenv("CI") == "true" {
 		t.Skip("Skipping integration test in short mode")
 	}
 

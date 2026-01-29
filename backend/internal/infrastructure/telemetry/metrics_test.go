@@ -2,6 +2,7 @@ package telemetry_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -44,8 +45,8 @@ func TestNewMeterProvider_Disabled(t *testing.T) {
 func TestNewMeterProvider_Enabled(t *testing.T) {
 	// Skip this test in CI as it requires a real OTEL collector
 	// This test is for local development with `make otel-up`
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
+	if testing.Short() || os.Getenv("CI") == "true" {
+		t.Skip("Skipping integration test - requires OTEL collector")
 	}
 
 	logger := zaptest.NewLogger(t)

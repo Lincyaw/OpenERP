@@ -75,7 +75,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p coverage
-          go test -short -coverprofile=coverage/coverage.out -covermode=atomic ./...
+          go test -coverprofile=coverage/coverage.out -covermode=atomic ./...
 
       - name: Check coverage threshold (80%)
         run: |
