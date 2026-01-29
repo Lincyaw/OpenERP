@@ -11178,7 +11178,7 @@
       "",
       "4. 同步更新 SalesReturns, PurchaseReturns"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-008",

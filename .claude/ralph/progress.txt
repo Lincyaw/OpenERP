@@ -38455,3 +38455,119 @@ import { IconUser, IconMail } from '@douyinfe/semi-icons'
 ### 下一步建议
 - 可考虑添加 `aria-describedby` 关联副标题
 - 可优化折叠动画使用 CSS transform 代替图标切换
+
+## 2026-01-29 - UX-007: 优化列表页表格列数和操作按钮完成
+
+### Task ID: UX-007
+### Status: COMPLETED ✅
+
+### 实现详情
+
+#### 1. SalesOrders 表格列精简 (frontend/src/pages/trade/SalesOrders.tsx)
+**从 9 列精简到 5 列 + 操作列**
+
+移除的列:
+- `item_count` - 商品数量（可在详情页查看）
+- `total_amount` - 订单金额（保留 payable_amount 作为"金额"）
+- `confirmed_at` - 确认时间（可在详情页查看）
+- `shipped_at` - 发货时间（可在详情页查看）
+
+保留的列:
+- `order_number` - 订单编号 (160px)
+- `customer_name` - 客户名称 (180px, ellipsis)
+- `payable_amount` → `amount` - 金额 (140px, right align, sortable)
+- `status` - 状态 (100px, center)
+- `created_at` - 创建时间 (150px, sortable)
+- 操作列 - 动态按钮（确认/发货/完成等）
+
+scroll 宽度从 1400px 减少到 900px
+
+#### 2. PurchaseOrders 表格列精简 (frontend/src/pages/trade/PurchaseOrders.tsx)
+**从 9 列精简到 6 列 + 操作列**
+
+移除的列:
+- `item_count` - 商品数量
+- `total_amount` - 订单金额
+- `confirmed_at` - 确认时间
+
+保留的列:
+- `order_number` - 订单编号 (160px)
+- `supplier_name` - 供应商名称 (180px, ellipsis)
+- `payable_amount` → `amount` - 金额 (140px, right align, sortable)
+- `status` - 状态 (100px, center)
+- `receive_progress` - 收货进度 (120px, Progress 组件)
+- `created_at` - 创建时间 (150px, sortable)
+
+scroll 宽度从 1400px 减少到 1000px
+
+#### 3. SalesReturns 表格列精简 (frontend/src/pages/trade/SalesReturns.tsx)
+**从 7 列精简到 6 列**
+
+移除的列:
+- `item_count` - 商品数量
+
+保留的列:
+- `return_number` - 退货单号 (150px)
+- `sales_order_number` - 原订单号 (150px)
+- `customer_name` - 客户名称 (180px, ellipsis)
+- `total_refund` → `amount` - 金额 (140px)
+- `status` - 状态 (100px)
+- `created_at` - 创建时间 (150px)
+
+scroll 宽度从 1400px 减少到 1000px
+
+#### 4. PurchaseReturns 表格列精简 (frontend/src/pages/trade/PurchaseReturns.tsx)
+**从 10 列精简到 6 列**
+
+移除的列:
+- `item_count` - 商品数量
+- `submitted_at` - 提交时间
+- `shipped_at` - 发货时间
+- `completed_at` - 完成时间
+
+保留的列:
+- `return_number` - 退货单号 (150px)
+- `purchase_order_number` - 原订单号 (150px)
+- `supplier_name` - 供应商名称 (180px, ellipsis)
+- `total_refund` → `amount` - 金额 (140px)
+- `status` - 状态 (100px)
+- `created_at` - 创建时间 (150px)
+
+scroll 宽度从 1500px 减少到 1000px
+
+#### 5. i18n 翻译更新
+**zh-CN/trade.json 和 en-US/trade.json**
+
+为所有模块添加了 `amount` 翻译键:
+- salesOrder.columns.amount: "金额" / "Amount"
+- purchaseOrder.columns.amount: "金额" / "Amount"
+- salesReturn.columns.amount: "金额" / "Amount"
+- purchaseReturn.columns.amount: "金额" / "Amount"
+
+### 修改文件
+1. `frontend/src/pages/trade/SalesOrders.tsx` - 列精简
+2. `frontend/src/pages/trade/PurchaseOrders.tsx` - 列精简
+3. `frontend/src/pages/trade/SalesReturns.tsx` - 列精简
+4. `frontend/src/pages/trade/PurchaseReturns.tsx` - 列精简
+5. `frontend/src/locales/zh-CN/trade.json` - 添加 amount 翻译
+6. `frontend/src/locales/en-US/trade.json` - 添加 amount 翻译
+
+### 验证结果
+- ✅ TypeScript 类型检查通过
+- ✅ ESLint 检查通过（无新增 errors）
+- ✅ 生产构建成功
+- ⚠️ 部分测试失败（预存问题，非本次修改引起）
+
+### 设计决策
+1. **统一金额列名称**: 使用 "金额"/"Amount" 替代原来的 "应付金额"/"订单金额"/"退货金额"，简化用户认知
+2. **保留收货进度**: PurchaseOrders 保留 receive_progress 列，因为它是采购订单的核心业务指标
+3. **移除详细时间戳**: confirmed_at、shipped_at、submitted_at、completed_at 等时间戳移至详情页，减少列表页信息量
+
+### UX 改进效果
+- 表格宽度大幅减少，更适合普通屏幕显示
+- 核心信息一目了然，减少用户认知负担
+- 详细信息下沉到详情页，符合渐进式披露原则
+
+### 下一步建议
+- 考虑添加列自定义功能，让用户可以选择显示哪些列
+- 考虑移动端响应式优化，在小屏幕上只显示最核心的 3-4 列

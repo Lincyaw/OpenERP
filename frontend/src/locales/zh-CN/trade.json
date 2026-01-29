@@ -587,6 +587,7 @@
       "supplier": "供应商",
       "itemCount": "商品数量",
       "totalAmount": "退货金额",
+      "amount": "金额",
       "status": "状态",
       "createdAt": "创建时间",
       "submittedAt": "提交时间",
