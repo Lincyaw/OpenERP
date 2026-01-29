@@ -1,7 +1,13 @@
-/* Cash Flow Page Styles */
+/**
+ * Cash Flow Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px → 1024px
+ */
 
 .cashflow-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Summary Section */
@@ -14,6 +20,7 @@
 
 .cashflow-summary .summary-descriptions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   gap: var(--spacing-8);
 }
@@ -24,7 +31,8 @@
   align-items: center;
   gap: var(--spacing-1);
   padding: var(--spacing-2) var(--spacing-4);
-  min-width: 120px;
+  min-width: 100px;
+  flex: 1 1 100%;
 }
 
 .cashflow-summary .summary-label {
@@ -33,7 +41,7 @@
 }
 
 .cashflow-summary .summary-value {
-  font-size: var(--semi-font-size-header-4);
+  font-size: var(--semi-font-size-header-5);
   font-weight: var(--semi-font-weight-semibold);
   color: var(--semi-color-text-0);
 }
@@ -52,10 +60,12 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .cashflow-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
 
@@ -88,11 +98,19 @@
   margin-top: var(--spacing-4);
 }
 
-/* Filter container */
+/* Filter container - Mobile base (stacked) */
 .cashflow-filter-container {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-3);
-  flex-wrap: wrap;
+}
+
+.cashflow-filter-container .semi-select[class] {
+  width: 100%;
+}
+
+.cashflow-filter-container .semi-datePicker[class] {
+  width: 100%;
 }
 
 /* Status tags */
@@ -106,39 +124,33 @@
   min-height: 300px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .cashflow-summary .summary-descriptions {
-    flex-wrap: wrap;
-  }
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
 
-  .cashflow-summary .summary-item {
-    min-width: 100px;
-    flex: 1 1 calc(33% - var(--spacing-4));
-  }
-}
-
-@media (max-width: 768px) {
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
   .cashflow-page {
-    padding: var(--page-padding-mobile);
+    padding: var(--spacing-6);
   }
 
   .cashflow-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .cashflow-filter-container {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .cashflow-filter-container .semi-select {
-    width: 100% !important;
+  .cashflow-filter-container .semi-select[class] {
+    width: auto;
   }
 
-  .cashflow-filter-container .semi-datePicker {
-    width: 100% !important;
+  .cashflow-filter-container .semi-datePicker[class] {
+    width: auto;
   }
 
   .cashflow-summary .summary-item {
@@ -146,12 +158,14 @@
   }
 
   .cashflow-summary .summary-value {
-    font-size: var(--semi-font-size-header-5);
+    font-size: var(--semi-font-size-header-4);
   }
 }
 
-@media (max-width: 375px) {
+/* Small desktops and up (>= 1024px) */
+@media (min-width: 1024px) {
   .cashflow-summary .summary-item {
-    flex: 1 1 100%;
+    min-width: 120px;
+    flex: 1 1 calc(33% - var(--spacing-4));
   }
 }

@@ -1,15 +1,24 @@
+/**
+ * Purchase Order Receive Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
+
 .purchase-order-receive-page {
-  padding: var(--page-padding-mobile);
+  padding: var(--spacing-3);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
 }
 
-/* Page Header */
+/* Page Header - Mobile base (stacked) */
 .page-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
   margin-bottom: var(--spacing-2);
 }
 
@@ -23,6 +32,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  width: 100%;
+  justify-content: flex-end;
 }
 
 /* Cards */
@@ -46,18 +57,24 @@
   margin-bottom: var(--spacing-3);
 }
 
-/* Warehouse Selection */
+/* Warehouse Selection - Mobile base (stacked) */
 .warehouse-selection {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
 }
 
-/* Items Header */
+.warehouse-selection .semi-select[class] {
+  width: 100%;
+}
+
+/* Items Header - Mobile base (stacked) */
 .items-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
   margin-bottom: var(--spacing-3);
 }
 
@@ -83,56 +100,64 @@
   text-align: right;
 }
 
-/* Actions Bar */
+/* Actions Bar - Mobile base (stacked) */
 .actions-bar {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
   gap: var(--spacing-3);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .purchase-order-receive-page {
-    padding: var(--spacing-3);
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
-  }
-
-  .header-right {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .warehouse-selection {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
-  }
-
-  .warehouse-selection .semi-select {
-    width: 100% !important;
-  }
-
-  .items-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
-  }
-
-  .actions-bar {
-    flex-direction: column-reverse;
-  }
-
-  .actions-bar .semi-button {
-    width: 100%;
-  }
+.actions-bar .semi-button {
+  width: 100%;
 }
 
 /* Dark Mode Support */
 [theme-mode='dark'] .receiving-summary {
   background-color: var(--semi-color-fill-1);
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .purchase-order-receive-page {
+    padding: var(--page-padding-mobile);
+  }
+
+  .page-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .header-right {
+    width: auto;
+  }
+
+  .warehouse-selection {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-3);
+  }
+
+  .warehouse-selection .semi-select[class] {
+    width: auto;
+  }
+
+  .items-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .actions-bar {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .actions-bar .semi-button {
+    width: auto;
+  }
 }

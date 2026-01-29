@@ -1,7 +1,13 @@
-/* Other Incomes Page Styles */
+/**
+ * Other Incomes Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px → 1024px
+ */
 
 .other-incomes-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Summary Section */
@@ -14,6 +20,7 @@
 
 .other-incomes-summary .summary-descriptions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   gap: var(--spacing-8);
 }
@@ -24,7 +31,8 @@
   align-items: center;
   gap: var(--spacing-1);
   padding: var(--spacing-2) var(--spacing-4);
-  min-width: 120px;
+  min-width: 100px;
+  flex: 1 1 100%;
 }
 
 .other-incomes-summary .summary-label {
@@ -33,7 +41,7 @@
 }
 
 .other-incomes-summary .summary-value {
-  font-size: var(--semi-font-size-header-4);
+  font-size: var(--semi-font-size-header-5);
   font-weight: var(--semi-font-weight-semibold);
   color: var(--semi-color-text-0);
 }
@@ -56,11 +64,17 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .other-incomes-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
+}
+
+.other-incomes-header .semi-button {
+  width: 100%;
 }
 
 /* Income number styling */
@@ -94,11 +108,19 @@
   margin-top: var(--spacing-4);
 }
 
-/* Filter container */
+/* Filter container - Mobile base (stacked) */
 .other-incomes-filter-container {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-3);
-  flex-wrap: wrap;
+}
+
+.other-incomes-filter-container .semi-select[class] {
+  width: 100%;
+}
+
+.other-incomes-filter-container .semi-datePicker[class] {
+  width: 100%;
 }
 
 /* Status tags */
@@ -117,50 +139,52 @@
   padding: var(--spacing-2) 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .other-incomes-summary .summary-descriptions {
-    flex-wrap: wrap;
-  }
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
 
-  .other-incomes-summary .summary-item {
-    min-width: 100px;
-    flex: 1 1 calc(50% - var(--spacing-4));
-  }
-}
-
-@media (max-width: 768px) {
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
   .other-incomes-page {
-    padding: var(--page-padding-mobile);
+    padding: var(--spacing-6);
   }
 
   .other-incomes-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .other-incomes-header .semi-button {
-    width: 100%;
+    width: auto;
   }
 
   .other-incomes-filter-container {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .other-incomes-filter-container .semi-select {
-    width: 100% !important;
+  .other-incomes-filter-container .semi-select[class] {
+    width: auto;
   }
 
-  .other-incomes-filter-container .semi-datePicker {
-    width: 100% !important;
+  .other-incomes-filter-container .semi-datePicker[class] {
+    width: auto;
   }
 
   .other-incomes-summary .summary-item {
-    flex: 1 1 100%;
+    flex: 1 1 calc(50% - var(--spacing-4));
   }
 
   .other-incomes-summary .summary-value {
-    font-size: var(--semi-font-size-header-5);
+    font-size: var(--semi-font-size-header-4);
+  }
+}
+
+/* Small desktops and up (>= 1024px) */
+@media (min-width: 1024px) {
+  .other-incomes-summary .summary-item {
+    min-width: 120px;
+    flex: 0 1 auto;
   }
 }

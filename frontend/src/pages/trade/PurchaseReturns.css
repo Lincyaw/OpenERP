@@ -1,7 +1,13 @@
-/* Purchase Returns Page Styles */
+/**
+ * Purchase Returns Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
 
 .purchase-returns-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Summary section */
@@ -14,10 +20,12 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .purchase-returns-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
 
@@ -47,27 +55,14 @@
   margin-top: var(--spacing-4);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .purchase-returns-page {
-    padding: var(--page-padding-mobile);
-  }
+/* Filter controls responsive - Mobile base (full width) */
+.purchase-returns-page .semi-select[class] {
+  width: 100%;
+}
 
-  .purchase-returns-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
-  }
-
-  /* Filter controls responsive */
-  .purchase-returns-page .semi-select {
-    width: 100% !important;
-  }
-
-  .purchase-returns-page .semi-datepicker {
-    min-width: 0;
-    width: 100% !important;
-  }
+.purchase-returns-page .semi-datepicker[class] {
+  min-width: 0;
+  width: 100%;
 }
 
 /* Status tags */
@@ -94,4 +89,30 @@
 /* Date picker adjustment */
 .purchase-returns-page .semi-datepicker {
   min-width: 240px;
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .purchase-returns-page {
+    padding: var(--spacing-6);
+  }
+
+  .purchase-returns-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .purchase-returns-page .semi-select[class] {
+    width: auto;
+  }
+
+  .purchase-returns-page .semi-datepicker[class] {
+    min-width: 240px;
+    width: auto;
+  }
 }

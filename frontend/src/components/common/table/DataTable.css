@@ -1,3 +1,11 @@
+/**
+ * DataTable Component Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
+
 .data-table-container {
   width: 100%;
 }
@@ -7,14 +15,15 @@
 }
 
 /* Override Semi Table styles to use design tokens */
+/* Mobile base: compact padding */
 .data-table .semi-table-thead > tr > th {
-  padding: var(--table-header-padding-y) var(--table-cell-padding-x);
+  padding: var(--spacing-2) var(--spacing-3);
   background-color: var(--semi-color-fill-0);
   font-weight: var(--font-weight-semibold);
 }
 
 .data-table .semi-table-tbody > tr > td {
-  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+  padding: var(--spacing-2) var(--spacing-3);
 }
 
 .data-table .semi-table-tbody > tr:hover > td {
@@ -30,11 +39,12 @@
   background-color: var(--semi-color-primary-light-hover);
 }
 
-/* Pagination */
+/* Pagination - Mobile base: stacked layout */
 .data-table-pagination {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  align-items: flex-start;
   padding: var(--page-padding-mobile) 0;
   margin-top: var(--spacing-4);
   border-top: 1px solid var(--semi-color-border);
@@ -81,55 +91,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .data-table-pagination {
-    flex-direction: column;
-    gap: var(--spacing-3);
-    align-items: flex-start;
-  }
-
-  .data-table .semi-table-thead > tr > th,
-  .data-table .semi-table-tbody > tr > td {
-    padding: var(--spacing-2) var(--spacing-3);
-  }
-}
-
-/* Elder-friendly theme */
-[theme-mode='elder'] .data-table .semi-table-thead > tr > th,
-[theme-mode='elder'] .data-table .semi-table-tbody > tr > td {
-  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-  font-size: var(--font-size-base);
-}
-
-/* Clickable primary column link - used for primary identifiers (name, order number, etc.) */
-.table-cell-link {
-  color: var(--semi-color-primary);
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    text-decoration-color 0.15s ease;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  font-weight: var(--font-weight-medium);
-}
-
-.table-cell-link:hover {
-  color: var(--semi-color-primary-hover);
-  text-decoration-color: var(--semi-color-primary-hover);
-}
-
-.table-cell-link:active {
-  color: var(--semi-color-primary-active);
-}
-
-/* Focus state for keyboard navigation */
-.table-cell-link:focus-visible {
-  outline: 2px solid var(--semi-color-primary);
-  outline-offset: 2px;
-  border-radius: var(--semi-border-radius-small);
-}
-
 /* Mobile view container */
 .data-table-mobile {
   width: 100%;
@@ -138,4 +99,25 @@
 .data-table-mobile.loading {
   opacity: 0.6;
   pointer-events: none;
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .data-table .semi-table-thead > tr > th {
+    padding: var(--table-header-padding-y) var(--table-cell-padding-x);
+  }
+
+  .data-table .semi-table-tbody > tr > td {
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+  }
+
+  .data-table-pagination {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }

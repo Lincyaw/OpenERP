@@ -1,18 +1,26 @@
+/**
+ * Form Component Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile
+ * - Media queries scale up: 768px → 992px
+ */
+
 .form {
   width: 100%;
 }
 
+/* Horizontal form - mobile base (stacked) */
 .form--horizontal .form-field-wrapper {
-  flex-direction: row;
-  align-items: flex-start;
+  flex-direction: column;
 }
 
 .form--horizontal .form-field-label {
   min-width: 100px;
-  padding-top: 8px;
-  padding-right: 12px;
-  text-align: right;
-  margin-bottom: 0;
+  padding-top: 0;
+  padding-right: 0;
+  text-align: left;
+  margin-bottom: var(--spacing-2);
 }
 
 .form--horizontal .form-field-control {
@@ -21,8 +29,8 @@
 
 /* Form Actions */
 .form-actions {
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-4);
   border-top: 1px solid var(--semi-color-border);
 }
 
@@ -43,7 +51,7 @@
 
 /* Form Section */
 .form-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-6);
   background: var(--semi-color-bg-0);
   border: 1px solid var(--semi-color-border);
   border-radius: var(--semi-border-radius-large, 8px);
@@ -58,7 +66,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: var(--spacing-4) var(--spacing-5);
   background: var(--semi-color-bg-1);
   border-bottom: 1px solid var(--semi-color-border);
 }
@@ -94,7 +102,7 @@
 .form-section-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-2);
 }
 
 .form-section-icon {
@@ -120,14 +128,14 @@
 
 .form-section-required {
   color: var(--semi-color-danger);
-  margin-left: 4px;
+  margin-left: var(--spacing-1);
   font-weight: 400;
 }
 
 .form-section-subtitle {
   font-size: 13px;
   color: var(--semi-color-text-2);
-  margin: 4px 0 0 0;
+  margin: var(--spacing-1) 0 0 0;
   line-height: 1.5;
 }
 
@@ -135,7 +143,7 @@
 .form-section-description {
   font-size: 13px;
   color: var(--semi-color-text-2);
-  margin: 4px 0 0 0;
+  margin: var(--spacing-1) 0 0 0;
   line-height: 1.5;
 }
 
@@ -145,15 +153,15 @@
   justify-content: center;
   color: var(--semi-color-text-2);
   transition: transform var(--duration-normal, 200ms) var(--ease-default, ease);
-  margin-left: 12px;
+  margin-left: var(--spacing-3);
   flex-shrink: 0;
 }
 
 .form-section-content {
-  padding: 20px;
+  padding: var(--spacing-5);
 }
 
-/* Form Row */
+/* Form Row - Mobile base (1 column) */
 .form-row {
   display: grid;
   width: 100%;
@@ -163,51 +171,54 @@
   grid-template-columns: 1fr;
 }
 
-.form-row--cols-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.form-row--cols-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
+.form-row--cols-2,
+.form-row--cols-3,
 .form-row--cols-4 {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr;
 }
 
 .form-row--gap-small {
-  gap: 12px;
+  gap: var(--spacing-3);
 }
 
 .form-row--gap-medium {
-  gap: 16px;
+  gap: var(--spacing-4);
 }
 
 .form-row--gap-large {
-  gap: 24px;
+  gap: var(--spacing-6);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .form-row--cols-2,
-  .form-row--cols-3,
-  .form-row--cols-4 {
-    grid-template-columns: 1fr;
-  }
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
 
+/* Tablets and up (≥ 768px) */
+@media (min-width: 768px) {
   .form--horizontal .form-field-wrapper {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: flex-start;
   }
 
   .form--horizontal .form-field-label {
-    text-align: left;
-    padding-right: 0;
-    margin-bottom: 8px;
+    padding-top: var(--spacing-2);
+    padding-right: var(--spacing-3);
+    text-align: right;
+    margin-bottom: 0;
+  }
+
+  .form-row--cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-row--cols-3 {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 992px) {
+/* Small desktops and up (≥ 992px) */
+@media (min-width: 992px) {
   .form-row--cols-4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }

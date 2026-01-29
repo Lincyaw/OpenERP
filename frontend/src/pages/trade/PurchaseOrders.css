@@ -1,7 +1,13 @@
-/* Purchase Orders Page Styles */
+/**
+ * Purchase Orders Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
 
 .purchase-orders-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Summary section */
@@ -14,10 +20,12 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .purchase-orders-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
 
@@ -40,27 +48,14 @@
   margin-top: var(--spacing-4);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .purchase-orders-page {
-    padding: var(--page-padding-mobile);
-  }
+/* Filter controls responsive - Mobile base (full width) */
+.purchase-orders-page .semi-select[class] {
+  width: 100%;
+}
 
-  .purchase-orders-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
-  }
-
-  /* Filter controls responsive */
-  .purchase-orders-page .semi-select {
-    width: 100% !important;
-  }
-
-  .purchase-orders-page .semi-datepicker {
-    min-width: 0;
-    width: 100% !important;
-  }
+.purchase-orders-page .semi-datepicker[class] {
+  min-width: 0;
+  width: 100%;
 }
 
 /* Status tags */
@@ -96,4 +91,30 @@
 
 .purchase-orders-page .semi-progress-line-text {
   font-size: var(--semi-font-size-small);
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .purchase-orders-page {
+    padding: var(--spacing-6);
+  }
+
+  .purchase-orders-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .purchase-orders-page .semi-select[class] {
+    width: auto;
+  }
+
+  .purchase-orders-page .semi-datepicker[class] {
+    min-width: 240px;
+    width: auto;
+  }
 }

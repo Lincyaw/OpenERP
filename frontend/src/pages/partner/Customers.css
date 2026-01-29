@@ -1,7 +1,13 @@
-/* Customers Page Styles */
+/**
+ * Customers Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
 
 .customers-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 .customers-card {
@@ -9,10 +15,12 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .customers-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
 
@@ -72,19 +80,6 @@
   margin-top: var(--spacing-4);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .customers-page {
-    padding: var(--page-padding-mobile);
-  }
-
-  .customers-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
-  }
-}
-
 /* Status tags */
 .customers-page .semi-tag {
   min-width: 48px;
@@ -118,19 +113,39 @@
   min-height: 300px;
 }
 
-/* Filter container */
+/* Filter container - Mobile base (stacked) */
 .customers-filter-container {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-3);
-  flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-  .customers-filter-container {
-    flex-direction: column;
+.customers-filter-container .semi-select[class] {
+  width: 100%;
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .customers-page {
+    padding: var(--spacing-6);
   }
 
-  .customers-filter-container .semi-select {
-    width: 100% !important;
+  .customers-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .customers-filter-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .customers-filter-container .semi-select[class] {
+    width: auto;
   }
 }

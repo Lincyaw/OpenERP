@@ -1,10 +1,18 @@
 /**
  * Dashboard Page Styles
  * P5-FE-006: Dashboard 首页看板
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles are optimized for mobile (< 480px)
+ * - Media queries scale up: 480px → 768px → 992px → 1200px
  */
 
+/* ===========================================
+ * Base Styles (Mobile-First: < 480px)
+ * =========================================== */
+
 .dashboard-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Page Header */
@@ -77,13 +85,13 @@
   text-overflow: ellipsis;
 }
 
-/* Desktop Metric Cards Section */
+/* Desktop Metric Cards Section (Mobile base) */
 .dashboard-metrics {
   margin-bottom: var(--spacing-6);
 }
 
 .dashboard-metrics .metric-card-wrapper {
-  flex: 0 0 calc(16.666% - 14px);
+  flex: 1 1 100%;
   min-width: 180px;
 }
 
@@ -107,7 +115,9 @@
 
 .metric-card-content {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: var(--spacing-4);
 }
 
@@ -124,6 +134,7 @@
 .metric-info {
   flex: 1;
   min-width: 0;
+  text-align: center;
 }
 
 .metric-label {
@@ -140,27 +151,30 @@
   margin-top: var(--spacing-1);
 }
 
-/* Main Content Layout */
+/* Main Content Layout (Mobile: stacked) */
 .dashboard-content {
   display: flex;
   flex-wrap: wrap;
 }
 
 .dashboard-col-left {
-  flex: 1 1 60%;
+  flex: 1 1 100%;
   min-width: 300px;
-  padding-right: var(--spacing-4);
+  padding-right: 0;
+  margin-bottom: var(--spacing-4);
 }
 
 .dashboard-col-right {
-  flex: 1 1 35%;
+  flex: 1 1 100%;
   min-width: 280px;
 }
 
-/* Order Statistics Card */
+/* Order Statistics Card (Mobile: vertical) */
 .stats-card .order-stats {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: var(--spacing-8);
 }
 
@@ -178,18 +192,22 @@
 .order-breakdown {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-4);
+  width: 100%;
 }
 
 .breakdown-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
+  flex: 0 0 auto;
 }
 
 .breakdown-item span:last-child {
-  margin-left: auto;
+  margin-left: var(--spacing-1);
 }
 
 .breakdown-dot {
@@ -226,8 +244,9 @@
 
 .recent-order-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
   padding: var(--spacing-3) var(--spacing-2);
   border-bottom: 1px solid var(--semi-color-border);
   cursor: pointer;
@@ -254,9 +273,11 @@
 
 .order-info {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--spacing-1);
+  width: 100%;
 }
 
 .order-amount {
@@ -287,7 +308,7 @@
 .pending-task-item {
   display: flex;
   gap: var(--spacing-3);
-  padding: var(--page-padding-mobile);
+  padding: var(--spacing-3);
   border-bottom: 1px solid var(--semi-color-border);
   cursor: pointer;
   transition: background-color var(--transition-fast);
@@ -318,9 +339,9 @@
 
 .task-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-1);
   margin-bottom: var(--spacing-1);
 }
 
@@ -330,124 +351,123 @@
   text-overflow: ellipsis;
 }
 
-/* Responsive Styles */
-@media screen and (max-width: 1200px) {
-  .dashboard-metrics .metric-card-wrapper {
-    flex: 0 0 calc(33.333% - 12px);
-  }
+/* Mobile order stats - 2x2 grid layout */
+.order-stats.mobile {
+  flex-direction: column;
+  gap: var(--spacing-4);
 }
 
-@media screen and (max-width: 992px) {
-  .dashboard-col-left {
-    flex: 1 1 100%;
-    padding-right: 0;
-    margin-bottom: var(--spacing-4);
-  }
-
-  .dashboard-col-right {
-    flex: 1 1 100%;
-  }
-
-  .stats-card .order-stats {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .order-breakdown {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--spacing-4);
-  }
-
-  .breakdown-item {
-    flex: 0 0 auto;
-  }
-
-  .breakdown-item span:last-child {
-    margin-left: var(--spacing-1);
-  }
+.order-stats.mobile .order-progress {
+  align-self: center;
 }
 
-@media screen and (max-width: 768px) {
-  .dashboard-page {
-    padding: var(--page-padding-mobile);
-  }
+.order-stats.mobile .order-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3);
+  width: 100%;
+}
 
+.order-stats.mobile .breakdown-item {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--radius-md);
+}
+
+.order-stats.mobile .breakdown-item span:last-child {
+  margin-left: 0;
+  font-size: var(--font-size-lg);
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * Scale up from mobile base styles
+ * =========================================== */
+
+/* Small tablets and large phones (≥ 480px) */
+@media screen and (min-width: 480px) {
   .dashboard-metrics .metric-card-wrapper {
     flex: 0 0 calc(50% - 8px);
   }
 
-  .metric-card-content {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .metric-info {
-    text-align: center;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .dashboard-metrics .metric-card-wrapper {
-    flex: 1 1 100%;
-  }
-
   .recent-order-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
   }
 
   .order-info {
-    align-items: flex-start;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  /* Mobile order stats - 2x2 grid layout */
-  .order-stats.mobile {
     flex-direction: column;
-    gap: var(--spacing-4);
+    align-items: flex-end;
+    justify-content: flex-start;
+    width: auto;
   }
 
-  .order-stats.mobile .order-progress {
-    align-self: center;
-  }
-
-  .order-stats.mobile .order-breakdown {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-3);
-    width: 100%;
-  }
-
-  .order-stats.mobile .breakdown-item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--spacing-1);
-    padding: var(--spacing-2);
-    background: var(--semi-color-fill-0);
-    border-radius: var(--radius-md);
-  }
-
-  .order-stats.mobile .breakdown-item span:last-child {
-    margin-left: 0;
-    font-size: var(--font-size-lg);
-  }
-
-  /* Pending tasks mobile optimization */
   .pending-task-item {
-    padding: var(--spacing-3);
+    padding: var(--page-padding-mobile);
   }
 
   .task-header {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-2);
+  }
+}
+
+/* Tablets (≥ 768px) */
+@media screen and (min-width: 768px) {
+  .dashboard-page {
+    padding: var(--spacing-6);
+  }
+
+  .metric-card-content {
+    flex-direction: row;
     align-items: flex-start;
-    gap: var(--spacing-1);
+    text-align: left;
+  }
+
+  .metric-info {
+    text-align: left;
+  }
+}
+
+/* Small desktops (≥ 992px) */
+@media screen and (min-width: 992px) {
+  .dashboard-col-left {
+    flex: 1 1 60%;
+    padding-right: var(--spacing-4);
+    margin-bottom: 0;
+  }
+
+  .dashboard-col-right {
+    flex: 1 1 35%;
+  }
+
+  .stats-card .order-stats {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .order-breakdown {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .breakdown-item span:last-child {
+    margin-left: auto;
+  }
+}
+
+/* Large desktops (≥ 1200px) */
+@media screen and (min-width: 1200px) {
+  .dashboard-metrics .metric-card-wrapper {
+    flex: 0 0 calc(33.333% - 12px);
   }
 }

@@ -1,7 +1,13 @@
-/* Sales Return Approval Page Styles */
+/**
+ * Sales Return Approval Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
 
 .sales-return-approval-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Loading container */
@@ -12,13 +18,12 @@
   min-height: 400px;
 }
 
-/* Page header */
+/* Page header - Mobile base (stacked) */
 .sales-return-approval-page .page-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: var(--spacing-6);
-  flex-wrap: wrap;
   gap: var(--spacing-4);
 }
 
@@ -26,6 +31,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
+  flex-wrap: wrap;
 }
 
 .sales-return-approval-page .page-title {
@@ -36,6 +42,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 /* Approval card */
@@ -44,11 +52,22 @@
   border-radius: var(--semi-border-radius-large);
 }
 
-/* Filter bar */
+/* Filter bar - Mobile base (stacked) */
 .sales-return-approval-page .filter-bar {
   margin-bottom: var(--spacing-4);
   padding-bottom: var(--spacing-4);
   border-bottom: 1px solid var(--semi-color-border);
+}
+
+.sales-return-approval-page .filter-bar .semi-space {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.sales-return-approval-page .filter-bar .semi-input-wrapper[class],
+.sales-return-approval-page .filter-bar .semi-select[class],
+.sales-return-approval-page .filter-bar .semi-datepicker[class] {
+  width: 100%;
 }
 
 /* Cards */
@@ -95,12 +114,12 @@
   color: var(--semi-color-danger);
 }
 
-/* Amount summary section */
+/* Amount summary section - Mobile base (full width) */
 .sales-return-approval-page .amount-summary {
   margin-top: var(--spacing-4);
   padding-top: var(--spacing-4);
   border-top: 1px solid var(--semi-color-border);
-  max-width: 300px;
+  max-width: 100%;
   margin-left: auto;
 }
 
@@ -141,6 +160,11 @@
   font-weight: var(--semi-font-weight-medium);
 }
 
+/* Items card - Mobile base (scrollable) */
+.sales-return-approval-page .items-card {
+  overflow-x: auto;
+}
+
 /* Empty state */
 .sales-return-approval-page .empty-state {
   padding: var(--spacing-12) 0;
@@ -166,46 +190,6 @@
   color: var(--semi-color-danger);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .sales-return-approval-page {
-    padding: var(--page-padding-mobile);
-  }
-
-  .sales-return-approval-page .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .sales-return-approval-page .header-left {
-    flex-wrap: wrap;
-  }
-
-  .sales-return-approval-page .header-right {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .sales-return-approval-page .filter-bar .semi-space {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sales-return-approval-page .filter-bar .semi-input-wrapper,
-  .sales-return-approval-page .filter-bar .semi-select,
-  .sales-return-approval-page .filter-bar .semi-datepicker {
-    width: 100% !important;
-  }
-
-  .sales-return-approval-page .amount-summary {
-    max-width: 100%;
-  }
-
-  .sales-return-approval-page .items-card {
-    overflow-x: auto;
-  }
-}
-
 /* Action button spacing */
 .sales-return-approval-page .header-right .semi-button {
   min-width: 80px;
@@ -214,4 +198,45 @@
 /* List table link styling */
 .sales-return-approval-page .semi-button-borderless {
   padding: 0;
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .sales-return-approval-page {
+    padding: var(--spacing-6);
+  }
+
+  .sales-return-approval-page .page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .sales-return-approval-page .header-right {
+    width: auto;
+  }
+
+  .sales-return-approval-page .filter-bar .semi-space {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .sales-return-approval-page .filter-bar .semi-input-wrapper[class],
+  .sales-return-approval-page .filter-bar .semi-select[class],
+  .sales-return-approval-page .filter-bar .semi-datepicker[class] {
+    width: auto;
+  }
+
+  .sales-return-approval-page .amount-summary {
+    max-width: 300px;
+  }
+
+  .sales-return-approval-page .items-card {
+    overflow-x: visible;
+  }
 }

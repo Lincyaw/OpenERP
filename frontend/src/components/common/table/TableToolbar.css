@@ -1,7 +1,16 @@
+/**
+ * Table Toolbar Component Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
+
+/* Mobile base (stacked) */
 .table-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--spacing-4);
   padding: var(--page-padding-mobile) 0;
   margin-bottom: var(--spacing-4);
@@ -9,7 +18,8 @@
 
 .table-toolbar-left {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--spacing-3);
   flex: 1;
 }
@@ -18,25 +28,41 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .table-toolbar-search {
-  width: 280px;
-  max-width: 100%;
+  width: 100%;
 }
 
 .table-toolbar-filters {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-2);
 }
 
-/* Allow Space component in filters to wrap on mobile */
-.table-toolbar-filters > .semi-space {
-  flex-wrap: wrap;
-  gap: var(--spacing-2) !important;
+/* Make filter controls full width on mobile */
+.table-toolbar-filters .semi-select,
+.table-toolbar-filters .semi-datepicker {
+  min-width: 0;
+  flex: 1 1 calc(50% - var(--spacing-1));
 }
 
+/* Date picker needs more space */
+.table-toolbar-filters .semi-datepicker {
+  flex: 1 1 100%;
+}
+
+/* Allow Space component in filters to wrap on mobile */
+/* Using [class] selector for specificity over Semi's inline styles */
+.table-toolbar-filters > .semi-space[class] {
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+/* BulkActionBar - Mobile base (stacked) */
 .table-toolbar-bulk {
   display: flex;
   align-items: center;
@@ -58,11 +84,12 @@
   gap: var(--spacing-2);
 }
 
-/* BulkActionBar */
+/* Bulk action bar - Mobile base (stacked) */
 .bulk-action-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  align-items: stretch;
   padding: var(--spacing-3) var(--spacing-4);
   margin-bottom: var(--spacing-4);
   background-color: var(--semi-color-primary-light-default);
@@ -72,6 +99,7 @@
 .bulk-action-bar-info {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-3);
 }
 
@@ -82,61 +110,43 @@
 
 .bulk-action-bar-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--spacing-2);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
   .table-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .table-toolbar-left {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .table-toolbar-search {
-    width: 100%;
-  }
-
-  .table-toolbar-filters {
-    flex-wrap: wrap;
-    gap: var(--spacing-2);
-  }
-
-  /* Make filter controls full width on mobile */
-  .table-toolbar-filters .semi-select,
-  .table-toolbar-filters .semi-datepicker {
-    min-width: 0;
-    flex: 1 1 calc(50% - var(--spacing-1));
-  }
-
-  /* Date picker needs more space */
-  .table-toolbar-filters .semi-datepicker {
-    flex: 1 1 100%;
-  }
-
-  .table-toolbar-right {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  /* Bulk action bar mobile */
-  .bulk-action-bar {
-    flex-direction: column;
-    gap: var(--spacing-3);
-    align-items: stretch;
-  }
-
-  .bulk-action-bar-info {
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
   }
 
-  .bulk-action-bar-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
+  .table-toolbar-left {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .table-toolbar-search {
+    width: 280px;
+    max-width: 100%;
+  }
+
+  .table-toolbar-filters .semi-select,
+  .table-toolbar-filters .semi-datepicker {
+    min-width: auto;
+    flex: 0 0 auto;
+  }
+
+  .bulk-action-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 }

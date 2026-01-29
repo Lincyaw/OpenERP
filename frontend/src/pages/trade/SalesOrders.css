@@ -1,7 +1,13 @@
-/* Sales Orders Page Styles */
+/**
+ * Sales Orders Page Styles
+ *
+ * Mobile-First Responsive Design:
+ * - Base styles optimized for mobile (< 768px)
+ * - Media queries scale up: 768px
+ */
 
 .sales-orders-page {
-  padding: var(--spacing-6);
+  padding: var(--page-padding-mobile);
 }
 
 /* Summary section */
@@ -14,10 +20,12 @@
   border-radius: var(--semi-border-radius-large);
 }
 
+/* Header - Mobile base (stacked) */
 .sales-orders-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-4);
 }
 
@@ -40,27 +48,14 @@
   margin-top: var(--spacing-4);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .sales-orders-page {
-    padding: var(--page-padding-mobile);
-  }
+/* Filter controls responsive - Mobile base (full width) */
+.sales-orders-page .semi-select[class] {
+  width: 100%;
+}
 
-  .sales-orders-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-3);
-  }
-
-  /* Filter controls responsive */
-  .sales-orders-page .semi-select {
-    width: 100% !important;
-  }
-
-  .sales-orders-page .semi-datepicker {
-    min-width: 0;
-    width: 100% !important;
-  }
+.sales-orders-page .semi-datepicker[class] {
+  min-width: 0;
+  width: 100%;
 }
 
 /* Status tags */
@@ -87,4 +82,30 @@
 /* Date picker adjustment */
 .sales-orders-page .semi-datepicker {
   min-width: 240px;
+}
+
+/* ===========================================
+ * Responsive Breakpoints (Mobile-First)
+ * =========================================== */
+
+/* Tablets and up (>= 768px) */
+@media (min-width: 768px) {
+  .sales-orders-page {
+    padding: var(--spacing-6);
+  }
+
+  .sales-orders-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sales-orders-page .semi-select[class] {
+    width: auto;
+  }
+
+  .sales-orders-page .semi-datepicker[class] {
+    min-width: 240px;
+    width: auto;
+  }
 }
