@@ -22,7 +22,7 @@
 .payables-page .summary-item-mobile {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-0-5);
   padding: var(--spacing-2) var(--spacing-3);
   background: var(--semi-color-fill-0);
   border-radius: var(--radius-sm);

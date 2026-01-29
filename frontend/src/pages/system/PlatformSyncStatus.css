@@ -200,5 +200,5 @@
 
 /* Fix table action buttons */
 .sync-status-tabs .semi-table-tbody .semi-btn-borderless {
-  padding: 4px 8px;
+  padding: var(--spacing-1) var(--spacing-2);
 }

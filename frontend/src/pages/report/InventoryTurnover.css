@@ -155,7 +155,7 @@
 .product-info-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-0-5);
 }
 
 .turnover-rate-cell {

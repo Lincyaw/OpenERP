@@ -50,7 +50,7 @@
 .default-tag {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--spacing-0-5);
   font-size: var(--semi-font-size-extra-small);
   padding: 0 var(--spacing-2);
 }
