@@ -44,9 +44,8 @@ func TestGormOutboxRepository_Save(t *testing.T) {
 	entry := shared.NewOutboxEntry(tenantID, event, payload)
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"created_at", "updated_at"}).
-			AddRow(entry.CreatedAt, entry.UpdatedAt))
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	err := repo.Save(ctx, entry)

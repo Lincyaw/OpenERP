@@ -67,7 +67,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install
 
       - name: Check formatting
         working-directory: frontend
@@ -118,7 +118,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install
 
       - name: Check SDK is up-to-date
         working-directory: frontend

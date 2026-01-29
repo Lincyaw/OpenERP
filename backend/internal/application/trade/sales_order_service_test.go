@@ -303,7 +303,7 @@ func TestSalesOrderService_GetByID(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		result, err := service.GetByID(ctx, testTenantID, order.ID)
 
@@ -318,7 +318,7 @@ func TestSalesOrderService_GetByID(t *testing.T) {
 		service := NewSalesOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("FindByIDForTenant", ctx, testTenantID, testOrderID).Return(nil, shared.ErrNotFound)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, testOrderID).Return(nil, shared.ErrNotFound)
 
 		result, err := service.GetByID(ctx, testTenantID, testOrderID)
 
@@ -377,16 +377,18 @@ func TestSalesOrderService_AddItem(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrder()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		req := AddOrderItemRequest{
-			ProductID:   testProductID,
-			ProductName: testProductName,
-			ProductCode: testProductCode,
-			Unit:        testUnit,
-			Quantity:    decimal.NewFromInt(5),
-			UnitPrice:   decimal.NewFromInt(100),
+			ProductID:      testProductID,
+			ProductName:    testProductName,
+			ProductCode:    testProductCode,
+			Unit:           testUnit,
+			BaseUnit:       testUnit,
+			ConversionRate: decimal.NewFromInt(1),
+			Quantity:       decimal.NewFromInt(5),
+			UnitPrice:      decimal.NewFromInt(100),
 		}
 
 		result, err := service.AddItem(ctx, testTenantID, order.ID, req)
@@ -405,15 +407,17 @@ func TestSalesOrderService_AddItem(t *testing.T) {
 
 		order := createTestOrderWithItem()
 		order.Confirm() // Move to CONFIRMED status
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		req := AddOrderItemRequest{
-			ProductID:   uuid.New(),
-			ProductName: "New Product",
-			ProductCode: "NEW-001",
-			Unit:        testUnit,
-			Quantity:    decimal.NewFromInt(5),
-			UnitPrice:   decimal.NewFromInt(100),
+			ProductID:      uuid.New(),
+			ProductName:    "New Product",
+			ProductCode:    "NEW-001",
+			Unit:           testUnit,
+			BaseUnit:       testUnit,
+			ConversionRate: decimal.NewFromInt(1),
+			Quantity:       decimal.NewFromInt(5),
+			UnitPrice:      decimal.NewFromInt(100),
 		}
 
 		result, err := service.AddItem(ctx, testTenantID, order.ID, req)
@@ -432,8 +436,8 @@ func TestSalesOrderService_Confirm(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).Return(nil)
 
 		result, err := service.Confirm(ctx, testTenantID, order.ID, ConfirmOrderRequest{})
 
@@ -451,8 +455,8 @@ func TestSalesOrderService_Confirm(t *testing.T) {
 
 		order := createTestOrderWithItem()
 		warehouseID := testWarehouseID
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).Return(nil)
 
 		result, err := service.Confirm(ctx, testTenantID, order.ID, ConfirmOrderRequest{WarehouseID: &warehouseID})
 
@@ -470,7 +474,7 @@ func TestSalesOrderService_Confirm(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrder() // No items
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		result, err := service.Confirm(ctx, testTenantID, order.ID, ConfirmOrderRequest{})
 
@@ -490,8 +494,8 @@ func TestSalesOrderService_Ship(t *testing.T) {
 		order := createTestOrderWithItem()
 		order.SetWarehouse(testWarehouseID)
 		order.Confirm()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).Return(nil)
 
 		result, err := service.Ship(ctx, testTenantID, order.ID, ShipOrderRequest{})
 
@@ -509,7 +513,7 @@ func TestSalesOrderService_Ship(t *testing.T) {
 
 		order := createTestOrderWithItem()
 		order.Confirm() // Confirm without warehouse
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		result, err := service.Ship(ctx, testTenantID, order.ID, ShipOrderRequest{})
 
@@ -530,8 +534,8 @@ func TestSalesOrderService_Complete(t *testing.T) {
 		order.SetWarehouse(testWarehouseID)
 		order.Confirm()
 		order.Ship()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
 
 		result, err := service.Complete(ctx, testTenantID, order.ID)
 
@@ -551,8 +555,8 @@ func TestSalesOrderService_Cancel(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrderWithItem()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).Return(nil)
 
 		result, err := service.Cancel(ctx, testTenantID, order.ID, CancelOrderRequest{Reason: "Customer request"})
 
@@ -571,8 +575,8 @@ func TestSalesOrderService_Cancel(t *testing.T) {
 
 		order := createTestOrderWithItem()
 		order.Confirm()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", ctx, order).Return(nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.SalesOrder"), mock.Anything).Return(nil)
 
 		result, err := service.Cancel(ctx, testTenantID, order.ID, CancelOrderRequest{Reason: "Out of stock"})
 
@@ -591,7 +595,7 @@ func TestSalesOrderService_Cancel(t *testing.T) {
 		order.SetWarehouse(testWarehouseID)
 		order.Confirm()
 		order.Ship()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		result, err := service.Cancel(ctx, testTenantID, order.ID, CancelOrderRequest{Reason: "Too late"})
 
@@ -609,7 +613,7 @@ func TestSalesOrderService_Delete(t *testing.T) {
 		ctx := context.Background()
 
 		order := createTestOrder()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 		repo.On("DeleteForTenant", ctx, testTenantID, order.ID).Return(nil)
 
 		err := service.Delete(ctx, testTenantID, order.ID)
@@ -625,7 +629,7 @@ func TestSalesOrderService_Delete(t *testing.T) {
 
 		order := createTestOrderWithItem()
 		order.Confirm()
-		repo.On("FindByIDForTenant", ctx, testTenantID, order.ID).Return(order, nil)
+		repo.On("FindByIDForTenant", mock.Anything, testTenantID, order.ID).Return(order, nil)
 
 		err := service.Delete(ctx, testTenantID, order.ID)
 

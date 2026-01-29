@@ -44,9 +44,8 @@ func TestOutboxPublisher_PublishWithTx(t *testing.T) {
 	event := newTestEvent("TestEvent", tenantID)
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"created_at", "updated_at"}).
-			AddRow(event.OccurredAt(), event.OccurredAt()))
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -72,11 +71,8 @@ func TestOutboxPublisher_PublishWithTx_MultipleEvents(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"created_at", "updated_at"}).
-			AddRow(events[0].OccurredAt(), events[0].OccurredAt()).
-			AddRow(events[1].OccurredAt(), events[1].OccurredAt()).
-			AddRow(events[2].OccurredAt(), events[2].OccurredAt()))
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
+		WillReturnResult(sqlmock.NewResult(1, 3))
 	mock.ExpectCommit()
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -115,9 +111,8 @@ func TestOutboxPublisher_PublishWithTx_TransactionRollback(t *testing.T) {
 	event := newTestEvent("TestEvent", tenantID)
 
 	mock.ExpectBegin()
-	mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"created_at", "updated_at"}).
-			AddRow(event.OccurredAt(), event.OccurredAt()))
+	mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO "outbox_events"`)).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectRollback()
 
 	testErr := errors.New("simulated error")

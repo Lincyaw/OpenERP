@@ -11050,5 +11050,191 @@
       "4. 无障碍: 添加 role=link, tabIndex=0, 支持键盘 Enter/Space 导航"
     ],
     "passes": true
+  },
+  {
+    "id": "UX-002",
+    "story": "创建 KPICard 和 PageSummary 通用组件 - 统一摘要卡片设计",
+    "priority": "high",
+    "requirements": [
+      "1. 创建 KPICard 组件 (frontend/src/components/common/KPICard.tsx):",
+      "   - Props: label, value, variant (default/primary/success/warning/danger), trend, onClick",
+      "   - 支持趋势显示 (上升/下降箭头 + 百分比)",
+      "   - 点击可触发筛选回调",
+      "   - 响应式设计，移动端自适应",
+      "",
+      "2. 创建 PageSummary 组件 (frontend/src/components/common/PageSummary.tsx):",
+      "   - 封装 KPICard 列表的容器组件",
+      "   - 自动处理响应式布局 (桌面4列, 平板3列, 手机2列)",
+      "   - 支持 loading 状态",
+      "",
+      "3. 样式文件:",
+      "   - KPICard.css: 卡片样式，配色变体",
+      "   - PageSummary.css: 网格布局",
+      "",
+      "4. 导出到 components/common/index.ts"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-003",
+    "story": "创建 DetailPageHeader 详情页头部组件 - 统一详情页顶部设计",
+    "priority": "high",
+    "requirements": [
+      "1. 创建 DetailPageHeader 组件 (frontend/src/components/common/DetailPageHeader.tsx):",
+      "   - Props: title, documentNumber, status, metrics[], primaryAction, secondaryActions[], onBack",
+      "   - 文档编号突出显示",
+      "   - 状态徽章带颜色",
+      "   - 关键指标行 (如: 金额, 数量)",
+      "   - 主操作按钮 + 次要操作下拉菜单",
+      "",
+      "2. 样式要求:",
+      "   - 响应式布局: 桌面横向, 移动端堆叠",
+      "   - 返回按钮始终可见",
+      "   - 操作按钮在移动端折叠为下拉菜单",
+      "",
+      "3. 导出到 components/common/index.ts"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-004",
+    "story": "创建 StatusFlow 状态流程组件 - 可视化订单状态流转",
+    "priority": "medium",
+    "requirements": [
+      "1. 创建 StatusFlow 组件 (frontend/src/components/common/StatusFlow.tsx):",
+      "   - Props: steps[], direction (horizontal/vertical), size",
+      "   - 每个 step: key, label, description?, timestamp?, status (completed/current/pending/error)",
+      "   - 显示步骤连接线",
+      "   - 已完成步骤显示勾号，当前步骤高亮",
+      "",
+      "2. 预设配置:",
+      "   - 销售订单流程: 草稿→已确认→已发货→已完成",
+      "   - 采购订单流程: 草稿→已确认→已收货→已完成",
+      "   - 退货单流程: 待审核→已批准→已入库→已完成",
+      "",
+      "3. 样式: 水平和垂直两种布局"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-005",
+    "story": "创建 FormSection 表单分组组件 - 提升表单专业感",
+    "priority": "medium",
+    "requirements": [
+      "1. 创建 FormSection 组件 (frontend/src/components/common/form/FormSection.tsx):",
+      "   - Props: title, subtitle?, icon?, collapsible?, defaultExpanded?, required?, children",
+      "   - 标题带可选图标",
+      "   - 支持折叠/展开",
+      "   - 必填标记显示",
+      "",
+      "2. 样式:",
+      "   - 带边框的卡片式分组",
+      "   - 标题和内容的视觉分隔",
+      "   - 折叠动画",
+      "",
+      "3. 更新 form/index.ts 导出"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-006",
+    "story": "为交易列表页添加 KPI 摘要卡片 - 提升列表页商务感",
+    "priority": "high",
+    "requirements": [
+      "1. 修改 SalesOrders.tsx:",
+      "   - 添加摘要区域显示: 总订单数, 待确认数, 待发货数, 本月销售额, 待收款金额",
+      "   - 使用 PageSummary 和 KPICard 组件",
+      "   - 点击指标可快速筛选对应状态",
+      "",
+      "2. 修改 PurchaseOrders.tsx:",
+      "   - 添加摘要区域显示: 总订单数, 待确认数, 待收货数, 本月采购额, 待付款金额",
+      "",
+      "3. 修改 SalesReturns.tsx 和 PurchaseReturns.tsx:",
+      "   - 添加类似的摘要卡片",
+      "",
+      "4. 后端 API (如需):",
+      "   - GET /api/sales-orders/summary",
+      "   - GET /api/purchase-orders/summary",
+      "",
+      "5. 参考 Payables.tsx 和 Receivables.tsx 的实现模式"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-007",
+    "story": "优化列表页表格列数和操作按钮 - 减少信息过载",
+    "priority": "medium",
+    "requirements": [
+      "1. 精简 SalesOrders 表格列 (9列→6列):",
+      "   - 保留: 订单号, 客户名称, 金额, 状态, 创建时间, 操作",
+      "   - 移除默认显示: confirmed_at, shipped_at (在详情页查看)",
+      "",
+      "2. 精简 PurchaseOrders 表格列:",
+      "   - 保留: 订单号, 供应商名称, 金额, 状态, 收货进度, 创建时间, 操作",
+      "",
+      "3. 整合操作按钮:",
+      "   - 主操作 (1个): 根据状态动态显示 (草稿→确认, 已确认→发货等)",
+      "   - 次要操作 (下拉菜单): 查看, 打印, 编辑, 取消, 删除",
+      "",
+      "4. 同步更新 SalesReturns, PurchaseReturns"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-008",
+    "story": "应用 DetailPageHeader 和 StatusFlow 到详情页 - 统一详情页设计",
+    "priority": "high",
+    "requirements": [
+      "1. 修改 SalesOrderDetail.tsx:",
+      "   - 替换现有头部为 DetailPageHeader 组件",
+      "   - 添加 StatusFlow 显示订单状态流程",
+      "   - 整合操作按钮到 DetailPageHeader",
+      "",
+      "2. 修改 PurchaseOrderDetail.tsx: 同上",
+      "",
+      "3. 修改 SalesReturnDetail.tsx, PurchaseReturnDetail.tsx: 同上",
+      "",
+      "4. 确保所有详情页风格一致"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-009",
+    "story": "应用 FormSection 到表单页并添加双按钮保存 - 提升编辑体验",
+    "priority": "medium",
+    "requirements": [
+      "1. 修改订单创建/编辑表单:",
+      "   - 使用 FormSection 分组: 基本信息, 订单明细, 备注",
+      "   - 替换单一保存按钮为: '保存草稿' + '确认提交'",
+      "",
+      "2. 修改退货单表单: 同样应用 FormSection",
+      "",
+      "3. 更新表单验证逻辑:",
+      "   - 保存草稿: 仅验证必填字段",
+      "   - 确认提交: 完整验证所有规则"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UX-010",
+    "story": "添加批量操作和导出功能 - 提升操作效率",
+    "priority": "low",
+    "requirements": [
+      "1. 增强 DataTable 组件:",
+      "   - 添加行选择复选框",
+      "   - 支持 bulkActions 配置",
+      "",
+      "2. 创建导出工具 (frontend/src/utils/export.ts):",
+      "   - exportToCSV 函数",
+      "   - exportToExcel 函数 (使用 xlsx 库)",
+      "",
+      "3. 在列表页添加批量操作:",
+      "   - 批量确认 (仅草稿状态)",
+      "   - 批量导出 (CSV/Excel)",
+      "   - 批量删除 (仅草稿状态)",
+      "",
+      "4. 添加导出按钮到 TableToolbar"
+    ],
+    "passes": false
   }
 ]

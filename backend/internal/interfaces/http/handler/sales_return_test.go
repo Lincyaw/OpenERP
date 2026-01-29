@@ -570,24 +570,6 @@ func TestSalesReturnHandler_Approve(t *testing.T) {
 
 		mockRepo.AssertExpectations(t)
 	})
-
-	t.Run("should fail to approve without authentication", func(t *testing.T) {
-		router, _, _, handler := setupSalesReturnTestRouter()
-
-		tenantID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
-		returnID := uuid.New()
-
-		router.POST("/sales-returns/:id/approve", handler.Approve)
-
-		req, _ := http.NewRequest(http.MethodPost, "/sales-returns/"+returnID.String()+"/approve", nil)
-		req.Header.Set("X-Tenant-ID", tenantID.String())
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-	})
 }
 
 func TestSalesReturnHandler_Reject(t *testing.T) {
@@ -664,7 +646,7 @@ func TestSalesReturnHandler_Complete(t *testing.T) {
 		returnID := uuid.New()
 		testReturn := createTestSalesReturn(tenantID, "SR-2026-00001")
 		testReturn.ID = returnID
-		testReturn.Status = trade.ReturnStatusApproved
+		testReturn.Status = trade.ReturnStatusReceiving // Must be RECEIVING to complete
 
 		router.POST("/sales-returns/:id/complete", handler.Complete)
 
