@@ -13,9 +13,9 @@ import (
 
 // DataScope context keys
 const (
-	DataScopesKey     = "data_scopes"
+	DataScopesKey      = "data_scopes"
 	DataScopeFilterKey = "data_scope_filter"
-	UserRolesKey      = "user_roles"
+	UserRolesKey       = "user_roles"
 )
 
 // DataScopeMiddlewareConfig holds configuration for DataScope middleware

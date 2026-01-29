@@ -199,7 +199,7 @@ func TestFeatureFlagIntegration(t *testing.T) {
 		// Should be approximately 50%
 		percentage := float64(trueCount) / float64(totalEvaluations) * 100
 		assert.Greater(t, percentage, 30.0) // At least 30%
-		assert.Less(t, percentage, 70.0)      // At most 70%
+		assert.Less(t, percentage, 70.0)    // At most 70%
 	})
 
 	t.Run("User Overrides", func(t *testing.T) {

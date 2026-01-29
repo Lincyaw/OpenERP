@@ -36,7 +36,7 @@ type CreateRoleInput struct {
 	Code        string
 	Name        string
 	Description string
-	Permissions []string   // Permission codes like "product:create"
+	Permissions []string // Permission codes like "product:create"
 	SortOrder   int
 	CreatedBy   *uuid.UUID // Set from JWT context for data scope filtering
 }

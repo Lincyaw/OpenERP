@@ -27,15 +27,15 @@ func (m *MockInventoryServiceForPurchaseReturn) DecreaseStock(ctx context.Contex
 
 // Test helper variables for purchase return handlers
 var (
-	testPRHandlerTenantID        = uuid.New()
-	testPRHandlerReturnID        = uuid.New()
-	testPRHandlerOrderID         = uuid.New()
-	testPRHandlerWarehouseID     = uuid.New()
-	testPRHandlerProductID       = uuid.New()
-	testPRHandlerReturnNumber    = "PR-2024-00001"
-	testPRHandlerOrderNumber     = "PO-2024-00001"
-	testPRHandlerSupplierID      = uuid.New()
-	testPRHandlerSupplierName    = "Test Supplier"
+	testPRHandlerTenantID     = uuid.New()
+	testPRHandlerReturnID     = uuid.New()
+	testPRHandlerOrderID      = uuid.New()
+	testPRHandlerWarehouseID  = uuid.New()
+	testPRHandlerProductID    = uuid.New()
+	testPRHandlerReturnNumber = "PR-2024-00001"
+	testPRHandlerOrderNumber  = "PO-2024-00001"
+	testPRHandlerSupplierID   = uuid.New()
+	testPRHandlerSupplierName = "Test Supplier"
 )
 
 // ==================== PurchaseReturnShippedHandler Tests ====================

@@ -233,7 +233,6 @@ type ExpenseIncomeCashFlowItem struct {
 
 // ===================== Expense Handlers =====================
 
-
 // ===================== Expense Handlers =====================
 
 // ListExpenses godoc
@@ -322,7 +321,6 @@ func (h *ExpenseIncomeHandler) ListExpenses(c *gin.Context) {
 	h.SuccessWithMeta(c, response, total, filter.Page, filter.PageSize)
 }
 
-
 // GetExpense godoc
 // @ID           getExpensExpense
 //
@@ -359,7 +357,6 @@ func (h *ExpenseIncomeHandler) GetExpense(c *gin.Context) {
 
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
-
 
 // CreateExpense godoc
 // @ID           createExpensExpense
@@ -415,7 +412,6 @@ func (h *ExpenseIncomeHandler) CreateExpense(c *gin.Context) {
 	})
 }
 
-
 // UpdateExpense godoc
 // @ID           updateExpensExpense
 //
@@ -470,7 +466,6 @@ func (h *ExpenseIncomeHandler) UpdateExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
-
 // DeleteExpense godoc
 // @ID           deleteExpensExpense
 //
@@ -506,7 +501,6 @@ func (h *ExpenseIncomeHandler) DeleteExpense(c *gin.Context) {
 
 	h.Success(c, nil)
 }
-
 
 // SubmitExpense godoc
 // @ID           submitExpenseExpens
@@ -551,7 +545,6 @@ func (h *ExpenseIncomeHandler) SubmitExpense(c *gin.Context) {
 
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
-
 
 // ApproveExpense godoc
 // @ID           approveExpenseExpens
@@ -600,7 +593,6 @@ func (h *ExpenseIncomeHandler) ApproveExpense(c *gin.Context) {
 
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
-
 
 // RejectExpense godoc
 // @ID           rejectExpenseExpens
@@ -653,7 +645,6 @@ func (h *ExpenseIncomeHandler) RejectExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
-
 // CancelExpense godoc
 // @ID           cancelExpenseExpens
 //
@@ -705,7 +696,6 @@ func (h *ExpenseIncomeHandler) CancelExpense(c *gin.Context) {
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
 
-
 // MarkExpensePaid godoc
 // @ID           markExpensePaidExpens
 //
@@ -750,7 +740,6 @@ func (h *ExpenseIncomeHandler) MarkExpensePaid(c *gin.Context) {
 
 	h.Success(c, h.toExpenseRecordResponse(*expense))
 }
-
 
 // GetExpensesSummary godoc
 // @ID           getExpensExpensesSummary
@@ -820,7 +809,6 @@ func (h *ExpenseIncomeHandler) GetExpensesSummary(c *gin.Context) {
 }
 
 // ===================== Other Income Handlers =====================
-
 
 // ===================== Other Income Handlers =====================
 
@@ -909,7 +897,6 @@ func (h *ExpenseIncomeHandler) ListIncomes(c *gin.Context) {
 	h.SuccessWithMeta(c, response, total, filter.Page, filter.PageSize)
 }
 
-
 // GetIncome godoc
 // @ID           getIncomeIncome
 //
@@ -946,7 +933,6 @@ func (h *ExpenseIncomeHandler) GetIncome(c *gin.Context) {
 
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
-
 
 // CreateIncome godoc
 // @ID           createIncomeIncome
@@ -1002,7 +988,6 @@ func (h *ExpenseIncomeHandler) CreateIncome(c *gin.Context) {
 	})
 }
 
-
 // UpdateIncome godoc
 // @ID           updateIncomeIncome
 //
@@ -1057,7 +1042,6 @@ func (h *ExpenseIncomeHandler) UpdateIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
-
 // DeleteIncome godoc
 // @ID           deleteIncomeIncome
 //
@@ -1093,7 +1077,6 @@ func (h *ExpenseIncomeHandler) DeleteIncome(c *gin.Context) {
 
 	h.Success(c, nil)
 }
-
 
 // ConfirmIncome godoc
 // @ID           confirmIncomeIncome
@@ -1138,7 +1121,6 @@ func (h *ExpenseIncomeHandler) ConfirmIncome(c *gin.Context) {
 
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
-
 
 // CancelIncome godoc
 // @ID           cancelIncomeIncome
@@ -1191,7 +1173,6 @@ func (h *ExpenseIncomeHandler) CancelIncome(c *gin.Context) {
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
 
-
 // MarkIncomeReceived godoc
 // @ID           markIncomeReceivedIncome
 //
@@ -1236,7 +1217,6 @@ func (h *ExpenseIncomeHandler) MarkIncomeReceived(c *gin.Context) {
 
 	h.Success(c, h.toIncomeRecordResponse(*income))
 }
-
 
 // GetIncomesSummary godoc
 // @ID           getIncomeIncomesSummary
@@ -1302,7 +1282,6 @@ func (h *ExpenseIncomeHandler) GetIncomesSummary(c *gin.Context) {
 
 	h.Success(c, response)
 }
-
 
 // GetCashFlow godoc
 // @ID           getExpensCashFlow

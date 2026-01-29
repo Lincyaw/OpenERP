@@ -38,15 +38,15 @@ func (m *MockInventoryServiceForSalesReturn) GetByWarehouseAndProduct(ctx contex
 
 // Test helper variables for sales return handlers
 var (
-	testReturnHandlerTenantID      = uuid.New()
-	testReturnHandlerReturnID      = uuid.New()
-	testReturnHandlerOrderID       = uuid.New()
-	testReturnHandlerWarehouseID   = uuid.New()
-	testReturnHandlerProductID     = uuid.New()
-	testReturnHandlerReturnNumber  = "SR-2024-00001"
-	testReturnHandlerOrderNumber   = "SO-2024-00001"
-	testReturnHandlerCustomerID    = uuid.New()
-	testReturnHandlerCustomerName  = "Test Customer"
+	testReturnHandlerTenantID     = uuid.New()
+	testReturnHandlerReturnID     = uuid.New()
+	testReturnHandlerOrderID      = uuid.New()
+	testReturnHandlerWarehouseID  = uuid.New()
+	testReturnHandlerProductID    = uuid.New()
+	testReturnHandlerReturnNumber = "SR-2024-00001"
+	testReturnHandlerOrderNumber  = "SO-2024-00001"
+	testReturnHandlerCustomerID   = uuid.New()
+	testReturnHandlerCustomerName = "Test Customer"
 )
 
 // ==================== SalesReturnCompletedHandler Tests ====================

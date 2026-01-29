@@ -25,11 +25,11 @@ func TestAgriculturalProductValidator_Validate_RequiredFields(t *testing.T) {
 	valCtx := strategy.ValidationContext{TenantID: "tenant1", IsNew: true}
 
 	tests := []struct {
-		name          string
-		data          strategy.ProductData
-		expectValid   bool
-		expectError   bool
-		errorField    string
+		name        string
+		data        strategy.ProductData
+		expectValid bool
+		expectError bool
+		errorField  string
 	}{
 		{
 			name: "valid product with all fields",

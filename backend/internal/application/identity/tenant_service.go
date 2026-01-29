@@ -70,24 +70,24 @@ type TenantConfigInput struct {
 
 // TenantDTO represents tenant data transfer object
 type TenantDTO struct {
-	ID           uuid.UUID        `json:"id"`
-	Code         string           `json:"code"`
-	Name         string           `json:"name"`
-	ShortName    string           `json:"short_name,omitempty"`
-	Status       string           `json:"status"`
-	Plan         string           `json:"plan"`
-	ContactName  string           `json:"contact_name,omitempty"`
-	ContactPhone string           `json:"contact_phone,omitempty"`
-	ContactEmail string           `json:"contact_email,omitempty"`
-	Address      string           `json:"address,omitempty"`
-	LogoURL      string           `json:"logo_url,omitempty"`
-	Domain       string           `json:"domain,omitempty"`
-	ExpiresAt    *time.Time       `json:"expires_at,omitempty"`
-	TrialEndsAt  *time.Time       `json:"trial_ends_at,omitempty"`
-	Config       TenantConfigDTO  `json:"config"`
-	Notes        string           `json:"notes,omitempty"`
-	CreatedAt    time.Time        `json:"created_at"`
-	UpdatedAt    time.Time        `json:"updated_at"`
+	ID           uuid.UUID       `json:"id"`
+	Code         string          `json:"code"`
+	Name         string          `json:"name"`
+	ShortName    string          `json:"short_name,omitempty"`
+	Status       string          `json:"status"`
+	Plan         string          `json:"plan"`
+	ContactName  string          `json:"contact_name,omitempty"`
+	ContactPhone string          `json:"contact_phone,omitempty"`
+	ContactEmail string          `json:"contact_email,omitempty"`
+	Address      string          `json:"address,omitempty"`
+	LogoURL      string          `json:"logo_url,omitempty"`
+	Domain       string          `json:"domain,omitempty"`
+	ExpiresAt    *time.Time      `json:"expires_at,omitempty"`
+	TrialEndsAt  *time.Time      `json:"trial_ends_at,omitempty"`
+	Config       TenantConfigDTO `json:"config"`
+	Notes        string          `json:"notes,omitempty"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
 }
 
 // TenantConfigDTO represents tenant configuration

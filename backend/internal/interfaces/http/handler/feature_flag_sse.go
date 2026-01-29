@@ -244,7 +244,6 @@ func (h *FeatureFlagSSEHandler) sendHeartbeats() {
 	}
 }
 
-
 // Stream godoc
 // @ID           streamFeatureFlag
 //

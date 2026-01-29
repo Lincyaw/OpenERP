@@ -118,7 +118,6 @@ func (h *FeatureFlagHandler) extractAuditContext(c *gin.Context) featureflagapp.
 // Flag Management Handlers
 // ============================================================================
 
-
 // ============================================================================
 // Flag Management Handlers
 // ============================================================================
@@ -167,7 +166,6 @@ func (h *FeatureFlagHandler) ListFlags(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // CreateFlag godoc
 // @ID           createFeatureFlagFlag
 //
@@ -214,7 +212,6 @@ func (h *FeatureFlagHandler) CreateFlag(c *gin.Context) {
 	h.Created(c, result)
 }
 
-
 // GetFlag godoc
 // @ID           getFeatureFlagFlag
 //
@@ -246,7 +243,6 @@ func (h *FeatureFlagHandler) GetFlag(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // UpdateFlag godoc
 // @ID           updateFeatureFlagFlag
@@ -300,7 +296,6 @@ func (h *FeatureFlagHandler) UpdateFlag(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // ArchiveFlag godoc
 // @ID           archiveFlagFeatureFlag
 //
@@ -333,7 +328,6 @@ func (h *FeatureFlagHandler) ArchiveFlag(c *gin.Context) {
 
 	h.NoContent(c)
 }
-
 
 // EnableFlag godoc
 // @ID           enableFlagFeatureFlag
@@ -369,7 +363,6 @@ func (h *FeatureFlagHandler) EnableFlag(c *gin.Context) {
 
 	h.Success(c, httpdto.MessageResponse{Message: "Feature flag enabled successfully"})
 }
-
 
 // DisableFlag godoc
 // @ID           disableFlagFeatureFlag
@@ -409,7 +402,6 @@ func (h *FeatureFlagHandler) DisableFlag(c *gin.Context) {
 // ============================================================================
 // Evaluation Handlers
 // ============================================================================
-
 
 // ============================================================================
 // Evaluation Handlers
@@ -457,7 +449,6 @@ func (h *FeatureFlagHandler) EvaluateFlag(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // BatchEvaluate godoc
 // @ID           batchEvaluateFeatureFlag
 //
@@ -491,7 +482,6 @@ func (h *FeatureFlagHandler) BatchEvaluate(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // GetClientConfig godoc
 // @ID           getFeatureFlagClientConfig
@@ -550,7 +540,6 @@ func (h *FeatureFlagHandler) enrichEvaluationContext(c *gin.Context, ctx dto.Eva
 // Override Handlers
 // ============================================================================
 
-
 // ============================================================================
 // Override Handlers
 // ============================================================================
@@ -602,7 +591,6 @@ func (h *FeatureFlagHandler) ListOverrides(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // CreateOverride godoc
 // @ID           createFeatureFlagOverride
@@ -672,7 +660,6 @@ func (h *FeatureFlagHandler) CreateOverride(c *gin.Context) {
 	h.Created(c, result)
 }
 
-
 // DeleteOverride godoc
 // @ID           deleteFeatureFlagOverride
 //
@@ -721,7 +708,6 @@ func (h *FeatureFlagHandler) DeleteOverride(c *gin.Context) {
 // ============================================================================
 // Audit Log Handlers
 // ============================================================================
-
 
 // ============================================================================
 // Audit Log Handlers

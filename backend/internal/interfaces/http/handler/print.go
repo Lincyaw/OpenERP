@@ -158,7 +158,6 @@ type PaperSizeResponse struct {
 	Height int    `json:"height" example:"297"`
 }
 
-
 // CreateTemplate godoc
 // @ID           createPrintTemplateTemplate
 //
@@ -215,7 +214,6 @@ func (h *PrintHandler) CreateTemplate(c *gin.Context) {
 	h.Created(c, result)
 }
 
-
 // GetTemplate godoc
 // @ID           getPrintTemplateTemplate
 //
@@ -252,7 +250,6 @@ func (h *PrintHandler) GetTemplate(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // ListTemplates godoc
 // @ID           listPrintTemplateTemplates
@@ -309,7 +306,6 @@ func (h *PrintHandler) ListTemplates(c *gin.Context) {
 
 	h.SuccessWithMeta(c, result.Items, result.Total, result.Page, result.Size)
 }
-
 
 // UpdateTemplate godoc
 // @ID           updatePrintTemplateTemplate
@@ -374,7 +370,6 @@ func (h *PrintHandler) UpdateTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // DeleteTemplate godoc
 // @ID           deletePrintTemplateTemplate
 //
@@ -411,7 +406,6 @@ func (h *PrintHandler) DeleteTemplate(c *gin.Context) {
 
 	h.NoContent(c)
 }
-
 
 // SetDefaultTemplate godoc
 // @ID           setDefaultTemplatePrintTemplate
@@ -452,7 +446,6 @@ func (h *PrintHandler) SetDefaultTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // ActivateTemplate godoc
 // @ID           activateTemplatePrintTemplate
 //
@@ -491,7 +484,6 @@ func (h *PrintHandler) ActivateTemplate(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // DeactivateTemplate godoc
 // @ID           deactivateTemplatePrintTemplate
@@ -532,7 +524,6 @@ func (h *PrintHandler) DeactivateTemplate(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // GetTemplatesByDocType godoc
 // @ID           getPrintTemplateTemplatesByDocType
 //
@@ -572,7 +563,6 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 // =============================================================================
 // Print Preview and PDF Generation Endpoints
 // =============================================================================
-
 
 // =============================================================================
 // Print Preview and PDF Generation Endpoints
@@ -637,7 +627,6 @@ func (h *PrintHandler) PreviewDocument(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // GeneratePDF godoc
 // @ID           generatePDFPrintJob
@@ -711,7 +700,6 @@ func (h *PrintHandler) GeneratePDF(c *gin.Context) {
 // Print Job Endpoints
 // =============================================================================
 
-
 // =============================================================================
 // Print Job Endpoints
 // =============================================================================
@@ -752,7 +740,6 @@ func (h *PrintHandler) GetJob(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // ListJobs godoc
 // @ID           listPrintJobJobs
@@ -808,7 +795,6 @@ func (h *PrintHandler) ListJobs(c *gin.Context) {
 	h.SuccessWithMeta(c, result.Items, result.Total, result.Page, result.Size)
 }
 
-
 // GetJobsByDocument godoc
 // @ID           getPrintJobJobsByDocument
 //
@@ -851,7 +837,6 @@ func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // DownloadPDF godoc
 // @ID           downloadPDFPrintJob
@@ -914,7 +899,6 @@ func (h *PrintHandler) DownloadPDF(c *gin.Context) {
 // Reference Data Endpoints
 // =============================================================================
 
-
 // =============================================================================
 // Reference Data Endpoints
 // =============================================================================
@@ -934,7 +918,6 @@ func (h *PrintHandler) GetDocumentTypes(c *gin.Context) {
 	h.Success(c, result)
 }
 
-
 // GetPaperSizes godoc
 // @ID           getPrintReferencePaperSizes
 //
@@ -949,7 +932,6 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 	result := h.printService.GetPaperSizes()
 	h.Success(c, result)
 }
-
 
 // GetTemplateContent godoc
 // @ID           getPrintTemplateTemplateContent
@@ -990,7 +972,6 @@ func (h *PrintHandler) GetTemplateContent(c *gin.Context) {
 		"content": result.Content,
 	})
 }
-
 
 // UpdateTemplateContent godoc
 // @ID           updatePrintTemplateTemplateContent
@@ -1042,7 +1023,6 @@ func (h *PrintHandler) UpdateTemplateContent(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
 
 // ServePDF godoc
 // @ID           servePDFPrintFile

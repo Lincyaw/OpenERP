@@ -33,7 +33,6 @@ type PaymentCallbackResponse struct {
 	Message          string `json:"message,omitempty" example:"Payment processed successfully"`
 }
 
-
 // HandleWechatPaymentCallback godoc
 // @ID           handleWechatPaymentCallbackPaymentCallback
 // @Summary      Handle WeChat Pay payment callback
@@ -52,7 +51,6 @@ func (h *PaymentCallbackHandler) HandleWechatPaymentCallback(c *gin.Context) {
 	h.handlePaymentCallback(c, finance.PaymentGatewayTypeWechat)
 }
 
-
 // HandleAlipayPaymentCallback godoc
 // @ID           handleAlipayPaymentCallbackPaymentCallback
 // @Summary      Handle Alipay payment callback
@@ -66,7 +64,6 @@ func (h *PaymentCallbackHandler) HandleWechatPaymentCallback(c *gin.Context) {
 func (h *PaymentCallbackHandler) HandleAlipayPaymentCallback(c *gin.Context) {
 	h.handlePaymentCallback(c, finance.PaymentGatewayTypeAlipay)
 }
-
 
 // HandleWechatRefundCallback godoc
 // @ID           handleWechatRefundCallbackPaymentCallback
@@ -85,7 +82,6 @@ func (h *PaymentCallbackHandler) HandleAlipayPaymentCallback(c *gin.Context) {
 func (h *PaymentCallbackHandler) HandleWechatRefundCallback(c *gin.Context) {
 	h.handleRefundCallback(c, finance.PaymentGatewayTypeWechat)
 }
-
 
 // HandleAlipayRefundCallback godoc
 // @ID           handleAlipayRefundCallbackPaymentCallback
