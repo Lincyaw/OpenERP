@@ -11134,7 +11134,7 @@
       "",
       "3. 更新 form/index.ts 导出"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-006",

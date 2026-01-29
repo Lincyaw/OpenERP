@@ -44,6 +44,10 @@
 /* Form Section */
 .form-section {
   margin-bottom: 24px;
+  background: var(--semi-color-bg-0);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-large, 8px);
+  overflow: hidden;
 }
 
 .form-section:last-child {
@@ -51,26 +55,102 @@
 }
 
 .form-section-header {
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--semi-color-bg-1);
   border-bottom: 1px solid var(--semi-color-border);
+}
+
+.form-section--collapsed .form-section-header {
+  border-bottom: none;
+}
+
+.form-section-header--collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--duration-fast, 150ms) var(--ease-default, ease);
+}
+
+.form-section-header--collapsible:hover {
+  background: var(--semi-color-fill-0);
+}
+
+.form-section-header--collapsible:focus {
+  outline: none;
+}
+
+.form-section-header--collapsible:focus-visible {
+  outline: 2px solid var(--semi-color-primary);
+  outline-offset: -2px;
+}
+
+.form-section-header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--semi-color-primary);
+  flex-shrink: 0;
+}
+
+.form-section-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .form-section-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--semi-color-text-0);
-  margin: 0 0 4px 0;
+  margin: 0;
+  line-height: 1.4;
 }
 
+.form-section-required {
+  color: var(--semi-color-danger);
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.form-section-subtitle {
+  font-size: 13px;
+  color: var(--semi-color-text-2);
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+/* Legacy support for description class */
 .form-section-description {
   font-size: 13px;
   color: var(--semi-color-text-2);
-  margin: 0;
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+.form-section-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--semi-color-text-2);
+  transition: transform var(--duration-normal, 200ms) var(--ease-default, ease);
+  margin-left: 12px;
+  flex-shrink: 0;
 }
 
 .form-section-content {
-  /* Content container */
+  padding: 20px;
 }
 
 /* Form Row */

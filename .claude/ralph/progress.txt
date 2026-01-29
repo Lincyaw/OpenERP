@@ -38368,3 +38368,90 @@ const errorSteps = [
 ### 下一步建议
 - 考虑添加国际化支持 (i18n) 到预设配置的标签
 - 可以扩展更多订单类型的预设配置
+
+## 2026-01-29 - UX-005: FormSection 表单分组组件增强完成
+
+### Task ID: UX-005
+### Status: COMPLETED ✅
+
+### 实现详情
+
+#### 1. 组件增强 (frontend/src/components/common/form/Form.tsx)
+- **新增 icon 属性**: 支持 Semi Icon 组件或 ReactNode，显示在标题前
+- **新增 subtitle 属性**: 副标题文本，显示在标题下方
+- **新增 required 属性**: 必填标记（红色星号）
+- **新增 defaultExpanded 属性**: 默认展开状态（替代旧的 defaultCollapsed）
+- **保留 description 属性**: 向后兼容，作为 subtitle 的别名
+- **保留 defaultCollapsed 属性**: 向后兼容
+
+#### 2. 样式更新 (frontend/src/components/common/form/Form.css)
+- **卡片式设计**: 添加边框、圆角、背景色
+- **标题区域**: 带背景色的头部，与内容区域视觉分隔
+- **图标样式**: 主题色图标，适当间距
+- **必填标记**: 红色星号样式
+- **折叠交互**: 折叠时移除底部边框
+- **悬停效果**: 可折叠头部的悬停反馈
+- **焦点样式**: 键盘导航的焦点可见性
+
+#### 3. 导出更新 (frontend/src/components/common/form/index.ts)
+- 导出 `FormSectionProps` 类型
+- 导出 `FormSectionIcon` 类型
+
+#### 4. 单元测试 (frontend/src/components/common/form/FormSection.test.tsx)
+- 新增 39 个测试用例
+- 覆盖基本渲染、图标属性、必填标记、折叠行为
+- 覆盖可访问性属性、CSS 类名、组合属性
+
+### 修改文件
+1. `frontend/src/components/common/form/Form.tsx` - 组件增强
+2. `frontend/src/components/common/form/Form.css` - 样式更新
+3. `frontend/src/components/common/form/index.ts` - 导出更新
+4. `frontend/src/components/common/form/FormSection.test.tsx` - 新增测试文件
+
+### 验证结果
+- ✅ TypeScript 类型检查通过
+- ✅ 39 个单元测试全部通过
+- ✅ ESLint 检查通过
+- ✅ 生产构建成功
+- ✅ 代码审查通过
+
+### 无障碍特性
+- `role="group"` 区域角色
+- `aria-labelledby` 标题关联
+- `aria-expanded` 展开状态
+- `aria-controls` 控制关联
+- `aria-hidden` 隐藏内容
+- 键盘支持（Enter/Space 切换）
+- 焦点可见性样式
+
+### 使用示例
+
+```tsx
+import { FormSection } from '@/components/common'
+import { IconUser, IconMail } from '@douyinfe/semi-icons'
+
+// 基础用法
+<FormSection title="基本信息" subtitle="填写您的基本资料">
+  <TextField name="name" label="姓名" />
+</FormSection>
+
+// 带图标和必填标记
+<FormSection
+  title="联系方式"
+  icon={IconMail}
+  required
+  collapsible
+  defaultExpanded
+>
+  <TextField name="email" label="邮箱" required />
+</FormSection>
+
+// 可折叠，默认收起
+<FormSection title="高级设置" collapsible defaultExpanded={false}>
+  <TextField name="advanced" label="高级选项" />
+</FormSection>
+```
+
+### 下一步建议
+- 可考虑添加 `aria-describedby` 关联副标题
+- 可优化折叠动画使用 CSS transform 代替图标切换

@@ -11,6 +11,7 @@ export { TreeSelectField, type TreeNode } from './TreeSelectField'
 
 // Form layout components
 export { Form, FormActions, FormSection, FormRow } from './Form'
+export type { FormSectionProps, FormSectionIcon } from './Form'
 export { FormFieldWrapper } from './FormFieldWrapper'
 
 // Form feedback components

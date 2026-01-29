@@ -1,7 +1,9 @@
+import React from 'react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { Button, Space, Spin, Collapsible } from '@douyinfe/semi-ui-19'
 import { IconChevronDown, IconChevronRight } from '@douyinfe/semi-icons'
+import type { IconSize, IconProps } from '@douyinfe/semi-icons'
 import './Form.css'
 
 interface FormProps {
@@ -91,89 +93,205 @@ export function FormActions({
   )
 }
 
-interface FormSectionProps {
+/**
+ * Icon type for FormSection - accepts either a ReactNode or a Semi icon component
+ */
+export type FormSectionIcon = ReactNode | React.ComponentType<{ size?: IconSize } & IconProps>
+
+export interface FormSectionProps {
   /** Section title */
   title?: string
-  /** Section description */
+  /** Section subtitle/description */
+  subtitle?: string
+  /**
+   * @deprecated Use `subtitle` instead
+   * Section description (alias for subtitle for backward compatibility)
+   */
   description?: string
+  /** Optional icon to display before title */
+  icon?: FormSectionIcon
   /** Section content */
   children: ReactNode
   /** Additional class name */
   className?: string
   /** Whether the section is collapsible */
   collapsible?: boolean
-  /** Whether the section is collapsed by default (only when collapsible=true) */
+  /** Whether the section is expanded by default (only when collapsible=true) */
+  defaultExpanded?: boolean
+  /**
+   * @deprecated Use `defaultExpanded` instead (inverted logic)
+   * Whether the section is collapsed by default (only when collapsible=true)
+   */
   defaultCollapsed?: boolean
+  /** Whether this section contains required fields */
+  required?: boolean
+  /** Test ID for testing */
+  'data-testid'?: string
 }
 
 /**
- * Form section with title and description
+ * Form section with title, subtitle, optional icon, and collapse support.
+ *
+ * Provides a card-style grouping for form fields with:
+ * - Optional icon in the header
+ * - Title and subtitle text
+ * - Required indicator (asterisk)
+ * - Collapsible content with smooth animation
+ *
+ * @example
+ * ```tsx
+ * // Basic section
+ * <FormSection title="Basic Info" subtitle="Enter your basic information">
+ *   <TextField name="name" label="Name" />
+ * </FormSection>
+ *
+ * // With icon and required indicator
+ * <FormSection
+ *   title="Contact Details"
+ *   icon={IconMail}
+ *   required
+ *   collapsible
+ *   defaultExpanded
+ * >
+ *   <TextField name="email" label="Email" required />
+ * </FormSection>
+ * ```
  */
 export function FormSection({
   title,
+  subtitle,
   description,
+  icon,
   children,
   className = '',
   collapsible = false,
-  defaultCollapsed = false,
+  defaultExpanded = true,
+  defaultCollapsed,
+  required = false,
+  'data-testid': testId,
 }: FormSectionProps) {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
+  // Handle backward compatibility: defaultCollapsed has priority if explicitly provided
+  const initialExpanded = defaultCollapsed !== undefined ? !defaultCollapsed : defaultExpanded
+  const [isExpanded, setIsExpanded] = useState(initialExpanded)
 
-  const toggleCollapsed = () => {
+  // Use subtitle if provided, fall back to description for backward compatibility
+  const displaySubtitle = subtitle ?? description
+
+  const sectionId = useId()
+  const headerId = `${sectionId}-header`
+  const contentId = `${sectionId}-content`
+
+  const toggleExpanded = () => {
     if (collapsible) {
-      setIsCollapsed(!isCollapsed)
+      setIsExpanded((prev) => !prev)
     }
   }
 
+  const renderIcon = () => {
+    if (!icon) return null
+
+    // Check if icon is a valid React element (already instantiated)
+    if (React.isValidElement(icon)) {
+      return <span className="form-section-icon">{icon}</span>
+    }
+
+    // Check if icon is a component (function or ForwardRef object)
+    // Semi Design icons are ForwardRef components with $$typeof property
+    const isComponent =
+      typeof icon === 'function' ||
+      (typeof icon === 'object' && icon !== null && '$$typeof' in icon)
+
+    if (isComponent) {
+      const IconComponent = icon as React.ComponentType<{ size?: IconSize }>
+      return (
+        <span className="form-section-icon">
+          <IconComponent size="default" />
+        </span>
+      )
+    }
+
+    // Fallback: render as ReactNode
+    return <span className="form-section-icon">{icon}</span>
+  }
+
   const renderHeader = () => {
-    if (!title && !description) return null
+    if (!title && !displaySubtitle && !icon) return null
+
+    const headerContent = (
+      <div className="form-section-header-content">
+        <div className="form-section-title-row">
+          {renderIcon()}
+          {title && (
+            <h3 className="form-section-title">
+              {title}
+              {required && <span className="form-section-required">*</span>}
+            </h3>
+          )}
+        </div>
+        {displaySubtitle && <p className="form-section-subtitle">{displaySubtitle}</p>}
+      </div>
+    )
 
     if (collapsible) {
       return (
         <div
+          id={headerId}
           className="form-section-header form-section-header--collapsible"
-          onClick={toggleCollapsed}
+          onClick={toggleExpanded}
           role="button"
           tabIndex={0}
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
-              toggleCollapsed()
+              toggleExpanded()
             }
           }}
         >
-          <div className="form-section-header-content">
-            {title && <h3 className="form-section-title">{title}</h3>}
-            {description && <p className="form-section-description">{description}</p>}
-          </div>
-          {isCollapsed ? <IconChevronRight /> : <IconChevronDown />}
+          {headerContent}
+          <span className="form-section-chevron">
+            {isExpanded ? <IconChevronDown /> : <IconChevronRight />}
+          </span>
         </div>
       )
     }
 
     return (
-      <div className="form-section-header">
-        {title && <h3 className="form-section-title">{title}</h3>}
-        {description && <p className="form-section-description">{description}</p>}
+      <div id={headerId} className="form-section-header">
+        {headerContent}
       </div>
     )
   }
 
-  if (collapsible) {
-    return (
-      <div className={`form-section form-section--collapsible ${className}`}>
-        {renderHeader()}
-        <Collapsible isOpen={!isCollapsed}>
-          <div className="form-section-content">{children}</div>
-        </Collapsible>
-      </div>
-    )
-  }
+  const sectionClasses = [
+    'form-section',
+    collapsible && 'form-section--collapsible',
+    !isExpanded && 'form-section--collapsed',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <div className={`form-section ${className}`}>
+    <div
+      className={sectionClasses}
+      data-testid={testId}
+      role="group"
+      aria-labelledby={title ? headerId : undefined}
+    >
       {renderHeader()}
-      <div className="form-section-content">{children}</div>
+      {collapsible ? (
+        <Collapsible isOpen={isExpanded}>
+          <div id={contentId} className="form-section-content" aria-hidden={!isExpanded}>
+            {children}
+          </div>
+        </Collapsible>
+      ) : (
+        <div id={contentId} className="form-section-content">
+          {children}
+        </div>
+      )}
     </div>
   )
 }
