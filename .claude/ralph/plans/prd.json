@@ -12509,7 +12509,7 @@
       "创建 attachment_dto.go 定义请求/响应 DTO",
       "编写服务层单元测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-006",

@@ -44,6 +44,10 @@ type ProductAttachmentFinder interface {
 
 	// ExistsByStorageKey checks if an attachment with the given storage key exists
 	ExistsByStorageKey(ctx context.Context, tenantID uuid.UUID, storageKey string) (bool, error)
+
+	// GetMaxSortOrder gets the maximum sort order for a product's attachments
+	// Returns -1 if no attachments exist (so adding 1 gives 0 as the first sort order)
+	GetMaxSortOrder(ctx context.Context, tenantID, productID uuid.UUID) (int, error)
 }
 
 // ProductAttachmentWriter defines the interface for attachment persistence (create, update, delete)

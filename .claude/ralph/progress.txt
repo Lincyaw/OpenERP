@@ -40015,3 +40015,66 @@ Created the complete persistence layer for ProductAttachment entity:
 
 - ATTACH-BE-005: ProductAttachment Application Service
 - ATTACH-INFRA-002: S3/Object Storage Interface Implementation
+
+2026-01-29 - Task ID: ATTACH-BE-005: Implement Product Attachment Application Service
+
+=== Implementation Details ===
+- Created `backend/internal/application/catalog/attachment_dto.go`:
+  - InitiateUploadRequest/Response DTOs for presigned URL workflow
+  - ConfirmUploadRequest for confirming completed uploads
+  - AttachmentResponse and AttachmentListResponse DTOs
+  - ToAttachment* conversion functions for domain -> DTO mapping
+  - EnrichWithURLs methods for adding download URLs
+
+- Created `backend/internal/application/catalog/attachment_service.go`:
+  - Defined ObjectStorageService interface for storage abstraction (S3, RustFS, etc.)
+  - Implemented AttachmentService with configurable settings
+  - InitiateUpload() - Creates pending attachment, validates product/limits/content types, returns presigned URL
+  - ConfirmUpload() - Verifies upload completed in storage, activates attachment, sets sort order
+  - GetByID() - Retrieves single attachment with download URL
+  - GetByProduct() - Lists attachments for product with pagination and filtering
+  - GetActiveByProduct() - Gets all active attachments (no pagination)
+  - GetMainImage() - Gets the main product image
+  - Delete() - Soft deletes attachment (status -> deleted)
+  - PermanentDelete() - Hard deletes from database and storage
+  - SetAsMainImage() - Promotes image to main, demotes existing (atomic SaveBatch)
+  - ReorderAttachments() - Updates sort order for multiple attachments
+
+- Updated `backend/internal/domain/catalog/product_attachment_repository.go`:
+  - Added GetMaxSortOrder() method to ProductAttachmentFinder interface
+
+- Security features implemented:
+  - Content-type whitelist (AllowedContentTypes) prevents dangerous file uploads
+  - Validates image types have image/* content type
+  - Per-product attachment limit (configurable, default 50)
+  - Main image uniqueness enforcement
+  - Presigned URL pattern (files never pass through app server)
+
+- Code review fixes applied:
+  - CRITICAL: Added content-type whitelist for security
+  - HIGH: Changed SetAsMainImage to use SaveBatch for atomic updates
+  - HIGH: Added proper slog logging for storage deletion errors
+  - MEDIUM: Added tests for isAllowedContentType
+
+=== Key Files Modified ===
+- backend/internal/application/catalog/attachment_dto.go (NEW)
+- backend/internal/application/catalog/attachment_service.go (NEW)
+- backend/internal/application/catalog/attachment_service_test.go (NEW)
+- backend/internal/domain/catalog/product_attachment_repository.go (modified)
+
+=== Verification ===
+- All 33 attachment service tests pass
+- All existing repository tests pass
+- Backend build succeeds
+- Code review completed and issues addressed
+
+=== Design Decisions ===
+1. ObjectStorageService interface defined in application layer - allows any storage implementation (S3, MinIO, RustFS)
+2. Two-phase upload: InitiateUpload returns presigned URL, ConfirmUpload validates completion
+3. Soft delete by default (Delete), hard delete available (PermanentDelete)
+4. Content-type whitelist for security - allows images, PDFs, Office docs, text, and ZIP
+5. Atomic main image promotion using SaveBatch to prevent data inconsistency
+
+=== Next Steps ===
+- ATTACH-BE-006: Implement HTTP handler for attachment endpoints
+- ATTACH-INFRA-002: Implement ObjectStorageService (S3/RustFS)
