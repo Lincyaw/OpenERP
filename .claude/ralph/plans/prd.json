@@ -10424,7 +10424,7 @@
       "./bin/loadgen --ramp-up 300s --peak-qps 1000 --duration 600s",
       "ps aux | grep loadgen | grep -v grep"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-010",
@@ -10452,7 +10452,7 @@
       "ls -la tools/loadgen/README.md",
       "head -50 tools/loadgen/README.md"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-001",
@@ -11114,7 +11114,7 @@
       "",
       "3. 样式: 水平和垂直两种布局"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UX-005",
