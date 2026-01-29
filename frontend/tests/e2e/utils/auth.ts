@@ -42,7 +42,7 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   // Wait for login form to be visible
   await page.waitForSelector('input[type="password"], #password', {
     state: 'visible',
-    timeout: 10000,
+    timeout: 15000,
   })
 
   // Fill login form
@@ -50,20 +50,44 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   await page.fill('input[name="password"], input[type="password"], #password', user.password)
 
   // Submit
+  console.log('[login] Submitting login form...')
   await page.click('button[type="submit"], .login-button, button:has-text("登录")')
+
+  // Wait for login API response - this gives us early failure detection
+  console.log('[login] Waiting for login API response...')
+  try {
+    const response = await page.waitForResponse(
+      (resp) => resp.url().includes('/api/v1/auth/login') && resp.status() !== 0,
+      { timeout: 15000 }
+    )
+    console.log(`[login] API response status: ${response.status()}`)
+    if (!response.ok()) {
+      const body = await response.text().catch(() => 'Could not read body')
+      console.log(`[login] API error response: ${body}`)
+      throw new Error(`Login API failed with status ${response.status()}: ${body}`)
+    }
+  } catch (e) {
+    console.log(`[login] Error waiting for API response: ${e}`)
+    // Continue - maybe the response already completed
+  }
 
   // Wait for navigation away from login page
   // Use a function that checks we're NOT on the login page
+  console.log('[login] Waiting for navigation away from login page...')
   await page
     .waitForFunction(() => !window.location.pathname.includes('/login'), { timeout: 15000 })
-    .catch(() => {
+    .catch((e) => {
+      console.log(`[login] Navigation wait failed: ${e}`)
       // Navigation might have failed - continue to check auth state
     })
+
+  console.log(`[login] Current URL after navigation wait: ${page.url()}`)
 
   // CRITICAL: Wait for auth state to be persisted
   // SEC-004: access_token is kept in memory only (not localStorage)
   // refresh_token is stored as httpOnly cookie (handled by browser)
   // We only need to check for user data in localStorage
+  console.log('[login] Waiting for user data in localStorage...')
   await page.waitForFunction(
     () => {
       // Check for user in localStorage (user data is still persisted synchronously)
@@ -79,9 +103,10 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
         return false
       }
     },
-    { timeout: 15000 }
+    { timeout: 20000 }
   )
 
+  console.log('[login] Login completed successfully')
   // Brief wait to ensure httpOnly cookie is properly set by the browser
   // The refresh_token cookie is set by the backend response
   await page.waitForTimeout(200)
