@@ -61,7 +61,9 @@ jobs:
 
       - name: Load seed data
         run: |
-          docker compose exec -T postgres psql -U postgres -d erp_dev -f /docker-entrypoint-initdb.d/seed-data.sql || true
+          # Load seed data using stdin (file is on host, not in container)
+          cat docker/seed-data.sql | docker compose exec -T postgres psql -U postgres -d erp_dev
+          echo "Seed data loaded successfully"
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
