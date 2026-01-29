@@ -13,7 +13,7 @@
 
 .main-layout__content {
   flex: 1;
-  padding: 16px 24px;
+  padding: var(--spacing-4) var(--spacing-6);
   margin-left: var(--sidebar-width, 220px);
   margin-top: var(--header-height, 60px);
   overflow-y: auto;
@@ -46,7 +46,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-layout__content {
-    padding: 12px 16px;
+    padding: var(--spacing-3) var(--spacing-4);
     margin-left: 0;
   }
 
