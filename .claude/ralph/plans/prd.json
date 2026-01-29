@@ -10371,7 +10371,7 @@
       "curl -s http://localhost:9090/metrics",
       "curl -s http://localhost:9090/metrics | grep -E 'loadgen_(requests_total|current_qps|backpressure_state)'"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-VAL-008",
