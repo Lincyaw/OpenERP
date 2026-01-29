@@ -12411,7 +12411,7 @@
       "配置 endpoint, access_key, secret_key, bucket 等参数",
       "验证 RustFS 服务启动正常"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-INFRA-002",

@@ -40324,3 +40324,68 @@ Modified `frontend/src/features/catalog/ProductForm.tsx` to integrate the Produc
 - ATTACH-TEST-001: Write unit tests for ProductAttachmentUploader
 - ATTACH-INFRA-002: Implement real S3/RustFS ObjectStorageService
 - Consider adding a hint in create mode to inform users they can add images after saving
+
+2025-01-29 - ATTACH-INFRA-001: 配置 RustFS S3 兼容存储服务
+
+=== Implementation Details ===
+
+Added RustFS S3-compatible object storage service to the ERP infrastructure for handling file attachments (product images, documents).
+
+**1. Docker Compose Service (docker-compose.yml)**
+- Added `rustfs` service using `rustfs/rustfs:latest` image
+- Configured ports: 9000 (S3 API), 9001 (Admin Console)
+- Environment variables:
+  - `RUSTFS_VOLUMES=/data` - Storage path
+  - `RUSTFS_ADDRESS=":9000"` - S3 API bind address
+  - `RUSTFS_CONSOLE_ADDRESS=":9001"` - Console bind address
+  - `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY` - Credentials from env
+  - `RUSTFS_REGION` - AWS region for S3 compatibility
+- Healthcheck: `curl -f http://localhost:9000/health` (returns JSON with status)
+- Added `rustfs_data` persistent volume for data storage
+
+**2. Backend Configuration (backend/config.toml)**
+- Added `[storage]` configuration section with:
+  - `endpoint = "http://localhost:9000"` - RustFS endpoint
+  - `region = "us-east-1"` - S3 region
+  - `access_key` / `secret_key` - Credentials (use ERP_STORAGE_* env vars in production)
+  - `bucket = "erp-attachments"` - Default bucket for attachments
+  - `use_path_style = true` - Required for RustFS/MinIO-compatible storage
+  - `use_ssl = false` - Development setting
+  - `presign_expiration = "15m"` - Presigned URL validity
+  - `max_file_size = 52428800` - 50MB max upload
+  - `allowed_mime_types` - Whitelist of allowed file types (images, PDFs, Office docs)
+
+**3. Environment Configuration (.env.example)**
+- Added RustFS environment variables:
+  - `RUSTFS_VERSION`, `RUSTFS_API_PORT`, `RUSTFS_CONSOLE_PORT`
+  - `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`, `RUSTFS_REGION`
+
+=== Verification ===
+
+- Docker Compose config validation: PASSED
+- RustFS container startup: PASSED
+- Container health status: healthy
+- Health endpoint (`/health`): Returns `{"service":"rustfs-endpoint","status":"ok"}`
+- Admin console accessible at: http://localhost:9001/rustfs/console/index.html
+
+=== Files Modified ===
+
+| File | Changes |
+|------|---------|
+| docker-compose.yml | Added rustfs service + rustfs_data volume |
+| backend/config.toml | Added [storage] configuration section |
+| .env.example | Added RustFS environment variables |
+
+=== Design Decisions ===
+
+1. **Health endpoint**: RustFS uses `/health` (not MinIO's `/minio/health/live`)
+2. **Path-style URLs**: Required for RustFS and most S3-compatible storage
+3. **Default credentials**: Development-only defaults with security warnings in comments
+4. **MIME type whitelist**: Restricted to common business document types (no SVG for XSS prevention)
+5. **50MB file limit**: Reasonable default for product images and documents
+
+=== Next Steps ===
+
+- ATTACH-INFRA-002: Implement S3 storage interface and RustFS client in Go backend
+- Backend needs to auto-create the `erp-attachments` bucket on startup
+- Consider adding bucket lifecycle policies for cleanup

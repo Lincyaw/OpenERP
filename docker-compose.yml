@@ -63,6 +63,37 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------------
+  # RustFS S3-Compatible Object Storage
+  # ---------------------------------------------------------------------------
+  # High-performance object storage for file attachments (product images, documents)
+  # S3-compatible API: http://localhost:9000
+  # Admin console: http://localhost:9001 (user: rustfsadmin, password: from env)
+  rustfs:
+    image: rustfs/rustfs:${RUSTFS_VERSION:-latest}
+    container_name: erp-rustfs
+    restart: unless-stopped
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin123}
+      RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
+    ports:
+      - "${RUSTFS_API_PORT:-9000}:9000"
+      - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - rustfs_data:/data
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
   # Database Migration Runner
   # ---------------------------------------------------------------------------
   migrate:
@@ -239,6 +270,8 @@ volumes:
     name: erp-postgres-data
   redis_data:
     name: erp-redis-data
+  rustfs_data:
+    name: erp-rustfs-data
   otel_logs:
     name: erp-otel-logs
   pyroscope_data:

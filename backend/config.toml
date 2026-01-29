@@ -194,3 +194,59 @@ disable_gc_runs = false
 # NOTE: Only CPU profiling is supported for span profiles
 # NOTE: Go CPU profiler samples at 100Hz, spans shorter than 10ms may not have profile data
 span_profiles_enabled = true
+
+# =============================================================================
+# Object Storage Configuration (RustFS / S3-compatible)
+# =============================================================================
+# For file attachments (product images, documents, etc.)
+# Uses RustFS (S3-compatible) in development, can use AWS S3 or other S3-compatible
+# storage in production.
+[storage]
+# S3-compatible endpoint URL (without protocol for SDK auto-detection)
+# Development: http://localhost:9000 (RustFS)
+# Production: s3.amazonaws.com or your S3-compatible endpoint
+endpoint = "http://localhost:9000"
+
+# AWS region (required even for non-AWS S3-compatible storage)
+region = "us-east-1"
+
+# Access credentials
+# SECURITY: Use environment variables in production: ERP_STORAGE_ACCESS_KEY
+access_key = "rustfsadmin"
+# SECURITY: Use environment variables in production: ERP_STORAGE_SECRET_KEY
+secret_key = "rustfsadmin123"
+
+# Default bucket for file attachments
+# This bucket will be auto-created on startup if it doesn't exist
+bucket = "erp-attachments"
+
+# Use path-style URLs instead of virtual-hosted style
+# Required for RustFS and most S3-compatible storage (MinIO, etc.)
+# Set to false for AWS S3 in production
+use_path_style = true
+
+# Enable SSL/TLS for S3 connections
+# Development: false (RustFS without TLS)
+# Production: true (AWS S3 or TLS-enabled storage)
+use_ssl = false
+
+# Presigned URL expiration time for uploads and downloads
+presign_expiration = "15m"
+
+# Maximum file size for uploads (in bytes)
+# Default: 50MB
+max_file_size = 52428800
+
+# Allowed MIME types for uploads (empty = allow all)
+# Example: ["image/jpeg", "image/png", "image/gif", "application/pdf"]
+allowed_mime_types = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+]
