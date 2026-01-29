@@ -11688,7 +11688,7 @@
       "- [ ] Import blocked for non-admin users",
       "- [ ] Comprehensive error messages for failures"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-BE-006",

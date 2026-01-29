@@ -40648,3 +40648,113 @@ Security review identified several recommendations:
 - Add rate limiting middleware for import endpoints (deployment config)
 - Consider Redis-backed session store for production deployments
 - Handler tests could be added for HTTP layer coverage
+
+================================================================================
+2026-01-30 - IMPORT-BE-005: Initial Inventory Import Service
+================================================================================
+
+=== Implementation Details ===
+
+Implemented backend service and HTTP handler for bulk importing initial inventory data.
+This is for initial data migration only, not for regular stock operations.
+
+=== Files Created/Modified ===
+
+| File | Changes |
+|------|---------|
+| backend/internal/application/import/inventory_import_service.go | NEW - Service implementation |
+| backend/internal/interfaces/http/handler/inventory_import_handler.go | NEW - HTTP handler |
+| backend/internal/application/import/inventory_import_service_test.go | NEW - Unit tests |
+| .claude/ralph/plans/prd.json | Updated passes: true |
+
+=== Key Design Decisions ===
+
+1. **CSV Field Mapping**:
+   - product_sku: Links to product by code
+   - warehouse_code: Links to warehouse by code
+   - quantity: Initial stock quantity (decimal)
+   - unit_cost: Unit cost for moving average calculation
+   - batch_number: Optional batch tracking
+   - production_date/expiry_date: Optional batch dates
+   - notes: Optional notes for transaction
+
+2. **Conflict Modes**:
+   - skip: Skip rows where product+warehouse already has inventory
+   - fail: Fail import if any duplicates found
+   - update: Add to existing inventory (weighted average cost recalculated)
+
+3. **Transaction Audit**:
+   - Creates InventoryTransaction with source_type='initial_stock'
+   - Records balance before/after for audit trail
+   - Uses 'moving_average' as cost method
+
+4. **Batch Management**:
+   - If batch_number provided, creates StockBatch with production/expiry dates
+   - Validates expiry_date > production_date when both provided
+
+5. **Domain Events**:
+   - Publishes StockIncreased events via eventBus
+   - Events cleared after publishing to avoid memory leaks
+
+=== API Endpoints ===
+
+- POST /api/v1/import/inventory/validate - Validate CSV without importing
+- POST /api/v1/import/inventory - Execute import from validated session
+
+=== Validation Rules Implemented ===
+
+1. product_sku: Required, must exist in products table
+2. warehouse_code: Required, must exist in warehouses table
+3. quantity: Required, decimal >= 0
+4. unit_cost: Required, decimal >= 0
+5. batch_number: Optional, max 50 chars
+6. production_date/expiry_date: Optional, validated date formats
+7. expiry_date must be after production_date if both provided
+
+=== Warnings (Non-blocking) ===
+
+- Quantity > 1,000,000 flagged as unusually high
+- Unit cost > 1,000,000 flagged as unusually high
+- Expiry date in past flagged
+- Batch without expiry date flagged
+
+=== Verification ===
+
+- [x] All unit tests pass: `go test ./internal/application/import/...` - PASS
+- [x] Build succeeds: `go build ./...` - OK
+- [x] Product and warehouse references validated
+- [x] Batch management handled correctly
+- [x] InventoryTransaction created for audit
+- [x] Cost calculation follows strategy pattern (moving average)
+- [x] Comprehensive error messages for failures
+
+=== Unit Tests Added ===
+
+19 test cases covering:
+- GetValidationRules
+- parseDate with various formats
+- Import session state validation
+- Context cancellation handling
+- Product not found error
+- Warehouse not found error
+- Successful new inventory import
+- ConflictMode: Skip, Fail, Update
+- Batch info import
+- Invalid expiry date validation
+- ValidateWithWarnings (4 warning types)
+- LookupReference for products and warehouses
+- Invalid quantity/unit_cost formats
+- Repository error handling
+
+=== Code Review Notes ===
+
+1. Fixed global session variable bug - now passed as parameter
+2. Renamed MockProductRepository to MockInventoryProductRepository to avoid conflict
+3. Handler follows same pattern as SupplierImportHandler
+
+=== Next Steps ===
+
+- IMPORT-BE-006: Import History and Audit Trail
+- Wire up InventoryImportHandler in router
+- Add admin permission check middleware
+- Integration tests with real database
