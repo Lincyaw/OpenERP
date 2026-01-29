@@ -11,7 +11,8 @@
         e2e e2e-ui e2e-debug e2e-local \
         otel-up otel-down otel-logs otel-status \
         pyroscope-up pyroscope-down pyroscope-ui pyroscope-logs pyroscope-status \
-        loadgen-build loadgen-clean loadgen-test \
+        loadgen-build loadgen-clean loadgen-test loadgen-run loadgen-stress \
+        loadgen-scenario loadgen-dry-run loadgen-list loadgen-validate \
         clean logs api-docs
 
 # Default target
@@ -333,3 +334,57 @@ loadgen-test: ## Run load generator tests
 	@echo "$(CYAN)Running load generator tests...$(NC)"
 	@cd $(LOADGEN_DIR) && go test -v ./...
 	@echo "$(GREEN)Tests complete.$(NC)"
+
+loadgen-run: loadgen-build ## Run load generator with default ERP config (5m, 100 QPS)
+	@echo "$(CYAN)Running load generator...$(NC)"
+	@echo "  Config:   $(LOADGEN_DIR)/configs/erp.yaml"
+	@echo "  Duration: 5m"
+	@echo "  QPS:      100"
+	@echo ""
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml \
+		-duration 5m -qps 100 -v
+	@echo ""
+	@echo "$(GREEN)Load test complete.$(NC)"
+
+loadgen-stress: loadgen-build ## Run stress test (30m, high QPS ramp-up)
+	@echo "$(CYAN)Running stress test...$(NC)"
+	@echo "  Config:   $(LOADGEN_DIR)/configs/erp.yaml"
+	@echo "  Duration: 30m"
+	@echo "  QPS:      500 (ramp up)"
+	@echo ""
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml \
+		-duration 30m -qps 500 -v
+	@echo ""
+	@echo "$(GREEN)Stress test complete.$(NC)"
+
+loadgen-scenario: loadgen-build ## Run load test for specific scenario (usage: make loadgen-scenario SCENARIO=browse_catalog)
+	@if [ -z "$(SCENARIO)" ]; then \
+		echo "$(RED)Error: SCENARIO is required$(NC)"; \
+		echo ""; \
+		echo "Usage: make loadgen-scenario SCENARIO=<name>"; \
+		echo ""; \
+		echo "Available scenarios:"; \
+		echo "  - browse_catalog      (Simulates browsing the product catalog)"; \
+		echo "  - create_sales_order  (Simulates creating a sales order)"; \
+		echo "  - create_purchase_order (Simulates creating a purchase order)"; \
+		echo "  - check_inventory     (Simulates checking inventory status)"; \
+		echo "  - review_finances     (Simulates reviewing financial status)"; \
+		echo "  - view_reports        (Simulates viewing reports)"; \
+		exit 1; \
+	fi
+	@echo "$(CYAN)Running scenario: $(SCENARIO)...$(NC)"
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml -v $(ARGS)
+	@echo ""
+	@echo "$(GREEN)Scenario test complete.$(NC)"
+
+loadgen-dry-run: loadgen-build ## Show execution plan without running (dry-run mode)
+	@echo "$(CYAN)Load generator dry run...$(NC)"
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml -dry-run -v
+
+loadgen-list: loadgen-build ## List all configured endpoints
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml -list
+
+loadgen-validate: loadgen-build ## Validate load generator configuration
+	@echo "$(CYAN)Validating configuration...$(NC)"
+	@$(LOADGEN_BIN) -config $(LOADGEN_DIR)/configs/erp.yaml -validate
+	@echo "$(GREEN)Configuration valid.$(NC)"

@@ -95,7 +95,17 @@ make pyroscope-ui          # Open Pyroscope UI
 ```bash
 make loadgen-build         # Build loadgen binary
 make loadgen-test          # Run loadgen tests
+make loadgen-run           # Run load test (5m, 100 QPS)
+make loadgen-stress        # Run stress test (30m, 500 QPS)
+make loadgen-scenario SCENARIO=browse_catalog  # Run specific scenario
+make loadgen-dry-run       # Show execution plan
+make loadgen-list          # List all endpoints
+make loadgen-validate      # Validate configuration
 ```
+
+Available scenarios: `browse_catalog`, `create_sales_order`, `create_purchase_order`, `check_inventory`, `review_finances`, `view_reports`
+
+See `tools/loadgen/README.md` for detailed documentation.
 
 ## Architecture
 

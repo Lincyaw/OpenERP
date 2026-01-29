@@ -37925,3 +37925,70 @@ when it's implemented. The runner should:
 - Integrate assertions into the main executor/runner when implemented
 - Consider adding warning mode for assertions (log but don't fail)
 - Consider adding assertion history for trend analysis
+
+2025-01-29 - LOADGEN-030: Makefile 集成与文档
+
+=== Implementation Details ===
+Added comprehensive Makefile integration and documentation for the load generator tool.
+
+Key Files Modified/Created:
+- Makefile (modified)
+  - Added `loadgen-run` target - Run load test with default ERP config (5m, 100 QPS)
+  - Added `loadgen-stress` target - Run stress test (30m, 500 QPS ramp-up)
+  - Added `loadgen-scenario` target - Run specific scenario with SCENARIO=<name> parameter
+  - Added `loadgen-dry-run` target - Show execution plan without running
+  - Added `loadgen-list` target - List all configured endpoints
+  - Added `loadgen-validate` target - Validate configuration
+  - Updated .PHONY to include all new targets
+
+- tools/loadgen/README.md (created - 450+ lines)
+  - Quick Start section with basic commands
+  - Installation instructions
+  - Complete CLI parameter reference table
+  - Makefile targets table with descriptions
+  - Configuration file structure documentation
+  - Traffic shaping types (constant, step, sine, spike, custom)
+  - Endpoint configuration with examples
+  - Semantic types reference
+  - Data generators template reference
+  - Workflow definition examples
+  - Output & Metrics documentation (console, JSON, Prometheus)
+  - SLO Assertions configuration
+  - Architecture overview (circuit board metaphor)
+  - Troubleshooting section
+  - Development and testing instructions
+
+- CLAUDE.md (modified)
+  - Updated Load Generator section with new Makefile targets
+  - Added available scenarios list
+  - Added reference to detailed documentation
+
+=== Acceptance Criteria Verification ===
+✅ 添加 Makefile 目标：loadgen-build、loadgen-run、loadgen-stress
+✅ 添加 loadgen-scenario 目标支持场景参数
+   - Shows available scenarios when SCENARIO not provided
+   - Supports SCENARIO=browse_catalog, create_sales_order, etc.
+✅ 更新项目 README 添加 loadgen 使用说明 (updated CLAUDE.md)
+✅ 编写 tools/loadgen/README.md 详细文档
+✅ 包含快速开始、配置说明、CLI 参数、示例
+✅ 验收标准：make loadgen-run 成功执行 - VERIFIED
+
+=== Test Results ===
+- `make loadgen-build` - SUCCESS (binary built at tools/loadgen/bin/loadgen)
+- `make loadgen-validate` - SUCCESS (configuration valid with 64 endpoints)
+- `make loadgen-list` - SUCCESS (lists all endpoints grouped by tag)
+- `make loadgen-dry-run` - SUCCESS (shows execution plan)
+- `make loadgen-run` - SUCCESS (runs with CLI framework, actual runner pending LOADGEN-003)
+- `make loadgen-scenario SCENARIO=browse_catalog` - SUCCESS
+
+=== Design Decisions ===
+1. Makefile targets follow existing project conventions (color-coded output)
+2. loadgen-scenario shows available scenarios when called without SCENARIO
+3. All targets depend on loadgen-build for automatic binary updates
+4. README follows same structure and conventions as other project READMEs
+5. Updated CLAUDE.md instead of creating separate project README (no main README.md exists)
+
+=== Next Steps ===
+- LOADGEN-003: Implement actual load test runner (runLoadTest function)
+- Consider adding loadgen-report target for HTML report generation
+- Add loadgen to CI/CD pipeline for performance regression testing

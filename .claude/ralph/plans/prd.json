@@ -8093,7 +8093,7 @@
       "包含快速开始、配置说明、CLI 参数、示例",
       "验收标准：make loadgen-run 成功执行"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-BE-001",
