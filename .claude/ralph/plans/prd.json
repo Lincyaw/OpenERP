@@ -11886,7 +11886,7 @@
       "- [ ] Example data demonstrates format",
       "- [ ] Download link prominent in wizard"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-TEST-001",

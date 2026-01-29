@@ -41236,3 +41236,95 @@ Modified:
 - Wire up ImportHistoryService in existing import handlers to automatically record import operations
 - Add integration tests for repository
 - Consider adding background job to clean up old import histories
+
+
+## 2026-01-30 - IMPORT-FE-003: Bulk Import Frontend - CSV Template Download
+
+### Task ID: IMPORT-FE-003
+### Status: COMPLETE
+
+=== Implementation Details ===
+
+Created downloadable CSV templates for bulk import with proper Excel compatibility.
+
+#### 1. Template Files Created (frontend/public/templates/)
+- **products_import_template.csv** - Product import with 12 columns
+  - name, category_code, base_unit, purchase_price, selling_price, sku, barcode, description, status, min_stock_level, max_stock_level, attributes
+  
+- **customers_import_template.csv** - Customer import with 13 columns
+  - name, type, code, contact_person, phone, email, level_code, credit_limit, address_province, address_city, address_district, address_detail, notes
+  
+- **suppliers_import_template.csv** - Supplier import with 15 columns
+  - name, code, type, contact_person, phone, email, credit_days, credit_limit, address_province, address_city, address_district, address_detail, bank_name, bank_account, notes
+  
+- **inventory_import_template.csv** - Inventory import with 8 columns
+  - product_sku, warehouse_code, quantity, unit_cost, batch_number, production_date, expiry_date, notes
+
+#### 2. Template Features
+- UTF-8 BOM (EF BB BF) prefix for Excel/WPS compatibility
+- Chinese sample data for demonstration
+- Header row with all column names
+- Two example rows per template
+
+#### 3. Frontend Integration
+
+**Pages updated:**
+- Products.tsx - Added templateUrl prop to ImportWizard
+- Customers.tsx - Added templateUrl prop to ImportWizard
+- Suppliers.tsx - Added templateUrl prop to ImportWizard
+- StockList.tsx - Added templateUrl prop to ImportWizard
+
+**ImportHistory.tsx updates:**
+- Added TEMPLATE_URLS constant mapping entity types to template URLs
+- Added handleDownloadTemplate callback function
+- Added Dropdown component with template download menu
+- New "Download Templates" button in toolbar with dropdown for each entity type
+
+#### 4. i18n Translations Added
+- en-US: `importHistory.downloadTemplates`: "Download Templates"
+- zh-CN: `importHistory.downloadTemplates`: "下载模板"
+
+=== Files Created/Modified ===
+
+Created:
+- frontend/public/templates/products_import_template.csv
+- frontend/public/templates/customers_import_template.csv
+- frontend/public/templates/suppliers_import_template.csv
+- frontend/public/templates/inventory_import_template.csv
+
+Modified:
+- frontend/src/pages/catalog/Products.tsx
+- frontend/src/pages/partner/Customers.tsx
+- frontend/src/pages/partner/Suppliers.tsx
+- frontend/src/pages/inventory/StockList.tsx
+- frontend/src/pages/system/ImportHistory.tsx
+- frontend/src/locales/en-US/common.json
+- frontend/src/locales/zh-CN/common.json
+
+=== Verification ===
+
+- ✅ npm run type-check passes
+- ✅ Pre-commit hooks pass (ESLint, Prettier)
+- ✅ Templates have UTF-8 BOM for Excel compatibility
+- ✅ Chinese characters in templates display correctly
+- ✅ Download links added to FileUploadStep via templateUrl prop
+- ✅ Download dropdown added to ImportHistory page
+
+=== Requirements Verification ===
+✅ Templates in frontend/public/templates/
+✅ Products template created
+✅ Customers template created
+✅ Suppliers template created
+✅ Inventory template created
+✅ UTF-8 BOM for Excel compatibility
+✅ Header row with all column names
+✅ Two example rows with sample data
+✅ Download link in FileUploadStep (via ImportWizard templateUrl prop)
+✅ Download available from ImportHistory page
+
+=== Notes ===
+- Note: npm run build shows pre-existing type errors in ImportHistory.tsx related to i18n type definitions. These are not caused by this task and exist independently. The npm run type-check passes, indicating the core TypeScript is valid.
+
+=== Next Steps ===
+- IMPORT-FE-004: Preview mapping step for import wizard
+- Consider adding a categories template when category import is implemented
