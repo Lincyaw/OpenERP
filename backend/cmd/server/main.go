@@ -30,6 +30,7 @@ import (
 	infraPrinting "github.com/erp/backend/internal/infrastructure/printing"
 	"github.com/erp/backend/internal/infrastructure/printing/providers"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
+	infraStorage "github.com/erp/backend/internal/infrastructure/storage"
 	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/infrastructure/telemetry"
 	"github.com/erp/backend/internal/interfaces/http/handler"
@@ -260,6 +261,7 @@ func main() {
 	// Initialize repositories
 	productRepo := persistence.NewGormProductRepository(db.DB)
 	productUnitRepo := persistence.NewGormProductUnitRepository(db.DB)
+	productAttachmentRepo := persistence.NewGormProductAttachmentRepository(db.DB)
 	categoryRepo := persistence.NewGormCategoryRepository(db.DB)
 	customerRepo := persistence.NewGormCustomerRepository(db.DB)
 	customerLevelRepo := persistence.NewGormCustomerLevelRepository(db.DB)
@@ -349,6 +351,12 @@ func main() {
 	productService.SetInventoryRepo(inventoryItemRepo)
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
+
+	// Object storage service (using stub implementation until S3/RustFS is configured)
+	// TODO: Replace with real S3/RustFS implementation (ATTACH-INFRA-002)
+	objectStorageService := infraStorage.NewStubObjectStorage()
+	attachmentService := catalogapp.NewAttachmentService(productAttachmentRepo, productRepo, objectStorageService)
+
 	customerService := partnerapp.NewCustomerService(customerRepo)
 	customerService.SetAccountReceivableRepo(accountReceivableRepo)
 	customerService.SetSalesOrderRepo(salesOrderRepo)
@@ -681,6 +689,7 @@ func main() {
 	// Initialize HTTP handlers
 	productHandler := handler.NewProductHandler(productService)
 	productUnitHandler := handler.NewProductUnitHandler(productUnitService)
+	productAttachmentHandler := handler.NewProductAttachmentHandler(attachmentService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	customerHandler := handler.NewCustomerHandler(customerService)
 	customerLevelHandler := handler.NewCustomerLevelHandler(customerLevelService)
@@ -923,6 +932,17 @@ func main() {
 	catalogRoutes.POST("/categories/:id/activate", categoryHandler.Activate)
 	catalogRoutes.POST("/categories/:id/deactivate", categoryHandler.Deactivate)
 	catalogRoutes.DELETE("/categories/:id", categoryHandler.Delete)
+
+	// Product attachment routes
+	catalogRoutes.POST("/attachments/upload", productAttachmentHandler.InitiateUpload)
+	catalogRoutes.POST("/attachments/:id/confirm", productAttachmentHandler.ConfirmUpload)
+	catalogRoutes.GET("/attachments/:id", productAttachmentHandler.GetByID)
+	catalogRoutes.DELETE("/attachments/:id", productAttachmentHandler.Delete)
+	catalogRoutes.POST("/attachments/:id/main", productAttachmentHandler.SetAsMainImage)
+	// Product-scoped attachment routes
+	catalogRoutes.GET("/products/:id/attachments", productAttachmentHandler.ListByProduct)
+	catalogRoutes.GET("/products/:id/attachments/main", productAttachmentHandler.GetMainImage)
+	catalogRoutes.POST("/products/:id/attachments/reorder", productAttachmentHandler.Reorder)
 
 	// Partner domain (customers, suppliers, warehouses)
 	partnerRoutes := router.NewDomainGroup("partner", "/partner")

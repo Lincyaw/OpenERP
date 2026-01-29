@@ -12528,7 +12528,7 @@
       "注册路由到 router.go",
       "更新 main.go 初始化依赖"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-FE-001",
@@ -12576,6 +12576,29 @@
       "编写 ProductAttachmentUploader.test.tsx 前端测试",
       "创建 e2e/catalog/product-attachments.spec.ts E2E 测试",
       "验证上传、删除、设置主图完整流程"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-SEC-001",
+    "story": "修复商品附件安全漏洞 - SVG XSS",
+    "priority": "high",
+    "category": "security",
+    "requirements": [
+      "从 AllowedContentTypes 中移除 image/svg+xml 或实现 SVG 消毒",
+      "如需保留 SVG 支持，使用 Content-Disposition: attachment 强制下载",
+      "添加 SVG 注入测试用例"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-SEC-002",
+    "story": "修复商品附件信息泄露 - StorageKey 暴露",
+    "priority": "medium",
+    "category": "security",
+    "requirements": [
+      "从 InitiateUploadResponse 和 AttachmentResponse 中移除 StorageKey 字段",
+      "客户端只需使用预签名 URL，不需要知道存储路径"
     ],
     "passes": false
   }

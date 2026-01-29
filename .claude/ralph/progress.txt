@@ -40078,3 +40078,91 @@ Created the complete persistence layer for ProductAttachment entity:
 === Next Steps ===
 - ATTACH-BE-006: Implement HTTP handler for attachment endpoints
 - ATTACH-INFRA-002: Implement ObjectStorageService (S3/RustFS)
+
+2026-01-29 - Task ID: ATTACH-BE-006: Implement Product Attachment HTTP Handler
+
+=== Implementation Details ===
+
+1. **backend/internal/interfaces/http/handler/product_attachment_handler.go** (NEW - 425 lines)
+   - Created ProductAttachmentHandler struct with all CRUD operations
+   - Endpoints implemented:
+     - POST /catalog/attachments/upload - InitiateUpload (presigned URL workflow)
+     - POST /catalog/attachments/{id}/confirm - ConfirmUpload
+     - GET /catalog/attachments/{id} - GetByID
+     - GET /catalog/products/{id}/attachments - ListByProduct (paginated)
+     - GET /catalog/products/{id}/attachments/main - GetMainImage
+     - DELETE /catalog/attachments/{id} - Delete (soft delete)
+     - POST /catalog/attachments/{id}/main - SetAsMainImage
+     - POST /catalog/products/{id}/attachments/reorder - Reorder
+   - Full Swagger annotations for OpenAPI documentation
+   - Proper validation (max file size 100MB at handler level)
+   - Follows existing handler patterns (BaseHandler, getTenantID, HandleDomainError)
+
+2. **backend/internal/infrastructure/storage/stub.go** (NEW)
+   - Created stub ObjectStorageService implementation for development
+   - Returns placeholder presigned URLs
+   - ObjectExists always returns true (allows confirmation flow)
+   - Placeholder until ATTACH-INFRA-002 (S3/RustFS) is implemented
+
+3. **backend/internal/infrastructure/storage/stub_test.go** (NEW)
+   - Unit tests for stub storage implementation
+   - Tests for all 4 interface methods
+
+4. **backend/cmd/server/main.go** (MODIFIED)
+   - Added infraStorage import
+   - Initialized productAttachmentRepo
+   - Initialized objectStorageService (StubObjectStorage)
+   - Initialized attachmentService with dependencies
+   - Initialized productAttachmentHandler
+   - Registered all attachment routes under catalog domain
+
+=== Routes Registered ===
+
+| Method | Path | Handler | Description |
+|--------|------|---------|-------------|
+| POST | /catalog/attachments/upload | InitiateUpload | Start upload, get presigned URL |
+| POST | /catalog/attachments/:id/confirm | ConfirmUpload | Confirm upload completed |
+| GET | /catalog/attachments/:id | GetByID | Get single attachment |
+| DELETE | /catalog/attachments/:id | Delete | Soft delete attachment |
+| POST | /catalog/attachments/:id/main | SetAsMainImage | Promote to main image |
+| GET | /catalog/products/:id/attachments | ListByProduct | List with pagination |
+| GET | /catalog/products/:id/attachments/main | GetMainImage | Get product main image |
+| POST | /catalog/products/:id/attachments/reorder | Reorder | Update sort order |
+
+=== Design Decisions ===
+
+1. **Stub storage implementation**: Created placeholder until real S3/RustFS is ready (ATTACH-INFRA-002)
+2. **Max file size in handler**: Added 100MB validation at handler layer for early rejection
+3. **ProductID as string in request DTO**: Allows proper JSON binding before UUID parsing
+4. **Follows existing patterns**: Uses BaseHandler, getTenantID, getUserID, HandleDomainError
+
+=== Code Review Findings ===
+
+Issues identified during code review (logged as new PRD tasks):
+- ATTACH-SEC-001 (HIGH): SVG content type allowed - XSS vulnerability (in attachment_service.go)
+- ATTACH-SEC-002 (MEDIUM): StorageKey exposed in API responses - information disclosure (in attachment_dto.go)
+
+These issues are in the application layer (ATTACH-BE-005), not the HTTP handler layer.
+
+=== Verification ===
+
+- Go build passes
+- All existing tests pass
+- Storage stub tests pass (8 test cases)
+- Application service tests pass (33 test cases)
+- Handler tests pass
+
+=== Files Created/Modified ===
+
+- backend/internal/interfaces/http/handler/product_attachment_handler.go (NEW)
+- backend/internal/infrastructure/storage/stub.go (NEW)
+- backend/internal/infrastructure/storage/stub_test.go (NEW)
+- backend/cmd/server/main.go (MODIFIED)
+- .claude/ralph/plans/prd.json (MODIFIED - marked task complete, added security bugs)
+
+=== Next Steps ===
+
+- ATTACH-INFRA-002: Implement S3/RustFS ObjectStorageService
+- ATTACH-FE-001: Frontend attachment upload component
+- ATTACH-SEC-001: Fix SVG XSS vulnerability
+- ATTACH-SEC-002: Remove StorageKey from API responses
