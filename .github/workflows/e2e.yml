@@ -32,31 +32,29 @@ jobs:
 
       - name: Start test environment
         run: |
-          cd docker
-          docker compose -f docker-compose.test.yml up -d --build
+          # Use default docker-compose.yml with docker profile
+          docker compose --profile docker up -d --build
           # Wait for services to be healthy
           echo "Waiting for services to start..."
           sleep 30
 
       - name: Check service health
         run: |
-          cd docker
           # Check if PostgreSQL is ready
-          docker compose -f docker-compose.test.yml exec -T db pg_isready -U erp || exit 1
+          docker compose exec -T postgres pg_isready -U postgres || exit 1
           # Check if backend is responding
-          curl -sf http://localhost:8081/api/health || echo "Backend not ready yet, continuing..."
+          curl -sf http://localhost:8080/health || echo "Backend not ready yet, continuing..."
           # Check if frontend is responding
-          curl -sf http://localhost:3001 || echo "Frontend not ready yet, continuing..."
+          curl -sf http://localhost:3000 || echo "Frontend not ready yet, continuing..."
 
       - name: Load seed data
         run: |
-          cd docker
-          docker compose -f docker-compose.test.yml exec -T db psql -U erp -d erp_db -f /docker-entrypoint-initdb.d/seed-data.sql || true
+          docker compose exec -T postgres psql -U postgres -d erp_dev -f /docker-entrypoint-initdb.d/seed-data.sql || true
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -72,7 +70,7 @@ jobs:
         working-directory: frontend
         run: npm run e2e:ci
         env:
-          E2E_BASE_URL: http://localhost:3001
+          E2E_BASE_URL: http://localhost:3000
           CI: true
 
       - name: Upload test results
@@ -94,8 +92,7 @@ jobs:
       - name: Stop test environment
         if: always()
         run: |
-          cd docker
-          docker compose -f docker-compose.test.yml down -v
+          docker compose --profile docker down -v
 
   # Summary job for PR status
   e2e-summary:

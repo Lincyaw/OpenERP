@@ -373,7 +373,9 @@ export default function PurchaseOrdersPage() {
         render: (orderNumber: unknown, record: PurchaseOrder) => (
           <span
             className="order-number table-cell-link"
-            onClick={() => record.id && navigate(`/trade/purchase/${record.id}`)}
+            onClick={() => {
+              if (record.id) navigate(`/trade/purchase/${record.id}`)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -489,7 +491,7 @@ export default function PurchaseOrdersPage() {
         },
       },
     ],
-    [t, formatCurrency, formatDate, formatDateTime]
+    [t, formatCurrency, formatDate, formatDateTime, navigate]
   )
 
   // Table row actions

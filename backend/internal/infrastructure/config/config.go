@@ -505,7 +505,7 @@ func applyDefaults(cfg *Config) {
 
 	// Telemetry defaults
 	if cfg.Telemetry.CollectorEndpoint == "" {
-		cfg.Telemetry.CollectorEndpoint = "localhost:4317" // Default gRPC endpoint
+		cfg.Telemetry.CollectorEndpoint = "localhost:14317" // Default gRPC endpoint
 	}
 	if cfg.Telemetry.SamplingRatio == 0 {
 		cfg.Telemetry.SamplingRatio = 1.0 // 100% in development

@@ -340,7 +340,9 @@ export default function StockListPage() {
         render: (productId: unknown, record: InventoryItem) => (
           <span
             className="product-name-cell table-cell-link"
-            onClick={() => record.id && navigate(`/inventory/stock/${record.id}`)}
+            onClick={() => {
+              if (record.id) navigate(`/inventory/stock/${record.id}`)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -445,7 +447,7 @@ export default function StockListPage() {
         render: (date: unknown) => formatDate(date as string | undefined, 'dateTime'),
       },
     ],
-    [getWarehouseName, getProductName, t, formatCurrency, formatDate]
+    [getWarehouseName, getProductName, t, formatCurrency, formatDate, navigate]
   )
 
   // Table row actions

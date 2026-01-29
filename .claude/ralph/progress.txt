@@ -37092,3 +37092,63 @@ Category: validation
 - All 29 E2E tests pass consistently
 - Tests stable across 3 consecutive runs
 - Full coverage of acceptance criteria
+
+2026-01-29 - UX-001: Implement clickable primary column links in all tables
+
+=== Implementation Details ===
+- Added shared CSS class `.table-cell-link` in DataTable.css for consistent styling
+- Updated 13 list pages to make primary identifiers clickable:
+  1. Customers.tsx - Customer name links to /partner/customers/{id}
+  2. Suppliers.tsx - Supplier name links to /partner/suppliers/{id}
+  3. Products.tsx - Product name links to /catalog/products/{id}
+  4. Warehouses.tsx - Warehouse name links to /partner/warehouses/{id}
+  5. SalesOrders.tsx - Order number links to /trade/sales/{id}
+  6. PurchaseOrders.tsx - Order number links to /trade/purchase/{id}
+  7. SalesReturns.tsx - Return number links to /trade/sales-returns/{id}
+  8. PurchaseReturns.tsx - Return number links to /trade/purchase-returns/{id}
+  9. StockList.tsx - Product name links to /inventory/stock/{id}
+  10. StockTakingList.tsx - Taking number links to /inventory/stock-taking/{id}
+  11. Receivables.tsx - Receivable number links to /finance/receivables/{id}
+  12. Payables.tsx - Payable number links to /finance/payables/{id}
+
+- Styling features:
+  - Primary color (--semi-color-primary) for link text
+  - Underline appears on hover
+  - Medium font weight for emphasis
+  - Focus visible outline for keyboard navigation
+
+- Accessibility:
+  - role="link" for screen readers
+  - tabIndex=0 for keyboard focusability
+  - onKeyDown handler for Enter/Space key navigation
+  - :focus-visible outline with proper contrast
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: All modified files pass linting
+- No runtime errors expected (pattern follows existing navigation handlers)
+
+=== Files Modified ===
+- frontend/src/components/common/table/DataTable.css (added .table-cell-link class)
+- frontend/src/pages/partner/Customers.tsx
+- frontend/src/pages/partner/Suppliers.tsx
+- frontend/src/pages/partner/Warehouses.tsx
+- frontend/src/pages/catalog/Products.tsx
+- frontend/src/pages/trade/SalesOrders.tsx
+- frontend/src/pages/trade/PurchaseOrders.tsx
+- frontend/src/pages/trade/SalesReturns.tsx
+- frontend/src/pages/trade/PurchaseReturns.tsx
+- frontend/src/pages/inventory/StockList.tsx
+- frontend/src/pages/inventory/StockTakingList.tsx
+- frontend/src/pages/finance/Receivables.tsx
+- frontend/src/pages/finance/Payables.tsx
+
+=== Design Decisions ===
+- Used span elements with role="link" instead of <a> tags to avoid default browser link behaviors
+- onClick handler uses conditional block `if (record.id)` instead of logical AND to satisfy ESLint no-unused-expressions rule
+- Added navigate to useMemo dependencies to satisfy exhaustive-deps rule
+- Kept existing class names (e.g., customer-name, order-number) and added table-cell-link as additional class
+
+=== Next Steps ===
+- Consider adding similar clickable links in detail pages for related entities
+- May want to add visual indicator icons for external navigation

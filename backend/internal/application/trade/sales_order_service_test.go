@@ -172,20 +172,22 @@ func TestSalesOrderService_Create(t *testing.T) {
 		service := NewSalesOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testTenantID).Return(testOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testTenantID).Return(testOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
 
 		req := CreateSalesOrderRequest{
 			CustomerID:   testCustomerID,
 			CustomerName: testCustomerName,
 			Items: []CreateSalesOrderItemInput{
 				{
-					ProductID:   testProductID,
-					ProductName: testProductName,
-					ProductCode: testProductCode,
-					Unit:        testUnit,
-					Quantity:    decimal.NewFromInt(5),
-					UnitPrice:   decimal.NewFromInt(100),
+					ProductID:      testProductID,
+					ProductName:    testProductName,
+					ProductCode:    testProductCode,
+					Unit:           testUnit,
+					BaseUnit:       testUnit,
+					ConversionRate: decimal.NewFromInt(1),
+					Quantity:       decimal.NewFromInt(5),
+					UnitPrice:      decimal.NewFromInt(100),
 				},
 			},
 		}
@@ -206,8 +208,8 @@ func TestSalesOrderService_Create(t *testing.T) {
 		service := NewSalesOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testTenantID).Return(testOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testTenantID).Return(testOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
 
 		discount := decimal.NewFromInt(50)
 		req := CreateSalesOrderRequest{
@@ -216,12 +218,14 @@ func TestSalesOrderService_Create(t *testing.T) {
 			Discount:     &discount,
 			Items: []CreateSalesOrderItemInput{
 				{
-					ProductID:   testProductID,
-					ProductName: testProductName,
-					ProductCode: testProductCode,
-					Unit:        testUnit,
-					Quantity:    decimal.NewFromInt(5),
-					UnitPrice:   decimal.NewFromInt(100),
+					ProductID:      testProductID,
+					ProductName:    testProductName,
+					ProductCode:    testProductCode,
+					Unit:           testUnit,
+					BaseUnit:       testUnit,
+					ConversionRate: decimal.NewFromInt(1),
+					Quantity:       decimal.NewFromInt(5),
+					UnitPrice:      decimal.NewFromInt(100),
 				},
 			},
 		}
@@ -240,8 +244,8 @@ func TestSalesOrderService_Create(t *testing.T) {
 		service := NewSalesOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testTenantID).Return(testOrderNumber, nil)
-		repo.On("Save", ctx, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
+		repo.On("GenerateOrderNumber", mock.Anything, testTenantID).Return(testOrderNumber, nil)
+		repo.On("Save", mock.Anything, mock.AnythingOfType("*trade.SalesOrder")).Return(nil)
 
 		warehouseID := testWarehouseID
 		req := CreateSalesOrderRequest{
@@ -250,12 +254,14 @@ func TestSalesOrderService_Create(t *testing.T) {
 			WarehouseID:  &warehouseID,
 			Items: []CreateSalesOrderItemInput{
 				{
-					ProductID:   testProductID,
-					ProductName: testProductName,
-					ProductCode: testProductCode,
-					Unit:        testUnit,
-					Quantity:    decimal.NewFromInt(1),
-					UnitPrice:   decimal.NewFromInt(100),
+					ProductID:      testProductID,
+					ProductName:    testProductName,
+					ProductCode:    testProductCode,
+					Unit:           testUnit,
+					BaseUnit:       testUnit,
+					ConversionRate: decimal.NewFromInt(1),
+					Quantity:       decimal.NewFromInt(1),
+					UnitPrice:      decimal.NewFromInt(100),
 				},
 			},
 		}
@@ -274,7 +280,7 @@ func TestSalesOrderService_Create(t *testing.T) {
 		service := NewSalesOrderService(repo)
 		ctx := context.Background()
 
-		repo.On("GenerateOrderNumber", ctx, testTenantID).Return("", errors.New("db error"))
+		repo.On("GenerateOrderNumber", mock.Anything, testTenantID).Return("", errors.New("db error"))
 
 		req := CreateSalesOrderRequest{
 			CustomerID:   testCustomerID,

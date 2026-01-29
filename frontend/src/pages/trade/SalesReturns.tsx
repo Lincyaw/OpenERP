@@ -436,7 +436,9 @@ export default function SalesReturnsPage() {
         render: (returnNumber: unknown, record: SalesReturn) => (
           <span
             className="return-number table-cell-link"
-            onClick={() => record.id && navigate(`/trade/sales-returns/${record.id}`)}
+            onClick={() => {
+              if (record.id) navigate(`/trade/sales-returns/${record.id}`)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -512,7 +514,7 @@ export default function SalesReturnsPage() {
         },
       },
     ],
-    [t, formatCurrency, formatDate]
+    [t, formatCurrency, formatDate, navigate]
   )
 
   // Table row actions

@@ -316,7 +316,9 @@ export default function ReceivablesPage() {
           <div className="receivable-number-cell">
             <span
               className="receivable-number table-cell-link"
-              onClick={() => record.id && navigate(`/finance/receivables/${record.id}`)}
+              onClick={() => {
+                if (record.id) navigate(`/finance/receivables/${record.id}`)
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
@@ -423,7 +425,7 @@ export default function ReceivablesPage() {
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    [t]
+    [t, navigate]
   )
 
   // Table row actions

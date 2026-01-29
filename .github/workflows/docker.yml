@@ -59,8 +59,3 @@ jobs:
         run: |
           docker compose -f docker-compose.yml config --quiet
           echo "OK: docker-compose.yml is valid"
-
-      - name: Validate docker-compose.test.yml
-        run: |
-          docker compose -f docker-compose.test.yml config --quiet
-          echo "OK: docker-compose.test.yml is valid"

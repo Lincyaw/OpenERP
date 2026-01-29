@@ -255,7 +255,9 @@ export default function StockTakingListPage() {
         render: (number: unknown, record: StockTakingItem) => (
           <span
             className="taking-number table-cell-link"
-            onClick={() => record.id && navigate(`/inventory/stock-taking/${record.id}`)}
+            onClick={() => {
+              if (record.id) navigate(`/inventory/stock-taking/${record.id}`)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -338,7 +340,7 @@ export default function StockTakingListPage() {
         render: (date: unknown) => formatDate(date as string | undefined, 'dateTime'),
       },
     ],
-    [t, formatDate, formatCurrency]
+    [t, formatDate, formatCurrency, navigate]
   )
 
   // Table row actions

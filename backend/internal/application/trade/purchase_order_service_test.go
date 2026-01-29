@@ -215,7 +215,7 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 		assert.Equal(t, testPOOrderNumber, result.OrderNumber)
 		assert.Equal(t, testSupplierName, result.SupplierName)
 		assert.Equal(t, 1, result.ItemCount)
-		assert.Equal(t, "DRAFT", result.Status)
+		assert.Equal(t, "draft", result.Status)
 		repo.AssertExpectations(t)
 	})
 
@@ -403,7 +403,7 @@ func TestPurchaseOrderService_ListPendingReceipt(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, len(result))
 		assert.Equal(t, int64(1), total)
-		assert.Equal(t, "CONFIRMED", result[0].Status)
+		assert.Equal(t, "confirmed", result[0].Status)
 		repo.AssertExpectations(t)
 	})
 }
@@ -417,15 +417,17 @@ func TestPurchaseOrderService_AddItem(t *testing.T) {
 
 		order := createTestPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		req := AddPurchaseOrderItemRequest{
-			ProductID:   testPOProductID,
-			ProductName: testPOProductName,
-			ProductCode: testPOProductCode,
-			Unit:        testPOUnit,
-			Quantity:    decimal.NewFromInt(5),
-			UnitCost:    decimal.NewFromInt(100),
+			ProductID:      testPOProductID,
+			ProductName:    testPOProductName,
+			ProductCode:    testPOProductCode,
+			Unit:           testPOUnit,
+			BaseUnit:       testPOUnit,
+			Quantity:       decimal.NewFromInt(5),
+			ConversionRate: decimal.NewFromInt(1),
+			UnitCost:       decimal.NewFromInt(100),
 		}
 
 		result, err := service.AddItem(ctx, testPOTenantID, order.ID, req)
@@ -446,12 +448,14 @@ func TestPurchaseOrderService_AddItem(t *testing.T) {
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
 
 		req := AddPurchaseOrderItemRequest{
-			ProductID:   uuid.New(),
-			ProductName: "New Product",
-			ProductCode: "NEW-001",
-			Unit:        testPOUnit,
-			Quantity:    decimal.NewFromInt(5),
-			UnitCost:    decimal.NewFromInt(100),
+			ProductID:      uuid.New(),
+			ProductName:    "New Product",
+			ProductCode:    "NEW-001",
+			Unit:           testPOUnit,
+			BaseUnit:       testPOUnit,
+			Quantity:       decimal.NewFromInt(5),
+			ConversionRate: decimal.NewFromInt(1),
+			UnitCost:       decimal.NewFromInt(100),
 		}
 
 		result, err := service.AddItem(ctx, testPOTenantID, order.ID, req)
@@ -471,13 +475,13 @@ func TestPurchaseOrderService_Confirm(t *testing.T) {
 
 		order := createTestPurchaseOrderWithItem()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		result, err := service.Confirm(ctx, testPOTenantID, order.ID, ConfirmPurchaseOrderRequest{})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CONFIRMED", result.Status)
+		assert.Equal(t, "confirmed", result.Status)
 		assert.NotNil(t, result.ConfirmedAt)
 		repo.AssertExpectations(t)
 	})
@@ -490,13 +494,13 @@ func TestPurchaseOrderService_Confirm(t *testing.T) {
 		order := createTestPurchaseOrderWithItem()
 		warehouseID := testPOWarehouseID
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		result, err := service.Confirm(ctx, testPOTenantID, order.ID, ConfirmPurchaseOrderRequest{WarehouseID: &warehouseID})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CONFIRMED", result.Status)
+		assert.Equal(t, "confirmed", result.Status)
 		assert.NotNil(t, result.WarehouseID)
 		assert.Equal(t, warehouseID, *result.WarehouseID)
 		repo.AssertExpectations(t)
@@ -527,7 +531,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 
 		order := createConfirmedPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder"), mock.AnythingOfType("[]shared.DomainEvent")).Return(nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -544,7 +548,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.True(t, result.IsFullyReceived)
-		assert.Equal(t, "COMPLETED", result.Order.Status)
+		assert.Equal(t, "completed", result.Order.Status)
 		assert.Equal(t, 1, len(result.ReceivedItems))
 		assert.Equal(t, decimal.NewFromInt(10), result.ReceivedItems[0].Quantity)
 		assert.Equal(t, "BATCH-001", result.ReceivedItems[0].BatchNumber)
@@ -558,7 +562,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 
 		order := createConfirmedPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder"), mock.AnythingOfType("[]shared.DomainEvent")).Return(nil)
 
 		req := ReceivePurchaseOrderRequest{
 			Items: []ReceiveItemInput{
@@ -574,7 +578,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 		assert.False(t, result.IsFullyReceived)
-		assert.Equal(t, "PARTIAL_RECEIVED", result.Order.Status)
+		assert.Equal(t, "partial_received", result.Order.Status)
 		assert.True(t, result.Order.ReceiveProgress.Equal(decimal.NewFromInt(50))) // 50%
 		repo.AssertExpectations(t)
 	})
@@ -586,7 +590,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 
 		order := createConfirmedPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder"), mock.AnythingOfType("[]shared.DomainEvent")).Return(nil)
 
 		overrideCost := decimal.NewFromInt(120) // Different from original 100
 		req := ReceivePurchaseOrderRequest{
@@ -614,7 +618,7 @@ func TestPurchaseOrderService_Receive(t *testing.T) {
 
 		order := createConfirmedPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLockAndEvents", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder"), mock.AnythingOfType("[]shared.DomainEvent")).Return(nil)
 
 		expiryDate := time.Now().AddDate(1, 0, 0) // 1 year from now
 		req := ReceivePurchaseOrderRequest{
@@ -725,13 +729,13 @@ func TestPurchaseOrderService_Cancel(t *testing.T) {
 
 		order := createTestPurchaseOrderWithItem()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		result, err := service.Cancel(ctx, testPOTenantID, order.ID, CancelPurchaseOrderRequest{Reason: "Supplier issue"})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CANCELLED", result.Status)
+		assert.Equal(t, "cancelled", result.Status)
 		assert.Equal(t, "Supplier issue", result.CancelReason)
 		assert.NotNil(t, result.CancelledAt)
 		repo.AssertExpectations(t)
@@ -744,13 +748,13 @@ func TestPurchaseOrderService_Cancel(t *testing.T) {
 
 		order := createConfirmedPurchaseOrder()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		result, err := service.Cancel(ctx, testPOTenantID, order.ID, CancelPurchaseOrderRequest{Reason: "Price changed"})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Equal(t, "CANCELLED", result.Status)
+		assert.Equal(t, "cancelled", result.Status)
 		repo.AssertExpectations(t)
 	})
 
@@ -878,7 +882,7 @@ func TestPurchaseOrderService_Update(t *testing.T) {
 
 		order := createTestPurchaseOrderWithItem()
 		repo.On("FindByIDForTenant", mock.Anything, testPOTenantID, order.ID).Return(order, nil)
-		repo.On("SaveWithLock", mock.Anything, order).Return(nil)
+		repo.On("SaveWithLock", mock.Anything, mock.AnythingOfType("*trade.PurchaseOrder")).Return(nil)
 
 		warehouseID := testPOWarehouseID
 		newRemark := "Updated remark"

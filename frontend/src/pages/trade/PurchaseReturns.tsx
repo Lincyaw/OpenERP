@@ -456,7 +456,9 @@ export default function PurchaseReturnsPage() {
         render: (returnNumber: unknown, record: PurchaseReturn) => (
           <span
             className="return-number table-cell-link"
-            onClick={() => record.id && navigate(`/trade/purchase-returns/${record.id}`)}
+            onClick={() => {
+              if (record.id) navigate(`/trade/purchase-returns/${record.id}`)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -561,7 +563,7 @@ export default function PurchaseReturnsPage() {
         },
       },
     ],
-    [t, formatCurrency, formatDate, formatDateTime]
+    [t, formatCurrency, formatDate, formatDateTime, navigate]
   )
 
   // Table row actions

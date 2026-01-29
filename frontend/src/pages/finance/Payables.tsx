@@ -316,7 +316,9 @@ export default function PayablesPage() {
           <div className="payable-number-cell">
             <span
               className="payable-number table-cell-link"
-              onClick={() => record.id && navigate(`/finance/payables/${record.id}`)}
+              onClick={() => {
+                if (record.id) navigate(`/finance/payables/${record.id}`)
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
@@ -421,7 +423,7 @@ export default function PayablesPage() {
         render: (date: unknown) => formatDate(date as string | undefined),
       },
     ],
-    [t]
+    [t, navigate]
   )
 
   // Table row actions

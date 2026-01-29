@@ -529,7 +529,7 @@ export default function SalesOrdersPage() {
         },
       },
     ],
-    [t, formatCurrency, formatDate, formatDateTime]
+    [t, formatCurrency, formatDate, formatDateTime, navigate]
   )
 
   // Table row actions
