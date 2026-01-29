@@ -443,8 +443,9 @@ func (e *Executor) doRequest(ctx context.Context, step Step, workflowCtx map[str
 	}
 	defer resp.Body.Close()
 
-	// Read response body
-	bodyBytes, err := io.ReadAll(resp.Body)
+	// Read response body with size limit to prevent memory exhaustion
+	const maxResponseSize = 10 * 1024 * 1024 // 10 MB
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize))
 	if err != nil {
 		return resp.StatusCode, "", fmt.Errorf("reading response: %w", err)
 	}
@@ -502,6 +503,12 @@ func navigatePath(data any, path string) (any, error) {
 	segments := parsePathSegments(path)
 	if len(segments) == 0 {
 		return data, nil
+	}
+
+	// Limit path depth to prevent abuse with deeply nested structures
+	const maxPathDepth = 20
+	if len(segments) > maxPathDepth {
+		return nil, fmt.Errorf("JSONPath depth limit exceeded (max %d segments)", maxPathDepth)
 	}
 
 	current := data

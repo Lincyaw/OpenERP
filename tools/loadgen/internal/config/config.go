@@ -11,6 +11,7 @@ import (
 	"github.com/example/erp/tools/loadgen/internal/circuit"
 	"github.com/example/erp/tools/loadgen/internal/loadctrl"
 	"github.com/example/erp/tools/loadgen/internal/warmup"
+	"github.com/example/erp/tools/loadgen/internal/workflow"
 	"gopkg.in/yaml.v3"
 )
 
@@ -87,6 +88,10 @@ type Config struct {
 
 	// InferenceConfig configures the semantic type inference engine.
 	InferenceConfig *InferenceConfig `yaml:"inference,omitempty" json:"inference,omitempty"`
+
+	// Workflows defines business workflows for sequential API call execution.
+	// Workflows are executed as complete sequences, with parameter passing between steps.
+	Workflows map[string]workflow.Definition `yaml:"workflows,omitempty" json:"workflows,omitempty"`
 }
 
 // InferenceConfig configures the semantic type inference engine.
@@ -447,6 +452,13 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("warmup config: %w", err)
 	}
 
+	// Validate workflows
+	for name, def := range c.Workflows {
+		if err := def.Validate(name); err != nil {
+			return fmt.Errorf("workflow config: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -488,6 +500,12 @@ func (c *Config) ApplyDefaults() {
 
 	// Apply warmup defaults
 	c.Warmup.ApplyDefaults()
+
+	// Apply workflow defaults
+	for name, def := range c.Workflows {
+		def.ApplyDefaults(name)
+		c.Workflows[name] = def
+	}
 
 	// Apply output defaults
 	if c.Output.ReportInterval == 0 {
@@ -564,6 +582,42 @@ func (c *Config) TotalWeight() int {
 	for _, ep := range c.Endpoints {
 		if !ep.Disabled {
 			total += ep.Weight
+		}
+	}
+	return total
+}
+
+// GetWorkflowConfig returns a workflow.Config from this config's workflows.
+func (c *Config) GetWorkflowConfig() *workflow.Config {
+	if len(c.Workflows) == 0 {
+		return nil
+	}
+	return &workflow.Config{
+		Workflows: c.Workflows,
+	}
+}
+
+// GetEnabledWorkflows returns all non-disabled workflows.
+func (c *Config) GetEnabledWorkflows() map[string]workflow.Definition {
+	result := make(map[string]workflow.Definition)
+	for name, def := range c.Workflows {
+		if !def.Disabled {
+			result[name] = def
+		}
+	}
+	return result
+}
+
+// WorkflowTotalWeight returns the sum of all enabled workflow weights.
+func (c *Config) WorkflowTotalWeight() int {
+	total := 0
+	for _, def := range c.Workflows {
+		if !def.Disabled {
+			weight := def.Weight
+			if weight <= 0 {
+				weight = 1
+			}
+			total += weight
 		}
 	}
 	return total

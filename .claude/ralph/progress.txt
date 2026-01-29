@@ -37559,3 +37559,84 @@ Created new StatusFlow component and applied DetailPageHeader + StatusFlow to al
 - Meaningful error responses returned
 - No crashes or hangs observed
 
+
+================================================================================
+2026-01-29 - LOADGEN-023: Workflow Support - COMPLETE
+================================================================================
+
+=== Task Summary ===
+Implemented comprehensive workflow support for the load generator, enabling 
+sequential execution of business processes with parameter passing between steps.
+
+=== Implementation Details ===
+
+1. Config Integration (internal/config/config.go):
+   - Added Workflows field to main Config struct (map[string]workflow.Definition)
+   - Integrated workflow validation in Config.Validate()
+   - Applied workflow defaults in Config.ApplyDefaults()
+   - Added helper methods: GetWorkflowConfig(), GetEnabledWorkflows(), WorkflowTotalWeight()
+
+2. Workflow Types (internal/workflow/types.go) - Pre-existing, enhanced:
+   - Config: Container for workflow definitions
+   - Definition: Workflow with name, description, weight, timeout, steps
+   - Step: Individual API call with endpoint, body, extract, conditions
+   - Validation: Comprehensive validation for endpoints, methods, JSONPath expressions
+   - Placeholder support: {variable_name} substitution in paths and bodies
+
+3. Workflow Executor (internal/workflow/executor.go) - Pre-existing, tested:
+   - Sequential step execution with context timeout
+   - Value extraction from JSON responses using JSONPath
+   - Placeholder replacement in endpoints and bodies
+   - Retry support with configurable delay
+   - Condition evaluation (skip steps based on context)
+   - Callbacks for workflow/step start/complete events
+   - Statistics tracking (success rate, latency)
+
+4. Workflow Selector (internal/workflow/selector.go) - Pre-existing, tested:
+   - Weighted random selection using binary search
+   - Thread-safe operations with RWMutex
+   - Dynamic workflow updates
+
+5. Tests Created:
+   - internal/workflow/types_test.go: Config/Definition/Step validation tests
+   - internal/workflow/executor_test.go: Comprehensive executor tests including
+     sales_cycle acceptance test (100% success rate verification)
+   - internal/workflow/selector_test.go: Selector weighted selection tests
+   - Coverage: 91.8% (exceeds 80% requirement)
+
+6. Example Workflows (configs/erp.yaml):
+   - sales_cycle: Create order → Add item → Confirm → Ship (weight: 10)
+   - purchase_cycle: Create PO → Add item → Confirm (weight: 5)
+   - quick_order_check: Create order → Get order (weight: 15)
+
+=== Key Files Modified/Created ===
+- tools/loadgen/internal/config/config.go (modified - workflow integration)
+- tools/loadgen/internal/workflow/types_test.go (created - 350+ lines)
+- tools/loadgen/internal/workflow/executor_test.go (created - 1000+ lines)
+- tools/loadgen/internal/workflow/selector_test.go (created - 330+ lines)
+- tools/loadgen/configs/erp.yaml (modified - added 3 example workflows)
+
+=== Acceptance Criteria Verification ===
+✅ 解析 workflows 配置 - Config struct includes Workflows map
+✅ 实现业务流程定义：steps 序列执行 - Executor.Execute() handles step sequence
+✅ 支持步骤间参数传递（extract 配置) - extractValues() + placeholder replacement
+✅ 支持流程级权重（workflow.weight) - Selector implements weighted selection
+✅ 实现销售周期示例 - sales_cycle workflow in erp.yaml
+✅ 编写测试验证流程执行 - 91.8% test coverage
+✅ sales_cycle 流程 100% 成功率 - TestExecutor_Execute_SalesCycle passes
+
+=== Test Results ===
+- All workflow tests pass (42 tests)
+- Coverage: 91.8% of statements
+- sales_cycle acceptance test: 100% success rate
+
+=== Design Decisions ===
+1. Used JSONPath for value extraction (simple subset, no external dependency)
+2. {variable_name} placeholder syntax for template substitution
+3. Workflows integrated into main Config rather than separate config file
+4. Selector uses cryptographic random for weighted selection (secure)
+
+=== Next Steps ===
+- LOADGEN-024: JSON Report Output
+- Consider adding workflow-specific metrics to console output
+- Consider workflow chaining (one workflow triggers another)

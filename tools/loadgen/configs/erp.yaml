@@ -1019,3 +1019,118 @@ scenarios:
       - "reports.finance.profitLoss"
     weight: 15
     sequential: false
+
+# ============================================================================
+# WORKFLOWS
+# ============================================================================
+# Business workflows define complete sequences of API calls with parameter
+# passing between steps. Unlike scenarios (which randomly select endpoints),
+# workflows execute all steps in order as a complete business process.
+#
+# Features:
+# - Sequential step execution
+# - Value extraction from responses (extract)
+# - Placeholder replacement in paths and bodies
+# - Weighted selection for load distribution
+# - Support for conditions, retries, and failure handling
+# ============================================================================
+
+workflows:
+  # Sales Order Lifecycle Workflow
+  # Demonstrates complete sales order flow: create → add items → confirm → ship
+  sales_cycle:
+    description: "Complete sales order lifecycle: create order, add item, confirm, and ship"
+    weight: 10
+    timeout: 60s
+    steps:
+      - name: create_order
+        endpoint: "POST /trade/sales-orders"
+        body: |
+          {
+            "customer_id": "{customer_id}",
+            "warehouse_id": "{warehouse_id}",
+            "remark": "Order created by load generator workflow"
+          }
+        expectedStatus: 201
+        extract:
+          order_id: "$.data.id"
+          order_number: "$.data.order_number"
+
+      - name: add_item
+        endpoint: "POST /trade/sales-orders/{order_id}/items"
+        body: |
+          {
+            "product_id": "{product_id}",
+            "quantity": 5,
+            "unit_price": 99.99,
+            "remark": "Item added by workflow"
+          }
+        expectedStatus: 201
+        extract:
+          item_id: "$.data.id"
+
+      - name: confirm_order
+        endpoint: "POST /trade/sales-orders/{order_id}/confirm"
+        expectedStatus: 200
+
+      - name: ship_order
+        endpoint: "POST /trade/sales-orders/{order_id}/ship"
+        expectedStatus: 200
+
+  # Purchase Order Lifecycle Workflow
+  purchase_cycle:
+    description: "Complete purchase order lifecycle: create order, add item, confirm, receive"
+    weight: 5
+    timeout: 60s
+    steps:
+      - name: create_purchase_order
+        endpoint: "POST /trade/purchase-orders"
+        body: |
+          {
+            "supplier_id": "{supplier_id}",
+            "warehouse_id": "{warehouse_id}",
+            "remark": "Purchase order created by load generator workflow"
+          }
+        expectedStatus: 201
+        extract:
+          po_id: "$.data.id"
+          po_number: "$.data.order_number"
+
+      - name: add_purchase_item
+        endpoint: "POST /trade/purchase-orders/{po_id}/items"
+        body: |
+          {
+            "product_id": "{product_id}",
+            "quantity": 20,
+            "unit_price": 49.99,
+            "remark": "Item added by workflow"
+          }
+        expectedStatus: 201
+        extract:
+          po_item_id: "$.data.id"
+
+      - name: confirm_purchase_order
+        endpoint: "POST /trade/purchase-orders/{po_id}/confirm"
+        expectedStatus: 200
+
+  # Quick Order Check Workflow
+  quick_order_check:
+    description: "Quick workflow to create and check an order without full lifecycle"
+    weight: 15
+    timeout: 30s
+    steps:
+      - name: create_order
+        endpoint: "POST /trade/sales-orders"
+        body: |
+          {
+            "customer_id": "{customer_id}",
+            "warehouse_id": "{warehouse_id}",
+            "remark": "Quick check order"
+          }
+        expectedStatus: 201
+        extract:
+          order_id: "$.data.id"
+
+      - name: get_order
+        endpoint: "GET /trade/sales-orders/{order_id}"
+        expectedStatus: 200

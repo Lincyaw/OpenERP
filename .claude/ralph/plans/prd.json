@@ -7987,7 +7987,7 @@
       "编写测试验证流程执行",
       "验收标准：sales_cycle 流程 100% 成功率"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-024",
