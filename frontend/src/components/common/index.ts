@@ -35,3 +35,9 @@ export {
   type DetailPageHeaderMetric,
   type DetailPageHeaderAction,
 } from './DetailPageHeader'
+export {
+  StatusFlow,
+  type StatusFlowProps,
+  type StatusFlowStep,
+  type StatusFlowStepState,
+} from './StatusFlow'

@@ -4,26 +4,22 @@ import {
   Typography,
   Descriptions,
   Table,
-  Tag,
   Toast,
-  Button,
-  Space,
-  Spin,
   Modal,
   Empty,
-  Timeline,
   TextArea,
 } from '@douyinfe/semi-ui-19'
-import {
-  IconArrowLeft,
-  IconEdit,
-  IconTick,
-  IconClose,
-  IconSend,
-  IconBox,
-} from '@douyinfe/semi-icons'
+import { IconEdit, IconTick, IconClose, IconSend, IconBox, IconPrinter } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  StatusFlow,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+  type StatusFlowStep,
+} from '@/components/common'
 import { PrintButton } from '@/components/printing'
 import {
   getPurchaseReturnById,
@@ -40,20 +36,20 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { safeToFixed } from '@/utils'
 import './PurchaseReturnDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<
   string,
-  'blue' | 'cyan' | 'green' | 'grey' | 'red' | 'orange' | 'amber' | 'violet'
+  'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
 > = {
-  DRAFT: 'blue',
-  PENDING: 'orange',
-  APPROVED: 'cyan',
-  REJECTED: 'red',
-  SHIPPED: 'violet',
-  COMPLETED: 'green',
-  CANCELLED: 'grey',
+  DRAFT: 'default',
+  PENDING: 'warning',
+  APPROVED: 'info',
+  REJECTED: 'danger',
+  SHIPPED: 'primary',
+  COMPLETED: 'success',
+  CANCELLED: 'danger',
 }
 
 // Status key mapping for i18n
@@ -71,9 +67,9 @@ const STATUS_KEYS: Record<string, string> = {
  * Purchase Return Detail Page
  *
  * Features:
- * - Display complete return information
+ * - Display complete return information using DetailPageHeader
+ * - Display return status flow using StatusFlow component
  * - Display return line items
- * - Display status change timeline
  * - Status action buttons (submit, approve, reject, ship, complete, cancel)
  */
 export default function PurchaseReturnDetailPage() {
@@ -250,6 +246,253 @@ export default function PurchaseReturnDetailPage() {
     }
   }, [returnData, navigate])
 
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!returnData) return undefined
+    const status = returnData.status || 'DRAFT'
+    const statusKey = STATUS_KEYS[status] || 'draft'
+    return {
+      label: t(`purchaseReturn.status.${statusKey}`),
+      variant: STATUS_VARIANTS[status] || 'default',
+    }
+  }, [returnData, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!returnData) return []
+    return [
+      {
+        label: t('purchaseReturnDetail.basicInfo.supplierName'),
+        value: returnData.supplier_name || '-',
+      },
+      {
+        label: t('purchaseReturnDetail.basicInfo.orderNumber'),
+        value: returnData.purchase_order_number || '-',
+      },
+      {
+        label: t('purchaseReturnDetail.basicInfo.itemCount'),
+        value: `${returnData.item_count || 0} ${t('salesOrder.unit')}`,
+      },
+      {
+        label: t('purchaseReturnDetail.amount.totalRefund'),
+        value: formatCurrency(returnData.total_refund || 0),
+        variant: 'primary',
+      },
+    ]
+  }, [returnData, t, formatCurrency])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!returnData) return undefined
+    const status = returnData.status || 'DRAFT'
+
+    if (status === 'DRAFT') {
+      return {
+        key: 'submit',
+        label: t('purchaseReturn.actions.submit'),
+        icon: <IconSend />,
+        type: 'primary',
+        onClick: handleSubmit,
+        loading: actionLoading,
+      }
+    }
+    if (status === 'PENDING') {
+      return {
+        key: 'approve',
+        label: t('purchaseReturn.actions.approve'),
+        icon: <IconTick />,
+        type: 'primary',
+        onClick: () => setApproveModalVisible(true),
+        loading: actionLoading,
+      }
+    }
+    if (status === 'APPROVED') {
+      return {
+        key: 'ship',
+        label: t('purchaseReturn.actions.ship'),
+        icon: <IconBox />,
+        type: 'primary',
+        onClick: () => setShipModalVisible(true),
+        loading: actionLoading,
+      }
+    }
+    if (status === 'SHIPPED') {
+      return {
+        key: 'complete',
+        label: t('purchaseReturn.actions.complete'),
+        icon: <IconTick />,
+        type: 'primary',
+        onClick: handleComplete,
+        loading: actionLoading,
+      }
+    }
+    return undefined
+  }, [returnData, t, handleSubmit, handleComplete, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!returnData) return []
+    const status = returnData.status || 'DRAFT'
+    const actions: DetailPageHeaderAction[] = []
+
+    // Print button is always available
+    actions.push({
+      key: 'print',
+      label: t('purchaseReturn.actions.print'),
+      icon: <IconPrinter />,
+      onClick: () => {
+        const printBtn = document.querySelector('.detail-page-print-btn') as HTMLButtonElement
+        printBtn?.click()
+      },
+    })
+
+    if (status === 'DRAFT') {
+      actions.push({
+        key: 'edit',
+        label: t('purchaseReturn.actions.edit'),
+        icon: <IconEdit />,
+        onClick: handleEdit,
+        disabled: actionLoading,
+      })
+      actions.push({
+        key: 'cancel',
+        label: t('purchaseReturn.actions.cancel'),
+        icon: <IconClose />,
+        type: 'danger',
+        onClick: () => setCancelModalVisible(true),
+        loading: actionLoading,
+      })
+    }
+
+    if (status === 'PENDING') {
+      actions.push({
+        key: 'reject',
+        label: t('purchaseReturn.actions.reject'),
+        icon: <IconClose />,
+        type: 'warning',
+        onClick: () => setRejectModalVisible(true),
+        loading: actionLoading,
+      })
+      actions.push({
+        key: 'cancel',
+        label: t('purchaseReturn.actions.cancel'),
+        icon: <IconClose />,
+        type: 'danger',
+        onClick: () => setCancelModalVisible(true),
+        loading: actionLoading,
+      })
+    }
+
+    if (status === 'APPROVED') {
+      actions.push({
+        key: 'cancel',
+        label: t('purchaseReturn.actions.cancel'),
+        icon: <IconClose />,
+        type: 'danger',
+        onClick: () => setCancelModalVisible(true),
+        loading: actionLoading,
+      })
+    }
+
+    return actions
+  }, [returnData, t, handleEdit, actionLoading])
+
+  // Build status flow steps
+  const statusFlowSteps = useMemo((): StatusFlowStep[] => {
+    if (!returnData) return []
+    const status = returnData.status || 'DRAFT'
+    const isCancelled = status === 'CANCELLED'
+    const isRejected = status === 'REJECTED'
+
+    // Define the normal flow
+    const steps: StatusFlowStep[] = [
+      {
+        key: 'draft',
+        label: t('purchaseReturn.status.draft'),
+        state: 'completed',
+        timestamp: returnData.created_at ? formatDateTime(returnData.created_at) : undefined,
+      },
+      {
+        key: 'pending',
+        label: t('purchaseReturn.status.pendingApproval'),
+        state: returnData.submitted_at
+          ? 'completed'
+          : status === 'PENDING'
+            ? 'current'
+            : isCancelled || isRejected
+              ? 'cancelled'
+              : 'pending',
+        timestamp: returnData.submitted_at ? formatDateTime(returnData.submitted_at) : undefined,
+      },
+      {
+        key: 'approved',
+        label: t('purchaseReturn.status.approved'),
+        state: returnData.approved_at
+          ? 'completed'
+          : status === 'APPROVED'
+            ? 'current'
+            : isCancelled || isRejected
+              ? 'cancelled'
+              : 'pending',
+        timestamp: returnData.approved_at ? formatDateTime(returnData.approved_at) : undefined,
+      },
+      {
+        key: 'shipped',
+        label: t('purchaseReturn.status.shipped'),
+        state: returnData.shipped_at
+          ? 'completed'
+          : status === 'SHIPPED'
+            ? 'current'
+            : isCancelled || isRejected
+              ? 'cancelled'
+              : 'pending',
+        timestamp: returnData.shipped_at ? formatDateTime(returnData.shipped_at) : undefined,
+      },
+      {
+        key: 'completed',
+        label: t('purchaseReturn.status.completed'),
+        state: returnData.completed_at
+          ? 'completed'
+          : status === 'COMPLETED'
+            ? 'current'
+            : isCancelled || isRejected
+              ? 'cancelled'
+              : 'pending',
+        timestamp: returnData.completed_at ? formatDateTime(returnData.completed_at) : undefined,
+      },
+    ]
+
+    // Update current step based on actual status
+    if (status === 'DRAFT') {
+      steps[0].state = 'current'
+      steps[1].state = 'pending'
+    }
+
+    // If rejected, add rejected step
+    if (isRejected) {
+      steps.push({
+        key: 'rejected',
+        label: t('purchaseReturn.status.rejected'),
+        state: 'rejected',
+        timestamp: returnData.rejected_at ? formatDateTime(returnData.rejected_at) : undefined,
+        description: returnData.rejection_reason || undefined,
+      })
+    }
+
+    // If cancelled, add cancelled step at the end
+    if (isCancelled) {
+      steps.push({
+        key: 'cancelled',
+        label: t('purchaseReturn.status.cancelled'),
+        state: 'rejected',
+        timestamp: returnData.cancelled_at ? formatDateTime(returnData.cancelled_at) : undefined,
+        description: returnData.cancel_reason || undefined,
+      })
+    }
+
+    return steps
+  }, [returnData, t, formatDateTime])
+
   // Return items table columns
   const itemColumns = useMemo(
     () => [
@@ -318,83 +561,9 @@ export default function PurchaseReturnDetailPage() {
     [t, formatCurrency]
   )
 
-  // Build timeline items based on return status
-  const timelineItems = useMemo(() => {
-    if (!returnData) return []
-
-    const items = []
-
-    // Created
-    if (returnData.created_at) {
-      items.push({
-        time: formatDateTime(returnData.created_at),
-        content: t('purchaseReturnDetail.timeline.created'),
-        type: 'default' as const,
-      })
-    }
-
-    // Submitted
-    if (returnData.submitted_at) {
-      items.push({
-        time: formatDateTime(returnData.submitted_at),
-        content: t('purchaseReturnDetail.timeline.submitted'),
-        type: 'ongoing' as const,
-      })
-    }
-
-    // Approved
-    if (returnData.approved_at) {
-      items.push({
-        time: formatDateTime(returnData.approved_at),
-        content: `${t('purchaseReturnDetail.timeline.approved')}${returnData.approval_note ? `: ${returnData.approval_note}` : ''}`,
-        type: 'success' as const,
-      })
-    }
-
-    // Rejected
-    if (returnData.rejected_at) {
-      items.push({
-        time: formatDateTime(returnData.rejected_at),
-        content: `${t('purchaseReturnDetail.timeline.rejected')}${returnData.rejection_reason ? `: ${returnData.rejection_reason}` : ''}`,
-        type: 'error' as const,
-      })
-    }
-
-    // Shipped
-    if (returnData.shipped_at) {
-      items.push({
-        time: formatDateTime(returnData.shipped_at),
-        content: `${t('purchaseReturnDetail.timeline.shipped')}${returnData.shipping_note ? `: ${returnData.shipping_note}` : ''}`,
-        type: 'ongoing' as const,
-      })
-    }
-
-    // Completed
-    if (returnData.completed_at) {
-      items.push({
-        time: formatDateTime(returnData.completed_at),
-        content: t('purchaseReturnDetail.timeline.completed'),
-        type: 'success' as const,
-      })
-    }
-
-    // Cancelled
-    if (returnData.cancelled_at) {
-      items.push({
-        time: formatDateTime(returnData.cancelled_at),
-        content: `${t('purchaseReturnDetail.timeline.cancelled')}${returnData.cancel_reason ? `: ${returnData.cancel_reason}` : ''}`,
-        type: 'error' as const,
-      })
-    }
-
-    return items
-  }, [returnData, t, formatDateTime])
-
   // Render return basic info
   const renderBasicInfo = () => {
     if (!returnData) return null
-
-    const statusKey = STATUS_KEYS[returnData.status || 'DRAFT'] || 'draft'
 
     const data = [
       { key: t('purchaseReturnDetail.basicInfo.returnNumber'), value: returnData.return_number },
@@ -405,18 +574,6 @@ export default function PurchaseReturnDetailPage() {
       {
         key: t('purchaseReturnDetail.basicInfo.supplierName'),
         value: returnData.supplier_name || '-',
-      },
-      {
-        key: t('purchaseReturnDetail.basicInfo.returnStatus'),
-        value: (
-          <Tag color={STATUS_TAG_COLORS[returnData.status || 'DRAFT']}>
-            {t(`purchaseReturn.status.${statusKey}`)}
-          </Tag>
-        ),
-      },
-      {
-        key: t('purchaseReturnDetail.basicInfo.itemCount'),
-        value: `${returnData.item_count || 0} ${t('salesOrder.unit')}`,
       },
       {
         key: t('purchaseReturnDetail.basicInfo.totalQuantity'),
@@ -457,115 +614,16 @@ export default function PurchaseReturnDetailPage() {
     )
   }
 
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!returnData) return null
-
-    const status = returnData.status || 'DRAFT'
-
-    return (
-      <Space>
-        {/* Print button - always available */}
-        <PrintButton
-          documentType="PURCHASE_RETURN"
-          documentId={returnData.id || ''}
-          documentNumber={returnData.return_number || ''}
-          label={t('purchaseReturn.actions.print')}
-          enableShortcut={true}
-        />
-        {status === 'DRAFT' && (
-          <>
-            <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-              {t('purchaseReturn.actions.edit')}
-            </Button>
-            <Button
-              type="primary"
-              icon={<IconSend />}
-              onClick={handleSubmit}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.submit')}
-            </Button>
-            <Button
-              type="danger"
-              icon={<IconClose />}
-              onClick={() => setCancelModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.cancel')}
-            </Button>
-          </>
-        )}
-        {status === 'PENDING' && (
-          <>
-            <Button
-              type="primary"
-              icon={<IconTick />}
-              onClick={() => setApproveModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.approve')}
-            </Button>
-            <Button
-              type="warning"
-              icon={<IconClose />}
-              onClick={() => setRejectModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.reject')}
-            </Button>
-            <Button
-              type="danger"
-              icon={<IconClose />}
-              onClick={() => setCancelModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.cancel')}
-            </Button>
-          </>
-        )}
-        {status === 'APPROVED' && (
-          <>
-            <Button
-              type="primary"
-              icon={<IconBox />}
-              onClick={() => setShipModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.ship')}
-            </Button>
-            <Button
-              type="danger"
-              icon={<IconClose />}
-              onClick={() => setCancelModalVisible(true)}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.cancel')}
-            </Button>
-          </>
-        )}
-        {status === 'SHIPPED' && (
-          <>
-            <Button
-              type="primary"
-              icon={<IconTick />}
-              onClick={handleComplete}
-              loading={actionLoading}
-            >
-              {t('purchaseReturn.actions.complete')}
-            </Button>
-          </>
-        )}
-      </Space>
-    )
-  }
-
   if (loading) {
     return (
       <Container size="lg" className="purchase-return-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('purchaseReturnDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/trade/purchase-returns')}
+          backLabel={t('purchaseReturnDetail.back')}
+        />
       </Container>
     )
   }
@@ -581,29 +639,40 @@ export default function PurchaseReturnDetailPage() {
     )
   }
 
-  const statusKey = STATUS_KEYS[returnData.status || 'DRAFT'] || 'draft'
-
   return (
     <Container size="lg" className="purchase-return-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/trade/purchase-returns')}
-          >
-            {t('purchaseReturnDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('purchaseReturnDetail.title')}
-          </Title>
-          <Tag color={STATUS_TAG_COLORS[returnData.status || 'DRAFT']} size="large">
-            {t(`purchaseReturn.status.${statusKey}`)}
-          </Tag>
-        </div>
-        <div className="header-right">{renderActions()}</div>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('purchaseReturnDetail.title')}
+        documentNumber={returnData.return_number}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/trade/purchase-returns')}
+        backLabel={t('purchaseReturnDetail.back')}
+      />
+
+      {/* Hidden Print Button for secondary action click */}
+      <div style={{ display: 'none' }}>
+        <PrintButton
+          documentType="PURCHASE_RETURN"
+          documentId={returnData.id || ''}
+          documentNumber={returnData.return_number || ''}
+          label={t('purchaseReturn.actions.print')}
+          enableShortcut={true}
+          className="detail-page-print-btn"
+        />
       </div>
+
+      {/* Status Flow */}
+      <Card className="status-flow-card" title={t('purchaseReturnDetail.timeline.title')}>
+        <StatusFlow
+          steps={statusFlowSteps}
+          showTimestamp
+          ariaLabel={t('purchaseReturnDetail.timeline.title')}
+        />
+      </Card>
 
       {/* Return Info Card */}
       <Card className="info-card" title={t('purchaseReturnDetail.basicInfo.title')}>
@@ -624,25 +693,6 @@ export default function PurchaseReturnDetailPage() {
           empty={<Empty description={t('purchaseReturnDetail.items.empty')} />}
         />
         {renderAmountSummary()}
-      </Card>
-
-      {/* Timeline Card */}
-      <Card className="timeline-card" title={t('purchaseReturnDetail.timeline.title')}>
-        {timelineItems.length > 0 ? (
-          <Timeline mode="left" className="status-timeline">
-            {timelineItems.map((item, index) => (
-              <Timeline.Item
-                key={index}
-                time={item.time}
-                type={item.type as 'default' | 'success' | 'warning' | 'error' | 'ongoing'}
-              >
-                {item.content}
-              </Timeline.Item>
-            ))}
-          </Timeline>
-        ) : (
-          <Empty description={t('purchaseReturnDetail.timeline.empty')} />
-        )}
       </Card>
 
       {/* Approve Modal */}

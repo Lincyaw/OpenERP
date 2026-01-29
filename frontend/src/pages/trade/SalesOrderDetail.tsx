@@ -1,21 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Tag,
-  Toast,
-  Button,
-  Space,
-  Spin,
-  Modal,
-  Empty,
-  Timeline,
-} from '@douyinfe/semi-ui-19'
-import { IconArrowLeft, IconEdit, IconTick, IconClose, IconSend } from '@douyinfe/semi-icons'
+import { Card, Typography, Descriptions, Table, Toast, Modal, Empty } from '@douyinfe/semi-ui-19'
+import { IconEdit, IconTick, IconClose, IconSend, IconPrinter } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import {
+  DetailPageHeader,
+  StatusFlow,
+  type DetailPageHeaderAction,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderMetric,
+  type StatusFlowStep,
+} from '@/components/common'
 import {
   getSalesOrderById,
   confirmSalesOrder,
@@ -31,24 +26,27 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { safeToFixed, toNumber } from '@/utils'
 import './SalesOrderDetail.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
-// Status tag color mapping
-const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'grey' | 'red'> = {
-  draft: 'blue',
-  confirmed: 'cyan',
-  shipped: 'green',
-  completed: 'grey',
-  cancelled: 'red',
+// Status variant mapping for DetailPageHeader
+const STATUS_VARIANTS: Record<
+  string,
+  'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+> = {
+  draft: 'default',
+  confirmed: 'info',
+  shipped: 'primary',
+  completed: 'success',
+  cancelled: 'danger',
 }
 
 /**
  * Sales Order Detail Page
  *
  * Features:
- * - Display complete order information
+ * - Display complete order information using DetailPageHeader
+ * - Display order status flow using StatusFlow component
  * - Display order line items
- * - Display status change timeline
  * - Status action buttons (confirm, ship, complete, cancel)
  */
 export default function SalesOrderDetailPage() {
@@ -103,7 +101,7 @@ export default function SalesOrderDetailPage() {
           fetchOrder()
         } catch (error) {
           Toast.error(t('orderDetail.messages.confirmError'))
-          throw error // Re-throw to keep modal loading state and prevent double-click
+          throw error
         } finally {
           setActionLoading(false)
         }
@@ -130,7 +128,7 @@ export default function SalesOrderDetailPage() {
         fetchOrder()
       } catch {
         Toast.error(t('orderDetail.messages.shipError'))
-        throw new Error(t('orderDetail.messages.shipError')) // Re-throw to keep modal open
+        throw new Error(t('orderDetail.messages.shipError'))
       }
     },
     [order, fetchOrder, t]
@@ -170,7 +168,7 @@ export default function SalesOrderDetailPage() {
           fetchOrder()
         } catch (error) {
           Toast.error(t('orderDetail.messages.cancelError'))
-          throw error // Re-throw to keep modal loading state and prevent double-click
+          throw error
         } finally {
           setActionLoading(false)
         }
@@ -184,6 +182,196 @@ export default function SalesOrderDetailPage() {
       navigate(`/trade/sales/${order.id}/edit`)
     }
   }, [order, navigate])
+
+  // Build status for DetailPageHeader
+  const headerStatus = useMemo((): DetailPageHeaderStatus | undefined => {
+    if (!order) return undefined
+    const status = order.status || 'draft'
+    return {
+      label: t(`salesOrder.status.${status}`),
+      variant: STATUS_VARIANTS[status] || 'default',
+    }
+  }, [order, t])
+
+  // Build metrics for DetailPageHeader
+  const headerMetrics = useMemo((): DetailPageHeaderMetric[] => {
+    if (!order) return []
+    return [
+      {
+        label: t('orderDetail.basicInfo.customerName'),
+        value: order.customer_name || '-',
+      },
+      {
+        label: t('orderDetail.basicInfo.itemCount'),
+        value: `${order.item_count || 0} ${t('salesOrder.unit')}`,
+      },
+      {
+        label: t('orderDetail.amount.payableAmount'),
+        value: formatCurrency(order.payable_amount || 0),
+        variant: 'primary',
+      },
+    ]
+  }, [order, t, formatCurrency])
+
+  // Build primary action for DetailPageHeader
+  const primaryAction = useMemo((): DetailPageHeaderAction | undefined => {
+    if (!order) return undefined
+    const status = order.status || 'draft'
+
+    if (status === 'draft') {
+      return {
+        key: 'confirm',
+        label: t('orderDetail.actions.confirmOrder'),
+        icon: <IconTick />,
+        type: 'primary',
+        onClick: handleConfirm,
+        loading: actionLoading,
+      }
+    }
+    if (status === 'confirmed') {
+      return {
+        key: 'ship',
+        label: t('orderDetail.actions.ship'),
+        icon: <IconSend />,
+        type: 'primary',
+        onClick: handleShip,
+        loading: actionLoading,
+      }
+    }
+    if (status === 'shipped') {
+      return {
+        key: 'complete',
+        label: t('orderDetail.actions.complete'),
+        icon: <IconTick />,
+        type: 'primary',
+        onClick: handleComplete,
+        loading: actionLoading,
+      }
+    }
+    return undefined
+  }, [order, t, handleConfirm, handleShip, handleComplete, actionLoading])
+
+  // Build secondary actions for DetailPageHeader
+  const secondaryActions = useMemo((): DetailPageHeaderAction[] => {
+    if (!order) return []
+    const status = order.status || 'draft'
+    const actions: DetailPageHeaderAction[] = []
+
+    // Print button is always available
+    actions.push({
+      key: 'print',
+      label: t('orderDetail.actions.print'),
+      icon: <IconPrinter />,
+      onClick: () => {
+        // PrintButton handles this, but we need a placeholder
+        const printBtn = document.querySelector('.detail-page-print-btn') as HTMLButtonElement
+        printBtn?.click()
+      },
+    })
+
+    if (status === 'draft') {
+      actions.push({
+        key: 'edit',
+        label: t('orderDetail.actions.edit'),
+        icon: <IconEdit />,
+        onClick: handleEdit,
+        disabled: actionLoading,
+      })
+      actions.push({
+        key: 'cancel',
+        label: t('orderDetail.actions.cancel'),
+        icon: <IconClose />,
+        type: 'danger',
+        onClick: handleCancel,
+        loading: actionLoading,
+      })
+    }
+
+    if (status === 'confirmed') {
+      actions.push({
+        key: 'cancel',
+        label: t('orderDetail.actions.cancel'),
+        icon: <IconClose />,
+        type: 'danger',
+        onClick: handleCancel,
+        loading: actionLoading,
+      })
+    }
+
+    return actions
+  }, [order, t, handleEdit, handleCancel, actionLoading])
+
+  // Build status flow steps
+  const statusFlowSteps = useMemo((): StatusFlowStep[] => {
+    if (!order) return []
+    const status = order.status || 'draft'
+    const isCancelled = status === 'cancelled'
+
+    // Define the normal flow
+    const steps: StatusFlowStep[] = [
+      {
+        key: 'draft',
+        label: t('salesOrder.status.draft'),
+        state: 'completed',
+        timestamp: order.created_at ? formatDateTime(order.created_at) : undefined,
+      },
+      {
+        key: 'confirmed',
+        label: t('salesOrder.status.confirmed'),
+        state: order.confirmed_at
+          ? 'completed'
+          : status === 'confirmed'
+            ? 'current'
+            : isCancelled
+              ? 'cancelled'
+              : 'pending',
+        timestamp: order.confirmed_at ? formatDateTime(order.confirmed_at) : undefined,
+      },
+      {
+        key: 'shipped',
+        label: t('salesOrder.status.shipped'),
+        state: order.shipped_at
+          ? 'completed'
+          : status === 'shipped'
+            ? 'current'
+            : isCancelled
+              ? 'cancelled'
+              : 'pending',
+        timestamp: order.shipped_at ? formatDateTime(order.shipped_at) : undefined,
+      },
+      {
+        key: 'completed',
+        label: t('salesOrder.status.completed'),
+        state: order.completed_at
+          ? 'completed'
+          : status === 'completed'
+            ? 'current'
+            : isCancelled
+              ? 'cancelled'
+              : 'pending',
+        timestamp: order.completed_at ? formatDateTime(order.completed_at) : undefined,
+      },
+    ]
+
+    // Update current step based on actual status
+    if (status === 'draft') {
+      steps[0].state = 'current'
+      steps[1].state = 'pending'
+    }
+
+    // If cancelled, add cancelled step at the end
+    if (isCancelled) {
+      steps.push({
+        key: 'cancelled',
+        label: t('salesOrder.status.cancelled'),
+        state: 'rejected',
+        timestamp: order.cancelled_at ? formatDateTime(order.cancelled_at) : undefined,
+        description: order.cancel_reason || undefined,
+      })
+    }
+
+    return steps
+  }, [order, t, formatDateTime])
 
   // Order items table columns
   const itemColumns = useMemo(
@@ -244,60 +432,6 @@ export default function SalesOrderDetailPage() {
     [t, formatCurrency]
   )
 
-  // Build timeline items based on order status
-  const timelineItems = useMemo(() => {
-    if (!order) return []
-
-    const items = []
-
-    // Created
-    if (order.created_at) {
-      items.push({
-        time: formatDateTime(order.created_at),
-        content: t('orderDetail.timeline.created'),
-        type: 'default' as const,
-      })
-    }
-
-    // Confirmed
-    if (order.confirmed_at) {
-      items.push({
-        time: formatDateTime(order.confirmed_at),
-        content: t('orderDetail.timeline.confirmed'),
-        type: 'success' as const,
-      })
-    }
-
-    // Shipped
-    if (order.shipped_at) {
-      items.push({
-        time: formatDateTime(order.shipped_at),
-        content: t('orderDetail.timeline.shipped'),
-        type: 'success' as const,
-      })
-    }
-
-    // Completed
-    if (order.completed_at) {
-      items.push({
-        time: formatDateTime(order.completed_at),
-        content: t('orderDetail.timeline.completed'),
-        type: 'success' as const,
-      })
-    }
-
-    // Cancelled
-    if (order.cancelled_at) {
-      items.push({
-        time: formatDateTime(order.cancelled_at),
-        content: `${t('orderDetail.timeline.cancelled')}${order.cancel_reason ? `: ${order.cancel_reason}` : ''}`,
-        type: 'error' as const,
-      })
-    }
-
-    return items
-  }, [order, t, formatDateTime])
-
   // Render order basic info
   const renderBasicInfo = () => {
     if (!order) return null
@@ -305,18 +439,6 @@ export default function SalesOrderDetailPage() {
     const data = [
       { key: t('orderDetail.basicInfo.orderNumber'), value: order.order_number },
       { key: t('orderDetail.basicInfo.customerName'), value: order.customer_name || '-' },
-      {
-        key: t('orderDetail.basicInfo.orderStatus'),
-        value: (
-          <Tag color={STATUS_TAG_COLORS[order.status || 'draft']}>
-            {t(`salesOrder.status.${order.status || 'draft'}`)}
-          </Tag>
-        ),
-      },
-      {
-        key: t('orderDetail.basicInfo.itemCount'),
-        value: `${order.item_count || 0} ${t('salesOrder.unit')}`,
-      },
       {
         key: t('orderDetail.basicInfo.totalQuantity'),
         value: safeToFixed(order.total_quantity, 2, '0.00'),
@@ -372,80 +494,16 @@ export default function SalesOrderDetailPage() {
     )
   }
 
-  // Render action buttons based on status
-  const renderActions = () => {
-    if (!order) return null
-
-    const status = order.status || 'draft'
-
-    return (
-      <Space>
-        {/* Print button - always available */}
-        <PrintButton
-          documentType="SALES_ORDER"
-          documentId={order.id || ''}
-          documentNumber={order.order_number || ''}
-          label={t('orderDetail.actions.print')}
-          enableShortcut={true}
-        />
-        {status === 'draft' && (
-          <>
-            <Button icon={<IconEdit />} onClick={handleEdit} disabled={actionLoading}>
-              {t('orderDetail.actions.edit')}
-            </Button>
-            <Button
-              type="primary"
-              icon={<IconTick />}
-              onClick={handleConfirm}
-              loading={actionLoading}
-            >
-              {t('orderDetail.actions.confirmOrder')}
-            </Button>
-            <Button
-              type="danger"
-              icon={<IconClose />}
-              onClick={handleCancel}
-              loading={actionLoading}
-            >
-              {t('orderDetail.actions.cancel')}
-            </Button>
-          </>
-        )}
-        {status === 'confirmed' && (
-          <>
-            <Button type="primary" icon={<IconSend />} onClick={handleShip} loading={actionLoading}>
-              {t('orderDetail.actions.ship')}
-            </Button>
-            <Button
-              type="warning"
-              icon={<IconClose />}
-              onClick={handleCancel}
-              loading={actionLoading}
-            >
-              {t('orderDetail.actions.cancel')}
-            </Button>
-          </>
-        )}
-        {status === 'shipped' && (
-          <Button
-            type="primary"
-            icon={<IconTick />}
-            onClick={handleComplete}
-            loading={actionLoading}
-          >
-            {t('orderDetail.actions.complete')}
-          </Button>
-        )}
-      </Space>
-    )
-  }
-
   if (loading) {
     return (
       <Container size="lg" className="sales-order-detail-page">
-        <div className="loading-container">
-          <Spin size="large" />
-        </div>
+        <DetailPageHeader
+          title={t('orderDetail.title')}
+          loading={true}
+          showBack={true}
+          onBack={() => navigate('/trade/sales')}
+          backLabel={t('orderDetail.back')}
+        />
       </Container>
     )
   }
@@ -460,25 +518,38 @@ export default function SalesOrderDetailPage() {
 
   return (
     <Container size="lg" className="sales-order-detail-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <Button
-            icon={<IconArrowLeft />}
-            theme="borderless"
-            onClick={() => navigate('/trade/sales')}
-          >
-            {t('orderDetail.back')}
-          </Button>
-          <Title heading={4} className="page-title">
-            {t('orderDetail.title')}
-          </Title>
-          <Tag color={STATUS_TAG_COLORS[order.status || 'draft']} size="large">
-            {t(`salesOrder.status.${order.status || 'draft'}`)}
-          </Tag>
-        </div>
-        <div className="header-right">{renderActions()}</div>
+      {/* Unified Header */}
+      <DetailPageHeader
+        title={t('orderDetail.title')}
+        documentNumber={order.order_number}
+        status={headerStatus}
+        metrics={headerMetrics}
+        primaryAction={primaryAction}
+        secondaryActions={secondaryActions}
+        onBack={() => navigate('/trade/sales')}
+        backLabel={t('orderDetail.back')}
+      />
+
+      {/* Hidden Print Button for secondary action click */}
+      <div style={{ display: 'none' }}>
+        <PrintButton
+          documentType="SALES_ORDER"
+          documentId={order.id || ''}
+          documentNumber={order.order_number || ''}
+          label={t('orderDetail.actions.print')}
+          enableShortcut={true}
+          className="detail-page-print-btn"
+        />
       </div>
+
+      {/* Status Flow */}
+      <Card className="status-flow-card" title={t('orderDetail.timeline.title')}>
+        <StatusFlow
+          steps={statusFlowSteps}
+          showTimestamp
+          ariaLabel={t('orderDetail.timeline.title')}
+        />
+      </Card>
 
       {/* Order Info Card */}
       <Card className="info-card" title={t('orderDetail.basicInfo.title')}>
@@ -498,25 +569,6 @@ export default function SalesOrderDetailPage() {
           empty={<Empty description={t('orderDetail.items.empty')} />}
         />
         {renderAmountSummary()}
-      </Card>
-
-      {/* Timeline Card */}
-      <Card className="timeline-card" title={t('orderDetail.timeline.title')}>
-        {timelineItems.length > 0 ? (
-          <Timeline mode="left" className="status-timeline">
-            {timelineItems.map((item, index) => (
-              <Timeline.Item
-                key={index}
-                time={item.time}
-                type={item.type as 'default' | 'success' | 'warning' | 'error'}
-              >
-                {item.content}
-              </Timeline.Item>
-            ))}
-          </Timeline>
-        ) : (
-          <Empty description={t('orderDetail.timeline.empty')} />
-        )}
       </Card>
 
       {/* Ship Order Modal */}

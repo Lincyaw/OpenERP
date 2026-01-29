@@ -41,7 +41,8 @@
 /* Cards */
 .purchase-return-detail-page .info-card,
 .purchase-return-detail-page .items-card,
-.purchase-return-detail-page .timeline-card {
+.purchase-return-detail-page .timeline-card,
+.purchase-return-detail-page .status-flow-card {
   margin-bottom: var(--spacing-4);
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);

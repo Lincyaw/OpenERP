@@ -1,0 +1,382 @@
+/**
+ * StatusFlow Styles
+ *
+ * Horizontal status progression component with visual step indicators.
+ * Responsive design that stacks vertically on mobile.
+ *
+ * Uses design tokens from the design system for consistency.
+ */
+
+/* === Base Container === */
+.status-flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: var(--spacing-3) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === Step Item === */
+.status-flow__step {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.status-flow__step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  min-width: 80px;
+  text-align: center;
+}
+
+/* === Step Icon === */
+.status-flow__step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-primary);
+  background-color: var(--color-bg-container);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--duration-normal) var(--ease-default);
+}
+
+.status-flow__step-icon-svg {
+  font-size: var(--font-size-base);
+}
+
+.status-flow__step-number {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* === Step Info === */
+.status-flow__step-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-0-5);
+  align-items: center;
+}
+
+.status-flow__step-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: color var(--duration-normal) var(--ease-default);
+}
+
+.status-flow__step-timestamp {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.status-flow__step-description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === Connector Line === */
+.status-flow__connector {
+  flex: 1;
+  min-width: 40px;
+  height: 2px;
+  background-color: var(--color-border-primary);
+  margin: 16px var(--spacing-2) 0;
+  transition: background-color var(--duration-normal) var(--ease-default);
+}
+
+/* === Step States === */
+
+/* Completed state */
+.status-flow__step--completed .status-flow__step-icon {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+
+.status-flow__step--completed .status-flow__step-label {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-flow__step--completed + .status-flow__step .status-flow__connector,
+.status-flow__step--completed .status-flow__connector {
+  background-color: var(--color-success);
+}
+
+/* Current state */
+.status-flow__step--current .status-flow__step-icon {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 0 0 4px var(--color-primary-light);
+}
+
+.status-flow__step--current .status-flow__step-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Pending state (default styling) */
+.status-flow__step--pending .status-flow__step-icon {
+  background-color: var(--color-bg-container);
+  border-color: var(--color-border-secondary);
+  color: var(--color-text-tertiary);
+}
+
+.status-flow__step--pending .status-flow__step-label {
+  color: var(--color-text-tertiary);
+}
+
+/* Cancelled state */
+.status-flow__step--cancelled .status-flow__step-icon {
+  background-color: var(--color-neutral-300);
+  border-color: var(--color-neutral-400);
+  color: var(--color-neutral-600);
+}
+
+.status-flow__step--cancelled .status-flow__step-label {
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+/* Rejected state */
+.status-flow__step--rejected .status-flow__step-icon {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
+}
+
+.status-flow__step--rejected .status-flow__step-label {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-medium);
+}
+
+/* === Small Size Variant === */
+.status-flow--small .status-flow__step-icon {
+  width: 24px;
+  height: 24px;
+  font-size: var(--font-size-xs);
+}
+
+.status-flow--small .status-flow__step-icon-svg {
+  font-size: var(--font-size-sm);
+}
+
+.status-flow--small .status-flow__step-content {
+  min-width: 60px;
+}
+
+.status-flow--small .status-flow__connector {
+  min-width: 24px;
+  margin-top: 12px;
+}
+
+.status-flow--small .status-flow__step-label {
+  font-size: 10px;
+}
+
+/* === Responsive Design (Mobile First) === */
+
+/* Mobile: Vertical stacking */
+@media (max-width: 767px) {
+  .status-flow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--spacing-2) 0;
+    overflow-x: visible;
+  }
+
+  .status-flow__step {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .status-flow__step-content {
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    text-align: left;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) 0;
+  }
+
+  .status-flow__step-info {
+    align-items: flex-start;
+  }
+
+  .status-flow__connector {
+    position: absolute;
+    left: 15px;
+    top: 42px;
+    width: 2px;
+    height: calc(100% - 32px);
+    min-width: 2px;
+    margin: 0;
+  }
+
+  .status-flow__step {
+    position: relative;
+    padding-left: 0;
+  }
+
+  .status-flow__step:last-child .status-flow__connector {
+    display: none;
+  }
+
+  .status-flow__step-description {
+    max-width: none;
+    white-space: normal;
+  }
+
+  /* Current state box shadow adjustment for vertical */
+  .status-flow__step--current .status-flow__step-icon {
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+}
+
+/* Tablet and up: Horizontal layout */
+@media (min-width: 768px) {
+  .status-flow {
+    flex-direction: row;
+  }
+
+  .status-flow__step-content {
+    min-width: 90px;
+  }
+
+  .status-flow__connector {
+    min-width: 50px;
+  }
+}
+
+/* Desktop: Larger spacing */
+@media (min-width: 1024px) {
+  .status-flow__step-content {
+    min-width: 100px;
+  }
+
+  .status-flow__connector {
+    min-width: 60px;
+  }
+
+  .status-flow__step-label {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* === Dark Mode === */
+[theme-mode='dark'] .status-flow__step-icon {
+  background-color: var(--color-bg-elevated);
+}
+
+[theme-mode='dark'] .status-flow__step--completed .status-flow__step-icon {
+  background-color: var(--color-success);
+}
+
+[theme-mode='dark'] .status-flow__step--current .status-flow__step-icon {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.2);
+}
+
+[theme-mode='dark'] .status-flow__step--rejected .status-flow__step-icon {
+  background-color: var(--color-danger);
+}
+
+/* === Elder-Friendly Theme === */
+[theme-mode='elder'] .status-flow__step-icon {
+  width: 40px;
+  height: 40px;
+  font-size: var(--font-size-base);
+  border-width: 3px;
+}
+
+[theme-mode='elder'] .status-flow__step-icon-svg {
+  font-size: var(--font-size-lg);
+}
+
+[theme-mode='elder'] .status-flow__step-label {
+  font-size: var(--font-size-sm);
+}
+
+[theme-mode='elder'] .status-flow__step-timestamp,
+[theme-mode='elder'] .status-flow__step-description {
+  font-size: var(--font-size-sm);
+}
+
+[theme-mode='elder'] .status-flow__connector {
+  height: 3px;
+  margin-top: 20px;
+}
+
+[theme-mode='elder'] .status-flow__step-content {
+  min-width: 100px;
+  gap: var(--spacing-2);
+}
+
+/* === High Contrast Mode === */
+@media (prefers-contrast: high) {
+  .status-flow__step-icon {
+    border-width: 3px;
+  }
+
+  .status-flow__connector {
+    height: 3px;
+  }
+
+  .status-flow__step--completed .status-flow__step-icon,
+  .status-flow__step--current .status-flow__step-icon,
+  .status-flow__step--rejected .status-flow__step-icon {
+    border-color: currentColor;
+  }
+}
+
+/* === Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  .status-flow__step-icon,
+  .status-flow__connector,
+  .status-flow__step-label {
+    transition: none;
+  }
+}
+
+/* === Print Styles === */
+@media print {
+  .status-flow {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+  }
+
+  .status-flow__step-icon {
+    border-width: 1px;
+    box-shadow: none;
+  }
+
+  .status-flow__connector {
+    min-width: 20px;
+    background-color: #666;
+  }
+
+  .status-flow__step--completed .status-flow__connector,
+  .status-flow__step--completed .status-flow__step-icon {
+    background-color: #333;
+    border-color: #333;
+  }
+}

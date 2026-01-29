@@ -41,7 +41,8 @@
 /* Cards */
 .sales-return-detail-page .info-card,
 .sales-return-detail-page .items-card,
-.sales-return-detail-page .timeline-card {
+.sales-return-detail-page .timeline-card,
+.sales-return-detail-page .status-flow-card {
   margin-bottom: var(--spacing-4);
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);

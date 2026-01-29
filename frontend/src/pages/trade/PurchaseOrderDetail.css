@@ -41,7 +41,8 @@
 /* Cards */
 .purchase-order-detail-page .info-card,
 .purchase-order-detail-page .items-card,
-.purchase-order-detail-page .timeline-card {
+.purchase-order-detail-page .timeline-card,
+.purchase-order-detail-page .status-flow-card {
   margin-bottom: var(--spacing-4);
   background: var(--semi-color-bg-0);
   border-radius: var(--semi-border-radius-large);

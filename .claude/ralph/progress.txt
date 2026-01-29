@@ -37385,3 +37385,81 @@ Design decisions:
 === Next Steps ===
 - Monitor page performance with summary API calls
 - Consider adding trend indicators to KPI cards in future iteration
+
+2025-01-29 - Task ID: UX-008 - Apply DetailPageHeader and StatusFlow to Detail Pages
+
+=== Implementation Details ===
+
+Created new StatusFlow component and applied DetailPageHeader + StatusFlow to all 4 detail pages:
+
+1. **StatusFlow Component** (NEW):
+   - Created `StatusFlow.tsx` and `StatusFlow.css` in `frontend/src/components/common/`
+   - Horizontal flow visualization with step states: completed, current, pending, cancelled, rejected
+   - Responsive design: horizontal on desktop, vertical on mobile
+   - Shows timestamps for completed steps
+   - Supports custom icons and descriptions
+   - Exported types: StatusFlowProps, StatusFlowStep, StatusFlowStepState
+   - Updated `components/common/index.ts` to export StatusFlow
+
+2. **SalesOrderDetail.tsx**:
+   - Replaced custom header with DetailPageHeader component
+   - Added StatusFlow showing: Draft → Confirmed → Shipped → Completed (+ Cancelled if applicable)
+   - Integrated primary action (Confirm/Ship/Complete based on status) into header
+   - Integrated secondary actions (Print, Edit, Cancel) into header dropdown
+   - Added metrics: Customer Name, Item Count, Payable Amount
+   - Updated CSS for status-flow-card
+
+3. **PurchaseOrderDetail.tsx**:
+   - Same pattern as SalesOrderDetail
+   - StatusFlow: Draft → Confirmed → Partial Received → Completed
+   - Primary action: Confirm/Receive based on status
+   - Metrics: Supplier Name, Item Count, Receive Progress, Payable Amount
+
+4. **SalesReturnDetail.tsx**:
+   - Same pattern as above
+   - StatusFlow: Draft → Pending Approval → Approved → Receiving → Completed (+ Rejected/Cancelled)
+   - Primary action: Submit/Approve/Receive/Complete based on status
+   - Secondary actions include Reject for pending status
+
+5. **PurchaseReturnDetail.tsx**:
+   - Same pattern as above
+   - StatusFlow: Draft → Pending Approval → Approved → Shipped → Completed
+   - Primary action: Submit/Approve/Ship/Complete based on status
+   - Ship action sends goods back to supplier
+
+=== Key Files Modified ===
+- NEW: frontend/src/components/common/StatusFlow.tsx
+- NEW: frontend/src/components/common/StatusFlow.css
+- MODIFIED: frontend/src/components/common/index.ts
+- MODIFIED: frontend/src/pages/trade/SalesOrderDetail.tsx
+- MODIFIED: frontend/src/pages/trade/SalesOrderDetail.css
+- MODIFIED: frontend/src/pages/trade/PurchaseOrderDetail.tsx
+- MODIFIED: frontend/src/pages/trade/PurchaseOrderDetail.css
+- MODIFIED: frontend/src/pages/trade/SalesReturnDetail.tsx
+- MODIFIED: frontend/src/pages/trade/SalesReturnDetail.css
+- MODIFIED: frontend/src/pages/trade/PurchaseReturnDetail.tsx
+- MODIFIED: frontend/src/pages/trade/PurchaseReturnDetail.css
+
+=== Design Decisions ===
+- Used useMemo for all derived state (headerStatus, headerMetrics, primaryAction, secondaryActions, statusFlowSteps) to optimize performance
+- StatusFlow shows timestamp when step is completed
+- Hidden PrintButton technique for triggering print from header action
+- Consistent status variant mapping across all pages
+- Status keys mapped to i18n translation keys for proper localization
+
+=== Verification ===
+- TypeScript type checking: PASSED (npm run type-check)
+- ESLint/Prettier: PASSED after auto-fix (npm run lint:fix)
+- No console.log statements
+- No debug statements
+- Build not run (per instructions - can be verified separately)
+
+=== Notes ===
+- The StatusFlow component is flexible and can be reused for other order-like entities
+- Print functionality requires hidden PrintButton due to existing print infrastructure
+- All pages now have consistent UX pattern for detail views
+- Responsive design tested via CSS media queries
+
+=== Next Steps ===
+- UX-007: Optimize list page table columns (reduce information overload)
+- UX-009: Apply FormSection to form pages with dual save buttons
