@@ -634,3 +634,149 @@ output:
 		assert.Equal(t, 0, cfg.Output.Prometheus.Port) // No defaults applied
 	})
 }
+
+func TestLoadFromBytes_AssertionsConfig(t *testing.T) {
+	yaml := `
+name: "Assertions Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+assertions:
+  global:
+    maxErrorRate: 1.0
+    minSuccessRate: 99.0
+    maxP95Latency: 100ms
+    maxAvgLatency: 50ms
+    minThroughput: 100.0
+  endpoints:
+    create-product:
+      maxErrorRate: 0.5
+      maxP95Latency: 200ms
+    get-products:
+      minSuccessRate: 99.9
+      disabled: true
+  exitOnFailure: true
+`
+	cfg, err := LoadFromBytes([]byte(yaml))
+	require.NoError(t, err)
+
+	// Global assertions
+	require.NotNil(t, cfg.Assertions.Global)
+	require.NotNil(t, cfg.Assertions.Global.MaxErrorRate)
+	assert.Equal(t, 1.0, *cfg.Assertions.Global.MaxErrorRate)
+	require.NotNil(t, cfg.Assertions.Global.MinSuccessRate)
+	assert.Equal(t, 99.0, *cfg.Assertions.Global.MinSuccessRate)
+	assert.Equal(t, 100*time.Millisecond, cfg.Assertions.Global.MaxP95Latency)
+	assert.Equal(t, 50*time.Millisecond, cfg.Assertions.Global.MaxAvgLatency)
+	require.NotNil(t, cfg.Assertions.Global.MinThroughput)
+	assert.Equal(t, 100.0, *cfg.Assertions.Global.MinThroughput)
+
+	// Endpoint overrides
+	require.Len(t, cfg.Assertions.EndpointOverrides, 2)
+
+	createProduct, ok := cfg.Assertions.EndpointOverrides["create-product"]
+	require.True(t, ok)
+	require.NotNil(t, createProduct.MaxErrorRate)
+	assert.Equal(t, 0.5, *createProduct.MaxErrorRate)
+	assert.Equal(t, 200*time.Millisecond, createProduct.MaxP95Latency)
+	assert.False(t, createProduct.Disabled)
+
+	getProducts, ok := cfg.Assertions.EndpointOverrides["get-products"]
+	require.True(t, ok)
+	require.NotNil(t, getProducts.MinSuccessRate)
+	assert.Equal(t, 99.9, *getProducts.MinSuccessRate)
+	assert.True(t, getProducts.Disabled)
+
+	// Exit on failure
+	require.NotNil(t, cfg.Assertions.ExitOnFailure)
+	assert.True(t, *cfg.Assertions.ExitOnFailure)
+}
+
+func TestLoadFromBytes_AssertionsConfig_AllLatencyTypes(t *testing.T) {
+	yaml := `
+name: "Latency Assertions Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+assertions:
+  global:
+    maxP50Latency: 10ms
+    maxP95Latency: 50ms
+    maxP99Latency: 100ms
+    maxAvgLatency: 20ms
+`
+	cfg, err := LoadFromBytes([]byte(yaml))
+	require.NoError(t, err)
+
+	require.NotNil(t, cfg.Assertions.Global)
+	assert.Equal(t, 10*time.Millisecond, cfg.Assertions.Global.MaxP50Latency)
+	assert.Equal(t, 50*time.Millisecond, cfg.Assertions.Global.MaxP95Latency)
+	assert.Equal(t, 100*time.Millisecond, cfg.Assertions.Global.MaxP99Latency)
+	assert.Equal(t, 20*time.Millisecond, cfg.Assertions.Global.MaxAvgLatency)
+}
+
+func TestApplyDefaults_AssertionsExitOnFailure(t *testing.T) {
+	t.Run("defaults to true when not specified", func(t *testing.T) {
+		yaml := `
+name: "Assertions Default Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+assertions:
+  global:
+    maxErrorRate: 1.0
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+
+		require.NotNil(t, cfg.Assertions.ExitOnFailure)
+		assert.True(t, *cfg.Assertions.ExitOnFailure)
+	})
+
+	t.Run("preserves explicit false", func(t *testing.T) {
+		yaml := `
+name: "Assertions Explicit False Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+assertions:
+  global:
+    maxErrorRate: 1.0
+  exitOnFailure: false
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+
+		require.NotNil(t, cfg.Assertions.ExitOnFailure)
+		assert.False(t, *cfg.Assertions.ExitOnFailure)
+	})
+
+	t.Run("no assertions still sets default", func(t *testing.T) {
+		yaml := `
+name: "No Assertions Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+
+		require.NotNil(t, cfg.Assertions.ExitOnFailure)
+		assert.True(t, *cfg.Assertions.ExitOnFailure) // Default applied
+	})
+}

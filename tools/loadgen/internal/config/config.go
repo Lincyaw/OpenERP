@@ -92,6 +92,10 @@ type Config struct {
 	// Workflows defines business workflows for sequential API call execution.
 	// Workflows are executed as complete sequences, with parameter passing between steps.
 	Workflows map[string]workflow.Definition `yaml:"workflows,omitempty" json:"workflows,omitempty"`
+
+	// Assertions configures SLO assertions for validating test results.
+	// Assertions are evaluated at the end of the test.
+	Assertions AssertionConfig `yaml:"assertions,omitempty" json:"assertions,omitempty"`
 }
 
 // InferenceConfig configures the semantic type inference engine.
@@ -435,6 +439,82 @@ type PrometheusOutputConfig struct {
 	Path string `yaml:"path,omitempty" json:"path,omitempty"`
 }
 
+// AssertionConfig configures SLO assertions for load testing.
+// Global assertions apply to all endpoints unless overridden.
+type AssertionConfig struct {
+	// Global assertions apply to overall test results.
+	Global *GlobalAssertions `yaml:"global,omitempty" json:"global,omitempty"`
+
+	// EndpointOverrides allows endpoint-specific assertion overrides.
+	// Key is the endpoint name.
+	EndpointOverrides map[string]EndpointAssertions `yaml:"endpoints,omitempty" json:"endpoints,omitempty"`
+
+	// ExitOnFailure causes the program to return a non-zero exit code
+	// if any assertion fails. Default: true
+	ExitOnFailure *bool `yaml:"exitOnFailure,omitempty" json:"exitOnFailure,omitempty"`
+}
+
+// GlobalAssertions defines SLO thresholds for the entire test.
+type GlobalAssertions struct {
+	// MaxErrorRate is the maximum allowed error rate (0.0 - 100.0).
+	// An assertion fails if the actual error rate exceeds this value.
+	// Example: 1.0 means max 1% error rate.
+	MaxErrorRate *float64 `yaml:"maxErrorRate,omitempty" json:"maxErrorRate,omitempty"`
+
+	// MinSuccessRate is the minimum required success rate (0.0 - 100.0).
+	// An assertion fails if the actual success rate is below this value.
+	// Example: 99.0 means minimum 99% success rate.
+	MinSuccessRate *float64 `yaml:"minSuccessRate,omitempty" json:"minSuccessRate,omitempty"`
+
+	// MaxP50Latency is the maximum allowed P50 (median) latency.
+	// An assertion fails if the actual P50 latency exceeds this value.
+	MaxP50Latency time.Duration `yaml:"maxP50Latency,omitempty" json:"maxP50Latency,omitempty"`
+
+	// MaxP95Latency is the maximum allowed P95 latency.
+	// An assertion fails if the actual P95 latency exceeds this value.
+	MaxP95Latency time.Duration `yaml:"maxP95Latency,omitempty" json:"maxP95Latency,omitempty"`
+
+	// MaxP99Latency is the maximum allowed P99 latency.
+	// An assertion fails if the actual P99 latency exceeds this value.
+	MaxP99Latency time.Duration `yaml:"maxP99Latency,omitempty" json:"maxP99Latency,omitempty"`
+
+	// MaxAvgLatency is the maximum allowed average latency.
+	// An assertion fails if the actual average latency exceeds this value.
+	MaxAvgLatency time.Duration `yaml:"maxAvgLatency,omitempty" json:"maxAvgLatency,omitempty"`
+
+	// MinThroughput is the minimum required throughput (requests per second).
+	// An assertion fails if the actual QPS is below this value.
+	MinThroughput *float64 `yaml:"minThroughput,omitempty" json:"minThroughput,omitempty"`
+}
+
+// EndpointAssertions defines SLO thresholds for a specific endpoint.
+// These override global assertions for the specified endpoint.
+type EndpointAssertions struct {
+	// MaxErrorRate is the maximum allowed error rate (0.0 - 100.0).
+	MaxErrorRate *float64 `yaml:"maxErrorRate,omitempty" json:"maxErrorRate,omitempty"`
+
+	// MinSuccessRate is the minimum required success rate (0.0 - 100.0).
+	MinSuccessRate *float64 `yaml:"minSuccessRate,omitempty" json:"minSuccessRate,omitempty"`
+
+	// MaxP50Latency is the maximum allowed P50 (median) latency.
+	MaxP50Latency time.Duration `yaml:"maxP50Latency,omitempty" json:"maxP50Latency,omitempty"`
+
+	// MaxP95Latency is the maximum allowed P95 latency.
+	MaxP95Latency time.Duration `yaml:"maxP95Latency,omitempty" json:"maxP95Latency,omitempty"`
+
+	// MaxP99Latency is the maximum allowed P99 latency.
+	MaxP99Latency time.Duration `yaml:"maxP99Latency,omitempty" json:"maxP99Latency,omitempty"`
+
+	// MaxAvgLatency is the maximum allowed average latency.
+	MaxAvgLatency time.Duration `yaml:"maxAvgLatency,omitempty" json:"maxAvgLatency,omitempty"`
+
+	// MinThroughput is the minimum required throughput for this endpoint.
+	MinThroughput *float64 `yaml:"minThroughput,omitempty" json:"minThroughput,omitempty"`
+
+	// Disabled skips assertions for this endpoint entirely.
+	Disabled bool `yaml:"disabled,omitempty" json:"disabled,omitempty"`
+}
+
 // LoadFromFile loads configuration from a YAML file.
 func LoadFromFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
@@ -584,6 +664,12 @@ func (c *Config) ApplyDefaults() {
 			c.Output.Prometheus.Path = "/metrics"
 		}
 	}
+
+	// Apply assertion defaults
+	if c.Assertions.ExitOnFailure == nil {
+		exitOnFailure := true
+		c.Assertions.ExitOnFailure = &exitOnFailure
+	}
 }
 
 // GetEndpointByName returns an endpoint by name.
@@ -694,4 +780,49 @@ func (c *Config) WorkflowTotalWeight() int {
 		}
 	}
 	return total
+}
+
+// HasAssertions returns true if any assertions are configured.
+func (c *Config) HasAssertions() bool {
+	global := c.Assertions.Global
+
+	// Check global assertions
+	if global != nil {
+		if global.MaxErrorRate != nil ||
+			global.MinSuccessRate != nil ||
+			global.MaxP50Latency > 0 ||
+			global.MaxP95Latency > 0 ||
+			global.MaxP99Latency > 0 ||
+			global.MaxAvgLatency > 0 ||
+			global.MinThroughput != nil {
+			return true
+		}
+	}
+
+	// Check endpoint assertions
+	for _, assertions := range c.Assertions.EndpointOverrides {
+		if assertions.Disabled {
+			continue
+		}
+		if assertions.MaxErrorRate != nil ||
+			assertions.MinSuccessRate != nil ||
+			assertions.MaxP50Latency > 0 ||
+			assertions.MaxP95Latency > 0 ||
+			assertions.MaxP99Latency > 0 ||
+			assertions.MaxAvgLatency > 0 ||
+			assertions.MinThroughput != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
+// ShouldExitOnAssertionFailure returns whether the program should exit
+// with non-zero exit code when assertions fail.
+func (c *Config) ShouldExitOnAssertionFailure() bool {
+	if c.Assertions.ExitOnFailure == nil {
+		return true // Default to true
+	}
+	return *c.Assertions.ExitOnFailure
 }
