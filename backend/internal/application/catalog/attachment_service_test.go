@@ -1058,7 +1058,8 @@ func TestIsAllowedContentType(t *testing.T) {
 		{"image/png", true},
 		{"image/gif", true},
 		{"image/webp", true},
-		{"image/svg+xml", true},
+		{"image/bmp", true},
+		{"image/tiff", true},
 		{"IMAGE/JPEG", true}, // Case insensitive
 		// Allowed document types
 		{"application/pdf", true},
@@ -1076,12 +1077,86 @@ func TestIsAllowedContentType(t *testing.T) {
 		{"text/html", false},
 		{"application/x-shellscript", false},
 		{"", false},
+		// SECURITY: SVG is disallowed due to XSS risk
+		{"image/svg+xml", false},
+		{"IMAGE/SVG+XML", false}, // Case insensitive check
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.contentType, func(t *testing.T) {
 			result := isAllowedContentType(tt.contentType)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// ============================================================================
+// SVG XSS Security Tests
+// ============================================================================
+
+func TestAttachmentService_InitiateUpload_SVG_XSS_Blocked(t *testing.T) {
+	service, mockAttachmentRepo, mockProductRepo, _ := newTestAttachmentService()
+
+	ctx := context.Background()
+	tenantID := newAttachmentTestTenantID()
+	productID := newAttachmentTestProductID()
+	product := createTestProduct(tenantID)
+	userID := uuid.New()
+
+	mockProductRepo.On("FindByIDForTenant", ctx, tenantID, productID).Return(product, nil)
+	mockAttachmentRepo.On("CountActiveByProduct", ctx, tenantID, productID).Return(int64(5), nil)
+
+	// Test various SVG content type variations that should all be blocked
+	svgContentTypes := []string{
+		"image/svg+xml",
+		"IMAGE/SVG+XML",
+		"image/SVG+xml",
+	}
+
+	for _, contentType := range svgContentTypes {
+		t.Run("blocks_"+contentType, func(t *testing.T) {
+			req := InitiateUploadRequest{
+				ProductID:   productID,
+				Type:        "gallery_image",
+				FileName:    "malicious.svg",
+				FileSize:    1024,
+				ContentType: contentType,
+			}
+
+			result, err := service.InitiateUpload(ctx, tenantID, req, &userID)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+			var domainErr *shared.DomainError
+			assert.ErrorAs(t, err, &domainErr)
+			assert.Equal(t, "DISALLOWED_CONTENT_TYPE", domainErr.Code)
+		})
+	}
+}
+
+func TestAttachmentService_SVG_XSS_Payloads_Are_Blocked(t *testing.T) {
+	// This test documents various SVG XSS payloads that are now blocked
+	// by removing SVG from the allowed content types
+	xssPayloads := []struct {
+		name        string
+		description string
+	}{
+		{"script_tag", "SVG with <script>alert('XSS')</script>"},
+		{"onload", "SVG with onload event: <svg onload=alert('XSS')>"},
+		{"onerror_image", "SVG with <image xlink:href=x onerror=alert('XSS')>"},
+		{"animate_xlink", "SVG with <animate xlink:href=#xss attributeName=href values=javascript:alert(1)>"},
+		{"use_xlink", "SVG with <use xlink:href=data:image/svg+xml,<svg onload=alert(1)>>"},
+		{"foreignObject", "SVG with <foreignObject> containing HTML/scripts"},
+		{"set_event", "SVG with <set attributeName=onmouseover to=alert(1)>"},
+		{"handler_attribute", "SVG with handler attribute exploits"},
+		{"xml_entity", "SVG with XML entity expansion attacks"},
+	}
+
+	for _, payload := range xssPayloads {
+		t.Run("svg_xss_"+payload.name+"_is_blocked", func(t *testing.T) {
+			// All these attack vectors are now blocked because SVG uploads are rejected
+			result := isAllowedContentType("image/svg+xml")
+			assert.False(t, result, "SVG should be blocked to prevent: %s", payload.description)
 		})
 	}
 }

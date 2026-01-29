@@ -16,15 +16,16 @@ import (
 
 // AllowedContentTypes defines the whitelist of allowed content types for uploads
 // This prevents uploading potentially dangerous file types (executables, scripts, etc.)
+// SECURITY: SVG files are explicitly NOT allowed due to XSS risk (can contain <script> tags
+// and inline event handlers like onload, onerror, etc.)
 var AllowedContentTypes = map[string]bool{
-	// Images
-	"image/jpeg":    true,
-	"image/png":     true,
-	"image/gif":     true,
-	"image/webp":    true,
-	"image/svg+xml": true,
-	"image/bmp":     true,
-	"image/tiff":    true,
+	// Images (SVG excluded - XSS risk)
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/gif":  true,
+	"image/webp": true,
+	"image/bmp":  true,
+	"image/tiff": true,
 	// Documents
 	"application/pdf":    true,
 	"application/msword": true,

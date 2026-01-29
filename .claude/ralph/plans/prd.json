@@ -12589,7 +12589,7 @@
       "如需保留 SVG 支持，使用 Content-Disposition: attachment 强制下载",
       "添加 SVG 注入测试用例"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-SEC-002",

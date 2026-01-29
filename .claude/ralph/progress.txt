@@ -40491,3 +40491,71 @@ Note: The requirement mentioned `rustfs_storage.go` but since S3ObjectStorage is
 - Wire S3ObjectStorage into the application service layer (replace StubObjectStorage)
 - Call EnsureBucket() during application startup
 - Add integration tests with actual RustFS container
+
+================================================================================
+2025-01-29 - Task ATTACH-SEC-001: 修复商品附件安全漏洞 - SVG XSS
+================================================================================
+
+=== Implementation Details ===
+
+Removed SVG (image/svg+xml) from the AllowedContentTypes whitelist in the product
+attachment service to prevent XSS attacks through malicious SVG file uploads.
+
+**Why SVG is a security risk:**
+- SVG is XML-based and can contain `<script>` tags
+- SVG elements can have inline event handlers (onload, onerror, onclick, etc.)
+- SVG can include `<foreignObject>` elements with embedded HTML
+- SVG supports `<animate>` and `<set>` elements that can execute JavaScript
+- SVG XML entity expansion can be exploited for XXE attacks
+
+**Changes Made:**
+
+1. `backend/internal/application/catalog/attachment_service.go`
+   - Removed `"image/svg+xml": true` from AllowedContentTypes map
+   - Added security comment explaining why SVG is excluded
+
+2. `backend/internal/application/catalog/attachment_service_test.go`
+   - Updated TestIsAllowedContentType to verify SVG is rejected
+   - Added TestAttachmentService_InitiateUpload_SVG_XSS_Blocked for integration testing
+   - Added TestAttachmentService_SVG_XSS_Payloads_Are_Blocked documenting attack vectors
+
+**Security Analysis:**
+- Case-insensitive matching via `strings.ToLower()` prevents bypass
+- Whitelist approach is inherently safer than blacklist
+- All SVG content-type variations are blocked
+
+=== Verification ===
+
+- [x] All unit tests pass: `go test ./internal/application/catalog/...`
+- [x] Build succeeds: `go build ./...`
+- [x] Go vet passes: `go vet ./internal/application/catalog/...`
+- [x] Security review: APPROVED (no critical/high issues)
+- [x] Code review: APPROVED (code quality good)
+
+=== Security Review Notes ===
+
+One MEDIUM recommendation for future enhancement:
+- Consider adding file extension validation to cross-validate content-type
+- This prevents content-type spoofing attacks (e.g., SVG uploaded as image/png)
+
+=== Files Modified ===
+
+| File | Changes |
+|------|---------|
+| backend/internal/application/catalog/attachment_service.go | Removed SVG from allowed types |
+| backend/internal/application/catalog/attachment_service_test.go | Added SVG XSS rejection tests |
+| .claude/ralph/plans/prd.json | Set passes: true |
+
+=== Requirements Checklist ===
+
+- [x] 从 AllowedContentTypes 中移除 image/svg+xml - DONE
+- [N/A] 如需保留 SVG 支持，使用 Content-Disposition: attachment - NOT NEEDED (SVG removed)
+- [x] 添加 SVG 注入测试用例 - DONE (3 test functions added)
+
+=== Next Steps ===
+
+- Consider implementing file extension validation (ATTACH-SEC-002 related)
+- Consider magic byte verification for uploaded files (defense in depth)
+- ATTACH-SEC-002: 修复 StorageKey 暴露问题
+- ATTACH-SEC-003: 增加文件类型嗅探防护
+
