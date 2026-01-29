@@ -8001,7 +8001,7 @@
       "编写测试验证 JSON 结构完整性",
       "验收标准：生成的 JSON 可被其他工具解析"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-025",

@@ -36,6 +36,8 @@ var (
 	openapiPath   string
 	inferDryRun   bool
 	minConfidence float64
+	outputFormat  string
+	outputFile    string
 )
 
 func init() {
@@ -65,6 +67,10 @@ func init() {
 	// Inference flags
 	flag.BoolVar(&inferDryRun, "infer", false, "Run semantic type inference on OpenAPI spec (dry-run mode)")
 	flag.Float64Var(&minConfidence, "min-confidence", 0.7, "Minimum confidence threshold for inference (0.0-1.0)")
+
+	// Output flags
+	flag.StringVar(&outputFormat, "output", "", "Output format: console, json, or console,json (enables JSON report)")
+	flag.StringVar(&outputFile, "output-file", "", "JSON output file path (overrides config, supports {{.Timestamp}})")
 
 	// Custom usage
 	flag.Usage = printUsage
@@ -101,12 +107,22 @@ UTILITY OPTIONS:
     -version              Show version information
     -help, -h             Show this help message
 
+OUTPUT OPTIONS:
+    -output <format>      Output format: console, json, or console,json
+    -output-file <path>   JSON output file (supports {{.Timestamp}} template)
+
 EXAMPLES:
     # Run with default configuration
     loadgen -config configs/erp.yaml
 
     # Run with overridden duration and QPS
     loadgen -config configs/erp.yaml -duration 10m -qps 50
+
+    # Generate JSON report
+    loadgen -config configs/erp.yaml -output json
+
+    # Generate JSON report with custom file path
+    loadgen -config configs/erp.yaml -output json -output-file results/test-{{.Timestamp}}.json
 
     # List all configured endpoints
     loadgen -config configs/erp.yaml -list
@@ -245,6 +261,27 @@ func applyOverrides(cfg *config.Config) {
 
 	if verbose {
 		cfg.Output.Verbose = true
+	}
+
+	// Apply output format override
+	if outputFormat != "" {
+		cfg.Output.Type = outputFormat
+		// Enable JSON output if format includes "json"
+		if strings.Contains(strings.ToLower(outputFormat), "json") {
+			cfg.Output.JSON.Enabled = true
+			if verbose {
+				fmt.Printf("Override: output format = %s (JSON enabled)\n", outputFormat)
+			}
+		}
+	}
+
+	// Apply output file override
+	if outputFile != "" {
+		cfg.Output.JSON.Enabled = true
+		cfg.Output.JSON.File = outputFile
+		if verbose {
+			fmt.Printf("Override: output file = %s\n", outputFile)
+		}
 	}
 }
 

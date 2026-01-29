@@ -373,9 +373,11 @@ type ScenarioConfig struct {
 // OutputConfig configures output and reporting.
 type OutputConfig struct {
 	// Type is the output type: "console", "json", "csv", "html".
+	// Can be combined with comma separation: "console,json"
 	Type string `yaml:"type,omitempty" json:"type,omitempty"`
 
 	// Path is the output file path (for file outputs).
+	// Deprecated: Use JSON.File instead.
 	Path string `yaml:"path,omitempty" json:"path,omitempty"`
 
 	// ReportInterval is how often to print progress reports.
@@ -384,6 +386,36 @@ type OutputConfig struct {
 
 	// Verbose enables verbose output.
 	Verbose bool `yaml:"verbose,omitempty" json:"verbose,omitempty"`
+
+	// JSON configures JSON output.
+	JSON JSONOutputConfig `yaml:"json,omitempty" json:"json,omitempty"`
+
+	// Console configures console output.
+	Console ConsoleOutputConfig `yaml:"console,omitempty" json:"console,omitempty"`
+}
+
+// JSONOutputConfig configures JSON report output.
+type JSONOutputConfig struct {
+	// Enabled enables JSON output.
+	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+
+	// File is the output file path.
+	// Supports template variables:
+	// - {{.Timestamp}} - Current timestamp in format YYYYMMDD-HHMMSS
+	// - {{.Date}} - Current date in format YYYY-MM-DD
+	// - {{.Time}} - Current time in format HHMMSS
+	// Default: "./results/loadgen-{{.Timestamp}}.json"
+	File string `yaml:"file,omitempty" json:"file,omitempty"`
+}
+
+// ConsoleOutputConfig configures console output.
+type ConsoleOutputConfig struct {
+	// Enabled enables console output. Default: true
+	Enabled *bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+
+	// Interval is the refresh interval for real-time display.
+	// Default: 500ms
+	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty"`
 }
 
 // LoadFromFile loads configuration from a YAML file.
@@ -510,6 +542,20 @@ func (c *Config) ApplyDefaults() {
 	// Apply output defaults
 	if c.Output.ReportInterval == 0 {
 		c.Output.ReportInterval = 10 * time.Second
+	}
+
+	// Apply console output defaults
+	if c.Output.Console.Enabled == nil {
+		enabled := true
+		c.Output.Console.Enabled = &enabled
+	}
+	if c.Output.Console.Interval == 0 {
+		c.Output.Console.Interval = 500 * time.Millisecond
+	}
+
+	// Apply JSON output defaults
+	if c.Output.JSON.Enabled && c.Output.JSON.File == "" {
+		c.Output.JSON.File = "./results/loadgen-{{.Timestamp}}.json"
 	}
 }
 

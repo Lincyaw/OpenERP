@@ -37640,3 +37640,96 @@ sequential execution of business processes with parameter passing between steps.
 - LOADGEN-024: JSON Report Output
 - Consider adding workflow-specific metrics to console output
 - Consider workflow chaining (one workflow triggers another)
+
+
+================================================================================
+2026-01-29 - LOADGEN-024: JSON Report Output - COMPLETE
+================================================================================
+
+=== Task Summary ===
+Implemented comprehensive JSON report generation for the load generator, enabling
+structured output that can be parsed by external tools for CI/CD integration
+and automated analysis.
+
+=== Implementation Details ===
+
+1. JSON Reporter (internal/metrics/reporter.go):
+   - Created new Reporter type with version tracking
+   - JSONReport struct with full test results:
+     - Metadata: version, timestamp, generator
+     - Configuration: test config, traffic shaper, rate limiter, worker pool, warmup, workflows
+     - Summary: request counts, success rate, QPS, latency stats
+     - Endpoints: per-endpoint statistics sorted alphabetically for deterministic output
+     - StatusCodes: status code distribution with string keys
+     - LatencyDistribution: histogram buckets
+     - Errors: error list with endpoint and count
+   - Duration type with custom JSON marshaling (seconds + display string)
+   - Path template expansion: {{.Timestamp}}, {{.Date}}, {{.Time}}
+   - Automatic directory creation with filepath.Clean for path safety
+
+2. Config Extensions (internal/config/config.go):
+   - Added JSONOutputConfig struct:
+     - Enabled: bool to enable JSON output
+     - File: path with template support, default "./results/loadgen-{{.Timestamp}}.json"
+   - Added ConsoleOutputConfig struct:
+     - Enabled: *bool with default true
+     - Interval: refresh interval, default 500ms
+   - Updated ApplyDefaults() to set default values
+
+3. CLI Integration (cmd/main.go):
+   - Added -output flag: accepts "console", "json", or "console,json"
+   - Added -output-file flag: custom JSON output path
+   - Updated help documentation with OUTPUT OPTIONS section
+   - Updated applyOverrides() to handle output flags
+
+4. Tests Created (internal/metrics/reporter_test.go):
+   - TestNewReporter: Basic initialization
+   - TestReporter_GenerateReport: Full report generation with all options
+   - TestReporter_ToJSON: JSON serialization
+   - TestReporter_WriteToFile: File writing with templates
+   - TestExpandPathTemplate: Path template expansion
+   - TestDuration_MarshalJSON/UnmarshalJSON: Custom JSON handling
+   - TestJSONReport_RoundTrip: Marshal/unmarshal cycle
+   - TestJSONReport_ExternalToolCompatibility: Verify jq-style access works
+   - TestLatencyDistribution: Histogram generation
+   - TestReporter_EmptySnapshot: Edge case handling
+   - TestFormatDurationString: Duration formatting
+   - Coverage: 87.6% (exceeds 80% requirement)
+
+=== Key Files Modified/Created ===
+- tools/loadgen/internal/metrics/reporter.go (created - 530 lines)
+- tools/loadgen/internal/metrics/reporter_test.go (created - 607 lines)
+- tools/loadgen/internal/config/config.go (modified - added output config types)
+- tools/loadgen/cmd/main.go (modified - added CLI flags)
+
+=== Acceptance Criteria Verification ===
+✅ 实现 internal/metrics/reporter.go JSON 报告生成 - Reporter struct implemented
+✅ 包含完整测试结果：配置、统计、端点详情、错误列表 - All fields included in JSONReport
+✅ 支持 output.json.file 配置（支持 {{.Timestamp}} 模板）- JSONOutputConfig.File with template expansion
+✅ 支持 -output json 命令行参数 - CLI flags -output and -output-file added
+✅ 编写测试验证 JSON 结构完整性 - 87.6% coverage with comprehensive tests
+✅ 验收标准：生成的 JSON 可被其他工具解析 - TestJSONReport_ExternalToolCompatibility verifies this
+
+=== Test Results ===
+- All loadgen tests pass (14 packages)
+- Reporter tests: 100% pass rate
+- Coverage: 87.6% of statements
+
+=== Design Decisions ===
+1. Endpoints sorted alphabetically for deterministic JSON output
+2. Status codes stored with string keys ("200" not 200) for JSON compatibility
+3. Duration stored as both seconds (numeric) and display (human-readable)
+4. Latency distribution is approximate (based on percentiles, not raw samples)
+5. Path template expansion happens at write time for dynamic timestamps
+6. filepath.Clean used for path sanitization (defense in depth)
+
+=== Code Review Feedback (Addressed) ===
+- Added sort.Strings for deterministic endpoint ordering
+- Added filepath.Clean for path safety
+- Test coverage exceeds 80% threshold
+- No critical security issues identified
+
+=== Next Steps ===
+- LOADGEN-025: HTML Report Generation
+- Consider adding actual latency histogram data from Collector
+- Consider refactoring cmd/main.go (791 lines, near 800 limit)
