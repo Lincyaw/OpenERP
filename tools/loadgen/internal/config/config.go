@@ -438,6 +438,9 @@ type OutputConfig struct {
 	// JSON configures JSON output.
 	JSON JSONOutputConfig `yaml:"json,omitempty" json:"json,omitempty"`
 
+	// HTML configures HTML output.
+	HTML HTMLOutputConfig `yaml:"html,omitempty" json:"html,omitempty"`
+
 	// Console configures console output.
 	Console ConsoleOutputConfig `yaml:"console,omitempty" json:"console,omitempty"`
 
@@ -456,6 +459,20 @@ type JSONOutputConfig struct {
 	// - {{.Date}} - Current date in format YYYY-MM-DD
 	// - {{.Time}} - Current time in format HHMMSS
 	// Default: "./results/loadgen-{{.Timestamp}}.json"
+	File string `yaml:"file,omitempty" json:"file,omitempty"`
+}
+
+// HTMLOutputConfig configures HTML report output.
+type HTMLOutputConfig struct {
+	// Enabled enables HTML output.
+	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+
+	// File is the output file path.
+	// Supports template variables:
+	// - {{.Timestamp}} - Current timestamp in format YYYYMMDD-HHMMSS
+	// - {{.Date}} - Current date in format YYYY-MM-DD
+	// - {{.Time}} - Current time in format HHMMSS
+	// Default: "./results/loadgen-{{.Timestamp}}.html"
 	File string `yaml:"file,omitempty" json:"file,omitempty"`
 }
 
@@ -704,6 +721,11 @@ func (c *Config) ApplyDefaults() {
 	// Apply JSON output defaults
 	if c.Output.JSON.Enabled && c.Output.JSON.File == "" {
 		c.Output.JSON.File = "./results/loadgen-{{.Timestamp}}.json"
+	}
+
+	// Apply HTML output defaults
+	if c.Output.HTML.Enabled && c.Output.HTML.File == "" {
+		c.Output.HTML.File = "./results/loadgen-{{.Timestamp}}.html"
 	}
 
 	// Apply Prometheus output defaults

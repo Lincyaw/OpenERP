@@ -38946,3 +38946,63 @@ session:
 - Consider integrating SessionSimulator into the executor workflow for session-aware load testing
 - Add session-aware endpoint selection (different behaviors select different endpoints)
 - Add metrics export for session statistics (active sessions, behavior distribution, etc.)
+
+---
+
+2026-01-29 - Task ID: LOADGEN-025 - HTML Report Generation
+
+=== Implementation Details ===
+
+Implemented comprehensive HTML report generation for the load generator:
+
+1. **HTMLOutputConfig in config.go**
+   - Added `HTMLOutputConfig` struct with `Enabled` and `File` fields
+   - Added `HTML` field to `OutputConfig` struct
+   - Added defaults in `ApplyDefaults()`: `./results/loadgen-{{.Timestamp}}.html`
+   - Supports same template variables as JSON output
+
+2. **HTMLReporter (html_reporter.go)**
+   - Created `NewHTMLReporter()` constructor
+   - Implemented `GenerateHTML()` to produce standalone HTML reports
+   - Implemented `WriteHTMLToFile()` with path template expansion
+   - Structured data types for template rendering: `HTMLReport`, `StatusCodeData`, `LatencyBucketData`, `EndpointData`, `ErrorData`, `WorkflowData`
+
+3. **HTML Template Features**
+   - Embedded CSS with modern design (CSS variables, responsive grid)
+   - Chart.js CDN integration for interactive charts
+   - Three charts: Status Code Distribution (doughnut), Latency Histogram (bar), Endpoint Distribution (horizontal bar)
+   - Summary statistics cards (Total Requests, Success Rate, QPS, Throughput)
+   - Latency grid (Min, Avg, P50, P95, P99, Max)
+   - Configuration section (test name, target URL, duration, traffic shaper, rate limiter, worker pool)
+   - Endpoint statistics table with full latency breakdown
+   - Conditional sections for errors and workflows (only rendered when present)
+   - Footer with generator version
+
+4. **Key Files Modified/Created**
+   - `tools/loadgen/internal/config/config.go`: Added HTMLOutputConfig
+   - `tools/loadgen/internal/metrics/html_reporter.go`: New file, HTML report generation
+   - `tools/loadgen/internal/metrics/html_reporter_test.go`: New file, comprehensive tests
+
+=== Verification ===
+
+- All tests pass: `go test ./internal/metrics/...`
+- Coverage: 90.9% (exceeds 80% requirement)
+- Race detection: No data races detected (`go test -race`)
+- Build succeeds: `go build ./...`
+- All loadgen tests pass: `go test ./...`
+- Acceptance criteria verified: HTML report renders correctly in browser with charts and tables
+
+=== Design Decisions ===
+
+1. **Chart.js CDN**: Used Chart.js from CDN rather than embedding for smaller file size and automatic updates
+2. **Standalone HTML**: All CSS is embedded, making the HTML file self-contained and shareable
+3. **Responsive design**: Grid layout adapts to different screen sizes (desktop, tablet, mobile)
+4. **Conditional sections**: Errors and workflows sections only rendered when data exists
+5. **Separate formatBytesPerSec**: Created new function to avoid conflict with existing formatBytes in console.go
+6. **Template.JS type**: Used for safe JSON embedding in script tag without XSS concerns
+
+=== Next Steps ===
+
+- Consider adding throughput over time chart (would require time-series data collection)
+- Add PDF export option using headless browser rendering
+- Consider dark mode theme option
