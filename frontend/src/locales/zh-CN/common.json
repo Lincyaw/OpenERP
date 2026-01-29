@@ -412,6 +412,7 @@
     "title": "导入记录",
     "description": "查看和管理所有批量导入操作",
     "tip": "此页面显示所有批量导入的历史记录。您可以查看详情并下载错误报告。",
+    "downloadTemplates": "下载模板",
     "columns": {
       "id": "导入ID",
       "entityType": "数据类型",

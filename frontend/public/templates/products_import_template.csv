@@ -1,0 +1,3 @@
+﻿name,category_code,base_unit,purchase_price,selling_price,sku,barcode,description,status,min_stock_level,max_stock_level,attributes
+示例商品A,CAT001,个,10.00,15.00,SKU001,6901234567890,这是一个示例商品描述,active,10,100,"{""color"":""red""}"
+示例商品B,CAT002,件,20.50,35.00,SKU002,6901234567891,另一个示例商品,active,5,50,

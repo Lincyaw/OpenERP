@@ -553,6 +553,7 @@ export default function ProductsPage() {
         visible={importWizardVisible}
         onClose={() => setImportWizardVisible(false)}
         onSuccess={fetchProducts}
+        templateUrl="/templates/products_import_template.csv"
       />
     </Container>
   )

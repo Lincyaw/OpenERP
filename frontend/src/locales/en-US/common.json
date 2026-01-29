@@ -412,6 +412,7 @@
     "title": "Import History",
     "description": "View and manage all bulk import operations",
     "tip": "This page shows the history of all bulk imports. You can view details and download error reports.",
+    "downloadTemplates": "Download Templates",
     "columns": {
       "id": "Import ID",
       "entityType": "Entity Type",

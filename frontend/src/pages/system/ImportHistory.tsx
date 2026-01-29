@@ -9,8 +9,10 @@ import {
   Spin,
   Banner,
   Empty,
+  Dropdown,
+  Button,
 } from '@douyinfe/semi-ui-19'
-import { IconRefresh, IconDownload } from '@douyinfe/semi-icons'
+import { IconRefresh, IconDownload, IconChevronDown } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
@@ -59,6 +61,14 @@ const ENTITY_TYPE_COLORS: Record<string, string> = {
   suppliers: 'indigo',
   inventory: 'teal',
   categories: 'pink',
+}
+
+// Template URLs for each entity type
+const TEMPLATE_URLS: Record<string, string> = {
+  products: '/templates/products_import_template.csv',
+  customers: '/templates/customers_import_template.csv',
+  suppliers: '/templates/suppliers_import_template.csv',
+  inventory: '/templates/inventory_import_template.csv',
 }
 
 /**
@@ -205,6 +215,14 @@ export default function ImportHistoryPage() {
   const handleRefresh = useCallback(() => {
     fetchHistory()
   }, [fetchHistory])
+
+  // Handle template download
+  const handleDownloadTemplate = useCallback((entityType: string) => {
+    const url = TEMPLATE_URLS[entityType]
+    if (url) {
+      window.open(url, '_blank')
+    }
+  }, [])
 
   // Format duration
   const formatDuration = useCallback((durationMs?: number): string => {
@@ -372,6 +390,35 @@ export default function ImportHistoryPage() {
                 optionList={STATUS_OPTIONS}
                 style={{ width: 130 }}
               />
+              <Dropdown
+                trigger="click"
+                position="bottomRight"
+                render={
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={() => handleDownloadTemplate('products')}>
+                      <IconDownload style={{ marginRight: 8 }} />
+                      {t('import.entityTypes.products')}
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleDownloadTemplate('customers')}>
+                      <IconDownload style={{ marginRight: 8 }} />
+                      {t('import.entityTypes.customers')}
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleDownloadTemplate('suppliers')}>
+                      <IconDownload style={{ marginRight: 8 }} />
+                      {t('import.entityTypes.suppliers')}
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => handleDownloadTemplate('inventory')}>
+                      <IconDownload style={{ marginRight: 8 }} />
+                      {t('import.entityTypes.inventory')}
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                }
+              >
+                <Button icon={<IconDownload />} iconPosition="left">
+                  {t('importHistory.downloadTemplates')}
+                  <IconChevronDown style={{ marginLeft: 4 }} />
+                </Button>
+              </Dropdown>
             </Space>
           }
         />

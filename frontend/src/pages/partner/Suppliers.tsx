@@ -606,6 +606,7 @@ export default function SuppliersPage() {
         visible={importWizardVisible}
         onClose={() => setImportWizardVisible(false)}
         onSuccess={fetchSuppliers}
+        templateUrl="/templates/suppliers_import_template.csv"
       />
     </Container>
   )

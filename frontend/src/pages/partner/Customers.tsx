@@ -681,6 +681,7 @@ export default function CustomersPage() {
         visible={importWizardVisible}
         onClose={() => setImportWizardVisible(false)}
         onSuccess={fetchCustomers}
+        templateUrl="/templates/customers_import_template.csv"
       />
     </Container>
   )

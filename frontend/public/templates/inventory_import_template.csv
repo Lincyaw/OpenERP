@@ -1,0 +1,3 @@
+﻿product_sku,warehouse_code,quantity,unit_cost,batch_number,production_date,expiry_date,notes
+SKU001,WH001,100,10.00,BATCH20240101,2024-01-01,2025-12-31,首批入库
+SKU002,WH001,50,20.50,BATCH20240201,2024-02-01,2026-06-30,第二批采购

@@ -560,6 +560,7 @@ export default function StockListPage() {
         visible={importWizardVisible}
         onClose={() => setImportWizardVisible(false)}
         onSuccess={fetchInventory}
+        templateUrl="/templates/inventory_import_template.csv"
       />
     </Container>
   )
