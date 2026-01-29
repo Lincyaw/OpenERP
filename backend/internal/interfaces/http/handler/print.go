@@ -26,33 +26,8 @@ func NewPrintHandler(printService *printingapp.PrintService) *PrintHandler {
 }
 
 // =============================================================================
-// Template Endpoints
+// Request/Response Types
 // =============================================================================
-
-// CreateTemplateRequest represents a request to create a new print template
-//
-//	@Description	Request body for creating a new print template
-type CreateTemplateRequest struct {
-	DocumentType string          `json:"document_type" binding:"required" example:"SALES_ORDER"`
-	Name         string          `json:"name" binding:"required,min=1,max=100" example:"Default Sales Order Template"`
-	Description  string          `json:"description" binding:"max=500" example:"Standard template for sales orders"`
-	Content      string          `json:"content" binding:"required" example:"<html>...template content...</html>"`
-	PaperSize    string          `json:"paper_size" binding:"required" example:"A4"`
-	Orientation  string          `json:"orientation" example:"PORTRAIT"`
-	Margins      *MarginsRequest `json:"margins"`
-}
-
-// UpdateTemplateRequest represents a request to update a print template
-//
-//	@Description	Request body for updating a print template
-type UpdateTemplateRequest struct {
-	Name        *string         `json:"name" binding:"omitempty,min=1,max=100" example:"Updated Template Name"`
-	Description *string         `json:"description" binding:"omitempty,max=500" example:"Updated description"`
-	Content     *string         `json:"content"`
-	PaperSize   *string         `json:"paper_size" example:"A5"`
-	Orientation *string         `json:"orientation" example:"LANDSCAPE"`
-	Margins     *MarginsRequest `json:"margins"`
-}
 
 // MarginsRequest represents page margins in the request
 type MarginsRequest struct {
@@ -89,7 +64,6 @@ type GeneratePDFHTTPRequest struct {
 //	@Description	Print template response
 type TemplateResponse struct {
 	ID           string          `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID     string          `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 	DocumentType string          `json:"document_type" example:"SALES_ORDER"`
 	Name         string          `json:"name" example:"Default Sales Order Template"`
 	Description  string          `json:"description" example:"Standard template for sales orders"`
@@ -98,8 +72,6 @@ type TemplateResponse struct {
 	Margins      MarginsResponse `json:"margins"`
 	IsDefault    bool            `json:"is_default" example:"true"`
 	Status       string          `json:"status" example:"ACTIVE"`
-	CreatedAt    string          `json:"created_at" example:"2024-01-15T10:30:00Z"`
-	UpdatedAt    string          `json:"updated_at" example:"2024-01-15T10:30:00Z"`
 }
 
 // MarginsResponse represents page margins in the response
@@ -158,377 +130,15 @@ type PaperSizeResponse struct {
 	Height int    `json:"height" example:"297"`
 }
 
-// CreateTemplate godoc
-// @ID           createPrintTemplateTemplate
-//
-//	@Summary		Create a new print template
-//	@Description	Create a new print template for a specific document type
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body		CreateTemplateRequest	true	"Template creation request"
-//	@Success		201		{object}	APIResponse[TemplateResponse]
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		401		{object}	ErrorResponse
-//	@Failure		409		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates [post]
-func (h *PrintHandler) CreateTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	var req CreateTemplateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		h.BadRequest(c, err.Error())
-		return
-	}
-
-	appReq := printingapp.CreateTemplateRequest{
-		DocumentType: req.DocumentType,
-		Name:         req.Name,
-		Description:  req.Description,
-		Content:      req.Content,
-		PaperSize:    req.PaperSize,
-		Orientation:  req.Orientation,
-	}
-
-	if req.Margins != nil {
-		appReq.Margins = &printingapp.MarginsDTO{
-			Top:    req.Margins.Top,
-			Right:  req.Margins.Right,
-			Bottom: req.Margins.Bottom,
-			Left:   req.Margins.Left,
-		}
-	}
-
-	result, err := h.printService.CreateTemplate(c.Request.Context(), tenantID, appReq)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Created(c, result)
-}
-
-// GetTemplate godoc
-// @ID           getPrintTemplateTemplate
-//
-//	@Summary		Get print template by ID
-//	@Description	Retrieve a print template by its ID
-//	@Tags			print-templates
-//	@Produce		json
-//	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	APIResponse[TemplateResponse]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id} [get]
-func (h *PrintHandler) GetTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	result, err := h.printService.GetTemplate(c.Request.Context(), tenantID, templateID)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
-
-// ListTemplates godoc
-// @ID           listPrintTemplateTemplates
-//
-//	@Summary		List print templates
-//	@Description	Retrieve a paginated list of print templates
-//	@Tags			print-templates
-//	@Produce		json
-//	@Param			page		query		int		false	"Page number"		default(1)
-//	@Param			page_size	query		int		false	"Page size"			default(20)
-//	@Param			order_by	query		string	false	"Order by field"	default(created_at)
-//	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
-//	@Param			search		query		string	false	"Search term"
-//	@Param			doc_type	query		string	false	"Filter by document type"
-//	@Param			status		query		string	false	"Filter by status"
-//	@Success		200			{object}	APIResponse[[]TemplateResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates [get]
-func (h *PrintHandler) ListTemplates(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	req := printingapp.ListTemplatesRequest{
-		Page:     1,
-		PageSize: 20,
-		OrderBy:  "created_at",
-		OrderDir: "desc",
-	}
-
-	if err := c.ShouldBindQuery(&req); err != nil {
-		h.BadRequest(c, err.Error())
-		return
-	}
-
-	// Apply defaults if not provided
-	if req.Page < 1 {
-		req.Page = 1
-	}
-	if req.PageSize < 1 {
-		req.PageSize = 20
-	}
-
-	result, err := h.printService.ListTemplates(c.Request.Context(), tenantID, req)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.SuccessWithMeta(c, result.Items, result.Total, result.Page, result.Size)
-}
-
-// UpdateTemplate godoc
-// @ID           updatePrintTemplateTemplate
-//
-//	@Summary		Update print template
-//	@Description	Update an existing print template
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			id		path		string					true	"Template ID"	format(uuid)
-//	@Param			request	body		UpdateTemplateRequest	true	"Template update request"
-//	@Success		200		{object}	APIResponse[TemplateResponse]
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
-//	@Failure		409		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id} [put]
-func (h *PrintHandler) UpdateTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	var req UpdateTemplateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		h.BadRequest(c, err.Error())
-		return
-	}
-
-	appReq := printingapp.UpdateTemplateRequest{
-		Name:        req.Name,
-		Description: req.Description,
-		Content:     req.Content,
-		PaperSize:   req.PaperSize,
-		Orientation: req.Orientation,
-	}
-
-	if req.Margins != nil {
-		appReq.Margins = &printingapp.MarginsDTO{
-			Top:    req.Margins.Top,
-			Right:  req.Margins.Right,
-			Bottom: req.Margins.Bottom,
-			Left:   req.Margins.Left,
-		}
-	}
-
-	result, err := h.printService.UpdateTemplate(c.Request.Context(), tenantID, templateID, appReq)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
-
-// DeleteTemplate godoc
-// @ID           deletePrintTemplateTemplate
-//
-//	@Summary		Delete print template
-//	@Description	Delete an existing print template
-//	@Tags			print-templates
-//	@Produce		json
-//	@Param			id	path	string	true	"Template ID"	format(uuid)
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		422	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id} [delete]
-func (h *PrintHandler) DeleteTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	if err := h.printService.DeleteTemplate(c.Request.Context(), tenantID, templateID); err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.NoContent(c)
-}
-
-// SetDefaultTemplate godoc
-// @ID           setDefaultTemplatePrintTemplate
-//
-//	@Summary		Set template as default
-//	@Description	Set a template as the default for its document type
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	APIResponse[TemplateResponse]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		422	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id}/set-default [post]
-func (h *PrintHandler) SetDefaultTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	result, err := h.printService.SetDefaultTemplate(c.Request.Context(), tenantID, templateID)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
-
-// ActivateTemplate godoc
-// @ID           activateTemplatePrintTemplate
-//
-//	@Summary		Activate template
-//	@Description	Activate an inactive print template
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	APIResponse[TemplateResponse]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		422	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id}/activate [post]
-func (h *PrintHandler) ActivateTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	result, err := h.printService.ActivateTemplate(c.Request.Context(), tenantID, templateID)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
-
-// DeactivateTemplate godoc
-// @ID           deactivateTemplatePrintTemplate
-//
-//	@Summary		Deactivate template
-//	@Description	Deactivate an active print template
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	APIResponse[TemplateResponse]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		422	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id}/deactivate [post]
-func (h *PrintHandler) DeactivateTemplate(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	result, err := h.printService.DeactivateTemplate(c.Request.Context(), tenantID, templateID)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
+// =============================================================================
+// Template Query Endpoints (Read-only)
+// =============================================================================
 
 // GetTemplatesByDocType godoc
 // @ID           getPrintTemplateTemplatesByDocType
 //
 //	@Summary		Get templates by document type
-//	@Description	Retrieve all active templates for a specific document type
+//	@Description	Retrieve all templates for a specific document type
 //	@Tags			print-templates
 //	@Produce		json
 //	@Param			doc_type	path		string	true	"Document type"
@@ -539,19 +149,13 @@ func (h *PrintHandler) DeactivateTemplate(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Router			/print/templates/by-doc-type/{doc_type} [get]
 func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
 	docType := c.Param("doc_type")
 	if docType == "" {
 		h.BadRequest(c, "Document type is required")
 		return
 	}
 
-	result, err := h.printService.GetTemplatesByDocType(c.Request.Context(), tenantID, docType)
+	result, err := h.printService.GetTemplatesByDocType(c.Request.Context(), docType)
 	if err != nil {
 		h.HandleDomainError(c, err)
 		return
@@ -559,10 +163,6 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 
 	h.Success(c, result)
 }
-
-// =============================================================================
-// Print Preview and PDF Generation Endpoints
-// =============================================================================
 
 // =============================================================================
 // Print Preview and PDF Generation Endpoints
@@ -695,10 +295,6 @@ func (h *PrintHandler) GeneratePDF(c *gin.Context) {
 
 	h.Created(c, result)
 }
-
-// =============================================================================
-// Print Job Endpoints
-// =============================================================================
 
 // =============================================================================
 // Print Job Endpoints
@@ -884,20 +480,13 @@ func (h *PrintHandler) DownloadPDF(c *gin.Context) {
 	}
 
 	// Security: Validate URL is a relative path to prevent open redirect attacks
-	// The PDF URL should be relative (e.g., /api/v1/prints/...)
 	if !strings.HasPrefix(job.PdfURL, "/") {
 		h.InternalError(c, "Invalid PDF URL configuration")
 		return
 	}
 
-	// The PDF URL is a relative path, redirect to serve it
-	// In production, this would use the storage service to stream the file
 	c.Redirect(http.StatusTemporaryRedirect, job.PdfURL)
 }
-
-// =============================================================================
-// Reference Data Endpoints
-// =============================================================================
 
 // =============================================================================
 // Reference Data Endpoints
@@ -933,96 +522,9 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 	h.Success(c, result)
 }
 
-// GetTemplateContent godoc
-// @ID           getPrintTemplateTemplateContent
-//
-//	@Summary		Get template content
-//	@Description	Retrieve the HTML content of a print template for editing
-//	@Tags			print-templates
-//	@Produce		json
-//	@Param			id	path		string	true	"Template ID"	format(uuid)
-//	@Success		200	{object}	APIResponse[ContentData]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id}/content [get]
-func (h *PrintHandler) GetTemplateContent(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	result, err := h.printService.GetTemplate(c.Request.Context(), tenantID, templateID)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	// Return just the content for the template editor
-	h.Success(c, map[string]string{
-		"content": result.Content,
-	})
-}
-
-// UpdateTemplateContent godoc
-// @ID           updatePrintTemplateTemplateContent
-//
-//	@Summary		Update template content
-//	@Description	Update only the HTML content of a print template
-//	@Tags			print-templates
-//	@Accept			json
-//	@Produce		json
-//	@Param			id		path		string								true	"Template ID"	format(uuid)
-//	@Param			request	body		object{content=string}				true	"Template content"
-//	@Success		200		{object}	APIResponse[TemplateResponse]
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/print/templates/{id}/content [put]
-func (h *PrintHandler) UpdateTemplateContent(c *gin.Context) {
-	tenantID, err := getTenantID(c)
-	if err != nil {
-		h.BadRequest(c, "Invalid tenant ID")
-		return
-	}
-
-	templateID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		h.BadRequest(c, "Invalid template ID format")
-		return
-	}
-
-	var req struct {
-		Content string `json:"content" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		h.BadRequest(c, err.Error())
-		return
-	}
-
-	appReq := printingapp.UpdateTemplateRequest{
-		Content: &req.Content,
-	}
-
-	result, err := h.printService.UpdateTemplate(c.Request.Context(), tenantID, templateID, appReq)
-	if err != nil {
-		h.HandleDomainError(c, err)
-		return
-	}
-
-	h.Success(c, result)
-}
+// =============================================================================
+// PDF File Serving
+// =============================================================================
 
 // ServePDF godoc
 // @ID           servePDFPrintFile

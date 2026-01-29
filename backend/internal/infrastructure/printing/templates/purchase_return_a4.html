@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>采购退货单 - {{ .Document.ReturnNumber }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .page {
+            width: 190mm;
+            padding: 5mm;
+        }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #996600;
+            padding-bottom: 10px;
+        }
+        .header .title {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #996600;
+        }
+        .header .company-name {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #666;
+        }
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        .info-left, .info-right {
+            width: 48%;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+        .info-label {
+            width: 80px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            padding-left: 5px;
+        }
+        /* Table Section */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: center;
+        }
+        .items-table th {
+            background-color: #fff0d0;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .items-table td {
+            font-size: 11px;
+        }
+        .items-table .col-index { width: 30px; }
+        .items-table .col-code { width: 80px; }
+        .items-table .col-name { width: auto; text-align: left; }
+        .items-table .col-unit { width: 40px; }
+        .items-table .col-qty { width: 60px; text-align: right; }
+        .items-table .col-price { width: 70px; text-align: right; }
+        .items-table .col-amount { width: 80px; text-align: right; }
+        .items-table .col-reason { width: 100px; text-align: left; }
+        .items-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        /* Summary Section */
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fffaf0;
+            border: 1px solid #e6d8b0;
+        }
+        .summary-left {
+            font-size: 11px;
+        }
+        .summary-right {
+            text-align: right;
+        }
+        .summary-row {
+            margin-bottom: 3px;
+        }
+        .total-amount {
+            font-size: 14px;
+            font-weight: bold;
+            color: #996600;
+        }
+        .amount-chinese {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        /* Supplier Info */
+        .supplier-section {
+            margin-bottom: 15px;
+            padding: 8px;
+            border: 1px dashed #999;
+            font-size: 11px;
+        }
+        .supplier-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .supplier-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+        /* Reason Section */
+        .reason-section {
+            margin-bottom: 15px;
+            padding: 8px;
+            background-color: #fff8f0;
+            border: 1px solid #f0c080;
+            font-size: 11px;
+        }
+        .reason-label {
+            font-weight: bold;
+            color: #996600;
+        }
+        /* Signature Section */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 22%;
+            text-align: center;
+        }
+        .signature-label {
+            font-size: 11px;
+            margin-bottom: 30px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 25px;
+        }
+        .signature-date {
+            font-size: 10px;
+            color: #666;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Remark Section */
+        .remark-section {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #fffef0;
+            border: 1px solid #e6e6c0;
+            font-size: 11px;
+        }
+        .remark-label {
+            font-weight: bold;
+            color: #996;
+        }
+        /* Print styles */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">采 购 退 货 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <!-- Document Info -->
+        <div class="info-section">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">退货单号:</span>
+                    <span class="info-value">{{ .Document.ReturnNumber }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">原采购单号:</span>
+                    <span class="info-value">{{ default .Document.PurchaseOrderNumber "-" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">供应商:</span>
+                    <span class="info-value">{{ .Document.Supplier.Name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">联系电话:</span>
+                    <span class="info-value">{{ .Document.Supplier.Phone }}</span>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">退货日期:</span>
+                    <span class="info-value">{{ .Meta.CreatedAtFormatted }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">退货状态:</span>
+                    <span class="info-value">{{ .Meta.StatusText }}</span>
+                </div>
+                {{ if .Document.Warehouse }}
+                <div class="info-row">
+                    <span class="info-label">退货仓库:</span>
+                    <span class="info-value">{{ .Document.Warehouse.Name }}</span>
+                </div>
+                {{ end }}
+                <div class="info-row">
+                    <span class="info-label">打印日期:</span>
+                    <span class="info-value">{{ .PrintDate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplier Details -->
+        <div class="supplier-section">
+            <div class="supplier-title">供应商信息</div>
+            <div class="supplier-grid">
+                <div>地址: {{ default .Document.Supplier.Address "-" }}</div>
+                <div>联系人: {{ default .Document.Supplier.Contact "-" }}</div>
+                <div>开户行: {{ default .Document.Supplier.BankName "-" }}</div>
+                <div>银行账号: {{ default .Document.Supplier.BankAccount "-" }}</div>
+            </div>
+        </div>
+
+        <!-- Return Reason -->
+        {{ if .Document.Reason }}
+        <div class="reason-section">
+            <span class="reason-label">退货原因:</span> {{ .Document.Reason }}
+        </div>
+        {{ end }}
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序号</th>
+                    <th class="col-code">商品编码</th>
+                    <th class="col-name">商品名称</th>
+                    <th class="col-unit">单位</th>
+                    <th class="col-qty">退货数量</th>
+                    <th class="col-price">单价</th>
+                    <th class="col-amount">退款金额</th>
+                    <th class="col-reason">退货原因</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Items }}
+                <tr>
+                    <td class="col-index">{{ .Index }}</td>
+                    <td class="col-code">{{ .ProductCode }}</td>
+                    <td class="col-name">{{ .ProductName }}</td>
+                    <td class="col-unit">{{ .Unit }}</td>
+                    <td class="col-qty">{{ .QuantityFormatted }}</td>
+                    <td class="col-price">{{ .UnitPriceFormatted }}</td>
+                    <td class="col-amount">{{ .RefundAmountFormatted }}</td>
+                    <td class="col-reason">{{ default .Reason "-" }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-left">
+                <div class="summary-row">商品种类: {{ .Document.ItemCount }} 种</div>
+                <div class="summary-row">退货总数: {{ formatDecimal .Document.TotalQuantity 2 }}</div>
+            </div>
+            <div class="summary-right">
+                <div class="total-amount">应退金额: {{ .Document.TotalRefundFormatted }}</div>
+                <div class="amount-chinese">大写: {{ .Document.TotalRefundChinese }}</div>
+            </div>
+        </div>
+
+        <!-- Remark -->
+        {{ if .Document.Remark }}
+        <div class="remark-section">
+            <span class="remark-label">备注:</span> {{ .Document.Remark }}
+        </div>
+        {{ end }}
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">仓库发货</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">质检确认</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">供应商签收</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">财务确认</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>{{ .Company.Name }} {{ if .Company.Phone }} | 电话: {{ .Company.Phone }}{{ end }}</div>
+            <div>打印时间: {{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>销售订单 - {{ .Document.OrderNumber }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .page {
+            width: 190mm;
+            padding: 5mm;
+        }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .header .title {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+        .header .company-name {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #666;
+        }
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        .info-left, .info-right {
+            width: 48%;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+        .info-label {
+            width: 70px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            padding-left: 5px;
+        }
+        /* Table Section */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: center;
+        }
+        .items-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .items-table td {
+            font-size: 11px;
+        }
+        .items-table .col-index { width: 30px; }
+        .items-table .col-code { width: 80px; }
+        .items-table .col-name { width: auto; text-align: left; }
+        .items-table .col-unit { width: 40px; }
+        .items-table .col-qty { width: 60px; text-align: right; }
+        .items-table .col-price { width: 70px; text-align: right; }
+        .items-table .col-amount { width: 80px; text-align: right; }
+        .items-table .col-remark { width: 80px; text-align: left; }
+        .items-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        /* Summary Section */
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .summary-left {
+            font-size: 11px;
+        }
+        .summary-right {
+            text-align: right;
+        }
+        .summary-row {
+            margin-bottom: 3px;
+        }
+        .total-amount {
+            font-size: 14px;
+            font-weight: bold;
+            color: #c00;
+        }
+        .amount-chinese {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        /* Signature Section */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+        .signature-label {
+            font-size: 11px;
+            margin-bottom: 30px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 25px;
+        }
+        .signature-date {
+            font-size: 10px;
+            color: #666;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Remark Section */
+        .remark-section {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #fffef0;
+            border: 1px solid #e6e6c0;
+            font-size: 11px;
+        }
+        .remark-label {
+            font-weight: bold;
+            color: #996;
+        }
+        /* Print styles */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">销 售 订 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <!-- Document Info -->
+        <div class="info-section">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">订单编号:</span>
+                    <span class="info-value">{{ .Document.OrderNumber }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">客户名称:</span>
+                    <span class="info-value">{{ .Document.Customer.Name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">联系人:</span>
+                    <span class="info-value">{{ .Document.Customer.Contact }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">联系电话:</span>
+                    <span class="info-value">{{ .Document.Customer.Phone }}</span>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">订单日期:</span>
+                    <span class="info-value">{{ .Meta.CreatedAtFormatted }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">订单状态:</span>
+                    <span class="info-value">{{ .Meta.StatusText }}</span>
+                </div>
+                {{ if .Document.Warehouse }}
+                <div class="info-row">
+                    <span class="info-label">发货仓库:</span>
+                    <span class="info-value">{{ .Document.Warehouse.Name }}</span>
+                </div>
+                {{ end }}
+                <div class="info-row">
+                    <span class="info-label">打印日期:</span>
+                    <span class="info-value">{{ .PrintDate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序号</th>
+                    <th class="col-code">商品编码</th>
+                    <th class="col-name">商品名称</th>
+                    <th class="col-unit">单位</th>
+                    <th class="col-qty">数量</th>
+                    <th class="col-price">单价</th>
+                    <th class="col-amount">金额</th>
+                    <th class="col-remark">备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Items }}
+                <tr>
+                    <td class="col-index">{{ .Index }}</td>
+                    <td class="col-code">{{ .ProductCode }}</td>
+                    <td class="col-name">{{ .ProductName }}</td>
+                    <td class="col-unit">{{ .Unit }}</td>
+                    <td class="col-qty">{{ .QuantityFormatted }}</td>
+                    <td class="col-price">{{ .UnitPriceFormatted }}</td>
+                    <td class="col-amount">{{ .AmountFormatted }}</td>
+                    <td class="col-remark">{{ default .Remark "-" }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-left">
+                <div class="summary-row">商品种类: {{ .Document.ItemCount }} 种</div>
+                <div class="summary-row">总数量: {{ formatDecimal .Document.TotalQuantity 2 }}</div>
+            </div>
+            <div class="summary-right">
+                <div class="summary-row">商品金额: {{ .Document.TotalAmountFormatted }}</div>
+                {{ if .Document.DiscountAmount }}<div class="summary-row">优惠金额: -{{ .Document.DiscountAmountFormatted }}</div>{{ end }}
+                <div class="total-amount">应付金额: {{ .Document.PayableAmountFormatted }}</div>
+                <div class="amount-chinese">大写: {{ .Document.PayableAmountChinese }}</div>
+            </div>
+        </div>
+
+        <!-- Remark -->
+        {{ if .Document.Remark }}
+        <div class="remark-section">
+            <span class="remark-label">备注:</span> {{ .Document.Remark }}
+        </div>
+        {{ end }}
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">制单人</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">审核人</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">客户确认</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>{{ .Company.Name }} {{ if .Company.Phone }} | 电话: {{ .Company.Phone }}{{ end }}</div>
+            <div>打印时间: {{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>

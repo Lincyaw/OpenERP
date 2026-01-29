@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
 import { Toast } from '@douyinfe/semi-ui-19'
 import type { ApiError } from '@/types/api'
+import { handleError } from '@/services/error-handler'
 
 interface UseFormWithValidationOptions<TFieldValues extends FieldValues> extends Omit<
   UseFormProps<TFieldValues>,
@@ -104,7 +105,8 @@ export function useFormWithValidation<TFieldValues extends FieldValues>({
               })
             })
           } else {
-            Toast.error(err.message || errorMessage)
+            // Use unified error handler with custom fallback message
+            handleError(error, { showToast: true, fallbackMessage: errorMessage })
           }
 
           onError?.(err)
@@ -113,7 +115,7 @@ export function useFormWithValidation<TFieldValues extends FieldValues>({
         }
       })
     },
-    [form, successMessage, errorMessage, resetOnSuccess, onSuccess, onError]
+    [form, successMessage, resetOnSuccess, onSuccess, onError]
   )
 
   const setServerErrors = useCallback(

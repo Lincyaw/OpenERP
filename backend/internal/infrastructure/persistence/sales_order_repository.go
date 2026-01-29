@@ -90,7 +90,8 @@ func (r *GormSalesOrderRepository) FindAllForTenant(ctx context.Context, tenantI
 	// Apply additional filters
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&orderModels).Error; err != nil {
+	// Preload Items to calculate item_count
+	if err := query.Preload("Items").Find(&orderModels).Error; err != nil {
 		return nil, err
 	}
 	orders := make([]trade.SalesOrder, len(orderModels))

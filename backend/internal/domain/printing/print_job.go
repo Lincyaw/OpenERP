@@ -36,8 +36,8 @@ func NewPrintJob(
 	if templateID == uuid.Nil {
 		return nil, shared.NewDomainError("INVALID_TEMPLATE", "Template ID cannot be empty")
 	}
-	if err := validateDocType(docType); err != nil {
-		return nil, err
+	if !docType.IsValid() {
+		return nil, shared.NewDomainError("INVALID_DOC_TYPE", "Invalid document type")
 	}
 	if documentID == uuid.Nil {
 		return nil, shared.NewDomainError("INVALID_DOCUMENT", "Document ID cannot be empty")

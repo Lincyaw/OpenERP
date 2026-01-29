@@ -1,14 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Toast,
-  Modal,
-  Empty,
-  TextArea,
-} from '@douyinfe/semi-ui-19'
+import { Card, Typography, Table, Toast, Modal, Empty, TextArea } from '@douyinfe/semi-ui-19'
 import { IconEdit, IconTick, IconClose, IconSend, IconBox, IconPrint } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
@@ -565,37 +556,70 @@ export default function PurchaseReturnDetailPage() {
   const renderBasicInfo = () => {
     if (!returnData) return null
 
-    const data = [
-      { key: t('purchaseReturnDetail.basicInfo.returnNumber'), value: returnData.return_number },
-      {
-        key: t('purchaseReturnDetail.basicInfo.orderNumber'),
-        value: returnData.purchase_order_number || '-',
-      },
-      {
-        key: t('purchaseReturnDetail.basicInfo.supplierName'),
-        value: returnData.supplier_name || '-',
-      },
-      {
-        key: t('purchaseReturnDetail.basicInfo.totalQuantity'),
-        value: safeToFixed(returnData.total_quantity, 2, '0.00'),
-      },
-      {
-        key: t('purchaseReturnDetail.basicInfo.createdAt'),
-        value: returnData.created_at ? formatDateTime(returnData.created_at) : '-',
-      },
-      { key: t('purchaseReturnDetail.basicInfo.reason'), value: returnData.reason || '-' },
-      { key: t('purchaseReturnDetail.basicInfo.remark'), value: returnData.remark || '-' },
-    ]
-
-    // Add tracking number if shipped
-    if (returnData.tracking_number) {
-      data.push({
-        key: t('purchaseReturnDetail.basicInfo.trackingNumber'),
-        value: returnData.tracking_number,
-      })
-    }
-
-    return <Descriptions data={data} row className="return-basic-info" />
+    return (
+      <div className="order-info-grid">
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.returnNumber')}
+          </Text>
+          <Text strong className="order-info-value order-number-value">
+            {returnData.return_number}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.orderNumber')}
+          </Text>
+          <Text className="order-info-value order-number-value">
+            {returnData.purchase_order_number || '-'}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.supplierName')}
+          </Text>
+          <Text className="order-info-value">{returnData.supplier_name || '-'}</Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.totalQuantity')}
+          </Text>
+          <Text className="order-info-value">
+            {safeToFixed(returnData.total_quantity, 2, '0.00')}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.createdAt')}
+          </Text>
+          <Text className="order-info-value">
+            {returnData.created_at ? formatDateTime(returnData.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.reason')}
+          </Text>
+          <Text className="order-info-value">{returnData.reason || '-'}</Text>
+        </div>
+        {returnData.tracking_number && (
+          <div className="order-info-item">
+            <Text type="secondary" className="order-info-label">
+              {t('purchaseReturnDetail.basicInfo.trackingNumber')}
+            </Text>
+            <Text className="order-info-value order-number-value">
+              {returnData.tracking_number}
+            </Text>
+          </div>
+        )}
+        <div className="order-info-item order-info-item--full">
+          <Text type="secondary" className="order-info-label">
+            {t('purchaseReturnDetail.basicInfo.remark')}
+          </Text>
+          <Text className="order-info-value">{returnData.remark || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render amount summary

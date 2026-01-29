@@ -1,14 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Toast,
-  Modal,
-  Empty,
-  Progress,
-} from '@douyinfe/semi-ui-19'
+import { Card, Typography, Table, Toast, Modal, Empty, Progress } from '@douyinfe/semi-ui-19'
 import { IconEdit, IconTick, IconClose, IconBox, IconPrint } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
@@ -425,25 +416,52 @@ export default function PurchaseOrderDetailPage() {
   const renderBasicInfo = () => {
     if (!order) return null
 
-    const data = [
-      { key: t('orderDetail.basicInfo.orderNumber'), value: order.order_number },
-      { key: t('orderDetail.basicInfo.supplierName'), value: order.supplier_name || '-' },
-      {
-        key: t('orderDetail.basicInfo.totalQuantity'),
-        value: formatQuantity(order.total_quantity),
-      },
-      {
-        key: t('orderDetail.basicInfo.createdAt'),
-        value: order.created_at ? formatDateTime(order.created_at) : '-',
-      },
-      {
-        key: t('orderDetail.basicInfo.updatedAt'),
-        value: order.updated_at ? formatDateTime(order.updated_at) : '-',
-      },
-      { key: t('orderDetail.basicInfo.remark'), value: order.remark || '-' },
-    ]
-
-    return <Descriptions data={data} row className="order-basic-info" />
+    return (
+      <div className="order-info-grid">
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.orderNumber')}
+          </Text>
+          <Text strong className="order-info-value order-number-value">
+            {order.order_number}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.supplierName')}
+          </Text>
+          <Text className="order-info-value">{order.supplier_name || '-'}</Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.totalQuantity')}
+          </Text>
+          <Text className="order-info-value">{formatQuantity(order.total_quantity)}</Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.createdAt')}
+          </Text>
+          <Text className="order-info-value">
+            {order.created_at ? formatDateTime(order.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.updatedAt')}
+          </Text>
+          <Text className="order-info-value">
+            {order.updated_at ? formatDateTime(order.updated_at) : '-'}
+          </Text>
+        </div>
+        <div className="order-info-item order-info-item--full">
+          <Text type="secondary" className="order-info-label">
+            {t('orderDetail.basicInfo.remark')}
+          </Text>
+          <Text className="order-info-value">{order.remark || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render receive progress

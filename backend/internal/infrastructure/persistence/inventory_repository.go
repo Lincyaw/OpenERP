@@ -117,10 +117,21 @@ func (r *GormInventoryItemRepository) FindByProduct(ctx context.Context, tenantI
 
 // FindAllForTenant finds all inventory items for a tenant with data scope filtering
 func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]inventory.InventoryItem, error) {
-	var itemModels []models.InventoryItemModel
+	// Use a custom struct to hold joined data
+	type InventoryWithProduct struct {
+		models.InventoryItemModel
+		ProductName string `gorm:"column:product_name"`
+		ProductCode string `gorm:"column:product_code"`
+		Unit        string `gorm:"column:unit"`
+	}
 
-	query := r.db.WithContext(ctx).Model(&models.InventoryItemModel{}).
-		Where("tenant_id = ?", tenantID)
+	var results []InventoryWithProduct
+
+	query := r.db.WithContext(ctx).
+		Table("inventory_items").
+		Select("inventory_items.*, products.name as product_name, products.code as product_code, products.unit").
+		Joins("LEFT JOIN products ON inventory_items.product_id = products.id").
+		Where("inventory_items.tenant_id = ?", tenantID)
 
 	// Apply data scope filtering - warehouse users only see their warehouse's inventory
 	dsFilter := datascope.NewFilterFromContext(ctx)
@@ -128,12 +139,17 @@ func (r *GormInventoryItemRepository) FindAllForTenant(ctx context.Context, tena
 
 	query = r.applyFilter(query, filter)
 
-	if err := query.Find(&itemModels).Error; err != nil {
+	if err := query.Find(&results).Error; err != nil {
 		return nil, err
 	}
-	items := make([]inventory.InventoryItem, len(itemModels))
-	for i, model := range itemModels {
-		items[i] = *model.ToDomain()
+
+	items := make([]inventory.InventoryItem, len(results))
+	for i, result := range results {
+		item := result.InventoryItemModel.ToDomain()
+		item.ProductName = result.ProductName
+		item.ProductCode = result.ProductCode
+		item.Unit = result.Unit
+		items[i] = *item
 	}
 	return items, nil
 }

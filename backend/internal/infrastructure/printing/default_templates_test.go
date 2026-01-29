@@ -11,8 +11,8 @@ import (
 func TestGetDefaultTemplates(t *testing.T) {
 	templates := GetDefaultTemplates()
 
-	// Verify we have the expected number of templates
-	assert.Len(t, templates, 8, "Expected 8 default templates")
+	// Verify we have the expected number of templates (20 templates total)
+	assert.Len(t, templates, 20, "Expected 20 default templates")
 
 	// Count by document type
 	docTypeCounts := make(map[printing.DocType]int)
@@ -21,9 +21,16 @@ func TestGetDefaultTemplates(t *testing.T) {
 	}
 
 	// Verify counts per document type
+	assert.Equal(t, 2, docTypeCounts[printing.DocTypeSalesOrder], "Expected 2 SALES_ORDER templates")
 	assert.Equal(t, 3, docTypeCounts[printing.DocTypeSalesDelivery], "Expected 3 SALES_DELIVERY templates")
 	assert.Equal(t, 3, docTypeCounts[printing.DocTypeSalesReceipt], "Expected 3 SALES_RECEIPT templates")
+	assert.Equal(t, 2, docTypeCounts[printing.DocTypeSalesReturn], "Expected 2 SALES_RETURN templates")
+	assert.Equal(t, 1, docTypeCounts[printing.DocTypePurchaseOrder], "Expected 1 PURCHASE_ORDER template")
 	assert.Equal(t, 2, docTypeCounts[printing.DocTypePurchaseReceiving], "Expected 2 PURCHASE_RECEIVING templates")
+	assert.Equal(t, 2, docTypeCounts[printing.DocTypePurchaseReturn], "Expected 2 PURCHASE_RETURN templates")
+	assert.Equal(t, 2, docTypeCounts[printing.DocTypeReceiptVoucher], "Expected 2 RECEIPT_VOUCHER templates")
+	assert.Equal(t, 1, docTypeCounts[printing.DocTypePaymentVoucher], "Expected 1 PAYMENT_VOUCHER template")
+	assert.Equal(t, 2, docTypeCounts[printing.DocTypeStockTaking], "Expected 2 STOCK_TAKING templates")
 }
 
 func TestGetDefaultTemplates_ValidDocTypes(t *testing.T) {
@@ -230,7 +237,7 @@ func TestGetDefaultTemplateByDocTypeAndPaperSize(t *testing.T) {
 		},
 		{
 			name:      "Non-existent combination",
-			docType:   printing.DocTypeSalesOrder, // No template for this type yet
+			docType:   printing.DocType("INVALID_DOC_TYPE"),
 			paperSize: printing.PaperSizeA4,
 			wantNil:   true,
 		},
@@ -260,6 +267,13 @@ func TestGetDefaultTemplateForDocType(t *testing.T) {
 		wantDefault bool
 	}{
 		{
+			name:        "Sales Order default",
+			docType:     printing.DocTypeSalesOrder,
+			wantNil:     false,
+			wantName:    "销售订单-A4",
+			wantDefault: true,
+		},
+		{
 			name:        "Sales Delivery default",
 			docType:     printing.DocTypeSalesDelivery,
 			wantNil:     false,
@@ -281,8 +295,8 @@ func TestGetDefaultTemplateForDocType(t *testing.T) {
 			wantDefault: true,
 		},
 		{
-			name:    "Sales Order - no default template",
-			docType: printing.DocTypeSalesOrder,
+			name:    "Invalid doc type - no default",
+			docType: printing.DocType("INVALID_DOC_TYPE"),
 			wantNil: true,
 		},
 	}
@@ -310,6 +324,12 @@ func TestGetTemplatesByDocType(t *testing.T) {
 		wantNames []string
 	}{
 		{
+			name:      "Sales Order templates",
+			docType:   printing.DocTypeSalesOrder,
+			wantCount: 2,
+			wantNames: []string{"销售订单-A4", "销售订单-A5"},
+		},
+		{
 			name:      "Sales Delivery templates",
 			docType:   printing.DocTypeSalesDelivery,
 			wantCount: 3,
@@ -328,8 +348,14 @@ func TestGetTemplatesByDocType(t *testing.T) {
 			wantNames: []string{"采购入库单-A4", "采购入库单-连续纸"},
 		},
 		{
-			name:      "Sales Order - no templates",
-			docType:   printing.DocTypeSalesOrder,
+			name:      "Stock Taking templates",
+			docType:   printing.DocTypeStockTaking,
+			wantCount: 2,
+			wantNames: []string{"盘点单-A4", "盘点单-A4横版"},
+		},
+		{
+			name:      "Invalid doc type - no templates",
+			docType:   printing.DocType("INVALID_DOC_TYPE"),
 			wantCount: 0,
 		},
 	}

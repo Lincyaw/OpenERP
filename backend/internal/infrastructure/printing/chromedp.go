@@ -340,3 +340,14 @@ func dataURLToBytes(dataURL string) ([]byte, error) {
 
 // Ensure ChromedpRenderer implements PDFRenderer
 var _ PDFRenderer = (*ChromedpRenderer)(nil)
+
+// estimatePageCount estimates the page count from PDF data
+// This is a simple heuristic that counts "/Type /Page" occurrences
+func estimatePageCount(pdfData []byte) int {
+	count := bytes.Count(pdfData, []byte("/Type /Page"))
+	// Each page has one "/Type /Page" but the count also includes "/Type /Pages"
+	// So we subtract the parent Pages object occurrences
+	parentCount := bytes.Count(pdfData, []byte("/Type /Pages"))
+	count = count - parentCount
+	return max(count, 1)
+}

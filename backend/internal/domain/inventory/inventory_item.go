@@ -69,6 +69,11 @@ type InventoryItem struct {
 	MinQuantity       valueobject.Quantity // Minimum stock threshold for alerts
 	MaxQuantity       valueobject.Quantity // Maximum stock threshold
 
+	// Denormalized product info (populated from JOIN on read queries)
+	ProductName string
+	ProductCode string
+	Unit        string
+
 	// Associations - loaded lazily
 	Batches []StockBatch
 	Locks   []StockLock

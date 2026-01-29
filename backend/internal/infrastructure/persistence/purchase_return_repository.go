@@ -77,7 +77,8 @@ func (r *GormPurchaseReturnRepository) FindAllForTenant(ctx context.Context, ten
 		filter,
 	)
 
-	if err := query.Find(&returnModels).Error; err != nil {
+	// Preload Items to calculate item_count
+	if err := query.Preload("Items").Find(&returnModels).Error; err != nil {
 		return nil, err
 	}
 	returns := make([]trade.PurchaseReturn, len(returnModels))

@@ -7,64 +7,24 @@ import (
 )
 
 // =============================================================================
-// Template DTOs
+// Template DTOs (Read-only, from static templates)
 // =============================================================================
-
-// CreateTemplateRequest represents a request to create a new print template
-type CreateTemplateRequest struct {
-	DocumentType string      `json:"document_type" binding:"required"`
-	Name         string      `json:"name" binding:"required,min=1,max=100"`
-	Description  string      `json:"description" binding:"max=500"`
-	Content      string      `json:"content" binding:"required"`
-	PaperSize    string      `json:"paper_size" binding:"required"`
-	Orientation  string      `json:"orientation"`
-	Margins      *MarginsDTO `json:"margins"`
-}
-
-// UpdateTemplateRequest represents a request to update a print template
-type UpdateTemplateRequest struct {
-	Name        *string     `json:"name" binding:"omitempty,min=1,max=100"`
-	Description *string     `json:"description" binding:"omitempty,max=500"`
-	Content     *string     `json:"content"`
-	PaperSize   *string     `json:"paper_size"`
-	Orientation *string     `json:"orientation"`
-	Margins     *MarginsDTO `json:"margins"`
-}
-
-// ListTemplatesRequest represents a request to list templates
-type ListTemplatesRequest struct {
-	Page     int    `form:"page" binding:"min=1"`
-	PageSize int    `form:"page_size" binding:"min=1,max=100"`
-	OrderBy  string `form:"order_by"`
-	OrderDir string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
-	Search   string `form:"search"`
-	DocType  string `form:"doc_type"`
-	Status   string `form:"status"`
-}
 
 // TemplateResponse represents a print template response
 type TemplateResponse struct {
 	ID           string     `json:"id"`
-	TenantID     string     `json:"tenant_id"`
+	TenantID     string     `json:"tenant_id,omitempty"`
 	DocumentType string     `json:"document_type"`
 	Name         string     `json:"name"`
 	Description  string     `json:"description"`
-	Content      string     `json:"content,omitempty"` // Template HTML content
+	Content      string     `json:"content,omitempty"` // Template HTML content (excluded in list)
 	PaperSize    string     `json:"paper_size"`
 	Orientation  string     `json:"orientation"`
 	Margins      MarginsDTO `json:"margins"`
 	IsDefault    bool       `json:"is_default"`
 	Status       string     `json:"status"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
-}
-
-// ListTemplatesResponse represents a paginated list of templates
-type ListTemplatesResponse struct {
-	Items []TemplateResponse `json:"items"`
-	Total int64              `json:"total"`
-	Page  int                `json:"page"`
-	Size  int                `json:"size"`
+	CreatedAt    time.Time  `json:"created_at,omitempty"`
+	UpdatedAt    time.Time  `json:"updated_at,omitempty"`
 }
 
 // MarginsDTO represents page margins

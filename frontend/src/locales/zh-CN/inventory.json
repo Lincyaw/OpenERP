@@ -339,6 +339,13 @@
         "submitError": "提交审批失败",
         "cancelSuccess": "已取消盘点",
         "cancelError": "取消失败"
+      },
+      "submitTips": {
+        "notStarted": "请先点击「开始盘点」按钮",
+        "noItems": "盘点单中没有商品明细",
+        "incomplete": "还有 {{count}} 个商品未完成盘点",
+        "unsaved": "请先保存已修改的数据",
+        "noChanges": "没有需要保存的修改"
       }
     }
   },

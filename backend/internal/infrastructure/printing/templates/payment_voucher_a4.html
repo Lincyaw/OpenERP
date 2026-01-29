@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>付款单 - {{ .Document.VoucherNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .page {
+            width: 190mm;
+            padding: 5mm;
+        }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #cc6600;
+            padding-bottom: 10px;
+        }
+        .header .title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 6px;
+            color: #cc6600;
+        }
+        .header .company-name {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #666;
+        }
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .info-left, .info-right {
+            width: 48%;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 6px;
+        }
+        .info-label {
+            width: 70px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            padding-left: 5px;
+        }
+        /* Amount Section */
+        .amount-section {
+            background-color: #fff8f0;
+            border: 2px solid #cc6600;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .amount-label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .amount-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #cc6600;
+        }
+        .amount-chinese {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        /* Supplier Info */
+        .supplier-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        .supplier-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #cc6600;
+        }
+        .supplier-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+        /* Allocations Table */
+        .allocations-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .allocations-table th,
+        .allocations-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+        }
+        .allocations-table th {
+            background-color: #fff0e0;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .allocations-table td {
+            font-size: 11px;
+        }
+        .allocations-table .col-index { width: 40px; }
+        .allocations-table .col-docno { width: auto; }
+        .allocations-table .col-date { width: 100px; }
+        .allocations-table .col-amount { width: 120px; text-align: right; }
+        /* Payment Info */
+        .payment-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fffef0;
+            border: 1px solid #e6e6c0;
+            font-size: 11px;
+        }
+        .payment-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #996;
+        }
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+        /* Signature Section */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 22%;
+            text-align: center;
+        }
+        .signature-label {
+            font-size: 11px;
+            margin-bottom: 30px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 25px;
+        }
+        .signature-date {
+            font-size: 10px;
+            color: #666;
+        }
+        /* Footer */
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Remark Section */
+        .remark-section {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        .remark-label {
+            font-weight: bold;
+            color: #666;
+        }
+        /* Print styles */
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">付 款 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <!-- Document Info -->
+        <div class="info-section">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">付款单号:</span>
+                    <span class="info-value">{{ .Document.VoucherNo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">供应商:</span>
+                    <span class="info-value">{{ .Document.Supplier.Name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">付款方式:</span>
+                    <span class="info-value">{{ .Document.PaymentMethodText }}</span>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">付款日期:</span>
+                    <span class="info-value">{{ .Meta.CreatedAtFormatted }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">单据状态:</span>
+                    <span class="info-value">{{ .Meta.StatusText }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">打印日期:</span>
+                    <span class="info-value">{{ .PrintDate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount Section -->
+        <div class="amount-section">
+            <div class="amount-label">付款金额</div>
+            <div class="amount-value">{{ .Document.AmountFormatted }}</div>
+            <div class="amount-chinese">大写: {{ .Document.AmountChinese }}</div>
+        </div>
+
+        <!-- Supplier Info -->
+        <div class="supplier-section">
+            <div class="supplier-title">供应商信息</div>
+            <div class="supplier-grid">
+                <div>供应商编码: {{ .Document.Supplier.Code }}</div>
+                <div>联系人: {{ default .Document.Supplier.Contact "-" }}</div>
+                <div>联系电话: {{ default .Document.Supplier.Phone "-" }}</div>
+                <div>地址: {{ default .Document.Supplier.Address "-" }}</div>
+                <div>开户行: {{ default .Document.Supplier.BankName "-" }}</div>
+                <div>银行账号: {{ default .Document.Supplier.BankAccount "-" }}</div>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="payment-section">
+            <div class="payment-title">付款信息</div>
+            <div class="payment-grid">
+                <div>付款方式: {{ .Document.PaymentMethodText }}</div>
+                <div>参考号: {{ default .Document.ReferenceNo "-" }}</div>
+                {{ if .Document.BankAccount }}<div>付款账号: {{ .Document.BankAccount }}</div>{{ end }}
+            </div>
+        </div>
+
+        <!-- Allocations Table (if any) -->
+        {{ if .Document.Allocations }}
+        <table class="allocations-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序号</th>
+                    <th class="col-docno">核销单据</th>
+                    <th class="col-date">核销日期</th>
+                    <th class="col-amount">核销金额</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range $i, $alloc := .Document.Allocations }}
+                <tr>
+                    <td class="col-index">{{ add $i 1 }}</td>
+                    <td class="col-docno">{{ $alloc.DocumentNo }}</td>
+                    <td class="col-date">{{ $alloc.DocumentDateFormatted }}</td>
+                    <td class="col-amount">{{ $alloc.AmountFormatted }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+        {{ end }}
+
+        <!-- Remark -->
+        {{ if .Document.Remark }}
+        <div class="remark-section">
+            <span class="remark-label">备注:</span> {{ .Document.Remark }}
+        </div>
+        {{ end }}
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-label">制单人</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">审核人</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">付款人</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-label">收款确认</div>
+                <div class="signature-line"></div>
+                <div class="signature-date">日期: ____________</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>{{ .Company.Name }} {{ if .Company.Phone }} | 电话: {{ .Company.Phone }}{{ end }}</div>
+            <div>打印时间: {{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>

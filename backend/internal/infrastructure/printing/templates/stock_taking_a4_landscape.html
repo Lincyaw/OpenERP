@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>盘点单 - {{ .Document.TakingNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .page {
+            width: 277mm;
+            padding: 5mm;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #666699;
+            padding-bottom: 8px;
+        }
+        .header .title {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #666699;
+        }
+        .header .company-name {
+            font-size: 12px;
+            margin-top: 3px;
+            color: #666;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+        .info-group {
+            display: flex;
+            gap: 30px;
+        }
+        .info-row {
+            display: flex;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            margin-right: 5px;
+        }
+        .info-value {
+            border-bottom: 1px solid #ddd;
+            padding: 0 10px;
+            min-width: 80px;
+        }
+        .summary-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #f0f0f8;
+            border: 1px solid #c0c0d0;
+        }
+        .summary-box {
+            text-align: center;
+            padding: 0 15px;
+        }
+        .summary-label {
+            font-size: 10px;
+            color: #666;
+        }
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .summary-value.match { color: #008800; }
+        .summary-value.surplus { color: #0066cc; }
+        .summary-value.shortage { color: #cc0000; }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #333;
+            padding: 5px 6px;
+            text-align: center;
+            font-size: 10px;
+        }
+        .items-table th {
+            background-color: #e8e8f0;
+            font-weight: bold;
+        }
+        .items-table .col-index { width: 30px; }
+        .items-table .col-code { width: 90px; }
+        .items-table .col-name { text-align: left; }
+        .items-table .col-unit { width: 45px; }
+        .items-table .col-qty { width: 70px; text-align: right; }
+        .items-table .col-variance { width: 70px; text-align: right; }
+        .items-table .col-remark { width: 100px; text-align: left; }
+        .items-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .variance-surplus { color: #0066cc; font-weight: bold; }
+        .variance-shortage { color: #cc0000; font-weight: bold; }
+        .variance-match { color: #008800; }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 22%;
+            text-align: center;
+            font-size: 10px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin: 20px 0 5px 0;
+            height: 1px;
+        }
+        .footer {
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        .remark-section {
+            margin-top: 8px;
+            padding: 5px;
+            background-color: #fffef0;
+            border: 1px solid #e6e6c0;
+            font-size: 10px;
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="title">库 存 盘 点 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <div class="info-section">
+            <div class="info-group">
+                <div class="info-row">
+                    <span class="info-label">盘点单号:</span>
+                    <span class="info-value">{{ .Document.TakingNo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">盘点仓库:</span>
+                    <span class="info-value">{{ .Document.Warehouse.Name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">盘点日期:</span>
+                    <span class="info-value">{{ .Document.StartedAtFormatted }}</span>
+                </div>
+            </div>
+            <div class="info-group">
+                <div class="info-row">
+                    <span class="info-label">盘点人:</span>
+                    <span class="info-value">{{ default .Document.CountedBy "-" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">状态:</span>
+                    <span class="info-value">{{ .Meta.StatusText }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">打印日期:</span>
+                    <span class="info-value">{{ .PrintDate }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-box">
+                <div class="summary-label">盘点商品数</div>
+                <div class="summary-value">{{ .Document.TotalItems }}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">账实相符</div>
+                <div class="summary-value match">{{ .Document.MatchedItems }}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">盘盈</div>
+                <div class="summary-value surplus">{{ .Document.SurplusItems }}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">盘亏</div>
+                <div class="summary-value shortage">{{ .Document.ShortageItems }}</div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-index">序号</th>
+                    <th class="col-code">商品编码</th>
+                    <th class="col-name">商品名称</th>
+                    <th class="col-unit">单位</th>
+                    <th class="col-qty">账面数量</th>
+                    <th class="col-qty">实盘数量</th>
+                    <th class="col-variance">差异</th>
+                    <th class="col-remark">备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Items }}
+                <tr>
+                    <td class="col-index">{{ .Index }}</td>
+                    <td class="col-code">{{ .ProductCode }}</td>
+                    <td class="col-name">{{ .ProductName }}</td>
+                    <td class="col-unit">{{ .Unit }}</td>
+                    <td class="col-qty">{{ .SystemQuantityFormatted }}</td>
+                    <td class="col-qty">{{ .ActualQuantityFormatted }}</td>
+                    <td class="col-variance {{ if eq .VarianceType "SURPLUS" }}variance-surplus{{ else if eq .VarianceType "SHORTAGE" }}variance-shortage{{ else }}variance-match{{ end }}">{{ .VarianceFormatted }}</td>
+                    <td class="col-remark">{{ default .Remark "-" }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+
+        {{ if .Document.Remark }}
+        <div class="remark-section">
+            <strong>备注:</strong> {{ .Document.Remark }}
+        </div>
+        {{ end }}
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div>盘点人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div>复核人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div>仓库主管</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div>审批人</div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>{{ .Company.Name }} {{ if .Company.Phone }} | 电话: {{ .Company.Phone }}{{ end }}</div>
+            <div>打印时间: {{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>

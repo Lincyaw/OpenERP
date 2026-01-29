@@ -12,6 +12,7 @@ import {
   Modal,
   Progress,
   Descriptions,
+  Tooltip,
 } from '@douyinfe/semi-ui-19'
 import {
   IconArrowLeft,
@@ -39,6 +40,7 @@ import type {
   HandlerStockTakingItemResponse,
   HandlerRecordCountRequest,
 } from '@/api/models'
+import { handleError } from '@/services/error-handler'
 import './StockTakingExecute.css'
 
 const { Title, Text } = Typography
@@ -178,13 +180,20 @@ export default function StockTakingExecutePage() {
         Toast.success(t('stockTaking.execute.messages.startSuccess'))
         setStockTaking(response.data.data)
       } else {
-        Toast.error(
-          (response.data.error as { message?: string })?.message ||
-            t('stockTaking.execute.messages.startError')
+        const errorCode = (response.data.error as { code?: string })?.code
+        const errorMessage = (response.data.error as { message?: string })?.message
+        handleError(
+          {
+            response: {
+              status: response.status,
+              data: { error: { code: errorCode, message: errorMessage } },
+            },
+          },
+          { showToast: true }
         )
       }
-    } catch {
-      Toast.error(t('stockTaking.execute.messages.startError'))
+    } catch (error) {
+      handleError(error, { showToast: true })
     }
   }, [id, t])
 
@@ -256,13 +265,20 @@ export default function StockTakingExecutePage() {
             return newMap
           })
         } else {
-          Toast.error(
-            (response.data.error as { message?: string })?.message ||
-              t('stockTaking.execute.messages.saveError')
+          const errorCode = (response.data.error as { code?: string })?.code
+          const errorMessage = (response.data.error as { message?: string })?.message
+          handleError(
+            {
+              response: {
+                status: response.status,
+                data: { error: { code: errorCode, message: errorMessage } },
+              },
+            },
+            { showToast: true }
           )
         }
-      } catch {
-        Toast.error(t('stockTaking.execute.messages.saveError'))
+      } catch (error) {
+        handleError(error, { showToast: true })
       }
     },
     [id, localItems, t]
@@ -307,13 +323,20 @@ export default function StockTakingExecutePage() {
           return newMap
         })
       } else {
-        Toast.error(
-          (response.data.error as { message?: string })?.message ||
-            t('stockTaking.execute.messages.saveAllError')
+        const errorCode = (response.data.error as { code?: string })?.code
+        const errorMessage = (response.data.error as { message?: string })?.message
+        handleError(
+          {
+            response: {
+              status: response.status,
+              data: { error: { code: errorCode, message: errorMessage } },
+            },
+          },
+          { showToast: true }
         )
       }
-    } catch {
-      Toast.error(t('stockTaking.execute.messages.saveAllError'))
+    } catch (error) {
+      handleError(error, { showToast: true })
     } finally {
       setSubmitting(false)
     }
@@ -331,13 +354,20 @@ export default function StockTakingExecutePage() {
         setStockTaking(response.data.data)
         setShowSubmitModal(false)
       } else {
-        Toast.error(
-          (response.data.error as { message?: string })?.message ||
-            t('stockTaking.execute.messages.submitError')
+        const errorCode = (response.data.error as { code?: string })?.code
+        const errorMessage = (response.data.error as { message?: string })?.message
+        handleError(
+          {
+            response: {
+              status: response.status,
+              data: { error: { code: errorCode, message: errorMessage } },
+            },
+          },
+          { showToast: true }
         )
       }
-    } catch {
-      Toast.error(t('stockTaking.execute.messages.submitError'))
+    } catch (error) {
+      handleError(error, { showToast: true })
     } finally {
       setSubmitting(false)
     }
@@ -358,13 +388,20 @@ export default function StockTakingExecutePage() {
         setShowCancelModal(false)
         setCancelReason('')
       } else {
-        Toast.error(
-          (response.data.error as { message?: string })?.message ||
-            t('stockTaking.execute.messages.cancelError')
+        const errorCode = (response.data.error as { code?: string })?.code
+        const errorMessage = (response.data.error as { message?: string })?.message
+        handleError(
+          {
+            response: {
+              status: response.status,
+              data: { error: { code: errorCode, message: errorMessage } },
+            },
+          },
+          { showToast: true }
         )
       }
-    } catch {
-      Toast.error(t('stockTaking.execute.messages.cancelError'))
+    } catch (error) {
+      handleError(error, { showToast: true })
     } finally {
       setSubmitting(false)
     }
@@ -437,18 +474,66 @@ export default function StockTakingExecutePage() {
     }
   }, [stockTaking?.items, localItems])
 
-  // Check if can submit
-  const canSubmit = useMemo(() => {
-    if (!isEditable) return false
-    return localTotals.countedItems === localTotals.totalItems && localTotals.totalItems > 0
-  }, [isEditable, localTotals])
-
-  // Check if has dirty items
+  // Check if has dirty items (unsaved changes)
   const hasDirtyItems = useMemo(() => {
     return Array.from(localItems.values()).some(
       (item) => item.dirty && item.actual_quantity !== null
     )
   }, [localItems])
+
+  // Check if can submit and why not
+  const submitStatus = useMemo(() => {
+    if (!isEditable) {
+      return { canSubmit: false, reason: 'notEditable' as const }
+    }
+    if (stockTaking?.status === 'DRAFT') {
+      return { canSubmit: false, reason: 'notStarted' as const }
+    }
+    if (localTotals.totalItems === 0) {
+      return { canSubmit: false, reason: 'noItems' as const }
+    }
+    if (localTotals.countedItems < localTotals.totalItems) {
+      return {
+        canSubmit: false,
+        reason: 'incomplete' as const,
+        uncountedCount: localTotals.totalItems - localTotals.countedItems,
+      }
+    }
+    if (hasDirtyItems) {
+      return { canSubmit: false, reason: 'unsaved' as const }
+    }
+    return { canSubmit: true, reason: null }
+  }, [isEditable, stockTaking?.status, localTotals, hasDirtyItems])
+
+  // Get submit button tooltip based on status
+  const getSubmitTooltip = useCallback(() => {
+    switch (submitStatus.reason) {
+      case 'notStarted':
+        return t('stockTaking.execute.submitTips.notStarted')
+      case 'noItems':
+        return t('stockTaking.execute.submitTips.noItems')
+      case 'incomplete':
+        return t('stockTaking.execute.submitTips.incomplete', {
+          count: submitStatus.uncountedCount,
+        })
+      case 'unsaved':
+        return t('stockTaking.execute.submitTips.unsaved')
+      default:
+        return ''
+    }
+  }, [submitStatus, t])
+
+  // Handle submit button click - show message if cannot submit
+  const handleSubmitClick = useCallback(() => {
+    if (!submitStatus.canSubmit) {
+      const tip = getSubmitTooltip()
+      if (tip) {
+        Toast.warning(tip)
+      }
+      return
+    }
+    setShowSubmitModal(true)
+  }, [submitStatus.canSubmit, getSubmitTooltip])
 
   // Table columns
   const tableColumns = useMemo(
@@ -657,20 +742,20 @@ export default function StockTakingExecutePage() {
           )}
           {isEditable && (
             <>
-              <Button
-                icon={<IconRefresh />}
-                onClick={handleSaveAllCounts}
-                loading={submitting}
-                disabled={!hasDirtyItems}
+              <Tooltip
+                content={!hasDirtyItems ? t('stockTaking.execute.submitTips.noChanges') : ''}
+                disabled={hasDirtyItems}
               >
-                {t('stockTaking.execute.actions.saveAll')}
-              </Button>
-              <Button
-                icon={<IconSend />}
-                type="primary"
-                onClick={() => setShowSubmitModal(true)}
-                disabled={!canSubmit}
-              >
+                <Button
+                  icon={<IconRefresh />}
+                  onClick={handleSaveAllCounts}
+                  loading={submitting}
+                  disabled={!hasDirtyItems}
+                >
+                  {t('stockTaking.execute.actions.saveAll')}
+                </Button>
+              </Tooltip>
+              <Button icon={<IconSend />} type="primary" onClick={handleSubmitClick}>
                 {t('stockTaking.execute.actions.submitApproval')}
               </Button>
               <Button

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/erp/backend/internal/domain/printing"
 	"github.com/erp/backend/internal/domain/shared"
@@ -15,7 +16,7 @@ import (
 
 // PrintService handles printing-related business operations
 type PrintService struct {
-	templateRepo   printing.PrintTemplateRepository
+	templateStore  *infra.TemplateStore
 	jobRepo        printing.PrintJobRepository
 	templateEngine *infra.TemplateEngine
 	pdfRenderer    infra.PDFRenderer
@@ -26,7 +27,7 @@ type PrintService struct {
 
 // NewPrintService creates a new PrintService
 func NewPrintService(
-	templateRepo printing.PrintTemplateRepository,
+	templateStore *infra.TemplateStore,
 	jobRepo printing.PrintJobRepository,
 	templateEngine *infra.TemplateEngine,
 	pdfRenderer infra.PDFRenderer,
@@ -38,7 +39,7 @@ func NewPrintService(
 		logger = zap.NewNop()
 	}
 	return &PrintService{
-		templateRepo:   templateRepo,
+		templateStore:  templateStore,
 		jobRepo:        jobRepo,
 		templateEngine: templateEngine,
 		pdfRenderer:    pdfRenderer,
@@ -49,326 +50,34 @@ func NewPrintService(
 }
 
 // =============================================================================
-// Print Template Operations
+// Template Query Operations (Read-only, from static templates)
 // =============================================================================
 
-// CreateTemplate creates a new print template
-func (s *PrintService) CreateTemplate(ctx context.Context, tenantID uuid.UUID, req CreateTemplateRequest) (*TemplateResponse, error) {
-	// Validate document type first
-	docType := printing.DocType(req.DocumentType)
-	if !docType.IsValid() {
-		return nil, shared.NewDomainError("INVALID_INPUT", "Invalid document type")
-	}
-
-	// Check if template with same name and doc type already exists
-	exists, err := s.templateRepo.ExistsByDocTypeAndName(ctx, tenantID, docType, req.Name, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check template existence: %w", err)
-	}
-	if exists {
-		return nil, shared.NewDomainError("ALREADY_EXISTS", "Template with this name already exists for this document type")
-	}
-
-	// Parse and validate paper size
-	paperSize := printing.PaperSize(req.PaperSize)
-	if !paperSize.IsValid() {
-		return nil, shared.NewDomainError("INVALID_INPUT", "Invalid paper size")
-	}
-
-	// Create the template
-	template, err := printing.NewPrintTemplate(
-		tenantID,
-		docType,
-		req.Name,
-		req.Content,
-		paperSize,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set optional fields
-	if req.Description != "" {
-		if err := template.Update(req.Name, req.Description); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.Orientation != "" {
-		orientation := printing.Orientation(req.Orientation)
-		if err := template.SetOrientation(orientation); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.Margins != nil {
-		margins := printing.Margins{
-			Top:    req.Margins.Top,
-			Right:  req.Margins.Right,
-			Bottom: req.Margins.Bottom,
-			Left:   req.Margins.Left,
-		}
-		if err := template.SetMargins(margins); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the template
-	if err := s.templateRepo.Save(ctx, template); err != nil {
-		return nil, fmt.Errorf("failed to save template: %w", err)
-	}
-
-	s.logger.Info("print template created",
-		zap.String("id", template.ID.String()),
-		zap.String("name", template.Name),
-		zap.String("docType", string(template.DocumentType)))
-
-	return toTemplateResponse(template), nil
-}
-
-// GetTemplate retrieves a template by ID
-func (s *PrintService) GetTemplate(ctx context.Context, tenantID, templateID uuid.UUID) (*TemplateResponse, error) {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	return toTemplateResponse(template), nil
-}
-
-// ListTemplates retrieves a paginated list of templates
-func (s *PrintService) ListTemplates(ctx context.Context, tenantID uuid.UUID, req ListTemplatesRequest) (*ListTemplatesResponse, error) {
-	// Build filter
-	filter := shared.Filter{
-		Page:     req.Page,
-		PageSize: req.PageSize,
-		OrderBy:  req.OrderBy,
-		OrderDir: req.OrderDir,
-		Search:   req.Search,
-	}
-
-	templates, err := s.templateRepo.FindAllForTenant(ctx, tenantID, filter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list templates: %w", err)
-	}
-
-	total, err := s.templateRepo.CountForTenant(ctx, tenantID, filter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to count templates: %w", err)
-	}
-
-	items := make([]TemplateResponse, len(templates))
-	for i, t := range templates {
-		items[i] = *toTemplateResponse(&t)
-	}
-
-	return &ListTemplatesResponse{
-		Items: items,
-		Total: total,
-		Page:  req.Page,
-		Size:  req.PageSize,
-	}, nil
-}
-
-// UpdateTemplate updates an existing template
-func (s *PrintService) UpdateTemplate(ctx context.Context, tenantID, templateID uuid.UUID, req UpdateTemplateRequest) (*TemplateResponse, error) {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	// Check for name conflicts if name is being changed
-	if req.Name != nil && *req.Name != template.Name {
-		exists, err := s.templateRepo.ExistsByDocTypeAndName(ctx, tenantID, template.DocumentType, *req.Name, &templateID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check template existence: %w", err)
-		}
-		if exists {
-			return nil, shared.NewDomainError("ALREADY_EXISTS", "Template with this name already exists for this document type")
-		}
-	}
-
-	// Update fields
-	if req.Name != nil || req.Description != nil {
-		name := template.Name
-		if req.Name != nil {
-			name = *req.Name
-		}
-		description := template.Description
-		if req.Description != nil {
-			description = *req.Description
-		}
-		if err := template.Update(name, description); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.Content != nil {
-		if err := template.UpdateContent(*req.Content); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.PaperSize != nil {
-		paperSize := printing.PaperSize(*req.PaperSize)
-		if err := template.SetPaperSize(paperSize); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.Orientation != nil {
-		orientation := printing.Orientation(*req.Orientation)
-		if err := template.SetOrientation(orientation); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.Margins != nil {
-		margins := printing.Margins{
-			Top:    req.Margins.Top,
-			Right:  req.Margins.Right,
-			Bottom: req.Margins.Bottom,
-			Left:   req.Margins.Left,
-		}
-		if err := template.SetMargins(margins); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save updates
-	if err := s.templateRepo.Save(ctx, template); err != nil {
-		return nil, fmt.Errorf("failed to save template: %w", err)
-	}
-
-	s.logger.Info("print template updated",
-		zap.String("id", template.ID.String()),
-		zap.String("name", template.Name))
-
-	return toTemplateResponse(template), nil
-}
-
-// DeleteTemplate deletes a template
-func (s *PrintService) DeleteTemplate(ctx context.Context, tenantID, templateID uuid.UUID) error {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return fmt.Errorf("failed to get template: %w", err)
-	}
-
-	// Cannot delete default template
-	if template.IsDefault {
-		return shared.NewDomainError("INVALID_STATE", "Cannot delete default template. Set another template as default first.")
-	}
-
-	if err := s.templateRepo.Delete(ctx, templateID); err != nil {
-		return fmt.Errorf("failed to delete template: %w", err)
-	}
-
-	s.logger.Info("print template deleted",
-		zap.String("id", templateID.String()))
-
-	return nil
-}
-
-// SetDefaultTemplate sets a template as the default for its document type
-func (s *PrintService) SetDefaultTemplate(ctx context.Context, tenantID, templateID uuid.UUID) (*TemplateResponse, error) {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	// Clear existing default for this doc type
-	if err := s.templateRepo.ClearDefaultForDocType(ctx, tenantID, template.DocumentType); err != nil {
-		return nil, fmt.Errorf("failed to clear existing default: %w", err)
-	}
-
-	// Set this template as default
-	if err := template.SetAsDefault(); err != nil {
-		return nil, err
-	}
-
-	if err := s.templateRepo.Save(ctx, template); err != nil {
-		return nil, fmt.Errorf("failed to save template: %w", err)
-	}
-
-	s.logger.Info("print template set as default",
-		zap.String("id", template.ID.String()),
-		zap.String("docType", string(template.DocumentType)))
-
-	return toTemplateResponse(template), nil
-}
-
-// ActivateTemplate activates a template
-func (s *PrintService) ActivateTemplate(ctx context.Context, tenantID, templateID uuid.UUID) (*TemplateResponse, error) {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	if err := template.Activate(); err != nil {
-		return nil, err
-	}
-
-	if err := s.templateRepo.Save(ctx, template); err != nil {
-		return nil, fmt.Errorf("failed to save template: %w", err)
-	}
-
-	return toTemplateResponse(template), nil
-}
-
-// DeactivateTemplate deactivates a template
-func (s *PrintService) DeactivateTemplate(ctx context.Context, tenantID, templateID uuid.UUID) (*TemplateResponse, error) {
-	template, err := s.templateRepo.FindByIDForTenant(ctx, tenantID, templateID)
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	if err := template.Deactivate(); err != nil {
-		return nil, err
-	}
-
-	if err := s.templateRepo.Save(ctx, template); err != nil {
-		return nil, fmt.Errorf("failed to save template: %w", err)
-	}
-
-	return toTemplateResponse(template), nil
-}
-
-// GetTemplatesByDocType retrieves all active templates for a document type
-func (s *PrintService) GetTemplatesByDocType(ctx context.Context, tenantID uuid.UUID, docType string) ([]TemplateResponse, error) {
+// GetTemplatesByDocType retrieves all templates for a document type
+func (s *PrintService) GetTemplatesByDocType(ctx context.Context, docType string) ([]TemplateResponse, error) {
 	dt := printing.DocType(docType)
 	if !dt.IsValid() {
 		return nil, shared.NewDomainError("INVALID_INPUT", "Invalid document type")
 	}
 
-	templates, err := s.templateRepo.FindActiveByDocType(ctx, tenantID, dt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find templates: %w", err)
-	}
-
+	templates := s.templateStore.GetByDocType(dt)
 	result := make([]TemplateResponse, len(templates))
 	for i, t := range templates {
-		result[i] = *toTemplateResponse(&t)
+		result[i] = staticTemplateToResponse(&t)
 	}
 
 	return result, nil
+}
+
+// GetTemplate retrieves a template by ID
+func (s *PrintService) GetTemplate(ctx context.Context, templateID string) (*TemplateResponse, error) {
+	template := s.templateStore.GetByID(templateID)
+	if template == nil {
+		return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
+	}
+
+	resp := staticTemplateToResponse(template)
+	return &resp, nil
 }
 
 // =============================================================================
@@ -384,28 +93,18 @@ func (s *PrintService) PreviewDocument(ctx context.Context, tenantID uuid.UUID, 
 	}
 
 	// Get template
-	var template *printing.PrintTemplate
-	var err error
-
+	var template *infra.StaticTemplate
 	if req.TemplateID != nil {
-		template, err = s.templateRepo.FindByIDForTenant(ctx, tenantID, *req.TemplateID)
-	} else {
-		// Use default template for the document type
-		template, err = s.templateRepo.FindDefault(ctx, tenantID, docType)
-		if err == nil && template == nil {
-			return nil, shared.NewDomainError("NOT_FOUND", "No default template found for this document type")
-		}
-	}
-
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
+		template = s.templateStore.GetByID(req.TemplateID.String())
+		if template == nil {
 			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
 		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	if !template.CanBeUsed() {
-		return nil, shared.NewDomainError("INVALID_STATE", "Template is not available for use")
+	} else {
+		// Use default template for the document type
+		template = s.templateStore.GetDefault(docType)
+		if template == nil {
+			return nil, shared.NewDomainError("NOT_FOUND", "No default template found for this document type")
+		}
 	}
 
 	// Load data from provider if not provided
@@ -424,7 +123,7 @@ func (s *PrintService) PreviewDocument(ctx context.Context, tenantID uuid.UUID, 
 
 	// Render template with data
 	result, err := s.templateEngine.Render(ctx, &infra.RenderTemplateRequest{
-		Template: template,
+		Template: template.ToPrintTemplate(),
 		Data:     data,
 	})
 	if err != nil {
@@ -437,7 +136,7 @@ func (s *PrintService) PreviewDocument(ctx context.Context, tenantID uuid.UUID, 
 
 	return &PreviewResponse{
 		HTML:        result.HTML,
-		TemplateID:  template.ID.String(),
+		TemplateID:  template.ID,
 		PaperSize:   string(template.PaperSize),
 		Orientation: string(template.Orientation),
 		Margins: MarginsDTO{
@@ -458,33 +157,24 @@ func (s *PrintService) GeneratePDF(ctx context.Context, tenantID, userID uuid.UU
 	}
 
 	// Get template
-	var template *printing.PrintTemplate
-	var err error
-
+	var template *infra.StaticTemplate
 	if req.TemplateID != nil {
-		template, err = s.templateRepo.FindByIDForTenant(ctx, tenantID, *req.TemplateID)
+		template = s.templateStore.GetByID(req.TemplateID.String())
+		if template == nil {
+			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
+		}
 	} else {
-		template, err = s.templateRepo.FindDefault(ctx, tenantID, docType)
-		if err == nil && template == nil {
+		template = s.templateStore.GetDefault(docType)
+		if template == nil {
 			return nil, shared.NewDomainError("NOT_FOUND", "No default template found for this document type")
 		}
 	}
 
-	if err != nil {
-		if errors.Is(err, shared.ErrNotFound) {
-			return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
-		}
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	if !template.CanBeUsed() {
-		return nil, shared.NewDomainError("INVALID_STATE", "Template is not available for use")
-	}
-
 	// Create print job
+	templateUUID := uuid.MustParse(template.ID)
 	job, err := printing.NewPrintJob(
 		tenantID,
-		template.ID,
+		templateUUID,
 		docType,
 		req.DocumentID,
 		req.DocumentNumber,
@@ -531,7 +221,7 @@ func (s *PrintService) GeneratePDF(ctx context.Context, tenantID, userID uuid.UU
 
 	// Render HTML
 	renderResult, err := s.templateEngine.Render(ctx, &infra.RenderTemplateRequest{
-		Template: template,
+		Template: template.ToPrintTemplate(),
 		Data:     data,
 	})
 	if err != nil {
@@ -654,6 +344,10 @@ func (s *PrintService) GetJobsByDocument(ctx context.Context, tenantID uuid.UUID
 	return result, nil
 }
 
+// =============================================================================
+// Reference Data Operations
+// =============================================================================
+
 // GetDocumentTypes returns all available document types
 func (s *PrintService) GetDocumentTypes() []DocumentTypeResponse {
 	docTypes := printing.AllDocTypes()
@@ -686,14 +380,14 @@ func (s *PrintService) GetPaperSizes() []PaperSizeResponse {
 // Helper Functions
 // =============================================================================
 
-func toTemplateResponse(t *printing.PrintTemplate) *TemplateResponse {
-	return &TemplateResponse{
-		ID:           t.ID.String(),
-		TenantID:     t.TenantID.String(),
-		DocumentType: string(t.DocumentType),
+func staticTemplateToResponse(t *infra.StaticTemplate) TemplateResponse {
+	return TemplateResponse{
+		ID:           t.ID,
+		TenantID:     "", // Static templates are not tenant-specific
+		DocumentType: string(t.DocType),
 		Name:         t.Name,
 		Description:  t.Description,
-		Content:      t.Content,
+		Content:      "", // Don't include content in list responses
 		PaperSize:    string(t.PaperSize),
 		Orientation:  string(t.Orientation),
 		Margins: MarginsDTO{
@@ -703,9 +397,9 @@ func toTemplateResponse(t *printing.PrintTemplate) *TemplateResponse {
 			Left:   t.Margins.Left,
 		},
 		IsDefault: t.IsDefault,
-		Status:    string(t.Status),
-		CreatedAt: t.CreatedAt,
-		UpdatedAt: t.UpdatedAt,
+		Status:    "ACTIVE",
+		CreatedAt: time.Time{},
+		UpdatedAt: time.Time{},
 	}
 }
 

@@ -57,6 +57,42 @@
   padding: var(--spacing-2) 0;
 }
 
+/* Order info grid layout */
+.purchase-order-detail-page .order-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4) var(--spacing-6);
+}
+
+.purchase-order-detail-page .order-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
+}
+
+.purchase-order-detail-page .order-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.purchase-order-detail-page .order-info-label {
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  line-height: 1.4;
+}
+
+.purchase-order-detail-page .order-info-value {
+  font-size: var(--semi-font-size-regular);
+  color: var(--semi-color-text-0);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.purchase-order-detail-page .order-number-value {
+  font-family: var(--semi-font-family-code);
+  letter-spacing: 0.02em;
+}
+
 /* Receive progress section */
 .purchase-order-detail-page .receive-progress-section {
   margin-top: var(--spacing-4);
@@ -137,9 +173,20 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .purchase-order-detail-page .order-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .purchase-order-detail-page {
     padding: var(--spacing-4);
+  }
+
+  .purchase-order-detail-page .order-info-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
   }
 
   .purchase-order-detail-page .page-header {

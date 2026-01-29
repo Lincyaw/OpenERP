@@ -339,6 +339,13 @@
         "submitError": "Failed to submit for approval",
         "cancelSuccess": "Stock taking cancelled",
         "cancelError": "Failed to cancel"
+      },
+      "submitTips": {
+        "notStarted": "Please click \"Start Counting\" first",
+        "noItems": "No items in stock taking",
+        "incomplete": "{{count}} items have not been counted yet",
+        "unsaved": "Please save changes first",
+        "noChanges": "No changes to save"
       }
     }
   },

@@ -16,8 +16,6 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
-  PageSummary,
-  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -31,7 +29,6 @@ import {
   shipPurchaseReturn,
   completePurchaseReturn,
   cancelPurchaseReturn,
-  getPurchaseReturnStatusSummary,
 } from '@/api/purchase-returns/purchase-returns'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
@@ -39,7 +36,6 @@ import type {
   ListPurchaseReturnsParams,
   ListPurchaseReturnsStatus,
   HandlerSupplierListResponse,
-  HandlerPurchaseReturnStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { useI18n } from '@/hooks/useI18n'
@@ -95,14 +91,12 @@ const STATUS_KEYS: Record<string, string> = {
 export default function PurchaseReturnsPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const { formatCurrency, formatDate, formatDateTime } = useFormatters()
+  const { formatCurrency, formatDate } = useFormatters()
 
   // State for data
   const [returnList, setReturnList] = useState<PurchaseReturn[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<HandlerPurchaseReturnStatusSummaryResponse | null>(null)
-  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Supplier options for filter
   const [supplierOptions, setSupplierOptions] = useState<SupplierOption[]>([])
@@ -215,26 +209,6 @@ export default function PurchaseReturnsPage() {
   useEffect(() => {
     fetchReturns()
   }, [fetchReturns])
-
-  // Fetch summary data
-  const fetchSummary = useCallback(async () => {
-    setSummaryLoading(true)
-    try {
-      const response = await getPurchaseReturnStatusSummary()
-      if (response.status === 200 && response.data.success && response.data.data) {
-        setSummary(response.data.data)
-      }
-    } catch {
-      // Silently fail for summary - it's not critical
-    } finally {
-      setSummaryLoading(false)
-    }
-  }, [])
-
-  // Fetch summary on mount
-  useEffect(() => {
-    fetchSummary()
-  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -469,19 +443,10 @@ export default function PurchaseReturnsPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchReturns()
-    fetchSummary()
-  }, [fetchReturns, fetchSummary])
+  }, [fetchReturns])
 
-  // Handle filter by clicking KPI card
-  const handleKPIClick = useCallback(
-    (status: string) => {
-      setStatusFilter(status)
-      setFilter('status', status || null)
-    },
-    [setFilter]
-  )
-
-  // Table columns
+  // Table columns - Simplified to 6 essential columns (UX-007)
+  // Removed: item_count, submitted_at, shipped_at, completed_at - can be viewed in detail page
   const tableColumns: DataTableColumn<PurchaseReturn>[] = useMemo(
     () => [
       {
@@ -519,21 +484,14 @@ export default function PurchaseReturnsPage() {
       {
         title: t('purchaseReturn.columns.supplier'),
         dataIndex: 'supplier_name',
-        width: 150,
+        width: 180,
         ellipsis: true,
         render: (name: unknown) => (name as string) || '-',
       },
       {
-        title: t('purchaseReturn.columns.itemCount'),
-        dataIndex: 'item_count',
-        width: 100,
-        align: 'center',
-        render: (count: unknown) => `${(count as number) || 0} ${t('common.unit')}`,
-      },
-      {
-        title: t('purchaseReturn.columns.totalAmount'),
+        title: t('purchaseReturn.columns.amount'),
         dataIndex: 'total_refund',
-        width: 120,
+        width: 140,
         align: 'right',
         sortable: true,
         render: (amount: unknown) => {
@@ -571,35 +529,8 @@ export default function PurchaseReturnsPage() {
           return value ? formatDate(value) : '-'
         },
       },
-      {
-        title: t('purchaseReturn.columns.submittedAt'),
-        dataIndex: 'submitted_at',
-        width: 150,
-        render: (date: unknown) => {
-          const value = date as string | undefined
-          return value ? formatDateTime(value) : '-'
-        },
-      },
-      {
-        title: t('purchaseReturn.columns.shippedAt'),
-        dataIndex: 'shipped_at',
-        width: 150,
-        render: (date: unknown) => {
-          const value = date as string | undefined
-          return value ? formatDateTime(value) : '-'
-        },
-      },
-      {
-        title: t('purchaseReturn.columns.completedAt'),
-        dataIndex: 'completed_at',
-        width: 150,
-        render: (date: unknown) => {
-          const value = date as string | undefined
-          return value ? formatDateTime(value) : '-'
-        },
-      },
     ],
-    [t, formatCurrency, formatDate, formatDateTime, navigate]
+    [t, formatCurrency, formatDate, navigate]
   )
 
   // Table row actions
@@ -676,40 +607,6 @@ export default function PurchaseReturnsPage() {
 
   return (
     <Container size="full" className="purchase-returns-page">
-      {/* KPI Summary Cards */}
-      <PageSummary loading={summaryLoading} className="purchase-returns-summary">
-        <KPICard
-          label={t('purchaseReturn.summary.total')}
-          value={summary?.total ?? '-'}
-          variant="default"
-          onClick={() => handleKPIClick('')}
-        />
-        <KPICard
-          label={t('purchaseReturn.summary.draft')}
-          value={summary?.draft ?? '-'}
-          variant="default"
-          onClick={() => handleKPIClick('DRAFT')}
-        />
-        <KPICard
-          label={t('purchaseReturn.summary.pending')}
-          value={summary?.pending ?? '-'}
-          variant="warning"
-          onClick={() => handleKPIClick('PENDING')}
-        />
-        <KPICard
-          label={t('purchaseReturn.summary.shipped')}
-          value={summary?.shipped ?? '-'}
-          variant="primary"
-          onClick={() => handleKPIClick('SHIPPED')}
-        />
-        <KPICard
-          label={t('purchaseReturn.summary.completed')}
-          value={summary?.completed ?? '-'}
-          variant="success"
-          onClick={() => handleKPIClick('COMPLETED')}
-        />
-      </PageSummary>
-
       <Card className="purchase-returns-card">
         <div className="purchase-returns-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -773,7 +670,7 @@ export default function PurchaseReturnsPage() {
             actions={tableActions}
             onStateChange={handleStateChange}
             sortState={state.sort}
-            scroll={{ x: 1500 }}
+            scroll={{ x: 1000 }}
           />
         </Spin>
       </Card>

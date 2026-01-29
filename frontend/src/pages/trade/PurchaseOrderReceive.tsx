@@ -33,6 +33,7 @@ import type {
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
 import { safeToFixed } from '@/utils'
+import { handleError } from '@/services/error-handler'
 import './PurchaseOrderReceive.css'
 
 const { Title, Text } = Typography
@@ -261,10 +262,21 @@ export default function PurchaseOrderReceivePage() {
         }
         navigate('/trade/purchase')
       } else {
-        Toast.error(t('receive.messages.receiveError'))
+        // Use error handler for user-friendly messages
+        const errorCode = (response.data.error as { code?: string })?.code
+        const errorMessage = (response.data.error as { message?: string })?.message
+        handleError(
+          {
+            response: {
+              status: response.status,
+              data: { error: { code: errorCode, message: errorMessage } },
+            },
+          },
+          { showToast: true }
+        )
       }
-    } catch {
-      Toast.error(t('receive.messages.receiveError'))
+    } catch (error) {
+      handleError(error, { showToast: true })
     } finally {
       setSubmitting(false)
     }

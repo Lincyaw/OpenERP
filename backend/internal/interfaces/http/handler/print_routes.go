@@ -10,17 +10,7 @@ func PrintRoutes(handler *PrintHandler, authMiddleware gin.HandlerFunc) *router.
 	group := router.NewDomainGroup("print", "/print")
 	group.Use(authMiddleware)
 
-	// Template management
-	group.POST("/templates", handler.CreateTemplate)
-	group.GET("/templates", handler.ListTemplates)
-	group.GET("/templates/:id", handler.GetTemplate)
-	group.PUT("/templates/:id", handler.UpdateTemplate)
-	group.DELETE("/templates/:id", handler.DeleteTemplate)
-	group.POST("/templates/:id/set-default", handler.SetDefaultTemplate)
-	group.POST("/templates/:id/activate", handler.ActivateTemplate)
-	group.POST("/templates/:id/deactivate", handler.DeactivateTemplate)
-	group.GET("/templates/:id/content", handler.GetTemplateContent)
-	group.PUT("/templates/:id/content", handler.UpdateTemplateContent)
+	// Template queries (read-only from static templates)
 	group.GET("/templates/by-doc-type/:doc_type", handler.GetTemplatesByDocType)
 
 	// Preview and PDF generation

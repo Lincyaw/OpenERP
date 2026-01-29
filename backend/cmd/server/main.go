@@ -295,8 +295,7 @@ func main() {
 	flagOverrideRepo := persistence.NewGormFlagOverrideRepository(db.DB)
 	flagAuditLogRepo := persistence.NewGormFlagAuditLogRepository(db.DB)
 
-	// Print repositories
-	printTemplateRepo := persistence.NewGormPrintTemplateRepository(db.DB)
+	// Print job repository (templates are now static, no repository needed)
 	printJobRepo := persistence.NewGormPrintJobRepository(db.DB)
 
 	// Initialize event serializer and register all event types
@@ -457,6 +456,12 @@ func main() {
 
 	// Print service
 	// Initialize printing infrastructure components
+	templateStore, err := infraPrinting.NewTemplateStore(&infraPrinting.TemplateStoreConfig{
+		ExternalDir: "", // Empty means use embedded templates; can be configured via env
+	})
+	if err != nil {
+		log.Fatal("Failed to initialize template store", zap.Error(err))
+	}
 	templateEngine := infraPrinting.NewTemplateEngine()
 	pdfRenderer, err := infraPrinting.NewChromedpRenderer(&infraPrinting.ChromedpConfig{})
 	if err != nil {
@@ -482,7 +487,7 @@ func main() {
 	dataProviderRegistry.Register(providers.NewStockTakingProvider(stockTakingRepo, warehouseRepo))
 
 	printService := printingapp.NewPrintService(
-		printTemplateRepo,
+		templateStore,
 		printJobRepo,
 		templateEngine,
 		pdfRenderer,

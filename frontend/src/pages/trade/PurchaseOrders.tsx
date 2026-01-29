@@ -17,8 +17,6 @@ import {
   DataTable,
   TableToolbar,
   useTableState,
-  PageSummary,
-  KPICard,
   type DataTableColumn,
   type TableAction,
 } from '@/components/common'
@@ -28,7 +26,6 @@ import {
   confirmPurchaseOrder,
   cancelPurchaseOrder,
   deletePurchaseOrder,
-  getPurchaseOrderStatusSummary,
 } from '@/api/purchase-orders/purchase-orders'
 import { listSuppliers } from '@/api/suppliers/suppliers'
 import type {
@@ -36,7 +33,6 @@ import type {
   ListPurchaseOrdersParams,
   ListPurchaseOrdersStatus,
   HandlerSupplierListResponse,
-  HandlerPurchaseOrderStatusSummaryResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import { PrintPreviewModal } from '@/components/printing'
@@ -77,14 +73,12 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'orange' | '
 export default function PurchaseOrdersPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
-  const { formatCurrency, formatDate, formatDateTime } = useFormatters()
+  const { formatCurrency, formatDate } = useFormatters()
 
   // State for data
   const [orderList, setOrderList] = useState<PurchaseOrder[]>([])
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<HandlerPurchaseOrderStatusSummaryResponse | null>(null)
-  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Supplier options for filter
   const [supplierOptions, setSupplierOptions] = useState<SupplierOption[]>([])
@@ -199,26 +193,6 @@ export default function PurchaseOrdersPage() {
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
-
-  // Fetch summary data
-  const fetchSummary = useCallback(async () => {
-    setSummaryLoading(true)
-    try {
-      const response = await getPurchaseOrderStatusSummary()
-      if (response.status === 200 && response.data.success && response.data.data) {
-        setSummary(response.data.data)
-      }
-    } catch {
-      // Silently fail for summary - it's not critical
-    } finally {
-      setSummaryLoading(false)
-    }
-  }, [])
-
-  // Fetch summary on mount
-  useEffect(() => {
-    fetchSummary()
-  }, [fetchSummary])
 
   // Handle search
   const handleSearch = useCallback(
@@ -386,19 +360,11 @@ export default function PurchaseOrdersPage() {
   // Refresh handler
   const handleRefresh = useCallback(() => {
     fetchOrders()
-    fetchSummary()
-  }, [fetchOrders, fetchSummary])
+  }, [fetchOrders])
 
-  // Handle filter by clicking KPI card
-  const handleKPIClick = useCallback(
-    (status: string) => {
-      setStatusFilter(status)
-      setFilter('status', status || null)
-    },
-    [setFilter]
-  )
-
-  // Table columns
+  // Table columns - Simplified to 7 essential columns (UX-007)
+  // Removed: item_count, total_amount (keeping payable_amount as "amount"), confirmed_at
+  // Kept receive_progress as it's a key business metric for purchase orders
   const tableColumns: DataTableColumn<PurchaseOrder>[] = useMemo(
     () => [
       {
@@ -428,32 +394,14 @@ export default function PurchaseOrdersPage() {
       {
         title: t('purchaseOrder.columns.supplier'),
         dataIndex: 'supplier_name',
-        width: 150,
+        width: 180,
         ellipsis: true,
         render: (name: unknown) => (name as string) || '-',
       },
       {
-        title: t('purchaseOrder.columns.itemCount'),
-        dataIndex: 'item_count',
-        width: 100,
-        align: 'center',
-        render: (count: unknown) => `${(count as number) || 0} ${t('salesOrder.unit')}`,
-      },
-      {
-        title: t('purchaseOrder.columns.totalAmount'),
-        dataIndex: 'total_amount',
-        width: 120,
-        align: 'right',
-        sortable: true,
-        render: (amount: unknown) => {
-          const value = amount as number | undefined
-          return value !== undefined && value !== null ? formatCurrency(value) : '-'
-        },
-      },
-      {
-        title: t('purchaseOrder.columns.payableAmount'),
+        title: t('purchaseOrder.columns.amount'),
         dataIndex: 'payable_amount',
-        width: 120,
+        width: 140,
         align: 'right',
         sortable: true,
         render: (amount: unknown) => {
@@ -517,17 +465,8 @@ export default function PurchaseOrdersPage() {
           return value ? formatDate(value) : '-'
         },
       },
-      {
-        title: t('purchaseOrder.columns.confirmedAt'),
-        dataIndex: 'confirmed_at',
-        width: 150,
-        render: (date: unknown) => {
-          const value = date as string | undefined
-          return value ? formatDateTime(value) : '-'
-        },
-      },
     ],
-    [t, formatCurrency, formatDate, formatDateTime, navigate]
+    [t, formatCurrency, formatDate, navigate]
   )
 
   // Table row actions
@@ -592,40 +531,6 @@ export default function PurchaseOrdersPage() {
 
   return (
     <Container size="full" className="purchase-orders-page">
-      {/* KPI Summary Cards */}
-      <PageSummary loading={summaryLoading} className="purchase-orders-summary">
-        <KPICard
-          label={t('purchaseOrder.summary.total')}
-          value={summary?.total ?? '-'}
-          variant="default"
-          onClick={() => handleKPIClick('')}
-        />
-        <KPICard
-          label={t('purchaseOrder.summary.draft')}
-          value={summary?.draft ?? '-'}
-          variant="default"
-          onClick={() => handleKPIClick('draft')}
-        />
-        <KPICard
-          label={t('purchaseOrder.summary.confirmed')}
-          value={summary?.confirmed ?? '-'}
-          variant="primary"
-          onClick={() => handleKPIClick('confirmed')}
-        />
-        <KPICard
-          label={t('purchaseOrder.summary.pendingReceipt')}
-          value={summary?.partial_received ?? '-'}
-          variant="warning"
-          onClick={() => handleKPIClick('partial_received')}
-        />
-        <KPICard
-          label={t('purchaseOrder.summary.completed')}
-          value={summary?.completed ?? '-'}
-          variant="success"
-          onClick={() => handleKPIClick('completed')}
-        />
-      </PageSummary>
-
       <Card className="purchase-orders-card">
         <div className="purchase-orders-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -689,7 +594,7 @@ export default function PurchaseOrdersPage() {
             actions={tableActions}
             onStateChange={handleStateChange}
             sortState={state.sort}
-            scroll={{ x: 1400 }}
+            scroll={{ x: 1000 }}
           />
         </Spin>
       </Card>

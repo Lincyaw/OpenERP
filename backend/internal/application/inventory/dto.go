@@ -33,6 +33,9 @@ type InventoryListItemResponse struct {
 	ID                uuid.UUID       `json:"id"`
 	WarehouseID       uuid.UUID       `json:"warehouse_id"`
 	ProductID         uuid.UUID       `json:"product_id"`
+	ProductName       string          `json:"product_name"`
+	ProductCode       string          `json:"product_code"`
+	Unit              string          `json:"unit"`
 	AvailableQuantity decimal.Decimal `json:"available_quantity"`
 	LockedQuantity    decimal.Decimal `json:"locked_quantity"`
 	TotalQuantity     decimal.Decimal `json:"total_quantity"`
@@ -245,6 +248,9 @@ func ToInventoryListItemResponse(item *inventory.InventoryItem) InventoryListIte
 		ID:                item.ID,
 		WarehouseID:       item.WarehouseID,
 		ProductID:         item.ProductID,
+		ProductName:       item.ProductName,
+		ProductCode:       item.ProductCode,
+		Unit:              item.Unit,
 		AvailableQuantity: item.AvailableQuantity.Amount(),
 		LockedQuantity:    item.LockedQuantity.Amount(),
 		TotalQuantity:     item.TotalQuantity().Amount(),

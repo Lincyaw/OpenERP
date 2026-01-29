@@ -25,7 +25,33 @@ type DefaultTemplate struct {
 // GetDefaultTemplates returns all default template configurations
 func GetDefaultTemplates() []DefaultTemplate {
 	return []DefaultTemplate{
+		// =============================================================================
+		// SALES_ORDER templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypeSalesOrder,
+			Name:        "销售订单-A4",
+			Description: "标准A4尺寸销售订单模板，包含客户信息、商品明细、金额汇总",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/sales_order_a4.html",
+			IsDefault:   true,
+		},
+		{
+			DocType:     printing.DocTypeSalesOrder,
+			Name:        "销售订单-A5",
+			Description: "紧凑A5尺寸销售订单模板，适合小批量订单",
+			PaperSize:   printing.PaperSizeA5,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/sales_order_a5.html",
+			IsDefault:   false,
+		},
+
+		// =============================================================================
 		// SALES_DELIVERY templates
+		// =============================================================================
 		{
 			DocType:     printing.DocTypeSalesDelivery,
 			Name:        "销售发货单-A4",
@@ -62,7 +88,9 @@ func GetDefaultTemplates() []DefaultTemplate {
 			IsDefault: false,
 		},
 
+		// =============================================================================
 		// SALES_RECEIPT templates
+		// =============================================================================
 		{
 			DocType:     printing.DocTypeSalesReceipt,
 			Name:        "销售收据-58mm",
@@ -94,7 +122,47 @@ func GetDefaultTemplates() []DefaultTemplate {
 			IsDefault:   false,
 		},
 
+		// =============================================================================
+		// SALES_RETURN templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypeSalesReturn,
+			Name:        "销售退货单-A4",
+			Description: "标准A4尺寸销售退货单，包含客户信息、退货明细、退款金额",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/sales_return_a4.html",
+			IsDefault:   true,
+		},
+		{
+			DocType:     printing.DocTypeSalesReturn,
+			Name:        "销售退货单-A5",
+			Description: "紧凑A5尺寸销售退货单，适合小批量退货",
+			PaperSize:   printing.PaperSizeA5,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/sales_return_a5.html",
+			IsDefault:   false,
+		},
+
+		// =============================================================================
+		// PURCHASE_ORDER templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypePurchaseOrder,
+			Name:        "采购订单-A4",
+			Description: "标准A4尺寸采购订单，包含供应商信息、商品明细、金额汇总",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/purchase_order_a4.html",
+			IsDefault:   true,
+		},
+
+		// =============================================================================
 		// PURCHASE_RECEIVING templates
+		// =============================================================================
 		{
 			DocType:     printing.DocTypePurchaseReceiving,
 			Name:        "采购入库单-A4",
@@ -119,6 +187,92 @@ func GetDefaultTemplates() []DefaultTemplate {
 			},
 			FilePath:  "templates/purchase_receiving_continuous.html",
 			IsDefault: false,
+		},
+
+		// =============================================================================
+		// PURCHASE_RETURN templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypePurchaseReturn,
+			Name:        "采购退货单-A4",
+			Description: "标准A4尺寸采购退货单，包含供应商信息、退货明细、退款金额",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/purchase_return_a4.html",
+			IsDefault:   true,
+		},
+		{
+			DocType:     printing.DocTypePurchaseReturn,
+			Name:        "采购退货单-A5",
+			Description: "紧凑A5尺寸采购退货单，适合小批量退货",
+			PaperSize:   printing.PaperSizeA5,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/purchase_return_a5.html",
+			IsDefault:   false,
+		},
+
+		// =============================================================================
+		// RECEIPT_VOUCHER templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypeReceiptVoucher,
+			Name:        "收款单-A4",
+			Description: "标准A4尺寸收款单，包含客户信息、收款金额、核销明细",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/receipt_voucher_a4.html",
+			IsDefault:   true,
+		},
+		{
+			DocType:     printing.DocTypeReceiptVoucher,
+			Name:        "收款单-A5",
+			Description: "紧凑A5尺寸收款单，适合快速打印收款凭证",
+			PaperSize:   printing.PaperSizeA5,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/receipt_voucher_a5.html",
+			IsDefault:   false,
+		},
+
+		// =============================================================================
+		// PAYMENT_VOUCHER templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypePaymentVoucher,
+			Name:        "付款单-A4",
+			Description: "标准A4尺寸付款单，包含供应商信息、付款金额、核销明细",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/payment_voucher_a4.html",
+			IsDefault:   true,
+		},
+
+		// =============================================================================
+		// STOCK_TAKING templates
+		// =============================================================================
+		{
+			DocType:     printing.DocTypeStockTaking,
+			Name:        "盘点单-A4",
+			Description: "标准A4尺寸盘点单，包含仓库信息、商品明细、盘盈盘亏汇总",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationPortrait,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/stock_taking_a4.html",
+			IsDefault:   true,
+		},
+		{
+			DocType:     printing.DocTypeStockTaking,
+			Name:        "盘点单-A4横版",
+			Description: "A4横向盘点单，适合商品较多的盘点场景，信息展示更全面",
+			PaperSize:   printing.PaperSizeA4,
+			Orientation: printing.OrientationLandscape,
+			Margins:     printing.DefaultMargins(),
+			FilePath:    "templates/stock_taking_a4_landscape.html",
+			IsDefault:   false,
 		},
 	}
 }

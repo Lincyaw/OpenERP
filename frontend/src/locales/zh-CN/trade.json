@@ -19,6 +19,7 @@
       "itemCount": "商品数量",
       "totalAmount": "订单金额",
       "payableAmount": "应付金额",
+      "amount": "金额",
       "status": "状态",
       "createdAt": "创建时间",
       "confirmedAt": "确认时间",
@@ -93,6 +94,7 @@
       "itemCount": "商品数量",
       "totalAmount": "订单金额",
       "payableAmount": "应付金额",
+      "amount": "金额",
       "status": "状态",
       "receiveProgress": "收货进度",
       "createdAt": "创建时间",
@@ -374,6 +376,7 @@
       "customer": "客户",
       "itemCount": "商品数量",
       "totalAmount": "退货金额",
+      "amount": "金额",
       "status": "状态",
       "createdAt": "创建时间"
     },

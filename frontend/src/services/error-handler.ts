@@ -77,6 +77,8 @@ export interface ErrorHandlerOptions {
   onError?: (details: ErrorDetails) => void
   /** Context message for the operation that failed */
   context?: string
+  /** Fallback message when error details are not available */
+  fallbackMessage?: string
 }
 
 /**
@@ -90,6 +92,21 @@ interface BackendErrorResponse {
   }
   message?: string
   status?: string
+}
+
+/**
+ * Get localized message for backend error code
+ *
+ * @param code - Backend error code (e.g., "INVALID_STATUS")
+ * @returns Localized message or undefined if not found
+ */
+function getLocalizedErrorCodeMessage(code?: string): string | undefined {
+  if (!code) return undefined
+  const key = `errors.codes.${code}`
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const translated = String((i18n as any).t(key, { ns: 'common' }))
+  // i18n returns the key itself if translation is not found
+  return translated === key ? undefined : translated
 }
 
 /**
@@ -199,17 +216,30 @@ export function parseError(error: unknown): ErrorDetails {
     const type = detectErrorType(statusCode)
     const backendData = error.response?.data as BackendErrorResponse | undefined
 
-    // Try to get backend error message first
+    // Try to get backend error code and message
+    const backendCode = backendData?.error?.code
     const backendMessage = backendData?.error?.message || backendData?.message
+
+    // Try to get localized message for the error code first
+    const localizedCodeMessage = getLocalizedErrorCodeMessage(backendCode)
+
+    // For validation/business errors, prefer localized code message > backend message > generic message
+    const isBusinessError = type === ErrorType.VALIDATION || type === ErrorType.CONFLICT
+    const displayMessage = isBusinessError
+      ? localizedCodeMessage || backendMessage || getErrorMessage(type)
+      : getErrorMessage(type)
+
+    // Don't show generic suggestions for business errors with specific messages
+    const hasSpecificMessage = isBusinessError && (localizedCodeMessage || backendMessage)
 
     return {
       type,
       statusCode,
-      message: getErrorMessage(type),
+      message: displayMessage,
       technicalMessage: backendMessage || error.message,
-      suggestion: getErrorSuggestion(type),
+      suggestion: hasSpecificMessage ? undefined : getErrorSuggestion(type),
       canRetry: isRetryable(type),
-      showContactSupport: shouldShowContactSupport(type),
+      showContactSupport: hasSpecificMessage ? false : shouldShowContactSupport(type),
       fieldErrors: extractFieldErrors(backendData),
     }
   }
@@ -331,9 +361,15 @@ export function handleError(error: unknown, options: ErrorHandlerOptions = {}): 
     logError = import.meta.env.DEV,
     onError,
     context,
+    fallbackMessage,
   } = options
 
   const details = parseError(error)
+
+  // Use fallback message if provided and no specific message was found
+  if (fallbackMessage && details.type === ErrorType.UNKNOWN && !details.technicalMessage) {
+    details.message = fallbackMessage
+  }
 
   // Log error in development or when enabled
   // TODO: Integrate with error tracking service (e.g., Sentry) for production

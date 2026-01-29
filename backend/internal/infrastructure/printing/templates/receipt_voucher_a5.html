@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>收款单 - {{ .Document.VoucherNo }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .page {
+            width: 138mm;
+            padding: 3mm;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #006699;
+            padding-bottom: 5px;
+        }
+        .header .title {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #006699;
+        }
+        .header .company-name {
+            font-size: 11px;
+            margin-top: 3px;
+            color: #666;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 9px;
+        }
+        .info-left, .info-right {
+            width: 48%;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 3px;
+        }
+        .info-label {
+            width: 55px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            padding-left: 3px;
+        }
+        .amount-section {
+            background-color: #f0f8ff;
+            border: 2px solid #006699;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .amount-label {
+            font-size: 11px;
+            color: #555;
+        }
+        .amount-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #006699;
+            margin: 3px 0;
+        }
+        .amount-chinese {
+            font-size: 11px;
+            color: #666;
+        }
+        .customer-section {
+            margin-bottom: 8px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            font-size: 9px;
+        }
+        .customer-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #006699;
+        }
+        .customer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3px;
+        }
+        .allocations-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+        .allocations-table th,
+        .allocations-table td {
+            border: 1px solid #333;
+            padding: 4px;
+            text-align: center;
+            font-size: 9px;
+        }
+        .allocations-table th {
+            background-color: #e0f0ff;
+            font-weight: bold;
+        }
+        .allocations-table .col-amount { text-align: right; }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        .signature-box {
+            width: 30%;
+            text-align: center;
+            font-size: 9px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin: 15px 0 3px 0;
+            height: 1px;
+        }
+        .footer {
+            margin-top: 8px;
+            font-size: 8px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .page { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="title">收 款 单</div>
+            {{ if .Company.Name }}<div class="company-name">{{ .Company.Name }}</div>{{ end }}
+        </div>
+
+        <div class="info-section">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">收款单号:</span>
+                    <span class="info-value">{{ .Document.VoucherNo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">客户:</span>
+                    <span class="info-value">{{ .Document.Customer.Name }}</span>
+                </div>
+            </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">日期:</span>
+                    <span class="info-value">{{ .Meta.CreatedAtFormatted }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">收款方式:</span>
+                    <span class="info-value">{{ .Document.PaymentMethodText }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="amount-section">
+            <div class="amount-label">收款金额</div>
+            <div class="amount-value">{{ .Document.AmountFormatted }}</div>
+            <div class="amount-chinese">大写: {{ .Document.AmountChinese }}</div>
+        </div>
+
+        <div class="customer-section">
+            <div class="customer-title">客户信息</div>
+            <div class="customer-grid">
+                <div>编码: {{ .Document.Customer.Code }}</div>
+                <div>电话: {{ default .Document.Customer.Phone "-" }}</div>
+            </div>
+        </div>
+
+        {{ if .Document.Allocations }}
+        <table class="allocations-table">
+            <thead>
+                <tr>
+                    <th>核销单据</th>
+                    <th>核销日期</th>
+                    <th class="col-amount">核销金额</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Document.Allocations }}
+                <tr>
+                    <td>{{ .DocumentNo }}</td>
+                    <td>{{ .DocumentDateFormatted }}</td>
+                    <td class="col-amount">{{ .AmountFormatted }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+        {{ end }}
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div>制单人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div>收款人</div>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-box">
+                <div>财务确认</div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>{{ .Company.Name }}</div>
+            <div>{{ .PrintDateTime }}</div>
+        </div>
+    </div>
+</body>
+</html>

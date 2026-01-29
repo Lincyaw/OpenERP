@@ -1,14 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import {
-  Card,
-  Typography,
-  Descriptions,
-  Table,
-  Toast,
-  Modal,
-  Empty,
-  TextArea,
-} from '@douyinfe/semi-ui-19'
+import { Card, Typography, Table, Toast, Modal, Empty, TextArea } from '@douyinfe/semi-ui-19'
 import { IconEdit, IconTick, IconClose, IconSend, IconPrint } from '@douyinfe/semi-icons'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
@@ -559,29 +550,60 @@ export default function SalesReturnDetailPage() {
   const renderBasicInfo = () => {
     if (!returnData) return null
 
-    const data = [
-      { key: t('salesReturnDetail.basicInfo.returnNumber'), value: returnData.return_number },
-      {
-        key: t('salesReturnDetail.basicInfo.orderNumber'),
-        value: returnData.sales_order_number || '-',
-      },
-      {
-        key: t('salesReturnDetail.basicInfo.customerName'),
-        value: returnData.customer_name || '-',
-      },
-      {
-        key: t('salesReturnDetail.basicInfo.totalQuantity'),
-        value: safeToFixed(returnData.total_quantity, 2, '0.00'),
-      },
-      {
-        key: t('salesReturnDetail.basicInfo.createdAt'),
-        value: returnData.created_at ? formatDateTime(returnData.created_at) : '-',
-      },
-      { key: t('salesReturnDetail.basicInfo.reason'), value: returnData.reason || '-' },
-      { key: t('salesReturnDetail.basicInfo.remark'), value: returnData.remark || '-' },
-    ]
-
-    return <Descriptions data={data} row className="return-basic-info" />
+    return (
+      <div className="order-info-grid">
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.returnNumber')}
+          </Text>
+          <Text strong className="order-info-value order-number-value">
+            {returnData.return_number}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.orderNumber')}
+          </Text>
+          <Text className="order-info-value order-number-value">
+            {returnData.sales_order_number || '-'}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.customerName')}
+          </Text>
+          <Text className="order-info-value">{returnData.customer_name || '-'}</Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.totalQuantity')}
+          </Text>
+          <Text className="order-info-value">
+            {safeToFixed(returnData.total_quantity, 2, '0.00')}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.createdAt')}
+          </Text>
+          <Text className="order-info-value">
+            {returnData.created_at ? formatDateTime(returnData.created_at) : '-'}
+          </Text>
+        </div>
+        <div className="order-info-item">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.reason')}
+          </Text>
+          <Text className="order-info-value">{returnData.reason || '-'}</Text>
+        </div>
+        <div className="order-info-item order-info-item--full">
+          <Text type="secondary" className="order-info-label">
+            {t('salesReturnDetail.basicInfo.remark')}
+          </Text>
+          <Text className="order-info-value">{returnData.remark || '-'}</Text>
+        </div>
+      </div>
+    )
   }
 
   // Render amount summary
