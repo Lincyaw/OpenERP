@@ -11799,7 +11799,7 @@
       "- [ ] Import progress shown in real-time",
       "- [ ] Error report downloadable as CSV"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-FE-002",

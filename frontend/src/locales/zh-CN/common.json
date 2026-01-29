@@ -258,6 +258,112 @@
       "RECEIPT_EXCEED_AMOUNT": "收款金额不能超过应收金额"
     }
   },
+  "import": {
+    "wizard": {
+      "title": "导入{{entity}}"
+    },
+    "steps": {
+      "upload": "上传文件",
+      "validate": "验证数据",
+      "import": "执行导入",
+      "results": "导入结果"
+    },
+    "entityTypes": {
+      "products": "商品",
+      "customers": "客户",
+      "suppliers": "供应商",
+      "inventory": "库存",
+      "categories": "分类"
+    },
+    "upload": {
+      "title": "上传{{entity}}数据",
+      "description": "请上传CSV格式的数据文件",
+      "selectFile": "选择文件",
+      "dropzone": "拖拽文件到此处或点击上传",
+      "dragDropText": "拖拽CSV文件到此处",
+      "orClickText": "或点击选择文件",
+      "fileRequirements": "支持CSV格式，最大{{maxSize}}",
+      "removeFile": "移除文件",
+      "templateHint": "不确定格式？",
+      "downloadTemplate": "下载模板"
+    },
+    "validation": {
+      "validating": "正在验证数据...",
+      "validatingHint": "正在检查文件格式和数据有效性",
+      "failed": "验证失败",
+      "retry": "重试",
+      "noResult": "暂无验证结果",
+      "allValid": "所有数据验证通过",
+      "someErrors": "部分数据存在错误",
+      "allInvalid": "所有数据验证失败",
+      "summary": "共{{total}}行，{{valid}}行有效，{{errors}}行有错误",
+      "totalRows": "总行数",
+      "validRows": "有效行",
+      "errorRows": "错误行",
+      "validRate": "通过率",
+      "warnings": "警告 ({{count}}条)",
+      "moreWarnings": "还有{{count}}条警告...",
+      "preview": "数据预览 ({{count}}行)",
+      "errors": "错误详情 ({{count}}条)",
+      "reupload": "重新上传",
+      "proceed": "继续导入 ({{count}}行)"
+    },
+    "conflictMode": {
+      "title": "冲突处理方式",
+      "description": "当导入数据与系统中已有数据冲突时",
+      "skip": "跳过",
+      "skipDescription": "跳过已存在的记录，只导入新数据",
+      "update": "更新",
+      "updateDescription": "更新已存在的记录，合并新数据",
+      "fail": "报错",
+      "failDescription": "遇到重复数据时终止导入"
+    },
+    "import": {
+      "title": "确认导入",
+      "description": "即将导入{{count}}条有效数据",
+      "warning": "导入操作将修改系统数据，请确认数据无误后再执行",
+      "readyToImport": "即将导入",
+      "rows": "条记录",
+      "startImport": "开始导入",
+      "importing": "导入中..."
+    },
+    "results": {
+      "noResult": "暂无导入结果",
+      "success": "导入成功",
+      "partial": "部分导入成功",
+      "failed": "导入失败",
+      "summary": "新增{{imported}}条，更新{{updated}}条，跳过{{skipped}}条，失败{{errors}}条",
+      "imported": "新增",
+      "updated": "更新",
+      "skipped": "跳过",
+      "errors": "失败",
+      "successRate": "成功率",
+      "processedTotal": "共处理{{count}}条数据",
+      "importMore": "继续导入",
+      "close": "完成"
+    },
+    "errors": {
+      "title": "错误详情 ({{count}}条)",
+      "noErrors": "没有错误",
+      "row": "行号",
+      "column": "列名",
+      "value": "错误值",
+      "message": "错误信息",
+      "code": "错误码",
+      "export": "导出错误报告",
+      "truncated": "显示前{{shown}}条，共{{total}}条错误",
+      "fileTooLarge": "文件大小超过限制（最大{{maxSize}}）",
+      "invalidFileType": "仅支持CSV格式文件",
+      "unsupportedEntity": "不支持的数据类型",
+      "validationFailed": "数据验证失败",
+      "importFailed": "数据导入失败",
+      "noValidRows": "没有有效数据可导入",
+      "noValidation": "请先验证数据"
+    },
+    "messages": {
+      "importSuccess": "成功导入{{imported}}条，更新{{updated}}条"
+    }
+  },
   "nav": {
     "dashboard": "工作台",
     "catalog": "商品管理",

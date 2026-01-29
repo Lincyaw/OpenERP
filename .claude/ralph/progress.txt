@@ -40758,3 +40758,90 @@ This is for initial data migration only, not for regular stock operations.
 - Wire up InventoryImportHandler in router
 - Add admin permission check middleware
 - Integration tests with real database
+
+2026-01-30 - Task ID: IMPORT-FE-001 - Bulk Import Frontend - Import Wizard Component
+
+=== Implementation Details ===
+Created a comprehensive import wizard component suite for bulk CSV imports:
+
+Files Created:
+- frontend/src/components/import/types.ts: Type definitions for all import components
+- frontend/src/components/import/ImportWizard.tsx: Main 4-step wizard container
+- frontend/src/components/import/FileUploadStep.tsx: File selection with drag & drop
+- frontend/src/components/import/ValidationStep.tsx: Validation results display
+- frontend/src/components/import/ImportStep.tsx: Conflict mode and import execution
+- frontend/src/components/import/ResultsStep.tsx: Import results summary
+- frontend/src/components/import/ErrorTable.tsx: Error display component
+- frontend/src/components/import/index.ts: Module exports
+- CSS files for each component
+
+i18n Translations Added:
+- frontend/src/locales/zh-CN/common.json: Chinese translations for import module
+- frontend/src/locales/en-US/common.json: English translations for import module
+
+Unit Tests:
+- ErrorTable.test.tsx: 7 passing tests
+- FileUploadStep.test.tsx: 10 passing tests
+- ImportWizard.test.tsx: 5 passing tests
+
+=== Component Features ===
+1. ImportWizard: 4-step wizard (Upload → Validate → Import → Results)
+   - Supports 5 entity types: products, customers, suppliers, inventory, categories
+   - Modal-based with step indicator
+   - Abort controller for canceling ongoing requests
+
+2. FileUploadStep:
+   - Drag & drop file upload
+   - Click to select file
+   - File size validation (max 10MB)
+   - File type validation (CSV only)
+   - Template download link support
+   - Keyboard accessible (Tab + Enter)
+
+3. ValidationStep:
+   - Progress spinner during validation
+   - Statistics cards (total, valid, errors)
+   - Data preview table
+   - Warnings display in collapsible section
+   - Error table with pagination
+   - Actions: Re-upload or Proceed
+
+4. ImportStep:
+   - Conflict mode selection (Skip/Update/Fail)
+   - Radio group with descriptions
+   - Warning banner about data modification
+   - Start import button with loading state
+
+5. ResultsStep:
+   - Success/partial/failed status indication
+   - Import statistics (imported, updated, skipped, errors)
+   - Success rate progress circle
+   - Error table for failed rows
+   - Actions: Import More or Close
+
+6. ErrorTable:
+   - Paginated error display
+   - Column highlighting
+   - Error code tagging
+   - CSV export functionality
+   - Truncation handling for large error lists
+
+=== API Integration ===
+Uses backend endpoints:
+- POST /import/{entity}/validate - Multipart form with file
+- POST /import/{entity} - JSON body with validation_id and conflict_mode
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- Unit tests: 22 tests passing
+- ESLint: No errors in import components
+
+=== Notes ===
+- Semi UI Toast component properly integrated for notifications
+- Responsive design with mobile breakpoints
+- Dark mode CSS variable support
+- Accessibility: ARIA labels, keyboard navigation, proper focus management
+
+=== Next Steps ===
+- IMPORT-FE-002: Integrate wizard into entity list pages (Products, Customers, Suppliers)
+- Add more E2E tests for complete import workflow

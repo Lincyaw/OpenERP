@@ -258,6 +258,112 @@
       "RECEIPT_EXCEED_AMOUNT": "Receipt amount cannot exceed the receivable amount"
     }
   },
+  "import": {
+    "wizard": {
+      "title": "Import {{entity}}"
+    },
+    "steps": {
+      "upload": "Upload File",
+      "validate": "Validate",
+      "import": "Import",
+      "results": "Results"
+    },
+    "entityTypes": {
+      "products": "Products",
+      "customers": "Customers",
+      "suppliers": "Suppliers",
+      "inventory": "Inventory",
+      "categories": "Categories"
+    },
+    "upload": {
+      "title": "Upload {{entity}} Data",
+      "description": "Please upload a CSV file with your data",
+      "selectFile": "Select File",
+      "dropzone": "Drop file here or click to upload",
+      "dragDropText": "Drag and drop CSV file here",
+      "orClickText": "or click to select file",
+      "fileRequirements": "CSV format, max {{maxSize}}",
+      "removeFile": "Remove file",
+      "templateHint": "Not sure about the format?",
+      "downloadTemplate": "Download Template"
+    },
+    "validation": {
+      "validating": "Validating data...",
+      "validatingHint": "Checking file format and data validity",
+      "failed": "Validation Failed",
+      "retry": "Retry",
+      "noResult": "No validation result",
+      "allValid": "All data is valid",
+      "someErrors": "Some rows have errors",
+      "allInvalid": "All data validation failed",
+      "summary": "{{total}} rows total, {{valid}} valid, {{errors}} with errors",
+      "totalRows": "Total Rows",
+      "validRows": "Valid Rows",
+      "errorRows": "Error Rows",
+      "validRate": "Pass Rate",
+      "warnings": "Warnings ({{count}})",
+      "moreWarnings": "{{count}} more warnings...",
+      "preview": "Data Preview ({{count}} rows)",
+      "errors": "Error Details ({{count}})",
+      "reupload": "Re-upload",
+      "proceed": "Proceed with {{count}} rows"
+    },
+    "conflictMode": {
+      "title": "Conflict Resolution",
+      "description": "When imported data conflicts with existing records",
+      "skip": "Skip",
+      "skipDescription": "Skip existing records, only import new data",
+      "update": "Update",
+      "updateDescription": "Update existing records, merge new data",
+      "fail": "Fail",
+      "failDescription": "Stop import when duplicate data is found"
+    },
+    "import": {
+      "title": "Confirm Import",
+      "description": "About to import {{count}} valid records",
+      "warning": "Import will modify system data. Please verify data before proceeding",
+      "readyToImport": "Ready to import",
+      "rows": "records",
+      "startImport": "Start Import",
+      "importing": "Importing..."
+    },
+    "results": {
+      "noResult": "No import result",
+      "success": "Import Successful",
+      "partial": "Partial Import Success",
+      "failed": "Import Failed",
+      "summary": "{{imported}} imported, {{updated}} updated, {{skipped}} skipped, {{errors}} failed",
+      "imported": "Imported",
+      "updated": "Updated",
+      "skipped": "Skipped",
+      "errors": "Failed",
+      "successRate": "Success Rate",
+      "processedTotal": "{{count}} records processed",
+      "importMore": "Import More",
+      "close": "Done"
+    },
+    "errors": {
+      "title": "Error Details ({{count}})",
+      "noErrors": "No errors",
+      "row": "Row",
+      "column": "Column",
+      "value": "Value",
+      "message": "Message",
+      "code": "Code",
+      "export": "Export Error Report",
+      "truncated": "Showing first {{shown}} of {{total}} errors",
+      "fileTooLarge": "File exceeds size limit (max {{maxSize}})",
+      "invalidFileType": "Only CSV files are supported",
+      "unsupportedEntity": "Unsupported entity type",
+      "validationFailed": "Data validation failed",
+      "importFailed": "Data import failed",
+      "noValidRows": "No valid data to import",
+      "noValidation": "Please validate data first"
+    },
+    "messages": {
+      "importSuccess": "Successfully imported {{imported}}, updated {{updated}}"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "catalog": "Catalog",

@@ -1,0 +1,148 @@
+.results-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.results-step--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.results-status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-6);
+  border-radius: var(--border-radius-md);
+}
+
+.results-status-header--success {
+  background-color: var(--color-success-light);
+  border: 1px solid var(--color-success);
+}
+
+.results-status-header--partial {
+  background-color: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
+}
+
+.results-status-header--error {
+  background-color: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+}
+
+.results-status-icon--success {
+  color: var(--color-success);
+}
+
+.results-status-icon--warning {
+  color: var(--color-warning);
+}
+
+.results-status-icon--error {
+  color: var(--color-danger);
+}
+
+.results-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.results-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-3);
+}
+
+.results-stat-card {
+  background-color: var(--color-bg-elevated);
+}
+
+.results-stat-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.results-stat-icon {
+  font-size: 32px;
+}
+
+.results-stat-card--imported .results-stat-icon {
+  color: var(--color-success);
+}
+
+.results-stat-card--updated .results-stat-icon {
+  color: var(--color-primary);
+}
+
+.results-stat-card--skipped .results-stat-icon {
+  color: var(--color-warning);
+}
+
+.results-stat-card--errors .results-stat-icon {
+  color: var(--color-danger);
+}
+
+.results-stat-value {
+  display: flex;
+  flex-direction: column;
+}
+
+.results-rate-card {
+  background-color: var(--color-bg-container);
+}
+
+.results-rate-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.results-rate-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.results-errors-card {
+  background-color: var(--color-bg-container);
+}
+
+.results-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .results-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .results-status-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .results-actions {
+    flex-direction: column;
+  }
+
+  .results-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

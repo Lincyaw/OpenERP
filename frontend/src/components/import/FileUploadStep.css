@@ -1,0 +1,123 @@
+.file-upload-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.file-upload-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.file-upload-input-hidden {
+  display: none;
+}
+
+.file-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: var(--spacing-6);
+  border: 2px dashed var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-bg-container);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    background-color var(--duration-fast) var(--ease-default);
+}
+
+.file-upload-dropzone:hover,
+.file-upload-dropzone:focus-visible {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.file-upload-dropzone--drag-over {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-style: solid;
+}
+
+.file-upload-dropzone--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.file-upload-dropzone--has-file {
+  border-style: solid;
+  border-color: var(--color-success);
+  background-color: var(--color-bg-container);
+}
+
+.file-upload-dropzone--has-file:hover {
+  background-color: var(--color-bg-container);
+}
+
+.file-upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-align: center;
+}
+
+.file-upload-empty-icon {
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-2);
+}
+
+.file-upload-file-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.file-upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.file-upload-file-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.file-upload-file-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-upload-file-name {
+  max-width: 250px;
+}
+
+.file-upload-template {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--spacing-2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .file-upload-dropzone {
+    min-height: 160px;
+    padding: var(--spacing-4);
+  }
+
+  .file-upload-file-name {
+    max-width: 150px;
+  }
+}
+
+/* Focus styles for accessibility */
+.file-upload-dropzone:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

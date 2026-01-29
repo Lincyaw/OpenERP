@@ -1,0 +1,120 @@
+.validation-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.validation-step--loading,
+.validation-step--error,
+.validation-step--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  min-height: 200px;
+  text-align: center;
+}
+
+.validation-status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-container);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-primary);
+}
+
+.validation-status-icon--success {
+  color: var(--color-success);
+}
+
+.validation-status-icon--warning {
+  color: var(--color-warning);
+}
+
+.validation-status-icon--error {
+  color: var(--color-danger);
+}
+
+.validation-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.validation-stats-card {
+  background-color: var(--color-bg-elevated);
+}
+
+.validation-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+  text-align: center;
+}
+
+.validation-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  align-items: center;
+}
+
+.validation-stat-value--success {
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.validation-stat-value--error {
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.validation-warnings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.validation-warning-tag {
+  margin-bottom: var(--spacing-1);
+}
+
+.validation-preview-table {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.validation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .validation-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .validation-status-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .validation-actions {
+    flex-direction: column;
+  }
+
+  .validation-actions button {
+    width: 100%;
+  }
+}
