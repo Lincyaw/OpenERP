@@ -37,7 +37,12 @@ export {
 } from './DetailPageHeader'
 export {
   StatusFlow,
+  generateOrderFlowSteps,
+  ORDER_FLOW_PRESETS,
   type StatusFlowProps,
   type StatusFlowStep,
   type StatusFlowStepState,
+  type StatusFlowDirection,
+  type OrderFlowType,
+  type OrderFlowPreset,
 } from './StatusFlow'

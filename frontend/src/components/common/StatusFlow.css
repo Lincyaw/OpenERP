@@ -167,6 +167,22 @@
   font-weight: var(--font-weight-medium);
 }
 
+/* Error state */
+.status-flow__step--error .status-flow__step-icon {
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+  color: white;
+}
+
+.status-flow__step--error .status-flow__step-label {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-flow__step--error .status-flow__step-description {
+  color: var(--color-warning);
+}
+
 /* === Small Size Variant === */
 .status-flow--small .status-flow__step-icon {
   width: 24px;
@@ -191,11 +207,68 @@
   font-size: 10px;
 }
 
+/* === Explicit Vertical Layout === */
+.status-flow--vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: visible;
+}
+
+.status-flow--vertical .status-flow__step {
+  flex-direction: row;
+  align-items: flex-start;
+  position: relative;
+}
+
+.status-flow--vertical .status-flow__step-content {
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+  text-align: left;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) 0;
+}
+
+.status-flow--vertical .status-flow__step-info {
+  align-items: flex-start;
+}
+
+.status-flow--vertical .status-flow__connector {
+  position: absolute;
+  left: 15px;
+  top: 42px;
+  width: 2px;
+  height: calc(100% - 32px);
+  min-width: 2px;
+  margin: 0;
+}
+
+.status-flow--vertical .status-flow__step:last-child .status-flow__connector {
+  display: none;
+}
+
+.status-flow--vertical .status-flow__step-description {
+  max-width: none;
+  white-space: normal;
+}
+
+.status-flow--vertical .status-flow__step--current .status-flow__step-icon {
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* Vertical layout small variant */
+.status-flow--vertical.status-flow--small .status-flow__connector {
+  left: 11px;
+  top: 32px;
+  height: calc(100% - 24px);
+}
+
 /* === Responsive Design (Mobile First) === */
 
-/* Mobile: Vertical stacking */
+/* Mobile: Vertical stacking (only for non-explicit vertical layouts) */
 @media (max-width: 767px) {
-  .status-flow {
+  .status-flow:not(.status-flow--vertical) {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
@@ -203,12 +276,14 @@
     overflow-x: visible;
   }
 
-  .status-flow__step {
+  .status-flow:not(.status-flow--vertical) .status-flow__step {
     flex-direction: row;
     align-items: flex-start;
+    position: relative;
+    padding-left: 0;
   }
 
-  .status-flow__step-content {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-content {
     flex-direction: row;
     align-items: center;
     min-width: 0;
@@ -217,11 +292,11 @@
     padding: var(--spacing-2) 0;
   }
 
-  .status-flow__step-info {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-info {
     align-items: flex-start;
   }
 
-  .status-flow__connector {
+  .status-flow:not(.status-flow--vertical) .status-flow__connector {
     position: absolute;
     left: 15px;
     top: 42px;
@@ -231,52 +306,47 @@
     margin: 0;
   }
 
-  .status-flow__step {
-    position: relative;
-    padding-left: 0;
-  }
-
-  .status-flow__step:last-child .status-flow__connector {
+  .status-flow:not(.status-flow--vertical) .status-flow__step:last-child .status-flow__connector {
     display: none;
   }
 
-  .status-flow__step-description {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-description {
     max-width: none;
     white-space: normal;
   }
 
   /* Current state box shadow adjustment for vertical */
-  .status-flow__step--current .status-flow__step-icon {
+  .status-flow:not(.status-flow--vertical) .status-flow__step--current .status-flow__step-icon {
     box-shadow: 0 0 0 3px var(--color-primary-light);
   }
 }
 
-/* Tablet and up: Horizontal layout */
+/* Tablet and up: Horizontal layout (only for non-explicit vertical layouts) */
 @media (min-width: 768px) {
-  .status-flow {
+  .status-flow:not(.status-flow--vertical) {
     flex-direction: row;
   }
 
-  .status-flow__step-content {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-content {
     min-width: 90px;
   }
 
-  .status-flow__connector {
+  .status-flow:not(.status-flow--vertical) .status-flow__connector {
     min-width: 50px;
   }
 }
 
-/* Desktop: Larger spacing */
+/* Desktop: Larger spacing (only for non-explicit vertical layouts) */
 @media (min-width: 1024px) {
-  .status-flow__step-content {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-content {
     min-width: 100px;
   }
 
-  .status-flow__connector {
+  .status-flow:not(.status-flow--vertical) .status-flow__connector {
     min-width: 60px;
   }
 
-  .status-flow__step-label {
+  .status-flow:not(.status-flow--vertical) .status-flow__step-label {
     font-size: var(--font-size-sm);
   }
 }
@@ -297,6 +367,11 @@
 
 [theme-mode='dark'] .status-flow__step--rejected .status-flow__step-icon {
   background-color: var(--color-danger);
+}
+
+[theme-mode='dark'] .status-flow__step--error .status-flow__step-icon {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 0 4px rgba(var(--color-warning-rgb, 255, 152, 0), 0.2);
 }
 
 /* === Elder-Friendly Theme === */
@@ -342,7 +417,8 @@
 
   .status-flow__step--completed .status-flow__step-icon,
   .status-flow__step--current .status-flow__step-icon,
-  .status-flow__step--rejected .status-flow__step-icon {
+  .status-flow__step--rejected .status-flow__step-icon,
+  .status-flow__step--error .status-flow__step-icon {
     border-color: currentColor;
   }
 }
