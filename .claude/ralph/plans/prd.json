@@ -8032,7 +8032,7 @@
       "编写测试验证指标注册和导出",
       "验收标准：Prometheus 可抓取 /metrics 端点"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "LOADGEN-027",

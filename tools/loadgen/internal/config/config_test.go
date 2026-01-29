@@ -568,3 +568,69 @@ dataGenerators:
 	assert.Equal(t, int64(1), idGen.Sequence.Step)
 	assert.Equal(t, 6, idGen.Sequence.Padding)
 }
+
+func TestLoadFromBytes_PrometheusConfig(t *testing.T) {
+	yaml := `
+name: "Prometheus Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+output:
+  prometheus:
+    enabled: true
+    port: 9091
+    path: "/custom-metrics"
+`
+	cfg, err := LoadFromBytes([]byte(yaml))
+	require.NoError(t, err)
+
+	assert.True(t, cfg.Output.Prometheus.Enabled)
+	assert.Equal(t, 9091, cfg.Output.Prometheus.Port)
+	assert.Equal(t, "/custom-metrics", cfg.Output.Prometheus.Path)
+}
+
+func TestApplyDefaults_PrometheusOutput(t *testing.T) {
+	t.Run("enabled with defaults", func(t *testing.T) {
+		yaml := `
+name: "Prometheus Default Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+output:
+  prometheus:
+    enabled: true
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+
+		assert.True(t, cfg.Output.Prometheus.Enabled)
+		assert.Equal(t, 9090, cfg.Output.Prometheus.Port)
+		assert.Equal(t, "/metrics", cfg.Output.Prometheus.Path)
+	})
+
+	t.Run("disabled does not apply defaults", func(t *testing.T) {
+		yaml := `
+name: "Prometheus Disabled Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+output:
+  prometheus:
+    enabled: false
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+
+		assert.False(t, cfg.Output.Prometheus.Enabled)
+		assert.Equal(t, 0, cfg.Output.Prometheus.Port) // No defaults applied
+	})
+}

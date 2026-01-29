@@ -392,6 +392,9 @@ type OutputConfig struct {
 
 	// Console configures console output.
 	Console ConsoleOutputConfig `yaml:"console,omitempty" json:"console,omitempty"`
+
+	// Prometheus configures Prometheus metrics export.
+	Prometheus PrometheusOutputConfig `yaml:"prometheus,omitempty" json:"prometheus,omitempty"`
 }
 
 // JSONOutputConfig configures JSON report output.
@@ -416,6 +419,20 @@ type ConsoleOutputConfig struct {
 	// Interval is the refresh interval for real-time display.
 	// Default: 500ms
 	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty"`
+}
+
+// PrometheusOutputConfig configures Prometheus metrics export.
+type PrometheusOutputConfig struct {
+	// Enabled enables Prometheus metrics export.
+	Enabled bool `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+
+	// Port is the HTTP port for the /metrics endpoint.
+	// Default: 9090
+	Port int `yaml:"port,omitempty" json:"port,omitempty"`
+
+	// Path is the URL path for the metrics endpoint.
+	// Default: /metrics
+	Path string `yaml:"path,omitempty" json:"path,omitempty"`
 }
 
 // LoadFromFile loads configuration from a YAML file.
@@ -556,6 +573,16 @@ func (c *Config) ApplyDefaults() {
 	// Apply JSON output defaults
 	if c.Output.JSON.Enabled && c.Output.JSON.File == "" {
 		c.Output.JSON.File = "./results/loadgen-{{.Timestamp}}.json"
+	}
+
+	// Apply Prometheus output defaults
+	if c.Output.Prometheus.Enabled {
+		if c.Output.Prometheus.Port == 0 {
+			c.Output.Prometheus.Port = 9090
+		}
+		if c.Output.Prometheus.Path == "" {
+			c.Output.Prometheus.Path = "/metrics"
+		}
 	}
 }
 

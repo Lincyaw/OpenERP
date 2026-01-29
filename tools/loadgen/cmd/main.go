@@ -24,20 +24,21 @@ var (
 
 // CLI flags
 var (
-	configPath    string
-	duration      time.Duration
-	concurrency   int
-	qps           float64
-	verbose       bool
-	list          bool
-	validate      bool
-	dryRun        bool
-	showVersion   bool
-	openapiPath   string
-	inferDryRun   bool
-	minConfidence float64
-	outputFormat  string
-	outputFile    string
+	configPath     string
+	duration       time.Duration
+	concurrency    int
+	qps            float64
+	verbose        bool
+	list           bool
+	validate       bool
+	dryRun         bool
+	showVersion    bool
+	openapiPath    string
+	inferDryRun    bool
+	minConfidence  float64
+	outputFormat   string
+	outputFile     string
+	prometheusAddr string
 )
 
 func init() {
@@ -71,6 +72,7 @@ func init() {
 	// Output flags
 	flag.StringVar(&outputFormat, "output", "", "Output format: console, json, or console,json (enables JSON report)")
 	flag.StringVar(&outputFile, "output-file", "", "JSON output file path (overrides config, supports {{.Timestamp}})")
+	flag.StringVar(&prometheusAddr, "prometheus", "", "Prometheus metrics endpoint (e.g., :9090 or localhost:9090)")
 
 	// Custom usage
 	flag.Usage = printUsage
@@ -110,6 +112,7 @@ UTILITY OPTIONS:
 OUTPUT OPTIONS:
     -output <format>      Output format: console, json, or console,json
     -output-file <path>   JSON output file (supports {{.Timestamp}} template)
+    -prometheus <addr>    Enable Prometheus metrics endpoint (e.g., :9090)
 
 EXAMPLES:
     # Run with default configuration
@@ -123,6 +126,9 @@ EXAMPLES:
 
     # Generate JSON report with custom file path
     loadgen -config configs/erp.yaml -output json -output-file results/test-{{.Timestamp}}.json
+
+    # Enable Prometheus metrics endpoint
+    loadgen -config configs/erp.yaml -prometheus :9090
 
     # List all configured endpoints
     loadgen -config configs/erp.yaml -list
@@ -283,6 +289,52 @@ func applyOverrides(cfg *config.Config) {
 			fmt.Printf("Override: output file = %s\n", outputFile)
 		}
 	}
+
+	// Apply Prometheus override
+	if prometheusAddr != "" {
+		cfg.Output.Prometheus.Enabled = true
+		// Parse address - support both :9090 and localhost:9090 formats
+		port := parsePrometheusPort(prometheusAddr)
+		if port > 0 {
+			cfg.Output.Prometheus.Port = port
+		}
+		if cfg.Output.Prometheus.Path == "" {
+			cfg.Output.Prometheus.Path = "/metrics"
+		}
+		if verbose {
+			fmt.Printf("Override: Prometheus enabled on port %d\n", cfg.Output.Prometheus.Port)
+		}
+	}
+}
+
+// parsePrometheusPort extracts port from address string.
+// Supports formats: :9090, localhost:9090, 9090
+// Returns 0 for invalid ports (including out of range 1-65535).
+func parsePrometheusPort(addr string) int {
+	addr = strings.TrimSpace(addr)
+
+	// Handle just port number
+	if !strings.Contains(addr, ":") {
+		var port int
+		if _, err := fmt.Sscanf(addr, "%d", &port); err == nil {
+			if port > 0 && port <= 65535 {
+				return port
+			}
+		}
+		return 0
+	}
+
+	// Handle :port or host:port
+	parts := strings.Split(addr, ":")
+	if len(parts) >= 2 {
+		var port int
+		if _, err := fmt.Sscanf(parts[len(parts)-1], "%d", &port); err == nil {
+			if port > 0 && port <= 65535 {
+				return port
+			}
+		}
+	}
+	return 0
 }
 
 func printConfigSummary(cfg *config.Config) {

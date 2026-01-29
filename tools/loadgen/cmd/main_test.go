@@ -751,3 +751,33 @@ paths:
 	assert.Contains(t, stdout, "/test")
 	assert.Equal(t, 0, exitCode)
 }
+
+// TestParsePrometheusPort tests the parsePrometheusPort function
+func TestParsePrometheusPort(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected int
+	}{
+		{"empty", "", 0},
+		{"just port", "9090", 9090},
+		{"colon port", ":9090", 9090},
+		{"localhost port", "localhost:9090", 9090},
+		{"ip port", "127.0.0.1:8080", 8080},
+		{"with spaces", "  :9090  ", 9090},
+		{"invalid", "abc", 0},
+		{"invalid port", ":abc", 0},
+		{"high port", ":65535", 65535},
+		{"port out of range high", ":65536", 0},
+		{"port out of range zero", ":0", 0},
+		{"negative port", ":-1", 0},
+		{"very high port", ":99999", 0},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := parsePrometheusPort(tc.input)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}

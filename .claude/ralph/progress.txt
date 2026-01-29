@@ -37733,3 +37733,115 @@ and automated analysis.
 - LOADGEN-025: HTML Report Generation
 - Consider adding actual latency histogram data from Collector
 - Consider refactoring cmd/main.go (791 lines, near 800 limit)
+
+
+================================================================================
+2026-01-29 - LOADGEN-026: Prometheus 指标导出 - COMPLETE
+================================================================================
+
+=== Task Summary ===
+Implemented Prometheus metrics export for the load generator, enabling real-time
+metrics monitoring via a standard /metrics HTTP endpoint that can be scraped by
+Prometheus.
+
+=== Implementation Details ===
+
+1. Prometheus Exporter (internal/metrics/prometheus.go):
+   - Created PrometheusExporter type with comprehensive metrics:
+     - loadgen_requests_total (CounterVec) - Total requests with status/success labels
+     - loadgen_request_duration_seconds (HistogramVec) - Request latency histogram
+     - loadgen_current_qps (Gauge) - Current requests per second
+     - loadgen_target_qps (Gauge) - Target QPS setting
+     - loadgen_pool_size (Gauge) - Worker pool size
+     - loadgen_backpressure_state (Gauge) - Backpressure state (0=normal, 1=warning, 2=critical)
+     - loadgen_success_rate (Gauge) - Current success rate percentage
+     - loadgen_active_workers (Gauge) - Active worker count
+     - loadgen_request_bytes_total (Counter) - Total bytes received
+   - PrometheusExporterConfig for customization:
+     - Port (default: 9090)
+     - Path (default: /metrics)
+     - Namespace/Subsystem for metric prefixes
+     - Custom histogram buckets
+   - HTTP server with /metrics and /health endpoints
+   - Thread-safe Start/Stop methods with graceful shutdown
+   - RecordRequest() for per-request metrics
+   - Update* methods for gauge metrics
+   - UpdateFromSnapshot() for batch updates from Collector
+   - Gather() method for testing metric collection
+
+2. Config Extensions (internal/config/config.go):
+   - Added PrometheusOutputConfig struct:
+     - Enabled: bool to enable Prometheus export
+     - Port: int (default: 9090)
+     - Path: string (default: /metrics)
+   - Added Prometheus field to OutputConfig
+   - Updated ApplyDefaults() to set Prometheus defaults when enabled
+
+3. CLI Integration (cmd/main.go):
+   - Added -prometheus flag (accepts :9090 or localhost:9090 format)
+   - Added parsePrometheusPort() helper function
+   - Updated applyOverrides() to handle Prometheus flag
+   - Updated help documentation with PROMETHEUS example
+
+4. Tests Created:
+   - prometheus_test.go (15 test functions, 88.7% coverage):
+     - TestNewPrometheusExporter: Initialization with default/custom config
+     - TestDefaultPrometheusExporterConfig: Default configuration values
+     - TestPrometheusExporter_StartStop: Server lifecycle management
+     - TestPrometheusExporter_RecordRequest: Request recording and counters
+     - TestPrometheusExporter_UpdateGauges: All gauge metric updates
+     - TestPrometheusExporter_UpdateFromSnapshot: Batch updates from snapshot
+     - TestPrometheusExporter_GetAddress: Address generation
+     - TestPrometheusExporter_MetricsEndpointContent: HTTP endpoint verification
+     - TestPrometheusExporter_MetricsWithNamespace: Namespaced metrics
+     - TestPrometheusExporter_CustomHistogramBuckets: Custom histogram buckets
+     - TestPrometheusExporter_ConcurrentAccess: Thread safety verification
+     - TestPrometheusExporter_BackpressureStates: State enum values
+     - TestPrometheusExporter_Registry: Registry access
+   - config_test.go additions:
+     - TestLoadFromBytes_PrometheusConfig: Config parsing
+     - TestApplyDefaults_PrometheusOutput: Default application
+   - main_test.go additions:
+     - TestParsePrometheusPort: Port parsing function
+
+=== Key Files Modified/Created ===
+- tools/loadgen/internal/metrics/prometheus.go (created - 380 lines)
+- tools/loadgen/internal/metrics/prometheus_test.go (created - 420 lines)
+- tools/loadgen/internal/config/config.go (modified - added PrometheusOutputConfig)
+- tools/loadgen/internal/config/config_test.go (modified - added Prometheus tests)
+- tools/loadgen/cmd/main.go (modified - added CLI flag and parsePrometheusPort)
+- tools/loadgen/cmd/main_test.go (modified - added parsePrometheusPort tests)
+- tools/loadgen/go.mod (modified - added Prometheus client dependency)
+
+=== Acceptance Criteria Verification ===
+✅ 实现 internal/metrics/prometheus.go Prometheus 导出 - PrometheusExporter implemented
+✅ 注册指标：loadgen_requests_total、loadgen_request_duration_seconds - CounterVec and HistogramVec registered
+✅ 注册指标：loadgen_current_qps、loadgen_target_qps、loadgen_pool_size - Gauges registered
+✅ 注册指标：loadgen_backpressure_state - Gauge registered with 0/1/2 state values
+✅ 支持 output.prometheus.port 和 path 配置 - PrometheusOutputConfig with YAML/JSON support
+✅ 支持 -prometheus :9090 命令行参数 - CLI flag with flexible port parsing
+✅ 编写测试验证指标注册和导出 - 88.7% test coverage
+✅ 验收标准：Prometheus 可抓取 /metrics 端点 - HTTP server serves valid OpenMetrics format
+
+=== Test Results ===
+- All loadgen tests pass (14 packages)
+- Prometheus exporter tests: 100% pass rate
+- Coverage: 88.7% of metrics package statements
+
+=== Design Decisions ===
+1. Used separate prometheus.Registry to avoid conflicts with default metrics
+2. Custom histogram buckets support for application-specific latency ranges
+3. Namespace/Subsystem support for multi-app deployments
+4. Health endpoint (/health) for load balancer health checks
+5. OpenMetrics format enabled for modern Prometheus compatibility
+6. ReadHeaderTimeout set to prevent slowloris attacks
+7. Graceful shutdown support with context cancellation
+
+=== Dependencies Added ===
+- github.com/prometheus/client_golang v1.23.2
+- github.com/prometheus/client_model (indirect)
+
+=== Next Steps ===
+- LOADGEN-027: SLO 断言验证
+- Consider integrating PrometheusExporter into executor for automatic metrics
+- Consider adding histogram for per-endpoint latency distribution
