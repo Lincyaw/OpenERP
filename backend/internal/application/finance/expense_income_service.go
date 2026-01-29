@@ -13,18 +13,24 @@ import (
 
 // ExpenseIncomeService provides application-level expense and income operations
 type ExpenseIncomeService struct {
-	expenseRepo finance.ExpenseRecordRepository
-	incomeRepo  finance.OtherIncomeRecordRepository
+	expenseRepo        finance.ExpenseRecordRepository
+	incomeRepo         finance.OtherIncomeRecordRepository
+	receiptVoucherRepo finance.ReceiptVoucherRepository
+	paymentVoucherRepo finance.PaymentVoucherRepository
 }
 
 // NewExpenseIncomeService creates a new ExpenseIncomeService
 func NewExpenseIncomeService(
 	expenseRepo finance.ExpenseRecordRepository,
 	incomeRepo finance.OtherIncomeRecordRepository,
+	receiptVoucherRepo finance.ReceiptVoucherRepository,
+	paymentVoucherRepo finance.PaymentVoucherRepository,
 ) *ExpenseIncomeService {
 	return &ExpenseIncomeService{
-		expenseRepo: expenseRepo,
-		incomeRepo:  incomeRepo,
+		expenseRepo:        expenseRepo,
+		incomeRepo:         incomeRepo,
+		receiptVoucherRepo: receiptVoucherRepo,
+		paymentVoucherRepo: paymentVoucherRepo,
 	}
 }
 
@@ -737,10 +743,46 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 		return nil, err
 	}
 
-	// For now, we only have expense and income
-	// In a full implementation, we would also include ReceiptVoucher and PaymentVoucher
-	totalInflow := incomeTotal
-	totalOutflow := expenseTotal
+	// Calculate receipt voucher total (inflow from customers)
+	receiptTotal := decimal.Zero
+	if s.receiptVoucherRepo != nil {
+		allocatedStatus := finance.VoucherStatusAllocated
+		receiptFilter := finance.ReceiptVoucherFilter{
+			Status:   &allocatedStatus,
+			FromDate: &from,
+			ToDate:   &to,
+		}
+		receipts, err := s.receiptVoucherRepo.FindAllForTenant(ctx, tenantID, receiptFilter)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range receipts {
+			receiptTotal = receiptTotal.Add(r.Amount)
+		}
+	}
+
+	// Calculate payment voucher total (outflow to suppliers)
+	paymentTotal := decimal.Zero
+	if s.paymentVoucherRepo != nil {
+		allocatedStatus := finance.VoucherStatusAllocated
+		paymentFilter := finance.PaymentVoucherFilter{
+			Status:   &allocatedStatus,
+			FromDate: &from,
+			ToDate:   &to,
+		}
+		payments, err := s.paymentVoucherRepo.FindAllForTenant(ctx, tenantID, paymentFilter)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range payments {
+			paymentTotal = paymentTotal.Add(p.Amount)
+		}
+	}
+
+	// Total inflow = income + receipt vouchers
+	totalInflow := incomeTotal.Add(receiptTotal)
+	// Total outflow = expense + payment vouchers
+	totalOutflow := expenseTotal.Add(paymentTotal)
 	netCashFlow := totalInflow.Sub(totalOutflow)
 
 	summary := &CashFlowSummary{
@@ -800,6 +842,58 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 				Date:        i.ReceivedAt,
 				Direction:   "INFLOW",
 			})
+		}
+
+		// Get allocated receipt vouchers (收款)
+		if s.receiptVoucherRepo != nil {
+			allocatedStatus := finance.VoucherStatusAllocated
+			receiptFilter := finance.ReceiptVoucherFilter{
+				Status:   &allocatedStatus,
+				FromDate: &from,
+				ToDate:   &to,
+			}
+			receipts, err := s.receiptVoucherRepo.FindAllForTenant(ctx, tenantID, receiptFilter)
+			if err != nil {
+				return nil, err
+			}
+			for _, r := range receipts {
+				items = append(items, CashFlowItem{
+					ID:          r.ID,
+					Type:        "RECEIPT",
+					Category:    string(r.PaymentMethod),
+					Number:      r.VoucherNumber,
+					Description: "收款 - " + r.CustomerName,
+					Amount:      r.Amount,
+					Date:        r.ReceiptDate,
+					Direction:   "INFLOW",
+				})
+			}
+		}
+
+		// Get allocated payment vouchers (付款)
+		if s.paymentVoucherRepo != nil {
+			allocatedStatus := finance.VoucherStatusAllocated
+			paymentFilter := finance.PaymentVoucherFilter{
+				Status:   &allocatedStatus,
+				FromDate: &from,
+				ToDate:   &to,
+			}
+			payments, err := s.paymentVoucherRepo.FindAllForTenant(ctx, tenantID, paymentFilter)
+			if err != nil {
+				return nil, err
+			}
+			for _, p := range payments {
+				items = append(items, CashFlowItem{
+					ID:          p.ID,
+					Type:        "PAYMENT",
+					Category:    string(p.PaymentMethod),
+					Number:      p.VoucherNumber,
+					Description: "付款 - " + p.SupplierName,
+					Amount:      p.Amount,
+					Date:        p.PaymentDate,
+					Direction:   "OUTFLOW",
+				})
+			}
 		}
 
 		summary.Items = items

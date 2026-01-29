@@ -18,7 +18,11 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { createFinanceReceiptReceiptVoucher } from '@/api/finance-receipts/finance-receipts'
+import {
+  createFinanceReceiptReceiptVoucher,
+  confirmReceiptVoucherFinanceReceipt,
+  reconcileReceiptVoucherFinanceReceipt,
+} from '@/api/finance-receipts/finance-receipts'
 import { listFinanceReceivableReceivables } from '@/api/finance-receivables/finance-receivables'
 import { listCustomers, getCustomerById } from '@/api/customers/customers'
 import type {
@@ -295,11 +299,37 @@ export default function ReceiptVoucherNewPage() {
       remark: data.remark,
     }
 
-    const response = await createFinanceReceiptReceiptVoucher(request)
-    if (response.status !== 201 || !response.data.success) {
+    // Step 1: Create receipt voucher
+    const createResponse = await createFinanceReceiptReceiptVoucher(request)
+    if (createResponse.status !== 201 || !createResponse.data.success) {
       throw new Error(
-        (response.data.error as { message?: string })?.message ||
+        (createResponse.data.error as { message?: string })?.message ||
           t('receiptVoucher.messages.createError')
+      )
+    }
+
+    const voucherId = createResponse.data.data?.id
+    if (!voucherId) {
+      throw new Error(t('receiptVoucher.messages.createError'))
+    }
+
+    // Step 2: Confirm receipt voucher
+    const confirmResponse = await confirmReceiptVoucherFinanceReceipt(voucherId, {})
+    if (confirmResponse.status !== 200 || !confirmResponse.data.success) {
+      throw new Error(
+        (confirmResponse.data.error as { message?: string })?.message ||
+          t('receiptVoucher.messages.confirmError')
+      )
+    }
+
+    // Step 3: Reconcile receipt voucher with FIFO strategy (auto-allocate to oldest receivables first)
+    const reconcileResponse = await reconcileReceiptVoucherFinanceReceipt(voucherId, {
+      strategy_type: 'FIFO',
+    })
+    if (reconcileResponse.status !== 200 || !reconcileResponse.data.success) {
+      throw new Error(
+        (reconcileResponse.data.error as { message?: string })?.message ||
+          t('receiptVoucher.messages.reconcileError')
       )
     }
   }

@@ -416,7 +416,7 @@ func main() {
 	})
 
 	// Expense and income service
-	expenseIncomeService := financeapp.NewExpenseIncomeService(expenseRecordRepo, otherIncomeRecordRepo)
+	expenseIncomeService := financeapp.NewExpenseIncomeService(expenseRecordRepo, otherIncomeRecordRepo, receiptVoucherRepo, paymentVoucherRepo)
 
 	// Finance core service (receivables, payables, vouchers)
 	// Configure with FIFO as default reconciliation strategy (injected from strategy registry)

@@ -116,7 +116,7 @@ type PaymentRecordResponse struct {
 // AccountReceivableListFilter defines filtering options for receivable list queries
 type AccountReceivableListFilter struct {
 	Search     string     `form:"search"`
-	CustomerID *uuid.UUID `form:"customer_id"`
+	CustomerID string     `form:"customer_id"`
 	Status     string     `form:"status"`
 	SourceType string     `form:"source_type"`
 	FromDate   *time.Time `form:"from_date"`
@@ -141,14 +141,22 @@ func (s *FinanceService) GetReceivableByID(ctx context.Context, tenantID, id uui
 // ListReceivables lists receivables with filtering
 func (s *FinanceService) ListReceivables(ctx context.Context, tenantID uuid.UUID, filter AccountReceivableListFilter) ([]AccountReceivableResponse, int64, error) {
 	domainFilter := finance.AccountReceivableFilter{
-		CustomerID: filter.CustomerID,
-		FromDate:   filter.FromDate,
-		ToDate:     filter.ToDate,
-		Overdue:    filter.Overdue,
+		FromDate: filter.FromDate,
+		ToDate:   filter.ToDate,
+		Overdue:  filter.Overdue,
 	}
 	domainFilter.Page = filter.Page
 	domainFilter.PageSize = filter.PageSize
 	domainFilter.Search = filter.Search
+
+	// Parse CustomerID if provided
+	if filter.CustomerID != "" {
+		customerID, err := uuid.Parse(filter.CustomerID)
+		if err != nil {
+			return nil, 0, shared.NewDomainError("INVALID_CUSTOMER_ID", "Invalid customer ID format")
+		}
+		domainFilter.CustomerID = &customerID
+	}
 
 	if filter.Status != "" {
 		status := finance.ReceivableStatus(filter.Status)
@@ -258,7 +266,7 @@ type PayablePaymentRecordResponse struct {
 // AccountPayableListFilter defines filtering options for payable list queries
 type AccountPayableListFilter struct {
 	Search     string     `form:"search"`
-	SupplierID *uuid.UUID `form:"supplier_id"`
+	SupplierID string     `form:"supplier_id"`
 	Status     string     `form:"status"`
 	SourceType string     `form:"source_type"`
 	FromDate   *time.Time `form:"from_date"`
@@ -283,14 +291,22 @@ func (s *FinanceService) GetPayableByID(ctx context.Context, tenantID, id uuid.U
 // ListPayables lists payables with filtering
 func (s *FinanceService) ListPayables(ctx context.Context, tenantID uuid.UUID, filter AccountPayableListFilter) ([]AccountPayableResponse, int64, error) {
 	domainFilter := finance.AccountPayableFilter{
-		SupplierID: filter.SupplierID,
-		FromDate:   filter.FromDate,
-		ToDate:     filter.ToDate,
-		Overdue:    filter.Overdue,
+		FromDate: filter.FromDate,
+		ToDate:   filter.ToDate,
+		Overdue:  filter.Overdue,
 	}
 	domainFilter.Page = filter.Page
 	domainFilter.PageSize = filter.PageSize
 	domainFilter.Search = filter.Search
+
+	// Parse SupplierID if provided
+	if filter.SupplierID != "" {
+		supplierID, err := uuid.Parse(filter.SupplierID)
+		if err != nil {
+			return nil, 0, shared.NewDomainError("INVALID_SUPPLIER_ID", "Invalid supplier ID format")
+		}
+		domainFilter.SupplierID = &supplierID
+	}
 
 	if filter.Status != "" {
 		status := finance.PayableStatus(filter.Status)
@@ -412,7 +428,7 @@ type CreateReceiptVoucherRequest struct {
 // ReceiptVoucherListFilter defines filtering options for receipt voucher list queries
 type ReceiptVoucherListFilter struct {
 	Search        string     `form:"search"`
-	CustomerID    *uuid.UUID `form:"customer_id"`
+	CustomerID    string     `form:"customer_id"`
 	Status        string     `form:"status"`
 	PaymentMethod string     `form:"payment_method"`
 	FromDate      *time.Time `form:"from_date"`
@@ -482,13 +498,21 @@ func (s *FinanceService) GetReceiptVoucherByID(ctx context.Context, tenantID, id
 // ListReceiptVouchers lists receipt vouchers with filtering
 func (s *FinanceService) ListReceiptVouchers(ctx context.Context, tenantID uuid.UUID, filter ReceiptVoucherListFilter) ([]ReceiptVoucherResponse, int64, error) {
 	domainFilter := finance.ReceiptVoucherFilter{
-		CustomerID: filter.CustomerID,
-		FromDate:   filter.FromDate,
-		ToDate:     filter.ToDate,
+		FromDate: filter.FromDate,
+		ToDate:   filter.ToDate,
 	}
 	domainFilter.Page = filter.Page
 	domainFilter.PageSize = filter.PageSize
 	domainFilter.Search = filter.Search
+
+	// Parse CustomerID if provided
+	if filter.CustomerID != "" {
+		customerID, err := uuid.Parse(filter.CustomerID)
+		if err != nil {
+			return nil, 0, shared.NewDomainError("INVALID_CUSTOMER_ID", "Invalid customer ID format")
+		}
+		domainFilter.CustomerID = &customerID
+	}
 
 	if filter.Status != "" {
 		status := finance.VoucherStatus(filter.Status)
@@ -608,7 +632,7 @@ type CreatePaymentVoucherRequest struct {
 // PaymentVoucherListFilter defines filtering options for payment voucher list queries
 type PaymentVoucherListFilter struct {
 	Search        string     `form:"search"`
-	SupplierID    *uuid.UUID `form:"supplier_id"`
+	SupplierID    string     `form:"supplier_id"`
 	Status        string     `form:"status"`
 	PaymentMethod string     `form:"payment_method"`
 	FromDate      *time.Time `form:"from_date"`
@@ -678,13 +702,21 @@ func (s *FinanceService) GetPaymentVoucherByID(ctx context.Context, tenantID, id
 // ListPaymentVouchers lists payment vouchers with filtering
 func (s *FinanceService) ListPaymentVouchers(ctx context.Context, tenantID uuid.UUID, filter PaymentVoucherListFilter) ([]PaymentVoucherResponse, int64, error) {
 	domainFilter := finance.PaymentVoucherFilter{
-		SupplierID: filter.SupplierID,
-		FromDate:   filter.FromDate,
-		ToDate:     filter.ToDate,
+		FromDate: filter.FromDate,
+		ToDate:   filter.ToDate,
 	}
 	domainFilter.Page = filter.Page
 	domainFilter.PageSize = filter.PageSize
 	domainFilter.Search = filter.Search
+
+	// Parse SupplierID if provided
+	if filter.SupplierID != "" {
+		supplierID, err := uuid.Parse(filter.SupplierID)
+		if err != nil {
+			return nil, 0, shared.NewDomainError("INVALID_SUPPLIER_ID", "Invalid supplier ID format")
+		}
+		domainFilter.SupplierID = &supplierID
+	}
 
 	if filter.Status != "" {
 		status := finance.VoucherStatus(filter.Status)

@@ -80,10 +80,6 @@ const ReceiptVoucherNewPage = () => lazyLoad(() => import('@/pages/finance/Recei
 const PaymentVoucherNewPage = () => lazyLoad(() => import('@/pages/finance/PaymentVoucherNew'))
 const ReceiptReconcilePage = () => lazyLoad(() => import('@/pages/finance/ReceiptReconcile'))
 const PaymentReconcilePage = () => lazyLoad(() => import('@/pages/finance/PaymentReconcile'))
-const ExpensesPage = () => lazyLoad(() => import('@/pages/finance/Expenses'))
-const ExpenseFormPage = () => lazyLoad(() => import('@/pages/finance/ExpenseForm'))
-const OtherIncomesPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomes'))
-const OtherIncomeFormPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomeForm'))
 const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
 const ReceivableDetailPage = () => lazyLoad(() => import('@/pages/finance/ReceivableDetail'))
 const PayableDetailPage = () => lazyLoad(() => import('@/pages/finance/PayableDetail'))
@@ -352,30 +348,12 @@ export const appRoutes: AppRoute[] = [
         },
       },
       {
-        path: '/finance/expenses',
-        meta: {
-          title: 'Expenses',
-          icon: 'IconMinusCircle',
-          order: 3,
-          permissions: [Permissions.EXPENSE_READ],
-        },
-      },
-      {
-        path: '/finance/incomes',
-        meta: {
-          title: 'Other Income',
-          icon: 'IconPlusCircle',
-          order: 4,
-          permissions: [Permissions.INCOME_READ],
-        },
-      },
-      {
         path: '/finance/cashflow',
         meta: {
           title: 'Cash Flow',
           icon: 'IconHistory',
-          order: 5,
-          permissions: [Permissions.EXPENSE_READ, Permissions.INCOME_READ],
+          order: 3,
+          permissions: [Permissions.ACCOUNT_RECEIVABLE_READ, Permissions.ACCOUNT_PAYABLE_READ],
         },
       },
     ],
@@ -589,10 +567,6 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return ReceivablesPage()
     case '/finance/payables':
       return PayablesPage()
-    case '/finance/expenses':
-      return ExpensesPage()
-    case '/finance/incomes':
-      return OtherIncomesPage()
     case '/finance/cashflow':
       return CashFlowPage()
     case '/report/sales':
@@ -760,11 +734,7 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'receipts/new', element: ReceiptVoucherNewPage() },
           { path: 'receipts/:id/reconcile', element: ReceiptReconcilePage() },
           { path: 'payments/new', element: PaymentVoucherNewPage() },
-          { path: 'payments/:id/reconcile', element: PaymentReconcilePage() },
-          { path: 'expenses/new', element: ExpenseFormPage() },
-          { path: 'expenses/:id/edit', element: ExpenseFormPage() },
-          { path: 'incomes/new', element: OtherIncomeFormPage() },
-          { path: 'incomes/:id/edit', element: OtherIncomeFormPage() }
+          { path: 'payments/:id/reconcile', element: PaymentReconcilePage() }
         )
       }
 

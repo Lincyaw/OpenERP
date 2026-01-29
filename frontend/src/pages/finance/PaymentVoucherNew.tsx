@@ -18,7 +18,11 @@ import {
   createEnumSchema,
 } from '@/components/common/form'
 import { Container } from '@/components/common/layout'
-import { createFinancePaymentPaymentVoucher } from '@/api/finance-payments/finance-payments'
+import {
+  createFinancePaymentPaymentVoucher,
+  confirmPaymentVoucherFinancePayment,
+  reconcilePaymentVoucherFinancePayment,
+} from '@/api/finance-payments/finance-payments'
 import { listFinancePayablePayables } from '@/api/finance-payables/finance-payables'
 import { listSuppliers, getSupplierById } from '@/api/suppliers/suppliers'
 import type {
@@ -288,11 +292,37 @@ export default function PaymentVoucherNewPage() {
       remark: data.remark,
     }
 
-    const response = await createFinancePaymentPaymentVoucher(request)
-    if (response.status !== 201 || !response.data.success) {
+    // Step 1: Create payment voucher
+    const createResponse = await createFinancePaymentPaymentVoucher(request)
+    if (createResponse.status !== 201 || !createResponse.data.success) {
       throw new Error(
-        (response.data.error as { message?: string })?.message ||
+        (createResponse.data.error as { message?: string })?.message ||
           t('paymentVoucher.messages.createError')
+      )
+    }
+
+    const voucherId = createResponse.data.data?.id
+    if (!voucherId) {
+      throw new Error(t('paymentVoucher.messages.createError'))
+    }
+
+    // Step 2: Confirm payment voucher
+    const confirmResponse = await confirmPaymentVoucherFinancePayment(voucherId, {})
+    if (confirmResponse.status !== 200 || !confirmResponse.data.success) {
+      throw new Error(
+        (confirmResponse.data.error as { message?: string })?.message ||
+          t('paymentVoucher.messages.confirmError')
+      )
+    }
+
+    // Step 3: Reconcile payment voucher with FIFO strategy (auto-allocate to oldest payables first)
+    const reconcileResponse = await reconcilePaymentVoucherFinancePayment(voucherId, {
+      strategy_type: 'FIFO',
+    })
+    if (reconcileResponse.status !== 200 || !reconcileResponse.data.success) {
+      throw new Error(
+        (reconcileResponse.data.error as { message?: string })?.message ||
+          t('paymentVoucher.messages.reconcileError')
       )
     }
   }

@@ -140,8 +140,6 @@ const titleToI18nKey: Record<string, string> = {
   Finance: 'nav.finance',
   Receivables: 'nav.receivables',
   Payables: 'nav.payables',
-  Expenses: 'nav.expenses',
-  'Other Income': 'nav.otherIncome',
   'Cash Flow': 'nav.cashFlow',
   Reports: 'nav.reports',
   'Sales Report': 'nav.salesReport',
